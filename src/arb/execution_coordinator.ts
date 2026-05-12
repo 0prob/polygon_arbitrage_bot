@@ -591,6 +591,13 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       return null;
     }
 
+    const postBuildProfitWei = postBuildAssessment.netProfitAfterGas > 0n
+      ? postBuildAssessment.netProfitAfterGas * tokenToMaticRate
+      : 0n;
+    builtTx.meta.expectedProfitTokenUnits = postBuildAssessment.netProfitAfterGas.toString();
+    builtTx.meta.expectedProfitWei = postBuildProfitWei.toString();
+    builtTx.meta.profitTokenToMaticRate = tokenToMaticRate.toString();
+
     deps.log(
       `[drift] pre=${executionCandidate.assessment.netProfitAfterGas} post=${postBuildAssessment.netProfitAfterGas} onChainMin=${onChainMinProfit}`,
       "info",

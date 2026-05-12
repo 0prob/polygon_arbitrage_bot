@@ -45,9 +45,26 @@ const PROFIT_MEDIUM_WEI = BigInt("5000000000000000"); // 0.005 MATIC — generou
  * Compute a profit-weighted receipt timeout.
  * Tiny profits get a short timeout (capital recovery); large profits are worth the wait.
  */
+function parseUnsignedBigInt(value: unknown) {
+  const text = String(value ?? "").trim();
+  return /^\d+$/.test(text) ? BigInt(text) : null;
+}
+
+export function expectedProfitWei(builtTx: BuiltTx) {
+  const meta = builtTx.meta ?? {};
+  const explicitWei = parseUnsignedBigInt(
+    meta.expectedProfitWei ?? meta.expectedProfitMaticWei ?? meta.expectedProfitNativeWei,
+  );
+  if (explicitWei != null) return explicitWei;
+
+  // Backward compatibility for older BuiltTx objects: expectedProfit was a raw
+  // start-token amount. Only use it as a wei estimate when no normalized value
+  // was provided, preserving previous behavior for legacy callers.
+  return parseUnsignedBigInt(meta.expectedProfit) ?? 0n;
+}
+
 function adaptiveReceiptTimeoutMs(builtTx: BuiltTx): number {
-  const profitStr = String(builtTx.meta?.expectedProfit ?? "0");
-  const profit = /^\d+$/.test(profitStr) ? BigInt(profitStr) : 0n;
+  const profit = expectedProfitWei(builtTx);
 
   if (profit <= PROFIT_TINY_WEI) return MIN_RECEIPT_TIMEOUT_MS;      // 15s for tiny
   if (profit <= PROFIT_SMALL_WEI) return 30_000;                     // 30s for small
@@ -283,8 +300,7 @@ async function pollTrackedReceipt(entry: PendingReceiptEntry) {
 
   const ageMs = Date.now() - entry.submittedAt;
   // Use adaptive drop threshold: smaller profits get shorter grace period
-  const profitStr = String(entry.builtTx.meta?.expectedProfit ?? "0");
-  const profit = /^\d+$/.test(profitStr) ? BigInt(profitStr) : 0n;
+  const profit = expectedProfitWei(entry.builtTx);
   const adaptiveDropAfterMs = profit <= PROFIT_TINY_WEI
     ? Math.min(RECEIPT_DROP_AFTER_MS, 25_000)  // 25s for tiny profits
     : RECEIPT_DROP_AFTER_MS;                    // 45s standard
