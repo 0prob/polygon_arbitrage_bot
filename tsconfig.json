@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

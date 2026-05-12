@@ -1,0 +1,20 @@
+[profile.default]
+solc_version = "0.8.34"
+
+evm_version = "shanghai"     # Modern EVM with PUSH0 support
+via_ir = true                # Yul IR pipeline → smaller bytecode, fixes stack-too-deep
+optimizer = true
+optimizer_runs = 200         # Balanced for deployment + runtime gas
+
+# --- Metadata / Determinism ---
+cbor_metadata = false        # Remove CBOR metadata
+bytecode_hash = "none"       # Remove IPFS hash → deterministic bytecode
+
+# --- Paths ---
+src = "src"
+out = "out"
+libs = ["lib"]
+
+# --- RPC (optional) ---
+# Leave the default profile RPC-free so pure unit tests run locally.
+# Pass `--rpc-url` (or use a separate profile) only for forked tests/scripts.

@@ -1,0 +1,1192 @@
+{
+  "nodes": [
+    {
+      "id": "math-module",
+      "type": "module",
+      "label": "src/math",
+      "properties": {
+        "path": "src/math/index.ts",
+        "description": "Barrel export aggregating all DEX swap math modules"
+      }
+    },
+    {
+      "id": "full_math-module",
+      "type": "module",
+      "label": "full_math.ts",
+      "properties": {
+        "path": "src/math/full_math.ts",
+        "description": "512-bit precision arithmetic utilities (mulDiv, divRoundingUp)"
+      }
+    },
+    {
+      "id": "tick_math-module",
+      "type": "module",
+      "label": "tick_math.ts",
+      "properties": {
+        "path": "src/math/tick_math.ts",
+        "description": "Tick ↔ sqrtPriceX96 conversions using binary decomposition"
+      }
+    },
+    {
+      "id": "sqrt_price_math-module",
+      "type": "module",
+      "label": "sqrt_price_math.ts",
+      "properties": {
+        "path": "src/math/sqrt_price_math.ts",
+        "description": "Q64.96 sqrt-price deltas and next-price computation"
+      }
+    },
+    {
+      "id": "swap_math-module",
+      "type": "module",
+      "label": "swap_math.ts",
+      "properties": {
+        "path": "src/math/swap_math.ts",
+        "description": "Single-tick-range swap step computation"
+      }
+    },
+    {
+      "id": "uniswap_v2-module",
+      "type": "module",
+      "label": "uniswap_v2.ts",
+      "properties": {
+        "path": "src/math/uniswap_v2.ts",
+        "description": "Uniswap V2 / constant-product swap simulator"
+      }
+    },
+    {
+      "id": "uniswap_v3-module",
+      "type": "module",
+      "label": "uniswap_v3.ts",
+      "properties": {
+        "path": "src/math/uniswap_v3.ts",
+        "description": "Optimized Uniswap V3 concentrated-liquidity swap simulator"
+      }
+    },
+    {
+      "id": "curve-module",
+      "type": "module",
+      "label": "curve.ts",
+      "properties": {
+        "path": "src/math/curve.ts",
+        "description": "Curve StableSwap 2-token and multi-token pool math"
+      }
+    },
+    {
+      "id": "balancer-module",
+      "type": "module",
+      "label": "balancer.ts",
+      "properties": {
+        "path": "src/math/balancer.ts",
+        "description": "Balancer V2 weighted and stable pool swap math"
+      }
+    },
+    {
+      "id": "woofi-module",
+      "type": "module",
+      "label": "woofi.ts",
+      "properties": {
+        "path": "src/math/woofi.ts",
+        "description": "WOOFi sPMM (synthetic Proactive Market Maker) swap math"
+      }
+    },
+    {
+      "id": "dodo-module",
+      "type": "module",
+      "label": "dodo.ts",
+      "properties": {
+        "path": "src/math/dodo.ts",
+        "description": "DODO vPMM (Virtual Private Market Maker) swap math"
+      }
+    },
+    {
+      "id": "function-mulDiv",
+      "type": "function",
+      "label": "mulDiv",
+      "properties": {
+        "module": "full_math.ts",
+        "description": "floor(a * b / denominator)",
+        "signature": "(a: bigint, b: bigint, denominator: bigint) => bigint"
+      }
+    },
+    {
+      "id": "function-mulDivRoundingUp",
+      "type": "function",
+      "label": "mulDivRoundingUp",
+      "properties": {
+        "module": "full_math.ts",
+        "description": "ceil(a * b / denominator)",
+        "signature": "(a: bigint, b: bigint, denominator: bigint) => bigint"
+      }
+    },
+    {
+      "id": "function-divRoundingUp",
+      "type": "function",
+      "label": "divRoundingUp",
+      "properties": {
+        "module": "full_math.ts",
+        "description": "ceil(a / b)",
+        "signature": "(a: bigint, b: bigint) => bigint"
+      }
+    },
+    {
+      "id": "function-getSqrtRatioAtTick",
+      "type": "function",
+      "label": "getSqrtRatioAtTick",
+      "properties": {
+        "module": "tick_math.ts",
+        "description": "Computes sqrt(1.0001^tick) * 2^96 using binary decomposition with 20 magic constants",
+        "signature": "(tick: number) => bigint"
+      }
+    },
+    {
+      "id": "function-getTickAtSqrtRatio",
+      "type": "function",
+      "label": "getTickAtSqrtRatio",
+      "properties": {
+        "module": "tick_math.ts",
+        "description": "Greatest tick such that getSqrtRatioAtTick(tick) <= sqrtPriceX96",
+        "signature": "(sqrtPriceX96: bigint) => number"
+      }
+    },
+    {
+      "id": "function-getTickAtSqrtRatioInRange",
+      "type": "function",
+      "label": "getTickAtSqrtRatioInRange",
+      "properties": {
+        "module": "tick_math.ts",
+        "description": "Bounded binary search for tick at sqrt price",
+        "signature": "(sqrtPriceX96: bigint, minTick: number, maxTick: number) => number"
+      }
+    },
+    {
+      "id": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "type": "function",
+      "label": "getNextSqrtPriceFromAmount0RoundingUp",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Next sqrt price given token0 delta (always rounds up)",
+        "signature": "(sqrtPX96: bigint, liquidity: bigint, amount: bigint, add: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "type": "function",
+      "label": "getNextSqrtPriceFromAmount1RoundingDown",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Next sqrt price given token1 delta (always rounds down)",
+        "signature": "(sqrtPX96: bigint, liquidity: bigint, amount: bigint, add: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-getNextSqrtPriceFromInput",
+      "type": "function",
+      "label": "getNextSqrtPriceFromInput",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Next sqrt price given input amount (dispatches to amount0/amount1 variants)",
+        "signature": "(sqrtPX96: bigint, liquidity: bigint, amountIn: bigint, zeroForOne: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-getNextSqrtPriceFromOutput",
+      "type": "function",
+      "label": "getNextSqrtPriceFromOutput",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Next sqrt price given output amount",
+        "signature": "(sqrtPX96: bigint, liquidity: bigint, amountOut: bigint, zeroForOne: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-getAmount0Delta",
+      "type": "function",
+      "label": "getAmount0Delta",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Amount0 = L * (sqrtB - sqrtA) / (sqrtA * sqrtB)",
+        "signature": "(sqrtRatioAX96: bigint, sqrtRatioBX96: bigint, liquidity: bigint, roundUp: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-getAmount1Delta",
+      "type": "function",
+      "label": "getAmount1Delta",
+      "properties": {
+        "module": "sqrt_price_math.ts",
+        "description": "Amount1 = L * (sqrtB - sqrtA)",
+        "signature": "(sqrtRatioAX96: bigint, sqrtRatioBX96: bigint, liquidity: bigint, roundUp: boolean) => bigint"
+      }
+    },
+    {
+      "id": "function-computeSwapStep",
+      "type": "function",
+      "label": "computeSwapStep",
+      "properties": {
+        "module": "swap_math.ts",
+        "description": "Computes swap result within a single tick range (port of Uniswap V3 SwapMath.sol)",
+        "signature": "(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, amountRemaining, feePips) => { sqrtRatioNextX96, amountIn, amountOut, feeAmount }"
+      }
+    },
+    {
+      "id": "function-getV2AmountOut",
+      "type": "function",
+      "label": "getV2AmountOut",
+      "properties": {
+        "module": "uniswap_v2.ts",
+        "description": "Constant-product output = reserveOut * amountIn * feeNum / (reserveIn * 1000 + amountIn * feeNum)",
+        "signature": "(amountIn, reserveIn, reserveOut, feeNumerator?, feeDenominator?) => bigint"
+      }
+    },
+    {
+      "id": "function-getV2AmountIn",
+      "type": "function",
+      "label": "getV2AmountIn",
+      "properties": {
+        "module": "uniswap_v2.ts",
+        "description": "Reversed V2: required input for desired output",
+        "signature": "(amountOut, reserveIn, reserveOut, feeNumerator?, feeDenominator?) => bigint"
+      }
+    },
+    {
+      "id": "function-simulateV2Swap",
+      "type": "function",
+      "label": "simulateV2Swap",
+      "properties": {
+        "module": "uniswap_v2.ts",
+        "description": "Full V2 swap wrapper with gas estimate ~90k",
+        "signature": "(poolState, amountIn, zeroForOne, feeNumerator?, feeDenominator?) => { amountOut, gasEstimate }"
+      }
+    },
+    {
+      "id": "function-quoteV2",
+      "type": "function",
+      "label": "quoteV2",
+      "properties": {
+        "module": "uniswap_v2.ts",
+        "description": "Convenience wrapper returning only amountOut",
+        "signature": "(poolState, amountIn, zeroForOne) => bigint"
+      }
+    },
+    {
+      "id": "function-simulateV3Swap",
+      "type": "function",
+      "label": "simulateV3Swap",
+      "properties": {
+        "module": "uniswap_v3.ts",
+        "description": "Optimized V3 exact-in swap simulator with tick-crossing loop, WeakMap caching of sorted ticks, binary search tick navigation",
+        "signature": "(state, amountIn, zeroForOne, feeOverride?) => { amountOut, sqrtPriceX96After, tickAfter, gasEstimate }"
+      }
+    },
+    {
+      "id": "function-quoteV3",
+      "type": "function",
+      "label": "quoteV3",
+      "properties": {
+        "module": "uniswap_v3.ts",
+        "description": "Convenience V3 quote returning only amountOut",
+        "signature": "(state, amountIn, zeroForOne, fee?) => bigint"
+      }
+    },
+    {
+      "id": "function-getCurveAmountOut",
+      "type": "function",
+      "label": "getCurveAmountOut",
+      "properties": {
+        "module": "curve.ts",
+        "description": "Curve StableSwap exact-input: Newton solve invariant D, then compute y balance",
+        "signature": "(amountIn, poolState, tokenInIdx, tokenOutIdx) => bigint"
+      }
+    },
+    {
+      "id": "function-getCurveAmountIn",
+      "type": "function",
+      "label": "getCurveAmountIn",
+      "properties": {
+        "module": "curve.ts",
+        "description": "Curve StableSwap exact-output via binary search on getCurveAmountOut",
+        "signature": "(amountOut, poolState, tokenInIdx, tokenOutIdx) => bigint"
+      }
+    },
+    {
+      "id": "function-simulateCurveSwap",
+      "type": "function",
+      "label": "simulateCurveSwap",
+      "properties": {
+        "module": "curve.ts",
+        "description": "Curve swap wrapper with gas estimate ~200k",
+        "signature": "(amountIn, poolState, tokenInIdx?, tokenOutIdx?) => { amountOut, gasEstimate }"
+      }
+    },
+    {
+      "id": "function-getBalancerAmountOut",
+      "type": "function",
+      "label": "getBalancerAmountOut",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Balancer weighted pool exact-output swap: balanceOut * (1 - (balIn/(balIn+amountInAfterFee))^(wIn/wOut))",
+        "signature": "(amountIn, poolState, inIdx, outIdx) => bigint"
+      }
+    },
+    {
+      "id": "function-getBalancerAmountIn",
+      "type": "function",
+      "label": "getBalancerAmountIn",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Balancer weighted pool exact-input with binary search correction for power approx",
+        "signature": "(amountOut, poolState, inIdx, outIdx) => bigint"
+      }
+    },
+    {
+      "id": "function-calculateBalancerStableInvariant",
+      "type": "function",
+      "label": "calculateBalancerStableInvariant",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Balancer stable invariant via Newton iteration (port of StableMath._calculateInvariant)",
+        "signature": "(amp, balances, ampPrecision?) => bigint"
+      }
+    },
+    {
+      "id": "function-getBalancerStableAmountOut",
+      "type": "function",
+      "label": "getBalancerStableAmountOut",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Balancer stable/composable-stable exact-input swap",
+        "signature": "(amountIn, poolState, inIdx, outIdx) => bigint"
+      }
+    },
+    {
+      "id": "function-simulateBalancerSwap",
+      "type": "function",
+      "label": "simulateBalancerSwap",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Balancer swap router: dispatches stable or weighted path, gas estimate ~150k",
+        "signature": "(amountIn, poolState, inIdx?, outIdx?) => { amountOut, gasEstimate }"
+      }
+    },
+    {
+      "id": "function-getWoofiAmountOut",
+      "type": "function",
+      "label": "getWoofiAmountOut",
+      "properties": {
+        "module": "woofi.ts",
+        "description": "WOOFi sPMM quote: sellBase→quote, sellQuote→base, or two-hop via quote",
+        "signature": "(poolState, amountIn, tokenIn, tokenOut) => bigint"
+      }
+    },
+    {
+      "id": "function-getWoofiFeeRate",
+      "type": "function",
+      "label": "getWoofiFeeRate",
+      "properties": {
+        "module": "woofi.ts",
+        "description": "WOOFi fee rate: direct or max of in/out fee rates",
+        "signature": "(poolState, tokenIn, tokenOut) => bigint"
+      }
+    },
+    {
+      "id": "function-getWoofiEdgeFeeBps",
+      "type": "function",
+      "label": "getWoofiEdgeFeeBps",
+      "properties": {
+        "module": "woofi.ts",
+        "description": "WOOFi fee in basis points (1/10 bps)",
+        "signature": "(poolState, tokenIn, tokenOut) => number"
+      }
+    },
+    {
+      "id": "function-simulateWoofiSwap",
+      "type": "function",
+      "label": "simulateWoofiSwap",
+      "properties": {
+        "module": "woofi.ts",
+        "description": "WOOFi swap wrapper with gas estimate ~150k",
+        "signature": "(amountIn, poolState, tokenInIdx, tokenOutIdx) => { amountOut, gasEstimate }"
+      }
+    },
+    {
+      "id": "function-getDodoAmountOut",
+      "type": "function",
+      "label": "getDodoAmountOut",
+      "properties": {
+        "module": "dodo.ts",
+        "description": "DODO vPMM exact-input with LP and mt fee deduction",
+        "signature": "(poolState, amountIn, baseToQuote) => bigint"
+      }
+    },
+    {
+      "id": "function-getDodoGrossAmountOut",
+      "type": "function",
+      "label": "getDodoGrossAmountOut",
+      "properties": {
+        "module": "dodo.ts",
+        "description": "DODO vPMM gross amount (pre-fee) using piecewise quadratic/linear pricing with 3 R states",
+        "signature": "(poolState, amountIn, baseToQuote) => bigint"
+      }
+    },
+    {
+      "id": "function-simulateDodoSwap",
+      "type": "function",
+      "label": "simulateDodoSwap",
+      "properties": {
+        "module": "dodo.ts",
+        "description": "DODO swap wrapper with gas estimate ~120k",
+        "signature": "(poolState, amountIn, baseToQuote) => { amountOut, gasEstimate }"
+      }
+    },
+    {
+      "id": "class-ComputedSwapStep",
+      "type": "interface",
+      "label": "SwapStepResult",
+      "properties": {
+        "module": "swap_math.ts",
+        "description": "Return shape: { sqrtRatioNextX96, amountIn, amountOut, feeAmount }"
+      }
+    },
+    {
+      "id": "class-V3SimulateResult",
+      "type": "interface",
+      "label": "V3SimulateResult",
+      "properties": {
+        "module": "uniswap_v3.ts",
+        "description": "Return shape: { amountOut, sqrtPriceX96After, tickAfter, gasEstimate }"
+      }
+    },
+    {
+      "id": "class-BalancerPoolState",
+      "type": "interface",
+      "label": "BalancerPoolState",
+      "properties": {
+        "module": "balancer.ts",
+        "description": "Shape includes poolId, tokens, balances, weights/amp, swapFee, scalingFactors",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "class-CurvePoolState",
+      "type": "interface",
+      "label": "CurvePoolState",
+      "properties": {
+        "module": "curve.ts",
+        "description": "Shape includes poolId, tokens, balances, rates, fee, A",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "class-DodoPoolState",
+      "type": "interface",
+      "label": "DodoPoolState",
+      "properties": {
+        "module": "dodo.ts",
+        "description": "Shape includes i, K/B/k, baseReserve/B, quoteReserve/Q, baseTarget/B0, quoteTarget/Q0, rState/R",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "class-WoofiPoolState",
+      "type": "interface",
+      "label": "WoofiPoolState",
+      "properties": {
+        "module": "woofi.ts",
+        "description": "Shape includes tokens, quoteToken, quoteReserve, baseTokenStates mapping",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "class-V2PoolState",
+      "type": "interface",
+      "label": "V2PoolState",
+      "properties": {
+        "module": "uniswap_v2.ts",
+        "description": "Shape includes reserve0, reserve1, optional fee/feeDenominator",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "class-V3PoolState",
+      "type": "interface",
+      "label": "V3PoolState",
+      "properties": {
+        "module": "uniswap_v3.ts",
+        "description": "Shape includes sqrtPriceX96, liquidity, tick, fee, ticks Map, initialized, tickVersion",
+        "isProtocolState": true
+      }
+    },
+    {
+      "id": "constant-MIN_TICK",
+      "type": "constant",
+      "label": "MIN_TICK",
+      "properties": {
+        "value": "-887272",
+        "module": "tick_math.ts"
+      }
+    },
+    {
+      "id": "constant-MAX_TICK",
+      "type": "constant",
+      "label": "MAX_TICK",
+      "properties": {
+        "value": "887272",
+        "module": "tick_math.ts"
+      }
+    },
+    {
+      "id": "constant-MIN_SQRT_RATIO",
+      "type": "constant",
+      "label": "MIN_SQRT_RATIO",
+      "properties": {
+        "value": "4295128739",
+        "module": "tick_math.ts"
+      }
+    },
+    {
+      "id": "constant-MAX_SQRT_RATIO",
+      "type": "constant",
+      "label": "MAX_SQRT_RATIO",
+      "properties": {
+        "value": "1461446703485210103287273052203988822378723970342",
+        "module": "tick_math.ts"
+      }
+    },
+    {
+      "id": "constant-DODO_RSTATE_ONE",
+      "type": "constant",
+      "label": "DODO_RSTATE_ONE",
+      "properties": {
+        "value": "0",
+        "module": "dodo.ts",
+        "description": "Pool at target reserve ratio"
+      }
+    },
+    {
+      "id": "constant-DODO_RSTATE_ABOVE_ONE",
+      "type": "constant",
+      "label": "DODO_RSTATE_ABOVE_ONE",
+      "properties": {
+        "value": "1",
+        "module": "dodo.ts",
+        "description": "Excess base tokens (price below peg)"
+      }
+    },
+    {
+      "id": "constant-DODO_RSTATE_BELOW_ONE",
+      "type": "constant",
+      "label": "DODO_RSTATE_BELOW_ONE",
+      "properties": {
+        "value": "2",
+        "module": "dodo.ts",
+        "description": "Excess quote tokens (price above peg)"
+      }
+    },
+    {
+      "id": "constant-ONE_1e18",
+      "type": "constant",
+      "label": "ONE (1e18)",
+      "properties": {
+        "value": "10^18",
+        "description": "Fixed-point precision used across balancer, dodo, woofi"
+      }
+    },
+    {
+      "id": "constant-Q96",
+      "type": "constant",
+      "label": "Q96",
+      "properties": {
+        "value": "2^96",
+        "module": "sqrt_price_math.ts",
+        "description": "Q64.96 fixed-point bit shift"
+      }
+    },
+    {
+      "id": "concept-WeightedConstantProduct",
+      "type": "concept",
+      "label": "Balancer Weighted CP Invariant",
+      "properties": {
+        "description": "V = prod(B_i ^ w_i); swap formula uses fixed-point powDown (ln + exp Taylor series)",
+        "usedBy": "balancer.ts"
+      }
+    },
+    {
+      "id": "concept-CurveStableSwap",
+      "type": "concept",
+      "label": "Curve StableSwap Invariant",
+      "properties": {
+        "description": "A * n^n * sum(x_i) + D = A * n^n * D + D^(n+1) / (n^n * prod(x_i)); solved via Newton iteration",
+        "usedBy": "curve.ts"
+      }
+    },
+    {
+      "id": "concept-DODOVPMM",
+      "type": "concept",
+      "label": "DODO vPMM Pricing",
+      "properties": {
+        "description": "Piecewise quadratic pricing (PM algorithm) + linear replenishment; 3 reserve states (ONE, ABOVE_ONE, BELOW_ONE)",
+        "usedBy": "dodo.ts"
+      }
+    },
+    {
+      "id": "concept-ConstantProduct",
+      "type": "concept",
+      "label": "Constant Product (x*y=k)",
+      "properties": {
+        "description": "Uniswap V2 style: amountOut = reserveOut * amountIn * 997 / (reserveIn * 1000 + amountIn * 997)",
+        "usedBy": "uniswap_v2.ts"
+      }
+    },
+    {
+      "id": "concept-ConcentratedLiquidity",
+      "type": "concept",
+      "label": "Uniswap V3 Concentrated Liquidity",
+      "properties": {
+        "description": "Liquidity allocated within tick ranges; price moves along sqrt price curve; swap crosses initialized ticks and adjusts liquidity via liquidityNet",
+        "usedBy": "uniswap_v3.ts"
+      }
+    },
+    {
+      "id": "concept-WoofiSPMM",
+      "type": "concept",
+      "label": "WOOFi sPMM Pricing",
+      "properties": {
+        "description": "Synthetic Proactive Market Maker with price, coeff (gamma), spread; per-base-token state; quote-mediated two-hop routing",
+        "usedBy": "woofi.ts"
+      }
+    },
+    {
+      "id": "concept-Q64-96",
+      "type": "concept",
+      "label": "Q64.96 Fixed-Point",
+      "properties": {
+        "description": "96-bit fractional precision for sqrt price representation (bigint << 96)",
+        "usedBy": ["sqrt_price_math.ts", "tick_math.ts", "swap_math.ts", "uniswap_v3.ts"]
+      }
+    },
+    {
+      "id": "concept-TickBinaryDecomposition",
+      "type": "concept",
+      "label": "Tick Binary Decomposition",
+      "properties": {
+        "description": "sqrt(1.0001^tick) computed via 20 precomputed magic constants masking bit positions",
+        "usedBy": "tick_math.ts"
+      }
+    },
+    {
+      "id": "concept-NewtonIteration",
+      "type": "concept",
+      "label": "Newton-Raphson Iteration",
+      "properties": {
+        "description": "Used in Curve (getD, getY) and Balancer stable (calculateBalancerStableInvariant, getTokenBalanceGivenStableInvariant); convergent to diff <= 1",
+        "usedBy": ["curve.ts", "balancer.ts"]
+      }
+    },
+    {
+      "id": "concept-BinarySearchTickNavigation",
+      "type": "concept",
+      "label": "Binary Search Tick Navigation",
+      "properties": {
+        "description": "V3 simulator uses O(log N) binary search to find next initialized tick instead of bitmap traversal",
+        "usedBy": "uniswap_v3.ts"
+      }
+    },
+    {
+      "id": "concept-WeakMapTickSortCache",
+      "type": "concept",
+      "label": "WeakMap Tick Sort Cache",
+      "properties": {
+        "description": "Sorted initialized ticks cached in WeakMap keyed by pool state object; invalidated on tickVersion change",
+        "usedBy": "uniswap_v3.ts"
+      }
+    },
+    {
+      "id": "concept-BalancerWeightedPowerApprox",
+      "type": "concept",
+      "label": "Balancer Power Approximation (ln+exp)",
+      "properties": {
+        "description": "x^y computing via ln(x) Taylor series (bit-shift reduction + 20 terms) then exp(x) Taylor series (30 terms); max 255 iterations",
+        "usedBy": "balancer.ts"
+      }
+    },
+    {
+      "id": "concept-DODOPiecewiseQuadratic",
+      "type": "concept",
+      "label": "DODO SolveQuadratic & GeneralIntegrate",
+      "properties": {
+        "description": "solveQuadraticFunctionForTrade (V0,V1,delta,i,k) uses quadratic formula with k*V0^2/V1 penalty term; generalIntegrate computes fair amount below peg",
+        "usedBy": "dodo.ts"
+      }
+    },
+    {
+      "id": "concept-WoofiTwoHopViaQuote",
+      "type": "concept",
+      "label": "WOOFi Two-Hop via Quote",
+      "properties": {
+        "description": "When neither token is the quote token: sellBase on inKey -> fee -> buyBase on outKey, using shared spread = max(left,right)/2",
+        "usedBy": "woofi.ts"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "math-module",
+      "target": "full_math-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "tick_math-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "sqrt_price_math-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "swap_math-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "uniswap_v3-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "uniswap_v2-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "curve-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "balancer-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "woofi-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "math-module",
+      "target": "dodo-module",
+      "relation": "exports_from"
+    },
+    {
+      "source": "balancer-module",
+      "target": "full_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["divRoundingUp"]
+      }
+    },
+    {
+      "source": "sqrt_price_math-module",
+      "target": "full_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["mulDiv", "mulDivRoundingUp", "divRoundingUp"]
+      }
+    },
+    {
+      "source": "swap_math-module",
+      "target": "full_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["mulDiv", "mulDivRoundingUp"]
+      }
+    },
+    {
+      "source": "swap_math-module",
+      "target": "sqrt_price_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["getAmount0Delta", "getAmount1Delta", "getNextSqrtPriceFromInput", "getNextSqrtPriceFromOutput"]
+      }
+    },
+    {
+      "source": "uniswap_v3-module",
+      "target": "tick_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["getSqrtRatioAtTick", "getTickAtSqrtRatioInRange", "MIN_TICK", "MAX_TICK", "MIN_SQRT_RATIO", "MAX_SQRT_RATIO"]
+      }
+    },
+    {
+      "source": "uniswap_v3-module",
+      "target": "swap_math-module",
+      "relation": "imports",
+      "properties": {
+        "symbols": ["computeSwapStep"]
+      }
+    },
+    {
+      "source": "function-getNextSqrtPriceFromInput",
+      "target": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "relation": "delegates_to"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromInput",
+      "target": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "relation": "delegates_to"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromOutput",
+      "target": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "relation": "delegates_to"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromOutput",
+      "target": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "relation": "delegates_to"
+    },
+    {
+      "source": "function-computeSwapStep",
+      "target": "function-getAmount0Delta",
+      "relation": "calls"
+    },
+    {
+      "source": "function-computeSwapStep",
+      "target": "function-getAmount1Delta",
+      "relation": "calls"
+    },
+    {
+      "source": "function-computeSwapStep",
+      "target": "function-getNextSqrtPriceFromInput",
+      "relation": "calls"
+    },
+    {
+      "source": "function-computeSwapStep",
+      "target": "function-getNextSqrtPriceFromOutput",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "function-computeSwapStep",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "function-getSqrtRatioAtTick",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "function-getTickAtSqrtRatioInRange",
+      "relation": "calls"
+    },
+    {
+      "source": "function-getCurveAmountOut",
+      "target": "concept-CurveStableSwap",
+      "relation": "implements"
+    },
+    {
+      "source": "function-getCurveAmountIn",
+      "target": "concept-CurveStableSwap",
+      "relation": "implements"
+    },
+    {
+      "source": "function-simulateCurveSwap",
+      "target": "function-getCurveAmountOut",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-getBalancerAmountOut",
+      "target": "concept-WeightedConstantProduct",
+      "relation": "implements"
+    },
+    {
+      "source": "function-getBalancerAmountIn",
+      "target": "concept-WeightedConstantProduct",
+      "relation": "implements"
+    },
+    {
+      "source": "function-getBalancerStableAmountOut",
+      "target": "function-calculateBalancerStableInvariant",
+      "relation": "calls",
+      "properties": {
+        "description": "Uses Newton-iteration invariant"
+      }
+    },
+    {
+      "source": "function-simulateBalancerSwap",
+      "target": "function-getBalancerAmountOut",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateBalancerSwap",
+      "target": "function-getBalancerStableAmountOut",
+      "relation": "calls"
+    },
+    {
+      "source": "function-getDodoGrossAmountOut",
+      "target": "concept-DODOVPMM",
+      "relation": "implements",
+      "properties": {
+        "description": "Dispatches by R state (ONE/ABOVE_ONE/BELOW_ONE) and direction"
+      }
+    },
+    {
+      "source": "function-getDodoAmountOut",
+      "target": "function-getDodoGrossAmountOut",
+      "relation": "calls",
+      "properties": {
+        "description": "Applies LP and mt fee on gross amount"
+      }
+    },
+    {
+      "source": "function-simulateDodoSwap",
+      "target": "function-getDodoAmountOut",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-getWoofiAmountOut",
+      "target": "concept-WoofiSPMM",
+      "relation": "implements"
+    },
+    {
+      "source": "function-simulateWoofiSwap",
+      "target": "function-getWoofiAmountOut",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-getV2AmountOut",
+      "target": "concept-ConstantProduct",
+      "relation": "implements"
+    },
+    {
+      "source": "function-getV2AmountIn",
+      "target": "concept-ConstantProduct",
+      "relation": "implements"
+    },
+    {
+      "source": "function-simulateV2Swap",
+      "target": "function-getV2AmountOut",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "concept-ConcentratedLiquidity",
+      "relation": "implements"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "concept-BinarySearchTickNavigation",
+      "relation": "uses"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "concept-WeakMapTickSortCache",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getBalancerAmountOut",
+      "target": "concept-BalancerWeightedPowerApprox",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getBalancerAmountIn",
+      "target": "concept-BalancerWeightedPowerApprox",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getDodoGrossAmountOut",
+      "target": "concept-DODOPiecewiseQuadratic",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getWoofiAmountOut",
+      "target": "concept-WoofiTwoHopViaQuote",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getCurveAmountOut",
+      "target": "concept-NewtonIteration",
+      "relation": "uses"
+    },
+    {
+      "source": "function-calculateBalancerStableInvariant",
+      "target": "concept-NewtonIteration",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getBalancerStableAmountOut",
+      "target": "concept-NewtonIteration",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getCurveAmountOut",
+      "target": "function-getCurveAmountIn",
+      "relation": "called_by",
+      "properties": {
+        "description": "getCurveAmountIn binary-searches on getCurveAmountOut"
+      }
+    },
+    {
+      "source": "function-getBalancerAmountOut",
+      "target": "function-getBalancerAmountIn",
+      "relation": "called_by",
+      "properties": {
+        "description": "getBalancerAmountIn binary-searches on getBalancerAmountOut for correction"
+      }
+    },
+    {
+      "source": "function-getSqrtRatioAtTick",
+      "target": "concept-TickBinaryDecomposition",
+      "relation": "implements"
+    },
+    {
+      "source": "function-getAmount0Delta",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount1Delta",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "target": "function-mulDivRoundingUp",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount0RoundingUp",
+      "target": "function-divRoundingUp",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "target": "function-mulDiv",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getNextSqrtPriceFromAmount1RoundingDown",
+      "target": "function-mulDivRoundingUp",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount0Delta",
+      "target": "function-mulDivRoundingUp",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount0Delta",
+      "target": "function-mulDiv",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount1Delta",
+      "target": "function-mulDivRoundingUp",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount1Delta",
+      "target": "function-mulDiv",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount0Delta",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getAmount1Delta",
+      "target": "constant-Q96",
+      "relation": "uses"
+    },
+    {
+      "source": "function-getSqrtRatioAtTick",
+      "target": "constant-MIN_TICK",
+      "relation": "bounded_by"
+    },
+    {
+      "source": "function-getSqrtRatioAtTick",
+      "target": "constant-MAX_TICK",
+      "relation": "bounded_by"
+    },
+    {
+      "source": "function-getTickAtSqrtRatio",
+      "target": "constant-MIN_SQRT_RATIO",
+      "relation": "bounded_by"
+    },
+    {
+      "source": "function-getTickAtSqrtRatio",
+      "target": "constant-MAX_SQRT_RATIO",
+      "relation": "bounded_by"
+    },
+    {
+      "source": "function-getSqrtRatioAtTick",
+      "target": "function-getTickAtSqrtRatio",
+      "relation": "inverse_of"
+    },
+    {
+      "source": "constant-DODO_RSTATE_ONE",
+      "target": "constant-DODO_RSTATE_ABOVE_ONE",
+      "relation": "sibling_state"
+    },
+    {
+      "source": "constant-DODO_RSTATE_ABOVE_ONE",
+      "target": "constant-DODO_RSTATE_BELOW_ONE",
+      "relation": "sibling_state"
+    },
+    {
+      "source": "function-getDodoGrossAmountOut",
+      "target": "constant-DODO_RSTATE_ONE",
+      "relation": "reads_state"
+    },
+    {
+      "source": "function-getDodoGrossAmountOut",
+      "target": "constant-DODO_RSTATE_ABOVE_ONE",
+      "relation": "reads_state"
+    },
+    {
+      "source": "function-getDodoGrossAmountOut",
+      "target": "constant-DODO_RSTATE_BELOW_ONE",
+      "relation": "reads_state"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "function-getSqrtRatioAtTick",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateV3Swap",
+      "target": "function-getTickAtSqrtRatioInRange",
+      "relation": "calls"
+    },
+    {
+      "source": "function-simulateV2Swap",
+      "target": "function-getV2AmountOut",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-quoteV2",
+      "target": "function-simulateV2Swap",
+      "relation": "wraps"
+    },
+    {
+      "source": "function-quoteV3",
+      "target": "function-simulateV3Swap",
+      "relation": "wraps"
+    }
+  ]
+}

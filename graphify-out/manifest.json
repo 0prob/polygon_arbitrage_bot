@@ -1,0 +1,714 @@
+{
+  "/home/x/arb/tt/runner.ts": {
+    "mtime": 1778548421.8631775,
+    "hash": "467ffc35592ae0d326f482d107e1448c"
+  },
+  "/home/x/arb/tt/src/tui/types.ts": {
+    "mtime": 1778551701.558017,
+    "hash": "bf21384466212f4a8a2501f330358d48"
+  },
+  "/home/x/arb/tt/src/tui/App.tsx": {
+    "mtime": 1778569421.8977523,
+    "hash": "f0f0952bd6fddd1b287fb1fa03888264"
+  },
+  "/home/x/arb/tt/src/tui/index.tsx": {
+    "mtime": 1778548421.5471811,
+    "hash": "51db6b187afad9544c6ca4038ece1bfa"
+  },
+  "/home/x/arb/tt/src/routing/path_freshness.ts": {
+    "mtime": 1778551701.558017,
+    "hash": "b97b81641a6b43bb7f2f165a4e575a21"
+  },
+  "/home/x/arb/tt/src/routing/route_cache.ts": {
+    "mtime": 1778563652.750652,
+    "hash": "1e800a7f5651ee2519b59cf81d93ee79"
+  },
+  "/home/x/arb/tt/src/routing/candidate_pipeline.ts": {
+    "mtime": 1778563578.587327,
+    "hash": "4e62cc399a2cc40a90f2c93ca1ff6cd5"
+  },
+  "/home/x/arb/tt/src/routing/simulation_types.ts": {
+    "mtime": 1778551701.558017,
+    "hash": "55e8c6155ac0004e58aac3f37c5603a5"
+  },
+  "/home/x/arb/tt/src/routing/predictive_cache_adapter.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "5bca18c5cc66fd212b9aed4fe9d8a5e8"
+  },
+  "/home/x/arb/tt/src/routing/index.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "b0b1b2e1c63cd448bf6be47ac6910e38"
+  },
+  "/home/x/arb/tt/src/routing/worker_pool.ts": {
+    "mtime": 1778568741.3207822,
+    "hash": "b5dd990b0e2ff9d6ce972773f67ec4a1"
+  },
+  "/home/x/arb/tt/src/routing/path_hops.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "08b44f833db9bce55fc9b518c9872cb1"
+  },
+  "/home/x/arb/tt/src/routing/graph.ts": {
+    "mtime": 1778574558.5166972,
+    "hash": "e16c917e7a1e20fa3ced9cbb3fb5118f"
+  },
+  "/home/x/arb/tt/src/routing/finder.ts": {
+    "mtime": 1778557996.0068338,
+    "hash": "34849f5b06f3a190b2c056a3500ec1b7"
+  },
+  "/home/x/arb/tt/src/routing/swap_indices.ts": {
+    "mtime": 1778558500.8618536,
+    "hash": "0ef3ababe26d8bb8d47e0f7e7f946623"
+  },
+  "/home/x/arb/tt/src/routing/worker_messages.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "1301378c9d7a13fd295a2191139e0bca"
+  },
+  "/home/x/arb/tt/src/routing/predictive_state_cache.ts": {
+    "mtime": 1778563742.5498319,
+    "hash": "560c1a5eac5c8e0acee3ad16ac4f27c7"
+  },
+  "/home/x/arb/tt/src/routing/liquidity.ts": {
+    "mtime": 1778574196.424829,
+    "hash": "4e7f75d6cd3eea30d66f425f805f790a"
+  },
+  "/home/x/arb/tt/src/routing/filter_fresh_candidates.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "d2816ea34d42169a16edec2944e64ff9"
+  },
+  "/home/x/arb/tt/src/routing/optimization_candidates.ts": {
+    "mtime": 1778559344.3412473,
+    "hash": "911bd0dfda0a7aa438f77b2ded814c97"
+  },
+  "/home/x/arb/tt/src/routing/simulator.ts": {
+    "mtime": 1778574196.424829,
+    "hash": "eda37b468b7de814cf7f5176fe02ee7e"
+  },
+  "/home/x/arb/tt/src/routing/route_identity.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "0e061f068dbc1a76f536d54a22e8d1e7"
+  },
+  "/home/x/arb/tt/src/routing/enumerate_cycles.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "edfc164f8c310910c9437313efdd7610"
+  },
+  "/home/x/arb/tt/src/routing/worker.ts": {
+    "mtime": 1778569838.7411716,
+    "hash": "5c9e3ec538497363279cd4956e28f63d"
+  },
+  "/home/x/arb/tt/src/routing/score_route.ts": {
+    "mtime": 1778552742.5155985,
+    "hash": "e4eaf7bef8dfd50325dfbb1f713f4fe0"
+  },
+  "/home/x/arb/tt/src/routing/persistent_worker.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "20b3d6d46d672e57fccc9e3b8e96e1a5"
+  },
+  "/home/x/arb/tt/src/state/watcher_poll_utils.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "ae5aed1f819ffee94d0fec0b281b77a3"
+  },
+  "/home/x/arb/tt/src/state/watcher_protocol_handlers.ts": {
+    "mtime": 1778567823.4111536,
+    "hash": "fcdd2ce8743c5fca832c711d5db51778"
+  },
+  "/home/x/arb/tt/src/state/watcher_sleep.ts": {
+    "mtime": 1778568757.436628,
+    "hash": "32d6e16adce44d11cc141b5ced374e75"
+  },
+  "/home/x/arb/tt/src/state/watcher_progress.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "64e5e1d693b9c4b81cc0be7ffd24a623"
+  },
+  "/home/x/arb/tt/src/state/watcher_filter.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "a1ba9f55b3f239ab3bad7fc38a42f1e0"
+  },
+  "/home/x/arb/tt/src/state/watcher_runtime_adapters.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "26d9adc8fa790c5a73d41158e74573ea"
+  },
+  "/home/x/arb/tt/src/state/state_multicall_hydrator.ts": {
+    "mtime": 1778567812.483295,
+    "hash": "7c364288fd2b2bf2388af488bbc76ea5"
+  },
+  "/home/x/arb/tt/src/state/index.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "17e2f004c9e0266acca71ca0b758035a"
+  },
+  "/home/x/arb/tt/src/state/watcher_state_ops.ts": {
+    "mtime": 1778574196.424829,
+    "hash": "e0d94b774e96d939840fcde23d05bdb7"
+  },
+  "/home/x/arb/tt/src/state/watcher_types.ts": {
+    "mtime": 1778567718.9085104,
+    "hash": "2f48c24293881a7191ccd0f27a64b277"
+  },
+  "/home/x/arb/tt/src/state/watcher_startup.ts": {
+    "mtime": 1778568773.6004727,
+    "hash": "33b9a074524df49a58e3e0fe6b4252a2"
+  },
+  "/home/x/arb/tt/src/state/pool_record.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "fafaa0096e6b775adb9895faa1f95ff0"
+  },
+  "/home/x/arb/tt/src/state/watcher.ts": {
+    "mtime": 1778565842.8058374,
+    "hash": "a9d84e6afc5594df2c00112effa89577"
+  },
+  "/home/x/arb/tt/src/state/watcher_log_handler.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "dea55501ce6769c5d86db1404712643d"
+  },
+  "/home/x/arb/tt/src/state/watcher_enrichment.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "65240040355e3b9a3f21a4e55126fa0b"
+  },
+  "/home/x/arb/tt/src/state/poll_dodo.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "a2df9dfb86373769e97c1bceea5368df"
+  },
+  "/home/x/arb/tt/src/state/warmup.ts": {
+    "mtime": 1778574200.8567784,
+    "hash": "215eb947bb3e0e8b517a1a0eee717562"
+  },
+  "/home/x/arb/tt/src/state/woofi.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "c9a5b83e4de6204f1bc81e87fa640da1"
+  },
+  "/home/x/arb/tt/src/state/watcher_polling.ts": {
+    "mtime": 1778551701.562017,
+    "hash": "bf8b78e47c80609e10e719d271741871"
+  },
+  "/home/x/arb/tt/src/state/watcher_reorg.ts": {
+    "mtime": 1778551759.997474,
+    "hash": "e85ecbeeed9299b0dd4f73afb329f5f7"
+  },
+  "/home/x/arb/tt/src/state/normalizer.ts": {
+    "mtime": 1778574282.2158492,
+    "hash": "3021b7bbfd074528defa4a32b8595b13"
+  },
+  "/home/x/arb/tt/src/state/uniswap_v3.ts": {
+    "mtime": 1778557832.124384,
+    "hash": "b948c751ad537030c25b08bf5a67258e"
+  },
+  "/home/x/arb/tt/src/state/reorg_detect.ts": {
+    "mtime": 1778557589.9626389,
+    "hash": "41d7e3772b57f1d7c5de2461aa521677"
+  },
+  "/home/x/arb/tt/src/state/pool_metadata.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "ee44e0b9010fb842bc2cd0b1799ad3b0"
+  },
+  "/home/x/arb/tt/src/state/poller_base.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "468524dd00780a5b8a4dd15dbe01420d"
+  },
+  "/home/x/arb/tt/src/state/watcher_shards.ts": {
+    "mtime": 1778559356.6291208,
+    "hash": "59d03808fef527ed8394bbddfd6f7b87"
+  },
+  "/home/x/arb/tt/src/state/watcher_poll_errors.ts": {
+    "mtime": 1778568746.2127357,
+    "hash": "243dc9145f864dd59d6e8d31b5d48209"
+  },
+  "/home/x/arb/tt/src/state/poll_univ3.ts": {
+    "mtime": 1778574196.424829,
+    "hash": "07ae6a724ddc040802c01440ad73fec2"
+  },
+  "/home/x/arb/tt/src/state/watcher_query.ts": {
+    "mtime": 1778574627.0439162,
+    "hash": "383c91e3ede62ca5587e50d806b9cc9c"
+  },
+  "/home/x/arb/tt/src/state/uniswap_v2.ts": {
+    "mtime": 1778557738.8092434,
+    "hash": "544d3ac24549b8b2b1baf43233311e24"
+  },
+  "/home/x/arb/tt/src/state/cache_utils.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "4ff63ff2410f33b4b63fa7271e355cd2"
+  },
+  "/home/x/arb/tt/src/state/watcher_height_wait.ts": {
+    "mtime": 1778565289.2995028,
+    "hash": "445dfa1e7d303e78d9903bc3ce97fac1"
+  },
+  "/home/x/arb/tt/src/state/watcher_normalized_state.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "fb35c21f328b8078fade9317697cd1c1"
+  },
+  "/home/x/arb/tt/src/state/poll_woofi.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "2ca6643dfe41688c1d01275955bdc42c"
+  },
+  "/home/x/arb/tt/src/state/dodo.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "cda616961f451db76c78e3b11fe69295"
+  },
+  "/home/x/arb/tt/src/state/watcher_refresh.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "556bdd18b15a76e48bc47e0e50b8ef80"
+  },
+  "/home/x/arb/tt/src/state/watcher_loop.ts": {
+    "mtime": 1778567782.1196885,
+    "hash": "84a99b4536a670b23abfc07ac8c9c63d"
+  },
+  "/home/x/arb/tt/src/state/watcher_state_adapters.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "b85c599356d079ba5fd319f46f5cce5f"
+  },
+  "/home/x/arb/tt/src/state/poll_balancer.ts": {
+    "mtime": 1778565231.6240396,
+    "hash": "d76dd336f121d2b7dba1c2280eab8dda"
+  },
+  "/home/x/arb/tt/src/state/poll_curve.ts": {
+    "mtime": 1778565243.519929,
+    "hash": "6297540fd21d63999892e8c508556327"
+  },
+  "/home/x/arb/tt/src/state/enrichment/token_hydrator.ts": {
+    "mtime": 1778574467.2817376,
+    "hash": "0ce440ed67bb8bbf1f0ba55df4ad7ceb"
+  },
+  "/home/x/arb/tt/src/state/enrichment/curve.ts": {
+    "mtime": 1778555115.5458097,
+    "hash": "84185e68d09b9e9b3b4728f7817a9e9b"
+  },
+  "/home/x/arb/tt/src/state/enrichment/index.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "723febcc7a0fbad65019d15763edd6ce"
+  },
+  "/home/x/arb/tt/src/state/enrichment/token_hydrator_helpers.ts": {
+    "mtime": 1778552847.9224987,
+    "hash": "2e5d969087ec47ad6b501a25a823b995"
+  },
+  "/home/x/arb/tt/src/state/enrichment/balancer.ts": {
+    "mtime": 1778555115.5458097,
+    "hash": "c0cd0a4ab980c23453e970065dcb4627"
+  },
+  "/home/x/arb/tt/src/state/enrichment/rpc.ts": {
+    "mtime": 1778574426.6102014,
+    "hash": "0f83cc95831f8f5173ffff803e349f33"
+  },
+  "/home/x/arb/tt/src/math/curve.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "f3eee106e1836b8e89e08da91940dfb8"
+  },
+  "/home/x/arb/tt/src/math/index.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "8f3232691b9769dd398a2ac47f8e4471"
+  },
+  "/home/x/arb/tt/src/math/full_math.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "0d813ba205e4c36a73d0bb59d855ea30"
+  },
+  "/home/x/arb/tt/src/math/swap_math.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "c5a2c058e6e5f7afdc67a9d7cb9bcf38"
+  },
+  "/home/x/arb/tt/src/math/woofi.ts": {
+    "mtime": 1778557625.4902627,
+    "hash": "3d50f475f361936fc691021ab6a190ec"
+  },
+  "/home/x/arb/tt/src/math/uniswap_v3.ts": {
+    "mtime": 1778560303.5351262,
+    "hash": "253cec346c0b4a9ecf2a94efcf41872f"
+  },
+  "/home/x/arb/tt/src/math/tick_math.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "16e5ed9fcc8beef18783fb1f23b15249"
+  },
+  "/home/x/arb/tt/src/math/balancer.ts": {
+    "mtime": 1778560281.3153605,
+    "hash": "4f4405aa925afe541d18f6f3688183a5"
+  },
+  "/home/x/arb/tt/src/math/sqrt_price_math.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "dbb0dd055dfda6844d33744755da2bc4"
+  },
+  "/home/x/arb/tt/src/math/uniswap_v2.ts": {
+    "mtime": 1778560267.3875077,
+    "hash": "14fcb2cac1bcc33a97182f1d99b4b711"
+  },
+  "/home/x/arb/tt/src/math/dodo.ts": {
+    "mtime": 1778560272.9554489,
+    "hash": "740aebbd48265d7cda034a0d12e23ace"
+  },
+  "/home/x/arb/tt/src/protocols/kyberswap_elastic.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "54a8a5617ceb8143ea9bee274f3a18ec"
+  },
+  "/home/x/arb/tt/src/protocols/curve_stableswap_ng.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "351265ebf557f5170de9857b717eef4e"
+  },
+  "/home/x/arb/tt/src/protocols/dodo_v2.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "c7e489a8d4ab4ee31f3952ed895300ce"
+  },
+  "/home/x/arb/tt/src/protocols/woofi_shared.ts": {
+    "mtime": 1778558065.5101638,
+    "hash": "ad42cc426d362ecc8935c42638bd949d"
+  },
+  "/home/x/arb/tt/src/protocols/index.ts": {
+    "mtime": 1778568295.5325632,
+    "hash": "f352d39edbda1ef980e8a0b115393d2b"
+  },
+  "/home/x/arb/tt/src/protocols/factories.ts": {
+    "mtime": 1778551701.566017,
+    "hash": "5e908583d956c2088212dba2770d70c3"
+  },
+  "/home/x/arb/tt/src/protocols/curve_list_factory.ts": {
+    "mtime": 1778557971.2870705,
+    "hash": "9d4290d116baebb9f516123b7fa66d95"
+  },
+  "/home/x/arb/tt/src/protocols/classification.ts": {
+    "mtime": 1778574311.483515,
+    "hash": "b05690e9d8b8aba98fbd9eeee20be475"
+  },
+  "/home/x/arb/tt/src/protocols/balancer_v2.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "e49823c93d914a8fa7c684102800ac97"
+  },
+  "/home/x/arb/tt/src/protocols/woofi.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "74371a86f233684b0a0dbab1c49419c4"
+  },
+  "/home/x/arb/tt/src/protocols/curve_stable_factory.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "582b29422fba4e7ed1f5dbd8dcd53e1c"
+  },
+  "/home/x/arb/tt/src/protocols/curve_tricrypto_ng.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "a1302db7ae3e0da6297be3fa546a3fc0"
+  },
+  "/home/x/arb/tt/src/protocols/curve_main_registry.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "c5d2fe208ee3ff2f773b512b444adc70"
+  },
+  "/home/x/arb/tt/src/protocols/quickswap_v3.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "d5230505949a439005cea1c676961c61"
+  },
+  "/home/x/arb/tt/src/protocols/contract_catalog.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "824da039bdd36388992174e4d80cef5b"
+  },
+  "/home/x/arb/tt/src/protocols/curve_crypto_factory.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "ccd5a04d4c6d40597177e0b1154a3040"
+  },
+  "/home/x/arb/tt/src/utils/get_revert_reason.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "ce8702c026f10b1ea4aee799f1da3353"
+  },
+  "/home/x/arb/tt/src/utils/rpc_manager.ts": {
+    "mtime": 1778574116.8417387,
+    "hash": "aabcd847b17a925fc129e049b7b09335"
+  },
+  "/home/x/arb/tt/src/utils/bigint.ts": {
+    "mtime": 1778556337.4681313,
+    "hash": "dbc04bf49174944e17c9ccc2d34b8a9e"
+  },
+  "/home/x/arb/tt/src/utils/pool_record.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "fc4229a760bbd8c9b2c41a9fcf13bc8c"
+  },
+  "/home/x/arb/tt/src/utils/unsafe_tokens.ts": {
+    "mtime": 1778552932.4456143,
+    "hash": "a5dad977179bed79e9f41870c51529b3"
+  },
+  "/home/x/arb/tt/src/utils/logger.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "d67fda3e0715f81da8eef43336ed5811"
+  },
+  "/home/x/arb/tt/src/utils/bounded_priority.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "cdc8d2f71d387c9276fa18b3ed6cca95"
+  },
+  "/home/x/arb/tt/src/utils/errors.ts": {
+    "mtime": 1778555191.841062,
+    "hash": "e4f9b7f4b9e6c72f55550aae3f2d4d5e"
+  },
+  "/home/x/arb/tt/src/utils/validation_job.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "335206cd7d0f01f2b1f5009f82539740"
+  },
+  "/home/x/arb/tt/src/utils/identity.ts": {
+    "mtime": 1778559425.3844132,
+    "hash": "540310c747d45b22e6d183ab78d42637"
+  },
+  "/home/x/arb/tt/src/utils/concurrency.ts": {
+    "mtime": 1778567747.6481361,
+    "hash": "a5bd12bc7955ba592f2bdf2088449bc4"
+  },
+  "/home/x/arb/tt/src/utils/multicall.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "86548b673711401306831087c856aa71"
+  },
+  "/home/x/arb/tt/src/utils/metrics.ts": {
+    "mtime": 1778569774.3698854,
+    "hash": "f9167acbbb0b44b434a9147990446612"
+  },
+  "/home/x/arb/tt/src/app/runner.ts": {
+    "mtime": 1778594214.5427446,
+    "hash": "902eca7bdb093f82a4df244417a0a421"
+  },
+  "/home/x/arb/tt/src/app/watcher_configurator.ts": {
+    "mtime": 1778552708.1959558,
+    "hash": "0c348ce5af4afd14fc68cab4cc57483d"
+  },
+  "/home/x/arb/tt/src/app/runner_app.ts": {
+    "mtime": 1778568891.051319,
+    "hash": "0a25cd4b55960d7ad22ab48be6a9a6d9"
+  },
+  "/home/x/arb/tt/src/app/lifecycle.ts": {
+    "mtime": 1778563586.7712526,
+    "hash": "0c73682d3d1b07774affdf4ae9870c50"
+  },
+  "/home/x/arb/tt/src/app/mempool_watcher.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "0827051e2eb09a4a1c69e4324694e94d"
+  },
+  "/home/x/arb/tt/src/app/index.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "0eaf44c926fbc73b39034840575af0b1"
+  },
+  "/home/x/arb/tt/src/app/runner_opportunity_engine.ts": {
+    "mtime": 1778552495.4021602,
+    "hash": "92a3780fc293922967ff8b3b99b1fb7f"
+  },
+  "/home/x/arb/tt/src/app/operator_log.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "7cf581d0152c2afbc4632d50a95701f4"
+  },
+  "/home/x/arb/tt/src/app/resource_tuning.ts": {
+    "mtime": 1778594105.0632408,
+    "hash": "313ed8dce5c8ce9f1b2b6496eeb3c146"
+  },
+  "/home/x/arb/tt/src/app/pricing_service.ts": {
+    "mtime": 1778551701.5700169,
+    "hash": "5ec83d586c558cf1c42c778950248a2d"
+  },
+  "/home/x/arb/tt/src/app/bot_telemetry.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "9d2bf74261c93169a2181df7c296f7db"
+  },
+  "/home/x/arb/tt/src/app/quiet_pool_sweep.ts": {
+    "mtime": 1778563664.6865432,
+    "hash": "f85f7ea291ffa5d099d0ca63e8eb7828"
+  },
+  "/home/x/arb/tt/src/app/runner_hydration.ts": {
+    "mtime": 1778552990.9890006,
+    "hash": "413a15f4c53a2c3abba0a0b010515133"
+  },
+  "/home/x/arb/tt/src/app/helpers.ts": {
+    "mtime": 1778565850.261598,
+    "hash": "9082a59e7fe6c6ac82125f7414bd349f"
+  },
+  "/home/x/arb/tt/src/execution/send_tx.ts": {
+    "mtime": 1778563725.6379867,
+    "hash": "4cf6e1a28bbf6ea1237cd9463078f4d7"
+  },
+  "/home/x/arb/tt/src/execution/abi_fragments.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "66277f446463959160e282b5b25a1c4a"
+  },
+  "/home/x/arb/tt/src/execution/index.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "67efa8f05ba2017142c048012f0df5fe"
+  },
+  "/home/x/arb/tt/src/execution/addresses.ts": {
+    "mtime": 1778574257.3521333,
+    "hash": "2dfa75abfd3463f82cffb51c3e8b3219"
+  },
+  "/home/x/arb/tt/src/execution/calldata.ts": {
+    "mtime": 1778574265.772037,
+    "hash": "7238eb82488e99f06a965333858864b5"
+  },
+  "/home/x/arb/tt/src/execution/gas_adjustment.ts": {
+    "mtime": 1778567665.3012104,
+    "hash": "3fd0aa8cec7206698862d74050ca90a1"
+  },
+  "/home/x/arb/tt/src/execution/build_tx.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "146504aefad0ae60a41b05826f83a823"
+  },
+  "/home/x/arb/tt/src/execution/executor_client.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "34507df756a5d7a2d6be286b181c07fa"
+  },
+  "/home/x/arb/tt/src/execution/gas.ts": {
+    "mtime": 1778569829.793271,
+    "hash": "a85313f0657f06948fe8f1f428cc8168"
+  },
+  "/home/x/arb/tt/src/execution/private_tx.ts": {
+    "mtime": 1778555123.4377325,
+    "hash": "1b5cd3cb43c4d6a256ba0091ab3a28af"
+  },
+  "/home/x/arb/tt/src/execution/tx_sniper.ts": {
+    "mtime": 1778563709.066138,
+    "hash": "f869bca20b20aa87d66587b3c7130e51"
+  },
+  "/home/x/arb/tt/src/execution/nonce_manager.ts": {
+    "mtime": 1778559397.824697,
+    "hash": "5a82c6ce0b18cffcbea73ff5e1f0bc43"
+  },
+  "/home/x/arb/tt/src/execution/gas_estimator.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "e0ad975f7fd540eabc3c378e3079e4a6"
+  },
+  "/home/x/arb/tt/src/db/registry_history_store.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "e36f94ba1747880fe197b70e7ce6b4cd"
+  },
+  "/home/x/arb/tt/src/db/repositories.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "56cbcfd874175fecb435093a6fab44f0"
+  },
+  "/home/x/arb/tt/src/db/registry.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "b48f3516884ced8accee4d903f02cb08"
+  },
+  "/home/x/arb/tt/src/db/index.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "dd02a4e02c854affd3e371590c9b63b2"
+  },
+  "/home/x/arb/tt/src/db/registry_assets.ts": {
+    "mtime": 1778557605.7424717,
+    "hash": "e1fe9e4fffaa92bd4479033d4472f8e9"
+  },
+  "/home/x/arb/tt/src/db/registry_pool_store.ts": {
+    "mtime": 1778551701.5740168,
+    "hash": "1bc244030aed3e895e7b81c64253233e"
+  },
+  "/home/x/arb/tt/src/db/registry_codec.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "a1f19af9734f1702190c766c4341657e"
+  },
+  "/home/x/arb/tt/src/db/registry_asset_store.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "9f5ee6ce2ca94f5623b99b5005f911c5"
+  },
+  "/home/x/arb/tt/src/db/registry_pools.ts": {
+    "mtime": 1778568368.1600287,
+    "hash": "7e1946d13739cced018cf05bf3937542"
+  },
+  "/home/x/arb/tt/src/db/registry_schema.ts": {
+    "mtime": 1778568323.668361,
+    "hash": "691e971c7c69cba87e4e019be750e6c8"
+  },
+  "/home/x/arb/tt/src/db/sqlite.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "e08ec3f750e103dc4121d4238ce379c7"
+  },
+  "/home/x/arb/tt/src/db/registry_history.ts": {
+    "mtime": 1778565293.7634614,
+    "hash": "ae49192eafd9395e115c8f64c4f25167"
+  },
+  "/home/x/arb/tt/src/db/registry_checkpoint_store.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "32388afae743b46252740851fb690c52"
+  },
+  "/home/x/arb/tt/src/db/registry_checkpoints.ts": {
+    "mtime": 1778568335.8162718,
+    "hash": "b3a73ec85f2b3ae2549409d5b09ec56e"
+  },
+  "/home/x/arb/tt/src/db/registry_meta_cache.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "1ab3ec5e4060488d9b492dd4d22951dd"
+  },
+  "/home/x/arb/tt/src/db/registry_asset_cache.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "7e81452a2a0f72b5c3f8c76ce143f046"
+  },
+  "/home/x/arb/tt/src/hypersync/paginate.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "89d522e10d28fd19a79e0e88bf842074"
+  },
+  "/home/x/arb/tt/src/hypersync/topics.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "4a73b1ebc9c1e418b11c221c5934affc"
+  },
+  "/home/x/arb/tt/src/hypersync/index.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "b0fc91e96e2970d993fcc79ec345c7be"
+  },
+  "/home/x/arb/tt/src/hypersync/logs.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "48c8f40c0c5de2f5af53bbd78d9602e1"
+  },
+  "/home/x/arb/tt/src/hypersync/client.ts": {
+    "mtime": 1778574377.9827561,
+    "hash": "c00872b967c6900b96d41322d78115a1"
+  },
+  "/home/x/arb/tt/src/hypersync/query_policy.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "b15a5f58d572d31509be07b08042ea8d"
+  },
+  "/home/x/arb/tt/src/arb/price_computation.ts": {
+    "mtime": 1778558568.0291767,
+    "hash": "2ca12633639f38b590ac2b129432bde6"
+  },
+  "/home/x/arb/tt/src/arb/topology_cache.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "a5b4042063dff5bdc9e20688fb6b4d92"
+  },
+  "/home/x/arb/tt/src/arb/execution_coordinator.ts": {
+    "mtime": 1778563635.3628106,
+    "hash": "081864018303b9c99a7c7e7d46de0288"
+  },
+  "/home/x/arb/tt/src/arb/assessment.ts": {
+    "mtime": 1778552743.1675918,
+    "hash": "3baaf8a1c13add62bf55e57a88eaed9e"
+  },
+  "/home/x/arb/tt/src/arb/route_revalidation.ts": {
+    "mtime": 1778569378.4662223,
+    "hash": "b7f28e4842a830b130e219380e93fbd5"
+  },
+  "/home/x/arb/tt/src/arb/discover.ts": {
+    "mtime": 1778555115.5458097,
+    "hash": "176b9f21b2299e087a84efc25fec3078"
+  },
+  "/home/x/arb/tt/src/arb/opportunity_engine.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "3f560b2a707fb7580ad8e726378fb077"
+  },
+  "/home/x/arb/tt/src/arb/discovery_helpers.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "d22b6278b9b482b9f8750b4b062e7a6f"
+  },
+  "/home/x/arb/tt/src/arb/profit_compute.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "72e6d50e82fbd29bb5afc26e1e83e7b6"
+  },
+  "/home/x/arb/tt/src/arb/price_oracle.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "61f4157a51b6d858303c89e51ce09c47"
+  },
+  "/home/x/arb/tt/src/arb/search.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "51c4ad6f5a55ec6c94a59c03344173fc"
+  },
+  "/home/x/arb/tt/src/arb/discovery_coordinator.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "ee2eebdef4a316ec2074c8fd52ef8260"
+  },
+  "/home/x/arb/tt/src/config/index.ts": {
+    "mtime": 1778574664.3274913,
+    "hash": "d0ca2ca566510698b153e890ddef0cdb"
+  },
+  "/home/x/arb/tt/src/config/rpc_env.ts": {
+    "mtime": 1778566764.9458654,
+    "hash": "e5359f44e5e3c40455f6fc3bd42d90df"
+  },
+  "/home/x/arb/tt/src/config/cli.ts": {
+    "mtime": 1778551701.5780168,
+    "hash": "2cd60160676023b01994e350d91a7258"
+  },
+  "/home/x/arb/tt/AGENTS.md": {
+    "mtime": 1778594305.4983509,
+    "hash": "a993bd9a8466b705f520b2a269a544bc"
+  },
+  "/home/x/arb/tt/pnpm-workspace.yaml": {
+    "mtime": 1778592821.493925,
+    "hash": "b742abf2d03aa9d79c3290767176eb41"
+  }
+}
