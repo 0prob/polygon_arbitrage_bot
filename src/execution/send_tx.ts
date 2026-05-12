@@ -248,10 +248,13 @@ export function hasTrackedPendingTx(fromAddress?: string | null | undefined) {
 async function pollTrackedReceipt(entry: PendingReceiptEntry) {
   try {
     const receipt = await entry.publicClient.getTransactionReceipt({ hash: asTxHash(entry.txHash) });
+    const pollEntry = stageFromBuiltTx(`poll_${entry.txHash}`, entry.builtTx, entry.txHash);
     if (receipt?.status === "reverted") {
       sendTxLogger.warn({ txHash: entry.txHash }, "Transaction reverted after submission");
+      logAttemptStage({ ...pollEntry, stage: "receipt_result", outcome: "reverted", txHash: entry.txHash });
       logFailure(entry.txHash, entry.builtTx, receipt);
     } else {
+      logAttemptStage({ ...pollEntry, stage: "receipt_result", outcome: "confirmed", txHash: entry.txHash });
       sendTxLogger.info(
         { txHash: entry.txHash, blockNumber: receipt.blockNumber?.toString?.() },
         "Transaction confirmed via poller"
@@ -291,6 +294,13 @@ async function pollTrackedReceipt(entry: PendingReceiptEntry) {
   }
 
   sendTxLogger.warn({ txHash: entry.txHash, ageMs, missCount: entry.missCount }, "Transaction appears dropped from mempool");
+  logAttemptStage({
+    ...stageFromBuiltTx(`poll_${entry.txHash}`, entry.builtTx, entry.txHash),
+    stage: "receipt_result",
+    outcome: "dropped",
+    txHash: entry.txHash,
+    error: `receipt not found after ${ageMs}ms and ${entry.missCount} misses`,
+  });
   entry.nonceManager?.markDropped?.(entry.fromAddress);
   clearTrackedReceipt(entry.txHash);
 }
@@ -704,8 +714,10 @@ try {
     clearTrackedReceipt(txHash);
     if (!confirmed) {
       sendTxLogger.warn({ txHash }, "Transaction reverted");
+      logAttemptStage({ ...baseEntry, stage: "receipt_result", outcome: "reverted", txHash });
       logFailure(txHash, builtTx, receipt);
     } else {
+      logAttemptStage({ ...baseEntry, stage: "receipt_result", outcome: "confirmed", txHash });
       sendTxLogger.info({ txHash, blockNumber: receipt.blockNumber?.toString?.() }, "Transaction confirmed");
     }
 
@@ -719,6 +731,7 @@ try {
   } catch (err: unknown) {
     const message = String((err as { message?: unknown } | null | undefined)?.message ?? err);
     sendTxLogger.warn({ txHash, error: message }, "Receipt wait failed");
+    logAttemptStage({ ...baseEntry, stage: "receipt_result", outcome: "receipt_timeout", txHash, error: message });
     return {
       submitted: true,
       confirmed: false,
@@ -756,13 +769,25 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
   const account = accountFromPrivateKey(privateKey);
   const fromAddress = account.address;
   const publicClient = (publicClientOverride ?? executionClient) as PublicClientLike;
+  const attemptEntries = builtTxs.map((builtTx) => stageFromBuiltTx(nextAttemptId("bundle_tx"), builtTx));
 
   if (dryRunFirst) {
+    for (const entry of attemptEntries) {
+      logAttemptStage({ ...entry, stage: "dry_run_start" });
+    }
     const dryRunResults = await mapWithConcurrency(
       builtTxs,
       builtTxs.length,
       (builtTx) => dryRun(builtTx, fromAddress, publicClient),
     );
+    dryRunResults.forEach((result, index) => {
+      logAttemptStage({
+        ...attemptEntries[index],
+        stage: "dry_run_result",
+        outcome: result.success ? "submitted" : "dry_run_failed",
+        error: result.success ? undefined : result.error ?? undefined,
+      });
+    });
     const failedDryRun = dryRunResults.find((result) => !result.success);
     if (failedDryRun) {
       sendTxLogger.warn(
@@ -778,6 +803,9 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
   }
 
   if (!submitTx) {
+    for (const entry of attemptEntries) {
+      logAttemptStage({ ...entry, stage: "final", outcome: "skipped", error: "submitTx disabled" });
+    }
     return {
       submitted: false,
       confirmed: false,
@@ -806,10 +834,23 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
     }
 
     const rawTxs: RawTransaction[] = await Promise.all(
-      builtTxs.map((builtTx, index) =>
-        signTransactionFn(builtTx, privateKey, reservedNonces[index], 137)
-      )
+      builtTxs.map(async (builtTx, index) => {
+        const nonce = reservedNonces[index];
+        logAttemptStage({ ...attemptEntries[index], stage: "sign_start", nonce: Number(nonce) });
+        try {
+          const rawTx = await signTransactionFn(builtTx, privateKey, nonce, 137);
+          logAttemptStage({ ...attemptEntries[index], stage: "sign_result", outcome: "submitted", nonce: Number(nonce) });
+          return rawTx;
+        } catch (err: unknown) {
+          const errorMsg = `Sign failed: ${String((err as { message?: unknown } | null | undefined)?.message ?? err)}`;
+          logAttemptStage({ ...attemptEntries[index], stage: "sign_result", outcome: "sign_failed", error: errorMsg, nonce: Number(nonce) });
+          throw err;
+        }
+      })
     );
+    for (const entry of attemptEntries) {
+      logAttemptStage({ ...entry, stage: "submit_start" });
+    }
     const blockNumber = BigInt(await publicClient.getBlockNumber()) + 1n;
     const tSubmissionStart = Date.now();
 
@@ -843,13 +884,22 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
         if (nonceManager?.resync && classifySubmissionError(fallbackResult.error) === "nonce") {
           nonceManager.resync(fromAddress);
         }
+        for (const entry of attemptEntries) {
+          logAttemptStage({ ...entry, stage: "submit_result", outcome: "submission_failed", error: fallbackResult.error ?? undefined });
+        }
         return fallbackResult;
       }
       txHashes = fallbackResult.txHashes ?? [];
+      txHashes.forEach((hash, index) => {
+        logAttemptStage({ ...attemptEntries[index], stage: "submit_result", outcome: "submitted", txHash: hash, endpoint: "individual_fallback" });
+      });
       bundleHash = undefined;
     } else if (!result.submitted) {
       throw new Error(result.error || "sendPrivateBundle: no method succeeded");
     } else {
+      txHashes.forEach((hash, index) => {
+        logAttemptStage({ ...attemptEntries[index], stage: "submit_result", outcome: "submitted", txHash: hash, endpoint: "bundle", latencyMs: Date.now() - tSubmissionStart });
+      });
       if (nonceManager?.confirm) {
         for (let i = 0; i < builtTxs.length; i++) {
           nonceManager.confirm(fromAddress);
@@ -879,6 +929,15 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
 
       for (const hash of txHashes) clearTrackedReceipt(hash);
       const confirmed = receipts.every((receipt) => receipt?.status === "success");
+      receipts.forEach((receipt, index) => {
+        const hash = txHashes[index];
+        logAttemptStage({
+          ...attemptEntries[index],
+          stage: "receipt_result",
+          outcome: receipt?.status === "success" ? "confirmed" : "reverted",
+          txHash: hash,
+        });
+      });
 
       return {
         submitted: true,
@@ -890,6 +949,9 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
     } catch (err: unknown) {
       const message = String((err as { message?: unknown } | null | undefined)?.message ?? err);
       sendTxLogger.warn({ txHashes, error: message }, "Bundle receipt wait failed");
+      txHashes.forEach((hash, index) => {
+        logAttemptStage({ ...attemptEntries[index], stage: "receipt_result", outcome: "receipt_timeout", txHash: hash, error: message });
+      });
       return {
         submitted: true,
         confirmed: false,
@@ -899,6 +961,7 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
       };
     }
   } catch (err: unknown) {
+    const errorMessage = String((err as { message?: unknown } | null | undefined)?.message ?? err);
     if (nonceManager?.revert) {
       for (let i = 0; i < reservedNonces.length; i++) {
         nonceManager.revert(fromAddress);
@@ -907,10 +970,13 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
         nonceManager.resync(fromAddress);
       }
     }
+    for (const entry of attemptEntries) {
+      logAttemptStage({ ...entry, stage: "submit_result", outcome: "submission_failed", error: errorMessage, errorCategory: classifySubmissionError(err) });
+    }
     return {
       submitted: false,
       confirmed: false,
-      error: String((err as { message?: unknown } | null | undefined)?.message ?? err),
+      error: errorMessage,
     };
   }
 }
