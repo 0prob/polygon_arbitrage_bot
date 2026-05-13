@@ -905,6 +905,14 @@ export const ROUTING_MIN_HOPS = Math.min(
  */
 export const ROUTING_CYCLE_MODE = _routingCycleMode("ROUTING_CYCLE_MODE", "all");
 
+/**
+ * Minimum pool liquidity in MATIC wei to include a pool in route enumeration.
+ * Pools below this threshold are pruned to avoid low-liquidity false positives.
+ * Default: ~$5,000 USD (7,143 MATIC * 10^18 wei at ~$0.70/MATIC).
+ * Set to 0 to disable liquidity filtering.
+ */
+export const MIN_LIQUIDITY_WMATIC = _bigint("MIN_LIQUIDITY_WMATIC", "MIN_LIQUIDITY_WMATIC", 7_143n * 10n ** 18n);
+
 /** Optional env-driven hub-token extensions. */
 export const EXTRA_POLYGON_HUB_TOKENS = _addressList("EXTRA_POLYGON_HUB_TOKENS");
 export const EXTRA_HUB_4_TOKENS = _addressList("EXTRA_HUB_4_TOKENS");

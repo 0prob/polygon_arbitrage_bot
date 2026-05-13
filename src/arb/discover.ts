@@ -232,7 +232,7 @@ export function resolveDiscoveryFromBlock(
   const shouldBackfillEmptyProtocol =
     hasCheckpoint &&
     existingPoolCount === 0 &&
-    existingCheckpointBlock >= startBlock;
+    existingCheckpointBlock === startBlock;
   const fromBlock = shouldBackfillEmptyProtocol
     ? startBlock
     : checkpointNextBlock;
@@ -443,7 +443,7 @@ async function discoverProtocol(
   if (logs.length === 0) {
     console.log(`  No new logs found for ${protocol.name}.`);
     registry.setCheckpoint(key, checkpointBlock);
-    return { discovered: 0, checkpointBlock, rollbackGuard };
+    return { discovered: 0, checkpointBlock, rollbackGuard, hydrationPromise: null };
   }
 
   console.log(`  Found ${logs.length} discovery events for ${protocol.name}.`);
@@ -467,13 +467,13 @@ async function discoverProtocol(
   }
   const poolBatch = buildDiscoveredPoolBatch(key, extractedPools);
 
-  let hydrationPromise: Promise<number> | null = null;
   if (poolBatch.length > 0) {
     registry.batchUpsertPools(poolBatch);
-    hydrationPromise = hydrateNewTokens(poolBatch, registry).catch((err) => {
-      console.warn(`  [discover] Token hydration failed: ${err.message}`);
-      return 0;
-    });
+    try {
+      await hydrateNewTokens(poolBatch, registry);
+    } catch (err: unknown) {
+      console.warn(`  [discover] Token hydration failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   registry.setCheckpoint(key, checkpointBlock);
@@ -492,7 +492,7 @@ async function discoverProtocol(
     "[discovery] Protocol scan complete",
   );
 
-  return { discovered: poolBatch.length, checkpointBlock, rollbackGuard, hydrationPromise };
+  return { discovered: poolBatch.length, checkpointBlock, rollbackGuard, hydrationPromise: null };
 }
 
 // ─── Curve PoolRemoved lifecycle ───────────────────────────────
@@ -633,7 +633,6 @@ export async function discoverPoolsWithDeps(deps: DiscoverPoolsDeps = {}) {
   const discoverCurveRemovalsFn = deps.discoverCurveRemovalsFn ?? discoverCurveRemovals;
   const detectReorgFn = deps.detectReorgFn ?? detectReorg;
   const protocolConcurrency = Math.max(1, Number(deps.protocolConcurrency ?? DISCOVERY_PROTOCOL_CONCURRENCY) || 1);
-  const pendingHydrations: Promise<number>[] = [];
   let chainHeight: number | null = null;
 
   console.log("=== Polygon Pool Discovery (HyperSync) ===");
@@ -690,7 +689,6 @@ export async function discoverPoolsWithDeps(deps: DiscoverPoolsDeps = {}) {
       const result = entry.result;
       if (!result) continue;
       totalDiscovered += Number(result.discovered ?? 0);
-      if (result.hydrationPromise) pendingHydrations.push(result.hydrationPromise);
 
       if (result.rollbackGuard) {
         const reorgBlock = detectReorgFn(registry, result.rollbackGuard);
@@ -716,11 +714,6 @@ export async function discoverPoolsWithDeps(deps: DiscoverPoolsDeps = {}) {
       }
     } catch (error: unknown) {
       console.error(`Error discovering Curve removals: ${errorMessage(error)}`);
-    }
-
-    if (pendingHydrations.length > 0) {
-      console.log(`Waiting for ${pendingHydrations.length} token hydration task(s) to finish...`);
-      await Promise.allSettled(pendingHydrations);
     }
 
     const protocolCoverage = discoveryProtocolCoverage(registry, discoveryEntries, protocolResults);

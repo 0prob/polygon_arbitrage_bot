@@ -372,6 +372,15 @@ export async function discoverCurveListedFactory({
   if (poolBatch.length > 0) {
     curveRegistry.batchUpsertPools(poolBatch);
   }
+
+  if (newPools.length > 0) {
+    try {
+      await hydrateNewTokens(newPools.map((entry) => entry.pool), requireCurveTokenMetadataRegistry(registry));
+    } catch (err: unknown) {
+      console.warn(`  [discover] Token hydration failed: ${errorMessage(err)}`);
+    }
+  }
+
   if (checkpointBlock != null) curveRegistry.setCheckpoint(protocolKey, checkpointBlock);
 
   console.log(`  Inserted ${newPools.length} new pool(s), refreshed ${poolBatch.length - newPools.length} existing pool(s) for ${protocolName}.`);
@@ -389,18 +398,10 @@ export async function discoverCurveListedFactory({
     "[discovery] Curve factory scan complete",
   );
 
-  const hydrationPromise =
-    newPools.length > 0
-      ? hydrateNewTokens(newPools.map((entry) => entry.pool), requireCurveTokenMetadataRegistry(registry)).catch((err) => {
-          console.warn(`  [discover] Token hydration failed: ${errorMessage(err)}`);
-          return 0;
-        })
-      : null;
-
   return {
     discovered: newPools.length,
     checkpointBlock,
     rollbackGuard,
-    hydrationPromise,
+    hydrationPromise: null,
   };
 }

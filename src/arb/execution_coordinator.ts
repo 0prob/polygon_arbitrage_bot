@@ -26,11 +26,18 @@ type QuarantineEntry = {
   failureClass: "transient" | "deterministic";
 };
 
-/** Short quarantine for transient failures (stale gas, stale rates, RPC glitches). */
+/** Base quarantine for transient failures (stale gas, stale rates, RPC glitches). */
 const TRANSIENT_QUARANTINE_MS = 30_000;
 
 /** Default quarantine for deterministic failures (unsupported tokens, malformed calldata). */
 const DETERMINISTIC_QUARANTINE_MS = 120_000;
+
+/**
+ * Progressive backoff multiplier per repeat failure.
+ * Failure 1: 1x base  |  Failure 2: 2x base  |  Failure 3: 4x base  |  ...
+ * Capped at 16x to avoid indefinite lockout.
+ */
+const PROGRESSIVE_QUARANTINE_BACKOFF = [1, 2, 4, 8, 16];
 
 type FeeSnapshot = {
   baseFee: bigint;
@@ -378,7 +385,12 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     const key = executionRouteKey(path);
     const previous = executionRouteQuarantine.get(key);
     const failures = (previous?.failures ?? 0) + 1;
-    const quarantineMs = failureClass === "transient" ? TRANSIENT_QUARANTINE_MS : (deps.executionRouteQuarantineMs ?? DETERMINISTIC_QUARANTINE_MS);
+    const baseMs = failureClass === "transient"
+      ? (deps.executionRouteQuarantineMs ?? TRANSIENT_QUARANTINE_MS)
+      : DETERMINISTIC_QUARANTINE_MS;
+    const backoffIndex = Math.min(failures - 1, PROGRESSIVE_QUARANTINE_BACKOFF.length - 1);
+    const multiplier = PROGRESSIVE_QUARANTINE_BACKOFF[backoffIndex];
+    const quarantineMs = baseMs * multiplier;
     const until = now + quarantineMs;
     executionRouteQuarantine.set(key, {
       until,
@@ -700,12 +712,28 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
         nonceManager: deps.getNonceManager(),
       };
 
+      const profitWei = prepared.map((p) => {
+        const raw = p.builtTx.meta?.expectedProfitWei;
+        return typeof raw === "string" ? BigInt(raw) : 0n;
+      });
+
       if (prepared.length === 1) {
-        // Pre-execution route refresh already simulated this route — skip the redundant dry-run
         const pools = prepared[0].best.path.edges
           .map((e) => (e.poolAddress ?? "").toLowerCase())
           .filter(Boolean);
-        return await deps.sendTx(prepared[0].builtTx, clientConfig, { awaitReceipt: false, skipDryRun: true, touchedPools: pools });
+        type SendTxResultWithDryRun = { submitted: boolean; dryRun?: { success: boolean; error: string | null } };
+        const result = await deps.sendTx(prepared[0].builtTx, clientConfig, { awaitReceipt: false, skipDryRun: true, touchedPools: pools });
+        const txResult = result as SendTxResultWithDryRun;
+        if (!txResult.submitted && txResult.dryRun && !txResult.dryRun.success) {
+          quarantinePreparedCandidate(
+            prepared[0].best,
+            txResult.dryRun.error ?? "dry_run_failed",
+            "execute_send_dry_run_failed",
+            {},
+            "transient",
+          );
+        }
+        return { ...result, profitWei };
       }
 
       deps.log(`[runner] Bundling ${prepared.length} opportunities into one private bundle`, "info", {
@@ -714,11 +742,24 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
         hopCounts: prepared.map((entry) => entry.best.path.hopCount),
       });
 
-      return await deps.sendTxBundle(
+      const result = await deps.sendTxBundle(
         prepared.map((entry) => entry.builtTx),
         clientConfig,
         { awaitReceipt: false },
       );
+      if (!result.submitted) {
+        const errorMsg = result.error ? String(result.error) : "bundle_submission_failed";
+        for (const p of prepared) {
+          quarantinePreparedCandidate(
+            p.best,
+            errorMsg,
+            "execute_bundle_failed",
+            {},
+            "transient",
+          );
+        }
+      }
+      return { ...result, profitWei };
     } catch (err: unknown) {
       const reason = errorReason(err);
       deps.log(`Execution error: ${reason}`, "error", {

@@ -123,7 +123,22 @@ async function refreshCandidateBeforeExecution(
     return { candidate: null, reason: freshness.reason ?? "pre-execution route refresh produced stale state" };
   }
 
+  const nowMs = Date.now();
+  for (const poolAddress of uniqueRoutePools(candidate.path)) {
+    const poolState = deps.stateCache.get(poolAddress.toLowerCase()) as { timestamp?: number } | undefined;
+    if (!poolState || !poolState.timestamp) {
+      return { candidate: null, reason: `pool ${poolAddress} has no timestamp after refresh` };
+    }
+    if (nowMs - poolState.timestamp > 5000) {
+      return { candidate: null, reason: `pool ${poolAddress} state still stale (${nowMs - poolState.timestamp}ms old) after refresh` };
+    }
+  }
+
   const refreshedResult = simulateRoute(candidate.path, candidate.result.amountIn, deps.stateCache);
+  if (!refreshedResult || refreshedResult.profit <= 0n) {
+    return { candidate: null, reason: "route produced zero or negative profit after pending-state refresh" };
+  }
+
   const refreshedAssessment = assessRouteResult(
     candidate.path,
     refreshedResult,
@@ -132,7 +147,7 @@ async function refreshCandidateBeforeExecution(
     { minProfitWei: deps.minProfitWei, flashLoanFeeBps: deps.flashLoanFeeBps },
   );
 
-  if (!refreshedResult.profitable || !refreshedAssessment.shouldExecute) {
+  if (!refreshedAssessment.shouldExecute) {
     return {
       candidate: null,
       reason: refreshedAssessment.rejectReason

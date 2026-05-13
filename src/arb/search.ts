@@ -621,21 +621,44 @@ export function createArbSearcher(deps: SearchDeps) {
       }
     }
 
-    deps.log("[runner] Candidate optimization pass complete", "debug", {
-      event: "candidate_optimization_summary",
-      activity: "Candidate optimization complete",
-      activityDetail: `${eligibleProfitable.length} profitable route(s) from ${candidates.length} candidate(s)`,
-      progressLabel: "scan",
-      progressCompleted: 3,
-      progressTotal: 3,
-      progressUnit: "steps",
-      candidates: candidates.length,
-      topCandidates: topCandidates.length,
-      optimizedCandidates,
-      skippedOptimization: topCandidates.length - optimizedCandidates,
-      profitableRoutes: eligibleProfitable.length,
-      assessmentSummary,
-    });
+    if (eligibleProfitable.length === 0 && assessmentSummary && assessmentSummary.rejected > 0) {
+      const topReasons = Object.entries(assessmentSummary.rejectReasons)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([reason, count]) => `${reason}:${count}`)
+        .join(", ");
+      deps.log(`[runner] 0 profitable — rejected ${assessmentSummary.rejected}/${assessmentSummary.assessed} (${topReasons})`, "info", {
+        event: "candidate_optimization_summary",
+        activity: "Candidate optimization complete",
+        activityDetail: `${eligibleProfitable.length} profitable route(s) from ${candidates.length} candidate(s)`,
+        progressLabel: "scan",
+        progressCompleted: 3,
+        progressTotal: 3,
+        progressUnit: "steps",
+        candidates: candidates.length,
+        topCandidates: topCandidates.length,
+        optimizedCandidates,
+        skippedOptimization: topCandidates.length - optimizedCandidates,
+        profitableRoutes: eligibleProfitable.length,
+        assessmentSummary,
+      });
+    } else {
+      deps.log("[runner] Candidate optimization pass complete", "debug", {
+        event: "candidate_optimization_summary",
+        activity: "Candidate optimization complete",
+        activityDetail: `${eligibleProfitable.length} profitable route(s) from ${candidates.length} candidate(s)`,
+        progressLabel: "scan",
+        progressCompleted: 3,
+        progressTotal: 3,
+        progressUnit: "steps",
+        candidates: candidates.length,
+        topCandidates: topCandidates.length,
+        optimizedCandidates,
+        skippedOptimization: topCandidates.length - optimizedCandidates,
+        profitableRoutes: eligibleProfitable.length,
+        assessmentSummary,
+      });
+    }
 
     eligibleProfitable.sort(compareAssessmentProfit);
     return eligibleProfitable;

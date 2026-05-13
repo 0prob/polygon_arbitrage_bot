@@ -49,6 +49,8 @@ export function createDiscoveryCoordinator(deps: DiscoveryDeps) {
   }
 
   async function runInitialDiscovery() {
+    if (discoveryInFlight) return null;
+    discoveryInFlight = true;
     deps.log("Initial pool discovery...");
     try {
       const result = await deps.discoverPools();
@@ -58,6 +60,8 @@ export function createDiscoveryCoordinator(deps: DiscoveryDeps) {
     } catch (err: unknown) {
       deps.log(`Initial discovery failed: ${errorMessage(err)} — using cached state`, "warn");
       return null;
+    } finally {
+      discoveryInFlight = false;
     }
   }
 

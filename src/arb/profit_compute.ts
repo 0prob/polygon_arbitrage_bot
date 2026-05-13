@@ -5,10 +5,10 @@ import { oracle } from "../execution/gas.ts";
 import { bigintToApproxNumber } from "../utils/bigint.ts";
 import { divRoundingUp } from "../math/full_math.ts";
 import {
+  DEFAULT_GAS_PRICE_WEI,
+  CONFIG_DEFAULT_MIN_PROFIT_WEI,
   CONFIG_DEFAULT_SLIPPAGE_BPS,
   CONFIG_DEFAULT_REVERT_RISK_BPS,
-  CONFIG_DEFAULT_MIN_PROFIT_WEI,
-  DEFAULT_GAS_PRICE_WEI,
 } from "../config/index.ts";
 
 /**
@@ -256,9 +256,9 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   const slippageDeduction = amountOut - adjustedOut;
   const profitAfterSlippage = adjustedOut - amountIn;
 
-  // 3. Revert risk penalty (applied to gross profit per documented intent)
+  // 3. Revert risk penalty (applied to profit after slippage to avoid double-counting)
   const revertPenalty = revertRiskPenalty(
-    grossProfit > 0n ? grossProfit : 0n,
+    profitAfterSlippage > 0n ? profitAfterSlippage : 0n,
     hopCount,
     revertRiskBps
   );
@@ -270,15 +270,15 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   // 4. Gas cost deduction (only if we know the token/MATIC exchange rate)
   let netProfitAfterGas = netProfit;
   let gasCostInTokens = 0n;
+  let gasWiped = false;
   if (tokenToMaticRate != null && tokenToMaticRate > 0n) {
-    // Convert gas cost from MATIC wei to raw start-token units.
-    //
-    // tokenToMaticRate = "how many MATIC wei is 1 raw start-token unit worth?"
-    //   WMATIC (18 dec): rate = 1     → gasCostInTokens = gasCostWei / 1   = gasCostWei
-    //   USDC   (6 dec):  rate = 1e12  → gasCostInTokens = gasCostWei / 1e12
-    //   WETH   (18 dec): rate = 2500  → gasCostInTokens = gasCostWei / 2500
     gasCostInTokens = gasCostInTokenUnits(gasCost, tokenToMaticRate);
     netProfitAfterGas = netProfit - gasCostInTokens;
+    // Gas sanity: if gas cost alone (in MATIC wei) already exceeds minNetProfit,
+    // the route is uneconomical regardless of token unit conversion quirks.
+    if (gasCost > 0n && minNetProfit > 0n && gasCost >= minNetProfit) {
+      gasWiped = true;
+    }
   }
 
   // 5. ROI (net profit / input, in micro-units = parts per million)
@@ -296,7 +296,10 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
       ? netProfitAfterGas
       : netProfit;
 
-  if (grossProfit <= 0n) {
+  if (gasWiped) {
+    shouldExecute = false;
+    rejectReason = "gas cost in MATIC wei already exceeds min profit threshold";
+  } else if (grossProfit <= 0n) {
     shouldExecute = false;
     rejectReason = "gross profit <= 0";
   } else if (profitAfterSlippage <= 0n) {

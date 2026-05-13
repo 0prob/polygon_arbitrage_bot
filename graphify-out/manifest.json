@@ -108,8 +108,8 @@
     "hash": "5c9e3ec538497363279cd4956e28f63d"
   },
   "/home/x/arb/t/src/routing/score_route.ts": {
-    "mtime": 1778552742.5155985,
-    "hash": "e4eaf7bef8dfd50325dfbb1f713f4fe0"
+    "mtime": 1778664199.5315814,
+    "hash": "e78d80725f28a43336525a741fab1e66"
   },
   "/home/x/arb/t/src/routing/persistent_worker.ts": {
     "mtime": 1778551701.562017,
@@ -196,8 +196,8 @@
     "hash": "e85ecbeeed9299b0dd4f73afb329f5f7"
   },
   "/home/x/arb/t/src/state/normalizer.ts": {
-    "mtime": 1778574282.2158492,
-    "hash": "3021b7bbfd074528defa4a32b8595b13"
+    "mtime": 1778664199.5315814,
+    "hash": "7f05f3fe9df8a79fd0baca54d8013262"
   },
   "/home/x/arb/t/src/state/uniswap_v3.ts": {
     "mtime": 1778655166.3410113,
@@ -368,8 +368,8 @@
     "hash": "5e908583d956c2088212dba2770d70c3"
   },
   "/home/x/arb/t/src/protocols/curve_list_factory.ts": {
-    "mtime": 1778557971.2870705,
-    "hash": "9d4290d116baebb9f516123b7fa66d95"
+    "mtime": 1778664199.5315814,
+    "hash": "b3d01fca7f56679ad71b5875ec4fe7d8"
   },
   "/home/x/arb/t/src/protocols/classification.ts": {
     "mtime": 1778658313.7091494,
@@ -608,8 +608,8 @@
     "hash": "9f5ee6ce2ca94f5623b99b5005f911c5"
   },
   "/home/x/arb/t/src/db/registry_pools.ts": {
-    "mtime": 1778662596.2185585,
-    "hash": "93e7ccdc5b469bcf1a44707055e52e12"
+    "mtime": 1778664199.5275815,
+    "hash": "66f1821ef5348e2d4e0f48bc5ab29284"
   },
   "/home/x/arb/t/src/db/registry_schema.ts": {
     "mtime": 1778568323.668361,
@@ -640,8 +640,8 @@
     "hash": "7e81452a2a0f72b5c3f8c76ce143f046"
   },
   "/home/x/arb/t/src/hypersync/paginate.ts": {
-    "mtime": 1778653325.5342262,
-    "hash": "d07d7cf0a9629244abf4adf4979aada0"
+    "mtime": 1778664199.5315814,
+    "hash": "151e849b11bdb7e9f57d26983eb16aa9"
   },
   "/home/x/arb/t/src/hypersync/topics.ts": {
     "mtime": 1778653349.0139894,
@@ -684,8 +684,8 @@
     "hash": "b7f28e4842a830b130e219380e93fbd5"
   },
   "/home/x/arb/t/src/arb/discover.ts": {
-    "mtime": 1778555115.5458097,
-    "hash": "176b9f21b2299e087a84efc25fec3078"
+    "mtime": 1778664199.5275815,
+    "hash": "9dc103dfcb7b2e942cb211057a22b630"
   },
   "/home/x/arb/t/src/arb/opportunity_engine.ts": {
     "mtime": 1778551701.5780168,
@@ -696,20 +696,20 @@
     "hash": "ca842790519923a94c6c3badabceba68"
   },
   "/home/x/arb/t/src/arb/profit_compute.ts": {
-    "mtime": 1778551701.5780168,
-    "hash": "72e6d50e82fbd29bb5afc26e1e83e7b6"
+    "mtime": 1778664456.2934291,
+    "hash": "1564fc183509460b564381b262883358"
   },
   "/home/x/arb/t/src/arb/price_oracle.ts": {
     "mtime": 1778661328.8747666,
     "hash": "eb7504a22725f8838450a90eb3f59c2a"
   },
   "/home/x/arb/t/src/arb/search.ts": {
-    "mtime": 1778551701.5780168,
-    "hash": "51c4ad6f5a55ec6c94a59c03344173fc"
+    "mtime": 1778664404.4977782,
+    "hash": "a5807e678429fb65053c3b8a582673b0"
   },
   "/home/x/arb/t/src/arb/discovery_coordinator.ts": {
-    "mtime": 1778551701.5780168,
-    "hash": "ee2eebdef4a316ec2074c8fd52ef8260"
+    "mtime": 1778664199.5275815,
+    "hash": "406282631cac5d6e57741561e02c9829"
   },
   "/home/x/arb/t/src/config/index.ts": {
     "mtime": 1778650592.1299112,

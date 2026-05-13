@@ -147,13 +147,22 @@ function normalizePoolUpsertRecord(pool: unknown): NormalizedPoolUpsertRecord {
 function normalizePoolUpsertBatch(poolList: unknown[]) {
   const latestByAddress = new Map<string, NormalizedPoolUpsertRecord>();
   let skipped = 0;
+  let loggedErrors = 0;
+  const MAX_LOG = 5;
   for (const pool of poolList) {
     try {
       const normalized = normalizePoolUpsertRecord(pool);
       latestByAddress.set(normalized.pool_address, normalized);
-    } catch {
+    } catch (err) {
       skipped++;
+      if (loggedErrors < MAX_LOG) {
+        console.warn(`  [registry] Skipping invalid pool: ${err instanceof Error ? err.message : String(err)}`);
+        loggedErrors++;
+      }
     }
+  }
+  if (skipped > MAX_LOG) {
+    console.warn(`  [registry] ... and ${skipped - MAX_LOG} more invalid pool(s) skipped`);
   }
   return { records: [...latestByAddress.values()], skipped };
 }
@@ -178,6 +187,8 @@ function normalizeStateUpdateRecord(state: unknown): NormalizedStateUpdate {
 function normalizeStateUpdateBatch(stateList: unknown[]) {
   const latestByAddress = new Map<string, NormalizedStateUpdate>();
   let skipped = 0;
+  let loggedErrors = 0;
+  const MAX_LOG = 5;
   for (const state of stateList) {
     try {
       const normalized = normalizeStateUpdateRecord(state);
@@ -185,9 +196,16 @@ function normalizeStateUpdateBatch(stateList: unknown[]) {
       if (!prior || normalized.block >= prior.block) {
         latestByAddress.set(normalized.pool_address, normalized);
       }
-    } catch {
+    } catch (err) {
       skipped++;
+      if (loggedErrors < MAX_LOG) {
+        console.warn(`  [registry] Skipping invalid state update: ${err instanceof Error ? err.message : String(err)}`);
+        loggedErrors++;
+      }
     }
+  }
+  if (skipped > MAX_LOG) {
+    console.warn(`  [registry] ... and ${skipped - MAX_LOG} more invalid state update(s) skipped`);
   }
   return { records: [...latestByAddress.values()], skipped };
 }

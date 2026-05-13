@@ -549,12 +549,18 @@ export function createPassRunner(deps: PassRunnerDeps) {
         });
         const executionResult = await deps.executeBatchIfIdle(opportunities.slice(0, deps.maxExecutionBatch), "run_pass");
         if (executionResult && typeof executionResult === "object") {
-          const result = executionResult as { submitted?: boolean; confirmed?: boolean; error?: unknown; txHash?: string; txHashes?: string[] };
+          const result = executionResult as {
+            submitted?: boolean; confirmed?: boolean; error?: unknown;
+            txHash?: string; txHashes?: string[];
+            profitWei?: bigint[];
+          };
           if (result.submitted) {
             const txCount = Math.min(opportunities.length, deps.maxExecutionBatch);
             if (deps.recordTxAttempt) {
+              const profits = result.profitWei ?? [];
               for (let i = 0; i < txCount; i++) {
-                deps.recordTxAttempt(true);
+                const profit = i < profits.length ? profits[i] : 0n;
+                deps.recordTxAttempt(true, profit);
               }
             }
           } else if (result.error) {

@@ -353,7 +353,8 @@ export function normalizeCurveState(
   const n = normalizedTokens.length;
   const tokenDecimals = normalizeTokenDecimalsList(normalizedTokens, meta);
   if (tokenDecimals.some(d => d == null)) {
-    throw new Error(`normalizeCurveState: unknown token decimals for pool ${poolId}`);
+    console.warn(`[normalizer] normalizeCurveState: unknown token decimals for pool ${poolId}, returning null`);
+    return null;
   }
   const resolvedDecimals = tokenDecimals as number[];
   const maxDecimals = Math.max(...resolvedDecimals, 18);
@@ -617,7 +618,7 @@ export function normalizeWoofiState(
 
   const quoteDecimalsValue = rawRecord.quoteDecimals ?? tokenDecimals[0];
   if (quoteDecimalsValue == null) {
-    throw new Error(`normalizeV2State: unknown quote decimals for pool ${poolId}`);
+    throw new Error(`normalizeWoofiState: unknown quote decimals for pool ${poolId}`);
   }
   return {
     poolId,

@@ -141,6 +141,8 @@ export async function fetchAllLogsWithClient<TLog>(
   let consecutiveEmptyPages = 0;
   const MAX_CONSECUTIVE_EMPTY = 3;
 
+  const PAGE_TIMEOUT_MS = 120_000;
+
   while (true) {
     const pageFromBlock = parseBlockInteger("page fromBlock", currentQuery.fromBlock);
     if (pages >= maxPages) {
@@ -148,7 +150,12 @@ export async function fetchAllLogsWithClient<TLog>(
         `HyperSync pagination exceeded maxPages ${maxPages} before reaching a terminal cursor.`,
       );
     }
-    const res = await hypersyncClient.get(currentQuery);
+    const res = await Promise.race([
+      hypersyncClient.get(currentQuery),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`HyperSync page ${pages} timed out after ${PAGE_TIMEOUT_MS}ms at block ${pageFromBlock}`)), PAGE_TIMEOUT_MS)
+      ),
+    ]);
     pages++;
 
     if (res.archiveHeight != null) {
@@ -165,7 +172,7 @@ export async function fetchAllLogsWithClient<TLog>(
           `HyperSync pagination exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs (${allLogs.length} + ${pageLogs.length} from page ${pages}). Consider reducing batch size, narrowing block range, or increasing filter specificity.`,
         );
       }
-      allLogs.push(...pageLogs);
+      allLogs.push.apply(allLogs, pageLogs);
       consecutiveEmptyPages = 0;
     } else {
       consecutiveEmptyPages++;

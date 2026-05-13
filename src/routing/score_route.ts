@@ -126,11 +126,18 @@ export function scoreRoute(path: RouteLike, result: RouteResultLike, options: Sc
   const protocols = new Set(path.edges.map((e: { protocol: string }) => e.protocol));
   const diversityBonus = protocols.size > 1 ? 0.2 : 0;
 
-  // Composite score: balance ROI, net profit, diversity, minus hop/gas penalties
-  // netProfit is in raw token units; normalize by 1e12 for dimensionless score
+  // Composite score: balance ROI, normalized profit, diversity, minus hop/gas penalties
+  // Normalize netProfit to MATIC-wei using tokenToMaticRate so profits from tokens
+  // with different decimals (USDC=6, WMATIC=18) are scored comparably.
+  const netProfitInMaticWei = tokenToMaticRate != null && tokenToMaticRate > 0n
+    ? netProfit * tokenToMaticRate
+    : null;
+  const normalizedProfitForScore = netProfitInMaticWei != null
+    ? bigintToApproxNumber(netProfitInMaticWei, 18)
+    : bigintToApproxNumber(netProfit, 12);
   const score =
     roi * 0.6 +
-    bigintToApproxNumber(netProfit, 12) * 0.3 +
+    normalizedProfitForScore * 0.3 +
     diversityBonus * 10 -
     hopPenalty * 5 -
     gasPenalty * 3;
