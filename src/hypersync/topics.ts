@@ -11,10 +11,25 @@ export function normalizeTopic(topic: unknown) {
 export function topic0ForSignature(signature: string) {
   const normalizedSignature = String(signature ?? "").trim();
   const cached = topic0Cache.get(normalizedSignature);
-  if (cached) return cached;
+  if (cached != null) return cached;
 
-  const abiItem = parseAbiItem(normalizedSignature) as AbiEvent;
-  const topic0 = normalizeTopic(encodeEventTopics({ abi: [abiItem], eventName: abiItem.name })[0]);
+  let abiItem: AbiEvent;
+  try {
+    abiItem = parseAbiItem(normalizedSignature) as AbiEvent;
+  } catch (err) {
+    console.warn(`[topics] Invalid event signature: "${signature}" — ${err instanceof Error ? err.message : String(err)}`);
+    topic0Cache.set(normalizedSignature, "");
+    return "";
+  }
+  let encoded: `0x${string}`;
+  try {
+    encoded = encodeEventTopics({ abi: [abiItem], eventName: abiItem.name })[0];
+  } catch (err) {
+    console.warn(`[topics] Failed to encode event topics for signature: "${signature}" — ${err instanceof Error ? err.message : String(err)}`);
+    topic0Cache.set(normalizedSignature, "");
+    return "";
+  }
+  const topic0 = normalizeTopic(encoded);
   topic0Cache.set(normalizedSignature, topic0);
   return topic0;
 }

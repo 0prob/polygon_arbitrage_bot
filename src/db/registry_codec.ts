@@ -36,8 +36,8 @@ function recordField(value: unknown): Record<string, unknown> {
 const BIGINT_SCALAR_FIELDS: Record<string, string[]> = {
   V2:      ["fee", "feeDenominator", "reserve0", "reserve1"],
   V3:      ["fee", "sqrtPriceX96", "liquidity"],
-  CURVE:   ["fee", "A", "swapFee"],
-  BALANCER:["swapFee", "amp", "ampPrecision"],
+  CURVE:   ["fee", "A", "swapFee", "virtualPrice"],
+  BALANCER:["fee", "swapFee", "amp", "ampPrecision"],
   DODO:    ["fee", "baseReserve", "quoteReserve", "baseTarget", "quoteTarget", "i", "k", "lpFeeRate", "mtFeeRate"],
   WOOFI:   ["fee", "feeDenominator", "quoteReserve", "quoteFeeRate", "quoteDec"],
 };
@@ -202,6 +202,27 @@ export function mapPoolRow(row: unknown) {
   };
 }
 
+const METADATA_BIGINT_FIELDS = new Set([
+  "fee", "feeNumerator", "feeDenominator",
+  "swapFee", "swapFeeUnits", "swapFeeBps",
+  "amp", "A", "virtualPrice",
+  "poolId", "pool_id",
+  "baseToken", "quoteToken",
+]);
+
+function rehydrateMetadataBigints(metadata: Record<string, unknown>): Record<string, unknown> {
+  if (!metadata || typeof metadata !== "object") return metadata ?? {};
+  for (const key of Object.keys(metadata)) {
+    if (METADATA_BIGINT_FIELDS.has(key) && typeof metadata[key] === "string") {
+      const val = metadata[key];
+      if (/^-?\d+$/.test(String(val))) {
+        metadata[key] = toBigInt(val);
+      }
+    }
+  }
+  return metadata;
+}
+
 export function mapPoolMetaRow(row: unknown) {
   const address = normalizeAddress(rowField(row, "address"));
   return {
@@ -210,7 +231,7 @@ export function mapPoolMetaRow(row: unknown) {
     tokens: normalizeAddressList(parseJson(rowField(row, "tokens"), [])),
     block: rowField(row, "created_block"),
     tx: rowField(row, "created_tx"),
-    metadata: parseJson(rowField(row, "metadata"), {}),
+    metadata: rehydrateMetadataBigints(recordField(parseJson(rowField(row, "metadata"), {}))),
     status: stringField(rowField(row, "status"), "active"),
     removed_block: rowField(row, "removed_block") ?? null,
     state: null,

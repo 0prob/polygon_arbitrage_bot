@@ -48,15 +48,35 @@ const GET_BALANCES_ABI = [
   },
 ];
 
-// Individual balance query (for pools without get_balances)
-const BALANCE_ABI = (idx: number) => [
+const GET_BALANCES_DYN_ABI = [
   {
-    name: "balances",
+    name: "get_balances",
     type: "function",
     stateMutability: "view",
-    inputs: [{ name: "i", type: idx < 0x80 ? "uint256" : "int128" }],
-    outputs: [{ name: "", type: "uint256" }],
+    inputs: [],
+    outputs: [{ name: "", type: "uint256[]" }],
   },
+];
+
+// Individual balance query with int128 index (standard Curve stableswap)
+const BALANCE_INT128_ABI = () => [
+  { name: "balances", type: "function", stateMutability: "view",
+    inputs: [{ name: "i", type: "int128" }],
+    outputs: [{ name: "", type: "uint256" }] },
+];
+
+// Individual balance query with uint256 index (Curve crypto / tricrypto)
+const BALANCE_UINT256_ABI = () => [
+  { name: "balances", type: "function", stateMutability: "view",
+    inputs: [{ name: "i", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }] },
+];
+
+// Stableswap-ng stored_balances(uint256)
+const STORED_BALANCES_ABI = () => [
+  { name: "stored_balances", type: "function", stateMutability: "view",
+    inputs: [{ name: "arg0", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }] },
 ];
 
 const VIRTUAL_PRICE_ABI = [
@@ -119,7 +139,9 @@ export function buildCurveRawState({ balances, A, fee, virtualPrice, fetchedAt =
 export async function fetchCurvePoolState(poolAddress: string, nCoins: number) {
   const PRECISION = 10n ** 18n;
 
-  // Try get_balances() first; fall back to per-index balances()
+  // Try get_balances() first (fixed uint256[8] for legacy); fall back to
+  // dynamic uint256[] (stableswap-ng); then per-index balances() with
+  // int128 (legacy), uint256 (crypto), and stored_balances(uint256) (stableswap-ng).
   let balances: bigint[] = [];
   try {
     const raw = await readContractWithRetry<CurveBalanceList>({
@@ -131,18 +153,40 @@ export async function fetchCurvePoolState(poolAddress: string, nCoins: number) {
       .slice(0, nCoins)
       .map((value) => BigInt(value));
   } catch {
-    // Fall back: query balances(i) for each coin
-    for (let i = 0; i < nCoins; i++) {
-      try {
-        const b = await readContractWithRetry<CurveNumberish>({
-          address: poolAddress,
-          abi: BALANCE_ABI(i),
-          functionName: "balances",
-          args: [i],
-        });
-        balances.push(BigInt(b));
-      } catch {
-        balances.push(0n);
+    try {
+      const raw = await readContractWithRetry<unknown[]>({
+        address: poolAddress,
+        abi: GET_BALANCES_DYN_ABI,
+        functionName: "get_balances",
+      });
+      balances = Array.from(raw as ArrayLike<string | number | bigint | boolean>)
+        .slice(0, nCoins)
+        .map((value) => BigInt(value));
+    } catch {
+      // Fall back: per-index balance functions
+      const fallbackAbis = [BALANCE_INT128_ABI, BALANCE_UINT256_ABI, STORED_BALANCES_ABI];
+      for (const makeAbi of fallbackAbis) {
+        if (balances.length > 0) break;
+        const candidate: bigint[] = [];
+        let allOk = true;
+        for (let i = 0; i < nCoins; i++) {
+          try {
+            const b = await readContractWithRetry<CurveNumberish>({
+              address: poolAddress,
+              abi: makeAbi(),
+              functionName: makeAbi()[0].name,
+              args: [i],
+            });
+            candidate.push(BigInt(b));
+          } catch {
+            allOk = false;
+            break;
+          }
+        }
+        if (allOk && candidate.length === nCoins) balances = candidate;
+      }
+      if (balances.length === 0) {
+        balances = Array(nCoins).fill(0n);
       }
     }
   }

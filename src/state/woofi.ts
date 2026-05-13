@@ -92,6 +92,17 @@ async function readTokenDecimals(token: string): Promise<number> {
   return Number(value);
 }
 
+const UNLIMITED_GAMMA = (1n << 128n) - 1n;
+
+function tryOptionalBigint(value: unknown): bigint | null {
+  if (value == null) return null;
+  try {
+    return toBigIntValue(value);
+  } catch {
+    return null;
+  }
+}
+
 async function fetchTokenInfo(poolAddress: string, token: string): Promise<WoofiTokenInfo> {
   const result = await readContractWithRetry({
     address: poolAddress,
@@ -102,8 +113,8 @@ async function fetchTokenInfo(poolAddress: string, token: string): Promise<Woofi
   return {
     reserve: toBigIntValue(tupleValue(result, 0, "reserve")),
     feeRate: toBigIntValue(tupleValue(result, 1, "feeRate")),
-    maxGamma: toBigIntValue(tupleValue(result, 2, "maxGamma")),
-    maxNotionalSwap: toBigIntValue(tupleValue(result, 3, "maxNotionalSwap")),
+    maxGamma: tryOptionalBigint(tupleValue(result, 2, "maxGamma")) ?? UNLIMITED_GAMMA,
+    maxNotionalSwap: tryOptionalBigint(tupleValue(result, 3, "maxNotionalSwap")) ?? UNLIMITED_GAMMA,
   };
 }
 

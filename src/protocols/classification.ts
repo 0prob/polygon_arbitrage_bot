@@ -7,10 +7,7 @@ export const V2_PROTOCOLS = new Set([
   "SUSHISWAP_V2",
   "UNISWAP_V2",
   "DFYN_V2",
-  "COMETHSWAP_V2",
   "APESWAP_V2",
-  "MESHSWAP_V2",
-  "JETSWAP_V2",
 ]);
 
 export const ALL_V3_PROTOCOLS = new Set([

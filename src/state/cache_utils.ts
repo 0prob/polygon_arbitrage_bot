@@ -22,6 +22,8 @@ type RegistryCacheSource = {
 
 type PendingEnrichmentMap = Map<string, unknown>;
 
+const CORE_STATE_KEYS = new Set(["poolId", "protocol", "tokens", "timestamp", "token0", "token1"]);
+
 export function mergeStateIntoCache(cache: RouteStateCache, addr: string, nextState: RouteState): RouteState {
   const current = cache.get(addr);
   if (!current) {
@@ -30,6 +32,7 @@ export function mergeStateIntoCache(cache: RouteStateCache, addr: string, nextSt
   }
 
   for (const key of Object.keys(current)) {
+    if (CORE_STATE_KEYS.has(key)) continue;
     if (!Object.hasOwn(nextState, key)) {
       delete current[key];
     }

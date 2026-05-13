@@ -856,12 +856,44 @@ export function createWarmupManager(deps: WarmupDeps) {
       return;
     }
 
-    const prioritizedHubPairPools = takeTopNBy(hubPairPools, deps.maxSyncWarmupPools, compareWarmupPriority);
+    const ALL_WARMUP_PROTOCOLS = [WARMUP_V2, WARMUP_V3, WARMUP_BAL, WARMUP_DODO, WARMUP_CRV, WARMUP_WOOFI];
+
+    function distributeBudget(pools: PoolRecord[], budget: number): PoolRecord[] {
+      if (pools.length <= budget) return [...pools];
+      const byProtocol = new Map<string, PoolRecord[]>();
+      for (const pool of pools) {
+        const key = normalizeProtocolKey(pool.protocol);
+        if (!byProtocol.has(key)) byProtocol.set(key, []);
+        byProtocol.get(key)!.push(pool);
+      }
+      for (const [, list] of byProtocol) list.sort(compareWarmupPriority);
+      const numProtocols = byProtocol.size;
+      const maxPerProtocol = Math.max(1, Math.ceil(budget / numProtocols));
+      const result: PoolRecord[] = [];
+      const counters = new Map<string, number>();
+      for (const key of byProtocol.keys()) counters.set(key, 0);
+      const iterators = [...byProtocol.entries()].map(([key, list]) => ({ key, list, idx: 0 }));
+      while (result.length < budget) {
+        let added = false;
+        for (const it of iterators) {
+          if (it.idx >= it.list.length) continue;
+          if ((counters.get(it.key) ?? 0) >= maxPerProtocol) continue;
+          result.push(it.list[it.idx++]);
+          counters.set(it.key, (counters.get(it.key) ?? 0) + 1);
+          added = true;
+          if (result.length >= budget) break;
+        }
+        if (!added) break;
+      }
+      return result;
+    }
+
+    const prioritizedHubPairPools = distributeBudget(hubPairPools, deps.maxSyncWarmupPools);
     const secondaryWarmupBudget = Math.max(0, deps.maxSyncWarmupOneHubPools);
     const secondaryWarmupV3Budget = Math.max(0, deps.maxSyncWarmupOneHubV3Pools);
     const oneHubV3Pools = oneHubPools.filter((pool: PoolRecord) => WARMUP_V3.has(normalizeProtocolKey(pool.protocol)));
     const oneHubNonV3Pools = oneHubPools.filter((pool: PoolRecord) => !WARMUP_V3.has(normalizeProtocolKey(pool.protocol)));
-    const prioritizedOneHubPools = takeTopNBy(oneHubNonV3Pools, secondaryWarmupBudget, compareWarmupPriority);
+    const prioritizedOneHubPools = distributeBudget(oneHubNonV3Pools, secondaryWarmupBudget);
     const prioritizedOneHubV3Pools = takeTopNBy(oneHubV3Pools, secondaryWarmupV3Budget, compareWarmupPriority);
     const syncWarmupPools = [];
 

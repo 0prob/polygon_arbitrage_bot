@@ -30,6 +30,8 @@ import {
   V3_POOL_SWAP_ABI,
   CURVE_EXCHANGE_INT128_ABI,
   CURVE_EXCHANGE_UINT256_ABI,
+  CURVE_EXCHANGE_INT128_RECEIVER_ABI,
+  CURVE_EXCHANGE_UINT256_USE_ETH_ABI,
   BALANCER_VAULT_SWAP_ABI,
   EXECUTOR_ABI,
   EXECUTOR_APPROVE_IF_NEEDED_ABI,
@@ -614,19 +616,39 @@ export function encodeCurveHop(hop: CalldataHop, executor: string, options: Rout
   calls.push(encodeDynamicApprovalCall(executor, tokenIn, pool, amountIn));
 
   // Call 2: Execute the exchange
-  const abi = hop.isCrypto ? CURVE_EXCHANGE_UINT256_ABI : CURVE_EXCHANGE_INT128_ABI;
-  const iIdx = hop.isCrypto ? BigInt(tokenInIdx)  : tokenInIdx;
-  const jIdx = hop.isCrypto ? BigInt(tokenOutIdx) : tokenOutIdx;
+  const proto = String(hop.protocol ?? "");
 
-  calls.push({
-    target: pool,
-    value: 0n,
-    data: encodeFunctionData({
-      abi,
-      functionName: "exchange",
-      args: [iIdx, jIdx, amountIn, minDy],
-    }),
-  });
+  if (proto === "CURVE_STABLESWAP_NG") {
+    calls.push({
+      target: pool,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: CURVE_EXCHANGE_INT128_RECEIVER_ABI,
+        functionName: "exchange",
+        args: [tokenInIdx, tokenOutIdx, amountIn, minDy, executor],
+      }),
+    });
+  } else if (hop.isCrypto) {
+    calls.push({
+      target: pool,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: CURVE_EXCHANGE_UINT256_ABI,
+        functionName: "exchange",
+        args: [BigInt(tokenInIdx), BigInt(tokenOutIdx), amountIn, minDy],
+      }),
+    });
+  } else {
+    calls.push({
+      target: pool,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: CURVE_EXCHANGE_INT128_ABI,
+        functionName: "exchange",
+        args: [tokenInIdx, tokenOutIdx, amountIn, minDy],
+      }),
+    });
+  }
 
   return calls;
 }

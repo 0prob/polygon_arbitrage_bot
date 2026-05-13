@@ -42,22 +42,27 @@ const GAS_BUFFER_BPS = CONFIG_DEFAULT_GAS_BUFFER_BPS;
  * Estimate gas for a transaction via GAS_ESTIMATION_RPC.
  * Returns the raw estimate multiplied by GAS_BUFFER_BPS / 100.
  *
- * @throws if the call reverts (ethers-style: "execution reverted")
+ * On revert or error, returns null (caller should fall back to a hardcoded
+ * estimate or skip the route).
  */
 export async function estimateGas(params: {
   to: Address;
   data: Hex;
   from: Address;
   value?: bigint;
-}): Promise<bigint> {
+}): Promise<bigint | null> {
   const client = getGasClient();
-  const raw = await client.estimateGas({
-    to:    params.to,
-    data:  params.data,
-    account: params.from,
-    value: params.value ?? 0n,
-  });
-  return (raw * BigInt(GAS_BUFFER_BPS)) / 100n;
+  try {
+    const raw = await client.estimateGas({
+      to:    params.to,
+      data:  params.data,
+      account: params.from,
+      value: params.value ?? 0n,
+    });
+    return (raw * BigInt(GAS_BUFFER_BPS)) / 100n;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Pre-flight simulation ────────────────────────────────────────────────────

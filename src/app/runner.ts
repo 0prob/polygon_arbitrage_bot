@@ -775,6 +775,10 @@ export function createTopologyRefreshCoordinator(deps: TopologyRefreshDeps) {
     const oracle = deps.getPriceOracle();
     if (oracle && !oracle.isFresh(deps.maxPriceAgeMs)) {
       oracle.update();
+      const typed = oracle as Record<string, unknown>;
+      if (typeof typed.updateMaticUsd === "function") {
+        (typed.updateMaticUsd as () => Promise<boolean>)().catch(() => {});
+      }
     }
     return oracle;
   }

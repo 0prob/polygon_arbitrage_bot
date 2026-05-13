@@ -19,7 +19,7 @@ function feePipsFromBps(value: string | undefined) {
 const protocol: ProtocolDefinition = {
   name: "KyberSwap Elastic",
   address: FACTORY_ADDRESS,
-  startBlock: 0,
+  startBlock: 26000000,
   capabilities: {
     discovery: true,
     routing: true,

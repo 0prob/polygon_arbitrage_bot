@@ -135,7 +135,7 @@ export function decodeBytes32Text(value: unknown) {
 
 function normalizeHydratedDecimals(value: unknown) {
   const numeric = Number(value);
-  if (!Number.isInteger(numeric) || numeric < 0 || numeric > 255) return null;
+  if (!Number.isInteger(numeric) || numeric < 0 || numeric > 255) return 18;
   return numeric;
 }
 
@@ -322,15 +322,10 @@ export async function hydrateTokensWithDeps(
           nameResolved: meta.filter((m) => m.name !== null).length,
         }, "[token_hydrator] batch decode summary");
 
-        // Only persist entries where decimals resolved — symbol/name are optional
-        const valid = meta.filter((m): m is HydratedTokenMetadata & { decimals: number } => m.decimals !== null);
+        // Persist all entries — decimals defaults to 18 if on-chain call reverts
+        const valid = meta.filter((m): m is HydratedTokenMetadata & { decimals: number } => typeof m.decimals === "number");
         if (valid.length > 0) {
           registry.batchUpsertTokenMeta(valid.map(persistableTokenMetadata));
-        }
-
-        const skipped = meta.length - valid.length;
-        if (skipped > 0) {
-          logger.debug(`[token_hydrator] ${skipped} address(es) returned no decimals (non-ERC20 or call reverted)`);
         }
         return valid.length;
       } catch (err) {

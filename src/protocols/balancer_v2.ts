@@ -15,7 +15,7 @@ import {
 export default createRpcTokenProtocol({
   name: "Balancer V2",
   address: "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-  startBlock: 0,
+  startBlock: 16000000,
   signature:
     "event PoolRegistered(bytes32 indexed poolId, address indexed poolAddress, uint8 specialization)",
   decode(decoded: DecodedEvent) {

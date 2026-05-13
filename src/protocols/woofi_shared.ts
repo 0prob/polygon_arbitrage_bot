@@ -35,8 +35,6 @@ export const WOOFI_POOL_ABI = [
         components: [
           { name: "reserve", type: "uint256" },
           { name: "feeRate", type: "uint16" },
-          { name: "maxGamma", type: "uint128" },
-          { name: "maxNotionalSwap", type: "uint128" },
         ],
       },
     ],

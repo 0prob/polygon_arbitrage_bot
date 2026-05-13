@@ -538,7 +538,9 @@ export function commitWatcherState(
   state: MutableWatcherState,
   rawLog: HyperSyncRawLog,
 ) {
-  state.timestamp = Date.now();
+  if (typeof state.timestamp !== "number" || !Number.isFinite(state.timestamp) || state.timestamp <= 0) {
+    state.timestamp = Date.now();
+  }
   validateWatcherStateOrThrow(state, { addr, rawLog });
   persistState(addr, state, rawLog);
   mergeStateIntoCache(cache, addr, state);
@@ -559,7 +561,9 @@ export function commitWatcherStatesBatch(
     const addr = update.addr.toLowerCase();
     const state = update?.state;
     if (!addr || !state) continue;
-    state.timestamp = committedAt;
+    if (typeof state.timestamp !== "number" || !Number.isFinite(state.timestamp) || state.timestamp <= 0) {
+      state.timestamp = committedAt;
+    }
     validateWatcherStateOrThrow(state, { addr, rawLog: update?.rawLog });
     committed.push({
       pool_address: addr,

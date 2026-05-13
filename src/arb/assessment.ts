@@ -108,7 +108,7 @@ export function assessRouteResult(
     slippageBps: config.slippageBps ?? ASSESSMENT_DEFAULT_SLIPPAGE_BPS,
     revertRiskBps: config.revertRiskBps ?? ASSESSMENT_DEFAULT_REVERT_RISK_BPS,
     flashLoanFeeBps: config.flashLoanFeeBps ?? ASSESSMENT_DEFAULT_FLASH_LOAN_FEE_BPS,
-    minNetProfit: minProfitInTokenUnits(tokenToMaticRate, config.minProfitWei),
+    minNetProfit: minProfitInTokenUnits(effectiveRate ?? 0n, config.minProfitWei),
     hopCount: getPathHopCount(path),
   });
 }

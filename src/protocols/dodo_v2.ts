@@ -14,17 +14,19 @@ function createDodoV2Protocol({
   address,
   eventName,
   poolType,
+  startBlock,
 }: {
   name: string;
   address: string;
   eventName: "NewDVM" | "NewDPP" | "NewDSP";
   poolType: "DVM" | "DPP" | "DSP";
+  startBlock: number;
 }): ProtocolDefinition {
   const poolArgName = poolType.toLowerCase();
   return {
     name,
     address,
-    startBlock: 0,
+    startBlock,
     capabilities: FULLY_SUPPORTED_CAPABILITIES,
     signature: `event ${eventName}(address baseToken, address quoteToken, address creator, address ${poolArgName})`,
     decode(decoded: DecodedEvent) {
@@ -53,6 +55,7 @@ export const DODO_DVM = createDodoV2Protocol({
   address: DVM_FACTORY,
   eventName: "NewDVM",
   poolType: "DVM",
+  startBlock: 17000000,
 });
 
 export const DODO_DPP = createDodoV2Protocol({
@@ -60,6 +63,7 @@ export const DODO_DPP = createDodoV2Protocol({
   address: DPP_FACTORY,
   eventName: "NewDPP",
   poolType: "DPP",
+  startBlock: 17000000,
 });
 
 export const DODO_DSP = createDodoV2Protocol({
@@ -67,4 +71,5 @@ export const DODO_DSP = createDodoV2Protocol({
   address: DSP_FACTORY,
   eventName: "NewDSP",
   poolType: "DSP",
+  startBlock: 17000000,
 });

@@ -11,12 +11,12 @@ import {
   type DecodedEvent,
 } from "./factories.ts";
 
-const REGISTRY_ADDRESS = "0x094d12e5b541784701FD8d65F11fc0598FBC6332";
+const REGISTRY_ADDRESS = "0x90E00ACe148ca3b23Ac1bC8C240C2a7Dd9c2d7f5";
 
 export default createRpcTokenProtocol({
   name: "Curve Main Registry",
   address: REGISTRY_ADDRESS,
-  startBlock: 0,
+  startBlock: 15000000,
   signature: "event PoolAdded(address indexed pool, bytes rate_method_id)",
   decode(decoded: DecodedEvent) {
     // indexed: [pool]; body: [rate_method_id]

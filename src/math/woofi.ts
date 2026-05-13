@@ -117,8 +117,8 @@ export function getWoofiAmountOut(poolState: unknown, amountIn: bigint, tokenIn:
   if (outKey === quoteToken) {
     const baseState = getBaseState(poolState, inKey);
     if (!baseState) return 0n;
-    const grossQuote = calcQuoteAmountSellBase(baseState, amount);
-    const quoteOut = applyWoofiFee(grossQuote, toBigInt(baseState.feeRate));
+    const feeAdjustedBase = applyWoofiFee(amount, toBigInt(baseState.feeRate));
+    const quoteOut = calcQuoteAmountSellBase(baseState, feeAdjustedBase);
     return quoteReserve > 0n && quoteOut <= quoteReserve ? quoteOut : 0n;
   }
 
@@ -140,9 +140,9 @@ export function getWoofiAmountOut(poolState: unknown, amountIn: bigint, tokenIn:
     const right = toBigInt(buyBaseState.spread);
     return (left > right ? left : right) / 2n;
   })();
-  const quoteAmount = calcQuoteAmountSellBase(sellBaseState, amount, sharedSpread);
-  const feeAdjustedQuote = applyWoofiFee(quoteAmount, getWoofiFeeRate(poolState, inKey, outKey));
-  const baseOut = calcBaseAmountSellQuote(buyBaseState, feeAdjustedQuote, sharedSpread);
+  const feeAdjustedBase = applyWoofiFee(amount, getWoofiFeeRate(poolState, inKey, outKey));
+  const quoteAmount = calcQuoteAmountSellBase(sellBaseState, feeAdjustedBase, sharedSpread);
+  const baseOut = calcBaseAmountSellQuote(buyBaseState, quoteAmount, sharedSpread);
   const baseReserve = toBigInt(buyBaseState.reserve);
 
   return baseReserve > 0n && baseOut <= baseReserve ? baseOut : 0n;

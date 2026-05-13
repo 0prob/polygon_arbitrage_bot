@@ -29,7 +29,7 @@ import {
 const protocol: ProtocolDefinition = {
   name: "QuickSwap V3",
   address: "0x411b0fAcC3489691f28ad58c47006AF5E3Ab3A28",
-  startBlock: 0,
+  startBlock: 26000000,
   capabilities: {
     discovery: true,
     routing: true,

@@ -705,7 +705,7 @@ export const PREDICTIVE_CACHE_STALENESS_MS = _num(
 export const MAX_SYNC_WARMUP_POOLS = _num(
   "MAX_SYNC_WARMUP_POOLS",
   "MAX_SYNC_WARMUP_POOLS",
-  400
+  800
 );
 
 /**
@@ -716,7 +716,7 @@ export const MAX_SYNC_WARMUP_POOLS = _num(
 export const MAX_SYNC_WARMUP_V3_POOLS = _num(
   "MAX_SYNC_WARMUP_V3_POOLS",
   "MAX_SYNC_WARMUP_V3_POOLS",
-  Math.min(96, Math.max(32, Math.floor(MAX_SYNC_WARMUP_POOLS * 0.2)))
+  Math.min(48, Math.max(16, Math.floor(MAX_SYNC_WARMUP_POOLS * 0.1)))
 );
 
 /**
@@ -726,7 +726,7 @@ export const MAX_SYNC_WARMUP_V3_POOLS = _num(
 export const MAX_SYNC_WARMUP_ONE_HUB_POOLS = _num(
   "MAX_SYNC_WARMUP_ONE_HUB_POOLS",
   "MAX_SYNC_WARMUP_ONE_HUB_POOLS",
-  160
+  400
 );
 
 /**

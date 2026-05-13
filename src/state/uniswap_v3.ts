@@ -149,10 +149,10 @@ const KYBER_LIQUIDITY_STATE_ABI = [
 
 const KYBER_SWAP_FEE_BPS_ABI = [
   {
-    name: "swapFeeBps",
+    name: "swapFeeUnits",
     type: "function",
     inputs: [],
-    outputs: [{ name: "", type: "uint16" }],
+    outputs: [{ name: "", type: "uint24" }],
     stateMutability: "view",
   },
 ];

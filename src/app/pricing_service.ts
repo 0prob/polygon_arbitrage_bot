@@ -7,6 +7,8 @@ type PriceOracleLike = {
   fromMatic: (tokenAddress: string, maticWei: bigint) => bigint;
   getFreshRate: (tokenAddress: string, maxAgeMs?: number) => bigint;
   getFreshWithStaleFallback?: (tokenAddress: string, maxAgeMs?: number, staleFallbackMs?: number) => bigint;
+  getMaticUsdRate?: () => bigint;
+  maticWeiToUsd?: (maticWei: bigint) => bigint;
 } | null;
 
 type PricingServiceDeps = {

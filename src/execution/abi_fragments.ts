@@ -306,6 +306,66 @@ export const CURVE_EXCHANGE_UINT256_ABI = [
   },
 ];
 
+/**
+ * Curve stableswap-ng exchange — int128 coin indices with receiver.
+ * Used by: CurveStableNG, CurveStableFactory (stableswap-ng pools).
+ *
+ * Stableswap-ng pools add a `receiver` parameter to the exchange
+ * function. The 4-param CURVE_EXCHANGE_INT128_ABI will produce
+ * wrong calldata for these pools.
+ *
+ * @param i        Index of input coin
+ * @param j        Index of output coin
+ * @param dx       Amount of input coin to swap
+ * @param min_dy   Minimum acceptable output
+ * @param receiver Address to receive output tokens
+ */
+export const CURVE_EXCHANGE_INT128_RECEIVER_ABI = [
+  {
+    name: "exchange",
+    type: "function",
+    inputs: [
+      { name: "i",        type: "int128"  },
+      { name: "j",        type: "int128"  },
+      { name: "dx",       type: "uint256" },
+      { name: "min_dy",   type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
+
+/**
+ * Curve Tricrypto exchange — uint256 coin indices with use_eth flag.
+ * Used by: CurveTricryptoNG, CurveCryptoFactory (tricrypto pools).
+ *
+ * Tricrypto pools add a `use_eth` flag to the exchange function.
+ * The 4-param CURVE_EXCHANGE_UINT256_ABI will produce wrong
+ * calldata for these pools.
+ *
+ * @param i        Index of input coin
+ * @param j        Index of output coin
+ * @param dx       Amount of input coin to swap
+ * @param min_dy   Minimum acceptable output
+ * @param use_eth  Whether to use native ETH for the swap
+ */
+export const CURVE_EXCHANGE_UINT256_USE_ETH_ABI = [
+  {
+    name: "exchange",
+    type: "function",
+    inputs: [
+      { name: "i",        type: "uint256" },
+      { name: "j",        type: "uint256" },
+      { name: "dx",       type: "uint256" },
+      { name: "min_dy",   type: "uint256" },
+      { name: "use_eth",  type: "bool"    },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
+
 // ─── Balancer V2 Vault ────────────────────────────────────────
 
 /**

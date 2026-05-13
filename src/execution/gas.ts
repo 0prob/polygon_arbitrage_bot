@@ -172,13 +172,14 @@ function bufferedGasLimit(gasEstimate: bigint, gasMultiplier: number) {
 }
 
 function normalizeGasEstimate(value: unknown) {
+  if (value == null) return null;
   if (typeof value === "bigint") {
-    if (value <= 0n) throw new Error("gas estimate must be > 0");
+    if (value <= 0n) return null;
     return value;
   }
   if (typeof value === "number") {
     if (!Number.isSafeInteger(value) || value <= 0) {
-      throw new Error("gas estimate must be a positive safe integer");
+      return null;
     }
     return BigInt(value);
   }
@@ -186,14 +187,14 @@ function normalizeGasEstimate(value: unknown) {
     typeof value !== "string" &&
     typeof value !== "boolean"
   ) {
-    throw new Error("gas estimate must be a positive integer");
+    return null;
   }
   try {
     const normalized = BigInt(value as BigIntInput);
-    if (normalized <= 0n) throw new Error();
+    if (normalized <= 0n) return null;
     return normalized;
   } catch {
-    throw new Error("gas estimate must be a positive integer");
+    return null;
   }
 }
 
@@ -553,13 +554,14 @@ export async function recommendGasParams(
     gasEstimate = getCachedGasEstimate(gasEstimateCacheKey, nowMs, cacheTtlMs) ?? undefined;
   }
   if (gasEstimate == null) {
-    gasEstimate = normalizeGasEstimate(await estimateGasFn(tx, fromAddress));
+    const raw = await estimateGasFn(tx, fromAddress);
+    gasEstimate = normalizeGasEstimate(raw) ?? undefined;
+    if (gasEstimate == null) {
+      gasEstimate = 500_000n;
+    }
     if (gasEstimateCacheKey) {
       rememberGasEstimate(gasEstimateCacheKey, gasEstimate, nowMs, cacheMaxEntries);
     }
-  }
-  if (gasEstimate == null) {
-    throw new Error("gas estimate unavailable");
   }
   const fees = normalizeFeeSnapshot(feeSnapshot ?? (
     requireFreshFees

@@ -33,16 +33,19 @@ export function normalizeHyperSyncLogInteger(value: unknown) {
 }
 
 export function topicArrayFromHyperSyncLog(log: HyperSyncRawLog) {
-  if (Array.isArray(log?.topics)) {
-    const flattened = log.topics.flatMap((topic: unknown) =>
-      Array.isArray(topic) ? topic : [topic],
-    ).map(normalizeTopic).filter((topic: string) => topic.length > 0);
-    if (flattened.length > 0) return flattened;
-  }
+  const fromTopicArray = Array.isArray(log?.topics) && log.topics.length > 0
+    ? log.topics.flatMap((topic: unknown) =>
+        Array.isArray(topic) ? topic : [topic],
+      ).map(normalizeTopic).filter((topic: string) => topic.length > 0)
+    : null;
+  if (fromTopicArray && fromTopicArray.length > 0) return fromTopicArray;
 
-  return [log?.topic0, log?.topic1, log?.topic2, log?.topic3]
+  const fromIndividual = [log?.topic0, log?.topic1, log?.topic2, log?.topic3]
     .map(normalizeTopic)
     .filter((topic) => topic.length > 0);
+  if (fromIndividual.length > 0) return fromIndividual;
+
+  return fromTopicArray ?? [];
 }
 
 export function normalizeHyperSyncLogMeta(log: HyperSyncRawLog): NormalizedHyperSyncLogMeta {

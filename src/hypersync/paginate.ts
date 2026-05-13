@@ -130,6 +130,7 @@ export async function fetchAllLogsWithClient<TLog>(
 
   // Pre-allocate log array with estimated capacity to reduce reallocations.
   // HyperSync typically returns ~500-2000 logs per page for DEX events.
+  const MAX_ACCUMULATED_LOGS = 5_000_000;
   const allLogs: TLog[] = [];
   let currentQuery = applyHistoricalHyperSyncQueryPolicy(query);
   let archiveHeight: number | null = null;
@@ -159,6 +160,11 @@ export async function fetchAllLogsWithClient<TLog>(
 
     const pageLogs = pageLogsFromResponse(res);
     if (pageLogs.length > 0) {
+      if (allLogs.length + pageLogs.length > MAX_ACCUMULATED_LOGS) {
+        throw new Error(
+          `HyperSync pagination exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs (${allLogs.length} + ${pageLogs.length} from page ${pages}). Consider reducing batch size, narrowing block range, or increasing filter specificity.`,
+        );
+      }
       allLogs.push(...pageLogs);
       consecutiveEmptyPages = 0;
     } else {

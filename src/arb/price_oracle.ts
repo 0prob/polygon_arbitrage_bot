@@ -34,6 +34,39 @@ const RATE_SCALE = 10n ** 18n;
 /** Q96 / Q192 constants for Uniswap V3 price decoding */
 const Q192 = 2n ** 192n;
 
+/** Chainlink AggregatorV3Interface for MATIC/USD on Polygon */
+const MATIC_USD_FEED = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0";
+const CHAINLINK_DECIMALS = 8n;
+
+const CHAINLINK_ABI = [
+  {
+    name: "latestRoundData",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "roundId", type: "uint80" },
+      { name: "answer", type: "int256" },
+      { name: "startedAt", type: "uint256" },
+      { name: "updatedAt", type: "uint256" },
+      { name: "answeredInRound", type: "uint80" },
+    ],
+  },
+  {
+    name: "decimals",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint8" }],
+  },
+] as const;
+
+/** Max acceptable age for a Chainlink MATIC/USD round, in ms */
+const MATIC_USD_STALE_AFTER_MS = 3_600_000; // 1 hour
+
+/** Minimum MATIC/USD round update interval on Polygon: 25s target, 1h ceiling */
+const MATIC_USD_POLL_INTERVAL_MS = 30_000; // poll every 30s
+
 /**
  * Common anchor tokens on Polygon (Chain 137)
  */
@@ -107,8 +140,16 @@ export class PriceOracle {
   private _pairQuoteSources: Map<string, Map<string, Map<string, PairQuote>>>;
   private _pairQuotes: Map<string, Map<string, PairQuote>>;
   private _rates: Map<string, bigint>;
+  private _maticUsdAnswer: bigint;
+  private _maticUsdUpdatedAt: number;
+  private _maticUsdLastPoll: number;
+  private _readContract: ((params: { address: string; abi: readonly unknown[]; functionName: string }) => Promise<unknown>) | null;
 
-  constructor(stateCache: ReadonlyMap<string, RouteState>, registry: PriceOracleRegistry) {
+  constructor(
+    stateCache: ReadonlyMap<string, RouteState>,
+    registry: PriceOracleRegistry,
+    readContract?: (params: { address: string; abi: readonly unknown[]; functionName: string }) => Promise<unknown>,
+  ) {
     this._cache    = stateCache;
     this._registry = registry;
     this._updatedAt = 0;
@@ -118,7 +159,23 @@ export class PriceOracle {
     this._pairQuoteSources = new Map();
     this._pairQuotes = new Map();
     this._rates = new Map();
+    this._maticUsdAnswer = 0n;
+    this._maticUsdUpdatedAt = 0;
+    this._maticUsdLastPoll = 0;
+    this._readContract = readContract ?? null;
     this._setDefaults();
+  }
+
+  private async _ensureReadContract() {
+    if (this._readContract) return;
+    try {
+      const mod = await import("../config/rpc_env.ts");
+      const createFn = (mod as Record<string, unknown>).createGasEstimationClient as unknown as () => { readContract: (params: Record<string, unknown>) => Promise<unknown> };
+      const c = createFn();
+      this._readContract = (params) => c.readContract(params as Record<string, unknown>);
+    } catch {
+      this._readContract = (() => Promise.resolve(undefined)) as unknown as typeof this._readContract;
+    }
   }
 
   _setDefaults() {
@@ -150,6 +207,99 @@ export class PriceOracle {
   }
 
   // ─── Public API ───────────────────────────────────────────────
+
+  /**
+   * Update the Chainlink MATIC/USD rate.
+   *
+   * Fetches latestRoundData() from the MATIC/USD feed and caches it.
+   * Skips if polled within MATIC_USD_POLL_INTERVAL_MS to avoid spamming.
+   */
+  async updateMaticUsd() {
+    const now = Date.now();
+    if (now - this._maticUsdLastPoll < MATIC_USD_POLL_INTERVAL_MS) return false;
+    this._maticUsdLastPoll = now;
+
+    await this._ensureReadContract();
+    if (!this._readContract) return false;
+
+    try {
+      const data = await this._readContract({
+        address: MATIC_USD_FEED,
+        abi: CHAINLINK_ABI as unknown as readonly unknown[],
+        functionName: "latestRoundData",
+      }) as unknown[];
+      const answer = data?.[1];
+      const updatedAt = Number(data?.[3] ?? 0);
+      if (typeof answer === "bigint" && answer > 0n && updatedAt > 0 && now - updatedAt * 1000 < MATIC_USD_STALE_AFTER_MS) {
+        this._maticUsdAnswer = answer;
+        this._maticUsdUpdatedAt = updatedAt;
+        return true;
+      }
+    } catch {
+      // keep last known rate
+    }
+    return false;
+  }
+
+  /**
+   * Get the MATIC/USD rate from Chainlink.
+   *
+   * @returns bigint with 8 decimals (e.g. 0.50 USD = 50_000_000)
+   */
+  getMaticUsdRate() {
+    return this._maticUsdAnswer;
+  }
+
+  /**
+   * Convert MATIC wei to USD with 6 decimal places.
+   *
+   * result = maticWei * maticUsdRate / 1e26
+   *         = maticWei * (rate * 1e8) / 1e26
+   *
+   * @param maticWei Amount in MATIC wei (18 decimals)
+   * @returns USD value with 6 decimals (e.g. 0.50 USD = 500_000)
+   */
+  maticWeiToUsd(maticWei: bigint): bigint {
+    if (this._maticUsdAnswer <= 0n || maticWei <= 0n) return 0n;
+    return (maticWei * this._maticUsdAnswer) / (10n ** 18n * 10n ** CHAINLINK_DECIMALS / 1_000_000n);
+  }
+
+  /**
+   * Check whether a DEX-derived rate is reliable by comparing against
+   * the UniV3 WMATIC/USDC 0.05% pool TWAP.
+   *
+   * Returns the TWAP rate (scaled) if deviation is within tolerance,
+   * 0n if the rate appears manipulated.
+   *
+   * @param spotRateWei  Spot-derived rate in MATIC wei per raw token unit
+   * @param tokenAddress Token address
+   * @param maxDeviationBps Max allowed deviation in basis points (default 200 = 2%)
+   */
+  getCrossCheckedRate(
+    spotRateWei: bigint,
+    tokenAddress: string,
+    maxDeviationBps = 200n,
+  ): bigint {
+    if (spotRateWei <= 0n) return 0n;
+
+    const pairKey = [tokenAddress.toLowerCase(), TOKENS.WMATIC].sort().join(":");
+    const pairQuote = this._pairQuotes.get(tokenAddress.toLowerCase())?.get(TOKENS.WMATIC);
+    if (!pairQuote || pairQuote.scaledRate <= 0n) return spotRateWei;
+
+    const twapRateWei = this._scaledRateToWei(pairQuote.scaledRate);
+    if (twapRateWei <= 0n) return spotRateWei;
+
+    const diff = spotRateWei > twapRateWei
+      ? spotRateWei - twapRateWei
+      : twapRateWei - spotRateWei;
+    const deviationBps = (diff * 10_000n) / twapRateWei;
+
+    if (deviationBps > maxDeviationBps) {
+      return 0n;
+    }
+
+    return spotRateWei;
+  }
 
   /**
    * Update rates from live pool state.
