@@ -1,6 +1,7 @@
 import { logger } from "../utils/logger.ts";
 import type { DecodeResult } from "../protocols/factories.ts";
 import { normalizeEvmAddress } from "../utils/pool_record.ts";
+import { isPolygonSystemContract } from "../utils/identity.ts";
 import { normalizeHyperSyncLogInteger } from "../hypersync/logs.ts";
 
 const discoveryLogger = logger.child({ component: "discovery" });
@@ -59,7 +60,7 @@ export function buildDiscoveredPoolBatch(key: string, extractedPools: Discovered
     ];
     const block = normalizeHyperSyncLogInteger(rawLog.blockNumber);
 
-    if (!poolAddress || tokens.length < 2 || block == null) {
+    if (!poolAddress || tokens.length < 2 || block == null || isPolygonSystemContract(poolAddress)) {
       skipped++;
       continue;
     }

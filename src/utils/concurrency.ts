@@ -46,8 +46,8 @@ export async function mapWithConcurrency<T, R>(
   );
   try {
     await Promise.all(workers);
-  } catch {
-    throw new Error("mapWithConcurrency: one or more workers failed");
+  } catch (err) {
+    throw new Error(`mapWithConcurrency: one or more workers failed: ${(err as Error)?.message ?? String(err)}`);
   }
   return results;
 }

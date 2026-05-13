@@ -14,7 +14,7 @@ import {
 import { normalizeEvmAddress, parsePoolMetadataValue, parsePoolTokensValue } from "../utils/pool_record.ts";
 import { isBalancerProtocol, isV3Protocol, normalizeProtocolKey } from "../protocols/classification.ts";
 import { toBigIntOrNull } from "../utils/bigint.ts";
-import { isRecord } from "../utils/identity.ts";
+import { isPolygonSystemContract, isRecord } from "../utils/identity.ts";
 import type { CompatDatabase } from "./sqlite.ts";
 
 const POOL_STATUSES = new Set(["active", "disabled", "removed"]);
@@ -93,7 +93,10 @@ function normalizeRequiredAddress(value: unknown, label: string) {
 }
 
 function assertPoolAddress(metadata: PoolRecordInput) {
-  normalizeRequiredAddress(metadata.pool_address, `pool_address for protocol ${metadata.protocol}`);
+  const addr = normalizeRequiredAddress(metadata.pool_address, `pool_address for protocol ${metadata.protocol}`);
+  if (isPolygonSystemContract(addr)) {
+    throw new Error(`RegistryService: Polygon system contract address cannot be used as pool: ${addr}`);
+  }
 }
 
 function normalizePoolStatus(value: unknown): PoolStatus {

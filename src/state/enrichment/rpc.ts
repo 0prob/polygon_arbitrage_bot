@@ -357,9 +357,9 @@ export async function throttledMap<T, R>(
   );
   try {
     await Promise.all(workers);
-  } catch {
+  } catch (err) {
     failed = true;
-    throw new Error("throttledMap: one or more workers failed");
+    throw new Error(`throttledMap: one or more workers failed: ${errorMessage(err)}`);
   }
 
   return results;

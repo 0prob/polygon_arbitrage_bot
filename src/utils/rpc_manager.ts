@@ -376,13 +376,26 @@ export class RpcManager {
 
 let _rpcInstance: RpcManager | null = null;
 
+const DEFAULT_FREE_RPCS = [
+  "https://polygon.api.pocket.network",
+  "https://polygon-bor-rpc.publicnode.com",
+  "https://polygon-rpc.com",
+  "https://rpc.ankr.com/polygon",
+  "https://polygon.llamarpc.com",
+  "https://polygon-public.nodies.app",
+  "https://polygon.api.onfinality.io/public",
+  "https://tenderly.rpc.polygon.community",
+];
+
 export function getRpcManagerInstance(): RpcManager {
   if (!_rpcInstance) {
-    const urls = (process.env.POLYGON_RPC || "").split(",").filter(Boolean);
-    if (urls.length === 0) {
-      urls.push("https://polygon-rpc.com");
-    }
-    _rpcInstance = new RpcManager(urls);
+    const primary = (process.env.POLYGON_RPC || "").split(",").filter(Boolean);
+    const extra = (process.env.POLYGON_RPC_URLS || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const urls = [...primary, ...extra, ...DEFAULT_FREE_RPCS];
+    _rpcInstance = new RpcManager([...new Set(urls)]);
     if (process.env.NODE_ENV !== "test") _rpcInstance.start();
   }
   return _rpcInstance;
