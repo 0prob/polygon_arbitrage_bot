@@ -151,24 +151,15 @@ const hyperRpcStateClient = createPublicClient({
 let hyperRpcMulticallAvailable = true;
 
 function requireStateMulticallClient(client: unknown, label: string): StateMulticallClient {
-  const multicall = client != null && typeof client === "object"
-    ? (client as { multicall?: unknown }).multicall
-    : null;
+  const multicall = client != null && typeof client === "object" ? (client as { multicall?: unknown }).multicall : null;
   if (typeof multicall !== "function") {
     throw new Error(`${label} client does not expose multicall()`);
   }
   return client as StateMulticallClient;
 }
 
-
-
 function toHydratorBigInt(value: unknown) {
-  if (
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string"
-  ) {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return BigInt(value);
   }
   throw new Error(`invalid state multicall bigint value: ${String(value)}`);
@@ -183,9 +174,7 @@ function successScalar(result: StateMulticallResult | null | undefined) {
   return result?.status === "success" ? result.result : undefined;
 }
 
-export async function stateMulticallWithFallback<T = StateMulticallResult[]>(
-  params: StateMulticallParams,
-): Promise<T> {
+export async function stateMulticallWithFallback<T = StateMulticallResult[]>(params: StateMulticallParams): Promise<T> {
   if (hyperRpcMulticallAvailable) {
     try {
       const hyperRpcMulticallClient = requireStateMulticallClient(hyperRpcStateClient, "HyperRPC state");
@@ -201,9 +190,7 @@ export async function stateMulticallWithFallback<T = StateMulticallResult[]>(
     } catch (err) {
       if (isEndpointCapabilityError(err)) {
         hyperRpcMulticallAvailable = false;
-        stateHydratorLogger.warn(
-          "[state_multicall_hydrator] HyperRPC does not support multicall here; falling back to RPC manager",
-        );
+        stateHydratorLogger.warn("[state_multicall_hydrator] HyperRPC does not support multicall here; falling back to RPC manager");
       } else {
         stateHydratorLogger.debug(
           { err, blockTag: params.blockTag, callCount: params.contracts.length },

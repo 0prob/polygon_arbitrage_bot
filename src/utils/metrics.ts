@@ -1,4 +1,3 @@
-
 import http from "http";
 import { logger } from "./logger.ts";
 
@@ -6,9 +5,15 @@ import { logger } from "./logger.ts";
 
 type LabelObj = Record<string, unknown>;
 
-interface LabelledCounter { inc(value?: number): void; }
-interface LabelledHistogram { observe(value: number): void; }
-interface LabelledGauge { set(value: number): void; }
+interface LabelledCounter {
+  inc(value?: number): void;
+}
+interface LabelledHistogram {
+  observe(value: number): void;
+}
+interface LabelledGauge {
+  set(value: number): void;
+}
 
 class Counter {
   private _values = new Map<string, number>();
@@ -32,15 +37,21 @@ class Counter {
       labelObj[this._labelNames[i]] = args[i];
     }
     const key = JSON.stringify(labelObj);
-    return { inc: (v) => { this._values.set(key, (this._values.get(key) ?? 0) + (v ?? 1)); } };
+    return {
+      inc: (v) => {
+        this._values.set(key, (this._values.get(key) ?? 0) + (v ?? 1));
+      },
+    };
   }
 
-  private _labelKey(labelsOrLabelObj: string | LabelObj | number | undefined, value: number | undefined): string {
+  private _labelKey(labelsOrLabelObj: string | LabelObj | number | undefined, _value: number | undefined): string {
     if (typeof labelsOrLabelObj === "object" && labelsOrLabelObj != null) return JSON.stringify(labelsOrLabelObj);
     return "{}";
   }
 
-  _collect() { return { type: "counter" as const, values: [...this._values.entries()].map(([k, v]) => ({ labels: k, value: v })) }; }
+  _collect() {
+    return { type: "counter" as const, values: [...this._values.entries()].map(([k, v]) => ({ labels: k, value: v })) };
+  }
 }
 
 class Histogram {
@@ -57,9 +68,7 @@ class Histogram {
   }
 
   observe(labelsOrLabelObj?: string | LabelObj | number, value?: number) {
-    const key = typeof labelsOrLabelObj === "object" && labelsOrLabelObj != null
-      ? JSON.stringify(labelsOrLabelObj)
-      : "{}";
+    const key = typeof labelsOrLabelObj === "object" && labelsOrLabelObj != null ? JSON.stringify(labelsOrLabelObj) : "{}";
     const val = typeof labelsOrLabelObj === "number" ? labelsOrLabelObj : (value ?? 0);
     let counts = this._counts.get(key);
     if (!counts) {
@@ -67,7 +76,10 @@ class Histogram {
       this._counts.set(key, counts);
     }
     for (let i = 0; i < this._buckets.length; i++) {
-      if (val <= this._buckets[i]) { counts[i]++; return; }
+      if (val <= this._buckets[i]) {
+        counts[i]++;
+        return;
+      }
     }
     counts[this._buckets.length]++;
   }
@@ -87,7 +99,10 @@ class Histogram {
           this._counts.set(key, counts);
         }
         for (let i = 0; i < buckets.length; i++) {
-          if (v <= buckets[i]) { counts[i]++; return; }
+          if (v <= buckets[i]) {
+            counts[i]++;
+            return;
+          }
         }
         counts[buckets.length]++;
       },
@@ -120,40 +135,140 @@ class Gauge {
     return { set: (v) => this._values.set(key, v) };
   }
 
-  _collect() { return { type: "gauge" as const, values: [...this._values.entries()].map(([k, v]) => ({ labels: k, value: v })) }; }
+  _collect() {
+    return { type: "gauge" as const, values: [...this._values.entries()].map(([k, v]) => ({ labels: k, value: v })) };
+  }
 }
 
 // ─── Metrics Definitions ───────────────────────────────────────
 
-export const pathsEvaluated = new Counter({ name: "arb_paths_evaluated_total", help: "Total number of arbitrage paths evaluated", labelNames: ["pass"] });
-export const arbsFound = new Counter({ name: "arb_opportunities_found_total", help: "Total number of profitable arbitrage opportunities found", labelNames: ["pass"] });
-export const candidateShortlistSize = new Histogram({ name: "arb_candidate_shortlist_size", help: "Number of candidates shortlisted for optimization", buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] });
-export const candidateOptimizedCount = new Histogram({ name: "arb_candidate_optimized_count", help: "Number of shortlisted candidates that were optimized", buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] });
-export const candidateProfitableCount = new Histogram({ name: "arb_candidate_profitable_count", help: "Number of profitable candidates remaining after assessment", buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] });
-export const candidateProfitableYield = new Histogram({ name: "arb_candidate_profitable_yield_ratio", help: "Profitable candidates divided by shortlisted candidates", buckets: [0, 0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1] });
-export const txAttempted = new Counter({ name: "arb_tx_attempted_total", help: "Total number of transaction attempts", labelNames: ["pass"] });
-export const txSuccessful = new Counter({ name: "arb_tx_successful_total", help: "Total number of successful transactions", labelNames: ["pass"] });
-export const txReverted = new Counter({ name: "arb_tx_reverted_total", help: "Total number of reverted transactions", labelNames: ["pass"] });
-export const profitAccumulator = new Histogram({ name: "arb_profit_accumulated_wei", help: "Accumulated profit in wei", buckets: [1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21] });
-export const txLatency = new Histogram({ name: "arb_tx_latency_ms", help: "Transaction latency in milliseconds", labelNames: ["stage"], buckets: [100, 250, 500, 1000, 2500, 5000, 10000, 30000] });
+export const pathsEvaluated = new Counter({
+  name: "arb_paths_evaluated_total",
+  help: "Total number of arbitrage paths evaluated",
+  labelNames: ["pass"],
+});
+export const arbsFound = new Counter({
+  name: "arb_opportunities_found_total",
+  help: "Total number of profitable arbitrage opportunities found",
+  labelNames: ["pass"],
+});
+export const candidateShortlistSize = new Histogram({
+  name: "arb_candidate_shortlist_size",
+  help: "Number of candidates shortlisted for optimization",
+  buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144],
+});
+export const candidateOptimizedCount = new Histogram({
+  name: "arb_candidate_optimized_count",
+  help: "Number of shortlisted candidates that were optimized",
+  buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144],
+});
+export const candidateProfitableCount = new Histogram({
+  name: "arb_candidate_profitable_count",
+  help: "Number of profitable candidates remaining after assessment",
+  buckets: [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144],
+});
+export const candidateProfitableYield = new Histogram({
+  name: "arb_candidate_profitable_yield_ratio",
+  help: "Profitable candidates divided by shortlisted candidates",
+  buckets: [0, 0.05, 0.1, 0.2, 0.35, 0.5, 0.75, 1],
+});
+export const txAttempted = new Counter({
+  name: "arb_tx_attempted_total",
+  help: "Total number of transaction attempts",
+  labelNames: ["pass"],
+});
+export const txSuccessful = new Counter({
+  name: "arb_tx_successful_total",
+  help: "Total number of successful transactions",
+  labelNames: ["pass"],
+});
+export const txReverted = new Counter({
+  name: "arb_tx_reverted_total",
+  help: "Total number of reverted transactions",
+  labelNames: ["pass"],
+});
+export const profitAccumulator = new Histogram({
+  name: "arb_profit_accumulated_wei",
+  help: "Accumulated profit in wei",
+  buckets: [1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21],
+});
+export const txLatency = new Histogram({
+  name: "arb_tx_latency_ms",
+  help: "Transaction latency in milliseconds",
+  labelNames: ["stage"],
+  buckets: [100, 250, 500, 1000, 2500, 5000, 10000, 30000],
+});
 export const gasPriceGwei = new Gauge({ name: "arb_gas_price_gwei", help: "Current gas price in gwei" });
-export const rpcErrors = new Counter({ name: "arb_rpc_errors_total", help: "Total number of RPC errors encountered", labelNames: ["method"] });
-export const rpcSwitches = new Counter({ name: "arb_rpc_switches_total", help: "Total number of RPC endpoint switches", labelNames: ["reason"] });
-export const rpcLatencyMs = new Histogram({ name: "arb_rpc_latency_ms", help: "RPC endpoint probe latency in milliseconds", labelNames: ["endpoint"], buckets: [10, 50, 100, 250, 500, 1000] });
-export const registryInvalidPools = new Gauge({ name: "arb_registry_invalid_pools", help: "Number of active pools that failed metadata validation" });
+export const rpcErrors = new Counter({
+  name: "arb_rpc_errors_total",
+  help: "Total number of RPC errors encountered",
+  labelNames: ["method"],
+});
+export const rpcSwitches = new Counter({
+  name: "arb_rpc_switches_total",
+  help: "Total number of RPC endpoint switches",
+  labelNames: ["reason"],
+});
+export const rpcLatencyMs = new Histogram({
+  name: "arb_rpc_latency_ms",
+  help: "RPC endpoint probe latency in milliseconds",
+  labelNames: ["endpoint"],
+  buckets: [10, 50, 100, 250, 500, 1000],
+});
+export const registryInvalidPools = new Gauge({
+  name: "arb_registry_invalid_pools",
+  help: "Number of active pools that failed metadata validation",
+});
 export const watcherHealth = new Gauge({ name: "arb_watcher_health", help: "Watcher health status (1 healthy, 0 unhealthy)" });
-export const watcherHalts = new Counter({ name: "arb_watcher_halts_total", help: "Total number of watcher halts by reason category", labelNames: ["reason_category"] });
-export const watcherLastHaltBlock = new Gauge({ name: "arb_watcher_last_halt_block", help: "Most recent block height associated with a watcher halt" });
-export const watcherIntegrityErrorStreak = new Gauge({ name: "arb_watcher_integrity_error_streak", help: "Consecutive watcher integrity error streak" });
+export const watcherHalts = new Counter({
+  name: "arb_watcher_halts_total",
+  help: "Total number of watcher halts by reason category",
+  labelNames: ["reason_category"],
+});
+export const watcherLastHaltBlock = new Gauge({
+  name: "arb_watcher_last_halt_block",
+  help: "Most recent block height associated with a watcher halt",
+});
+export const watcherIntegrityErrorStreak = new Gauge({
+  name: "arb_watcher_integrity_error_streak",
+  help: "Consecutive watcher integrity error streak",
+});
 export const watcherPollLagBlocks = new Gauge({ name: "arb_watcher_poll_lag_blocks", help: "HyperSync watcher lag in blocks" });
 export const watcherLogsPerSecond = new Gauge({ name: "arb_watcher_logs_per_second", help: "Decoded HyperSync logs processed per second" });
-export const watcherDecodeMs = new Histogram({ name: "arb_watcher_decode_ms", help: "Time spent decoding HyperSync logs in milliseconds", buckets: [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500] });
-export const watcherStateCommitMs = new Histogram({ name: "arb_watcher_state_commit_ms", help: "Time spent mutating and committing watcher state in milliseconds", buckets: [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000] });
-export const predictiveCacheTrackedPaths = new Gauge({ name: "arb_predictive_cache_tracked_paths", help: "Number of paths tracked in predictive shadow state cache" });
-export const predictiveCacheCycleTime = new Histogram({ name: "arb_predictive_cache_cycle_time_ms", help: "Time spent in predictive cache pre-computation cycle in milliseconds", buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000] });
-export const predictiveCacheHitRate = new Gauge({ name: "arb_predictive_cache_hit_rate", help: "Ratio of cache hits to total path requests (0-1)" });
-export const txSubmissionLatency = new Histogram({ name: "arb_tx_submission_latency_ms", help: "Transaction submission latency in milliseconds by endpoint type", labelNames: ["endpoint_type", "success"], buckets: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000] });
-export const txSubmissions = new Counter({ name: "arb_tx_submissions_total", help: "Total transaction submissions by endpoint and result", labelNames: ["endpoint_type", "result"] });
+export const watcherDecodeMs = new Histogram({
+  name: "arb_watcher_decode_ms",
+  help: "Time spent decoding HyperSync logs in milliseconds",
+  buckets: [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500],
+});
+export const watcherStateCommitMs = new Histogram({
+  name: "arb_watcher_state_commit_ms",
+  help: "Time spent mutating and committing watcher state in milliseconds",
+  buckets: [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000],
+});
+export const predictiveCacheTrackedPaths = new Gauge({
+  name: "arb_predictive_cache_tracked_paths",
+  help: "Number of paths tracked in predictive shadow state cache",
+});
+export const predictiveCacheCycleTime = new Histogram({
+  name: "arb_predictive_cache_cycle_time_ms",
+  help: "Time spent in predictive cache pre-computation cycle in milliseconds",
+  buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000],
+});
+export const predictiveCacheHitRate = new Gauge({
+  name: "arb_predictive_cache_hit_rate",
+  help: "Ratio of cache hits to total path requests (0-1)",
+});
+export const txSubmissionLatency = new Histogram({
+  name: "arb_tx_submission_latency_ms",
+  help: "Transaction submission latency in milliseconds by endpoint type",
+  labelNames: ["endpoint_type", "success"],
+  buckets: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000],
+});
+export const txSubmissions = new Counter({
+  name: "arb_tx_submissions_total",
+  help: "Total transaction submissions by endpoint and result",
+  labelNames: ["endpoint_type", "result"],
+});
 
 // ─── Telemetry helpers ─────────────────────────────────────────
 
@@ -223,11 +338,7 @@ export function setWatcherHealthy() {
   watcherIntegrityErrorStreak.set(0);
 }
 
-export function recordWatcherHalt(payload: {
-  reason?: unknown;
-  consecutiveIntegrityPollErrors?: unknown;
-  currentLastBlock?: unknown;
-}) {
+export function recordWatcherHalt(payload: { reason?: unknown; consecutiveIntegrityPollErrors?: unknown; currentLastBlock?: unknown }) {
   watcherHealth.set(0);
   watcherIntegrityErrorStreak.set(Math.max(0, Number(payload?.consecutiveIntegrityPollErrors) || 0));
   watcherLastHaltBlock.set(Math.max(0, Number(payload?.currentLastBlock) || 0));
@@ -253,17 +364,33 @@ export function getMetrics() {
 let server: http.Server | null = null;
 
 const allMetrics = () => [
-  pathsEvaluated, arbsFound,
-  txAttempted, txSuccessful, txReverted,
-  txLatency, txSubmissionLatency, txSubmissions,
-  rpcErrors, rpcSwitches,
+  pathsEvaluated,
+  arbsFound,
+  txAttempted,
+  txSuccessful,
+  txReverted,
+  txLatency,
+  txSubmissionLatency,
+  txSubmissions,
+  rpcErrors,
+  rpcSwitches,
   registryInvalidPools,
-  candidateShortlistSize, candidateOptimizedCount, candidateProfitableCount, candidateProfitableYield,
+  candidateShortlistSize,
+  candidateOptimizedCount,
+  candidateProfitableCount,
+  candidateProfitableYield,
   profitAccumulator,
-  watcherHealth, watcherHalts, watcherLastHaltBlock, watcherIntegrityErrorStreak,
-  watcherPollLagBlocks, watcherLogsPerSecond,
-  watcherDecodeMs, watcherStateCommitMs,
-  predictiveCacheTrackedPaths, predictiveCacheHitRate, predictiveCacheCycleTime,
+  watcherHealth,
+  watcherHalts,
+  watcherLastHaltBlock,
+  watcherIntegrityErrorStreak,
+  watcherPollLagBlocks,
+  watcherLogsPerSecond,
+  watcherDecodeMs,
+  watcherStateCommitMs,
+  predictiveCacheTrackedPaths,
+  predictiveCacheHitRate,
+  predictiveCacheCycleTime,
   gasPriceGwei,
 ];
 
@@ -277,9 +404,7 @@ export function startMetricsServer(port = 9090) {
         return collected.values.map((v: any) => ({
           name: m.name ?? m.constructor.name,
           labels: v.labels,
-          ...(collected.type === "histogram"
-            ? { buckets: v.buckets, counts: v.counts }
-            : { value: v.value }),
+          ...(collected.type === "histogram" ? { buckets: v.buckets, counts: v.counts } : { value: v.value }),
         }));
       });
       res.setHeader("Content-Type", "application/json");
@@ -292,8 +417,10 @@ export function startMetricsServer(port = 9090) {
   server = candidateServer;
   candidateServer.once("error", (err: NodeJS.ErrnoException) => {
     if (server === candidateServer) server = null;
-    logger.warn({ event: "metrics_server_start_failed", port, code: err.code, err },
-      `[metrics] Failed to start metrics server on port ${port}; continuing without HTTP endpoint`);
+    logger.warn(
+      { event: "metrics_server_start_failed", port, code: err.code, err },
+      `[metrics] Failed to start metrics server on port ${port}; continuing without HTTP endpoint`,
+    );
   });
   candidateServer.listen(port, () => {
     logger.info(`[metrics] Metrics server listening on port ${port}`);
@@ -301,5 +428,8 @@ export function startMetricsServer(port = 9090) {
 }
 
 export function stopMetricsServer() {
-  if (server) { server.close(); server = null; }
+  if (server) {
+    server.close();
+    server = null;
+  }
 }

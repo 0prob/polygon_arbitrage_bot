@@ -1,4 +1,3 @@
-
 /**
  * src/math/uniswap_v2.js — Constant-product (x*y=k) swap simulator
  *
@@ -8,11 +7,7 @@
  * Works for QuickSwap V2, SushiSwap V2, and other Uniswap V2 forks.
  */
 
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigInt,
-} from "../utils/bigint.ts";
+import { toBigInt } from "../utils/bigint.ts";
 
 // ─── Constants ────────────────────────────────────────────────
 
@@ -23,7 +18,7 @@ const FEE_DENOMINATOR = 1000n;
 type V2PoolStateLike = Record<string, unknown>;
 
 function asPoolState(value: unknown): V2PoolStateLike {
-  return value != null && typeof value === "object" ? value as V2PoolStateLike : {};
+  return value != null && typeof value === "object" ? (value as V2PoolStateLike) : {};
 }
 
 // ─── V2 Swap Simulator ───────────────────────────────────────
@@ -44,7 +39,7 @@ export function getV2AmountOut(
   reserveIn: bigint,
   reserveOut: bigint,
   feeNumerator: bigint = DEFAULT_FEE_NUMERATOR,
-  feeDenominator: bigint = FEE_DENOMINATOR
+  feeDenominator: bigint = FEE_DENOMINATOR,
 ): bigint {
   if (amountIn <= 0n) return 0n;
   if (reserveIn <= 0n || reserveOut <= 0n) return 0n;
@@ -73,7 +68,7 @@ export function getV2AmountIn(
   reserveIn: bigint,
   reserveOut: bigint,
   feeNumerator: bigint = DEFAULT_FEE_NUMERATOR,
-  feeDenominator: bigint = FEE_DENOMINATOR
+  feeDenominator: bigint = FEE_DENOMINATOR,
 ): bigint {
   if (amountOut <= 0n) return 0n;
   if (reserveIn <= 0n || reserveOut <= 0n) return 0n;
@@ -102,7 +97,7 @@ export function simulateV2Swap(
   amountIn: bigint,
   zeroForOne: boolean,
   feeNumerator?: bigint,
-  feeDenominator?: bigint
+  feeDenominator?: bigint,
 ): { amountOut: bigint; gasEstimate: number } {
   if (amountIn <= 0n) {
     return { amountOut: 0n, gasEstimate: 0 };
@@ -117,14 +112,9 @@ export function simulateV2Swap(
   }
 
   const resolvedFeeNumerator = feeNumerator ?? (pool.fee != null ? toBigInt(pool.fee, DEFAULT_FEE_NUMERATOR) : DEFAULT_FEE_NUMERATOR);
-  const resolvedFeeDenominator = feeDenominator ?? (pool.feeDenominator != null ? toBigInt(pool.feeDenominator, FEE_DENOMINATOR) : FEE_DENOMINATOR);
-  const amountOut = getV2AmountOut(
-    amountIn,
-    reserveIn,
-    reserveOut,
-    resolvedFeeNumerator,
-    resolvedFeeDenominator,
-  );
+  const resolvedFeeDenominator =
+    feeDenominator ?? (pool.feeDenominator != null ? toBigInt(pool.feeDenominator, FEE_DENOMINATOR) : FEE_DENOMINATOR);
+  const amountOut = getV2AmountOut(amountIn, reserveIn, reserveOut, resolvedFeeNumerator, resolvedFeeDenominator);
 
   // V2 swaps on Polygon use the transfer-first pattern (ERC20.transfer + pair.swap).
   // Measured on-chain: ~85–95k gas. Use 90k as a conservative estimate.

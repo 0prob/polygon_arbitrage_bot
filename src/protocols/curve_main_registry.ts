@@ -1,15 +1,9 @@
-
 /**
  * src/protocols/curve_main_registry.js — Curve Main Registry protocol definition
  */
 
 import { getCurveTokens } from "../state/enrichment/curve.ts";
-import {
-  createRpcTokenProtocol,
-  decodedBodyString,
-  decodedIndexedString,
-  type DecodedEvent,
-} from "./factories.ts";
+import { createRpcTokenProtocol, decodedBodyString, decodedIndexedString, type DecodedEvent } from "./factories.ts";
 
 const REGISTRY_ADDRESS = "0x90E00ACe148ca3b23Ac1bC8C240C2a7Dd9c2d7f5";
 

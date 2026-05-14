@@ -33,17 +33,11 @@ export class RegistryAssetStore {
   }
 
   getTokenMeta(address: string) {
-    return this.cache.getTokenMeta(
-      address,
-      (normalizedAddress) => getTokenMetaRecord(this.db, normalizedAddress),
-    );
+    return this.cache.getTokenMeta(address, (normalizedAddress) => getTokenMetaRecord(this.db, normalizedAddress));
   }
 
   getTokenDecimals(addresses: string[]) {
-    return this.cache.getTokenDecimals(
-      addresses,
-      (misses) => getTokenDecimalsRecord(this.db, misses),
-    );
+    return this.cache.getTokenDecimals(addresses, (misses) => getTokenDecimalsRecord(this.db, misses));
   }
 
   batchUpsertTokenMeta(tokens: Array<{ address: string; decimals: number; symbol?: string; name?: string }>) {
@@ -62,9 +56,6 @@ export class RegistryAssetStore {
   }
 
   getPoolFee(poolAddress: string) {
-    return this.cache.getPoolFee(
-      poolAddress,
-      (normalizedAddress) => getPoolFeeRecord(this.db, normalizedAddress),
-    );
+    return this.cache.getPoolFee(poolAddress, (normalizedAddress) => getPoolFeeRecord(this.db, normalizedAddress));
   }
 }

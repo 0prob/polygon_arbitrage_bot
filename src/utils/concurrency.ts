@@ -42,7 +42,7 @@ export async function mapWithConcurrency<T, R>(
     worker().catch((err) => {
       failed = true;
       throw err;
-    })
+    }),
   );
   try {
     await Promise.all(workers);

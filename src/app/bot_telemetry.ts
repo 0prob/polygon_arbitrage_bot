@@ -84,12 +84,7 @@ export function createBotTelemetry({
     pathsEvaluated.inc({ pass: getPassCount() }, count);
   }
 
-  function recordCandidateMetrics({
-    candidateCount,
-    topCandidates,
-    optimizedCandidates,
-    profitableRoutes,
-  }: CandidateMetricsUpdate) {
+  function recordCandidateMetrics({ candidateCount, topCandidates, optimizedCandidates, profitableRoutes }: CandidateMetricsUpdate) {
     state.lastCandidateCount = candidateCount;
     state.lastShortlistCount = topCandidates;
     state.lastOptimizedCount = optimizedCandidates;
@@ -171,12 +166,7 @@ export function createBotTelemetry({
     state.lastArbMs = now();
   }
 
-  function setPassErrorState({
-    passCount,
-    consecutiveErrors,
-    lastPassDurationMs,
-    lastUpdateMs,
-  }: PassErrorStateUpdate) {
+  function setPassErrorState({ passCount, consecutiveErrors, lastPassDurationMs, lastUpdateMs }: PassErrorStateUpdate) {
     state.passCount = passCount;
     state.consecutiveErrors = consecutiveErrors;
     state.lastPassDurationMs = lastPassDurationMs;

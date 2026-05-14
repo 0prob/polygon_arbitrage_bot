@@ -1,8 +1,5 @@
 import { detectReorg } from "../state/reorg_detect.ts";
-import type {
-  RollbackGuard,
-  WatcherRollbackResult,
-} from "./watcher_poll_utils.ts";
+import type { RollbackGuard, WatcherRollbackResult } from "./watcher_poll_utils.ts";
 
 export type WatcherRollbackRegistry = {
   getRollbackGuard?: () => unknown;

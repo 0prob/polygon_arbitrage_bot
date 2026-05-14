@@ -1,4 +1,3 @@
-
 /**
  * src/enrichment/rpc.ts — Shared viem public client with multi-RPC switching
  *
@@ -10,18 +9,8 @@
  */
 
 import { errorMessage } from "../../utils/errors.ts";
-import {
-  rpcManager,
-  dynamicPublicClient,
-  isEndpointCapabilityError,
-  isRateLimitError,
-  isRetryableError,
-} from "../../utils/rpc_manager.ts";
-import {
-  RPC_MAX_RETRIES,
-  RPC_BASE_DELAY_MS,
-  RPC_MAX_DELAY_MS,
-} from "../../config/index.ts";
+import { rpcManager, dynamicPublicClient, isEndpointCapabilityError, isRateLimitError, isRetryableError } from "../../utils/rpc_manager.ts";
+import { RPC_MAX_RETRIES, RPC_BASE_DELAY_MS, RPC_MAX_DELAY_MS } from "../../config/index.ts";
 
 // ─── Warn about demo endpoint ──────────────────────────────────
 // Lazy-initialized to avoid circular module initialization deadlock.
@@ -34,7 +23,7 @@ function _warnDemoEndpoint() {
     if (process.env.NODE_ENV !== "test" && (process.env.POLYGON_RPC || "").includes("/v2/demo")) {
       console.warn(
         "WARNING: Using Alchemy demo RPC endpoint — rate limits are extremely low.\n" +
-          "         Set POLYGON_RPC in .env to a real endpoint for production use."
+          "         Set POLYGON_RPC in .env to a real endpoint for production use.",
       );
     }
   } catch {
@@ -54,19 +43,9 @@ type RpcRetryEndpoint = {
   client: unknown;
 };
 
-type RpcRetryMessageFactory = (
-  shortUrl: string,
-  endpoint: RpcRetryEndpoint,
-  attempt: number,
-  reason?: string,
-) => string;
+type RpcRetryMessageFactory = (shortUrl: string, endpoint: RpcRetryEndpoint, attempt: number, reason?: string) => string;
 
-type RpcRetryDelayMessageFactory = (
-  shortUrl: string,
-  delayMs: number,
-  endpoint: RpcRetryEndpoint,
-  attempt: number,
-) => string;
+type RpcRetryDelayMessageFactory = (shortUrl: string, delayMs: number, endpoint: RpcRetryEndpoint, attempt: number) => string;
 
 type RpcRetryOptions = {
   retries?: number;
@@ -95,17 +74,11 @@ type MulticallFailureResult = {
   error?: unknown;
 };
 
-
 export async function executeWithRpcRetry<T, TClient = unknown>(
   fn: (client: TClient, endpoint: RpcRetryEndpoint, attempt: number) => Promise<T> | T,
   options: RpcRetryOptions = {},
 ): Promise<T> {
-  const {
-    retries = RPC_MAX_RETRIES,
-    method = "unknown",
-    onRateLimitMessage = null,
-    onRetryMessage = null,
-  } = options;
+  const { retries = RPC_MAX_RETRIES, method = "unknown", onRateLimitMessage = null, onRetryMessage = null } = options;
 
   let lastError: unknown;
   const capabilityFailedUrls = new Set<string>();
@@ -120,9 +93,7 @@ export async function executeWithRpcRetry<T, TClient = unknown>(
     }
 
     if (rpcManager.areAllEndpointsMethodUnavailable(rpcMethod)) {
-      throw new Error(
-        `RPC method unsupported by all configured endpoints (${rpcManager.endpoints.length}) for ${rpcMethod}`
-      );
+      throw new Error(`RPC method unsupported by all configured endpoints (${rpcManager.endpoints.length}) for ${rpcMethod}`);
     }
 
     const endpoint = rpcManager.checkoutBestEndpoint(rpcMethod);
@@ -139,18 +110,11 @@ export async function executeWithRpcRetry<T, TClient = unknown>(
         capabilityFailedUrls.add(endpoint.url);
         rpcManager.markMethodUnavailable(endpoint.url, rpcMethod);
         if (attempt === 0 && onRateLimitMessage) {
-          console.warn(
-            onRateLimitMessage(rpcManagerShortUrl(endpoint.url), endpoint, attempt, "unsupported for contract reads")
-          );
+          console.warn(onRateLimitMessage(rpcManagerShortUrl(endpoint.url), endpoint, attempt, "unsupported for contract reads"));
         }
-        if (
-          capabilityFailedUrls.size >= rpcManager.endpoints.length ||
-          rpcManager.areAllEndpointsMethodUnavailable(rpcMethod)
-        ) {
+        if (capabilityFailedUrls.size >= rpcManager.endpoints.length || rpcManager.areAllEndpointsMethodUnavailable(rpcMethod)) {
           throw new Error(
-            `RPC method unsupported by all configured endpoints (${rpcManager.endpoints.length}) for ${rpcMethod}: ${
-              errorMessage(error)
-            }`
+            `RPC method unsupported by all configured endpoints (${rpcManager.endpoints.length}) for ${rpcMethod}: ${errorMessage(error)}`,
           );
         }
         continue;
@@ -159,9 +123,7 @@ export async function executeWithRpcRetry<T, TClient = unknown>(
       if (isRateLimitError(error)) {
         rpcManager.markRateLimited(endpoint.url, error, rpcMethod);
         if (attempt === 0 && onRateLimitMessage) {
-          console.warn(
-            onRateLimitMessage(rpcManagerShortUrl(endpoint.url), endpoint, attempt, "rate-limited")
-          );
+          console.warn(onRateLimitMessage(rpcManagerShortUrl(endpoint.url), endpoint, attempt, "rate-limited"));
         }
         continue;
       }
@@ -179,15 +141,10 @@ export async function executeWithRpcRetry<T, TClient = unknown>(
         continue;
       }
 
-      const delay = Math.min(
-        RPC_BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 200,
-        RPC_MAX_DELAY_MS
-      );
+      const delay = Math.min(RPC_BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 200, RPC_MAX_DELAY_MS);
 
       if (attempt === 0 && onRetryMessage) {
-        console.warn(
-          onRetryMessage(rpcManagerShortUrl(endpoint.url), Math.round(delay), endpoint, attempt)
-        );
+        console.warn(onRetryMessage(rpcManagerShortUrl(endpoint.url), Math.round(delay), endpoint, attempt));
       }
 
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -210,16 +167,12 @@ export async function executeWithRpcRetry<T, TClient = unknown>(
  * @throws After RPC_MAX_RETRIES exhausted across all endpoints
  */
 export async function readContractWithRetry<T = unknown>(params: ReadContractWithRetryParams): Promise<T> {
-  return executeWithRpcRetry<T, ReadContractClient>(
-    (client) => client.readContract<T>(params),
-    {
-      method: "eth_call",
-      onRateLimitMessage: (shortUrl, _endpoint, _attempt, reason = "rate-limited") =>
-        `    RPC ${reason} on ${shortUrl}, switching endpoint...`,
-      onRetryMessage: (shortUrl, delayMs) =>
-        `    RPC error on ${shortUrl}, retrying in ${delayMs}ms...`,
-    }
-  );
+  return executeWithRpcRetry<T, ReadContractClient>((client) => client.readContract<T>(params), {
+    method: "eth_call",
+    onRateLimitMessage: (shortUrl, _endpoint, _attempt, reason = "rate-limited") =>
+      `    RPC ${reason} on ${shortUrl}, switching endpoint...`,
+    onRetryMessage: (shortUrl, delayMs) => `    RPC error on ${shortUrl}, retrying in ${delayMs}ms...`,
+  });
 }
 
 /**
@@ -241,9 +194,8 @@ export async function multicallWithRetry<T = unknown[]>(params: MulticallWithRet
       method: "eth_call",
       onRateLimitMessage: (shortUrl, _endpoint, _attempt, reason = "rate-limited") =>
         `    RPC ${reason} on ${shortUrl} during multicall, switching endpoint...`,
-      onRetryMessage: (shortUrl, delayMs) =>
-        `    RPC multicall error on ${shortUrl}, retrying in ${delayMs}ms...`,
-    }
+      onRetryMessage: (shortUrl, delayMs) => `    RPC multicall error on ${shortUrl}, retrying in ${delayMs}ms...`,
+    },
   );
 }
 
@@ -257,10 +209,8 @@ function multicallBatchTransportFailure(params: MulticallWithRetryParams, result
   const resultCountMismatch = expectedResults != null && results.length !== expectedResults;
   if (!everyReturnedResultFailed && !resultCountMismatch) return null;
 
-  const retryableFailures = failures.filter((result) =>
-    isRetryableError(result.error) ||
-    isEndpointCapabilityError(result.error) ||
-    isRateLimitError(result.error)
+  const retryableFailures = failures.filter(
+    (result) => isRetryableError(result.error) || isEndpointCapabilityError(result.error) || isRateLimitError(result.error),
   );
   if (retryableFailures.length !== failures.length) return null;
   return retryableFailures[0]?.error ?? null;
@@ -339,16 +289,12 @@ export async function throttledMap<T, R>(
     }
   }
 
-  const workerCount = Math.max(
-    1,
-    Math.min(Math.floor(Number(concurrency) || 1), items.length),
-  );
-  const workers = Array.from(
-    { length: workerCount },
-    () => worker().catch((err) => {
+  const workerCount = Math.max(1, Math.min(Math.floor(Number(concurrency) || 1), items.length));
+  const workers = Array.from({ length: workerCount }, () =>
+    worker().catch((err) => {
       failed = true;
       throw err;
-    })
+    }),
   );
   try {
     await Promise.all(workers);
@@ -389,7 +335,6 @@ export async function fetchBlockRollbackGuard(): Promise<Record<string, unknown>
     } finally {
       rpcManager.releaseEndpoint(endpoint.url);
     }
-  } catch {
-  }
+  } catch {}
   return null;
 }

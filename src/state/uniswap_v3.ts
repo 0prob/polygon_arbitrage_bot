@@ -1,4 +1,3 @@
-
 /**
  * src/state/uniswap_v3.ts — Uniswap V3 / Algebra pool state fetcher
  *
@@ -17,76 +16,15 @@
  */
 
 import { chunk } from "../utils/concurrency.ts";
-import {
-  isNoDataReadContractError,
-  multicallWithRetry,
-  readContractWithRetry,
-  throttledMap,
-} from "../state/enrichment/rpc.ts";
-import {
-  ENRICH_CONCURRENCY,
-  V3_BITMAP_MULTICALL_CHUNK_SIZE,
-  V3_TICKS_MULTICALL_CHUNK_SIZE,
-} from "../config/index.ts";
+import { isNoDataReadContractError, multicallWithRetry, readContractWithRetry, throttledMap } from "../state/enrichment/rpc.ts";
+import { ENRICH_CONCURRENCY, V3_BITMAP_MULTICALL_CHUNK_SIZE, V3_TICKS_MULTICALL_CHUNK_SIZE } from "../config/index.ts";
 import { isEndpointCapabilityError } from "../utils/rpc_manager.ts";
 import { errorMessage } from "../utils/errors.ts";
-import {
-  fetchV3PoolCoreSnapshots,
-  type StateReadBlockTag,
-} from "./state_multicall_hydrator.ts";
+import { fetchV3PoolCoreSnapshots, type StateReadBlockTag } from "./state_multicall_hydrator.ts";
 
 // ─── ABI fragments ───────────────────────────────────────────
 
-const SLOT0_ABI = [
-  {
-    name: "slot0",
-    type: "function",
-    inputs: [],
-    outputs: [
-      { name: "sqrtPriceX96", type: "uint160" },
-      { name: "tick", type: "int24" },
-      { name: "observationIndex", type: "uint16" },
-      { name: "observationCardinality", type: "uint16" },
-      { name: "observationCardinalityNext", type: "uint16" },
-      { name: "feeProtocol", type: "uint8" },
-      { name: "unlocked", type: "bool" },
-    ],
-    stateMutability: "view",
-  },
-];
-
-const LIQUIDITY_ABI = [
-  {
-    name: "liquidity",
-    type: "function",
-    inputs: [],
-    outputs: [{ name: "", type: "uint128" }],
-    stateMutability: "view",
-  },
-];
-
-const TICK_SPACING_ABI = [
-  {
-    name: "tickSpacing",
-    type: "function",
-    inputs: [],
-    outputs: [{ name: "", type: "int24" }],
-    stateMutability: "view",
-  },
-];
-
-const FEE_ABI = [
-  {
-    name: "fee",
-    type: "function",
-    inputs: [],
-    outputs: [{ name: "", type: "uint24" }],
-    stateMutability: "view",
-  },
-];
-
-/**
- * Algebra Protocol (QuickSwap V3) globalState() ABI.
+/** Algebra Protocol (QuickSwap V3) globalState() ABI.
  *
  * Combines slot0 + fee into one call. Dynamic fee is stored in the pool
  * and may change per-block via the fee manager.
@@ -100,24 +38,6 @@ const FEE_ABI = [
  *   [5] communityFeeToken1  uint8
  *   [6] unlocked       bool
  */
-const GLOBAL_STATE_ABI = [
-  {
-    name: "globalState",
-    type: "function",
-    inputs: [],
-    outputs: [
-      { name: "sqrtPriceX96", type: "uint160" },
-      { name: "tick", type: "int24" },
-      { name: "fee", type: "uint16" },
-      { name: "timepointIndex", type: "uint16" },
-      { name: "communityFeeToken0", type: "uint8" },
-      { name: "communityFeeToken1", type: "uint8" },
-      { name: "unlocked", type: "bool" },
-    ],
-    stateMutability: "view",
-  },
-];
-
 const KYBER_POOL_STATE_ABI = [
   {
     name: "getPoolState",
@@ -257,17 +177,10 @@ type V3MulticallResult = {
   error?: unknown;
 };
 
-type V3FetchResult =
-  | { addr: string; state: V3PoolState; error: null }
-  | { addr: string; state: null; error: unknown };
+type V3FetchResult = { addr: string; state: V3PoolState; error: null } | { addr: string; state: null; error: unknown };
 
 function toV3BigInt(value: unknown) {
-  if (
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string"
-  ) {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return BigInt(value);
   }
   throw new Error(`invalid V3 bigint value: ${String(value)}`);
@@ -335,8 +248,6 @@ function extractTicksFromWord(word: bigint, wordPos: number, tickSpacing: number
   return ticks;
 }
 
-
-
 function normalizeOptionalSwapFeeBps(value: unknown): number | null {
   if (value == null || value === "") return null;
   const n = Number(value);
@@ -367,21 +278,20 @@ export async function fetchPoolCore(
   options: { blockTag?: StateReadBlockTag } = {},
 ): Promise<PoolCoreState> {
   if (isKyberElastic) {
-    const providedSwapFeeBps =
-      normalizeOptionalSwapFeeBps(swapFeeBps) ?? normalizeOptionalSwapFeeBps(swapFeeUnits);
+    const providedSwapFeeBps = normalizeOptionalSwapFeeBps(swapFeeBps) ?? normalizeOptionalSwapFeeBps(swapFeeUnits);
     const [poolStateResult, liquidityStateResult, tickDistanceResult] = await Promise.all([
-        readContractWithRetry<V3TupleResult>({
-          address: poolAddress,
-          abi: KYBER_POOL_STATE_ABI,
-          functionName: "getPoolState",
-          blockTag: options.blockTag,
-        }),
-        readContractWithRetry<V3TupleResult>({
-          address: poolAddress,
-          abi: KYBER_LIQUIDITY_STATE_ABI,
-          functionName: "getLiquidityState",
-          blockTag: options.blockTag,
-        }),
+      readContractWithRetry<V3TupleResult>({
+        address: poolAddress,
+        abi: KYBER_POOL_STATE_ABI,
+        functionName: "getPoolState",
+        blockTag: options.blockTag,
+      }),
+      readContractWithRetry<V3TupleResult>({
+        address: poolAddress,
+        abi: KYBER_LIQUIDITY_STATE_ABI,
+        functionName: "getLiquidityState",
+        blockTag: options.blockTag,
+      }),
       readContractWithRetry({
         address: poolAddress,
         abi: KYBER_TICK_DISTANCE_ABI,
@@ -389,12 +299,14 @@ export async function fetchPoolCore(
         blockTag: options.blockTag,
       }),
     ]);
-    const swapFeeBpsResult = providedSwapFeeBps ?? await readContractWithRetry({
-      address: poolAddress,
-      abi: KYBER_SWAP_FEE_BPS_ABI,
-      functionName: "swapFeeBps",
-      blockTag: options.blockTag,
-    });
+    const swapFeeBpsResult =
+      providedSwapFeeBps ??
+      (await readContractWithRetry({
+        address: poolAddress,
+        abi: KYBER_SWAP_FEE_BPS_ABI,
+        functionName: "swapFeeBps",
+        blockTag: options.blockTag,
+      }));
 
     const baseLiquidity = toV3BigInt(liquidityStateResult[0]);
     const reinvestLiquidity = toV3BigInt(liquidityStateResult[1]);
@@ -412,19 +324,13 @@ export async function fetchPoolCore(
   }
 
   if (isAlgebra) {
-    const snapshots = await fetchV3PoolCoreSnapshots(
-      [{ address: poolAddress, isAlgebra: true }],
-      { blockTag: options.blockTag },
-    );
+    const snapshots = await fetchV3PoolCoreSnapshots([{ address: poolAddress, isAlgebra: true }], { blockTag: options.blockTag });
     const core = snapshots.get(poolAddress.toLowerCase());
     if (!core) throw new Error(`V3 core multicall returned no data for ${poolAddress}`);
     return core;
   }
 
-  const snapshots = await fetchV3PoolCoreSnapshots(
-    [{ address: poolAddress, isAlgebra: false }],
-    { blockTag: options.blockTag },
-  );
+  const snapshots = await fetchV3PoolCoreSnapshots([{ address: poolAddress, isAlgebra: false }], { blockTag: options.blockTag });
   const core = snapshots.get(poolAddress.toLowerCase());
   if (!core) throw new Error(`V3 core multicall returned no data for ${poolAddress}`);
   return core;
@@ -440,10 +346,7 @@ export async function fetchPoolCore(
  * @param {number} tickSpacing  Pool tick spacing
  * @returns {Promise<{ bitmaps: Map<number, bigint>, tickIndices: number[] }>}
  */
-export async function fetchTickBitmap(
-  poolAddress: string,
-  tickSpacing: number
-): Promise<TickBitmapResult> {
+export async function fetchTickBitmap(poolAddress: string, tickSpacing: number): Promise<TickBitmapResult> {
   const { minWord, maxWord } = wordRange(tickSpacing);
   return fetchTickBitmapWordRange(poolAddress, tickSpacing, minWord, maxWord);
 }
@@ -476,10 +379,10 @@ async function fetchTickBitmapWordRange(
 
       let results: V3MulticallResult[];
       try {
-        results = await multicallWithRetry({
+        results = (await multicallWithRetry({
           contracts,
           allowFailure: true,
-        }) as V3MulticallResult[];
+        })) as V3MulticallResult[];
       } catch (error) {
         // Fall back only when multicall is unsupported. Retrying a rate-limit or
         // transport failure as per-word reads multiplies RPC load during warmup.
@@ -497,7 +400,7 @@ async function fetchTickBitmapWordRange(
             } catch {
               return { status: "failure", result: 0n };
             }
-          })
+          }),
         );
       }
 
@@ -511,7 +414,7 @@ async function fetchTickBitmapWordRange(
         tickIndices.push(...extractTicksFromWord(word, wordPos, tickSpacing));
       }
     },
-    ENRICH_CONCURRENCY
+    ENRICH_CONCURRENCY,
   );
 
   return { bitmaps, tickIndices: tickIndices.sort((a, b) => a - b) };
@@ -537,10 +440,7 @@ export async function fetchTickBitmapWindow(
  * @param {number[]} tickIndices   Array of initialized tick values
  * @returns {Map<number, { liquidityGross: bigint, liquidityNet: bigint }>}
  */
-export async function fetchTickData(
-  poolAddress: string,
-  tickIndices: number[]
-): Promise<Map<number, TickLiquidity>> {
+export async function fetchTickData(poolAddress: string, tickIndices: number[]): Promise<Map<number, TickLiquidity>> {
   const tickMap = new Map<number, TickLiquidity>();
 
   if (tickIndices.length === 0) return tickMap;
@@ -559,10 +459,10 @@ export async function fetchTickData(
 
       let results: V3MulticallResult[];
       try {
-        results = await multicallWithRetry({
+        results = (await multicallWithRetry({
           contracts,
           allowFailure: true,
-        }) as V3MulticallResult[];
+        })) as V3MulticallResult[];
       } catch (error) {
         // Preserve existing behavior only if multicall cannot be used.
         if (!shouldFallbackToIndividualV3Reads(error)) throw error;
@@ -579,7 +479,7 @@ export async function fetchTickData(
             } catch {
               return { status: "failure" };
             }
-          })
+          }),
         );
       }
 
@@ -597,16 +497,14 @@ export async function fetchTickData(
         });
       }
     },
-    ENRICH_CONCURRENCY
+    ENRICH_CONCURRENCY,
   );
 
   return tickMap;
 }
 
 async function fetchKyberTickData(poolAddress: string, tickIndices: number[]) {
-  const uniqueTicks = [...new Set(tickIndices)]
-    .filter((tick) => Number.isSafeInteger(tick))
-    .sort((a, b) => a - b);
+  const uniqueTicks = [...new Set(tickIndices)].filter((tick) => Number.isSafeInteger(tick)).sort((a, b) => a - b);
   const tickMap = new Map<number, TickLiquidity>();
   if (uniqueTicks.length === 0) return tickMap;
 
@@ -636,11 +534,7 @@ async function fetchKyberTickData(poolAddress: string, tickIndices: number[]) {
   return tickMap;
 }
 
-async function fetchKyberInitializedTickWindow(
-  poolAddress: string,
-  centerTick: number,
-  tickRadius: number,
-) {
+async function fetchKyberInitializedTickWindow(poolAddress: string, centerTick: number, tickRadius: number) {
   const radius = Math.max(0, Math.min(Math.trunc(Number(tickRadius) || 0), 64));
   const tickSet = new Set<number>();
   if (Number.isSafeInteger(centerTick)) tickSet.add(centerTick);
@@ -715,18 +609,22 @@ export async function fetchV3PoolState(
     hydrationMode = "full",
     nearWordRadius = 2,
     blockTag,
-  }: V3PoolMeta & V3FetchOptions = {}
+  }: V3PoolMeta & V3FetchOptions = {},
 ): Promise<V3PoolState> {
   // Step 1: Core state (dispatches to Algebra or Uniswap V3 interface)
   const useAlgebraInterface = isAlgebra === true;
-  const core = await fetchPoolCore(poolAddress, {
-    isAlgebra: useAlgebraInterface,
-    isKyberElastic,
-    swapFeeBps,
-    swapFeeUnits,
-  }, {
-    blockTag,
-  });
+  const core = await fetchPoolCore(
+    poolAddress,
+    {
+      isAlgebra: useAlgebraInterface,
+      isKyberElastic,
+      swapFeeBps,
+      swapFeeUnits,
+    },
+    {
+      blockTag,
+    },
+  );
 
   // Skip pools that are uninitialized (sqrtPriceX96 == 0)
   if (core.sqrtPriceX96 === 0n) {
@@ -747,11 +645,7 @@ export async function fetchV3PoolState(
   let tickIndices: number[] = [];
   let ticks = new Map<number, TickLiquidity>();
   if (isKyberElastic && hydrationMode !== "none") {
-    const tickWindow = await fetchKyberInitializedTickWindow(
-      poolAddress,
-      core.nearestCurrentTick ?? core.tick,
-      nearWordRadius,
-    );
+    const tickWindow = await fetchKyberInitializedTickWindow(poolAddress, core.nearestCurrentTick ?? core.tick, nearWordRadius);
     bitmaps = tickWindow.bitmaps;
     tickIndices = tickWindow.tickIndices;
     ticks = tickWindow.ticks;
@@ -759,12 +653,7 @@ export async function fetchV3PoolState(
     if (hydrationMode === "full") {
       ({ bitmaps, tickIndices } = await fetchTickBitmap(poolAddress, core.tickSpacing));
     } else if (hydrationMode === "nearby") {
-      ({ bitmaps, tickIndices } = await fetchTickBitmapWindow(
-        poolAddress,
-        core.tickSpacing,
-        core.tick,
-        nearWordRadius,
-      ));
+      ({ bitmaps, tickIndices } = await fetchTickBitmapWindow(poolAddress, core.tickSpacing, core.tick, nearWordRadius));
     }
 
     // Algebra ticks() returns the same types as Uniswap V3, so TICKS_ABI is
@@ -840,7 +729,7 @@ export async function fetchMultipleV3States(
         }
       }
     },
-    concurrency
+    concurrency,
   );
 
   for (const { addr, state } of results) {

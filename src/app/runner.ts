@@ -69,7 +69,11 @@ import { poolLiquidityWmatic } from "../routing/liquidity.ts";
 import { printStartupBanner } from "./helpers";
 import { recordWatcherHalt as defaultRecordWatcherHalt } from "../utils/metrics.ts";
 import { routeIdentityFromEdges } from "../routing/route_identity.ts";
-import { setWatcherHealthy, startMetricsServer as defaultStartMetricsServer, stopMetricsServer as defaultStopMetricsServer } from "../utils/metrics.ts";
+import {
+  setWatcherHealthy,
+  startMetricsServer as defaultStartMetricsServer,
+  stopMetricsServer as defaultStopMetricsServer,
+} from "../utils/metrics.ts";
 import { takeTopNBy } from "../utils/bounded_priority.ts";
 import { toFiniteNumber as normaliseLogWeight } from "../utils/bigint.ts";
 import { validatePoolState as defaultValidatePoolState } from "../state/normalizer.ts";
@@ -131,11 +135,7 @@ export type WatcherHaltEvent = {
   payload: Record<string, unknown>;
 };
 
-export type RuntimeEvent =
-  | PoolsChangedEvent
-  | ReorgDetectedEvent
-  | PoolsDiscoveredEvent
-  | WatcherHaltEvent;
+export type RuntimeEvent = PoolsChangedEvent | ReorgDetectedEvent | PoolsDiscoveredEvent | WatcherHaltEvent;
 
 export type RuntimeState = RouteState;
 export type RuntimeStateCache = RouteStateCache;
@@ -275,10 +275,13 @@ type DiscoveryRefreshDeps = {
   log: LoggerFn;
   getRepositories: () => Pick<RegistryRepositories, "pools"> | null;
   stateCache: StateCache;
-  getWatcher: () => {
-    addPools: (poolAddresses: string[]) => Promise<unknown>;
-    backfillPools?: (poolAddresses: string[]) => Promise<unknown>;
-  } | null | undefined;
+  getWatcher: () =>
+    | {
+        addPools: (poolAddresses: string[]) => Promise<unknown>;
+        backfillPools?: (poolAddresses: string[]) => Promise<unknown>;
+      }
+    | null
+    | undefined;
   isHydratablePool: (pool: PoolRecordDiscovery) => boolean;
   claimDeferredHydration: (pools: PoolRecordDiscovery[]) => PoolRecordDiscovery[];
   releaseDeferredHydration: (pools: PoolRecordDiscovery[]) => void;
@@ -379,19 +382,11 @@ export function normalizeChangedPools(value: unknown): Set<string> {
   }
 
   if (value instanceof Set || Array.isArray(value)) {
-    return new Set(
-      [...value]
-        .map(normalizePoolAddressLike)
-        .filter((entry): entry is string => entry != null),
-    );
+    return new Set([...value].map(normalizePoolAddressLike).filter((entry): entry is string => entry != null));
   }
 
   if (typeof (value as { [Symbol.iterator]?: unknown })?.[Symbol.iterator] === "function") {
-    return new Set(
-      [...value as Iterable<unknown>]
-        .map(normalizePoolAddressLike)
-        .filter((entry): entry is string => entry != null),
-    );
+    return new Set([...(value as Iterable<unknown>)].map(normalizePoolAddressLike).filter((entry): entry is string => entry != null));
   }
 
   return new Set();
@@ -441,12 +436,7 @@ type PassRunnerDeps = {
     totalProfitWei?: bigint;
     lastProfitWei?: bigint;
   }) => void;
-  setBotErrorState?: (update: {
-    passCount: number;
-    consecutiveErrors: number;
-    lastPassDurationMs: number;
-    lastUpdateMs: number;
-  }) => void;
+  setBotErrorState?: (update: { passCount: number; consecutiveErrors: number; lastPassDurationMs: number; lastUpdateMs: number }) => void;
   log: LoggerFn;
   trackBackgroundTask: (task: Promise<unknown>) => void;
   maybeRunDiscovery: () => Promise<unknown>;
@@ -465,10 +455,7 @@ type PassRunnerDeps = {
   recordTxAttempt?: (success: boolean, profitWei?: bigint) => void;
 };
 
-function formatDisplayedOpportunities(
-  candidates: CandidateLike[],
-  deps: Pick<PassRunnerDeps, "formatProfit" | "roiForCandidate">,
-) {
+function formatDisplayedOpportunities(candidates: CandidateLike[], deps: Pick<PassRunnerDeps, "formatProfit" | "roiForCandidate">) {
   return candidates.slice(0, 5).map((candidate) => ({
     Route: candidate.path.edges.map((edge) => edge.protocol).join(" -> "),
     Profit: deps.formatProfit(candidate.assessment?.netProfitAfterGas ?? candidate.assessment?.netProfit ?? 0n, candidate.path.startToken),
@@ -491,15 +478,17 @@ export function createPassRunner(deps: PassRunnerDeps) {
     });
 
     try {
-      deps.trackBackgroundTask((async () => {
-        const result = await deps.maybeRunDiscovery();
-        await deps.reconcileDiscoveryResult(result);
-      })().catch((err: unknown) => {
-        deps.log(`Background discovery error: ${errorMessage(err)}`, "warn", {
-          event: "discovery_bg_error",
-          err,
-        });
-      }));
+      deps.trackBackgroundTask(
+        (async () => {
+          const result = await deps.maybeRunDiscovery();
+          await deps.reconcileDiscoveryResult(result);
+        })().catch((err: unknown) => {
+          deps.log(`Background discovery error: ${errorMessage(err)}`, "warn", {
+            event: "discovery_bg_error",
+            err,
+          });
+        }),
+      );
 
       await deps.refreshCycles();
       await deps.maybeHydrateQuietPools().catch((err: unknown) => {
@@ -550,8 +539,11 @@ export function createPassRunner(deps: PassRunnerDeps) {
         const executionResult = await deps.executeBatchIfIdle(opportunities.slice(0, deps.maxExecutionBatch), "run_pass");
         if (executionResult && typeof executionResult === "object") {
           const result = executionResult as {
-            submitted?: boolean; confirmed?: boolean; error?: unknown;
-            txHash?: string; txHashes?: string[];
+            submitted?: boolean;
+            confirmed?: boolean;
+            error?: unknown;
+            txHash?: string;
+            txHashes?: string[];
             profitWei?: bigint[];
           };
           if (result.submitted) {
@@ -791,9 +783,7 @@ export function createTopologyRefreshCoordinator(deps: TopologyRefreshDeps) {
 
   function getRateWei() {
     const oracle = refreshPriceOracleIfStale();
-    return oracle
-      ? ((addr: string) => oracle.getFreshRate(addr, deps.maxPriceAgeMs))
-      : null;
+    return oracle ? (addr: string) => oracle.getFreshRate(addr, deps.maxPriceAgeMs) : null;
   }
 
   async function refreshCycles(force = false) {
@@ -821,15 +811,14 @@ type HydrationBacklogStats = {
   observedUnroutablePools: number;
   unsupportedPools: number;
 };
-type RoutingGraphLike = Pick<RoutingGraph, "adjacency" | "tokens" | "hasToken" | "getEdges" | "getEdgesBetween" | "addPool" | "upsertPool" | "removePool" | "getPoolEdge"> & {
+type RoutingGraphLike = Pick<
+  RoutingGraph,
+  "adjacency" | "tokens" | "hasToken" | "getEdges" | "getEdgesBetween" | "addPool" | "upsertPool" | "removePool" | "getPoolEdge"
+> & {
   _edgesByPool: Map<string, SwapEdge[]>;
 };
 type WorkerEnumerator = {
-  enumerate: (
-    topology: SerializedTopology,
-    startTokens: string[],
-    options: Record<string, unknown>,
-  ) => Promise<SerializedEnumeratedPath[]>;
+  enumerate: (topology: SerializedTopology, startTokens: string[], options: Record<string, unknown>) => Promise<SerializedEnumeratedPath[]>;
 };
 type RegistryAdapter = {
   getActivePoolsMeta: () => PoolRecordBase[];
@@ -867,10 +856,7 @@ type TopologyServiceDeps = {
 export function createTopologyService(deps: TopologyServiceDeps) {
   const topologyCache = createTopologyCache(deps.maxTotalPaths);
   const routingMaxHops = Math.max(2, Math.floor(Number(deps.routingMaxHops) || 4));
-  const routingMinHops = Math.min(
-    routingMaxHops,
-    Math.max(2, Math.floor(Number(deps.routingMinHops ?? 2) || 2)),
-  );
+  const routingMinHops = Math.min(routingMaxHops, Math.max(2, Math.floor(Number(deps.routingMinHops ?? 2) || 2)));
 
   let hubGraph: RoutingGraphLike | null = null;
   let fullGraph: RoutingGraphLike | null = null;
@@ -881,8 +867,8 @@ export function createTopologyService(deps: TopologyServiceDeps) {
   let cycleRefreshPromise: Promise<ArbPathLike[]> | null = null;
   let queuedRefreshPromise: Promise<ArbPathLike[]> | null = null;
   let queuedRefreshForce = false;
-  let dirtyPoolAddresses = new Set<string>();
-  let dirtyHubStartTokens = new Set<string>();
+  const dirtyPoolAddresses = new Set<string>();
+  const dirtyHubStartTokens = new Set<string>();
 
   function cycleModeOptions(include4Hop: boolean) {
     if (deps.routingCycleMode === "triangular") {
@@ -904,7 +890,10 @@ export function createTopologyService(deps: TopologyServiceDeps) {
     };
   }
 
-  function liquidityAwareEnumerationCap(baseCap: number, options: { minLiquidityWmatic: bigint; getRateWei?: ((token: string) => bigint) | null }) {
+  function liquidityAwareEnumerationCap(
+    baseCap: number,
+    options: { minLiquidityWmatic: bigint; getRateWei?: ((token: string) => bigint) | null },
+  ) {
     const cap = Math.max(1, Math.ceil(baseCap));
     if (options.minLiquidityWmatic <= 0n || !options.getRateWei) return cap;
     return Math.max(cap, Math.min(5_000, Math.max(16, deps.maxTotalPaths * 4)));
@@ -917,8 +906,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       try {
         const rate = getRateWei(token);
         if (rate > 0n) rates[token.toLowerCase()] = rate.toString();
-      } catch {
-      }
+      } catch {}
     }
     return rates;
   }
@@ -960,10 +948,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
   }
 
   function selectFullGraphPivotTokens(graph: RoutingGraphLike, getRateWei: ((token: string) => bigint) | null) {
-    const limit = Math.max(
-      1,
-      Math.floor(Number(deps.dynamicPivotTokenLimit ?? deps.polygonHubTokens.size)),
-    );
+    const limit = Math.max(1, Math.floor(Number(deps.dynamicPivotTokenLimit ?? deps.polygonHubTokens.size)));
     return selectHighLiquidityHubTokens(graph, getRateWei, limit);
   }
 
@@ -982,12 +967,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
 
   function quantizeLiquidityValue(value: unknown) {
     try {
-      if (
-        typeof value !== "bigint" &&
-        typeof value !== "string" &&
-        typeof value !== "number" &&
-        typeof value !== "boolean"
-      ) {
+      if (typeof value !== "bigint" && typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
         return "x";
       }
       const raw = BigInt(value);
@@ -1011,14 +991,6 @@ export function createTopologyService(deps: TopologyServiceDeps) {
     return parts.length > 0 ? parts.join(";") : "none";
   }
 
-  async function hashStringSHA256(value: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(value);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
-  }
-
   async function poolSignatureDigest(pools: PoolRecordBase[], processId: string) {
     const encoder = new TextEncoder();
     const signatures: string[] = [];
@@ -1026,19 +998,17 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       const addr = normalizeEvmAddress(pool.pool_address);
       if (!addr) continue;
       const tokens = getPoolRoutingTokens(pool).join(",");
-      const signature = [
-        addr,
-        pool.protocol,
-        tokens,
-        stateLiquiditySignature(deps.stateCache.get(addr)),
-      ].join(":");
+      const signature = [addr, pool.protocol, tokens, stateLiquiditySignature(deps.stateCache.get(addr))].join(":");
       signatures.push(signature);
     }
 
     const combined = `${processId}:${pools.length}:${signatures.sort().join("|")}`;
     const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(combined));
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const digest = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+    const digest = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 32);
 
     return {
       count: signatures.length,
@@ -1099,11 +1069,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
     return !requiresFullRefresh;
   }
 
-  function pathPassesLiquidityFloor(
-    path: ArbPathLike,
-    minLiquidityWmatic: bigint,
-    getRateWei: ((token: string) => bigint) | null,
-  ) {
+  function pathPassesLiquidityFloor(path: ArbPathLike, minLiquidityWmatic: bigint, getRateWei: ((token: string) => bigint) | null) {
     if (minLiquidityWmatic <= 0n || !getRateWei) return true;
     for (const edge of path.edges) {
       const liquidity = poolLiquidityWmatic(edge, getRateWei);
@@ -1132,18 +1098,10 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       }
     }
 
-    return takeTopNBy(
-      merged,
-      deps.maxTotalPaths,
-      (a, b) => normaliseLogWeight(a.logWeight) - normaliseLogWeight(b.logWeight),
-    );
+    return takeTopNBy(merged, deps.maxTotalPaths, (a, b) => normaliseLogWeight(a.logWeight) - normaliseLogWeight(b.logWeight));
   }
 
-  function pruneCyclesByLiquidity(
-    paths: ArbPathLike[],
-    minLiquidityWmatic: bigint,
-    getRateWei: ((token: string) => bigint) | null,
-  ) {
+  function pruneCyclesByLiquidity(paths: ArbPathLike[], minLiquidityWmatic: bigint, getRateWei: ((token: string) => bigint) | null) {
     if (minLiquidityWmatic <= 0n || !getRateWei || paths.length === 0) {
       return { paths, dropped: 0 };
     }
@@ -1248,9 +1206,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
         stateRows++;
         topStateProtocolCounts.set(protocol, (topStateProtocolCounts.get(protocol) ?? 0) + 1);
       }
-      const verdict = state == null
-        ? { valid: false, reason: "missing_state" }
-        : deps.validatePoolState(state);
+      const verdict = state == null ? { valid: false, reason: "missing_state" } : deps.validatePoolState(state);
       const valid = Boolean(addr && verdict.valid);
       const includeInStateGap = Boolean(addr && isSupportedWarmupProtocol(protocol));
       if (includeInStateGap) {
@@ -1301,10 +1257,11 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       }
     }
 
-    const topProtocolCountsFn = (counts: Map<string, number>) => [...counts]
-      .map(([protocol, pools]) => ({ protocol, pools }))
-      .sort((a, b) => b.pools - a.pools || a.protocol.localeCompare(b.protocol))
-      .slice(0, 5);
+    const topProtocolCountsFn = (counts: Map<string, number>) =>
+      [...counts]
+        .map(([protocol, pools]) => ({ protocol, pools }))
+        .sort((a, b) => b.pools - a.pools || a.protocol.localeCompare(b.protocol))
+        .slice(0, 5);
     const topUnroutableProtocols = topProtocolCountsFn(topUnroutableProtocolCounts);
     const hubAdjacentActionableMissingByProtocol = topProtocolCountsFn(hubAdjacentMissingProtocolCounts);
     const hub4ActionableMissingByProtocol = topProtocolCountsFn(hub4AdjacentMissingProtocolCounts);
@@ -1319,8 +1276,8 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       activeProtocolCounts: Map<string, number>,
       stateProtocolCounts: Map<string, number>,
       routableProtocolCounts: Map<string, number>,
-    ) => [...activeProtocolCounts]
-      .map(([protocol, activeProtocolPools]) => {
+    ) =>
+      [...activeProtocolCounts].map(([protocol, activeProtocolPools]) => {
         const protocolStateRows = stateProtocolCounts.get(protocol) ?? 0;
         const protocolRoutablePools = routableProtocolCounts.get(protocol) ?? 0;
         return {
@@ -1337,15 +1294,17 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       activeProtocolCounts: Map<string, number>,
       stateProtocolCounts: Map<string, number>,
       routableProtocolCounts: Map<string, number>,
-    ) => coverageGapRows(activeProtocolCounts, stateProtocolCounts, routableProtocolCounts)
-      .filter((entry) => entry.missingStatePools > 0 && isSupportedWarmupProtocol(entry.protocol))
-      .sort((a, b) =>
-        b.missingStatePools - a.missingStatePools ||
-        a.stateCoverageBps - b.stateCoverageBps ||
-        b.activePools - a.activePools ||
-        a.protocol.localeCompare(b.protocol)
-      )
-      .slice(0, 5);
+    ) =>
+      coverageGapRows(activeProtocolCounts, stateProtocolCounts, routableProtocolCounts)
+        .filter((entry) => entry.missingStatePools > 0 && isSupportedWarmupProtocol(entry.protocol))
+        .sort(
+          (a, b) =>
+            b.missingStatePools - a.missingStatePools ||
+            a.stateCoverageBps - b.stateCoverageBps ||
+            b.activePools - a.activePools ||
+            a.protocol.localeCompare(b.protocol),
+        )
+        .slice(0, 5);
     const topStateCoverageGapsByProtocol = coverageGapsByProtocol(
       stateGapActiveProtocolCounts,
       stateGapStateProtocolCounts,
@@ -1362,10 +1321,8 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       stateGapRoutableProtocolCounts,
     )
       .filter((entry) => entry.routableCoverageBps < 10_000 && isSupportedWarmupProtocol(entry.protocol))
-      .sort((a, b) =>
-        a.routableCoverageBps - b.routableCoverageBps ||
-        b.activePools - a.activePools ||
-        a.protocol.localeCompare(b.protocol),
+      .sort(
+        (a, b) => a.routableCoverageBps - b.routableCoverageBps || b.activePools - a.activePools || a.protocol.localeCompare(b.protocol),
       )
       .slice(0, 5);
     const hub4RoutableCoverageGapsByProtocol = coverageGapRows(
@@ -1374,10 +1331,8 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       hub4StateGapRoutableProtocolCounts,
     )
       .filter((entry) => entry.routableCoverageBps < 10_000 && isSupportedWarmupProtocol(entry.protocol))
-      .sort((a, b) =>
-        a.routableCoverageBps - b.routableCoverageBps ||
-        b.activePools - a.activePools ||
-        a.protocol.localeCompare(b.protocol),
+      .sort(
+        (a, b) => a.routableCoverageBps - b.routableCoverageBps || b.activePools - a.activePools || a.protocol.localeCompare(b.protocol),
       )
       .slice(0, 5);
 
@@ -1426,9 +1381,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
     if (stateTokens) {
       const normalized: string[] = [
         ...new Set<string>(
-          stateTokens
-            .map((token: unknown) => normalizeEvmAddress(token))
-            .filter((token: string | null): token is string => token != null),
+          stateTokens.map((token: unknown) => normalizeEvmAddress(token)).filter((token: string | null): token is string => token != null),
         ),
       ];
       if (normalized.length >= 2) return normalized;
@@ -1464,17 +1417,19 @@ export function createTopologyService(deps: TopologyServiceDeps) {
 
       const fullResult = fullGraph.upsertPool(pool, deps.stateCache);
       const hubEligible = poolTouchesHubTokens(pool);
-      const hubResult = hubEligible
-        ? hubGraph.upsertPool(pool, deps.stateCache)
-        : hubGraph.removePool(addr) > 0
-          ? "removed"
-          : "skipped";
+      const hubResult = hubEligible ? hubGraph.upsertPool(pool, deps.stateCache) : hubGraph.removePool(addr) > 0 ? "removed" : "skipped";
 
       if (fullResult === "added") {
         admitted++;
       }
-      if (fullResult === "added" || fullResult === "updated" || fullResult === "removed" ||
-          hubResult === "added" || hubResult === "updated" || hubResult === "removed") {
+      if (
+        fullResult === "added" ||
+        fullResult === "updated" ||
+        fullResult === "removed" ||
+        hubResult === "added" ||
+        hubResult === "updated" ||
+        hubResult === "removed"
+      ) {
         changed++;
         changedPools.add(addr);
       }
@@ -1524,8 +1479,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
   }): Promise<ArbPathLike[]> {
     const force = options.force === true;
     const now = Date.now();
-    const intervalElapsed =
-      lastCycleRefreshMs <= 0 || now - lastCycleRefreshMs >= deps.cycleRefreshIntervalMs;
+    const intervalElapsed = lastCycleRefreshMs <= 0 || now - lastCycleRefreshMs >= deps.cycleRefreshIntervalMs;
     if (!force && !topologyDirty && cachedCycles.length > 0 && !intervalElapsed) return cachedCycles;
 
     if (cycleRefreshPromise) {
@@ -1619,13 +1573,11 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       const topologyKeyBase = `topology:${++topologyVersion}`;
       const activeHubGraph = hubGraph!;
       const activeFullGraph = fullGraph!;
-      const selective4HopTokens = deps.routingCycleMode === "triangular" || routingMinHops > 4 || routingMaxHops < 4
-        ? []
-        : selectHighLiquidityHubTokens(activeFullGraph, options.getRateWei);
-      const fullPivotTokens = mergeTokenLists(
-        selectFullGraphPivotTokens(activeFullGraph, options.getRateWei),
-        selective4HopTokens,
-      );
+      const selective4HopTokens =
+        deps.routingCycleMode === "triangular" || routingMinHops > 4 || routingMaxHops < 4
+          ? []
+          : selectHighLiquidityHubTokens(activeFullGraph, options.getRateWei);
+      const fullPivotTokens = mergeTokenLists(selectFullGraphPivotTokens(activeFullGraph, options.getRateWei), selective4HopTokens);
       const dirtyStartTokens = [...dirtyHubStartTokens].filter((token) => activeFullGraph.hasToken(token));
       const canUseIncrementalRefresh =
         !rebuildGraphs &&
@@ -1637,33 +1589,23 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       const routeCycleCacheKey = await buildRouteCycleCacheKey(pools, options, fullPivotTokens, selective4HopTokens);
       let loadedPersistentCycleCache = false;
       if (!canUseIncrementalRefresh) {
-        const cached = topologyCache.readPersistentRouteCycles(
-          deps.routeCycleCacheFile,
-          routeCycleCacheKey,
-          deps.routeCycleCacheMaxAgeMs,
-        );
+        const cached = topologyCache.readPersistentRouteCycles(deps.routeCycleCacheFile, routeCycleCacheKey, deps.routeCycleCacheMaxAgeMs);
         if (cached.hit) {
           const hydrated = topologyCache.hydratePathCache(cached.paths, activeHubGraph, activeFullGraph, { maxPaths: null });
           if (hydrated.paths.length > 0) {
-            const liquidityPrune = pruneCyclesByLiquidity(
-              hydrated.paths,
-              options.minLiquidityWmatic,
-              options.getRateWei,
-            );
-            const filteredCachedCycles = mergeArbPaths(
-              [liquidityPrune.paths],
-              {
-                minLiquidityWmatic: options.minLiquidityWmatic,
-                getRateWei: options.getRateWei,
-              },
-            );
+            const liquidityPrune = pruneCyclesByLiquidity(hydrated.paths, options.minLiquidityWmatic, options.getRateWei);
+            const filteredCachedCycles = mergeArbPaths([liquidityPrune.paths], {
+              minLiquidityWmatic: options.minLiquidityWmatic,
+              getRateWei: options.getRateWei,
+            });
             if (filteredCachedCycles.length === 0 || liquidityPrune.dropped > 0 || hydrated.rejected > 0) {
               deps.log("[runner] Ignored liquidity-filtered route cycle cache; rebuilding cycles", "warn", {
                 event: "route_cycle_cache_unusable",
                 activity: "Rebuilding route cycles",
-                activityDetail: liquidityPrune.dropped > 0
-                  ? "Cached route cycle records were pruned by the active liquidity floor"
-                  : "Cached route cycle records no longer satisfy the active liquidity floor",
+                activityDetail:
+                  liquidityPrune.dropped > 0
+                    ? "Cached route cycle records were pruned by the active liquidity floor"
+                    : "Cached route cycle records no longer satisfy the active liquidity floor",
                 progressLabel: "refresh",
                 progressCompleted: 2,
                 progressTotal: 5,
@@ -1765,10 +1707,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
         const enumerationResults = await Promise.allSettled([
           deps.workerPool.enumerate(hubTopo, hubTokens, {
             ...cycleModeOptions(true),
-            maxPathsPerToken: liquidityAwareEnumerationCap(
-              deps.maxTotalPaths * 0.5 / Math.max(hubTokens.length, 1),
-              options,
-            ),
+            maxPathsPerToken: liquidityAwareEnumerationCap((deps.maxTotalPaths * 0.5) / Math.max(hubTokens.length, 1), options),
             max4HopPathsPerToken: 2_000,
             minLiquidityWmatic: hubTokenRateWeiByToken ? options.minLiquidityWmatic : 0n,
             tokenRateWeiByToken: hubTokenRateWeiByToken,
@@ -1776,10 +1715,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
           }),
           deps.workerPool.enumerate(fullTopo, fullPivotTokens, {
             ...cycleModeOptions(false),
-            maxPathsPerToken: liquidityAwareEnumerationCap(
-              deps.maxTotalPaths * 0.35 / Math.max(fullPivotTokens.length, 1),
-              options,
-            ),
+            maxPathsPerToken: liquidityAwareEnumerationCap((deps.maxTotalPaths * 0.35) / Math.max(fullPivotTokens.length, 1), options),
             minLiquidityWmatic: fullTokenRateWeiByToken ? options.minLiquidityWmatic : 0n,
             tokenRateWeiByToken: fullTokenRateWeiByToken,
             topologyKey: `${topologyKeyBase}:full`,
@@ -1832,59 +1768,55 @@ export function createTopologyService(deps: TopologyServiceDeps) {
           if (dirtyStartTokens.includes(path.startToken)) return false;
           return !path.edges.some((edge) => affectedPoolAddresses.has(edge.poolAddress.toLowerCase()));
         });
-        const partialHubCycles = affectedHubGraphTokens.length > 0
-          ? deps.enumerateCycles(activeHubGraph, {
-              startTokens: new Set(affectedHubGraphTokens),
-              ...cycleModeOptions(true),
-              maxPathsPerToken: liquidityAwareEnumerationCap(
-                deps.maxTotalPaths * 0.5 / Math.max(affectedHubGraphTokens.length, 1),
-                options,
-              ),
-              max4HopPathsPerToken: 2_000,
-              maxTotalPaths: deps.maxTotalPaths,
-              minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
-              getRateWei: options.getRateWei,
-            })
-          : [];
+        const partialHubCycles =
+          affectedHubGraphTokens.length > 0
+            ? deps.enumerateCycles(activeHubGraph, {
+                startTokens: new Set(affectedHubGraphTokens),
+                ...cycleModeOptions(true),
+                maxPathsPerToken: liquidityAwareEnumerationCap(
+                  (deps.maxTotalPaths * 0.5) / Math.max(affectedHubGraphTokens.length, 1),
+                  options,
+                ),
+                max4HopPathsPerToken: 2_000,
+                maxTotalPaths: deps.maxTotalPaths,
+                minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
+                getRateWei: options.getRateWei,
+              })
+            : [];
         const partialFullCycles = deps.enumerateCycles(activeFullGraph, {
           startTokens: new Set(dirtyStartTokens),
           ...cycleModeOptions(false),
-          maxPathsPerToken: liquidityAwareEnumerationCap(
-            deps.maxTotalPaths * 0.35 / Math.max(dirtyStartTokens.length, 1),
-            options,
-          ),
+          maxPathsPerToken: liquidityAwareEnumerationCap((deps.maxTotalPaths * 0.35) / Math.max(dirtyStartTokens.length, 1), options),
           maxTotalPaths: deps.maxTotalPaths,
           minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
           getRateWei: options.getRateWei,
         });
         const selectiveDirtyTokens = dirtyStartTokens.filter((token) => selective4HopTokens.includes(token));
-        const selective4HopCycles = selectiveDirtyTokens.length > 0 && routingMinHops <= 4 && routingMaxHops >= 4
-          ? deps.enumerateCycles(activeFullGraph, {
-              startTokens: new Set(selectiveDirtyTokens),
-              include2Hop: false,
-              include3Hop: false,
-              include4Hop: true,
-              maxHops: 4,
-              maxPathsPerToken: liquidityAwareEnumerationCap(
-                Math.min(
-                  options.selective4HopMaxPathsPerToken,
-                  options.selective4HopPathBudget / Math.max(selectiveDirtyTokens.length, 1),
+        const selective4HopCycles =
+          selectiveDirtyTokens.length > 0 && routingMinHops <= 4 && routingMaxHops >= 4
+            ? deps.enumerateCycles(activeFullGraph, {
+                startTokens: new Set(selectiveDirtyTokens),
+                include2Hop: false,
+                include3Hop: false,
+                include4Hop: true,
+                maxHops: 4,
+                maxPathsPerToken: liquidityAwareEnumerationCap(
+                  Math.min(
+                    options.selective4HopMaxPathsPerToken,
+                    options.selective4HopPathBudget / Math.max(selectiveDirtyTokens.length, 1),
+                  ),
+                  options,
                 ),
-                options,
-              ),
-              max4HopPathsPerToken: options.selective4HopMaxPathsPerToken,
-              maxTotalPaths: options.selective4HopPathBudget,
-              minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
-              getRateWei: options.getRateWei,
-            })
-          : [];
-        cachedCycles = mergeArbPaths(
-          [unaffectedCycles, partialHubCycles, partialFullCycles, selective4HopCycles],
-          {
-            minLiquidityWmatic: options.minLiquidityWmatic,
-            getRateWei: options.getRateWei,
-          },
-        );
+                max4HopPathsPerToken: options.selective4HopMaxPathsPerToken,
+                maxTotalPaths: options.selective4HopPathBudget,
+                minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
+                getRateWei: options.getRateWei,
+              })
+            : [];
+        cachedCycles = mergeArbPaths([unaffectedCycles, partialHubCycles, partialFullCycles, selective4HopCycles], {
+          minLiquidityWmatic: options.minLiquidityWmatic,
+          getRateWei: options.getRateWei,
+        });
       } else {
         const baseCycles = deps.enumerateCyclesDual(activeHubGraph, activeFullGraph, {
           ...cycleModeOptions(true),
@@ -1896,40 +1828,34 @@ export function createTopologyService(deps: TopologyServiceDeps) {
           minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
           getRateWei: options.getRateWei,
         });
-        const selective4HopCycles = selective4HopTokens.length > 0 && routingMinHops <= 4 && routingMaxHops >= 4
-          ? deps.enumerateCycles(activeFullGraph, {
-              startTokens: new Set(selective4HopTokens),
-              include2Hop: false,
-              include3Hop: false,
-              include4Hop: true,
-              maxHops: 4,
-              maxPathsPerToken: liquidityAwareEnumerationCap(
-                Math.min(
-                  options.selective4HopMaxPathsPerToken,
-                  options.selective4HopPathBudget / Math.max(selective4HopTokens.length, 1),
+        const selective4HopCycles =
+          selective4HopTokens.length > 0 && routingMinHops <= 4 && routingMaxHops >= 4
+            ? deps.enumerateCycles(activeFullGraph, {
+                startTokens: new Set(selective4HopTokens),
+                include2Hop: false,
+                include3Hop: false,
+                include4Hop: true,
+                maxHops: 4,
+                maxPathsPerToken: liquidityAwareEnumerationCap(
+                  Math.min(
+                    options.selective4HopMaxPathsPerToken,
+                    options.selective4HopPathBudget / Math.max(selective4HopTokens.length, 1),
+                  ),
+                  options,
                 ),
-                options,
-              ),
-              max4HopPathsPerToken: options.selective4HopMaxPathsPerToken,
-              maxTotalPaths: options.selective4HopPathBudget,
-              minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
-              getRateWei: options.getRateWei,
-            })
-          : [];
-        cachedCycles = mergeArbPaths(
-          [baseCycles, selective4HopCycles],
-          {
-            minLiquidityWmatic: options.minLiquidityWmatic,
-            getRateWei: options.getRateWei,
-          },
-        );
+                max4HopPathsPerToken: options.selective4HopMaxPathsPerToken,
+                maxTotalPaths: options.selective4HopPathBudget,
+                minLiquidityWmatic: options.getRateWei ? options.minLiquidityWmatic : 0n,
+                getRateWei: options.getRateWei,
+              })
+            : [];
+        cachedCycles = mergeArbPaths([baseCycles, selective4HopCycles], {
+          minLiquidityWmatic: options.minLiquidityWmatic,
+          getRateWei: options.getRateWei,
+        });
       }
 
-      const liquidityPrune = pruneCyclesByLiquidity(
-        cachedCycles,
-        options.minLiquidityWmatic,
-        options.getRateWei,
-      );
+      const liquidityPrune = pruneCyclesByLiquidity(cachedCycles, options.minLiquidityWmatic, options.getRateWei);
       if (liquidityPrune.dropped > 0) {
         cachedCycles = liquidityPrune.paths;
         deps.log("[runner] Pruned low-liquidity route cycles", "info", {
@@ -1962,11 +1888,7 @@ export function createTopologyService(deps: TopologyServiceDeps) {
       });
 
       if (!loadedPersistentCycleCache) {
-        const wroteCache = topologyCache.writePersistentRouteCycles(
-          deps.routeCycleCacheFile,
-          routeCycleCacheKey,
-          cachedCycles,
-        );
+        const wroteCache = topologyCache.writePersistentRouteCycles(deps.routeCycleCacheFile, routeCycleCacheKey, cachedCycles);
         if (wroteCache) {
           deps.log("[runner] Stored precomputed route cycle cache", "debug", {
             event: "route_cycle_cache_store",
@@ -2077,17 +1999,13 @@ export function createWatcherBatchCoordinator(deps: WatcherBatchDeps) {
     if (invalidChangedAddrs.size > 0) {
       const removedEdges = deps.removePoolsFromTopology(invalidChangedAddrs);
       const removedRoutes = deps.removeRoutesByPools(invalidChangedAddrs);
-      deps.log(
-        `[runner] ${invalidChangedAddrs.size} pool(s) became unroutable; ${removedEdges / 2} removed from topology.`,
-        "info",
-        {
-          event: "watcher_batch_remove_unroutable",
-          changedPools: changedPools.size,
-          invalidPools: invalidChangedAddrs.size,
-          removedPools: removedEdges / 2,
-          removedRoutes,
-        },
-      );
+      deps.log(`[runner] ${invalidChangedAddrs.size} pool(s) became unroutable; ${removedEdges / 2} removed from topology.`, "info", {
+        event: "watcher_batch_remove_unroutable",
+        changedPools: changedPools.size,
+        invalidPools: invalidChangedAddrs.size,
+        removedPools: removedEdges / 2,
+        removedRoutes,
+      });
     }
 
     if (validChangedAddrs.size > 0) {
@@ -2177,10 +2095,7 @@ type RunnerMainDeps<Registry, Repositories> = {
   };
 };
 
-function registerShutdownSignals(
-  processLike: ProcessSignalRegistrar,
-  shutdown: ShutdownFn,
-) {
+function registerShutdownSignals(processLike: ProcessSignalRegistrar, shutdown: ShutdownFn) {
   processLike.on("SIGINT", () => {
     void shutdown("SIGINT");
   });
@@ -2233,14 +2148,16 @@ export function createRunnerMainController<Registry, Repositories>(deps: RunnerM
           deps.log("RPC role not separated", "warn", {
             event: "rpc_role_not_separated",
             role: "GAS_ESTIMATION_RPC",
-            message: "GAS_ESTIMATION_RPC falls back to POLYGON_RPC — gas estimation shares read connection, risking rate-limit cross-contamination and inaccurate pending-state simulation. Set a dedicated GAS_ESTIMATION_RPC for best results.",
+            message:
+              "GAS_ESTIMATION_RPC falls back to POLYGON_RPC — gas estimation shares read connection, risking rate-limit cross-contamination and inaccurate pending-state simulation. Set a dedicated GAS_ESTIMATION_RPC for best results.",
           });
         }
         if (EXECUTION_RPC_URL === POLYGON_RPC_URL) {
           deps.log("RPC role not separated", "warn", {
             event: "rpc_role_not_separated",
             role: "EXECUTION_RPC",
-            message: "EXECUTION_RPC falls back to POLYGON_RPC — transaction submission shares read connection, risking rate-limit contention and latency. Set a dedicated EXECUTION_RPC for best results.",
+            message:
+              "EXECUTION_RPC falls back to POLYGON_RPC — transaction submission shares read connection, risking rate-limit contention and latency. Set a dedicated EXECUTION_RPC for best results.",
           });
         }
       } catch {
@@ -2296,10 +2213,8 @@ export function createRunnerDeferredActions<Cycle = unknown, PassResult = void>(
   getPassCoordinator,
 }: RunnerDeferredActionDeps<Cycle, PassResult>) {
   return {
-    refreshCycles: async (force = false) =>
-      requireInitialized(getTopologyAdapters(), "Runner topology adapters").refreshCycles(force),
-    runPass: async () =>
-      requireInitialized(getPassCoordinator(), "Runner pass coordinator").runPass(),
+    refreshCycles: async (force = false) => requireInitialized(getTopologyAdapters(), "Runner topology adapters").refreshCycles(force),
+    runPass: async () => requireInitialized(getPassCoordinator(), "Runner pass coordinator").runPass(),
   };
 }
 
@@ -2319,7 +2234,11 @@ type RunnerTopologyAdaptersDeps = {
   workerCount?: number;
   workerPool?: {
     initialized: boolean;
-    enumerate: (topology: SerializedTopology, startTokens: string[], options: Record<string, unknown>) => Promise<SerializedEnumeratedPath[]>;
+    enumerate: (
+      topology: SerializedTopology,
+      startTokens: string[],
+      options: Record<string, unknown>,
+    ) => Promise<SerializedEnumeratedPath[]>;
   };
   cycleRefreshIntervalMs?: number;
   routeCache: Pick<RouteCacheType, "prune" | "routes">;
@@ -2385,8 +2304,7 @@ export function createRunnerTopologyAdapters(deps: RunnerTopologyAdaptersDeps) {
   return {
     topologyService,
     topologyRefreshCoordinator,
-    refreshCycles: (force = false): Promise<ArbPathLike[] | void> =>
-      topologyRefreshCoordinator.refreshCycles(force),
+    refreshCycles: (force = false): Promise<ArbPathLike[] | void> => topologyRefreshCoordinator.refreshCycles(force),
     getCachedCycles: () => topologyService.getCachedCycles(),
     getCachedCycleCount: () => topologyService.getCachedCycles().length,
     isTopologyDirty: () => topologyService.isTopologyDirty(),
@@ -2424,9 +2342,11 @@ type RunnerWatcherAdaptersDeps = {
 export function createRunnerWatcherAdapters(deps: RunnerWatcherAdaptersDeps) {
   const validatePoolState = deps.validatePoolState ?? defaultValidatePoolState;
   const runnerLogger = defaultLogger.child({ component: "runner" });
-  const debugInvalidPool = deps.debugInvalidPool ?? ((addr: string, reason?: string) => {
-    runnerLogger.debug(`[runner] Pool ${addr} is currently unroutable: ${reason ?? "invalid state"}`);
-  });
+  const debugInvalidPool =
+    deps.debugInvalidPool ??
+    ((addr: string, reason?: string) => {
+      runnerLogger.debug(`[runner] Pool ${addr} is currently unroutable: ${reason ?? "invalid state"}`);
+    });
   const watcherBatchCoordinator = createWatcherBatchCoordinator({
     stateCache: deps.stateCache,
     log: deps.log,
@@ -2671,7 +2591,7 @@ type RunnerBootSurfaceDeps<BotStateGeneric extends BotState> = {
 };
 
 async function defaultStartTui<BotStateGeneric extends BotState>(botState: BotStateGeneric) {
-  const { startTui } = await import("../tui/index.tsx");
+  const { startTui } = await import("../tui/index.ts");
   return startTui(botState);
 }
 
@@ -2679,9 +2599,7 @@ function createDefaultWatcher(registry: unknown, stateCache: RuntimeStateCache) 
   return new StateWatcher(registry, stateCache);
 }
 
-export function createRunnerBootSurface<BotStateGeneric extends BotState = BotState>(
-  deps: RunnerBootSurfaceDeps<BotStateGeneric>,
-) {
+export function createRunnerBootSurface<BotStateGeneric extends BotState = BotState>(deps: RunnerBootSurfaceDeps<BotStateGeneric>) {
   let stopTui: (() => void) | null = null;
   const metricsPort = deps.metricsPort ?? METRICS_PORT;
   const workerCount = deps.workerCount ?? WORKER_COUNT;
@@ -2736,10 +2654,7 @@ type PoolLike = {
 
 type StateCacheLike = Map<string, { timestamp?: number } | undefined>;
 
-type DecimalAwareFetcher<Result> = (
-  pool: PoolLike,
-  options: { tokenDecimals?: Map<string, number> | null },
-) => Promise<Result>;
+type DecimalAwareFetcher<Result> = (pool: PoolLike, options: { tokenDecimals?: Map<string, number> | null }) => Promise<Result>;
 
 type NormalizedPoolFetchResult = {
   addr: string;
@@ -2773,7 +2688,7 @@ export function createRunnerMarketDataAdapters<
   getRepositories,
   getPriceOracle,
   stateCache,
-  resolvePoolTokens,
+  resolvePoolTokens: _resolvePoolTokens,
   fetchAndNormalizeCurvePool,
   fetchAndNormalizeDodoPool,
   fetchAndNormalizeWoofiPool,
@@ -2872,10 +2787,7 @@ type RunnerRuntimeDeps<T extends FeeSnapshotLike> = RunnerRuntimeBaseDeps & {
   fetchFees?: FeeFetcher<T>;
 };
 
-function createRunnerRuntimeWithFetcher<T extends FeeSnapshotLike>(
-  deps: RunnerRuntimeBaseDeps,
-  fetchFees: FeeFetcher<T>,
-) {
+function createRunnerRuntimeWithFetcher<T extends FeeSnapshotLike>(deps: RunnerRuntimeBaseDeps, fetchFees: FeeFetcher<T>) {
   const metrics = deps.metrics ?? defaultMetrics;
   const runnerLogger = deps.runnerLogger ?? defaultLogger.child({ component: "runner" });
   const runtime = createRuntimeContext({
@@ -2936,10 +2848,7 @@ export function createRunnerRuntime<T extends FeeSnapshotLike>(
   deps: RunnerRuntimeBaseDeps & { fetchFees: FeeFetcher<T> },
 ): ReturnType<typeof createRunnerRuntimeWithFetcher<T>>;
 export function createRunnerRuntime(deps: RunnerRuntimeDeps<FeeSnapshotLike>) {
-  return createRunnerRuntimeWithFetcher(
-    deps,
-    deps.fetchFees ?? defaultFetchFees,
-  );
+  return createRunnerRuntimeWithFetcher(deps, deps.fetchFees ?? defaultFetchFees);
 }
 
 function isPriceOracleRegistry(registry: unknown): registry is PriceOracleRegistry {
@@ -2947,10 +2856,7 @@ function isPriceOracleRegistry(registry: unknown): registry is PriceOracleRegist
     registry != null &&
     typeof registry === "object" &&
     typeof (registry as { getPoolMeta?: unknown }).getPoolMeta === "function" &&
-    (
-      !("getTokenMeta" in registry) ||
-      typeof (registry as { getTokenMeta?: unknown }).getTokenMeta === "function"
-    )
+    (!("getTokenMeta" in registry) || typeof (registry as { getTokenMeta?: unknown }).getTokenMeta === "function")
   );
 }
 
@@ -2987,22 +2893,13 @@ export function createRunnerStartupCoordinator<
   const dbPath = deps.dbPath ?? DB_PATH;
   return createStartupCoordinator({
     log: deps.log,
-    createRegistry: () => (
-      deps.createRegistry?.(dbPath) ??
-      new RegistryService(dbPath) as Registry
-    ),
-    createRepositories: (registry) => (
-      deps.createRepositories?.(registry) ??
-      createRegistryRepositories(registry as RegistryService) as Repositories
-    ),
-    createPriceOracle: (registry) => (
+    createRegistry: () => deps.createRegistry?.(dbPath) ?? (new RegistryService(dbPath) as Registry),
+    createRepositories: (registry) =>
+      deps.createRepositories?.(registry) ?? (createRegistryRepositories(registry as RegistryService) as Repositories),
+    createPriceOracle: (registry) =>
       deps.createPriceOracle?.(deps.stateCache, registry) ??
-      createDefaultPriceOracle(deps.stateCache, registry) as PriceOracleLikeGeneric
-    ),
-    createNonceManager: () => (
-      deps.createNonceManager?.() ??
-      new NonceManager() as NonceManagerLikeGeneric
-    ),
+      (createDefaultPriceOracle(deps.stateCache, registry) as PriceOracleLikeGeneric),
+    createNonceManager: () => deps.createNonceManager?.() ?? (new NonceManager() as NonceManagerLikeGeneric),
     setPriceOracle: deps.setPriceOracle,
     setNonceManager: deps.setNonceManager,
     runInitialDiscovery: deps.runInitialDiscovery,

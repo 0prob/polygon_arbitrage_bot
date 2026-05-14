@@ -1,4 +1,3 @@
-
 /**
  * src/state/uniswap_v2.ts — Uniswap V2 / QuickSwap / SushiSwap pool state fetcher
  *
@@ -7,18 +6,9 @@
  */
 
 import { chunk } from "../utils/concurrency.ts";
-import {
-  isNoDataReadContractError,
-  multicallWithRetry,
-  readContractWithRetry,
-  throttledMap,
-} from "../state/enrichment/rpc.ts";
+import { isNoDataReadContractError, multicallWithRetry, readContractWithRetry, throttledMap } from "../state/enrichment/rpc.ts";
 import { ENRICH_CONCURRENCY, V2_RESERVES_MULTICALL_CHUNK_SIZE } from "../config/index.ts";
-import {
-  stateMulticallWithFallback,
-  V2_GET_RESERVES_ABI,
-  type StateReadBlockTag,
-} from "./state_multicall_hydrator.ts";
+import { stateMulticallWithFallback, V2_GET_RESERVES_ABI, type StateReadBlockTag } from "./state_multicall_hydrator.ts";
 
 // ─── ABI fragment ─────────────────────────────────────────────
 
@@ -92,10 +82,7 @@ function normalizeV2MulticallResult(poolAddress: string, result: V2MulticallResu
  * @property {bigint}  reserve1   Reserve of token1
  * @property {number}  fetchedAt  Timestamp of fetch (ms)
  */
-export async function fetchV2PoolState(
-  poolAddress: string,
-  options: V2FetchOptions = {},
-): Promise<V2PoolState> {
+export async function fetchV2PoolState(poolAddress: string, options: V2FetchOptions = {}): Promise<V2PoolState> {
   const result = await readContractWithRetry<V2ReservesResult>({
     address: poolAddress,
     abi: GET_RESERVES_ABI,
@@ -135,9 +122,7 @@ export async function fetchMultipleV2StatesWithDeps(
 ): Promise<V2StateMap> {
   const states: V2StateMap = new Map();
   const noDataFailures = new Set<string>();
-  const addresses = Array.isArray(poolAddresses)
-    ? [...new Set(poolAddresses.map(normalizeV2PoolAddress).filter(Boolean))]
-    : [];
+  const addresses = Array.isArray(poolAddresses) ? [...new Set(poolAddresses.map(normalizeV2PoolAddress).filter(Boolean))] : [];
   if (addresses.length === 0) {
     states.noDataFailures = noDataFailures;
     return states;
@@ -161,11 +146,11 @@ export async function fetchMultipleV2StatesWithDeps(
 
       let results: V2MulticallResult[];
       try {
-        results = await multicall({
+        results = (await multicall({
           contracts,
           allowFailure: true,
           blockTag: options.blockTag,
-        }) as V2MulticallResult[];
+        })) as V2MulticallResult[];
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         failedBatches++;
@@ -189,13 +174,13 @@ export async function fetchMultipleV2StatesWithDeps(
         }
       }
     },
-    batchConcurrency
+    batchConcurrency,
   );
 
   if (failedCalls > 0) {
     console.warn(
       `  Failed to fetch V2 reserves for ${failedCalls}/${addresses.length} pool(s)` +
-        (failedBatches > 0 ? ` across ${failedBatches} failed multicall batch(es).` : ".")
+        (failedBatches > 0 ? ` across ${failedBatches} failed multicall batch(es).` : "."),
     );
   }
 

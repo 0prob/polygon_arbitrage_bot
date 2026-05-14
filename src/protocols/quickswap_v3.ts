@@ -1,4 +1,3 @@
-
 /**
  * src/protocols/quickswap_v3.js — QuickSwap V3 protocol definition
  *
@@ -19,12 +18,7 @@
  * Router:  0xf5b509bB0909a69B1c207E495f687a596C168E12 (AlgebraRouter on Polygon)
  */
 
-import {
-  decodedBodyString,
-  decodedIndexedString,
-  type DecodedEvent,
-  type ProtocolDefinition,
-} from "./factories.ts";
+import { decodedBodyString, decodedIndexedString, type DecodedEvent, type ProtocolDefinition } from "./factories.ts";
 
 const protocol: ProtocolDefinition = {
   name: "QuickSwap V3",
@@ -36,16 +30,12 @@ const protocol: ProtocolDefinition = {
     execution: true,
   },
   // Algebra factory emits Pool(token0, token1, pool) — no fee or tickSpacing in event
-  signature:
-    "event Pool(address indexed token0, address indexed token1, address pool)",
+  signature: "event Pool(address indexed token0, address indexed token1, address pool)",
   decode(decoded: DecodedEvent) {
     // indexed: [token0, token1]; body: [pool]
     return {
       pool_address: decodedBodyString(decoded, 0),
-      tokens: [
-        decodedIndexedString(decoded, 0),
-        decodedIndexedString(decoded, 1),
-      ],
+      tokens: [decodedIndexedString(decoded, 0), decodedIndexedString(decoded, 1)],
       metadata: {
         // Fee and tickSpacing are absent from the creation event in Algebra.
         // They are populated during the first state poll via globalState()

@@ -1,4 +1,3 @@
-
 /**
  * src/discovery/discover.js — Core discovery engine
  *
@@ -15,10 +14,7 @@ import { errorMessage } from "../utils/errors.ts";
 import { client, Decoder, LogField } from "../hypersync/client.ts";
 import { fetchAllLogs } from "../hypersync/paginate.ts";
 import { topic0sForSignatures } from "../hypersync/topics.ts";
-import {
-  buildHyperSyncLogQuery,
-  DEFAULT_HYPERSYNC_LOG_FIELDS,
-} from "../hypersync/query_policy.ts";
+import { buildHyperSyncLogQuery, DEFAULT_HYPERSYNC_LOG_FIELDS } from "../hypersync/query_policy.ts";
 import { RegistryService } from "../db/registry.ts";
 import { PROTOCOLS, CURVE_POOL_REMOVED } from "../protocols/index.ts";
 import { detectReorg } from "../state/reorg_detect.ts";
@@ -35,12 +31,7 @@ import {
 import { ALL_V3_PROTOCOLS, normalizeProtocolKey } from "../protocols/classification.ts";
 import { logger } from "../utils/logger.ts";
 import { buildDiscoveredPoolBatch, type DiscoveredPoolCandidate, type DiscoveryRawLog } from "./discovery_helpers.ts";
-import {
-  decodedIndexedString,
-  type DecodeResult,
-  type ProtocolDefinition,
-  type ProtocolDiscoveryResult,
-} from "../protocols/factories.ts";
+import { decodedIndexedString, type DecodeResult, type ProtocolDefinition, type ProtocolDiscoveryResult } from "../protocols/factories.ts";
 import type { HyperSyncLogQuery } from "../hypersync/query_policy.ts";
 
 const DEFAULT_DISCOVERY_START_BLOCK = 0;
@@ -85,19 +76,21 @@ type RollbackSummary = {
   statesRemoved?: unknown;
 };
 
-const discoveryQuerySpecCache = new Map<string, {
-  topic0s: string[];
-  decoder: InstanceType<typeof Decoder>;
-}>();
+const discoveryQuerySpecCache = new Map<
+  string,
+  {
+    topic0s: string[];
+    decoder: InstanceType<typeof Decoder>;
+  }
+>();
 const discoveryLogger = logger.child({ component: "discovery" });
-
 
 function errorStack(error: unknown) {
   return error instanceof Error ? error.stack : undefined;
 }
 
 function rollbackSummary(value: unknown): RollbackSummary {
-  return value && typeof value === "object" ? value as RollbackSummary : {};
+  return value && typeof value === "object" ? (value as RollbackSummary) : {};
 }
 
 function discoveryQueryToBlock(chainHeight: number | string | null | undefined) {
@@ -189,22 +182,16 @@ export function summarizeProtocolCoverageByFamily(protocolCoverage: ProtocolCove
 
     if (entry.checkpointBlock != null) {
       summary.minCheckpointBlock =
-        summary.minCheckpointBlock == null
-          ? entry.checkpointBlock
-          : Math.min(summary.minCheckpointBlock, entry.checkpointBlock);
+        summary.minCheckpointBlock == null ? entry.checkpointBlock : Math.min(summary.minCheckpointBlock, entry.checkpointBlock);
       summary.maxCheckpointBlock =
-        summary.maxCheckpointBlock == null
-          ? entry.checkpointBlock
-          : Math.max(summary.maxCheckpointBlock, entry.checkpointBlock);
+        summary.maxCheckpointBlock == null ? entry.checkpointBlock : Math.max(summary.maxCheckpointBlock, entry.checkpointBlock);
     }
     if (entry.error) {
       summary.errors.push(`${entry.protocol}: ${entry.error}`);
     }
   }
 
-  return [...summaries.values()].sort(
-    (a, b) => b.activePools - a.activePools || a.family.localeCompare(b.family)
-  );
+  return [...summaries.values()].sort((a, b) => b.activePools - a.activePools || a.family.localeCompare(b.family));
 }
 
 export function protocolDiscoveryStartBlock(protocol: Pick<ProtocolDefinition, "startBlock"> | null | undefined) {
@@ -222,20 +209,10 @@ export function resolveDiscoveryFromBlock(
 ) {
   const startBlock = protocolDiscoveryStartBlock(protocol);
   const existingCheckpointBlock = Number(checkpointLastBlock);
-  const hasCheckpoint =
-    checkpointLastBlock != null &&
-    Number.isSafeInteger(existingCheckpointBlock) &&
-    existingCheckpointBlock >= 0;
-  const checkpointNextBlock = hasCheckpoint
-    ? Math.max(startBlock, existingCheckpointBlock + 1)
-    : startBlock;
-  const shouldBackfillEmptyProtocol =
-    hasCheckpoint &&
-    existingPoolCount === 0 &&
-    existingCheckpointBlock === startBlock;
-  const fromBlock = shouldBackfillEmptyProtocol
-    ? startBlock
-    : checkpointNextBlock;
+  const hasCheckpoint = checkpointLastBlock != null && Number.isSafeInteger(existingCheckpointBlock) && existingCheckpointBlock >= 0;
+  const checkpointNextBlock = hasCheckpoint ? Math.max(startBlock, existingCheckpointBlock + 1) : startBlock;
+  const shouldBackfillEmptyProtocol = hasCheckpoint && existingPoolCount === 0 && existingCheckpointBlock === startBlock;
+  const fromBlock = shouldBackfillEmptyProtocol ? startBlock : checkpointNextBlock;
 
   return {
     fromBlock,
@@ -246,12 +223,8 @@ export function resolveDiscoveryFromBlock(
 }
 
 function normalizeDiscoveryDecodeResult(extracted: unknown): DecodeResult {
-  const decoded = extracted && typeof extracted === "object"
-    ? extracted as Record<string, unknown>
-    : {};
-  const poolAddress = typeof decoded.pool_address === "string"
-    ? decoded.pool_address.trim().toLowerCase()
-    : undefined;
+  const decoded = extracted && typeof extracted === "object" ? (extracted as Record<string, unknown>) : {};
+  const poolAddress = typeof decoded.pool_address === "string" ? decoded.pool_address.trim().toLowerCase() : undefined;
   const tokens = Array.isArray(decoded.tokens)
     ? decoded.tokens
         .map((token) => (typeof token === "string" ? token.trim().toLowerCase() : null))
@@ -259,7 +232,7 @@ function normalizeDiscoveryDecodeResult(extracted: unknown): DecodeResult {
     : [];
   const metadata =
     decoded.metadata && typeof decoded.metadata === "object" && !Array.isArray(decoded.metadata)
-      ? decoded.metadata as Record<string, unknown>
+      ? (decoded.metadata as Record<string, unknown>)
       : {};
 
   return {
@@ -274,9 +247,7 @@ function assertDecodedLogsAligned(protocolName: string, logs: DiscoveryRawLog[],
     throw new Error(`${protocolName} decoder returned a non-array decode result.`);
   }
   if (decodedLogs.length !== logs.length) {
-    throw new Error(
-      `${protocolName} decoder returned ${decodedLogs.length} decoded log(s) for ${logs.length} raw log(s).`,
-    );
+    throw new Error(`${protocolName} decoder returned ${decodedLogs.length} decoded log(s) for ${logs.length} raw log(s).`);
   }
 }
 
@@ -297,18 +268,14 @@ export function decodeDiscoveryLogs(
     try {
       const extracted = normalizeDiscoveryDecodeResult(protocol.decode(decoded, rawLog) as DecodeResult);
       if (!extracted.pool_address || typeof extracted.pool_address !== "string") {
-        console.warn(
-          `  Warning: Could not extract pool address for ${protocol.name} at block ${rawLog.blockNumber}`
-        );
+        console.warn(`  Warning: Could not extract pool address for ${protocol.name} at block ${rawLog.blockNumber}`);
         continue;
       }
       extractedPools.push({ extracted, rawLog });
     } catch (innerError: unknown) {
       errors++;
       if (errors <= 5) {
-        console.error(
-          `  Error decoding log #${i} for ${protocol.name}: ${errorMessage(innerError)}`
-        );
+        console.error(`  Error decoding log #${i} for ${protocol.name}: ${errorMessage(innerError)}`);
       }
     }
   }
@@ -356,9 +323,7 @@ export async function enrichDiscoveredPools(protocol: DiscoveryProtocol, extract
   const needsEnrichment = extractedPools.filter((p) => p.extracted.tokens.length === 0);
   if (needsEnrichment.length === 0) return { attempted: 0, failed: 0, earliestFailedBlock: null as number | null };
 
-  console.log(
-    `  Enriching ${needsEnrichment.length} pools via RPC (concurrency=${ENRICH_CONCURRENCY})...`
-  );
+  console.log(`  Enriching ${needsEnrichment.length} pools via RPC (concurrency=${ENRICH_CONCURRENCY})...`);
 
   let failed = 0;
   let earliestFailedBlock: number | null = null;
@@ -371,17 +336,13 @@ export async function enrichDiscoveredPools(protocol: DiscoveryProtocol, extract
         failed++;
         const blockNumber = Number(item.rawLog.blockNumber);
         if (Number.isSafeInteger(blockNumber) && blockNumber >= 0) {
-          earliestFailedBlock = earliestFailedBlock == null
-            ? blockNumber
-            : Math.min(earliestFailedBlock, blockNumber);
+          earliestFailedBlock = earliestFailedBlock == null ? blockNumber : Math.min(earliestFailedBlock, blockNumber);
         }
-        console.warn(
-          `  [discover] Token enrichment failed for ${item.extracted.pool_address ?? "unknown pool"}: ${errorMessage(error)}`
-        );
+        console.warn(`  [discover] Token enrichment failed for ${item.extracted.pool_address ?? "unknown pool"}: ${errorMessage(error)}`);
         return [];
       }
     },
-    ENRICH_CONCURRENCY
+    ENRICH_CONCURRENCY,
   );
 
   for (let i = 0; i < needsEnrichment.length; i++) {
@@ -404,12 +365,11 @@ async function discoverProtocol(
   }
   const checkpoint = registry.getCheckpoint(key);
   const existingPoolCount = registry.getPoolCountForProtocol(key);
-  const {
-    fromBlock,
-    startBlock,
-    resumed,
-    shouldBackfillEmptyProtocol,
-  } = resolveDiscoveryFromBlock(protocol, checkpoint?.last_block, existingPoolCount);
+  const { fromBlock, startBlock, resumed, shouldBackfillEmptyProtocol } = resolveDiscoveryFromBlock(
+    protocol,
+    checkpoint?.last_block,
+    existingPoolCount,
+  );
 
   console.log(
     `\n[${protocol.name}] Discovering from block ${fromBlock}` +
@@ -420,7 +380,7 @@ async function discoverProtocol(
           : startBlock === DEFAULT_DISCOVERY_START_BLOCK
             ? ` (chain start)`
             : ` (protocol start)`) +
-      `...`
+      `...`,
   );
   discoveryLogger.info(
     {
@@ -500,19 +460,11 @@ async function discoverProtocol(
 async function discoverCurveRemovals(registry: RegistryService, context: { chainHeight?: number | null } = {}) {
   const checkpointKey = "CURVE_POOL_REMOVED";
   const checkpoint = registry.getCheckpoint(checkpointKey);
-  const { fromBlock, startBlock, resumed } = resolveDiscoveryFromBlock(
-    CURVE_POOL_REMOVED,
-    checkpoint?.last_block,
-    1,
-  );
+  const { fromBlock, startBlock, resumed } = resolveDiscoveryFromBlock(CURVE_POOL_REMOVED, checkpoint?.last_block, 1);
 
   console.log(
     `\n[Curve PoolRemoved] Scanning from block ${fromBlock}` +
-      (resumed
-        ? ` (resumed from checkpoint)`
-        : startBlock === DEFAULT_DISCOVERY_START_BLOCK
-          ? ` (chain start)`
-          : ` (protocol start)`) +
+      (resumed ? ` (resumed from checkpoint)` : startBlock === DEFAULT_DISCOVERY_START_BLOCK ? ` (chain start)` : ` (protocol start)`) +
       `...`,
   );
 
@@ -528,13 +480,7 @@ async function discoverCurveRemovals(registry: RegistryService, context: { chain
         topics: [topic0s],
       },
     ],
-    logFields: [
-      LogField.Address,
-      LogField.Topic0,
-      LogField.Topic1,
-      LogField.BlockNumber,
-      LogField.TransactionHash,
-    ],
+    logFields: [LogField.Address, LogField.Topic0, LogField.Topic1, LogField.BlockNumber, LogField.TransactionHash],
   });
 
   const { logs, rollbackGuard, nextBlock } = await fetchAllLogs<DiscoveryRawLog>(query);
@@ -745,9 +691,7 @@ export async function discoverPoolsWithDeps(deps: DiscoverPoolsDeps = {}) {
     console.log(`Total pools in registry: ${totalPools} (${activePools} active)`);
     const activeFamilies = protocolFamilyCoverage.filter((entry) => entry.activePools > 0);
     if (activeFamilies.length > 0) {
-      const familySummary = activeFamilies
-        .map((entry) => `${entry.name}: ${entry.activePools}`)
-        .join(", ");
+      const familySummary = activeFamilies.map((entry) => `${entry.name}: ${entry.activePools}`).join(", ");
       console.log(`Active pools by protocol family: ${familySummary}`);
     }
 

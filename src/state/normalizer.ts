@@ -1,4 +1,3 @@
-
 /**
  * src/state/normalizer.js — Unified pool state normalizer
  *
@@ -59,24 +58,15 @@ type StateRecord = Record<string, unknown>;
 type BigIntLike = bigint | boolean | number | string;
 
 function asStateRecord(value: unknown): StateRecord {
-  return value != null && (typeof value === "object" || typeof value === "function")
-    ? value as StateRecord
-    : {};
+  return value != null && (typeof value === "object" || typeof value === "function") ? (value as StateRecord) : {};
 }
 
 function asStateRecordOrNull(value: unknown): StateRecord | null {
-  return value != null && (typeof value === "object" || typeof value === "function")
-    ? value as StateRecord
-    : null;
+  return value != null && (typeof value === "object" || typeof value === "function") ? (value as StateRecord) : null;
 }
 
 function toBigIntStrict(value: unknown) {
-  if (
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string"
-  ) {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return BigInt(value as BigIntLike);
   }
   throw new Error(`invalid bigint value: ${String(value)}`);
@@ -108,9 +98,7 @@ function normalizeStateAddress(value: unknown, allowZero = false) {
 
 function normalizeStateTokenList(tokens: unknown, allowZero = true) {
   if (!Array.isArray(tokens)) return [];
-  return tokens
-    .map((t) => normalizeStateAddress(t, allowZero))
-    .filter((token): token is string => token != null);
+  return tokens.map((t) => normalizeStateAddress(t, allowZero)).filter((token): token is string => token != null);
 }
 
 function normalizeTokenDecimalsList(tokens: string[], meta: unknown = {}) {
@@ -135,21 +123,13 @@ function normalizeTokenDecimalsList(tokens: string[], meta: unknown = {}) {
 
   return tokens.map((token, index) => {
     // token is already lowercase from normalizeStateTokenList
-    const raw = Object.keys(byAddress).length > 0
-      ? byAddress[token] // token is lowercase, byAddress keys are lowercase
-      : list?.[index];
+    const raw =
+      Object.keys(byAddress).length > 0
+        ? byAddress[token] // token is lowercase, byAddress keys are lowercase
+        : list?.[index];
     const decimals = Number(raw);
     return Number.isInteger(decimals) && decimals >= 0 && decimals <= 255 ? decimals : null;
   });
-}
-
-function defaultRatesForDecimals(decimals: Array<number | null>) {
-  if (!Array.isArray(decimals) || decimals.some((value) => value == null)) {
-    throw new Error(`defaultRatesForDecimals: unknown token decimals (null/undefined)`);
-  }
-  const maxDecimals = Math.max(...decimals.map((value) => value!), 18);
-  if (maxDecimals > 59) return null;
-  return decimals.map((value) => 10n ** BigInt(18 + maxDecimals - value!));
 }
 
 function normalizeBigIntList(values: unknown, length: number) {
@@ -229,13 +209,7 @@ function optionalNonNegativeBigInt(value: unknown) {
  * @param {Object}   [meta]       Registry metadata (fee override, etc.)
  * @returns {Object}  Canonical pool state
  */
-export function normalizeV2State(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeV2State(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   // V2 fee: default 997/1000 (0.3%). SushiSwap also 0.3%.
   // Some forks differ — use registry metadata if available.
   const metaRecord = asStateRecord(meta);
@@ -254,14 +228,12 @@ export function normalizeV2State(
     token1: (normalizedTokens[1] || "").toLowerCase(),
     tokens: normalizedTokens,
     tokenDecimals,
-    fee: feeNumerator,        // 997 = 0.3% fee (out of 1000)
+    fee: feeNumerator, // 997 = 0.3% fee (out of 1000)
     feeDenominator,
-    feeSource: metaRecord.feeNumerator != null ||
-      metaRecord.fee != null ||
-      metaRecord.feeDenominator != null ||
-      metaRecord.fee_denominator != null
-      ? "metadata"
-      : "default",
+    feeSource:
+      metaRecord.feeNumerator != null || metaRecord.fee != null || metaRecord.feeDenominator != null || metaRecord.fee_denominator != null
+        ? "metadata"
+        : "default",
     reserve0: rawRecord.reserve0,
     reserve1: rawRecord.reserve1,
     blockTimestampLast: rawRecord.blockTimestampLast,
@@ -279,13 +251,7 @@ export function normalizeV2State(
  * @param {Object}   [meta]       Registry metadata
  * @returns {Object}  Canonical pool state
  */
-export function normalizeV3State(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeV3State(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   const metaRecord = asStateRecord(meta);
   const rawRecord = asStateRecord(rawState);
   const poolId = normalizeStateAddress(poolAddress) ?? "";
@@ -295,15 +261,12 @@ export function normalizeV3State(
   const isKyberElastic = rawRecord.isKyberElastic === true || metaRecord.isKyberElastic === true || protocolKey === "KYBERSWAP_ELASTIC";
   const isAlgebra = rawRecord.isAlgebra === true || metaRecord.isAlgebra === true || protocolKey === "QUICKSWAP_V3";
   const swapFeeBps = isKyberElastic
-    ? optionalNonNegativeBigInt(rawRecord.swapFeeBps) ??
+    ? (optionalNonNegativeBigInt(rawRecord.swapFeeBps) ??
       optionalNonNegativeBigInt(metaRecord.swapFeeBps) ??
-      optionalNonNegativeBigInt(metaRecord.swapFeeUnits)
+      optionalNonNegativeBigInt(metaRecord.swapFeeUnits))
     : null;
-  const fee = rawRecord.fee != null
-    ? toBigIntStrict(rawRecord.fee)
-    : isKyberElastic && swapFeeBps != null
-      ? swapFeeBps * 100n
-      : resolveV3Fee(meta);
+  const fee =
+    rawRecord.fee != null ? toBigIntStrict(rawRecord.fee) : isKyberElastic && swapFeeBps != null ? swapFeeBps * 100n : resolveV3Fee(meta);
   return {
     poolId,
     protocol: protocolKey,
@@ -338,13 +301,7 @@ export function normalizeV3State(
  * @param {Object}   [meta]       Registry metadata (A, fee, etc.)
  * @returns {Object}  Canonical pool state
  */
-export function normalizeCurveState(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeCurveState(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   const rawRecord = asStateRecord(rawState);
   const metaRecord = asStateRecord(meta);
   const poolId = normalizeStateAddress(poolAddress) ?? "";
@@ -357,19 +314,18 @@ export function normalizeCurveState(
     throw new Error(`normalizeCurveState: unknown token decimals for token ${normalizedTokens[i]} in pool ${poolId}`);
   }) as number[];
   const maxDecimals = Math.max(...resolvedDecimals, 18);
-  const derivedRates: bigint[] | null = maxDecimals <= 59
-    ? resolvedDecimals.map((d) => 10n ** BigInt(18 + maxDecimals - d))
-    : null;
+  const derivedRates: bigint[] | null = maxDecimals <= 59 ? resolvedDecimals.map((d) => 10n ** BigInt(18 + maxDecimals - d)) : null;
 
   const rates = normalizeBigIntList(rawRecord.rates, n) ?? derivedRates ?? defaultRates(n);
   const balances = normalizeBigIntList(rawRecord.balances, n) ?? [];
   const A_raw = rawRecord.A != null ? toBigIntOrFallback(rawRecord.A) : null;
-  const A = A_raw != null
-    ? A_raw
-    : (() => {
-        const metaA = toBigIntOrFallback(metaRecord.A);
-        return metaA != null ? metaA : 100n * 100n;
-      })();
+  const A =
+    A_raw != null
+      ? A_raw
+      : (() => {
+          const metaA = toBigIntOrFallback(metaRecord.A);
+          return metaA != null ? metaA : 100n * 100n;
+        })();
 
   return {
     poolId,
@@ -377,9 +333,7 @@ export function normalizeCurveState(
     token0: (normalizedTokens[0] || "").toLowerCase(),
     token1: (normalizedTokens[1] || "").toLowerCase(),
     tokens: normalizedTokens,
-    fee: rawRecord.fee != null
-      ? toBigIntOrFallback(rawRecord.fee, 4_000_000n)
-      : toBigIntOrFallback(metaRecord.fee, 4_000_000n),  // default 0.04% in 1e10
+    fee: rawRecord.fee != null ? toBigIntOrFallback(rawRecord.fee, 4_000_000n) : toBigIntOrFallback(metaRecord.fee, 4_000_000n), // default 0.04% in 1e10
     balances,
     rates,
     tokenDecimals,
@@ -399,22 +353,15 @@ export function normalizeCurveState(
  * @param {Object}   [meta]       Registry metadata (weights, swapFee)
  * @returns {Object}  Canonical pool state
  */
-export function normalizeBalancerState(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeBalancerState(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   const rawRecord = asStateRecord(rawState);
   const metaRecord = asStateRecord(meta);
   const poolId = normalizeStateAddress(poolAddress) ?? "";
   const protocolKey = normalizeProtocolKey(protocol);
   const normalizedTokens = normalizeStateTokenList(tokens);
   const poolType = rawRecord.poolType ?? metaRecord.poolType ?? metaRecord.pool_type ?? null;
-  const isStable = rawRecord.isStable === true ||
-    rawRecord.amp != null ||
-    (typeof poolType === "string" && poolType.toLowerCase().includes("stable"));
+  const isStable =
+    rawRecord.isStable === true || rawRecord.amp != null || (typeof poolType === "string" && poolType.toLowerCase().includes("stable"));
 
   const weights = Array.isArray(rawRecord.weights)
     ? rawRecord.weights.map((value) => toBigIntOrFallback(value))
@@ -422,9 +369,7 @@ export function normalizeBalancerState(
       ? metaRecord.weights.map((value) => toBigIntOrFallback(value))
       : [];
   const swapFee = toBigIntOrFallback(rawRecord.swapFee ?? metaRecord.swapFee, 3_000_000_000_000_000n);
-  const balances = Array.isArray(rawRecord.balances)
-    ? rawRecord.balances.map((value) => toBigIntOrFallback(value))
-    : [];
+  const balances = Array.isArray(rawRecord.balances) ? rawRecord.balances.map((value) => toBigIntOrFallback(value)) : [];
   const scalingFactors = Array.isArray(rawRecord.scalingFactors)
     ? rawRecord.scalingFactors.map((value) => toBigIntOrFallback(value))
     : Array.isArray(metaRecord.scalingFactors)
@@ -436,15 +381,16 @@ export function normalizeBalancerState(
   // Balancer scalingFactor[i] = 10^(18 - decimals[i]) normalizes raw amounts to 18-decimal
   // precision for invariant math. Without this: stable pools fail validatePoolState (empty
   // scalingFactors vs. balances length), and weighted pools return 0 from simulateBalancerSwap.
-  const resolvedScalingFactors: bigint[] = scalingFactors && scalingFactors.length === normalizedTokens.length
-    ? scalingFactors
-    : tokenDecimals.map((dec) => {
-        if (dec == null) {
-          throw new Error(`normalizeBalancerState: unknown token decimals for pool ${poolId}`);
-        }
-        const d = dec;
-        return d <= 18 ? 10n ** BigInt(18 - d) : 1n;
-      });
+  const resolvedScalingFactors: bigint[] =
+    scalingFactors && scalingFactors.length === normalizedTokens.length
+      ? scalingFactors
+      : tokenDecimals.map((dec) => {
+          if (dec == null) {
+            throw new Error(`normalizeBalancerState: unknown token decimals for pool ${poolId}`);
+          }
+          const d = dec;
+          return d <= 18 ? 10n ** BigInt(18 - d) : 1n;
+        });
 
   return {
     poolId,
@@ -459,11 +405,12 @@ export function normalizeBalancerState(
     weights,
     scalingFactors: resolvedScalingFactors,
     amp: rawRecord.amp != null ? toBigIntOrFallback(rawRecord.amp) : metaRecord.amp != null ? toBigIntOrFallback(metaRecord.amp) : null,
-    ampPrecision: rawRecord.ampPrecision != null
-      ? toBigIntOrFallback(rawRecord.ampPrecision, 1000n)
-      : metaRecord.ampPrecision != null
-        ? toBigIntOrFallback(metaRecord.ampPrecision, 1000n)
-        : null,
+    ampPrecision:
+      rawRecord.ampPrecision != null
+        ? toBigIntOrFallback(rawRecord.ampPrecision, 1000n)
+        : metaRecord.ampPrecision != null
+          ? toBigIntOrFallback(metaRecord.ampPrecision, 1000n)
+          : null,
     ampIsUpdating: Boolean(rawRecord.ampIsUpdating ?? metaRecord.ampIsUpdating ?? false),
     swapFee,
     swapFeeSource: rawRecord.swapFee != null ? "rpc" : metaRecord.swapFee != null ? "metadata" : "default",
@@ -479,13 +426,7 @@ export function normalizeBalancerState(
 /**
  * Normalize a DODO V2 PMM pool state.
  */
-export function normalizeDodoState(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeDodoState(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   const rawRecord = asStateRecord(rawState);
   const metaRecord = asStateRecord(meta);
   const poolId = normalizeStateAddress(poolAddress) ?? "";
@@ -493,9 +434,7 @@ export function normalizeDodoState(
   const fallbackTokens = normalizeStateTokenList(tokens);
   const baseToken = normalizeStateAddress(rawRecord.baseToken ?? metaRecord.baseToken ?? fallbackTokens[0]);
   const quoteToken = normalizeStateAddress(rawRecord.quoteToken ?? metaRecord.quoteToken ?? fallbackTokens[1]);
-  const normalizedTokens = baseToken && quoteToken
-    ? [baseToken, quoteToken]
-    : fallbackTokens;
+  const normalizedTokens = baseToken && quoteToken ? [baseToken, quoteToken] : fallbackTokens;
   const tokenDecimals = normalizeTokenDecimalsList(normalizedTokens, meta);
 
   return {
@@ -526,13 +465,7 @@ export function normalizeDodoState(
 /**
  * Normalize a WOOFi WooPPV2 singleton state.
  */
-export function normalizeWoofiState(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizeWoofiState(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   const rawRecord = asStateRecord(rawState);
   const metaRecord = asStateRecord(meta);
   const poolId = normalizeStateAddress(poolAddress) ?? "";
@@ -578,8 +511,7 @@ export function normalizeWoofiState(
   const normalizedTokens = quoteToken
     ? [
         quoteToken,
-        ...fallbackTokens
-          .filter((token) => token !== quoteToken && baseStates.has(token)),
+        ...fallbackTokens.filter((token) => token !== quoteToken && baseStates.has(token)),
         ...[...baseStates.keys()].filter((token) => !fallbackTokens.includes(token)),
       ]
     : fallbackTokens;
@@ -593,7 +525,7 @@ export function normalizeWoofiState(
     const dec = fallbackDecimals[i];
     if (t && dec != null) fallbackDecimalByToken.set(t, dec);
   }
-  const tokenDecimals = dedupedTokens.map((token, index) => {
+  const tokenDecimals = dedupedTokens.map((token) => {
     if (token === quoteToken) {
       const dec = Number(rawRecord.quoteDecimals ?? fallbackDecimalByToken.get(token) ?? 0);
       if (dec == null) throw new Error(`normalizeWoofiState: unknown quote decimals for pool ${poolId}`);
@@ -601,7 +533,8 @@ export function normalizeWoofiState(
     }
     const baseState = baseStates.get(token);
     if (baseState) {
-      if (baseState.baseDecimals == null) throw new Error(`normalizeWoofiState: unknown base decimals for token ${token} in pool ${poolId}`);
+      if (baseState.baseDecimals == null)
+        throw new Error(`normalizeWoofiState: unknown base decimals for token ${token} in pool ${poolId}`);
       return toNonNegativeInteger(baseState.baseDecimals, fallbackDecimalByToken.get(token) ?? undefined);
     }
     const dec = fallbackDecimalByToken.get(token);
@@ -610,9 +543,7 @@ export function normalizeWoofiState(
   });
   const baseTokenStates: Record<string, StateRecord> = Object.fromEntries(baseStates.entries());
   const balances = dedupedTokens.map((token) =>
-    token === quoteToken
-      ? toBigIntOrFallback(rawRecord.quoteReserve)
-      : toBigIntOrFallback(baseTokenStates[token]?.reserve)
+    token === quoteToken ? toBigIntOrFallback(rawRecord.quoteReserve) : toBigIntOrFallback(baseTokenStates[token]?.reserve),
   );
 
   const quoteDecimalsValue = rawRecord.quoteDecimals ?? tokenDecimals[0];
@@ -659,13 +590,7 @@ export function normalizeWoofiState(
  * @param {Object}   [meta]       Registry metadata
  * @returns {Object|null}  Canonical pool state, or null if protocol unknown
  */
-export function normalizePoolState(
-  poolAddress: unknown,
-  protocol: unknown,
-  tokens: unknown,
-  rawState: unknown,
-  meta: unknown = {},
-) {
+export function normalizePoolState(poolAddress: unknown, protocol: unknown, tokens: unknown, rawState: unknown, meta: unknown = {}) {
   if (!rawState) return null;
 
   const addr = normalizeStateAddress(poolAddress);
@@ -766,53 +691,36 @@ export function validatePoolState(input: unknown): ValidationVerdict {
     tokens.push(normalizedToken);
   }
 
-  if (!Number.isFinite(Number(state.timestamp)) || Number(state.timestamp) <= 0)
-    return { valid: false, reason: "invalid timestamp" };
+  if (!Number.isFinite(Number(state.timestamp)) || Number(state.timestamp) <= 0) return { valid: false, reason: "invalid timestamp" };
 
   if (V2_PROTOCOLS.has(protocol)) {
-    if (tokens.length !== 2)
-      return { valid: false, reason: "V2: token count must be exactly 2" };
-    if (state.reserve0 == null || state.reserve1 == null)
-      return { valid: false, reason: "V2: missing reserves" };
-    if (!positiveBigInt(state.reserve0) || !positiveBigInt(state.reserve1))
-      return { valid: false, reason: "V2: zero reserves" };
+    if (tokens.length !== 2) return { valid: false, reason: "V2: token count must be exactly 2" };
+    if (state.reserve0 == null || state.reserve1 == null) return { valid: false, reason: "V2: missing reserves" };
+    if (!positiveBigInt(state.reserve0) || !positiveBigInt(state.reserve1)) return { valid: false, reason: "V2: zero reserves" };
     const feeDenominator = validationBigInt(state.feeDenominator) ?? DEFAULT_V2_FEE_DENOMINATOR;
     const fee = validationBigInt(state.fee);
-    if (feeDenominator <= 0n || fee == null || fee <= 0n || fee >= feeDenominator)
-      return { valid: false, reason: "V2: invalid fee" };
-    if (state.token0 && state.token0 !== tokens[0])
-      return { valid: false, reason: "V2: token0 mismatch" };
-    if (state.token1 && state.token1 !== tokens[1])
-      return { valid: false, reason: "V2: token1 mismatch" };
+    if (feeDenominator <= 0n || fee == null || fee <= 0n || fee >= feeDenominator) return { valid: false, reason: "V2: invalid fee" };
+    if (state.token0 && state.token0 !== tokens[0]) return { valid: false, reason: "V2: token0 mismatch" };
+    if (state.token1 && state.token1 !== tokens[1]) return { valid: false, reason: "V2: token1 mismatch" };
   } else if (V3_PROTOCOLS().has(protocol)) {
-    if (tokens.length !== 2)
-      return { valid: false, reason: "V3: token count must be exactly 2" };
-    if (!state.initialized)
-      return { valid: false, reason: "V3: not initialized" };
+    if (tokens.length !== 2) return { valid: false, reason: "V3: token count must be exactly 2" };
+    if (!state.initialized) return { valid: false, reason: "V3: not initialized" };
     const sqrtPriceX96 = validationBigInt(state.sqrtPriceX96);
     if (sqrtPriceX96 == null || sqrtPriceX96 < MIN_SQRT_RATIO || sqrtPriceX96 >= MAX_SQRT_RATIO)
       return { valid: false, reason: "V3: zero sqrtPrice" };
     if (typeof state.tick !== "number" || !Number.isInteger(state.tick) || state.tick < MIN_TICK || state.tick > MAX_TICK)
       return { valid: false, reason: "V3: invalid tick" };
     const liquidity = validationBigInt(state.liquidity);
-    if (liquidity == null || liquidity === 0n)
-      return { valid: false, reason: "V3: zero liquidity" };
+    if (liquidity == null || liquidity === 0n) return { valid: false, reason: "V3: zero liquidity" };
     const tickSpacing = typeof state.tickSpacing === "number" ? state.tickSpacing : null;
-    if (
-      state.tickSpacing != null &&
-      (tickSpacing == null || !Number.isInteger(tickSpacing) || tickSpacing <= 0)
-    ) {
+    if (state.tickSpacing != null && (tickSpacing == null || !Number.isInteger(tickSpacing) || tickSpacing <= 0)) {
       return { valid: false, reason: "V3: invalid tickSpacing" };
     }
     const fee = validationBigInt(state.fee);
-    if (fee == null || fee < 0n || fee >= 1_000_000n)
-      return { valid: false, reason: "V3: invalid fee" };
-    if (state.token0 && state.token0 !== tokens[0])
-      return { valid: false, reason: "V3: token0 mismatch" };
-    if (state.token1 && state.token1 !== tokens[1])
-      return { valid: false, reason: "V3: token1 mismatch" };
-    if (state.ticks != null && !(state.ticks instanceof Map))
-      return { valid: false, reason: "V3: ticks must be a Map" };
+    if (fee == null || fee < 0n || fee >= 1_000_000n) return { valid: false, reason: "V3: invalid fee" };
+    if (state.token0 && state.token0 !== tokens[0]) return { valid: false, reason: "V3: token0 mismatch" };
+    if (state.token1 && state.token1 !== tokens[1]) return { valid: false, reason: "V3: token1 mismatch" };
+    if (state.ticks != null && !(state.ticks instanceof Map)) return { valid: false, reason: "V3: ticks must be a Map" };
     if (state.ticks instanceof Map) {
       for (const [tick, data] of state.ticks.entries()) {
         if (!Number.isInteger(tick) || tick < MIN_TICK || tick > MAX_TICK) {
@@ -837,116 +745,74 @@ export function validatePoolState(input: unknown): ValidationVerdict {
     }
   } else if (CURVE_PROTOCOLS.has(protocol)) {
     const balances = validationBigIntArray(state.balances);
-    if (!balances || balances.length < 2)
-      return { valid: false, reason: "Curve: missing balances" };
-    if (balances.length !== tokens.length)
-      return { valid: false, reason: "Curve: token/balance length mismatch" };
-    if (balances.some((balance) => balance <= 0n))
-      return { valid: false, reason: "Curve: zero balance" };
-    if (!positiveBigInt(state.A))
-      return { valid: false, reason: "Curve: missing A" };
+    if (!balances || balances.length < 2) return { valid: false, reason: "Curve: missing balances" };
+    if (balances.length !== tokens.length) return { valid: false, reason: "Curve: token/balance length mismatch" };
+    if (balances.some((balance) => balance <= 0n)) return { valid: false, reason: "Curve: zero balance" };
+    if (!positiveBigInt(state.A)) return { valid: false, reason: "Curve: missing A" };
     const rates = validationBigIntArray(state.rates);
-    if (!rates || rates.length !== balances.length)
-      return { valid: false, reason: "Curve: invalid rates" };
-    if (rates.some((rate) => rate <= 0n))
-      return { valid: false, reason: "Curve: non-positive rate" };
+    if (!rates || rates.length !== balances.length) return { valid: false, reason: "Curve: invalid rates" };
+    if (rates.some((rate) => rate <= 0n)) return { valid: false, reason: "Curve: non-positive rate" };
     const fee = validationBigInt(state.fee);
-    if (fee == null || fee < 0n || fee >= 10n ** 10n)
-      return { valid: false, reason: "Curve: invalid fee" };
+    if (fee == null || fee < 0n || fee >= 10n ** 10n) return { valid: false, reason: "Curve: invalid fee" };
   } else if (BALANCER_PROTOCOLS.has(protocol)) {
     const balances = validationBigIntArray(state.balances);
-    if (!balances || balances.length < 2)
-      return { valid: false, reason: "Balancer: missing balances" };
-    if (balances.length !== tokens.length)
-      return { valid: false, reason: "Balancer: token count mismatch" };
-    if (balances.some((balance) => balance <= 0n))
-      return { valid: false, reason: "Balancer: zero balance" };
+    if (!balances || balances.length < 2) return { valid: false, reason: "Balancer: missing balances" };
+    if (balances.length !== tokens.length) return { valid: false, reason: "Balancer: token count mismatch" };
+    if (balances.some((balance) => balance <= 0n)) return { valid: false, reason: "Balancer: zero balance" };
     const swapFee = validationBigInt(state.swapFee);
-    if (swapFee == null || swapFee < 0n || swapFee >= ONE)
-      return { valid: false, reason: "Balancer: invalid swapFee" };
+    if (swapFee == null || swapFee < 0n || swapFee >= ONE) return { valid: false, reason: "Balancer: invalid swapFee" };
     if (state.isStable === true) {
-      if (!positiveBigInt(state.amp))
-        return { valid: false, reason: "Balancer stable: missing amp" };
-      if (!positiveBigInt(state.ampPrecision))
-        return { valid: false, reason: "Balancer stable: invalid amp precision" };
+      if (!positiveBigInt(state.amp)) return { valid: false, reason: "Balancer stable: missing amp" };
+      if (!positiveBigInt(state.ampPrecision)) return { valid: false, reason: "Balancer stable: invalid amp precision" };
       const scalingFactors = validationBigIntArray(state.scalingFactors);
       if (!scalingFactors || scalingFactors.length !== balances.length)
         return { valid: false, reason: "Balancer stable: scaling factor length mismatch" };
-      if (scalingFactors.some((factor) => factor <= 0n))
-        return { valid: false, reason: "Balancer stable: non-positive scaling factor" };
+      if (scalingFactors.some((factor) => factor <= 0n)) return { valid: false, reason: "Balancer stable: non-positive scaling factor" };
     } else {
       const weights = validationBigIntArray(state.weights);
-      if (!weights || weights.length < 2)
-        return { valid: false, reason: "Balancer: missing weights" };
-      if (balances.length !== weights.length)
-        return { valid: false, reason: "Balancer: balances/weights length mismatch" };
-      if (weights.some((weight) => weight <= 0n))
-        return { valid: false, reason: "Balancer: non-positive weight" };
-      if (weights.reduce((sum, weight) => sum + weight, 0n) !== ONE)
-        return { valid: false, reason: "Balancer: weights must sum to 1e18" };
+      if (!weights || weights.length < 2) return { valid: false, reason: "Balancer: missing weights" };
+      if (balances.length !== weights.length) return { valid: false, reason: "Balancer: balances/weights length mismatch" };
+      if (weights.some((weight) => weight <= 0n)) return { valid: false, reason: "Balancer: non-positive weight" };
+      if (weights.reduce((sum, weight) => sum + weight, 0n) !== ONE) return { valid: false, reason: "Balancer: weights must sum to 1e18" };
     }
   } else if (DODO_PROTOCOLS.has(protocol)) {
-    if (tokens.length !== 2)
-      return { valid: false, reason: "DODO: token count must be exactly 2" };
-    if (state.baseToken !== tokens[0] || state.quoteToken !== tokens[1])
-      return { valid: false, reason: "DODO: base/quote token mismatch" };
-    if (state.baseReserve == null || state.quoteReserve == null)
-      return { valid: false, reason: "DODO: missing reserves" };
-    if (!positiveBigInt(state.baseReserve) || !positiveBigInt(state.quoteReserve))
-      return { valid: false, reason: "DODO: zero reserves" };
-    if (state.baseTarget == null || state.quoteTarget == null)
-      return { valid: false, reason: "DODO: missing targets" };
-    if (!positiveBigInt(state.baseTarget) || !positiveBigInt(state.quoteTarget))
-      return { valid: false, reason: "DODO: zero targets" };
-    if (!positiveBigInt(state.i))
-      return { valid: false, reason: "DODO: invalid oracle price" };
+    if (tokens.length !== 2) return { valid: false, reason: "DODO: token count must be exactly 2" };
+    if (state.baseToken !== tokens[0] || state.quoteToken !== tokens[1]) return { valid: false, reason: "DODO: base/quote token mismatch" };
+    if (state.baseReserve == null || state.quoteReserve == null) return { valid: false, reason: "DODO: missing reserves" };
+    if (!positiveBigInt(state.baseReserve) || !positiveBigInt(state.quoteReserve)) return { valid: false, reason: "DODO: zero reserves" };
+    if (state.baseTarget == null || state.quoteTarget == null) return { valid: false, reason: "DODO: missing targets" };
+    if (!positiveBigInt(state.baseTarget) || !positiveBigInt(state.quoteTarget)) return { valid: false, reason: "DODO: zero targets" };
+    if (!positiveBigInt(state.i)) return { valid: false, reason: "DODO: invalid oracle price" };
     const k = validationBigInt(state.k);
-    if (k == null || k < 0n || k > ONE)
-      return { valid: false, reason: "DODO: invalid k" };
+    if (k == null || k < 0n || k > ONE) return { valid: false, reason: "DODO: invalid k" };
     if (typeof state.rState !== "number" || !Number.isInteger(state.rState) || state.rState < 0 || state.rState > 2)
       return { valid: false, reason: "DODO: invalid R state" };
     const lpFeeRate = validationBigInt(state.lpFeeRate);
     const mtFeeRate = validationBigInt(state.mtFeeRate);
-    if (lpFeeRate == null || mtFeeRate == null)
-      return { valid: false, reason: "DODO: missing fee rates" };
-    if (lpFeeRate < 0n || mtFeeRate < 0n || lpFeeRate + mtFeeRate >= ONE)
-      return { valid: false, reason: "DODO: invalid fee rates" };
+    if (lpFeeRate == null || mtFeeRate == null) return { valid: false, reason: "DODO: missing fee rates" };
+    if (lpFeeRate < 0n || mtFeeRate < 0n || lpFeeRate + mtFeeRate >= ONE) return { valid: false, reason: "DODO: invalid fee rates" };
   } else if (WOOFI_PROTOCOLS.has(protocol)) {
-    if (tokens.length < 2)
-      return { valid: false, reason: "WOOFi: token count must be at least 2" };
-    if (state.quoteToken !== tokens[0])
-      return { valid: false, reason: "WOOFi: quote token must be token0" };
-    if (!positiveBigInt(state.quoteReserve))
-      return { valid: false, reason: "WOOFi: invalid quote reserve" };
+    if (tokens.length < 2) return { valid: false, reason: "WOOFi: token count must be at least 2" };
+    if (state.quoteToken !== tokens[0]) return { valid: false, reason: "WOOFi: quote token must be token0" };
+    if (!positiveBigInt(state.quoteReserve)) return { valid: false, reason: "WOOFi: invalid quote reserve" };
     const balances = validationBigIntArray(state.balances);
-    if (!balances || balances.length !== tokens.length)
-      return { valid: false, reason: "WOOFi: token/balance length mismatch" };
-    if (balances.some((balance) => balance <= 0n))
-      return { valid: false, reason: "WOOFi: zero balance" };
+    if (!balances || balances.length !== tokens.length) return { valid: false, reason: "WOOFi: token/balance length mismatch" };
+    if (balances.some((balance) => balance <= 0n)) return { valid: false, reason: "WOOFi: zero balance" };
     const baseTokenStates = asStateRecordOrNull(state.baseTokenStates);
-    if (!baseTokenStates)
-      return { valid: false, reason: "WOOFi: missing base token states" };
+    if (!baseTokenStates) return { valid: false, reason: "WOOFi: missing base token states" };
     for (const token of tokens.slice(1)) {
       const base = asStateRecordOrNull(baseTokenStates[token]);
       if (!base) return { valid: false, reason: `WOOFi: missing base state for ${token}` };
-      if (!positiveBigInt(base.reserve))
-        return { valid: false, reason: `WOOFi: invalid reserve for ${token}` };
-      if (!positiveBigInt(base.price))
-        return { valid: false, reason: `WOOFi: invalid price for ${token}` };
-      if (base.feasible === false)
-        return { valid: false, reason: `WOOFi: infeasible oracle for ${token}` };
+      if (!positiveBigInt(base.reserve)) return { valid: false, reason: `WOOFi: invalid reserve for ${token}` };
+      if (!positiveBigInt(base.price)) return { valid: false, reason: `WOOFi: invalid price for ${token}` };
+      if (base.feasible === false) return { valid: false, reason: `WOOFi: infeasible oracle for ${token}` };
       const spread = validationBigInt(base.spread);
-      if (spread == null || spread < 0n || spread >= ONE)
-        return { valid: false, reason: `WOOFi: invalid spread for ${token}` };
-      if (!nonNegativeBigInt(base.coeff))
-        return { valid: false, reason: `WOOFi: invalid coeff for ${token}` };
+      if (spread == null || spread < 0n || spread >= ONE) return { valid: false, reason: `WOOFi: invalid spread for ${token}` };
+      if (!nonNegativeBigInt(base.coeff)) return { valid: false, reason: `WOOFi: invalid coeff for ${token}` };
       const feeRate = validationBigInt(base.feeRate);
-      if (feeRate == null || feeRate < 0n || feeRate >= 100_000n)
-        return { valid: false, reason: `WOOFi: invalid fee rate for ${token}` };
-      if (!nonNegativeBigInt(base.maxGamma))
-        return { valid: false, reason: `WOOFi: invalid maxGamma for ${token}` };
-      if (!positiveBigInt(base.maxNotionalSwap))
-        return { valid: false, reason: `WOOFi: invalid maxNotionalSwap for ${token}` };
+      if (feeRate == null || feeRate < 0n || feeRate >= 100_000n) return { valid: false, reason: `WOOFi: invalid fee rate for ${token}` };
+      if (!nonNegativeBigInt(base.maxGamma)) return { valid: false, reason: `WOOFi: invalid maxGamma for ${token}` };
+      if (!positiveBigInt(base.maxNotionalSwap)) return { valid: false, reason: `WOOFi: invalid maxNotionalSwap for ${token}` };
       if (!positiveBigInt(base.baseDec) || !positiveBigInt(base.quoteDec) || !positiveBigInt(base.priceDec))
         return { valid: false, reason: `WOOFi: invalid decimals for ${token}` };
     }
@@ -958,4 +824,4 @@ export function validatePoolState(input: unknown): ValidationVerdict {
 // ─── Protocol sets export ─────────────────────────────────────
 
 export { V2_PROTOCOLS, CURVE_PROTOCOLS, BALANCER_PROTOCOLS, DODO_PROTOCOLS, WOOFI_PROTOCOLS };
-export { V3_PROTOCOLS }
+export { V3_PROTOCOLS };

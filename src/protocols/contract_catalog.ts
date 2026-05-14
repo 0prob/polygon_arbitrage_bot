@@ -30,9 +30,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "SUSHISWAP_V2",
@@ -40,9 +38,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "DFYN_V2",
@@ -50,9 +46,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "COMETHSWAP_V2",
@@ -60,9 +54,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0x800b052609c355cA8103E06F022aA30647eAd60a",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "APESWAP_V2",
@@ -70,9 +62,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0xCf083Be4164828f00cAE704EC15a36D711491284",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "MESHSWAP_V2",
@@ -80,9 +70,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0x9F3044f7F9FC8bC9eD615d54845b4577B833282d",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "JETSWAP_V2",
@@ -90,9 +78,7 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
     address: "0x668ad0ed2622C62E24f0d5ab6B6Ac1b9D2cD4AC7",
     role: "factory",
     integration: "active",
-    expectations: [
-      UNISWAP_V2_PAIR_CREATED_EXPECTATION,
-    ],
+    expectations: [UNISWAP_V2_PAIR_CREATED_EXPECTATION],
   },
   {
     protocol: "UNISWAP_V3",
@@ -230,7 +216,21 @@ export const CONTRACT_CATALOG: ContractCatalogEntry[] = [
       {
         type: "event",
         name: "CryptoPoolDeployed",
-        inputs: ["address", "address[2]", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "address"],
+        inputs: [
+          "address",
+          "address[2]",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "address",
+        ],
         indexed: [false, false, false, false, false, false, false, false, false, false, false, false, false],
       },
     ],

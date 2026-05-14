@@ -94,16 +94,17 @@ export async function evaluateCandidatePipeline<TAssessment, TCandidate extends 
         if (shouldOptimizeCandidate(candidate, i, shortlisted.length, bestQuickProfit)) {
           candidateOptimizations++;
           optimized = true;
-          evaluatedResult = await options.optimizePath(path, quickResult, tokenToMaticRate) ?? quickResult;
+          evaluatedResult = (await options.optimizePath(path, quickResult, tokenToMaticRate)) ?? quickResult;
         }
 
         let assessment = options.assessRoute(path, evaluatedResult, tokenToMaticRate);
         const assessmentWithReason = assessment as { shouldExecute: boolean; rejectReason?: string };
-        const canBenefitFromReoptimization = !assessmentWithReason.shouldExecute
-          && !optimized
-          && quickResult.profit > 0n
-          && assessmentWithReason.rejectReason !== "stale_or_missing_token_matic_rate"
-          && !assessmentWithReason.rejectReason?.startsWith("net profit");
+        const canBenefitFromReoptimization =
+          !assessmentWithReason.shouldExecute &&
+          !optimized &&
+          quickResult.profit > 0n &&
+          assessmentWithReason.rejectReason !== "stale_or_missing_token_matic_rate" &&
+          !assessmentWithReason.rejectReason?.startsWith("net profit");
         if (canBenefitFromReoptimization) {
           const secondChanceResult = await options.optimizePath(path, quickResult, tokenToMaticRate);
           if (secondChanceResult) {

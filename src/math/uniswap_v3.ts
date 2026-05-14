@@ -1,4 +1,3 @@
-
 /**
  * src/math/uniswap_v3.js — Optimized Uniswap V3 swap simulator
  *
@@ -11,38 +10,30 @@
  * and returns the swap result without side effects.
  */
 
-import {
-  getSqrtRatioAtTick,
-  getTickAtSqrtRatioInRange,
-  MIN_TICK,
-  MAX_TICK,
-  MIN_SQRT_RATIO,
-  MAX_SQRT_RATIO,
-} from "./tick_math.ts";
+import { getSqrtRatioAtTick, getTickAtSqrtRatioInRange, MIN_TICK, MAX_TICK, MIN_SQRT_RATIO, MAX_SQRT_RATIO } from "./tick_math.ts";
 import { computeSwapStep } from "./swap_math.ts";
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigIntOrNull,
-} from "../utils/bigint.ts";
+import { toBigIntOrNull } from "../utils/bigint.ts";
 
 // ─── Optimized Tick Navigation ──────────────────────────────────
 
 type V3PoolStateLike = Record<string, unknown>;
 type V3TickData = Record<string, unknown>;
 
-const sortedTicksCache = new Map<string, {
-  tickVersion: number;
-  ticksRef: Map<unknown, unknown>;
-  sortedTicks: number[];
-}>();
+const sortedTicksCache = new Map<
+  string,
+  {
+    tickVersion: number;
+    ticksRef: Map<unknown, unknown>;
+    sortedTicks: number[];
+  }
+>();
 
 function asPoolState(value: unknown): V3PoolStateLike {
-  return value != null && typeof value === "object" ? value as V3PoolStateLike : {};
+  return value != null && typeof value === "object" ? (value as V3PoolStateLike) : {};
 }
 
 function asTickData(value: unknown): V3TickData | null {
-  return value != null && typeof value === "object" ? value as V3TickData : null;
+  return value != null && typeof value === "object" ? (value as V3TickData) : null;
 }
 
 function poolCacheKey(pool: V3PoolStateLike) {
@@ -98,9 +89,7 @@ function getSortedTicks(state: V3PoolStateLike) {
   const ticks = state.ticks;
   if (!(ticks instanceof Map) || ticks.size === 0) return [];
 
-  const tickVersion = Number.isFinite(Number(state?.tickVersion))
-    ? Number(state.tickVersion)
-    : 0;
+  const tickVersion = Number.isFinite(Number(state?.tickVersion)) ? Number(state.tickVersion) : 0;
   const key = poolCacheKey(state);
   if (key) {
     const cached = sortedTicksCache.get(key);
@@ -162,9 +151,7 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   }
 
   // Price limit: min or max sqrt ratio depending on direction
-  const sqrtPriceLimitX96 = zeroForOne
-    ? getSqrtRatioAtTick(MIN_TICK) + 1n
-    : getSqrtRatioAtTick(MAX_TICK) - 1n;
+  const sqrtPriceLimitX96 = zeroForOne ? getSqrtRatioAtTick(MIN_TICK) + 1n : getSqrtRatioAtTick(MAX_TICK) - 1n;
 
   const sortedTicks = getSortedTicks(pool);
   const ticks = pool.ticks instanceof Map ? pool.ticks : null;
@@ -182,17 +169,10 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
 
   for (let i = 0; i < MAX_ITERATIONS && amountRemaining > 0n; i++) {
     // Find the next initialized tick boundary
-    const nextTick = nextInitializedTickOptimized(
-      sortedTicks,
-      tick,
-      zeroForOne
-    );
+    const nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
 
     // Determine the sqrt price at the next tick boundary
-    const sqrtPriceNextTickX96 =
-      nextTick !== null
-        ? getSqrtRatioAtTick(nextTick)
-        : sqrtPriceLimitX96;
+    const sqrtPriceNextTickX96 = nextTick !== null ? getSqrtRatioAtTick(nextTick) : sqrtPriceLimitX96;
 
     // Clamp to price limit
     const sqrtRatioTargetX96 = zeroForOne
@@ -204,13 +184,7 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
         : sqrtPriceNextTickX96;
 
     // Compute swap within this tick range
-    const step = computeSwapStep(
-      sqrtPriceX96,
-      sqrtRatioTargetX96,
-      liquidity,
-      amountRemaining,
-      feePips
-    );
+    const step = computeSwapStep(sqrtPriceX96, sqrtRatioTargetX96, liquidity, amountRemaining, feePips);
 
     // Update state
     sqrtPriceX96 = step.sqrtRatioNextX96;
@@ -226,9 +200,7 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
         if (liquidityNet == null) break;
         // When moving left (zeroForOne), we subtract liquidityNet
         // When moving right (!zeroForOne), we add liquidityNet
-        liquidity = zeroForOne
-          ? liquidity - liquidityNet
-          : liquidity + liquidityNet;
+        liquidity = zeroForOne ? liquidity - liquidityNet : liquidity + liquidityNet;
         ticksCrossed++;
       }
 
@@ -239,14 +211,8 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
       // from the post-swap sqrt price to keep downstream metadata canonical.
       // We already know the active tick must lie within the interval bounded by
       // the previous active tick and the next initialized boundary when present.
-      const minTick = zeroForOne
-        ? nextTick ?? MIN_TICK
-        : tick;
-      const maxTick = zeroForOne
-        ? tick
-        : nextTick != null
-          ? nextTick - 1
-          : MAX_TICK;
+      const minTick = zeroForOne ? (nextTick ?? MIN_TICK) : tick;
+      const maxTick = zeroForOne ? tick : nextTick != null ? nextTick - 1 : MAX_TICK;
       tick = getTickAtSqrtRatioInRange(sqrtPriceX96, minTick, maxTick);
       break;
     }

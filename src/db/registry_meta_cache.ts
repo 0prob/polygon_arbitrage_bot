@@ -46,9 +46,7 @@ export class RegistryMetaCache {
     if (!this._activePoolMetaCache) {
       const activePools = loadPoolMetaCache(this._stmt, "active") as RegistryPoolMeta[];
       this._activePoolMetaCache = activePools;
-      this._activePoolMetaByAddressCache = new Map(
-        activePools.map((pool) => [pool.pool_address, pool]),
-      );
+      this._activePoolMetaByAddressCache = new Map(activePools.map((pool) => [pool.pool_address, pool]));
     }
     return this._activePoolMetaCache;
   }

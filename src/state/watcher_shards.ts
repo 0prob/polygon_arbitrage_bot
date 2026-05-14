@@ -14,10 +14,7 @@ import {
   watcherShardFailureError,
 } from "./watcher_poll_utils.ts";
 
-export type WatcherPollResponse = Omit<
-  HyperSyncGetResponse<HyperSyncRawLog>,
-  "archiveHeight" | "data" | "nextBlock" | "rollbackGuard"
-> & {
+export type WatcherPollResponse = Omit<HyperSyncGetResponse<HyperSyncRawLog>, "archiveHeight" | "data" | "nextBlock" | "rollbackGuard"> & {
   rollbackGuard?: RollbackGuard | null;
   data: {
     logs: HyperSyncRawLog[];
@@ -53,9 +50,7 @@ export function mergeWatcherShardSettledResults(
   return mergeWatcherShardResponses(responses);
 }
 
-export function mergeWatcherShardResponses(
-  responses: HyperSyncGetResponse<HyperSyncRawLog>[],
-): WatcherShardMergeResult {
+export function mergeWatcherShardResponses(responses: HyperSyncGetResponse<HyperSyncRawLog>[]): WatcherShardMergeResult {
   const logs: HyperSyncRawLog[] = [];
   let rollbackGuard: RollbackGuard | null = null;
   let nextBlock = Number.POSITIVE_INFINITY;
@@ -97,9 +92,7 @@ export function mergeWatcherShardResponses(
     }
   }
 
-  const archiveHeightMeta = shardArchiveHeights.size > 1
-    ? watcherShardArchiveHeightMeta(shardArchiveHeights)
-    : null;
+  const archiveHeightMeta = shardArchiveHeights.size > 1 ? watcherShardArchiveHeightMeta(shardArchiveHeights) : null;
 
   return {
     rollbackGuard,

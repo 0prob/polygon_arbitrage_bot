@@ -69,29 +69,33 @@ export class TxAttemptStore {
   write(entry: AttemptLogEntry): void {
     if (!this._open) return;
     try {
-      this.db.prepare(`
+      this.db
+        .prepare(
+          `
         INSERT INTO tx_attempts (
           attempt_id, stage, outcome, tx_hash, nonce, endpoint,
           latency_ms, error, error_category, gas_limit, gas_price,
           profit_wei, route_summary, endpoint_results, meta
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        entry.attemptId,
-        entry.stage,
-        entry.outcome ?? null,
-        entry.txHash ?? null,
-        entry.nonce != null ? entry.nonce : null,
-        entry.endpoint ?? null,
-        entry.latencyMs != null ? entry.latencyMs : null,
-        entry.error ?? null,
-        entry.errorCategory ?? null,
-        entry.gasLimit ?? null,
-        entry.gasPrice ?? null,
-        entry.profitWei ?? null,
-        entry.routeSummary ?? null,
-        entry.endpointResults ? JSON.stringify(entry.endpointResults) : null,
-        entry.meta ? JSON.stringify(entry.meta) : null,
-      );
+      `,
+        )
+        .run(
+          entry.attemptId,
+          entry.stage,
+          entry.outcome ?? null,
+          entry.txHash ?? null,
+          entry.nonce != null ? entry.nonce : null,
+          entry.endpoint ?? null,
+          entry.latencyMs != null ? entry.latencyMs : null,
+          entry.error ?? null,
+          entry.errorCategory ?? null,
+          entry.gasLimit ?? null,
+          entry.gasPrice ?? null,
+          entry.profitWei ?? null,
+          entry.routeSummary ?? null,
+          entry.endpointResults ? JSON.stringify(entry.endpointResults) : null,
+          entry.meta ? JSON.stringify(entry.meta) : null,
+        );
     } catch {
       // Intentionally silent — tx_attempts is diagnostic infra, not critical path
     }
@@ -101,14 +105,14 @@ export class TxAttemptStore {
 
   /** All stages for a given attempt_id, in insertion order. */
   getAttempt(attemptId: string): unknown[] {
-    return this.db.prepare(
-      "SELECT * FROM tx_attempts WHERE attempt_id = ? ORDER BY id ASC"
-    ).all(attemptId);
+    return this.db.prepare("SELECT * FROM tx_attempts WHERE attempt_id = ? ORDER BY id ASC").all(attemptId);
   }
 
   /** Most recent N final outcomes, useful for quick health checks. */
   getRecentOutcomes(limit = 50): unknown[] {
-    return this.db.prepare(`
+    return this.db
+      .prepare(
+        `
       SELECT attempt_id, outcome, tx_hash, profit_wei, route_summary,
              error, error_category, recorded_at
       FROM   tx_attempts
@@ -118,12 +122,16 @@ export class TxAttemptStore {
              )
       ORDER  BY id DESC
       LIMIT  ?
-    `).all(limit);
+    `,
+      )
+      .all(limit);
   }
 
   /** All failed attempts in the last N minutes. */
   getRecentFailures(windowMinutes = 60): unknown[] {
-    return this.db.prepare(`
+    return this.db
+      .prepare(
+        `
       SELECT *
       FROM   tx_attempts
       WHERE  outcome IN (
@@ -132,14 +140,14 @@ export class TxAttemptStore {
              )
         AND  recorded_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', ? || ' minutes')
       ORDER  BY id DESC
-    `).all(`-${windowMinutes}`);
+    `,
+      )
+      .all(`-${windowMinutes}`);
   }
 
   /** Full history for a tx hash (all stages, across any attempt_id). */
   getByTxHash(txHash: string): unknown[] {
-    return this.db.prepare(
-      "SELECT * FROM tx_attempts WHERE tx_hash = ? ORDER BY id ASC"
-    ).all(txHash);
+    return this.db.prepare("SELECT * FROM tx_attempts WHERE tx_hash = ? ORDER BY id ASC").all(txHash);
   }
 
   /**
@@ -147,22 +155,30 @@ export class TxAttemptStore {
    * Returns rows: { outcome, count }
    */
   getOutcomeSummary(windowMinutes = 60): unknown[] {
-    return this.db.prepare(`
+    return this.db
+      .prepare(
+        `
       SELECT outcome, COUNT(*) as count
       FROM   tx_attempts
       WHERE  outcome IS NOT NULL
         AND  recorded_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', ? || ' minutes')
       GROUP  BY outcome
       ORDER  BY count DESC
-    `).all(`-${windowMinutes}`);
+    `,
+      )
+      .all(`-${windowMinutes}`);
   }
 
   /** Prune rows older than retentionDays (default 7). Call periodically to bound DB growth. */
   prune(retentionDays = 7): number {
-    const result = this.db.prepare(`
+    const result = this.db
+      .prepare(
+        `
       DELETE FROM tx_attempts
       WHERE recorded_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', ? || ' days')
-    `).run(`-${retentionDays}`) as { changes?: number };
+    `,
+      )
+      .run(`-${retentionDays}`) as { changes?: number };
     return result?.changes ?? 0;
   }
 

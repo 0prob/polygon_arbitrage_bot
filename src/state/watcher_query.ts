@@ -1,10 +1,6 @@
 import { chunk } from "../utils/concurrency.ts";
 import { LogField, JoinMode } from "../hypersync/client.ts";
-import {
-  buildHyperSyncLogQuery,
-  DEFAULT_HYPERSYNC_BLOCK_FIELDS,
-  type HyperSyncLogQuery,
-} from "../hypersync/query_policy.ts";
+import { buildHyperSyncLogQuery, DEFAULT_HYPERSYNC_BLOCK_FIELDS, type HyperSyncLogQuery } from "../hypersync/query_policy.ts";
 import { topic0ForSignature } from "../hypersync/topics.ts";
 import {
   HYPERSYNC_BATCH_SIZE,
@@ -16,15 +12,24 @@ import { HUB_4_TOKENS, POLYGON_HUB_TOKENS } from "../routing/graph.ts";
 import type { WatcherTopicMap } from "./watcher_types.ts";
 
 const V2_SYNC = "event Sync(uint112 reserve0, uint112 reserve1)";
-const V3_SWAP = "event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)";
-const V3_MINT = "event Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)";
-const V3_BURN = "event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)";
-const BAL_BALANCE = "event PoolBalanceChanged(bytes32 indexed poolId, address indexed liquidityProvider, address[] tokens, int256[] deltas, uint256[] protocolFeeAmounts)";
-const CURVE_EXCHANGE_STABLE = "event TokenExchange(address indexed buyer, int128 sold_id, uint256 tokens_sold, int128 bought_id, uint256 tokens_bought)";
-const CURVE_EXCHANGE_CRYPTO = "event TokenExchange(address indexed buyer, uint256 sold_id, uint256 tokens_sold, uint256 bought_id, uint256 tokens_bought)";
-const CURVE_EXCHANGE_UNDERLYING = "event TokenExchangeUnderlying(address indexed buyer, int128 sold_id, uint256 tokens_sold, int128 bought_id, uint256 tokens_bought)";
-const DODO_SWAP = "event DODOSwap(address fromToken, address toToken, uint256 fromAmount, uint256 toAmount, address trader, address receiver)";
-const WOOFI_SWAP = "event WooSwap(address indexed fromToken, address indexed toToken, uint256 fromAmount, uint256 toAmount, address from, address indexed to, address rebateTo, uint256 swapVol, uint256 swapFee)";
+const V3_SWAP =
+  "event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)";
+const V3_MINT =
+  "event Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)";
+const V3_BURN =
+  "event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)";
+const BAL_BALANCE =
+  "event PoolBalanceChanged(bytes32 indexed poolId, address indexed liquidityProvider, address[] tokens, int256[] deltas, uint256[] protocolFeeAmounts)";
+const CURVE_EXCHANGE_STABLE =
+  "event TokenExchange(address indexed buyer, int128 sold_id, uint256 tokens_sold, int128 bought_id, uint256 tokens_bought)";
+const CURVE_EXCHANGE_CRYPTO =
+  "event TokenExchange(address indexed buyer, uint256 sold_id, uint256 tokens_sold, uint256 bought_id, uint256 tokens_bought)";
+const CURVE_EXCHANGE_UNDERLYING =
+  "event TokenExchangeUnderlying(address indexed buyer, int128 sold_id, uint256 tokens_sold, int128 bought_id, uint256 tokens_bought)";
+const DODO_SWAP =
+  "event DODOSwap(address fromToken, address toToken, uint256 fromAmount, uint256 toAmount, address trader, address receiver)";
+const WOOFI_SWAP =
+  "event WooSwap(address indexed fromToken, address indexed toToken, uint256 fromAmount, uint256 toAmount, address from, address indexed to, address rebateTo, uint256 swapVol, uint256 swapFee)";
 
 export const WATCHER_SIGNATURES = [
   V2_SYNC,
@@ -60,7 +65,9 @@ function _getWatcherTopics(): string[] {
   try {
     const env = process.env.ENABLE_V3_PROTOCOLS;
     v3Enabled = env === undefined || env === "" || env === "true" || env === "1";
-  } catch { /* config not ready */ }
+  } catch {
+    /* config not ready */
+  }
   _watcherTopics = [
     WATCHER_TOPIC0.V2_SYNC,
     ...(v3Enabled ? [WATCHER_TOPIC0.V3_SWAP, WATCHER_TOPIC0.V3_MINT, WATCHER_TOPIC0.V3_BURN] : []),
@@ -87,8 +94,6 @@ const WATCHER_LOG_FIELDS = [
   LogField.TransactionIndex,
 ];
 
-
-
 export function normalizeWatchedAddresses(addresses: unknown[]) {
   if (!Array.isArray(addresses) || addresses.length === 0) return [];
   const seen = new Set<string>();
@@ -114,11 +119,11 @@ export function watcherFilterMode(addrCount: number) {
 
 export function buildWatcherLogQueries(addresses: unknown[], fromBlock: number): HyperSyncLogQuery[] {
   const watchedAddresses = normalizeWatchedAddresses(addresses);
-  
+
   // Sort addresses by activity/liquidity priority if available
   // High-liquidity pools get prioritized in earlier filter slots
   const sortedAddresses = sortAddressesByPriority(watchedAddresses);
-  
+
   const logFilters =
     sortedAddresses.length > 0
       ? chunk(sortedAddresses, HYPERSYNC_MAX_ADDRESS_FILTER).map((address) => ({
@@ -138,7 +143,7 @@ export function buildWatcherLogQueries(addresses: unknown[], fromBlock: number):
       joinMode: JoinMode.JoinNothing,
       logFields: WATCHER_LOG_FIELDS,
       blockFields: DEFAULT_HYPERSYNC_BLOCK_FIELDS,
-    })
+    }),
   );
 }
 

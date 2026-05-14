@@ -1,4 +1,3 @@
-
 /**
  * src/db/sqlite.js — small compatibility layer over node:sqlite
  *
@@ -65,9 +64,7 @@ export class CompatDatabase {
     if (this._closed) throw new Error("CompatDatabase: database is closed");
     const cachedSql = this._namedStatementSql.get(key);
     if (cachedSql != null && cachedSql !== sql) {
-      throw new Error(
-        `CompatDatabase.statement key collision for "${key}": existing SQL does not match new SQL`,
-      );
+      throw new Error(`CompatDatabase.statement key collision for "${key}": existing SQL does not match new SQL`);
     }
     if (!this._namedStatementCache.has(key)) {
       this._namedStatementCache.set(key, this.prepare(sql));

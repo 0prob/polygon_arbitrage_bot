@@ -1,4 +1,3 @@
-
 /**
  * src/utils/validation_job.js — Periodic registry validation job
  *
@@ -67,14 +66,11 @@ async function runValidation(registry: ValidationRegistry) {
   const issueCount = invalid.reduce((sum, entry) => sum + entry.issues.length, 0);
 
   if (issueCount === 0) {
-    logger.info(
-      { total, elapsed_ms: elapsed },
-      "[validation_job] Registry validation passed — no issues found"
-    );
+    logger.info({ total, elapsed_ms: elapsed }, "[validation_job] Registry validation passed — no issues found");
   } else {
     logger.warn(
       { total, invalid_pools: invalid.length, issues: issueCount, elapsed_ms: elapsed },
-      "[validation_job] Registry validation found issues"
+      "[validation_job] Registry validation found issues",
     );
 
     for (const entry of invalid.slice(0, 20)) {
@@ -84,9 +80,7 @@ async function runValidation(registry: ValidationRegistry) {
     }
 
     if (invalid.length > 20) {
-      logger.warn(
-        `[validation_job] ... and ${invalid.length - 20} more invalid pools (truncated)`
-      );
+      logger.warn(`[validation_job] ... and ${invalid.length - 20} more invalid pools (truncated)`);
     }
   }
 
@@ -118,23 +112,14 @@ async function runValidation(registry: ValidationRegistry) {
  * @returns {{ stop: Function }}  Handle with a `stop()` method
  */
 export function startValidationJob(registry: ValidationRegistry, options: ValidationJobOptions = {}) {
-  const {
-    intervalMs = DEFAULT_INTERVAL_MS,
-    runImmediately = true,
-  } = options;
+  const { intervalMs = DEFAULT_INTERVAL_MS, runImmediately = true } = options;
 
   if (_timer !== null) {
-    logger.warn(
-      { event: "validation_job_duplicate_start" },
-      "Validation job already running; ignoring duplicate start"
-    );
+    logger.warn({ event: "validation_job_duplicate_start" }, "Validation job already running; ignoring duplicate start");
     return { stop: stopValidationJob };
   }
 
-  logger.info(
-    { event: "validation_job_start", interval_ms: intervalMs },
-    "Starting periodic registry validation job"
-  );
+  logger.info({ event: "validation_job_start", interval_ms: intervalMs }, "Starting periodic registry validation job");
 
   if (runImmediately) {
     // Defer by one tick so callers can finish setup before the first pass

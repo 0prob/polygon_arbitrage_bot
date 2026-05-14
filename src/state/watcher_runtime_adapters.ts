@@ -6,11 +6,7 @@ import {
   type WatcherLogHandler,
   type WatcherLogHandlerRegistry,
 } from "./watcher_log_handler.ts";
-import {
-  createWatcherStateAdapters,
-  type WatcherStateAdapterRegistry,
-  type WatcherStateAdapters,
-} from "./watcher_state_adapters.ts";
+import { createWatcherStateAdapters, type WatcherStateAdapterRegistry, type WatcherStateAdapters } from "./watcher_state_adapters.ts";
 import type { WatcherEnqueueEnrichment } from "./watcher_types.ts";
 
 export type WatcherRuntimeRegistry = WatcherStateAdapterRegistry & WatcherLogHandlerRegistry;

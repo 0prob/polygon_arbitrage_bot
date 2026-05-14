@@ -45,17 +45,12 @@ const GAS_BUFFER_BPS = CONFIG_DEFAULT_GAS_BUFFER_BPS;
  * On revert or error, returns null (caller should fall back to a hardcoded
  * estimate or skip the route).
  */
-export async function estimateGas(params: {
-  to: Address;
-  data: Hex;
-  from: Address;
-  value?: bigint;
-}): Promise<bigint | null> {
+export async function estimateGas(params: { to: Address; data: Hex; from: Address; value?: bigint }): Promise<bigint | null> {
   const client = getGasClient();
   try {
     const raw = await client.estimateGas({
-      to:    params.to,
-      data:  params.data,
+      to: params.to,
+      data: params.data,
       account: params.from,
       value: params.value ?? 0n,
     });
@@ -81,11 +76,13 @@ export async function simulateCall(params: {
   blockTag?: "latest" | "pending";
 }): Promise<Hex> {
   const client = getGasClient();
-  return client.call({
-    to:      params.to,
-    data:    params.data,
-    account: params.from,
-    value:   params.value ?? 0n,
-    blockTag: params.blockTag ?? "pending",
-  }).then((r) => r.data ?? "0x");
+  return client
+    .call({
+      to: params.to,
+      data: params.data,
+      account: params.from,
+      value: params.value ?? 0n,
+      blockTag: params.blockTag ?? "pending",
+    })
+    .then((r) => r.data ?? "0x");
 }

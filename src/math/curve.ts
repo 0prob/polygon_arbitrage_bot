@@ -1,4 +1,3 @@
-
 /**
  * src/math/curve.js — Curve StableSwap swap math
  *
@@ -37,11 +36,7 @@ const PRECISION = 10n ** 18n;
 const FEE_DENOMINATOR = 10n ** 10n;
 const A_PRECISION = 100n;
 
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigIntOrNull,
-} from "../utils/bigint.ts";
+import { toBigIntOrNull } from "../utils/bigint.ts";
 
 // Max Newton iterations for invariant solve
 const MAX_ITERATIONS = 255;
@@ -49,7 +44,7 @@ const MAX_ITERATIONS = 255;
 type CurvePoolState = Record<string, unknown>;
 
 function asPoolState(value: unknown): CurvePoolState {
-  return value != null && typeof value === "object" ? value as CurvePoolState : {};
+  return value != null && typeof value === "object" ? (value as CurvePoolState) : {};
 }
 
 // ─── Invariant helpers ────────────────────────────────────────
@@ -80,10 +75,7 @@ function getD(xp: bigint[], A: bigint) {
 
     const Dprev = D;
     // D = (Ann * S / A_PRECISION + D_P * n) * D / ((Ann / A_PRECISION - 1) * D + (n + 1) * D_P)
-    D =
-      ((Ann * S) / A_PRECISION + D_P * n) *
-      D /
-      (((Ann - A_PRECISION) * D) / A_PRECISION + (n + 1n) * D_P);
+    D = (((Ann * S) / A_PRECISION + D_P * n) * D) / (((Ann - A_PRECISION) * D) / A_PRECISION + (n + 1n) * D_P);
 
     const diff = D > Dprev ? D - Dprev : Dprev - D;
     if (diff <= 1n) return D;
@@ -297,12 +289,7 @@ export function getCurveAmountIn(amountOut: bigint, poolState: unknown, tokenInI
  * @param {number}  tokenOutIdx Output token index
  * @returns {{ amountOut: bigint, gasEstimate: number }}
  */
-export function simulateCurveSwap(
-  amountIn: bigint,
-  poolState: unknown,
-  tokenInIdx = 0,
-  tokenOutIdx = 1
-) {
+export function simulateCurveSwap(amountIn: bigint, poolState: unknown, tokenInIdx = 0, tokenOutIdx = 1) {
   if (amountIn <= 0n) return { amountOut: 0n, gasEstimate: 0 };
 
   const amountOut = getCurveAmountOut(amountIn, poolState, tokenInIdx, tokenOutIdx);

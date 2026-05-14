@@ -10,7 +10,9 @@ import {
 import type { RouteStateCache } from "../routing/simulation_types.ts";
 
 type RevalidationDeps = {
-  getAffectedRoutes: (changedPools: Set<string>) => Array<{ path: ArbPathLike; result: RouteResultLike }> | Promise<Array<{ path: ArbPathLike; result: RouteResultLike }>>;
+  getAffectedRoutes: (
+    changedPools: Set<string>,
+  ) => Array<{ path: ArbPathLike; result: RouteResultLike }> | Promise<Array<{ path: ArbPathLike; result: RouteResultLike }>>;
   routeKeyFromEdges: (startToken: string, edges: ArbPathLike["edges"]) => string;
   stateCache: RouteStateCache;
   testAmountWei: bigint;
@@ -22,11 +24,7 @@ type RevalidationDeps = {
   getFreshTokenToMaticRate: (tokenAddress: string) => bigint;
   getRouteFreshness: (path: ArbPathLike) => { ok: boolean; reason?: string };
   simulateRoute: (path: ArbPathLike, amountIn: bigint, stateCache: RouteStateCache) => RouteResultLike;
-  optimizeInputAmount: (
-    path: ArbPathLike,
-    stateCache: RouteStateCache,
-    options: AssessmentOptimizationOptions,
-  ) => RouteResultLike | null;
+  optimizeInputAmount: (path: ArbPathLike, stateCache: RouteStateCache, options: AssessmentOptimizationOptions) => RouteResultLike | null;
   routeCacheUpdate: (candidates: ExecutableCandidate[]) => void;
   routeCacheRemove?: (path: ArbPathLike, reason: string) => number | void;
   filterQuarantinedCandidates: <T extends { path: ArbPathLike }>(candidates: T[], source: string) => T[];
@@ -101,30 +99,24 @@ export function createRouteRevalidator(deps: RevalidationDeps) {
         continue;
       }
 
-      const quickResult = deps.simulateRoute(
-        path,
-        prev?.amountIn ?? deps.testAmountWei,
-        deps.stateCache,
-      );
-      const quickAssessment = assessRouteResult(
-        path,
-        quickResult,
-        gasPriceWei,
-        tokenToMaticRate,
-        { minProfitWei: deps.minProfitWei, flashLoanFeeBps: deps.flashLoanFeeBps },
-      );
+      const quickResult = deps.simulateRoute(path, prev?.amountIn ?? deps.testAmountWei, deps.stateCache);
+      const quickAssessment = assessRouteResult(path, quickResult, gasPriceWei, tokenToMaticRate, {
+        minProfitWei: deps.minProfitWei,
+        flashLoanFeeBps: deps.flashLoanFeeBps,
+      });
 
       let optimized = quickResult;
       if (quickAssessment.shouldExecute || quickResult.profit > 0n) {
         optimizedRoutes++;
-        optimized = deps.optimizeInputAmount(
-          path,
-          deps.stateCache,
-          getAssessmentOptimizationOptions(path, prev, gasPriceWei, tokenToMaticRate, {
-            minProfitWei: deps.minProfitWei,
-            flashLoanFeeBps: deps.flashLoanFeeBps,
-          }),
-        ) || quickResult;
+        optimized =
+          deps.optimizeInputAmount(
+            path,
+            deps.stateCache,
+            getAssessmentOptimizationOptions(path, prev, gasPriceWei, tokenToMaticRate, {
+              minProfitWei: deps.minProfitWei,
+              flashLoanFeeBps: deps.flashLoanFeeBps,
+            }),
+          ) || quickResult;
       }
       if (!optimized?.profitable) {
         if (!quickAssessment.shouldExecute) {
@@ -135,13 +127,10 @@ export function createRouteRevalidator(deps: RevalidationDeps) {
         continue;
       }
 
-      const assessment = assessRouteResult(
-        path,
-        optimized,
-        gasPriceWei,
-        tokenToMaticRate,
-        { minProfitWei: deps.minProfitWei, flashLoanFeeBps: deps.flashLoanFeeBps },
-      );
+      const assessment = assessRouteResult(path, optimized, gasPriceWei, tokenToMaticRate, {
+        minProfitWei: deps.minProfitWei,
+        flashLoanFeeBps: deps.flashLoanFeeBps,
+      });
       if (assessment.shouldExecute) {
         profitable.push({ path, result: optimized, assessment });
       } else if (!quickAssessment.shouldExecute) {

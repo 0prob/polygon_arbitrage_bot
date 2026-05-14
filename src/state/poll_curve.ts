@@ -1,4 +1,3 @@
-
 /**
  * src/state/poll_curve.js — Curve pool balances + virtual price poller
  *
@@ -60,23 +59,35 @@ const GET_BALANCES_DYN_ABI = [
 
 // Individual balance query with int128 index (standard Curve stableswap)
 const BALANCE_INT128_ABI = () => [
-  { name: "balances", type: "function", stateMutability: "view",
+  {
+    name: "balances",
+    type: "function",
+    stateMutability: "view",
     inputs: [{ name: "i", type: "int128" }],
-    outputs: [{ name: "", type: "uint256" }] },
+    outputs: [{ name: "", type: "uint256" }],
+  },
 ];
 
 // Individual balance query with uint256 index (Curve crypto / tricrypto)
 const BALANCE_UINT256_ABI = () => [
-  { name: "balances", type: "function", stateMutability: "view",
+  {
+    name: "balances",
+    type: "function",
+    stateMutability: "view",
     inputs: [{ name: "i", type: "uint256" }],
-    outputs: [{ name: "", type: "uint256" }] },
+    outputs: [{ name: "", type: "uint256" }],
+  },
 ];
 
 // Stableswap-ng stored_balances(uint256)
 const STORED_BALANCES_ABI = () => [
-  { name: "stored_balances", type: "function", stateMutability: "view",
+  {
+    name: "stored_balances",
+    type: "function",
+    stateMutability: "view",
     inputs: [{ name: "arg0", type: "uint256" }],
-    outputs: [{ name: "", type: "uint256" }] },
+    outputs: [{ name: "", type: "uint256" }],
+  },
 ];
 
 const VIRTUAL_PRICE_ABI = [
@@ -120,8 +131,8 @@ type CurveRawStateArgs = {
 export function buildCurveRawState({ balances, A, fee, virtualPrice, fetchedAt = Date.now() }: CurveRawStateArgs) {
   return {
     balances,
-    A,            // Already in A_PRECISION (scaled by 100 in caller)
-    fee,          // in 1e10
+    A, // Already in A_PRECISION (scaled by 100 in caller)
+    fee, // in 1e10
     virtualPrice,
     fetchedAt,
   };
@@ -204,9 +215,7 @@ export async function fetchCurvePoolState(poolAddress: string, nCoins: number) {
   // Otherwise multiply by 100 to match internal A_PRECISION format.
   const A = A_raw > 1_000_000n ? A_raw : A_raw * 100n;
   const fee = feeResult.status === "fulfilled" ? BigInt(feeResult.value) : 4_000_000n;
-  const virtualPrice = virtualPriceResult.status === "fulfilled"
-    ? BigInt(virtualPriceResult.value)
-    : PRECISION;
+  const virtualPrice = virtualPriceResult.status === "fulfilled" ? BigInt(virtualPriceResult.value) : PRECISION;
 
   return buildCurveRawState({
     balances,
@@ -228,13 +237,7 @@ export async function fetchAndNormalizeCurvePool(
 
   const rawState = await fetchCurvePoolState(addr, nCoins);
   const metadata = metadataWithTokenDecimals(pool, tokens, options.tokenDecimals);
-  const normalized = normalizeCurveState(
-    addr,
-    pool.protocol,
-    tokens,
-    rawState,
-    metadata
-  ) as RouteState;
+  const normalized = normalizeCurveState(addr, pool.protocol, tokens, rawState, metadata) as RouteState;
 
   return { addr, normalized };
 }
@@ -256,9 +259,7 @@ export class PollCurve extends TimedPoller {
   async poll() {
     const t0 = Date.now();
 
-    const pools = this._registry.getActivePoolsMeta().filter(
-      (p) => CURVE_PROTOCOLS.has(normalizeProtocolKey(p.protocol))
-    );
+    const pools = this._registry.getActivePoolsMeta().filter((p) => CURVE_PROTOCOLS.has(normalizeProtocolKey(p.protocol)));
 
     if (pools.length === 0) {
       return { updated: 0, failed: 0, durationMs: Date.now() - t0 };
@@ -277,17 +278,13 @@ export class PollCurve extends TimedPoller {
           return asBatchResult<RouteState>(addr, null, err);
         }
       },
-      this._concurrency
+      this._concurrency,
+      120_000, // timeout per pool to prevent stuck concurrency slots
     );
 
-    const { updated, failed } = this._storeBatchResults(
-      "poll_curve",
-      this._cache,
-      results,
-      ({ addr, normalized }) => {
-        return `[poll_curve] ${addr} A=${normalized.A} balances=${normalized.balances}`;
-      }
-    );
+    const { updated, failed } = this._storeBatchResults("poll_curve", this._cache, results, ({ addr, normalized }) => {
+      return `[poll_curve] ${addr} A=${normalized.A} balances=${normalized.balances}`;
+    });
 
     return this._completePass("poll_curve", t0, updated, failed);
   }

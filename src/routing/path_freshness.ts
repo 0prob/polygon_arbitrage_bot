@@ -24,11 +24,7 @@ function lookupPoolState(poolAddress: unknown, stateCache: StateCacheLike) {
   return { normalized, state: undefined };
 }
 
-export function getPathFreshness(
-  path: PathLike | null | undefined,
-  stateCache: StateCacheLike,
-  options: FreshnessOptions,
-) {
+export function getPathFreshness(path: PathLike | null | undefined, stateCache: StateCacheLike, options: FreshnessOptions) {
   if (!Array.isArray(path?.edges) || path.edges.length === 0) {
     return { ok: false, reason: "missing route edges" };
   }

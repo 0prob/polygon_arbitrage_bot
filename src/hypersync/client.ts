@@ -1,4 +1,3 @@
-
 /**
  * src/hypersync/client.js — HyperSync client factory
  *
@@ -83,7 +82,7 @@ type HypersyncModuleLike = {
 function createUnsupportedHypersyncError(cause: unknown) {
   const err = new Error(
     "HyperSync client is unavailable on this runtime. " +
-    "The installed @envio-dev/hypersync-client@1.3.0 package does not ship a native binding for this platform."
+      "The installed @envio-dev/hypersync-client@1.3.0 package does not ship a native binding for this platform.",
   ) as HypersyncError;
   err.name = "HyperSyncClientUnavailableError";
   err.cause = cause;
@@ -97,18 +96,12 @@ function createHypersyncConfigError(message: string, cause?: unknown) {
   return err;
 }
 
-function normalizeOptionalClientInteger(
-  name: keyof HypersyncClientConfig,
-  value: unknown,
-  options: { allowZero?: boolean } = {},
-) {
+function normalizeOptionalClientInteger(name: keyof HypersyncClientConfig, value: unknown, options: { allowZero?: boolean } = {}) {
   if (value == null) return undefined;
   const numeric = Number(value);
   const minimum = options.allowZero ? 0 : 1;
   if (!Number.isSafeInteger(numeric) || numeric < minimum) {
-    throw createHypersyncConfigError(
-      `${name} must be a ${options.allowZero ? "non-negative" : "positive"} safe integer.`,
-    );
+    throw createHypersyncConfigError(`${name} must be a ${options.allowZero ? "non-negative" : "positive"} safe integer.`);
   }
   return numeric;
 }
@@ -140,33 +133,13 @@ export function normalizeHypersyncClientConfig(rawConfig: HypersyncClientConfig)
   } catch (err) {
     throw createHypersyncConfigError(`HYPERSYNC_URL is not a valid HTTP(S) URL: ${url}`, err);
   }
-  const httpReqTimeoutMillis = normalizeOptionalClientInteger(
-    "httpReqTimeoutMillis",
-    rawConfig?.httpReqTimeoutMillis,
-  );
-  const maxNumRetries = normalizeOptionalClientInteger(
-    "maxNumRetries",
-    rawConfig?.maxNumRetries,
-    { allowZero: true },
-  );
-  const retryBackoffMs = normalizeOptionalClientInteger(
-    "retryBackoffMs",
-    rawConfig?.retryBackoffMs,
-  );
-  const retryBaseMs = normalizeOptionalClientInteger(
-    "retryBaseMs",
-    rawConfig?.retryBaseMs,
-  );
-  const retryCeilingMs = normalizeOptionalClientInteger(
-    "retryCeilingMs",
-    rawConfig?.retryCeilingMs,
-  );
+  const httpReqTimeoutMillis = normalizeOptionalClientInteger("httpReqTimeoutMillis", rawConfig?.httpReqTimeoutMillis);
+  const maxNumRetries = normalizeOptionalClientInteger("maxNumRetries", rawConfig?.maxNumRetries, { allowZero: true });
+  const retryBackoffMs = normalizeOptionalClientInteger("retryBackoffMs", rawConfig?.retryBackoffMs);
+  const retryBaseMs = normalizeOptionalClientInteger("retryBaseMs", rawConfig?.retryBaseMs);
+  const retryCeilingMs = normalizeOptionalClientInteger("retryCeilingMs", rawConfig?.retryCeilingMs);
 
-  if (
-    retryBaseMs != null &&
-    retryCeilingMs != null &&
-    retryCeilingMs < retryBaseMs
-  ) {
+  if (retryBaseMs != null && retryCeilingMs != null && retryCeilingMs < retryBaseMs) {
     throw createHypersyncConfigError("retryCeilingMs must be >= retryBaseMs.");
   }
 
@@ -212,9 +185,7 @@ export function createHypersyncClient(
   try {
     return new HypersyncClientImpl(normalizeHypersyncClientConfig(rawConfig));
   } catch (err) {
-    return createUnavailableHypersyncClient(
-      createHypersyncConfigError(String((err as { message?: string })?.message ?? err), err),
-    );
+    return createUnavailableHypersyncClient(createHypersyncConfigError(String((err as { message?: string })?.message ?? err), err));
   }
 }
 
@@ -267,15 +238,19 @@ let _client: ReturnType<typeof createHypersyncClient> | null = null;
 function _initClient() {
   if (_clientInitialized) return;
   _clientInitialized = true;
-  _client = createHypersyncClient(hypersync, {
-    url: HYPERSYNC_URL,
-    apiToken: ENVIO_API_TOKEN || "",
-    httpReqTimeoutMillis: HYPERSYNC_HTTP_REQ_TIMEOUT_MS,
-    maxNumRetries: HYPERSYNC_MAX_RETRIES,
-    retryBackoffMs: HYPERSYNC_RETRY_BACKOFF_MS,
-    retryBaseMs: HYPERSYNC_RETRY_BASE_MS,
-    retryCeilingMs: HYPERSYNC_RETRY_CEILING_MS,
-  }, hypersyncImportError);
+  _client = createHypersyncClient(
+    hypersync,
+    {
+      url: HYPERSYNC_URL,
+      apiToken: ENVIO_API_TOKEN || "",
+      httpReqTimeoutMillis: HYPERSYNC_HTTP_REQ_TIMEOUT_MS,
+      maxNumRetries: HYPERSYNC_MAX_RETRIES,
+      retryBackoffMs: HYPERSYNC_RETRY_BACKOFF_MS,
+      retryBaseMs: HYPERSYNC_RETRY_BASE_MS,
+      retryCeilingMs: HYPERSYNC_RETRY_CEILING_MS,
+    },
+    hypersyncImportError,
+  );
 }
 
 export const client = new Proxy({} as ReturnType<typeof createHypersyncClient>, {

@@ -52,21 +52,11 @@ export type WatcherTopicMap = {
 
 export type WatcherEnrichmentTask = () => unknown | Promise<unknown>;
 
-export type WatcherEnqueueEnrichment = (
-  addr: string,
-  task: WatcherEnrichmentTask,
-) => unknown | Promise<unknown>;
+export type WatcherEnqueueEnrichment = (addr: string, task: WatcherEnrichmentTask) => unknown | Promise<unknown>;
 
-export type WatcherPoolRefresh = (
-  addr: string,
-  pool: WatcherPoolMeta | null,
-) => unknown | Promise<unknown>;
+export type WatcherPoolRefresh = (addr: string, pool: WatcherPoolMeta | null) => unknown | Promise<unknown>;
 
-export type WatcherV3Refresh = (
-  addr: string,
-  pool: WatcherPoolMeta | null,
-  rawLog?: HyperSyncRawLog,
-) => unknown | Promise<unknown>;
+export type WatcherV3Refresh = (addr: string, pool: WatcherPoolMeta | null, rawLog?: HyperSyncRawLog) => unknown | Promise<unknown>;
 
 export type WatcherProtocolHandlerContext = {
   addr: string;
@@ -82,9 +72,7 @@ export type WatcherProtocolHandlerContext = {
   refreshV3: WatcherV3Refresh;
 };
 
-export type WatcherProtocolHandler = (
-  context: WatcherProtocolHandlerContext,
-) => boolean;
+export type WatcherProtocolHandler = (context: WatcherProtocolHandlerContext) => boolean;
 
 export type WatcherStateUpdate = {
   addr: string;

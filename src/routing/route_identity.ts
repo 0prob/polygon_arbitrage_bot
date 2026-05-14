@@ -30,12 +30,7 @@ export function routeIdentityFromEdges(startToken: string, edges: RouteIdentityE
   ].join("|");
 }
 
-export function routeIdentityFromSerializedPath(
-  startToken: string,
-  poolAddresses: string[],
-  tokenIns: string[],
-  tokenOuts: string[],
-) {
+export function routeIdentityFromSerializedPath(startToken: string, poolAddresses: string[], tokenIns: string[], tokenOuts: string[]) {
   if (
     !Array.isArray(poolAddresses) ||
     !Array.isArray(tokenIns) ||
@@ -49,9 +44,7 @@ export function routeIdentityFromSerializedPath(
 
   return [
     requireRouteAddress(startToken, "startToken"),
-    ...poolAddresses.map((poolAddress, index) =>
-      normaliseRouteSegment(poolAddress, tokenIns[index], tokenOuts[index])
-    ),
+    ...poolAddresses.map((poolAddress, index) => normaliseRouteSegment(poolAddress, tokenIns[index], tokenOuts[index])),
   ].join("|");
 }
 

@@ -87,8 +87,9 @@ function compareDeferredHydrationPriority(
   hub4Tokens: Set<string>,
   stateCache?: StateCache,
 ) {
-  return compareDeferredHydrationCohortPriority(a, b, polygonHubTokens, hub4Tokens, stateCache) ||
-    a.pool_address.localeCompare(b.pool_address);
+  return (
+    compareDeferredHydrationCohortPriority(a, b, polygonHubTokens, hub4Tokens, stateCache) || a.pool_address.localeCompare(b.pool_address)
+  );
 }
 
 function protocolDiversityCap(batchSize: number) {
@@ -130,32 +131,15 @@ function hubClassBreakdown(pools: PoolRecord[], polygonHubTokens: Set<string>, h
     .filter((entry) => entry.pools > 0);
 }
 
-function poolsForHubClass(
-  pools: PoolRecord[],
-  hubClass: string,
-  polygonHubTokens: Set<string>,
-  hub4Tokens: Set<string>,
-) {
+function poolsForHubClass(pools: PoolRecord[], hubClass: string, polygonHubTokens: Set<string>, hub4Tokens: Set<string>) {
   return pools.filter((pool) => selectedHubClass(pool, polygonHubTokens, hub4Tokens) === hubClass);
 }
 
-function protocolBreakdownForHubClass(
-  pools: PoolRecord[],
-  hubClass: string,
-  polygonHubTokens: Set<string>,
-  hub4Tokens: Set<string>,
-) {
-  return protocolBreakdown(
-    poolsForHubClass(pools, hubClass, polygonHubTokens, hub4Tokens),
-    { sortByCount: true },
-  );
+function protocolBreakdownForHubClass(pools: PoolRecord[], hubClass: string, polygonHubTokens: Set<string>, hub4Tokens: Set<string>) {
+  return protocolBreakdown(poolsForHubClass(pools, hubClass, polygonHubTokens, hub4Tokens), { sortByCount: true });
 }
 
-function validationReasonBreakdown(
-  entries: ValidationReasonPool[],
-  polygonHubTokens: Set<string>,
-  hub4Tokens: Set<string>,
-) {
+function validationReasonBreakdown(entries: ValidationReasonPool[], polygonHubTokens: Set<string>, hub4Tokens: Set<string>) {
   const counts = new Map<string, { outcome: string; protocol: string; hubClass: string; reason: string; pools: number }>();
   for (const entry of entries) {
     const protocol = String(entry.pool.protocol ?? "UNKNOWN");
@@ -174,31 +158,26 @@ function validationReasonBreakdown(
       });
     }
   }
-  return [...counts.values()].sort((a, b) =>
-    b.pools - a.pools ||
-    a.outcome.localeCompare(b.outcome) ||
-    a.protocol.localeCompare(b.protocol) ||
-    a.hubClass.localeCompare(b.hubClass) ||
-    a.reason.localeCompare(b.reason)
+  return [...counts.values()].sort(
+    (a, b) =>
+      b.pools - a.pools ||
+      a.outcome.localeCompare(b.outcome) ||
+      a.protocol.localeCompare(b.protocol) ||
+      a.hubClass.localeCompare(b.hubClass) ||
+      a.reason.localeCompare(b.reason),
   );
 }
 
 type PendingReasonBreakdown = { protocol: string; hubClass: string; reason: string; pools: number };
 
 function sortPendingReasonBreakdown(entries: PendingReasonBreakdown[]) {
-  return entries.sort((a, b) =>
-    b.pools - a.pools ||
-    a.protocol.localeCompare(b.protocol) ||
-    a.hubClass.localeCompare(b.hubClass) ||
-    a.reason.localeCompare(b.reason)
+  return entries.sort(
+    (a, b) =>
+      b.pools - a.pools || a.protocol.localeCompare(b.protocol) || a.hubClass.localeCompare(b.hubClass) || a.reason.localeCompare(b.reason),
   );
 }
 
-function pendingValidationReasonBreakdown(
-  entries: PendingValidationReasonPool[],
-  polygonHubTokens: Set<string>,
-  hub4Tokens: Set<string>,
-) {
+function pendingValidationReasonBreakdown(entries: PendingValidationReasonPool[], polygonHubTokens: Set<string>, hub4Tokens: Set<string>) {
   const counts = new Map<string, PendingReasonBreakdown>();
   for (const entry of entries) {
     const protocol = String(entry.pool.protocol ?? "UNKNOWN");
@@ -301,11 +280,7 @@ function protocolCohortCooldowns(
       selectedPools,
       failedPools: failedCounts.get(protocol) ?? 0,
     }))
-    .sort((a, b) =>
-      b.selectedPools - a.selectedPools ||
-      b.failedPools - a.failedPools ||
-      a.protocol.localeCompare(b.protocol)
-    );
+    .sort((a, b) => b.selectedPools - a.selectedPools || b.failedPools - a.failedPools || a.protocol.localeCompare(b.protocol));
 }
 
 function hubClassYieldBreakdown(
@@ -366,8 +341,8 @@ function selectDiversePendingPools(
   function leadingCohortSize(protocolPools: PoolRecord[]) {
     const first = protocolPools[0];
     if (!first) return 0;
-    return protocolPools.filter((pool) =>
-      compareDeferredHydrationCohortPriority(first, pool, polygonHubTokens, hub4Tokens, stateCache) === 0
+    return protocolPools.filter(
+      (pool) => compareDeferredHydrationCohortPriority(first, pool, polygonHubTokens, hub4Tokens, stateCache) === 0,
     ).length;
   }
 
@@ -376,13 +351,7 @@ function selectDiversePendingPools(
     const aFirst = aPools[0];
     const bFirst = bPools[0];
     if (aFirst && bFirst) {
-      const priority = compareDeferredHydrationCohortPriority(
-        aFirst,
-        bFirst,
-        polygonHubTokens,
-        hub4Tokens,
-        stateCache,
-      );
+      const priority = compareDeferredHydrationCohortPriority(aFirst, bFirst, polygonHubTokens, hub4Tokens, stateCache);
       if (priority !== 0) return priority;
     }
     if (scarceAcrossProtocols) {
@@ -432,19 +401,10 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
 
   function quietPoolBatchSizing(pendingBacklogPools: number) {
     const baseBatchSize = nonNegativeInteger(deps.quietPoolSweepBatchSize, 0);
-    const catchupThreshold = nonNegativeInteger(
-      deps.quietPoolSweepCatchupThreshold,
-      Number.POSITIVE_INFINITY,
-    );
-    const catchupBatchSize = Math.max(
-      baseBatchSize,
-      nonNegativeInteger(deps.quietPoolSweepCatchupBatchSize, baseBatchSize),
-    );
+    const catchupThreshold = nonNegativeInteger(deps.quietPoolSweepCatchupThreshold, Number.POSITIVE_INFINITY);
+    const catchupBatchSize = Math.max(baseBatchSize, nonNegativeInteger(deps.quietPoolSweepCatchupBatchSize, baseBatchSize));
     const catchupActive =
-      baseBatchSize > 0 &&
-      catchupBatchSize > baseBatchSize &&
-      catchupThreshold > 0 &&
-      pendingBacklogPools >= catchupThreshold;
+      baseBatchSize > 0 && catchupBatchSize > baseBatchSize && catchupThreshold > 0 && pendingBacklogPools >= catchupThreshold;
 
     return {
       batchSize: catchupActive ? catchupBatchSize : baseBatchSize,
@@ -458,7 +418,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
 
   function nextDeferredHydrationRetryMs(attempts: number) {
     const exponent = Math.max(0, attempts - 1);
-    return Math.min(deps.quietPoolRetryMaxMs, deps.quietPoolRetryBaseMs * (2 ** exponent));
+    return Math.min(deps.quietPoolRetryMaxMs, deps.quietPoolRetryBaseMs * 2 ** exponent);
   }
 
   function clearDeferredHydrationRetry(addr: string) {
@@ -582,13 +542,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
     }
     const sizing = quietPoolBatchSizing(pending.length);
     const diversityCap = protocolDiversityCap(sizing.batchSize);
-    const selectedPending = selectDiversePendingPools(
-      pending,
-      sizing.batchSize,
-      deps.polygonHubTokens,
-      deps.hub4Tokens,
-      deps.stateCache,
-    );
+    const selectedPending = selectDiversePendingPools(pending, sizing.batchSize, deps.polygonHubTokens, deps.hub4Tokens, deps.stateCache);
     return {
       pending: selectedPending,
       pendingBacklogPools: sizing.pendingBacklogPools,
@@ -607,22 +561,13 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
       protocolDiversityCap: diversityCap,
       pendingProtocolBreakdown: protocolBreakdown(pending, { sortByCount: true }),
       pendingHubClassBreakdown: hubClassBreakdown(pending, deps.polygonHubTokens, deps.hub4Tokens),
-      pendingCoreHubProtocolBreakdown: protocolBreakdownForHubClass(
-        pending,
-        "core_hub",
-        deps.polygonHubTokens,
-        deps.hub4Tokens,
-      ),
+      pendingCoreHubProtocolBreakdown: protocolBreakdownForHubClass(pending, "core_hub", deps.polygonHubTokens, deps.hub4Tokens),
       pendingValidationReasonBreakdown: pendingValidationReasonBreakdown(
         pendingValidationReasonRecords,
         deps.polygonHubTokens,
         deps.hub4Tokens,
       ),
-      cooldownReasonBreakdown: pendingValidationReasonBreakdown(
-        cooldownReasonRecords,
-        deps.polygonHubTokens,
-        deps.hub4Tokens,
-      ),
+      cooldownReasonBreakdown: pendingValidationReasonBreakdown(cooldownReasonRecords, deps.polygonHubTokens, deps.hub4Tokens),
       inFlightProtocolBreakdown: protocolBreakdown(inFlightPoolRecords, { sortByCount: true }),
       inFlightHubClassBreakdown: hubClassBreakdown(inFlightPoolRecords, deps.polygonHubTokens, deps.hub4Tokens),
       inFlightCoreHubProtocolBreakdown: protocolBreakdownForHubClass(
@@ -659,9 +604,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
       claimedPools = pending;
 
       if (pending.length === 0) {
-        const skipReason = selection.pendingBacklogPools > 0 && selection.batchSize === 0
-          ? "quiet_pool_sweep_batch_size_zero"
-          : undefined;
+        const skipReason = selection.pendingBacklogPools > 0 && selection.batchSize === 0 ? "quiet_pool_sweep_batch_size_zero" : undefined;
         if (
           skipReason ||
           selection.skippedUnsupportedPools > 0 ||
@@ -855,9 +798,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
         const reason = `zero_routable_protocol_cohort: selected=${cohort.selectedPools} failed=${cohort.failedPools}`;
         recordProtocolCohortFailure(cohort.protocol, reason);
         protocolCohortCooldownReasonRecords.push(
-          ...failedPoolRecords
-            .filter((pool) => String(pool.protocol ?? "UNKNOWN") === cohort.protocol)
-            .map((pool) => ({ pool, reason })),
+          ...failedPoolRecords.filter((pool) => String(pool.protocol ?? "UNKNOWN") === cohort.protocol).map((pool) => ({ pool, reason })),
         );
       }
       const broadCooldownProtocols = new Set(protocolCohortCooldownBreakdown.map((cohort) => cohort.protocol));
@@ -874,23 +815,13 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
       for (const cohort of coreHubProtocolCohortCooldownBreakdown) {
         const reason = `zero_routable_core_hub_protocol_cohort: selected=${cohort.selectedPools} failed=${cohort.failedPools}`;
         coreHubProtocolCohortCooldownReasonRecords.push(
-          ...coreHubFailedPools
-            .filter((pool) => String(pool.protocol ?? "UNKNOWN") === cohort.protocol)
-            .map((pool) => ({ pool, reason })),
+          ...coreHubFailedPools.filter((pool) => String(pool.protocol ?? "UNKNOWN") === cohort.protocol).map((pool) => ({ pool, reason })),
         );
       }
       const completionCooldownReasonBreakdown = mergePendingReasonBreakdowns(
         selection.cooldownReasonBreakdown,
-        pendingValidationReasonBreakdown(
-          protocolCohortCooldownReasonRecords,
-          deps.polygonHubTokens,
-          deps.hub4Tokens,
-        ),
-        pendingValidationReasonBreakdown(
-          coreHubProtocolCohortCooldownReasonRecords,
-          deps.polygonHubTokens,
-          deps.hub4Tokens,
-        ),
+        pendingValidationReasonBreakdown(protocolCohortCooldownReasonRecords, deps.polygonHubTokens, deps.hub4Tokens),
+        pendingValidationReasonBreakdown(coreHubProtocolCohortCooldownReasonRecords, deps.polygonHubTokens, deps.hub4Tokens),
       );
 
       deps.log(
@@ -922,17 +853,8 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
           coreHubProtocolCohortCooldownBreakdown,
           hydrationYield: hydrationYield(pending.length, hydratedAddrs.size, admitted),
           protocolYieldBreakdown: protocolYieldBreakdown(pending, hydratedPools),
-          hubClassYieldBreakdown: hubClassYieldBreakdown(
-            pending,
-            hydratedPools,
-            deps.polygonHubTokens,
-            deps.hub4Tokens,
-          ),
-          validationReasonBreakdown: validationReasonBreakdown(
-            validationReasonRecords,
-            deps.polygonHubTokens,
-            deps.hub4Tokens,
-          ),
+          hubClassYieldBreakdown: hubClassYieldBreakdown(pending, hydratedPools, deps.polygonHubTokens, deps.hub4Tokens),
+          validationReasonBreakdown: validationReasonBreakdown(validationReasonRecords, deps.polygonHubTokens, deps.hub4Tokens),
           pendingProtocolBreakdown: selection.pendingProtocolBreakdown,
           pendingHubClassBreakdown: selection.pendingHubClassBreakdown,
           pendingCoreHubProtocolBreakdown: selection.pendingCoreHubProtocolBreakdown,
@@ -945,12 +867,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
           selectedHubClassBreakdown: claimedSelectedHubClassBreakdown,
           selectedCoreHubProtocolBreakdown: claimedSelectedCoreHubProtocolBreakdown,
           routableProtocolBreakdown: protocolBreakdown(hydratedPools),
-          routableCoreHubProtocolBreakdown: protocolBreakdownForHubClass(
-            hydratedPools,
-            "core_hub",
-            deps.polygonHubTokens,
-            deps.hub4Tokens,
-          ),
+          routableCoreHubProtocolBreakdown: protocolBreakdownForHubClass(hydratedPools, "core_hub", deps.polygonHubTokens, deps.hub4Tokens),
           routableHubClassBreakdown: hubClassBreakdown(hydratedPools, deps.polygonHubTokens, deps.hub4Tokens),
           failedProtocolBreakdown: protocolBreakdown(failedPoolRecords),
           failedCoreHubProtocolBreakdown: protocolBreakdownForHubClass(
@@ -967,11 +884,7 @@ export function createQuietPoolSweepCoordinator(deps: QuietPoolSweepDeps) {
             deps.polygonHubTokens,
             deps.hub4Tokens,
           ),
-          observedUnroutableHubClassBreakdown: hubClassBreakdown(
-            observedUnroutablePoolRecords,
-            deps.polygonHubTokens,
-            deps.hub4Tokens,
-          ),
+          observedUnroutableHubClassBreakdown: hubClassBreakdown(observedUnroutablePoolRecords, deps.polygonHubTokens, deps.hub4Tokens),
           warmupStats,
         },
       );

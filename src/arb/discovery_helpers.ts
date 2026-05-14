@@ -30,18 +30,11 @@ type DiscoveryBatchEntry = {
 };
 
 function normalizeDiscoveryMetadata(value: unknown) {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? { ...(value as Record<string, unknown>) }
-    : {};
+  return value && typeof value === "object" && !Array.isArray(value) ? { ...(value as Record<string, unknown>) } : {};
 }
 
 function compareDiscoveryOrder(a: DiscoveryBatchEntry["order"], b: DiscoveryBatchEntry["order"]) {
-  return (
-    a.block - b.block ||
-    a.transactionIndex - b.transactionIndex ||
-    a.logIndex - b.logIndex ||
-    a.sequence - b.sequence
-  );
+  return a.block - b.block || a.transactionIndex - b.transactionIndex || a.logIndex - b.logIndex || a.sequence - b.sequence;
 }
 
 export function buildDiscoveredPoolBatch(key: string, extractedPools: DiscoveredPoolCandidate[]) {
@@ -52,11 +45,7 @@ export function buildDiscoveredPoolBatch(key: string, extractedPools: Discovered
     const { extracted, rawLog } = extractedPools[sequence];
     const poolAddress = normalizeEvmAddress(extracted.pool_address);
     const tokens = [
-      ...new Set(
-        (extracted.tokens ?? [])
-          .map((token) => normalizeEvmAddress(token))
-          .filter((token): token is string => token != null),
-      ),
+      ...new Set((extracted.tokens ?? []).map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null)),
     ];
     const block = normalizeHyperSyncLogInteger(rawLog.blockNumber);
 

@@ -1,8 +1,4 @@
-export function takeTopNBy<T>(
-  items: Iterable<T>,
-  limit: number,
-  compare: (a: T, b: T) => number,
-): T[] {
+export function takeTopNBy<T>(items: Iterable<T>, limit: number, compare: (a: T, b: T) => number): T[] {
   if (!Number.isFinite(limit) || limit <= 0) return [];
 
   const selected: T[] = [];

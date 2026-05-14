@@ -1,8 +1,6 @@
-
 import { PredictiveStateCache, type PredictivePathEntry } from "./predictive_state_cache.ts";
 import { RouteCache } from "./route_cache.ts";
 import type { ArbPathLike } from "../arb/assessment.ts";
-import type { AssessmentLike } from "../arb/assessment.ts";
 import type { RouteResultLike } from "./score_route.ts";
 import { logger } from "../utils/logger.ts";
 
@@ -83,10 +81,7 @@ export class PredictiveCacheAdapter {
     if (!this._predictiveCache || !this._isInitialized) return;
     const staleCount = this._predictiveCache.notifyPoolStateChanged(poolAddresses);
     if (staleCount > 0) {
-      logger.debug(
-        { poolCount: poolAddresses.size, stalePaths: staleCount },
-        "[predictive-cache] Marked paths stale from pool changes"
-      );
+      logger.debug({ poolCount: poolAddresses.size, stalePaths: staleCount }, "[predictive-cache] Marked paths stale from pool changes");
     }
   }
 
@@ -102,15 +97,11 @@ export class PredictiveCacheAdapter {
     try {
       const allPaths = this._predictiveCache.getAllPaths(true);
       const affected: AffectedRoute[] = [];
-      const normalizedChanged = new Set(
-        Array.from(changedPools, (p) => p.toLowerCase())
-      );
+      const normalizedChanged = new Set(Array.from(changedPools, (p) => p.toLowerCase()));
 
       for (const entry of allPaths) {
         if (entry.isStale) continue;
-        const touchesChanged = Array.from(entry.affectedPools).some((pool) =>
-          normalizedChanged.has(pool)
-        );
+        const touchesChanged = Array.from(entry.affectedPools).some((pool) => normalizedChanged.has(pool));
         if (touchesChanged) {
           affected.push({
             path: entry.path,
@@ -170,9 +161,7 @@ export class PredictiveCacheAdapter {
   }
 }
 
-export function createPredictiveCacheAdapter(
-  deps: PredictiveCacheAdapterDeps
-): PredictiveCacheAdapter {
+export function createPredictiveCacheAdapter(deps: PredictiveCacheAdapterDeps): PredictiveCacheAdapter {
   const adapter = new PredictiveCacheAdapter(deps);
   adapter.initialize();
   return adapter;

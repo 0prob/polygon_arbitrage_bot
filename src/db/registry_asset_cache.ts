@@ -55,10 +55,7 @@ export class RegistryAssetCache {
     return this.cacheTokenMetaEntry(fetchMeta(normalizedAddress));
   }
 
-  getTokenDecimals(
-    addresses: string[],
-    fetchDecimals: (normalizedAddresses: string[]) => Map<string, number>,
-  ) {
+  getTokenDecimals(addresses: string[], fetchDecimals: (normalizedAddresses: string[]) => Map<string, number>) {
     const result = new Map<string, number>();
     if (!Array.isArray(addresses) || addresses.length === 0) return result;
 
@@ -96,12 +93,7 @@ export class RegistryAssetCache {
     return result;
   }
 
-  refreshTokenMetaAfterWrite(
-    address: string,
-    decimals: number,
-    symbol: string | null = null,
-    name: string | null = null,
-  ) {
+  refreshTokenMetaAfterWrite(address: string, decimals: number, symbol: string | null = null, name: string | null = null) {
     const normalizedAddress = this.normalizeTokenAddress(address);
     if (!normalizedAddress) return;
     const normalizedDecimals = normalizeTokenDecimals(decimals);
@@ -134,27 +126,21 @@ export class RegistryAssetCache {
     this.tokenMetaCache.delete(normalizedAddress);
   }
 
-  refreshBatchTokenMetaAfterWrite(tokens: Array<{
-    address?: string | null;
-    decimals?: number | null;
-    symbol?: string | null;
-    name?: string | null;
-  }>) {
+  refreshBatchTokenMetaAfterWrite(
+    tokens: Array<{
+      address?: string | null;
+      decimals?: number | null;
+      symbol?: string | null;
+      name?: string | null;
+    }>,
+  ) {
     for (const token of tokens) {
       if (token?.address == null || token?.decimals == null) continue;
-      this.refreshTokenMetaAfterWrite(
-        token.address,
-        token.decimals,
-        token.symbol ?? null,
-        token.name ?? null,
-      );
+      this.refreshTokenMetaAfterWrite(token.address, token.decimals, token.symbol ?? null, token.name ?? null);
     }
   }
 
-  getPoolFee(
-    poolAddress: string,
-    fetchFee: (normalizedAddress: string) => CachedPoolFee | null,
-  ) {
+  getPoolFee(poolAddress: string, fetchFee: (normalizedAddress: string) => CachedPoolFee | null) {
     const normalizedAddress = this.normalizePoolAddress(poolAddress);
     if (!normalizedAddress) return null;
     if (this.poolFeeCache.has(normalizedAddress)) {
@@ -169,29 +155,35 @@ export class RegistryAssetCache {
     this.poolFeeCache.delete(normalizedAddress);
   }
 
-  private cacheTokenMetaEntry(meta: {
-    address?: string | null;
-    decimals?: number | null;
-    symbol?: string | null;
-    name?: string | null;
-  } | null | undefined) {
+  private cacheTokenMetaEntry(
+    meta:
+      | {
+          address?: string | null;
+          decimals?: number | null;
+          symbol?: string | null;
+          name?: string | null;
+        }
+      | null
+      | undefined,
+  ) {
     const normalizedAddress = this.normalizeTokenAddress(meta?.address);
     if (!normalizedAddress) return null;
 
-    const cachedMeta = meta == null
-      ? null
-      : (() => {
-          try {
-            return {
-              address: normalizedAddress,
-              decimals: normalizeTokenDecimals(meta.decimals),
-              symbol: this.normalizeTokenText(meta.symbol ?? null),
-              name: this.normalizeTokenText(meta.name ?? null),
-            };
-          } catch {
-            return null;
-          }
-        })();
+    const cachedMeta =
+      meta == null
+        ? null
+        : (() => {
+            try {
+              return {
+                address: normalizedAddress,
+                decimals: normalizeTokenDecimals(meta.decimals),
+                symbol: this.normalizeTokenText(meta.symbol ?? null),
+                name: this.normalizeTokenText(meta.name ?? null),
+              };
+            } catch {
+              return null;
+            }
+          })();
 
     this.tokenMetaCache.set(normalizedAddress, cachedMeta);
     if (cachedMeta?.decimals != null) {
@@ -204,12 +196,13 @@ export class RegistryAssetCache {
     const normalizedAddress = this.normalizePoolAddress(poolAddress);
     if (!normalizedAddress) return null;
 
-    const cachedFee = fee == null
-      ? null
-      : {
-          feeBps: Number(fee.feeBps),
-          feeRaw: fee.feeRaw != null ? String(fee.feeRaw) : null,
-        };
+    const cachedFee =
+      fee == null
+        ? null
+        : {
+            feeBps: Number(fee.feeBps),
+            feeRaw: fee.feeRaw != null ? String(fee.feeRaw) : null,
+          };
     this.poolFeeCache.set(normalizedAddress, cachedFee);
     return cachedFee;
   }

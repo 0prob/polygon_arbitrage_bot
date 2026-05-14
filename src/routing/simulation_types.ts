@@ -17,12 +17,7 @@ export type SimulationEdge = {
   tokenInIdx?: number;
   tokenOutIdx?: number;
   stateRef?: RouteState | null;
-  swapFn?: ((
-    state: RouteState,
-    amountIn: bigint,
-    zeroForOne: boolean,
-    fee?: number,
-  ) => SimulatedHopResult) | null;
+  swapFn?: ((state: RouteState, amountIn: bigint, zeroForOne: boolean, fee?: number) => SimulatedHopResult) | null;
 };
 
 export type SimulationPath = {
@@ -46,10 +41,7 @@ export type RouteSimulationResult = {
   hopCount: number;
 };
 
-export type RouteResultCore = Pick<
-  RouteSimulationResult,
-  "amountIn" | "amountOut" | "profit" | "totalGas"
->;
+export type RouteResultCore = Pick<RouteSimulationResult, "amountIn" | "amountOut" | "profit" | "totalGas">;
 
 export type RouteResultTrace = Pick<
   RouteSimulationResult,

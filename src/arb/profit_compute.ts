@@ -1,4 +1,3 @@
-
 import { getResultHopCount } from "../routing/path_hops.ts";
 import type { RouteResultCore, RouteResultTrace } from "../routing/simulation_types.ts";
 import { oracle } from "../execution/gas.ts";
@@ -152,11 +151,7 @@ export function flashLoanFeeInTokenUnits(amountBorrowed: bigint, feeBps: bigint 
  * @param {bigint} revertRiskBps Base revert risk in bps (configurable)
  * @returns {bigint}             Revert risk penalty
  */
-export function revertRiskPenalty(
-  grossProfit: bigint,
-  hopCount: number,
-  revertRiskBps: bigint = DEFAULT_REVERT_RISK_BPS
-) {
+export function revertRiskPenalty(grossProfit: bigint, hopCount: number, revertRiskBps: bigint = DEFAULT_REVERT_RISK_BPS) {
   if (grossProfit < 0n) {
     throw new Error("grossProfit must be >= 0");
   }
@@ -219,9 +214,7 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   // set defaultHopCount = 0 when routeResult.hopCount existed but derivedHopCount
   // was null, which immediately failed the hopCount < 1 guard and silently
   // rejected valid routes via invalidAssessment("invalid hopCount").
-  const defaultHopCount = derivedHopCount != null
-    ? derivedHopCount
-    : (routeResult.hopCount != null ? Number(routeResult.hopCount) : 2);
+  const defaultHopCount = derivedHopCount != null ? derivedHopCount : routeResult.hopCount != null ? Number(routeResult.hopCount) : 2;
   const {
     gasPriceWei: optionGasPrice,
     tokenToMaticRate = null,
@@ -257,11 +250,7 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   const profitAfterSlippage = adjustedOut - amountIn;
 
   // 3. Revert risk penalty (applied to profit after slippage to avoid double-counting)
-  const revertPenalty = revertRiskPenalty(
-    profitAfterSlippage > 0n ? profitAfterSlippage : 0n,
-    hopCount,
-    revertRiskBps
-  );
+  const revertPenalty = revertRiskPenalty(profitAfterSlippage > 0n ? profitAfterSlippage : 0n, hopCount, revertRiskBps);
 
   const netProfitBeforeFlashLoanFee = profitAfterSlippage - revertPenalty;
   const flashLoanFee = flashLoanFeeInTokenUnits(amountIn, flashLoanFeeBps);
@@ -282,19 +271,14 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   }
 
   // 5. ROI (net profit / input, in micro-units = parts per million)
-  const roiBase = tokenToMaticRate != null && tokenToMaticRate > 0n
-    ? netProfitAfterGas
-    : netProfit;
+  const roiBase = tokenToMaticRate != null && tokenToMaticRate > 0n ? netProfitAfterGas : netProfit;
   const roi = roiMicroUnits(roiBase, amountIn);
 
   // 6. Threshold checks
   let shouldExecute = true;
   let rejectReason = "";
 
-  const thresholdProfit =
-    tokenToMaticRate != null && tokenToMaticRate > 0n
-      ? netProfitAfterGas
-      : netProfit;
+  const thresholdProfit = tokenToMaticRate != null && tokenToMaticRate > 0n ? netProfitAfterGas : netProfit;
 
   if (gasWiped) {
     shouldExecute = false;

@@ -31,12 +31,8 @@ const POOL_LIST_ABI = [
 
 function isMissingPoolListEntryError(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error ?? "").toLowerCase();
-  return (
-    message.includes("missing or invalid parameters") ||
-    message.includes("metadata is not found")
-  );
+  return message.includes("missing or invalid parameters") || message.includes("metadata is not found");
 }
-
 
 function getCoinsAbi(slotCount: number) {
   return [
@@ -101,24 +97,15 @@ type ListedPoolEntry = {
   pool: Record<string, unknown>;
 };
 
-
 function requireCurveFactoryRegistry(registry: unknown): CurveFactoryRegistry {
-  if (
-    isRecord(registry) &&
-    typeof registry.batchUpsertPools === "function" &&
-    typeof registry.setCheckpoint === "function"
-  ) {
+  if (isRecord(registry) && typeof registry.batchUpsertPools === "function" && typeof registry.setCheckpoint === "function") {
     return registry as CurveFactoryRegistry;
   }
   throw new Error("Curve factory discovery requires registry batchUpsertPools() and setCheckpoint() methods");
 }
 
 function requireCurveTokenMetadataRegistry(registry: unknown): CurveTokenMetadataRegistry {
-  if (
-    isRecord(registry) &&
-    typeof registry.getTokenDecimals === "function" &&
-    typeof registry.batchUpsertTokenMeta === "function"
-  ) {
+  if (isRecord(registry) && typeof registry.getTokenDecimals === "function" && typeof registry.batchUpsertTokenMeta === "function") {
     return registry as CurveTokenMetadataRegistry;
   }
   throw new Error("Curve factory discovery requires registry token metadata methods for hydration");
@@ -148,7 +135,9 @@ export function discoverFactoryIndexesToScan(existingPools: unknown, poolCount: 
   if (!Number.isSafeInteger(normalizedPoolCount) || normalizedPoolCount <= 0) return [];
 
   const discoveredIndexes = new Set<number>();
-  for (const pool of Array.isArray(existingPools) ? existingPools.map(asCurveFactoryPool).filter((entry): entry is CurveFactoryPool => entry != null) : []) {
+  for (const pool of Array.isArray(existingPools)
+    ? existingPools.map(asCurveFactoryPool).filter((entry): entry is CurveFactoryPool => entry != null)
+    : []) {
     const index = metadataFactoryIndex(pool.metadata);
     if (index != null && index < normalizedPoolCount) {
       discoveredIndexes.add(index);
@@ -174,12 +163,11 @@ export async function discoverCurveListedFactory({
 }: DiscoverCurveFactoryOptions): Promise<ProtocolDiscoveryResult> {
   const rollbackGuard = await fetchBlockRollbackGuard();
   const curveRegistry = requireCurveFactoryRegistry(registry);
-  const directPools = typeof curveRegistry.getPools === "function"
-    ? curveRegistry.getPools({ protocol: protocolKey })
-    : null;
-  const fallbackAddresses = !Array.isArray(directPools) && typeof curveRegistry.getPoolAddressesForProtocol === "function"
-    ? curveRegistry.getPoolAddressesForProtocol(protocolKey)
-    : [];
+  const directPools = typeof curveRegistry.getPools === "function" ? curveRegistry.getPools({ protocol: protocolKey }) : null;
+  const fallbackAddresses =
+    !Array.isArray(directPools) && typeof curveRegistry.getPoolAddressesForProtocol === "function"
+      ? curveRegistry.getPoolAddressesForProtocol(protocolKey)
+      : [];
   const existingPools: CurveFactoryPool[] = Array.isArray(directPools)
     ? directPools.map(asCurveFactoryPool).filter((entry): entry is CurveFactoryPool => entry != null)
     : (Array.isArray(fallbackAddresses) ? fallbackAddresses : []).map((address) => ({
@@ -192,7 +180,7 @@ export async function discoverCurveListedFactory({
     existingPools.flatMap((pool) => {
       const address = normalizeEvmAddress(pool.pool_address ?? pool.address);
       return address ? [[address, pool] as const] : [];
-    })
+    }),
   );
 
   const poolCount = Number(
@@ -200,7 +188,7 @@ export async function discoverCurveListedFactory({
       address: factoryAddress,
       abi: POOL_COUNT_ABI,
       functionName: "pool_count",
-    })
+    }),
   );
 
   if (!Number.isFinite(poolCount) || poolCount <= 0) {
@@ -220,7 +208,7 @@ export async function discoverCurveListedFactory({
         : startIndex > 0
           ? ` from index ${startIndex}`
           : ` across ${poolCount} pool slot(s)`) +
-      `...`
+      `...`,
   );
   discoveryLogger.info(
     {
@@ -248,10 +236,10 @@ export async function discoverCurveListedFactory({
 
   let poolListResults: { status: string; result?: unknown; error?: unknown }[];
   try {
-    poolListResults = await multicallWithRetry({
+    poolListResults = (await multicallWithRetry({
       contracts: poolListContracts,
       allowFailure: true,
-    }) as { status: string; result?: unknown; error?: unknown }[];
+    })) as { status: string; result?: unknown; error?: unknown }[];
   } catch (error: unknown) {
     console.warn(`  [${protocolName}] Multicall for pool_list failed: ${errorMessage(error)}`);
     if (checkpointBlock != null) curveRegistry.setCheckpoint(protocolKey, checkpointBlock);
@@ -313,10 +301,10 @@ export async function discoverCurveListedFactory({
   let getCoinsResults: { status: string; result?: unknown; error?: unknown }[];
   if (getCoinsContracts.length > 0) {
     try {
-      getCoinsResults = await multicallWithRetry({
+      getCoinsResults = (await multicallWithRetry({
         contracts: getCoinsContracts,
         allowFailure: true,
-      }) as { status: string; result?: unknown; error?: unknown }[];
+      })) as { status: string; result?: unknown; error?: unknown }[];
     } catch (error: unknown) {
       console.warn(`  [${protocolName}] Multicall for get_coins failed: ${errorMessage(error)}`);
       getCoinsResults = [];
@@ -375,7 +363,10 @@ export async function discoverCurveListedFactory({
 
   if (newPools.length > 0) {
     try {
-      await hydrateNewTokens(newPools.map((entry) => entry.pool), requireCurveTokenMetadataRegistry(registry));
+      await hydrateNewTokens(
+        newPools.map((entry) => entry.pool),
+        requireCurveTokenMetadataRegistry(registry),
+      );
     } catch (err: unknown) {
       console.warn(`  [discover] Token hydration failed: ${errorMessage(err)}`);
     }
@@ -383,7 +374,9 @@ export async function discoverCurveListedFactory({
 
   if (checkpointBlock != null) curveRegistry.setCheckpoint(protocolKey, checkpointBlock);
 
-  console.log(`  Inserted ${newPools.length} new pool(s), refreshed ${poolBatch.length - newPools.length} existing pool(s) for ${protocolName}.`);
+  console.log(
+    `  Inserted ${newPools.length} new pool(s), refreshed ${poolBatch.length - newPools.length} existing pool(s) for ${protocolName}.`,
+  );
   discoveryLogger.info(
     {
       protocol: protocolKey,

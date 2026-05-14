@@ -8,7 +8,6 @@ import {
   CONFIG_DEFAULT_SLIPPAGE_BPS,
   CONFIG_DEFAULT_REVERT_RISK_BPS,
   CONFIG_DEFAULT_FLASH_LOAN_FEE_BPS,
-  CONFIG_DEFAULT_MIN_PROFIT_WEI,
 } from "../config/index.ts";
 
 export type RouteResultLike = RouteResultCore &
@@ -24,10 +23,12 @@ export type AssessmentLike = {
 
 export type ArbPathLike = {
   startToken: string;
-  edges: Array<RouteIdentityEdge & {
-    protocol: string;
-    zeroForOne: boolean;
-  }>;
+  edges: Array<
+    RouteIdentityEdge & {
+      protocol: string;
+      zeroForOne: boolean;
+    }
+  >;
   hopCount: number;
   logWeight: unknown;
   cumulativeFeesBps?: number;
@@ -47,9 +48,6 @@ type AssessmentConfig = {
   revertRiskBps?: bigint;
   flashLoanFeeBps?: bigint;
 };
-
-/** Minimum net profit threshold in MATIC wei (≈ $0.50 at ~2500 MATIC/ETH). */
-const MIN_PROFIT_WEI_DEFAULT = CONFIG_DEFAULT_MIN_PROFIT_WEI;
 
 const ASSESSMENT_DEFAULT_SLIPPAGE_BPS = CONFIG_DEFAULT_SLIPPAGE_BPS;
 const ASSESSMENT_DEFAULT_REVERT_RISK_BPS = CONFIG_DEFAULT_REVERT_RISK_BPS;
@@ -127,10 +125,8 @@ export function getAssessmentOptimizationOptions(
   // purely on gross profit when gas data is available.
   return {
     ...getOptimizationOptions(quickResult),
-    scorer: (routeResult: RouteResultLike) =>
-      assessRouteResult(path, routeResult, gasPriceWei, tokenToMaticRate, config).netProfitAfterGas,
-    accept: (routeResult: RouteResultLike) =>
-      assessRouteResult(path, routeResult, gasPriceWei, tokenToMaticRate, config).shouldExecute,
+    scorer: (routeResult: RouteResultLike) => assessRouteResult(path, routeResult, gasPriceWei, tokenToMaticRate, config).netProfitAfterGas,
+    accept: (routeResult: RouteResultLike) => assessRouteResult(path, routeResult, gasPriceWei, tokenToMaticRate, config).shouldExecute,
   };
 }
 

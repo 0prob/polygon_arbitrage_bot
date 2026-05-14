@@ -1,9 +1,4 @@
-import {
-  decodedBodyString,
-  FULLY_SUPPORTED_CAPABILITIES,
-  type DecodedEvent,
-  type ProtocolDefinition,
-} from "./factories.ts";
+import { decodedBodyString, FULLY_SUPPORTED_CAPABILITIES, type DecodedEvent, type ProtocolDefinition } from "./factories.ts";
 
 const DVM_FACTORY = "0x79887f65f83bdf15Bcc8736b5e5BcDB48fb8fE13";
 const DPP_FACTORY = "0xd24153244066F0afA9415563bFC7Ba248bfB7a51";
@@ -34,10 +29,7 @@ function createDodoV2Protocol({
       const quoteToken = decodedBodyString(decoded, 1);
       return {
         pool_address: decodedBodyString(decoded, 3),
-        tokens: [
-          baseToken,
-          quoteToken,
-        ],
+        tokens: [baseToken, quoteToken],
         metadata: {
           factory: address,
           poolType,

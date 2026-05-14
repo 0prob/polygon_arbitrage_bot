@@ -46,11 +46,7 @@ type WoofiDiscoveryRegistry = {
 };
 
 function requireWoofiRegistry(registry: unknown): WoofiDiscoveryRegistry {
-  if (
-    isRecord(registry) &&
-    typeof registry.setCheckpoint === "function" &&
-    typeof registry.upsertPool === "function"
-  ) {
+  if (isRecord(registry) && typeof registry.setCheckpoint === "function" && typeof registry.upsertPool === "function") {
     return registry as WoofiDiscoveryRegistry;
   }
   throw new Error("WOOFi discovery requires registry setCheckpoint() and upsertPool() methods");
@@ -62,17 +58,18 @@ function registryTokenCandidates(registry: WoofiDiscoveryRegistry): string[] {
       const addresses = registry.getAllTokenAddresses();
       if (Array.isArray(addresses)) return addresses;
     }
-  } catch {
-  }
+  } catch {}
   return [];
 }
 
 async function readWoofiAddress(poolAddress: string, functionName: "quoteToken" | "wooracle") {
-  return normalizeEvmAddress(await readContractWithRetry({
-    address: poolAddress,
-    abi: WOOFI_POOL_ABI,
-    functionName,
-  }));
+  return normalizeEvmAddress(
+    await readContractWithRetry({
+      address: poolAddress,
+      abi: WOOFI_POOL_ABI,
+      functionName,
+    }),
+  );
 }
 
 async function hasLiveWoofiBase(poolAddress: string, wooracle: string, token: string) {
@@ -106,7 +103,7 @@ export async function discoverWoofiPool({ key, registry, chainHeight }: Protocol
   if (!quoteToken) {
     throw new Error("WOOFi discovery failed: WooPP quoteToken() returned an invalid address");
   }
-  const wooracle = await readWoofiAddress(poolAddress, "wooracle") ?? normalizeEvmAddress(WOOFI_WOORACLE_V2)!;
+  const wooracle = (await readWoofiAddress(poolAddress, "wooracle")) ?? normalizeEvmAddress(WOOFI_WOORACLE_V2)!;
   const candidates = uniqueAddresses([
     quoteToken,
     ...parseConfiguredTokens(),
@@ -114,11 +111,7 @@ export async function discoverWoofiPool({ key, registry, chainHeight }: Protocol
     ...registryTokenCandidates(woofiRegistry),
   ]).filter((token) => token !== quoteToken);
 
-  const liveFlags = await throttledMap(
-    candidates,
-    (token) => hasLiveWoofiBase(poolAddress, wooracle, token),
-    4,
-  );
+  const liveFlags = await throttledMap(candidates, (token) => hasLiveWoofiBase(poolAddress, wooracle, token), 4);
   const liveBaseTokens = candidates.filter((_token, index) => liveFlags[index]);
   const tokens = [quoteToken, ...liveBaseTokens];
 
@@ -127,7 +120,7 @@ export async function discoverWoofiPool({ key, registry, chainHeight }: Protocol
     woofiRegistry.setCheckpoint(key, checkpointBlock);
     console.warn(
       `  WOOFi discovery found no live base tokens (checked ${candidates.length} candidate(s)). ` +
-      `Set WOOFI_TOKENS or WOOFI_POLYGON_TOKENS env var to seed additional candidates.`
+        `Set WOOFI_TOKENS or WOOFI_POLYGON_TOKENS env var to seed additional candidates.`,
     );
     return { discovered: 0, checkpointBlock, rollbackGuard };
   }

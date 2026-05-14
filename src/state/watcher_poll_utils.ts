@@ -78,14 +78,7 @@ export function compareRollbackGuards(a: RollbackGuard | null | undefined, b: Ro
   const bHeadBlock = rollbackGuardHeadBlock(b);
   const aHeadHash = rollbackGuardHeadHash(a);
   const bHeadHash = rollbackGuardHeadHash(b);
-  if (
-    aHeadBlock != null &&
-    bHeadBlock != null &&
-    aHeadHash &&
-    bHeadHash &&
-    aHeadBlock === bHeadBlock &&
-    aHeadHash !== bHeadHash
-  ) {
+  if (aHeadBlock != null && bHeadBlock != null && aHeadHash && bHeadHash && aHeadBlock === bHeadBlock && aHeadHash !== bHeadHash) {
     return false;
   }
 
@@ -141,8 +134,7 @@ export function watcherShardArchiveHeightMeta(archiveHeights: Iterable<number>) 
   const min = heights.length > 0 ? heights[0] : null;
   const max = heights.length > 0 ? heights[heights.length - 1] : null;
   const spread = min != null && max != null ? max - min : 0;
-  const logLevel: WatcherArchiveHeightLogLevel =
-    heights.length > 1 && spread > WATCHER_SHARD_ARCHIVE_HEIGHT_WARN_SPREAD ? "warn" : "debug";
+  const logLevel: WatcherArchiveHeightLogLevel = heights.length > 1 && spread > WATCHER_SHARD_ARCHIVE_HEIGHT_WARN_SPREAD ? "warn" : "debug";
   return {
     archiveHeights: heights,
     archiveHeightSpread: spread,
@@ -150,18 +142,13 @@ export function watcherShardArchiveHeightMeta(archiveHeights: Iterable<number>) 
   };
 }
 
-export function mergeRollbackGuards(
-  base: RollbackGuard | null | undefined,
-  next: RollbackGuard | null | undefined,
-): RollbackGuard | null {
+export function mergeRollbackGuards(base: RollbackGuard | null | undefined, next: RollbackGuard | null | undefined): RollbackGuard | null {
   if (!base) return next ?? null;
   if (!next) return base;
   const baseHeadBlock = rollbackGuardHeadBlock(base);
   const nextHeadBlock = rollbackGuardHeadBlock(next);
   const primary =
-    baseHeadBlock != null &&
-    nextHeadBlock != null &&
-    nextHeadBlock < baseHeadBlock
+    baseHeadBlock != null && nextHeadBlock != null && nextHeadBlock < baseHeadBlock
       ? next
       : baseHeadBlock == null && nextHeadBlock != null
         ? next
@@ -173,8 +160,7 @@ export function mergeRollbackGuards(
     primary?.block_hash ?? primary?.blockHash ?? primary?.hash ?? secondary?.block_hash ?? secondary?.blockHash ?? secondary?.hash;
   const firstBlock =
     primary?.first_block_number ?? primary?.firstBlockNumber ?? secondary?.first_block_number ?? secondary?.firstBlockNumber;
-  const firstParent =
-    primary?.first_parent_hash ?? primary?.firstParentHash ?? secondary?.first_parent_hash ?? secondary?.firstParentHash;
+  const firstParent = primary?.first_parent_hash ?? primary?.firstParentHash ?? secondary?.first_parent_hash ?? secondary?.firstParentHash;
 
   if (headBlock != null) merged.block_number = headBlock;
   if (headHash != null) {
@@ -249,19 +235,10 @@ export function watcherCheckpointFromNextBlock(nextBlock: unknown, currentLastBl
   }
 
   const numericArchiveHeight = parseOptionalWatcherBlock("archiveHeight", archiveHeight);
-  if (
-    numericNextBlock === requestedFromBlock &&
-    numericArchiveHeight == null
-  ) {
-    throw new Error(
-      `HyperSync nextBlock cursor stalled at ${numericNextBlock} without archive height; cannot advance watcher safely.`,
-    );
+  if (numericNextBlock === requestedFromBlock && numericArchiveHeight == null) {
+    throw new Error(`HyperSync nextBlock cursor stalled at ${numericNextBlock} without archive height; cannot advance watcher safely.`);
   }
-  if (
-    numericNextBlock === requestedFromBlock &&
-    numericArchiveHeight != null &&
-    numericArchiveHeight > requestedFromBlock
-  ) {
+  if (numericNextBlock === requestedFromBlock && numericArchiveHeight != null && numericArchiveHeight > requestedFromBlock) {
     throw new Error(
       `HyperSync nextBlock cursor stalled at ${numericNextBlock} before archive height ${numericArchiveHeight}; cannot advance watcher safely.`,
     );
@@ -286,18 +263,15 @@ export function watcherProgressMeta(
   const checkpointBlock = watcherCheckpointFromNextBlock(numericNextBlock, numericCurrentLastBlock, numericArchiveHeight);
   const requestedFromBlock = numericCurrentLastBlock + 1;
   const advancedBlocks = Math.max(0, checkpointBlock - numericCurrentLastBlock);
-  const caughtUp =
-    numericArchiveHeight != null &&
-    numericNextBlock >= numericArchiveHeight;
+  const caughtUp = numericArchiveHeight != null && numericNextBlock >= numericArchiveHeight;
   const hadLogs = Number(logCount) > 0;
-  const archiveHeights = Array.isArray(shardSummary?.archiveHeights) && shardSummary.archiveHeights.length > 0
-    ? [...shardSummary.archiveHeights].map((height) => parseWatcherBlock("shard archiveHeight", height))
-    : null;
-  
+  const archiveHeights =
+    Array.isArray(shardSummary?.archiveHeights) && shardSummary.archiveHeights.length > 0
+      ? [...shardSummary.archiveHeights].map((height) => parseWatcherBlock("shard archiveHeight", height))
+      : null;
+
   // Calculate poll lag for adaptive sleep
-  const pollLagBlocks = numericArchiveHeight != null
-    ? Math.max(0, numericArchiveHeight - checkpointBlock)
-    : null;
+  const pollLagBlocks = numericArchiveHeight != null ? Math.max(0, numericArchiveHeight - checkpointBlock) : null;
 
   let waitReason = null;
   if (!hadLogs) {
@@ -350,7 +324,7 @@ export function classifyWatcherPollError(error: unknown): WatcherErrorCategory {
   const name = String(err?.name ?? "").toLowerCase();
   const message = String(err?.message ?? error ?? "").toLowerCase();
   const code = String(err?.code ?? "").toLowerCase();
-  
+
   // Rate limiting (429, rate limit mentions)
   if (
     message.includes("rate limit") ||
@@ -361,7 +335,7 @@ export function classifyWatcherPollError(error: unknown): WatcherErrorCategory {
   ) {
     return "rate_limit";
   }
-  
+
   // Timeout errors
   if (
     message.includes("timeout") ||
@@ -373,7 +347,7 @@ export function classifyWatcherPollError(error: unknown): WatcherErrorCategory {
   ) {
     return "timeout";
   }
-  
+
   // Integrity errors (data consistency issues)
   if (
     message.includes("mismatched rollback guards") ||
@@ -391,12 +365,12 @@ export function classifyWatcherPollError(error: unknown): WatcherErrorCategory {
   ) {
     return "integrity";
   }
-  
+
   // Shard request failures are transient
   if (message.includes("watcher shard request failed")) {
     return "transient";
   }
-  
+
   // Default to transient for unknown errors
   return "transient";
 }
@@ -404,35 +378,26 @@ export function classifyWatcherPollError(error: unknown): WatcherErrorCategory {
 export function watcherErrorBackoffMs(error: unknown, consecutivePollErrors: number): number {
   const category = classifyWatcherPollError(error);
   const streak = Math.max(1, Number(consecutivePollErrors) || 1);
-  
+
   // Integrity errors: fixed long delay (data consistency issue)
   if (category === "integrity") {
     return WATCHER_INTEGRITY_ERROR_SLEEP_MS;
   }
-  
+
   // Rate limiting: exponential backoff with higher ceiling
   if (category === "rate_limit") {
-    const backoff = Math.min(
-      WATCHER_RATE_LIMIT_BASE_MS * Math.pow(2, streak - 1),
-      WATCHER_RATE_LIMIT_MAX_MS,
-    );
+    const backoff = Math.min(WATCHER_RATE_LIMIT_BASE_MS * Math.pow(2, streak - 1), WATCHER_RATE_LIMIT_MAX_MS);
     return backoff;
   }
-  
+
   // Timeout: moderate backoff, retry sooner
   if (category === "timeout") {
-    const backoff = Math.min(
-      WATCHER_TIMEOUT_BASE_MS * Math.pow(2, streak - 1),
-      WATCHER_TIMEOUT_MAX_MS,
-    );
+    const backoff = Math.min(WATCHER_TIMEOUT_BASE_MS * Math.pow(2, streak - 1), WATCHER_TIMEOUT_MAX_MS);
     return backoff;
   }
-  
+
   // Transient errors: standard exponential backoff
-  return Math.min(
-    WATCHER_TRANSIENT_ERROR_SLEEP_MS * Math.max(1, 2 ** (streak - 1)),
-    WATCHER_TRANSIENT_ERROR_SLEEP_MAX_MS,
-  );
+  return Math.min(WATCHER_TRANSIENT_ERROR_SLEEP_MS * Math.max(1, 2 ** (streak - 1)), WATCHER_TRANSIENT_ERROR_SLEEP_MAX_MS);
 }
 
 export function watcherShouldHaltAfterIntegrityError(consecutiveIntegrityErrors: number) {
@@ -445,11 +410,7 @@ export function watcherReorgMeta(
   changedAddrs: unknown,
   checkpointBlock: unknown,
 ) {
-  const changedAddrCount = Array.isArray(changedAddrs)
-    ? changedAddrs.length
-    : changedAddrs instanceof Set
-      ? changedAddrs.size
-      : 0;
+  const changedAddrCount = Array.isArray(changedAddrs) ? changedAddrs.length : changedAddrs instanceof Set ? changedAddrs.size : 0;
   return {
     reorgBlock: Math.max(0, Number(reorgBlock) || 0),
     checkpointBlock: Math.max(0, Number(checkpointBlock) || 0),
@@ -459,12 +420,7 @@ export function watcherReorgMeta(
   };
 }
 
-export function watcherHaltMeta(
-  error: unknown,
-  consecutiveIntegrityPollErrors: number,
-  haltThreshold: number,
-  currentLastBlock: unknown,
-) {
+export function watcherHaltMeta(error: unknown, consecutiveIntegrityPollErrors: number, haltThreshold: number, currentLastBlock: unknown) {
   const err = error as { message?: string; name?: string } | null | undefined;
   return {
     reason: String(err?.message ?? error ?? "Unknown watcher halt reason"),

@@ -1,4 +1,3 @@
-
 /**
  * src/protocols/curve_stable_factory.js — Curve StableSwap Factory definition
  */

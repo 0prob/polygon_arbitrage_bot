@@ -78,27 +78,26 @@ export function logArbResult(db: HistoryDatabase, arb: ArbResultInput) {
   historyStmt(
     db,
     "logArbResult",
-      `INSERT INTO arb_history
+    `INSERT INTO arb_history
          (tx_hash, block_number, start_token, hop_count,
           amount_in, amount_out, gross_profit, net_profit,
           gas_used, gas_price_wei, pools, protocols, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  )
-    .run(
-      normalizeOptionalText(arb.txHash),
-      normalizeOptionalNumber(arb.blockNumber),
-      startToken,
-      normalizeOptionalNumber(arb.hopCount),
-      arb.amountIn != null ? String(arb.amountIn) : null,
-      arb.amountOut != null ? String(arb.amountOut) : null,
-      arb.grossProfit != null ? String(arb.grossProfit) : null,
-      arb.netProfit != null ? String(arb.netProfit) : null,
-      normalizeOptionalNumber(arb.gasUsed),
-      arb.gasPriceWei != null ? String(arb.gasPriceWei) : null,
-      JSON.stringify(lowerCaseAddressList(pools)),
-      JSON.stringify(protocols),
-      normalizeOptionalText(arb.status) ?? "success"
-    );
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    normalizeOptionalText(arb.txHash),
+    normalizeOptionalNumber(arb.blockNumber),
+    startToken,
+    normalizeOptionalNumber(arb.hopCount),
+    arb.amountIn != null ? String(arb.amountIn) : null,
+    arb.amountOut != null ? String(arb.amountOut) : null,
+    arb.grossProfit != null ? String(arb.grossProfit) : null,
+    arb.netProfit != null ? String(arb.netProfit) : null,
+    normalizeOptionalNumber(arb.gasUsed),
+    arb.gasPriceWei != null ? String(arb.gasPriceWei) : null,
+    JSON.stringify(lowerCaseAddressList(pools)),
+    JSON.stringify(protocols),
+    normalizeOptionalText(arb.status) ?? "success",
+  );
 }
 
 export function getArbHistory(db: HistoryDatabase, opts: ArbHistoryOptions = {}) {
@@ -127,7 +126,7 @@ export function getArbHistory(db: HistoryDatabase, opts: ArbHistoryOptions = {})
     `SELECT id, tx_hash, block_number, start_token, hop_count,
             amount_in, amount_out, gross_profit, net_profit,
             gas_used, gas_price_wei, pools, protocols, status, recorded_at
-     FROM arb_history ${where} ORDER BY recorded_at DESC LIMIT ?`
+     FROM arb_history ${where} ORDER BY recorded_at DESC LIMIT ?`,
   ).all(...params, limit);
 
   return rows.map((row) => mapArbHistoryRow(row));
@@ -146,7 +145,7 @@ export function getArbStats(db: HistoryDatabase, opts: ArbHistoryOptions = {}) {
        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successes,
        SUM(CASE WHEN status = 'reverted' THEN 1 ELSE 0 END) as reverts,
        SUM(CASE WHEN status = 'dropped' THEN 1 ELSE 0 END) as dropped
-     FROM arb_history ${whereClause}`
+     FROM arb_history ${whereClause}`,
   ).get(...params) as ArbStatsTotalsRow | undefined;
 
   // Load net_profit as TEXT and aggregate in JS with BigInt to avoid CAST-to-REAL precision loss
@@ -154,7 +153,7 @@ export function getArbStats(db: HistoryDatabase, opts: ArbHistoryOptions = {}) {
   const profitRows = historyStmt(
     db,
     `getArbStatsProfitRows:${profitWhere}`,
-    `SELECT net_profit FROM arb_history WHERE status = 'success' ${profitWhere}`
+    `SELECT net_profit FROM arb_history WHERE status = 'success' ${profitWhere}`,
   ).all(...(since ? [String(since)] : [])) as { net_profit: string }[];
 
   let totalNetProfit = 0n;
@@ -176,7 +175,7 @@ export function getArbStats(db: HistoryDatabase, opts: ArbHistoryOptions = {}) {
     `getArbStatsByHop:${whereClause}`,
     `SELECT hop_count, COUNT(*) as count
      FROM arb_history ${whereClause}
-     GROUP BY hop_count`
+     GROUP BY hop_count`,
   ).all(...params) as ArbStatsByHopRow[];
 
   const byHopMap: Record<string, number> = {};

@@ -41,20 +41,35 @@ export function isEvmAddress(value: unknown, options: { allowZero?: boolean } = 
 }
 
 export function normalizeProtocolKey(protocol: unknown): ProtocolKey {
-  return String(protocol ?? "").trim().toUpperCase();
+  return String(protocol ?? "")
+    .trim()
+    .toUpperCase();
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object";
 }
 
-
 export const normalizeAddress = normalizeEvmAddress;
 
 // Polygon (bor) reserves 0x02-0x0f range for system contracts (staking, state,
 // validators). These are not user-deployed contracts and will never be DEX pools.
-const POLYGON_SYSTEM_PREFIXES = ["0x02", "0x03", "0x04", "0x05", "0x06", "0x07",
-  "0x08", "0x09", "0x0a", "0x0b", "0x0c", "0x0d", "0x0e", "0x0f"];
+const POLYGON_SYSTEM_PREFIXES = [
+  "0x02",
+  "0x03",
+  "0x04",
+  "0x05",
+  "0x06",
+  "0x07",
+  "0x08",
+  "0x09",
+  "0x0a",
+  "0x0b",
+  "0x0c",
+  "0x0d",
+  "0x0e",
+  "0x0f",
+];
 
 export function isPolygonSystemContract(address: string): boolean {
   const lower = address.toLowerCase();

@@ -20,10 +20,7 @@
  *   const receipt = await exec.waitForReceipt(hash);
  */
 
-import {
-  createExecutionClient,
-  createExecutionReadClient,
-} from "../config/rpc_env.ts";
+import { createExecutionClient, createExecutionReadClient } from "../config/rpc_env.ts";
 import type { Account, Hex, TransactionReceipt } from "viem";
 
 export class ExecutorClient {
@@ -51,9 +48,7 @@ export class ExecutorClient {
    * Use `submit()` instead if you need explicit control over the signed bytes
    * (e.g. for private mempool / bundle submission).
    */
-  async sendTransaction(
-    params: Parameters<typeof this.wallet.sendTransaction>[0],
-  ): Promise<Hex> {
+  async sendTransaction(params: Parameters<typeof this.wallet.sendTransaction>[0]): Promise<Hex> {
     return this.wallet.sendTransaction(params);
   }
 
@@ -66,11 +61,7 @@ export class ExecutorClient {
    * @param confirmations    Blocks to wait for (default 1).
    * @param timeoutMs        Max wait time in milliseconds (default 60s).
    */
-  async waitForReceipt(
-    hash: Hex,
-    confirmations = 1,
-    timeoutMs = 60_000,
-  ): Promise<TransactionReceipt> {
+  async waitForReceipt(hash: Hex, confirmations = 1, timeoutMs = 60_000): Promise<TransactionReceipt> {
     return this.reader.waitForTransactionReceipt({
       hash,
       confirmations,
@@ -86,9 +77,7 @@ export class ExecutorClient {
    * for cases where you need an estimate anchored to the same node that will
    * broadcast the tx (useful for nonce-critical timing).
    */
-  async estimateGas(
-    params: Parameters<typeof this.reader.estimateGas>[0],
-  ): Promise<bigint> {
+  async estimateGas(params: Parameters<typeof this.reader.estimateGas>[0]): Promise<bigint> {
     return this.reader.estimateGas(params);
   }
 }

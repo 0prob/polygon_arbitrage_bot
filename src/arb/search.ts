@@ -56,30 +56,6 @@ type ScanPathSelection = {
 const STALE_SCAN_ROUTE_REFRESH_PATH_LIMIT = 64;
 const STALE_SCAN_ROUTE_REFRESH_POOL_LIMIT = 32;
 
-function normalizeToBigInt(value: unknown, fallback: bigint = 0n): bigint {
-  if (typeof value === "bigint") return value;
-  if (typeof value === "boolean") return value ? 1n : 0n;
-  if (typeof value === "number") {
-    if (!Number.isFinite(value) || !Number.isInteger(value)) return fallback;
-    try {
-      return BigInt(value);
-    } catch {
-      return fallback;
-    }
-  }
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return fallback;
-    if (!/^-?\d+$/.test(trimmed)) return fallback;
-    try {
-      return BigInt(trimmed);
-    } catch {
-      return fallback;
-    }
-  }
-  return fallback;
-}
-
 function isMissingRouteAmount(value: unknown) {
   return value == null || (typeof value === "string" && value.trim().length === 0);
 }
@@ -96,8 +72,7 @@ function normalizeExplicitHopCount(value: unknown) {
 }
 
 function normalizeProbeAmounts(values: bigint[]) {
-  return [...new Set(values.filter((amount) => typeof amount === "bigint" && amount > 0n).map(String))]
-    .map((amount) => BigInt(amount));
+  return [...new Set(values.filter((amount) => typeof amount === "bigint" && amount > 0n).map(String))].map((amount) => BigInt(amount));
 }
 
 function normalizeRouteAmount(value: unknown): bigint {
@@ -198,10 +173,7 @@ function collectRoutePoolRecordsForRefresh(
   return { records, consideredPaths, missingPoolRecords };
 }
 
-async function refreshStaleScanRoutes(
-  cycles: ArbPathLike[],
-  deps: Pick<SearchDeps, "getPoolRecord" | "fetchAndCacheStates" | "log">,
-) {
+async function refreshStaleScanRoutes(cycles: ArbPathLike[], deps: Pick<SearchDeps, "getPoolRecord" | "fetchAndCacheStates" | "log">) {
   if (!deps.getPoolRecord || !deps.fetchAndCacheStates) return false;
   const { records, consideredPaths, missingPoolRecords } = collectRoutePoolRecordsForRefresh(cycles, deps, {
     maxPaths: STALE_SCAN_ROUTE_REFRESH_PATH_LIMIT,
@@ -237,15 +209,11 @@ export function toRouteResultLike(result: RawRouteResult): RouteResultLike {
   const amountOut = normalizeRouteAmount(result.amountOut);
   const profit = isMissingRouteAmount(result.profit) ? amountOut - amountIn : normalizeRouteAmount(result.profit);
   const profitable = typeof result.profitable === "boolean" ? result.profitable : profit > 0n;
-  const poolPath = Array.isArray(result.poolPath) && result.poolPath.every((item) => typeof item === "string")
-    ? result.poolPath
-    : undefined;
-  const tokenPath = Array.isArray(result.tokenPath) && result.tokenPath.every((item) => typeof item === "string")
-    ? result.tokenPath
-    : undefined;
-  const hopAmounts = Array.isArray(result.hopAmounts)
-    ? result.hopAmounts.map((amount) => normalizeRouteAmount(amount))
-    : undefined;
+  const poolPath =
+    Array.isArray(result.poolPath) && result.poolPath.every((item) => typeof item === "string") ? result.poolPath : undefined;
+  const tokenPath =
+    Array.isArray(result.tokenPath) && result.tokenPath.every((item) => typeof item === "string") ? result.tokenPath : undefined;
+  const hopAmounts = Array.isArray(result.hopAmounts) ? result.hopAmounts.map((amount) => normalizeRouteAmount(amount)) : undefined;
   const routeResult = {
     amountIn,
     amountOut,
@@ -278,9 +246,7 @@ function mergeCandidateBatch(
   }
 }
 
-function normaliseCandidateBatch(
-  batch: Array<{ path: ArbPathLike; result: RawRouteResult }>,
-): CandidateEntry[] {
+function normaliseCandidateBatch(batch: Array<{ path: ArbPathLike; result: RawRouteResult }>): CandidateEntry[] {
   return batch.map(({ path, result }) => ({
     path,
     result: toRouteResultLike(result),
@@ -324,24 +290,26 @@ type SearchDeps = {
     probeAmount: bigint,
     options: Record<string, unknown>,
   ) => Promise<Array<{ path: ArbPathLike; result: RawRouteResult }>>;
-  optimizeInputAmount: (
-    path: ArbPathLike,
-    stateCache: RouteStateCache,
-    options: AssessmentOptimizationOptions,
-  ) => RouteResultLike | null;
-  evaluateCandidatePipeline: (candidates: CandidateEntry[], options: {
-    shortlistLimit: number;
-    gasPriceWei: bigint;
-    getTokenToMaticRate: (tokenAddress: string) => bigint;
-    optimizePath: (
-      path: ArbPathLike,
-      quickResult: RouteResultLike | null | undefined,
-      tokenToMaticRate: bigint,
-    ) => Promise<RouteResultLike | null> | RouteResultLike | null;
-    assessRoute: (path: ArbPathLike, routeResult: RouteResultLike, tokenToMaticRate: bigint) => AssessmentLike;
-    optimizeConcurrency?: number;
-  }) => Promise<CandidatePipelineResult>;
-  partitionFreshCandidates: (candidates: ExecutableCandidate[], getFreshness: (path: ArbPathLike) => { ok: boolean; reason?: string }) => {
+  optimizeInputAmount: (path: ArbPathLike, stateCache: RouteStateCache, options: AssessmentOptimizationOptions) => RouteResultLike | null;
+  evaluateCandidatePipeline: (
+    candidates: CandidateEntry[],
+    options: {
+      shortlistLimit: number;
+      gasPriceWei: bigint;
+      getTokenToMaticRate: (tokenAddress: string) => bigint;
+      optimizePath: (
+        path: ArbPathLike,
+        quickResult: RouteResultLike | null | undefined,
+        tokenToMaticRate: bigint,
+      ) => Promise<RouteResultLike | null> | RouteResultLike | null;
+      assessRoute: (path: ArbPathLike, routeResult: RouteResultLike, tokenToMaticRate: bigint) => AssessmentLike;
+      optimizeConcurrency?: number;
+    },
+  ) => Promise<CandidatePipelineResult>;
+  partitionFreshCandidates: (
+    candidates: ExecutableCandidate[],
+    getFreshness: (path: ArbPathLike) => { ok: boolean; reason?: string },
+  ) => {
     fresh: ExecutableCandidate[];
     stale: Array<{ candidate: ExecutableCandidate; freshness: { reason?: string } }>;
   };
@@ -353,7 +321,12 @@ type SearchDeps = {
   fmtPath: (path: ArbPathLike) => string;
   fmtProfit: (netWei: bigint, tokenAddr: string) => string;
   onPathsEvaluated: (count: number) => void;
-  onCandidateMetrics: (metrics: { candidateCount: number; topCandidates: number; optimizedCandidates: number; profitableRoutes: number }) => void;
+  onCandidateMetrics: (metrics: {
+    candidateCount: number;
+    topCandidates: number;
+    optimizedCandidates: number;
+    profitableRoutes: number;
+  }) => void;
   onArbsFound: (count: number) => void;
   workerCount: number;
 };
@@ -380,25 +353,14 @@ export function createArbSearcher(deps: SearchDeps) {
     }
 
     const concurrency = Math.max(1, deps.workerCount || 1);
-    const evaluatedBatches = await mapConcurrent(
-      probeTasks,
-      concurrency,
-      async ({ tokenPaths, probeAmount }) => deps.evaluatePathsParallel(
-        tokenPaths,
-        deps.stateCache,
-        probeAmount,
-        { workerCount: deps.workerCount },
-      ),
+    const evaluatedBatches = await mapConcurrent(probeTasks, concurrency, async ({ tokenPaths, probeAmount }) =>
+      deps.evaluatePathsParallel(tokenPaths, deps.stateCache, probeAmount, { workerCount: deps.workerCount }),
     );
 
     // Merge in deterministic task-construction order so equal-profit duplicate
     // routes retain the same winner as the previous sequential implementation.
     for (const batch of evaluatedBatches) {
-      mergeCandidateBatch(
-        merged,
-        normaliseCandidateBatch(batch),
-        deps.routeKeyFromEdges,
-      );
+      mergeCandidateBatch(merged, normaliseCandidateBatch(batch), deps.routeKeyFromEdges);
     }
 
     deps.log("[runner] Multi-probe evaluation complete", "debug", {
@@ -583,9 +545,8 @@ export function createArbSearcher(deps: SearchDeps) {
       optimizeConcurrency: deps.workerCount,
     });
 
-    const { fresh: freshProfitable, stale: staleProfitable } = deps.partitionFreshCandidates(
-      profitable,
-      (candidatePath: ArbPathLike) => deps.getRouteFreshness(candidatePath),
+    const { fresh: freshProfitable, stale: staleProfitable } = deps.partitionFreshCandidates(profitable, (candidatePath: ArbPathLike) =>
+      deps.getRouteFreshness(candidatePath),
     );
     if (staleProfitable.length > 0) {
       deps.log("[runner] Skipping stale profitable routes from scan", "debug", {
@@ -608,16 +569,12 @@ export function createArbSearcher(deps: SearchDeps) {
       deps.routeCacheUpdate(eligibleProfitable);
       for (const { path, assessment } of eligibleProfitable) {
         const net = assessment.netProfitAfterGas ?? assessment.netProfit ?? 0n;
-        deps.log(
-          `  ↳ ${deps.fmtPath(path)}  net ${deps.fmtProfit(net, path.startToken)}`,
-          "info",
-          {
-            event: "profitable_route",
-            route: deps.fmtPath(path),
-            hopCount: path.hopCount,
-            netProfit: net.toString(),
-          },
-        );
+        deps.log(`  ↳ ${deps.fmtPath(path)}  net ${deps.fmtProfit(net, path.startToken)}`, "info", {
+          event: "profitable_route",
+          route: deps.fmtPath(path),
+          hopCount: path.hopCount,
+          netProfit: net.toString(),
+        });
       }
     }
 

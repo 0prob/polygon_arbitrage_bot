@@ -1,4 +1,3 @@
-
 /**
  * src/routing/persistent_worker.ts — Long-lived simulation + enumeration worker
  *
@@ -25,7 +24,6 @@ import { errorMessage } from "../utils/errors.ts";
 import type { RouteState, RouteStateCache, SimulationPath } from "./simulation_types.ts";
 import type {
   SerializedEnumeratedPath,
-  SerializedTopology,
   WorkerErrorResponse,
   WorkerRequest,
   WorkerStateObject,
@@ -39,9 +37,7 @@ let cachedTopologyGraph: ReturnType<typeof deserializeTopology> | null = null;
 
 function stateEntries(stateObj: WorkerStateObject | Map<string, RouteState> | null | undefined) {
   if (!stateObj) return [];
-  return stateObj instanceof Map
-    ? [...stateObj.entries()]
-    : Object.entries(stateObj);
+  return stateObj instanceof Map ? [...stateObj.entries()] : Object.entries(stateObj);
 }
 
 function rehydrateAndStoreState(poolAddress: string, state: RouteState) {
@@ -77,7 +73,7 @@ parentPort!.on("message", (message: WorkerRequest) => {
         const retained = new Set(
           retainPools
             .map((poolAddress: string) => normalizeEvmAddress(poolAddress))
-            .filter((poolAddress: string | null): poolAddress is string => poolAddress != null)
+            .filter((poolAddress: string | null): poolAddress is string => poolAddress != null),
         );
         for (const poolAddress of [...workerStateMap.keys()]) {
           if (!retained.has(poolAddress)) {
@@ -86,13 +82,11 @@ parentPort!.on("message", (message: WorkerRequest) => {
         }
       }
       parentPort!.postMessage({ id, type: "SYNC_STATE" });
-
     } else if (message.type === "SYNC_TOPOLOGY") {
       const { adjacency, topologyKey } = message;
       cachedTopologyGraph = deserializeTopology(adjacency);
       cachedTopologyKey = topologyKey ?? null;
       parentPort!.postMessage({ id, type: "SYNC_TOPOLOGY" });
-
     } else if (message.type === "EVALUATE") {
       const { paths, stateObj, testAmount, options } = message;
       if (stateObj) {
@@ -103,7 +97,6 @@ parentPort!.on("message", (message: WorkerRequest) => {
 
       const profitable = evaluatePaths(paths, workerStateMap, BigInt(testAmount), options || {});
       parentPort!.postMessage({ id, type: "EVALUATE", profitable });
-
     } else if (message.type === "ENUMERATE") {
       const { adjacency, topologyKey, startTokens, options } = message;
       let graph = cachedTopologyGraph;
@@ -123,7 +116,6 @@ parentPort!.on("message", (message: WorkerRequest) => {
       const paths = findArbPaths(graph, startTokens, options || {}) as SimulationPath[];
       const serialised = paths.map((path) => serialiseEnumeratedPath(path));
       parentPort!.postMessage({ id, type: "ENUMERATE", paths: serialised });
-
     } else {
       parentPort!.postMessage({ id, error: `Unknown message type: ${(message as { type?: unknown }).type}` });
     }

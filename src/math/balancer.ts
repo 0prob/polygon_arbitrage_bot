@@ -1,4 +1,3 @@
-
 /**
  * src/math/balancer.js — Balancer V2 weighted and stable pool swap math
  *
@@ -42,11 +41,7 @@ const DEFAULT_AMP_PRECISION = 1000n;
 const MAX_IN_RATIO = 30n * 10n ** 16n;
 const MAX_OUT_RATIO = 30n * 10n ** 16n;
 
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigInt,
-} from "../utils/bigint.ts";
+import { toBigInt } from "../utils/bigint.ts";
 import { divRoundingUp } from "./full_math.ts";
 
 // Maximum number of iterations for power approximation
@@ -55,7 +50,7 @@ const MAX_POW_ITERATIONS = 255;
 type BalancerPoolState = Record<string, unknown>;
 
 function asPoolState(value: unknown): BalancerPoolState {
-  return value != null && typeof value === "object" ? value as BalancerPoolState : {};
+  return value != null && typeof value === "object" ? (value as BalancerPoolState) : {};
 }
 
 function absDiff(a: bigint, b: bigint): bigint {
@@ -277,11 +272,10 @@ export function getBalancerAmountIn(amountOut: bigint, poolState: unknown, inIdx
   const feeComplement = ONE - fee;
   if (feeComplement <= 0n) return 0n;
 
-  let candidate = (amountInBeforeFee * ONE) / feeComplement + 1n;
+  const candidate = (amountInBeforeFee * ONE) / feeComplement + 1n;
   if (candidate <= 0n) return 0n;
 
-  const quoteAt = (amountInCandidate: bigint) =>
-    getBalancerAmountOut(amountInCandidate, poolState, inIdx, outIdx);
+  const quoteAt = (amountInCandidate: bigint) => getBalancerAmountOut(amountInCandidate, poolState, inIdx, outIdx);
 
   let low = 0n;
   let high = candidate;
@@ -334,11 +328,7 @@ function getScaledBalances(poolState: unknown): bigint[] | null {
  * Compute the Balancer stable invariant using the same Newton iteration shape
  * as Balancer V2 StableMath._calculateInvariant.
  */
-export function calculateBalancerStableInvariant(
-  amp: bigint,
-  balances: bigint[],
-  ampPrecision = DEFAULT_AMP_PRECISION,
-): bigint {
+export function calculateBalancerStableInvariant(amp: bigint, balances: bigint[], ampPrecision = DEFAULT_AMP_PRECISION): bigint {
   amp = toBigInt(amp);
   ampPrecision = toBigInt(ampPrecision, DEFAULT_AMP_PRECISION);
   if (!Array.isArray(balances) || balances.length < 2 || amp <= 0n || ampPrecision <= 0n) return 0n;
@@ -363,9 +353,8 @@ export function calculateBalancerStableInvariant(
     }
 
     const prevInvariant = invariant;
-    const numerator = (((ampTimesTotal * sum) / ampPrecision) + D_P * numTokens) * invariant;
-    const denominator = (((ampTimesTotal - ampPrecision) * invariant) / ampPrecision) +
-      (numTokens + 1n) * D_P;
+    const numerator = ((ampTimesTotal * sum) / ampPrecision + D_P * numTokens) * invariant;
+    const denominator = ((ampTimesTotal - ampPrecision) * invariant) / ampPrecision + (numTokens + 1n) * D_P;
     if (denominator <= 0n) return 0n;
     invariant = numerator / denominator;
 
@@ -443,9 +432,7 @@ export function getBalancerStableAmountOut(amountIn: bigint, poolState: unknown,
   if (!scaledBalances) return 0n;
   if (inIdx < 0 || outIdx < 0 || inIdx >= scaledBalances.length || outIdx >= scaledBalances.length) return 0n;
 
-  const scalingFactors = Array.isArray(pool.scalingFactors)
-    ? pool.scalingFactors.map((value: unknown) => toBigInt(value))
-    : [];
+  const scalingFactors = Array.isArray(pool.scalingFactors) ? pool.scalingFactors.map((value: unknown) => toBigInt(value)) : [];
   const fee = toBigInt(pool.swapFee);
   if (fee < 0n || fee >= ONE || scalingFactors[inIdx] <= 0n || scalingFactors[outIdx] <= 0n) return 0n;
 
@@ -460,13 +447,7 @@ export function getBalancerStableAmountOut(amountIn: bigint, poolState: unknown,
 
   const balancesAfterIn = [...scaledBalances];
   balancesAfterIn[inIdx] += scaledAmountIn;
-  const finalBalanceOut = getTokenBalanceGivenStableInvariant(
-    amp,
-    balancesAfterIn,
-    invariant,
-    outIdx,
-    ampPrecision,
-  );
+  const finalBalanceOut = getTokenBalanceGivenStableInvariant(amp, balancesAfterIn, invariant, outIdx, ampPrecision);
   if (finalBalanceOut <= 0n || finalBalanceOut >= scaledBalances[outIdx]) return 0n;
 
   const scaledAmountOut = scaledBalances[outIdx] - finalBalanceOut - 1n;
@@ -491,7 +472,7 @@ export function simulateBalancerSwap(
   amountIn: bigint,
   poolState: unknown,
   inIdx = 0,
-  outIdx = 1
+  outIdx = 1,
 ): { amountOut: bigint; gasEstimate: number } {
   amountIn = toBigInt(amountIn);
   if (amountIn <= 0n) return { amountOut: 0n, gasEstimate: 0 };
@@ -499,9 +480,10 @@ export function simulateBalancerSwap(
   let amountOut = 0n;
   try {
     const pool = asPoolState(poolState);
-    amountOut = pool.isStable === true || pool.amp != null
-      ? getBalancerStableAmountOut(amountIn, poolState, inIdx, outIdx)
-      : getBalancerAmountOut(amountIn, poolState, inIdx, outIdx);
+    amountOut =
+      pool.isStable === true || pool.amp != null
+        ? getBalancerStableAmountOut(amountIn, poolState, inIdx, outIdx)
+        : getBalancerAmountOut(amountIn, poolState, inIdx, outIdx);
   } catch {
     amountOut = 0n;
   }

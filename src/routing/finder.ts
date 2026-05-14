@@ -1,4 +1,3 @@
-
 /**
  * src/routing/finder.js — Arbitrage path finder
  *
@@ -78,16 +77,9 @@ type ResolvedCycleEnumeratorOptions = {
   maxNHopExpansionsPerToken?: number;
   pruneOpts: PruneOptions;
 };
-type QuoteLogWeightFn = (
-  amountIn: bigint,
-  state: RouteState,
-  tokenInIdx: number,
-  tokenOutIdx: number,
-) => { amountOut: bigint };
+type QuoteLogWeightFn = (amountIn: bigint, state: RouteState, tokenInIdx: number, tokenOutIdx: number) => { amountOut: bigint };
 
 // ─── Log-weight helpers ───────────────────────────────────────
-
-
 
 function anyNonPositiveBigInt(values: unknown[]) {
   return values.some((value) => {
@@ -121,9 +113,9 @@ function rateLookupFromOptions(opts: Pick<PathFinderOptions, "getRateWei" | "tok
  *   result = (hi + frac/2^32) / 2^32  = sqrtPriceX96 / 2^96
  */
 function sqrtPriceToFloat(sqrtPriceX96: bigint) {
-  const hi   = Number(sqrtPriceX96 >> 64n);
-  const frac = Number((sqrtPriceX96 >> 32n) & 0xFFFF_FFFFn) / (2 ** 32);
-  return (hi + frac) / (2 ** 32);
+  const hi = Number(sqrtPriceX96 >> 64n);
+  const frac = Number((sqrtPriceX96 >> 32n) & 0xffff_ffffn) / 2 ** 32;
+  return (hi + frac) / 2 ** 32;
 }
 
 function probeAmountFromBalance(balance: unknown) {
@@ -141,10 +133,7 @@ function positiveLog(value: unknown) {
     if (digits.length <= 15) return Math.log(Number(bigintValue));
 
     const mantissaDigits = digits.slice(0, 15);
-    const mantissa =
-      mantissaDigits.length === 1
-        ? Number(mantissaDigits)
-        : Number(`${mantissaDigits[0]}.${mantissaDigits.slice(1)}`);
+    const mantissa = mantissaDigits.length === 1 ? Number(mantissaDigits) : Number(`${mantissaDigits[0]}.${mantissaDigits.slice(1)}`);
     return Math.log(mantissa) + (digits.length - 1) * Math.LN10;
   }
 
@@ -238,7 +227,7 @@ export function edgeSpotLogWeight(edge: SwapEdge) {
     const sqrtP = toBigIntOrNull(state.sqrtPriceX96);
     if (sqrtP == null || sqrtP === 0n || !state.initialized) return null;
     const sqrtFloat = sqrtPriceToFloat(sqrtP); // ≈ sqrtPriceX96 / 2^96
-    const price01 = sqrtFloat * sqrtFloat;      // token1 per token0
+    const price01 = sqrtFloat * sqrtFloat; // token1 per token0
     if (price01 <= 0 || !isFinite(price01)) return null;
     const feeFrac = toFiniteNumber(edge.fee, 3000) / 1e6;
     const logSpot = edge.zeroForOne ? Math.log(price01) : -Math.log(price01);
@@ -311,7 +300,7 @@ export function annotatePath(path: PendingArbPath): ArbPath {
   // If no edges had state, treat as neutral (0) so simulator gets a chance.
   // If at least one edge was known, use the partial sum — it's still a better
   // signal than zero and keeps paths ranked relative to each other.
-  path.logWeight         = knownEdges === 0 ? 0 : logWeight;
+  path.logWeight = knownEdges === 0 ? 0 : logWeight;
   path.cumulativeFeesBps = pathCumulativeFeesBps(path);
   return path as ArbPath;
 }
@@ -442,11 +431,13 @@ function shouldPruneEdge(edge: SwapEdge, opts: PruneOptions = {}) {
     if (
       edge.tokenIn !== state.quoteToken &&
       (!isRecord(inState) || (toBigIntOrNull(inState.price) ?? 0n) <= 0n || inState.feasible === false)
-    ) return true;
+    )
+      return true;
     if (
       edge.tokenOut !== state.quoteToken &&
       (!isRecord(outState) || (toBigIntOrNull(outState.price) ?? 0n) <= 0n || outState.feasible === false)
-    ) return true;
+    )
+      return true;
     return false;
   }
 
@@ -543,7 +534,9 @@ function findShortHopPaths(
       if (e2.poolAddress === e1.poolAddress) continue;
 
       for (const e3 of edgesBetween(tokenC, startToken)) {
-        const p1 = e1.poolAddress, p2 = e2.poolAddress, p3 = e3.poolAddress;
+        const p1 = e1.poolAddress,
+          p2 = e2.poolAddress,
+          p3 = e3.poolAddress;
         if (p3 === p1 || p3 === p2) continue;
         pushTopPath(paths, { startToken, edges: [e1, e2, e3], hopCount: 3 }, maxPaths);
       }
@@ -680,13 +673,13 @@ export function find4HopPathsBidirectional(graph: PathSearchGraph, startToken: s
     if (!bwdPairs) continue;
 
     for (const [e1, e2] of fwdPairs) {
-      const p1 = e1.poolAddress, p2 = e2.poolAddress;
+      const p1 = e1.poolAddress,
+        p2 = e2.poolAddress;
       for (const [e3, e4] of bwdPairs) {
-        const p3 = e3.poolAddress, p4 = e4.poolAddress;
+        const p3 = e3.poolAddress,
+          p4 = e4.poolAddress;
         // All 4 pools must be unique (bit-twiddling-free: 6 comparisons)
-        if (p1 === p2 || p1 === p3 || p1 === p4 ||
-                         p2 === p3 || p2 === p4 ||
-                                      p3 === p4) continue;
+        if (p1 === p2 || p1 === p3 || p1 === p4 || p2 === p3 || p2 === p4 || p3 === p4) continue;
 
         pushTopPath(paths, { startToken, edges: [e1, e2, e3, e4], hopCount: 4 }, maxPaths);
       }
@@ -703,10 +696,7 @@ function findNHopPaths(graph: PathSearchGraph, startToken: string, exactHops: nu
   const maxPaths = normalizePathLimit(opts.maxPaths, 2_000);
   // 5+ hop DFS can explode on dense hub graphs; cap edge expansions so startup
   // cannot stall forever after warmup completes.
-  const maxExpansions = normalizePathLimit(
-    opts.maxExpansions,
-    Math.max(25_000, maxPaths * 50),
-  );
+  const maxExpansions = normalizePathLimit(opts.maxExpansions, Math.max(25_000, maxPaths * 50));
   if (!Number.isFinite(exactHops) || exactHops < 2) return [];
 
   const paths: ArbPath[] = [];
@@ -828,13 +818,18 @@ export class CycleEnumerator {
   }
 
   private enumerateForwardShortHops(startToken: string, search: ResolvedCycleEnumeratorOptions): ArbPath[] {
-    const shortPaths = findShortHopPaths(this.graph, startToken, {
-      ...search.pruneOpts,
-      maxPaths: search.maxPathsPerToken,
-    }, {
-      include2Hop: search.include2Hop,
-      include3Hop: search.include3Hop,
-    });
+    const shortPaths = findShortHopPaths(
+      this.graph,
+      startToken,
+      {
+        ...search.pruneOpts,
+        maxPaths: search.maxPathsPerToken,
+      },
+      {
+        include2Hop: search.include2Hop,
+        include3Hop: search.include3Hop,
+      },
+    );
     return selectTopPathsByLogWeight(shortPaths, search.maxPathsPerToken);
   }
 
@@ -845,10 +840,7 @@ export class CycleEnumerator {
     });
   }
 
-  private enumerateBoundedLongHops(
-    startToken: string,
-    search: ResolvedCycleEnumeratorOptions,
-  ): ArbPath[] {
+  private enumerateBoundedLongHops(startToken: string, search: ResolvedCycleEnumeratorOptions): ArbPath[] {
     // Fix #3: give 5+ hop paths their own budget equal to max4HopPathsPerToken
     // rather than sharing the 4-hop budget. Previously a full 4-hop run left
     // remainingComplexBudget=0 and silently skipped all 5+ hop paths.
@@ -904,7 +896,7 @@ export function findArbPaths(graph: PathSearchGraph, startTokens: StartTokenInpu
  * @returns {ArbPath[]}
  */
 export function deduplicatePaths(paths: ArbPath[]): ArbPath[] {
-  const seen   = new Set<string>();
+  const seen = new Set<string>();
   const unique: ArbPath[] = [];
 
   for (const path of paths) {

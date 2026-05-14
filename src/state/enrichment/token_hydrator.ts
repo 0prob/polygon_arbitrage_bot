@@ -1,4 +1,3 @@
-
 /**
  * src/enrichment/token_hydrator.js — ERC-20 metadata hydration via multicall
  *
@@ -52,15 +51,9 @@ const HYPERRPC_MULTICALL_RECOVERY_MS = 60_000;
 
 // ─── ERC-20 ABI fragments ──────────────────────────────────────
 
-const DECIMALS_ABI = [
-  { name: "decimals", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint8" }] },
-];
-const SYMBOL_ABI = [
-  { name: "symbol", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
-];
-const NAME_ABI = [
-  { name: "name", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] },
-];
+const DECIMALS_ABI = [{ name: "decimals", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint8" }] }];
+const SYMBOL_ABI = [{ name: "symbol", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] }];
+const NAME_ABI = [{ name: "name", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "string" }] }];
 const SYMBOL_BYTES32_ABI = [
   { name: "symbol", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "bytes32" }] },
 ];
@@ -86,16 +79,11 @@ type MulticallResult = {
 };
 
 type MulticallClient = {
-  multicall: (args: {
-    contracts: readonly MulticallContract[];
-    allowFailure: boolean;
-  }) => Promise<MulticallResult[]>;
+  multicall: (args: { contracts: readonly MulticallContract[]; allowFailure: boolean }) => Promise<MulticallResult[]>;
 };
 
 function requireMulticallClient(client: unknown, label: string): MulticallClient {
-  const multicall = client != null && typeof client === "object"
-    ? (client as { multicall?: unknown }).multicall
-    : null;
+  const multicall = client != null && typeof client === "object" ? (client as { multicall?: unknown }).multicall : null;
   if (typeof multicall !== "function") {
     throw new Error(`${label} client does not expose multicall()`);
   }
@@ -120,10 +108,6 @@ type TokenMetadataRegistry = {
   getTokenDecimals: (addresses: string[]) => Map<string, unknown>;
   batchUpsertTokenMeta: (tokens: PersistableTokenMetadata[]) => unknown;
 };
-
-
-
-
 
 export function decodeBytes32Text(value: unknown) {
   if (typeof value !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(value)) return null;
@@ -160,15 +144,15 @@ export function mergeMetadataBatchResults(
   fallbackResultsByAddressIndex = new Map<number, MetadataFallback>(),
 ): HydratedTokenMetadata[] {
   return addresses.map((addr, i) => {
-    const dec  = results[i * 3];
-    const sym  = results[i * 3 + 1];
+    const dec = results[i * 3];
+    const sym = results[i * 3 + 1];
     const name = results[i * 3 + 2];
     const fallback = fallbackResultsByAddressIndex.get(i);
     return {
-      address:  addr,
-      decimals: dec?.status  === "success" ? normalizeHydratedDecimals(dec.result) : null,
-      symbol:   sym?.status  === "success" ? normalizeHydratedText(sym.result) ?? (fallback?.symbol ?? null) : (fallback?.symbol ?? null),
-      name:     name?.status === "success" ? normalizeHydratedText(name.result) ?? (fallback?.name ?? null) : (fallback?.name ?? null),
+      address: addr,
+      decimals: dec?.status === "success" ? normalizeHydratedDecimals(dec.result) : null,
+      symbol: sym?.status === "success" ? (normalizeHydratedText(sym.result) ?? fallback?.symbol ?? null) : (fallback?.symbol ?? null),
+      name: name?.status === "success" ? (normalizeHydratedText(name.result) ?? fallback?.name ?? null) : (fallback?.name ?? null),
     };
   });
 }
@@ -213,20 +197,21 @@ async function runMulticall(contracts: readonly MulticallContract[]) {
 async function fetchMetaBatch(addresses: string[]): Promise<HydratedTokenMetadata[]> {
   const contracts: MulticallContract[] = addresses.flatMap((addr) => [
     { address: getAddress(addr), abi: DECIMALS_ABI, functionName: "decimals" },
-    { address: getAddress(addr), abi: SYMBOL_ABI,   functionName: "symbol"   },
-    { address: getAddress(addr), abi: NAME_ABI,     functionName: "name"     },
+    { address: getAddress(addr), abi: SYMBOL_ABI, functionName: "symbol" },
+    { address: getAddress(addr), abi: NAME_ABI, functionName: "name" },
   ]);
   const results = await runMulticall(contracts);
 
-  const successCount = Array.isArray(results)
-    ? results.filter((r) => r?.status === "success").length
-    : 0;
-  logger.info({
-    addresses: addresses.length,
-    callCount: contracts.length,
-    resultCount: Array.isArray(results) ? results.length : 0,
-    successCount,
-  }, "[token_hydrator] multicall raw result summary");
+  const successCount = Array.isArray(results) ? results.filter((r) => r?.status === "success").length : 0;
+  logger.info(
+    {
+      addresses: addresses.length,
+      callCount: contracts.length,
+      resultCount: Array.isArray(results) ? results.length : 0,
+      successCount,
+    },
+    "[token_hydrator] multicall raw result summary",
+  );
 
   const fallbackContracts: MulticallContract[] = [];
   const fallbackLookups: Array<{ addressIndex: number; field: MetadataFallbackField }> = [];
@@ -247,10 +232,13 @@ async function fetchMetaBatch(addresses: string[]): Promise<HydratedTokenMetadat
   if (fallbackContracts.length > 0) {
     fallbackResults = await runMulticall(fallbackContracts);
     const fallbackResolved = fallbackResults.filter((result) => decodeBytes32Text(result?.result) != null).length;
-    logger.info({
-      fallbackCallCount: fallbackContracts.length,
-      fallbackResolved,
-    }, "[token_hydrator] bytes32 metadata fallback summary");
+    logger.info(
+      {
+        fallbackCallCount: fallbackContracts.length,
+        fallbackResolved,
+      },
+      "[token_hydrator] bytes32 metadata fallback summary",
+    );
   }
 
   const fallbackByAddressIndex = new Map<number, MetadataFallback>();
@@ -295,7 +283,7 @@ export async function hydrateTokensWithDeps(
   // Filter to only addresses not yet in the DB — re-hydration is rare; this
   // check ensures a repeated discovery run is a no-op for existing tokens.
   const existing = registry.getTokenDecimals(normalizedAddresses);
-  const toFetch  = normalizedAddresses.filter((address) => !existing.has(address));
+  const toFetch = normalizedAddresses.filter((address) => !existing.has(address));
 
   if (toFetch.length === 0) {
     logger.debug(`[token_hydrator] ${normalizedAddresses.length} token(s) already in DB — skipping`);
@@ -304,7 +292,7 @@ export async function hydrateTokensWithDeps(
 
   logger.info(
     `[token_hydrator] Hydrating ${toFetch.length} new token(s) via multicall ` +
-    `(${chunk(toFetch, CHUNK_SIZE).length} batch(es) of up to ${CHUNK_SIZE}, concurrency=${deps.concurrency ?? ENRICH_CONCURRENCY})`
+      `(${chunk(toFetch, CHUNK_SIZE).length} batch(es) of up to ${CHUNK_SIZE}, concurrency=${deps.concurrency ?? ENRICH_CONCURRENCY})`,
   );
 
   const chunks = chunk(toFetch, CHUNK_SIZE);
@@ -314,13 +302,16 @@ export async function hydrateTokensWithDeps(
     async (batch) => {
       try {
         const meta = await fetchBatch(batch);
-        logger.info({
-          batchSize: batch.length,
-          sample: meta.slice(0, 5),
-          decimalsResolved: meta.filter((m) => m.decimals !== null).length,
-          symbolResolved: meta.filter((m) => m.symbol !== null).length,
-          nameResolved: meta.filter((m) => m.name !== null).length,
-        }, "[token_hydrator] batch decode summary");
+        logger.info(
+          {
+            batchSize: batch.length,
+            sample: meta.slice(0, 5),
+            decimalsResolved: meta.filter((m) => m.decimals !== null).length,
+            symbolResolved: meta.filter((m) => m.symbol !== null).length,
+            nameResolved: meta.filter((m) => m.name !== null).length,
+          },
+          "[token_hydrator] batch decode summary",
+        );
 
         // Persist all entries — decimals defaults to 18 if on-chain call reverts
         const valid = meta.filter((m): m is HydratedTokenMetadata & { decimals: number } => typeof m.decimals === "number");

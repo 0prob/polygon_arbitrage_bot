@@ -1,4 +1,3 @@
-
 /**
  * src/reorg/detect.js — Chain reorganization detection
  *
@@ -6,8 +5,6 @@
  * by HyperSync. If the parent hash for an overlapping block
  * doesn't match, a reorg has occurred.
  */
-
-type RollbackGuardLike = Record<string, unknown>;
 
 import { isRecord } from "../utils/identity.ts";
 

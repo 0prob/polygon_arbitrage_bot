@@ -1,5 +1,5 @@
 import { decodeFunctionData } from "viem";
-import type { PublicClient } from 'viem';
+import type { PublicClient } from "viem";
 
 import {
   assessRouteResult,
@@ -66,12 +66,15 @@ type ExecutionSubmitOptions = {
   touchedPools?: string[];
 };
 
-type ExecutionSubmitResult = SendTxResult | SendTxBundleResult | {
-  submitted: boolean;
-  dryRun?: unknown;
-  error?: unknown;
-  [key: string]: unknown;
-};
+type ExecutionSubmitResult =
+  | SendTxResult
+  | SendTxBundleResult
+  | {
+      submitted: boolean;
+      dryRun?: unknown;
+      error?: unknown;
+      [key: string]: unknown;
+    };
 
 type CandidateRefreshContext = {
   gasPriceWei: bigint;
@@ -319,10 +322,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     return parts.length > 0 ? parts.join(" | ") : String(err ?? "execution error");
   }
 
-  async function mapExecutionCandidates<T, R>(
-    candidates: T[],
-    worker: (candidate: T) => Promise<R>,
-  ): Promise<R[]> {
+  async function mapExecutionCandidates<T, R>(candidates: T[], worker: (candidate: T) => Promise<R>): Promise<R[]> {
     if (candidates.length === 0) return [];
 
     const concurrency = Math.max(1, Math.min(Math.floor(Number(deps.maxExecutionBatch) || 1), candidates.length));
@@ -345,9 +345,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
   }
 
   function executionPoolKeys(path: ArbPathLike) {
-    return path.edges
-      .map((edge) => normalizeEvmAddress(edge.poolAddress))
-      .filter((pool): pool is string => pool != null);
+    return path.edges.map((edge) => normalizeEvmAddress(edge.poolAddress)).filter((pool): pool is string => pool != null);
   }
 
   function pruneQuarantineMap(map: Map<string, QuarantineEntry>, now: number) {
@@ -381,13 +379,17 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     return null;
   }
 
-  function quarantineExecutionRoute(path: ArbPathLike, reason: string, failureClass: "transient" | "deterministic" = "deterministic", now = Date.now()) {
+  function quarantineExecutionRoute(
+    path: ArbPathLike,
+    reason: string,
+    failureClass: "transient" | "deterministic" = "deterministic",
+    now = Date.now(),
+  ) {
     const key = executionRouteKey(path);
     const previous = executionRouteQuarantine.get(key);
     const failures = (previous?.failures ?? 0) + 1;
-    const baseMs = failureClass === "transient"
-      ? (deps.executionRouteQuarantineMs ?? TRANSIENT_QUARANTINE_MS)
-      : DETERMINISTIC_QUARANTINE_MS;
+    const baseMs =
+      failureClass === "transient" ? (deps.executionRouteQuarantineMs ?? TRANSIENT_QUARANTINE_MS) : DETERMINISTIC_QUARANTINE_MS;
     const backoffIndex = Math.min(failures - 1, PROGRESSIVE_QUARANTINE_BACKOFF.length - 1);
     const multiplier = PROGRESSIVE_QUARANTINE_BACKOFF[backoffIndex];
     const quarantineMs = baseMs * multiplier;
@@ -402,7 +404,12 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     return { failures, until };
   }
 
-  function quarantineExecutionPools(path: ArbPathLike, reason: string, failureClass: "transient" | "deterministic" = "deterministic", now = Date.now()) {
+  function quarantineExecutionPools(
+    path: ArbPathLike,
+    reason: string,
+    failureClass: "transient" | "deterministic" = "deterministic",
+    now = Date.now(),
+  ) {
     // Skip pool quarantine for transient failures — the pool state is fine,
     // only the execution context (gas, rates, RPC) was temporarily unavailable.
     if (failureClass === "transient") return { failures: 0, until: now };
@@ -425,7 +432,13 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     return { failures: maxFailures, until: maxUntil };
   }
 
-  function quarantinePreparedCandidate(candidate: ExecutableCandidate, reason: string, source: string, meta: Record<string, unknown> = {}, failureClass: "transient" | "deterministic" = "deterministic") {
+  function quarantinePreparedCandidate(
+    candidate: ExecutableCandidate,
+    reason: string,
+    source: string,
+    meta: Record<string, unknown> = {},
+    failureClass: "transient" | "deterministic" = "deterministic",
+  ) {
     const quarantine = quarantineExecutionRoute(candidate.path, reason, failureClass);
     const poolQuarantine = quarantineExecutionPools(candidate.path, reason, failureClass);
     const payload = {
@@ -539,17 +552,21 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     const freshness = deps.getRouteFreshness(executionCandidate.path);
     if (!freshness.ok) {
       const quarantineReason = freshness.reason ?? "route freshness check failed";
-      quarantinePreparedCandidate(executionCandidate, quarantineReason, "prepare_execution_freshness", {
-        ageMs: freshness.ageMs,
-        skewMs: freshness.skewMs,
-      }, "transient");
+      quarantinePreparedCandidate(
+        executionCandidate,
+        quarantineReason,
+        "prepare_execution_freshness",
+        {
+          ageMs: freshness.ageMs,
+          skewMs: freshness.skewMs,
+        },
+        "transient",
+      );
       return null;
     }
 
     const feeSnapshot = await deps.getCurrentFeeSnapshot();
-    const dynamicBid = feeSnapshot
-      ? deps.scalePriorityFeeByProfitMargin(feeSnapshot, profitMarginBps(executionCandidate))
-      : null;
+    const dynamicBid = feeSnapshot ? deps.scalePriorityFeeByProfitMargin(feeSnapshot, profitMarginBps(executionCandidate)) : null;
 
     let tokenToMaticRate = deps.getFreshTokenToMaticRate(executionCandidate.path.startToken);
     if (tokenToMaticRate <= 0n) {
@@ -583,10 +600,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       }
     }
 
-    const onChainMinProfit = deps.deriveOnChainMinProfit(
-      executionCandidate.assessment,
-      tokenToMaticRate,
-    );
+    const onChainMinProfit = deps.deriveOnChainMinProfit(executionCandidate.assessment, tokenToMaticRate);
 
     const builtTx = await deps.buildArbTx(
       executionCandidate,
@@ -603,7 +617,13 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
 
     const flashLoanValidationError = validateBuiltFlashLoanArbTx(executionCandidate, builtTx, onChainMinProfit);
     if (flashLoanValidationError) {
-      quarantinePreparedCandidate(executionCandidate, flashLoanValidationError, "prepare_execution_flash_loan_boundary", {}, "deterministic");
+      quarantinePreparedCandidate(
+        executionCandidate,
+        flashLoanValidationError,
+        "prepare_execution_flash_loan_boundary",
+        {},
+        "deterministic",
+      );
       return null;
     }
 
@@ -629,9 +649,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       return null;
     }
 
-    const postBuildProfitWei = postBuildAssessment.netProfitAfterGas > 0n
-      ? postBuildAssessment.netProfitAfterGas * tokenToMaticRate
-      : 0n;
+    const postBuildProfitWei = postBuildAssessment.netProfitAfterGas > 0n ? postBuildAssessment.netProfitAfterGas * tokenToMaticRate : 0n;
     builtTx.meta.expectedProfitTokenUnits = postBuildAssessment.netProfitAfterGas.toString();
     builtTx.meta.expectedProfitWei = postBuildProfitWei.toString();
     builtTx.meta.profitTokenToMaticRate = tokenToMaticRate.toString();
@@ -686,7 +704,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
           // deps.publicClient is not wired and data is unavailable at this
           // point — the error came from buildArbTx/estimateGas, not a revert.
           // The raw viem error already contains the best available reason.
-          let finalReason = baseReason;
+          const finalReason = baseReason;
           // Note: getRevertReason was removed here because the catch block
           // catches errors from prepareExecutionCandidate (buildArbTx), not
           // from submission. The error message already contains full details.
@@ -718,9 +736,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       });
 
       if (prepared.length === 1) {
-        const pools = prepared[0].best.path.edges
-          .map((e) => (e.poolAddress ?? "").toLowerCase())
-          .filter(Boolean);
+        const pools = prepared[0].best.path.edges.map((e) => (e.poolAddress ?? "").toLowerCase()).filter(Boolean);
         type SendTxResultWithDryRun = { submitted: boolean; dryRun?: { success: boolean; error: string | null } };
         const result = await deps.sendTx(prepared[0].builtTx, clientConfig, { awaitReceipt: false, skipDryRun: true, touchedPools: pools });
         const txResult = result as SendTxResultWithDryRun;
@@ -750,13 +766,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       if (!result.submitted) {
         const errorMsg = result.error ? String(result.error) : "bundle_submission_failed";
         for (const p of prepared) {
-          quarantinePreparedCandidate(
-            p.best,
-            errorMsg,
-            "execute_bundle_failed",
-            {},
-            "transient",
-          );
+          quarantinePreparedCandidate(p.best, errorMsg, "execute_bundle_failed", {}, "transient");
         }
       }
       return { ...result, profitWei };
@@ -777,7 +787,9 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
     // happens inside the lock: non-overlapping routes can proceed.
     if (executionInFlight) {
       deps.log("[runner] Skipping execution while another execution is in flight", "warn", {
-        event: "execute_skip", reason: "execution_in_flight", source,
+        event: "execute_skip",
+        reason: "execution_in_flight",
+        source,
       });
       return { submitted: false, error: "execution already in flight" };
     }
@@ -788,7 +800,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
       // Routes that share pools with pending txs are skipped (nonce conflict risk);
       // routes with zero pool overlap are safe to execute concurrently.
       const fromAddress = deps.executorAddress;
-      const pendingPools = fromAddress ? deps.getPendingPools?.(fromAddress) ?? [] : [];
+      const pendingPools = fromAddress ? (deps.getPendingPools?.(fromAddress) ?? []) : [];
       const hasOverlap = pendingPools.length > 0;
 
       if (hasOverlap) {
@@ -797,9 +809,7 @@ export function createExecutionCoordinator(deps: ExecutionCoordinatorDeps) {
 
         for (let i = 0; i < candidates.length; i++) {
           const candidate = candidates[i];
-          const pools = (candidate.path.edges ?? [])
-            .map((e) => (e.poolAddress ?? "").toLowerCase())
-            .filter(Boolean);
+          const pools = (candidate.path.edges ?? []).map((e) => (e.poolAddress ?? "").toLowerCase()).filter(Boolean);
           const shared = pools.some((p) => pendingPools.includes(p));
           if (shared) {
             overlapping.push({ index: i, pools });

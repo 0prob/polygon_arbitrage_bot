@@ -22,10 +22,7 @@ export function buildWatcherAddressFilter(addresses: Iterable<unknown>): Watcher
   };
 }
 
-export function extendWatcherAddressFilter(
-  current: WatcherAddressFilter,
-  newAddresses: unknown,
-): ExtendWatcherAddressFilterResult {
+export function extendWatcherAddressFilter(current: WatcherAddressFilter, newAddresses: unknown): ExtendWatcherAddressFilterResult {
   if (!Array.isArray(newAddresses) || newAddresses.length === 0) {
     return {
       ...current,
@@ -51,10 +48,7 @@ export function extendWatcherAddressFilter(
   };
 }
 
-export function updateWatcherAddressFilter(
-  current: WatcherAddressFilter,
-  newAddresses: unknown,
-): WatcherAddressFilterUpdate {
+export function updateWatcherAddressFilter(current: WatcherAddressFilter, newAddresses: unknown): WatcherAddressFilterUpdate {
   if (!Array.isArray(newAddresses) || newAddresses.length === 0) {
     return {
       ...current,

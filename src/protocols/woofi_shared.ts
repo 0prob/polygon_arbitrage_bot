@@ -73,8 +73,6 @@ export const WOOFI_ORACLE_WITH_DECIMALS_ABI = [
   },
 ] as const;
 
-
-
 export function tupleValue(value: unknown, index: number, key: string) {
   if (Array.isArray(value)) return value[index];
   if (isRecord(value)) return value[key] ?? value[index];
@@ -95,12 +93,7 @@ export function bigintOrZero(value: unknown): bigint {
 }
 
 export function toBigIntValue(value: unknown): bigint {
-  if (
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string"
-  ) {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return BigInt(value);
   }
   throw new Error(`invalid bigint value: ${String(value)}`);

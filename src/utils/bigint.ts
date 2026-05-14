@@ -6,12 +6,7 @@
 export type BigIntConvertible = bigint | string | number | boolean;
 
 export function isBigIntConvertible(value: unknown): value is BigIntConvertible {
-  return (
-    typeof value === "bigint" ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  );
+  return typeof value === "bigint" || typeof value === "string" || typeof value === "number" || typeof value === "boolean";
 }
 
 export function toBigInt(value: unknown, fallback = 0n): bigint {
@@ -66,10 +61,7 @@ export function bigintToApproxNumber(value: bigint, decimals = 0): number {
 
   const exponent = integerDigits - 1;
   const mantissaDigits = digits.slice(0, 15);
-  const mantissa =
-    mantissaDigits.length === 1
-      ? mantissaDigits
-      : `${mantissaDigits[0]}.${mantissaDigits.slice(1)}`;
+  const mantissa = mantissaDigits.length === 1 ? mantissaDigits : `${mantissaDigits[0]}.${mantissaDigits.slice(1)}`;
   const approximate = Number(`${mantissa}e${exponent}`);
   return negative ? -approximate : approximate;
 }
@@ -86,6 +78,3 @@ export function toFiniteNumber(value: bigint | number | string | unknown, fallba
   }
   return fallback;
 }
-
-
-

@@ -53,10 +53,7 @@ function balancesLiquidityWmatic(state: RouteState, getRateWei: RateFn) {
 
 function v2LiquidityWmatic(edge: LiquidityEdge, state: RouteState, getRateWei: RateFn) {
   const [token0, token1] = tokensFromStateOrEdge(edge, state);
-  return (
-    valueTokenAmount(state.reserve0, token0, getRateWei) +
-    valueTokenAmount(state.reserve1, token1, getRateWei)
-  );
+  return valueTokenAmount(state.reserve0, token0, getRateWei) + valueTokenAmount(state.reserve1, token1, getRateWei);
 }
 
 function v3LiquidityWmatic(edge: LiquidityEdge, state: RouteState, getRateWei: RateFn) {
@@ -67,10 +64,7 @@ function v3LiquidityWmatic(edge: LiquidityEdge, state: RouteState, getRateWei: R
   const [token0, token1] = tokensFromStateOrEdge(edge, state);
   const virtualReserve0 = (liquidity << 96n) / sqrtPriceX96;
   const virtualReserve1 = (liquidity * sqrtPriceX96) >> 96n;
-  return (
-    valueTokenAmount(virtualReserve0, token0, getRateWei) +
-    valueTokenAmount(virtualReserve1, token1, getRateWei)
-  );
+  return valueTokenAmount(virtualReserve0, token0, getRateWei) + valueTokenAmount(virtualReserve1, token1, getRateWei);
 }
 
 function dodoLiquidityWmatic(state: RouteState, getRateWei: RateFn) {

@@ -51,10 +51,7 @@ function enrichmentErrorMessage(error: unknown) {
   return String((error as { message?: unknown } | null | undefined)?.message ?? error ?? "unknown enrichment error");
 }
 
-export function clearWatcherEnrichmentRetry(
-  retryState: Map<string, WatcherEnrichmentRetryState>,
-  addr: string,
-) {
+export function clearWatcherEnrichmentRetry(retryState: Map<string, WatcherEnrichmentRetryState>, addr: string) {
   retryState.delete(addr);
 }
 
@@ -66,10 +63,7 @@ export function recordWatcherEnrichmentRetry(
 ): WatcherEnrichmentRetryMeta {
   const current = retryState.get(addr);
   const attempts = (current?.attempts ?? 0) + 1;
-  const cooldownMs = Math.min(
-    WATCHER_ENRICHMENT_RETRY_BASE_MS * Math.max(1, 2 ** (attempts - 1)),
-    WATCHER_ENRICHMENT_RETRY_MAX_MS,
-  );
+  const cooldownMs = Math.min(WATCHER_ENRICHMENT_RETRY_BASE_MS * Math.max(1, 2 ** (attempts - 1)), WATCHER_ENRICHMENT_RETRY_MAX_MS);
   const lastReason = enrichmentErrorMessage(error);
   retryState.set(addr, {
     attempts,
@@ -84,9 +78,7 @@ export function recordWatcherEnrichmentRetry(
   };
 }
 
-export function clearPendingWatcherEnrichment(
-  pending: Map<string, PendingWatcherEnrichment>,
-) {
+export function clearPendingWatcherEnrichment(pending: Map<string, PendingWatcherEnrichment>) {
   const cleared = pending.size;
   pending.clear();
   return cleared;

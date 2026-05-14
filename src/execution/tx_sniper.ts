@@ -42,17 +42,19 @@ export type SubmissionError = {
   latencyMs: number;
 };
 
-export type SniperResult = {
-  success: true;
-  hash: Hex;
-  endpoint: string;
-  latencyMs: number;
-  allAttempts: (SubmissionResult | SubmissionError)[];
-} | {
-  success: false;
-  error: string;
-  allAttempts: (SubmissionResult | SubmissionError)[];
-};
+export type SniperResult =
+  | {
+      success: true;
+      hash: Hex;
+      endpoint: string;
+      latencyMs: number;
+      allAttempts: (SubmissionResult | SubmissionError)[];
+    }
+  | {
+      success: false;
+      error: string;
+      allAttempts: (SubmissionResult | SubmissionError)[];
+    };
 
 // ─── Constants ─────────────────────────────────────────────────
 
@@ -127,10 +129,10 @@ export class TransactionSniper {
         throw new Error("No pre-created client for endpoint");
       }
       const endpointStart = Date.now();
-      const hash = await client.request({
+      const hash = (await client.request({
         method: "eth_sendRawTransaction",
         params: [serializedTx],
-      }) as Hex;
+      })) as Hex;
       const latencyMs = Date.now() - endpointStart;
       logger.info({ hash, endpoint: shortenUrl(url), latencyMs }, "Transaction sniper: submission successful");
       return { hash, endpoint: url, latencyMs, method: SUBMISSION_METHOD } as SubmissionResult;
@@ -154,7 +156,7 @@ export class TransactionSniper {
         latencyMs: winner.latencyMs,
         allAttempts: [],
       };
-    } catch (e) {
+    } catch {
       // All endpoints failed — collect full diagnostics from settled results
       const allAttempts: (SubmissionResult | SubmissionError)[] = [];
       const results = await Promise.allSettled(
@@ -163,15 +165,15 @@ export class TransactionSniper {
           if (!client) return { endpoint: url, error: new Error("No pre-created client for endpoint"), latencyMs: 0 };
           const endpointStart = Date.now();
           try {
-            const hash = await client.request({
+            const hash = (await client.request({
               method: "eth_sendRawTransaction",
               params: [serializedTx],
-            }) as Hex;
+            })) as Hex;
             return { hash, endpoint: url, latencyMs: Date.now() - endpointStart, method: SUBMISSION_METHOD } as SubmissionResult;
           } catch (error) {
             return { endpoint: url, error, latencyMs: Date.now() - endpointStart } as SubmissionError;
           }
-        })
+        }),
       );
       for (const result of results) {
         if (result.status === "fulfilled") allAttempts.push(result.value);
@@ -206,15 +208,9 @@ export class TransactionSniper {
    * new viem clients per call unlike the old new-TransactionSniper approach).
    */
   async submitPrivate(serializedTx: Hex): Promise<SniperResult> {
-    const targets = this.privateMempoolUrls.length > 0
-      ? this.privateMempoolUrls
-      : this.endpoints;
+    const targets = this.privateMempoolUrls.length > 0 ? this.privateMempoolUrls : this.endpoints;
 
-    const clients = this.privateMempoolUrls.length > 0
-      ? this.privateClients
-      : this.clients;
-
-    const startTime = Date.now();
+    const clients = this.privateMempoolUrls.length > 0 ? this.privateClients : this.clients;
 
     const submissionPromises = targets.map(async (url) => {
       const client = clients.get(url);
@@ -222,10 +218,10 @@ export class TransactionSniper {
         throw new Error("No pre-created client for endpoint");
       }
       const endpointStart = Date.now();
-      const hash = await client.request({
+      const hash = (await client.request({
         method: "eth_sendRawTransaction",
         params: [serializedTx],
-      }) as Hex;
+      })) as Hex;
       const latencyMs = Date.now() - endpointStart;
       logger.info({ hash, endpoint: shortenUrl(url), latencyMs }, "Transaction sniper: private submission successful");
       return { hash, endpoint: url, latencyMs, method: SUBMISSION_METHOD } as SubmissionResult;
@@ -255,15 +251,15 @@ export class TransactionSniper {
           if (!client) return { endpoint: url, error: new Error("No pre-created client"), latencyMs: 0 };
           const endpointStart = Date.now();
           try {
-            const hash = await client.request({
+            const hash = (await client.request({
               method: "eth_sendRawTransaction",
               params: [serializedTx],
-            }) as Hex;
+            })) as Hex;
             return { hash, endpoint: url, latencyMs: Date.now() - endpointStart, method: SUBMISSION_METHOD } as SubmissionResult;
           } catch (error) {
             return { endpoint: url, error, latencyMs: Date.now() - endpointStart } as SubmissionError;
           }
-        })
+        }),
       );
       for (const r of results) {
         if (r.status === "fulfilled") allAttempts.push(r.value);
@@ -313,7 +309,7 @@ function shortenUrl(url: string): string {
  * Includes public RPCs from config plus optional private mempool endpoints.
  */
 export async function createSniperFromConfig(): Promise<TransactionSniper> {
-  const { FREE_RPC_URLS, POLYGON_RPC } = await import("../config/index.ts");
+  const { POLYGON_RPC } = await import("../config/index.ts");
 
   const endpoints: string[] = [];
 
@@ -323,11 +319,7 @@ export async function createSniperFromConfig(): Promise<TransactionSniper> {
   }
 
   if (endpoints.length === 0) {
-    endpoints.push(
-      "https://polygon-mainnet.g.alchemy.com/v2/demo",
-      "https://polygon-rpc.com",
-      "https://polygon-bor-rpc.publicnode.com",
-    );
+    endpoints.push("https://polygon-mainnet.g.alchemy.com/v2/demo", "https://polygon-rpc.com", "https://polygon-bor-rpc.publicnode.com");
   }
 
   const uniqueEndpoints = [...new Set(endpoints)];
@@ -342,7 +334,7 @@ export async function createSniperFromConfig(): Promise<TransactionSniper> {
       publicEndpoints: uniqueEndpoints.length,
       privateEndpoints: privateMempoolUrls.length,
     },
-    "Transaction sniper initialized with multi-endpoint submission"
+    "Transaction sniper initialized with multi-endpoint submission",
   );
 
   return new TransactionSniper(uniqueEndpoints, privateMempoolUrls);

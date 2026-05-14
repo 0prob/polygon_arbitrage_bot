@@ -1,4 +1,3 @@
-
 /**
  * src/routing/enumerate_cycles.js — Arbitrage cycle enumerator
  *
@@ -38,20 +37,20 @@ import { takeTopNBy } from "../utils/bounded_priority.ts";
 // ─── Defaults ────────────────────────────────────────────────
 
 const DEFAULTS = {
-  include2Hop:          true,
-  include3Hop:          true,
-  include4Hop:          false,
-  minHops:              2,
-  maxHops:              4,
-  maxPathsPerToken:     5_000,
+  include2Hop: true,
+  include3Hop: true,
+  include4Hop: false,
+  minHops: 2,
+  maxHops: 4,
+  maxPathsPerToken: 5_000,
   max4HopPathsPerToken: 2_000,
-  maxTotalPaths:        20_000,
-  hubTokensOnly:        true,
-  dedup:                true,
-  minV2Reserve:         0n,
-  probeWei:             0n,
-  minLiquidityWmatic:   0n,
-  getRateWei:           null,
+  maxTotalPaths: 20_000,
+  hubTokensOnly: true,
+  dedup: true,
+  minV2Reserve: 0n,
+  probeWei: 0n,
+  minLiquidityWmatic: 0n,
+  getRateWei: null,
 };
 
 type RateLookup = (token: string) => bigint;
@@ -157,17 +156,17 @@ export function enumerateCycles(graph: CycleGraph, options: CycleEnumerationOpti
   }
 
   let paths = findArbPaths(graph, startTokens, {
-    include2Hop:          opts.include2Hop,
-    include3Hop:          opts.include3Hop,
-    include4Hop:          opts.include4Hop,
-    minHops:              opts.minHops,
-    maxHops:              opts.maxHops,
-    maxPathsPerToken:     opts.maxPathsPerToken,
+    include2Hop: opts.include2Hop,
+    include3Hop: opts.include3Hop,
+    include4Hop: opts.include4Hop,
+    minHops: opts.minHops,
+    maxHops: opts.maxHops,
+    maxPathsPerToken: opts.maxPathsPerToken,
     max4HopPathsPerToken: opts.max4HopPathsPerToken,
-    minV2Reserve:         opts.minV2Reserve,
-    probeWei:             opts.probeWei,
-    minLiquidityWmatic:   opts.minLiquidityWmatic,
-    getRateWei:           opts.getRateWei,
+    minV2Reserve: opts.minV2Reserve,
+    probeWei: opts.probeWei,
+    minLiquidityWmatic: opts.minLiquidityWmatic,
+    getRateWei: opts.getRateWei,
   });
 
   if (opts.dedup) paths = deduplicatePaths(paths);
@@ -179,13 +178,9 @@ export function enumerateCycles(graph: CycleGraph, options: CycleEnumerationOpti
 
 // ─── Dual-graph hub-first (preferred) ────────────────────────
 
-export function enumerateCyclesDual(
-  hubGraph: CycleGraph,
-  fullGraph: CycleGraph,
-  options: CycleEnumerationOptions = {},
-): ArbPath[] {
-  const opts      = { ...DEFAULTS, ...options };
-  const maxTotal  = normalizePathBudget(opts.maxTotalPaths);
+export function enumerateCyclesDual(hubGraph: CycleGraph, fullGraph: CycleGraph, options: CycleEnumerationOptions = {}): ArbPath[] {
+  const opts = { ...DEFAULTS, ...options };
+  const maxTotal = normalizePathBudget(opts.maxTotalPaths);
   if (maxTotal <= 0) return [];
   const hubBudget = resolvePhaseBudget(opts.hubPathBudget, maxTotal, 0.6);
   const pruneOpts = { minV2Reserve: opts.minV2Reserve, probeWei: opts.probeWei };
@@ -223,7 +218,9 @@ export function enumerateCyclesDual(
     const fullStart = new Set([...normalizeTokenSet(rawFullStart)].filter((t) => fullGraph.hasToken(t)));
     if (fullStart.size > 0) {
       fullPaths = findArbPaths(fullGraph, fullStart, {
-        include2Hop: opts.include2Hop, include3Hop: opts.include3Hop, include4Hop: false,
+        include2Hop: opts.include2Hop,
+        include3Hop: opts.include3Hop,
+        include4Hop: false,
         minHops: opts.minHops,
         maxHops: Math.min(opts.maxHops, 3),
         maxPathsPerToken: opts.maxPathsPerToken,
@@ -247,11 +244,7 @@ export function enumerateCyclesDual(
 
 // ─── Convenience wrappers ────────────────────────────────────
 
-export function enumerateCyclesForToken(
-  graph: CycleGraph,
-  startToken: string,
-  options: CycleEnumerationOptions = {},
-): ArbPath[] {
+export function enumerateCyclesForToken(graph: CycleGraph, startToken: string, options: CycleEnumerationOptions = {}): ArbPath[] {
   return enumerateCycles(graph, { ...options, hubTokensOnly: false, startTokens: new Set([startToken]) });
 }
 

@@ -9,11 +9,7 @@ import {
   persistWatcherStates,
   reloadWatcherCache,
 } from "./watcher_state_ops.ts";
-import type {
-  MutableWatcherState,
-  WatcherPersistedStateUpdate,
-  WatcherStateUpdate,
-} from "./watcher_types.ts";
+import type { MutableWatcherState, WatcherPersistedStateUpdate, WatcherStateUpdate } from "./watcher_types.ts";
 
 export type WatcherStateAdapterRegistry = {
   updatePoolState?: (state: WatcherPersistedStateUpdate) => unknown;
@@ -36,16 +32,8 @@ export type WatcherStateAdapterOptions = {
 };
 
 export type WatcherStateAdapters = {
-  commitState: (
-    addr: string,
-    state: MutableWatcherState,
-    rawLog: HyperSyncRawLog,
-    expectedEpoch?: number,
-  ) => void;
-  commitStates: (
-    updates: WatcherStateUpdate[],
-    expectedEpoch?: number,
-  ) => string[];
+  commitState: (addr: string, state: MutableWatcherState, rawLog: HyperSyncRawLog, expectedEpoch?: number) => void;
+  commitStates: (updates: WatcherStateUpdate[], expectedEpoch?: number) => string[];
   mergeState: (addr: string, nextState: MutableWatcherState) => MutableWatcherState;
   reloadCacheFromRegistry: () => Set<string>;
   advanceEnrichmentEpoch: () => number;
@@ -102,9 +90,7 @@ export function createWatcherStateAdapters({
     reloadCacheFromRegistry: () => {
       const cacheSource = requireCacheSource(registry);
       if (!cacheSource) return new Set<string>();
-      const filter = buildWatcherAddressFilter(
-        reloadWatcherCache(cacheSource, cache, pendingEnrichment),
-      );
+      const filter = buildWatcherAddressFilter(reloadWatcherCache(cacheSource, cache, pendingEnrichment));
       setAddressFilter(filter);
       return filter.addressSet;
     },

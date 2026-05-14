@@ -1,6 +1,6 @@
 import { routeIdentityFromEdges } from "./route_identity.ts";
 import { scoreRoute } from "./score_route.ts";
-import { bigintToApproxNumber, toFiniteNumber as normaliseLogWeight, toFiniteNumber } from "../utils/bigint.ts";
+import { bigintToApproxNumber, toFiniteNumber } from "../utils/bigint.ts";
 import type { RouteLike, RouteResultLike, ScoredRoute } from "./score_route.ts";
 import type { RouteIdentityEdge } from "./route_identity.ts";
 
@@ -160,9 +160,7 @@ export function selectOptimizationCandidates<T extends CandidateEntryLike>(
     }
   }
 
-  return [...selected.values()]
-    .sort(compareCandidateProfit)
-    .slice(0, normalizedLimit);
+  return [...selected.values()].sort(compareCandidateProfit).slice(0, normalizedLimit);
 }
 
 export function shouldOptimizeCandidate(

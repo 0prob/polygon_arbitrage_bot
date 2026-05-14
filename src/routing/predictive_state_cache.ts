@@ -1,4 +1,3 @@
-
 import type { RouteCache } from "./route_cache.ts";
 import type { ArbPathLike, AssessmentLike } from "../arb/assessment.ts";
 import { assessRouteResult } from "../arb/assessment.ts";
@@ -57,10 +56,7 @@ export class PredictiveStateCache {
     lastUpdateTime: Date.now(),
   };
 
-  constructor(
-    routeCache: RouteCache,
-    options: Partial<PredictiveStateCacheOptions> = {}
-  ) {
+  constructor(routeCache: RouteCache, options: Partial<PredictiveStateCacheOptions> = {}) {
     this._routeCache = routeCache;
     this._options = { ...DEFAULT_OPTIONS, ...options };
     this._shadowState = new Map();
@@ -80,18 +76,13 @@ export class PredictiveStateCache {
     this._getTokenToMaticRate = getTokenToMaticRate;
   }
 
-  populateShadowState(
-    options: { maxPaths?: number; testAmount?: bigint } = {}
-  ): void {
+  populateShadowState(options: { maxPaths?: number; testAmount?: bigint } = {}): void {
     const maxPaths = options.maxPaths ?? this._options.precomputeTopN;
     const testAmount = options.testAmount ?? BigInt("1000000000000000000");
     const cachedRoutes = this._routeCache.getAll();
     const routesToTrack = cachedRoutes.slice(0, maxPaths);
 
-    logger.info(
-      { cachedCount: cachedRoutes.length, trackingCount: routesToTrack.length },
-      "[predictive-cache] Populating shadow state"
-    );
+    logger.info({ cachedCount: cachedRoutes.length, trackingCount: routesToTrack.length }, "[predictive-cache] Populating shadow state");
 
     for (const route of routesToTrack) {
       try {
@@ -130,10 +121,7 @@ export class PredictiveStateCache {
     return staleCount;
   }
 
-  updateAffectedPaths(
-    changedPools: Set<string>,
-    testAmount: bigint = BigInt("1000000000000000000")
-  ): number {
+  updateAffectedPaths(changedPools: Set<string>, testAmount: bigint = BigInt("1000000000000000000")): number {
     const affectedPathKeys = new Set<string>();
     for (const pool of changedPools) {
       const pathKeys = this._poolToPaths.get(pool.toLowerCase());
@@ -146,10 +134,7 @@ export class PredictiveStateCache {
 
     if (affectedPathKeys.size === 0) return 0;
 
-    logger.debug(
-      { poolCount: changedPools.size, pathCount: affectedPathKeys.size },
-      "[predictive-cache] Re-simulating affected paths"
-    );
+    logger.debug({ poolCount: changedPools.size, pathCount: affectedPathKeys.size }, "[predictive-cache] Re-simulating affected paths");
 
     let updatedCount = 0;
     for (const pathKey of affectedPathKeys) {
@@ -212,7 +197,7 @@ export class PredictiveStateCache {
     let updatedCount = 0;
     for (let i = 0; i < batchSize; i++) {
       const idx = (this._roundRobinCursor + i) % entries.length;
-      const [key, entry] = entries[idx];
+      const entry = entries[idx][1];
 
       if (entry.isStale) {
         const success = this._reSimulatePath(entry.path, amount);
@@ -255,10 +240,7 @@ export class PredictiveStateCache {
     }
     if (added > 0) {
       this._stats.pathsUpdated += added;
-      logger.debug(
-        { added, totalTracked: this._shadowState.size },
-        "[predictive-cache] Synced new routes from route cache"
-      );
+      logger.debug({ added, totalTracked: this._shadowState.size }, "[predictive-cache] Synced new routes from route cache");
     }
   }
 
@@ -266,18 +248,14 @@ export class PredictiveStateCache {
     const now = Date.now();
     let count = 0;
     for (const entry of this._shadowState.values()) {
-      if (!entry.isStale && (now - entry.lastUpdateTime) > this._options.stalenessThresholdMs) {
+      if (!entry.isStale && now - entry.lastUpdateTime > this._options.stalenessThresholdMs) {
         count++;
       }
     }
     return count;
   }
 
-  private _createPathEntry(
-    path: any,
-    cachedResult: any,
-    testAmount: bigint
-  ): PredictivePathEntry | null {
+  private _createPathEntry(path: any, cachedResult: any, testAmount: bigint): PredictivePathEntry | null {
     const affectedTokens = new Set<string>();
     const affectedPools = new Set<string>();
     if (path.edges) {
@@ -345,13 +323,16 @@ export class PredictiveStateCache {
 
   private _getPathKey(path: { startToken: string; edges: Array<{ poolAddress?: string }> }): string {
     const edges = path.edges || [];
-    const poolIds = edges.map((e: any) => e.poolAddress?.toLowerCase() || "").filter(Boolean).join(",");
+    const poolIds = edges
+      .map((e: any) => e.poolAddress?.toLowerCase() || "")
+      .filter(Boolean)
+      .join(",");
     return `${path.startToken || ""}->${poolIds}`;
   }
 
   private _simulatePath(
     path: any,
-    testAmount: bigint
+    testAmount: bigint,
   ): { profit: bigint; amountIn: bigint; amountOut: bigint; totalGas: number; assessment: AssessmentLike | null } | null {
     try {
       if (!this._stateCache) {
@@ -380,10 +361,7 @@ export class PredictiveStateCache {
     }
   }
 
-  private _reSimulatePath(
-    path: ArbPathLike,
-    testAmount: bigint
-  ): boolean {
+  private _reSimulatePath(path: ArbPathLike, testAmount: bigint): boolean {
     const pathKey = this._getPathKey(path);
     const entry = this._shadowState.get(pathKey);
     if (!entry) return false;

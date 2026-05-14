@@ -17,16 +17,19 @@ function normalizedHopCount(value: number) {
 }
 
 export function getResultHopCount(result: unknown) {
-  const value = result as {
-    hopCount?: number;
-    poolPath?: Array<unknown>;
-    tokenPath?: Array<unknown>;
-    hopAmounts?: Array<unknown>;
-    amountIn?: unknown;
-    amountOut?: unknown;
-    profit?: unknown;
-    totalGas?: unknown;
-  } | null | undefined;
+  const value = result as
+    | {
+        hopCount?: number;
+        poolPath?: Array<unknown>;
+        tokenPath?: Array<unknown>;
+        hopAmounts?: Array<unknown>;
+        amountIn?: unknown;
+        amountOut?: unknown;
+        profit?: unknown;
+        totalGas?: unknown;
+      }
+    | null
+    | undefined;
 
   const structuralCandidates = [
     Array.isArray(value?.poolPath) ? normalizedHopCount(value.poolPath.length) : null,

@@ -1,17 +1,7 @@
 import type { HyperSyncRawLog } from "../hypersync/logs.ts";
-import {
-  handleWatcherRollbackGuard,
-  type WatcherRollbackRegistry,
-} from "./watcher_reorg.ts";
-import {
-  commitWatcherProgressCheckpoint,
-  type WatcherProgressRegistry,
-  watcherProgressShouldLog,
-} from "./watcher_progress.ts";
-import {
-  watcherProgressMeta,
-  watcherReorgMeta,
-} from "./watcher_poll_utils.ts";
+import { handleWatcherRollbackGuard, type WatcherRollbackRegistry } from "./watcher_reorg.ts";
+import { commitWatcherProgressCheckpoint, type WatcherProgressRegistry, watcherProgressShouldLog } from "./watcher_progress.ts";
+import { watcherProgressMeta, watcherReorgMeta } from "./watcher_poll_utils.ts";
 import type { WatcherPollErrorTracker } from "./watcher_poll_errors.ts";
 import type { WatcherPollResponse } from "./watcher_shards.ts";
 import { recordWatcherPollTelemetry } from "../utils/metrics.ts";
@@ -100,10 +90,7 @@ export async function runWatcherLoop({
       const pollError = pollErrors.resolve(err, getLastBlock());
       logger.error(pollError.errorLogMeta, pollError.errorLogMessage);
       if (pollError.haltMeta) {
-        logger.error(
-          pollError.haltMeta,
-          "Watcher halted after repeated integrity failures",
-        );
+        logger.error(pollError.haltMeta, "Watcher halted after repeated integrity failures");
         stopForHalt();
         onHalt?.(pollError.haltMeta);
         wakeSleep();
@@ -142,12 +129,7 @@ export async function handleWatcherPollResponse({
     if (rollback.reorgDetected) {
       const changedAddrs = reloadCacheFromRegistry();
       logger.warn(
-        watcherReorgMeta(
-          rollback.reorgBlock,
-          rollback.rollbackResult,
-          changedAddrs,
-          rollback.checkpointBlock,
-        ),
+        watcherReorgMeta(rollback.reorgBlock, rollback.rollbackResult, changedAddrs, rollback.checkpointBlock),
         "Watcher reorg rollback summary",
       );
       onReorg?.({
@@ -173,12 +155,8 @@ export async function handleWatcherPollResponse({
     logs.length,
     response.shardSummary ?? null,
   );
-  const pollLagBlocks = progress.archiveHeight != null
-    ? Math.max(0, progress.archiveHeight - progress.checkpointBlock)
-    : null;
-  const logsPerSec = logs.length > 0
-    ? logs.length / Math.max(0.001, handleElapsedMs / 1000)
-    : 0;
+  const pollLagBlocks = progress.archiveHeight != null ? Math.max(0, progress.archiveHeight - progress.checkpointBlock) : null;
+  const logsPerSec = logs.length > 0 ? logs.length / Math.max(0.001, handleElapsedMs / 1000) : 0;
   Object.assign(progress, {
     pollLagBlocks,
     logsPerSec,

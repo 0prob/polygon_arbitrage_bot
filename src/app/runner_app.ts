@@ -4,7 +4,6 @@ import { type RegistryRepositories } from "../db/repositories.ts";
 import { type RegistryService } from "../db/registry.ts";
 import { StateWatcher } from "../state/watcher.ts";
 import { createOpportunityRouteCacheAdapters, resolveRunnerOptions, type RunnerEnv } from "./helpers.ts";
-import { RouteCache } from "../routing/route_cache.ts";
 import { createRunnerBootSurface } from "./runner.ts";
 import { createRunnerDeferredActions } from "./runner.ts";
 import { createRunnerMainController } from "./runner.ts";
@@ -36,9 +35,12 @@ function isWatcherCallbackTarget(value: unknown): value is WatcherCallbackTarget
   if (value == null || typeof value !== "object") return false;
   const target = value as Record<string, unknown>;
   return (
-    ("onBatch" in target && (target.onBatch == null || typeof target.onBatch === "function")) &&
-    ("onReorg" in target && (target.onReorg == null || typeof target.onReorg === "function")) &&
-    ("onHalt" in target && (target.onHalt == null || typeof target.onHalt === "function"))
+    "onBatch" in target &&
+    (target.onBatch == null || typeof target.onBatch === "function") &&
+    "onReorg" in target &&
+    (target.onReorg == null || typeof target.onReorg === "function") &&
+    "onHalt" in target &&
+    (target.onHalt == null || typeof target.onHalt === "function")
   );
 }
 
@@ -49,12 +51,7 @@ type RunnerAppDeps = {
   exit: (code: number) => never;
 };
 
-export function createRunnerApp({
-  argv,
-  env,
-  processLike,
-  exit,
-}: RunnerAppDeps) {
+export function createRunnerApp({ argv, env, processLike, exit }: RunnerAppDeps) {
   const options = resolveRunnerOptions(argv, env);
   const resourcePlan = RESOURCE_TUNED_RUN_PARAMETERS;
   const maxExecutionBatch = Math.min(options.maxExecutionBatch, resourcePlan.maxExecutionBatch);
@@ -77,16 +74,7 @@ export function createRunnerApp({
     loopMode: options.loopMode,
     liveMode: options.liveMode,
   });
-  const {
-    runtime,
-    stateCache,
-    routeCache,
-    botState,
-    botTelemetry,
-    log,
-    getCurrentFeeSnapshot,
-    arbActivityTracker,
-  } = runnerRuntime;
+  const { runtime, stateCache, routeCache, botState, botTelemetry, log, getCurrentFeeSnapshot, arbActivityTracker } = runnerRuntime;
 
   const marketDataAdapters = createRunnerMarketDataAdapters({
     getRepositories: () => repositories,
@@ -94,19 +82,17 @@ export function createRunnerApp({
     stateCache,
     testAmountWei: options.testAmountWei,
   });
-  const {
-    registryReadAccess,
-    pricingService,
-    getRouteFreshness,
-    decimalAwarePoolStateFetchers,
-    fmtPath,
-  } = marketDataAdapters;
+  const { registryReadAccess, pricingService, getRouteFreshness, decimalAwarePoolStateFetchers, fmtPath } = marketDataAdapters;
   const opportunityRouteCache = createOpportunityRouteCacheAdapters({
     routeCache,
     getOpportunityEngine: () => opportunityEngine,
   });
 
-  const onPreparedCandidateError = (candidate: Pick<CandidateEntry, "path">, reason: string, quarantine: { failures: number; until: number }) => {
+  const onPreparedCandidateError = (
+    candidate: Pick<CandidateEntry, "path">,
+    reason: string,
+    quarantine: { failures: number; until: number },
+  ) => {
     const { path } = candidate;
     const removed = routeCache.removeByRoute(path);
     if (removed > 0) {
@@ -227,10 +213,7 @@ export function createRunnerApp({
   const pendingTxWatcher = createPendingTxStateWatcher({
     isRunning: () => runtime.isRunning(),
     stateCache,
-    getPoolRecord: (poolAddress: string) =>
-      repositories?.pools.getMeta(poolAddress) ??
-      repositories?.pools.get(poolAddress) ??
-      null,
+    getPoolRecord: (poolAddress: string) => repositories?.pools.getMeta(poolAddress) ?? repositories?.pools.get(poolAddress) ?? null,
     fetchAndCacheStates: (pools, options) => hydrationAdapters.fetchAndCacheStates(pools, options),
     handlePoolsChanged: (changedPools) => watcherAdapters.watcherBatchCoordinator.handlePoolsChanged(changedPools),
     scheduleArb,
@@ -282,10 +265,7 @@ export function createRunnerApp({
     maxPathsToOptimize: resourcePlan.maxPathsToOptimize,
     getAffectedRoutes: opportunityRouteCache.getAffectedRoutes,
     testAmountWei: options.testAmountWei,
-    getPoolRecord: (poolAddress: string) =>
-      repositories?.pools.getMeta(poolAddress) ??
-      repositories?.pools.get(poolAddress) ??
-      null,
+    getPoolRecord: (poolAddress: string) => repositories?.pools.getMeta(poolAddress) ?? repositories?.pools.get(poolAddress) ?? null,
     fetchAndCacheStates: (pools, fetchOptions) => hydrationAdapters.fetchAndCacheStates(pools, fetchOptions),
     routeCache,
   };
@@ -311,12 +291,17 @@ export function createRunnerApp({
       trackBackgroundTask(task as Promise<void>);
     },
     maybeRunDiscovery,
-    reconcileDiscoveryResult: (result) => hydrationAdapters.reconcileDiscoveryResult(result as { totalDiscovered?: number } | null | undefined),
+    reconcileDiscoveryResult: (result) =>
+      hydrationAdapters.reconcileDiscoveryResult(result as { totalDiscovered?: number } | null | undefined),
     refreshCycles: deferredActions.refreshCycles,
     maybeHydrateQuietPools,
     refreshPriceOracleIfStale: () => topologyRefreshCoordinator.refreshPriceOracleIfStale(),
-    searchOpportunities: () => opportunityEngine ? opportunityEngine.search() : (console.warn("searchOpportunities called before engine init"), Promise.resolve([])),
-    executeBatchIfIdle: (candidates, reason) => opportunityEngine ? opportunityEngine.executeBatchIfIdle(candidates, reason) : (Promise.resolve({ submitted: false, error: "execution engine not initialized" })),
+    searchOpportunities: () =>
+      opportunityEngine ? opportunityEngine.search() : (console.warn("searchOpportunities called before engine init"), Promise.resolve([])),
+    executeBatchIfIdle: (candidates, reason) =>
+      opportunityEngine
+        ? opportunityEngine.executeBatchIfIdle(candidates, reason)
+        : Promise.resolve({ submitted: false, error: "execution engine not initialized" }),
     maxExecutionBatch,
     formatProfit: (profit, startToken) => pricingService.fmtProfit(profit, startToken),
     recordTxAttempt: (success, profitWei) => botTelemetry.recordTransactionAttempt(success, profitWei ?? 0n),
@@ -372,20 +357,23 @@ export function createRunnerApp({
         try {
           txAttemptStore = new TxAttemptStore(DB_PATH);
           setAttemptLogSink(txAttemptStore.write.bind(txAttemptStore));
-          logger.child({ component: "runner_app" }).info(
-            { dbPath: DB_PATH },
-            "Transaction attempt logging enabled"
-          );
+          logger.child({ component: "runner_app" }).info({ dbPath: DB_PATH }, "Transaction attempt logging enabled");
 
           // Prune rows older than 7 days, once per week (non-blocking background task)
-          setInterval(() => {
-            try { txAttemptStore?.prune(7); } catch { /* diagnostic infra, ignore */ }
-          }, 7 * 24 * 60 * 60 * 1000).unref?.();
+          setInterval(
+            () => {
+              try {
+                txAttemptStore?.prune(7);
+              } catch {
+                /* diagnostic infra, ignore */
+              }
+            },
+            7 * 24 * 60 * 60 * 1000,
+          ).unref?.();
         } catch (err) {
-          logger.child({ component: "runner_app" }).warn(
-            { err: String(err) },
-            "Failed to initialize TxAttemptStore — attempt logging disabled"
-          );
+          logger
+            .child({ component: "runner_app" })
+            .warn({ err: String(err) }, "Failed to initialize TxAttemptStore — attempt logging disabled");
         }
       }
     },

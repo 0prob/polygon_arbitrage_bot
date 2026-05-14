@@ -1,4 +1,3 @@
-
 /**
  * src/routing/score_route.js — Route scoring and ranking
  *
@@ -22,18 +21,11 @@ import { gasCostInTokenUnits, DEFAULT_SLIPPAGE_BPS, BPS_DENOM } from "../arb/pro
 import { bigintToApproxNumber } from "../utils/bigint.ts";
 import type { RouteResultCore, RouteResultTrace } from "./simulation_types.ts";
 import { oracle } from "../execution/gas.ts";
-import {
-  DEFAULT_GAS_PRICE_WEI,
-  CONFIG_DEFAULT_MIN_PROFIT_WEI,
-} from "../config/index.ts";
+import { DEFAULT_GAS_PRICE_WEI } from "../config/index.ts";
 
 // ─── Gas cost helpers ────────────────────────────────────────
 
-function scaledRatioToApproxNumber(
-  numerator: bigint,
-  denominator: bigint,
-  scale = 1_000_000n,
-) {
+function scaledRatioToApproxNumber(numerator: bigint, denominator: bigint, scale = 1_000_000n) {
   if (denominator <= 0n) return -Infinity;
   return bigintToApproxNumber((numerator * scale) / denominator);
 }
@@ -129,18 +121,10 @@ export function scoreRoute(path: RouteLike, result: RouteResultLike, options: Sc
   // Composite score: balance ROI, normalized profit, diversity, minus hop/gas penalties
   // Normalize netProfit to MATIC-wei using tokenToMaticRate so profits from tokens
   // with different decimals (USDC=6, WMATIC=18) are scored comparably.
-  const netProfitInMaticWei = tokenToMaticRate != null && tokenToMaticRate > 0n
-    ? netProfit * tokenToMaticRate
-    : null;
-  const normalizedProfitForScore = netProfitInMaticWei != null
-    ? bigintToApproxNumber(netProfitInMaticWei, 18)
-    : bigintToApproxNumber(netProfit, 12);
-  const score =
-    roi * 0.6 +
-    normalizedProfitForScore * 0.3 +
-    diversityBonus * 10 -
-    hopPenalty * 5 -
-    gasPenalty * 3;
+  const netProfitInMaticWei = tokenToMaticRate != null && tokenToMaticRate > 0n ? netProfit * tokenToMaticRate : null;
+  const normalizedProfitForScore =
+    netProfitInMaticWei != null ? bigintToApproxNumber(netProfitInMaticWei, 18) : bigintToApproxNumber(netProfit, 12);
+  const score = roi * 0.6 + normalizedProfitForScore * 0.3 + diversityBonus * 10 - hopPenalty * 5 - gasPenalty * 3;
 
   return { path, result, netProfit, score, roi, gasCostInTokens };
 }
@@ -155,10 +139,7 @@ export function scoreRoute(path: RouteLike, result: RouteResultLike, options: Sc
  * @param {bigint} [options.minNetProfit]
  * @returns {ScoredRoute[]}  Sorted descending by score
  */
-export function rankRoutes(
-  candidates: Array<{ path: RouteLike; result: RouteResultLike }>,
-  options: ScoreOptions = {}
-): ScoredRoute[] {
+export function rankRoutes(candidates: Array<{ path: RouteLike; result: RouteResultLike }>, options: ScoreOptions = {}): ScoredRoute[] {
   const scored: ScoredRoute[] = [];
 
   for (const { path, result } of candidates) {
@@ -176,7 +157,7 @@ export function rankRoutes(
  */
 export function selectBestRoute(
   candidates: Array<{ path: RouteLike; result: RouteResultLike }>,
-  options: ScoreOptions = {}
+  options: ScoreOptions = {},
 ): ScoredRoute | null {
   let best: ScoredRoute | null = null;
 

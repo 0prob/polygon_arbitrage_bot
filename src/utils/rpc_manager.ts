@@ -1,4 +1,3 @@
-
 /**
  * src/utils/rpc_manager.ts — Multi-endpoint RPC connection manager
  *
@@ -6,11 +5,10 @@
  * Routes calls to the healthiest available endpoint.
  */
 
-import { createPublicClient, http, type Hex } from "viem";
+import { createPublicClient, http } from "viem";
 import { polygon } from "viem/chains";
 
 import { errorMessage } from "./errors.ts";
-import { logger } from "./logger.ts";
 
 // ─── PublicClient proxy ──────────────────────────────────────
 // Uses the shared multi-endpoint pool for general-purpose reads.
@@ -51,12 +49,13 @@ export const dynamicPublicClient = new Proxy(
         }
       };
     },
-  }
+  },
 ) as unknown as ReturnType<typeof createPublicClient>;
 
 // ─── Types ────────────────────────────────────────────────────
 
-type RpcMethodKey =
+/** Method names supported by the RPC manager */
+type _RpcMethodKey =
   | "getBlockNumber"
   | "getBalance"
   | "getBlock"
@@ -165,7 +164,7 @@ class RpcEndpoint {
     return until != null && Date.now() < until;
   }
 
-  markRateLimited(error: unknown = null, method = DEFAULT_RPC_METHOD) {
+  markRateLimited(_error: unknown = null, method = DEFAULT_RPC_METHOD) {
     const cooldownMs = this._backoffMs;
     this.rateLimitedUntil = Date.now() + cooldownMs;
     this.errorCooldownUntil = Date.now() + Math.max(cooldownMs, 5_000);
@@ -185,7 +184,7 @@ class RpcEndpoint {
     lazyMetrics().then((m) => m?.rpcErrors.labels(`error:${method}`));
   }
 
-  markSuccess(method = DEFAULT_RPC_METHOD) {
+  markSuccess(_method = DEFAULT_RPC_METHOD) {
     this.consecutiveErrors = 0;
     if (!this.isRateLimited() && !this.isCoolingDown()) {
       this._backoffMs = INITIAL_BACKOFF_MS;
@@ -218,9 +217,7 @@ export class RpcManager {
 
   getBestEndpoint(method = DEFAULT_RPC_METHOD) {
     const candidates = this._methodAvailableEndpoints(method);
-    const healthy = candidates.filter(
-      (ep) => !ep.isRateLimited() && !ep.isCoolingDown()
-    );
+    const healthy = candidates.filter((ep) => !ep.isRateLimited() && !ep.isCoolingDown());
     if (healthy.length > 0) {
       // Sort by latency + in-flight penalty to spread load
       healthy.sort((a, b) => {
@@ -266,11 +263,7 @@ export class RpcManager {
   msUntilAnyEndpointAvailable(method = DEFAULT_RPC_METHOD) {
     const now = Date.now();
     const allRecoveries = this.endpoints
-      .map((ep) => Math.min(
-        ep.rateLimitedUntil,
-        ep.errorCooldownUntil,
-        ep.methodUnavailableUntil.get(method) ?? 0,
-      ))
+      .map((ep) => Math.min(ep.rateLimitedUntil, ep.errorCooldownUntil, ep.methodUnavailableUntil.get(method) ?? 0))
       .filter((t) => t > now);
     if (allRecoveries.length > 0) {
       return Math.min(...allRecoveries) - now;
@@ -360,9 +353,7 @@ export class RpcManager {
     try {
       await Promise.race([
         endpoint.client.getBlockNumber(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("probe timeout")), PROBE_TIMEOUT_MS)
-        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("probe timeout")), PROBE_TIMEOUT_MS)),
       ]);
       endpoint.latencyMs = Date.now() - start;
       endpoint.markSuccess();
@@ -380,11 +371,7 @@ export class RpcManager {
 
 let _rpcInstance: RpcManager | null = null;
 
-const DEFAULT_FREE_RPCS = [
-  "https://polygon-bor-rpc.publicnode.com",
-  "https://rpc.ankr.com/polygon",
-  "https://polygon.llamarpc.com",
-];
+const DEFAULT_FREE_RPCS = ["https://polygon-bor-rpc.publicnode.com", "https://rpc.ankr.com/polygon", "https://polygon.llamarpc.com"];
 
 export function getRpcManagerInstance(): RpcManager {
   if (!_rpcInstance) {
@@ -474,12 +461,7 @@ export function rpcManagerShortUrl(url: string): string {
 
 export function isRateLimitError(err: unknown): boolean {
   const msg = errorMessage(err).toLowerCase();
-  return (
-    msg.includes("rate limit") ||
-    msg.includes("too many requests") ||
-    msg.includes("429") ||
-    msg.includes("exceeded")
-  );
+  return msg.includes("rate limit") || msg.includes("too many requests") || msg.includes("429") || msg.includes("exceeded");
 }
 
 export function isEndpointCapabilityError(err: unknown): boolean {

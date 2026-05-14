@@ -1,10 +1,6 @@
 import { normalizeEvmAddress, ZERO_ADDRESS } from "../utils/identity.ts";
 
-export {
-  isEvmAddress,
-  normalizeEvmAddress,
-  ZERO_ADDRESS,
-} from "../utils/identity.ts";
+export { isEvmAddress, normalizeEvmAddress, ZERO_ADDRESS } from "../utils/identity.ts";
 
 const tokenCache = new WeakMap<object, string[]>();
 const metadataCache = new WeakMap<object, Record<string, unknown>>();
@@ -46,9 +42,7 @@ export function parsePoolMetadataValue(value: unknown): Record<string, unknown> 
     for (let depth = 0; depth < MAX_JSON_UNWRAP_DEPTH && typeof parsed === "string"; depth++) {
       parsed = JSON.parse(parsed || "{}");
     }
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
   } catch {
     return {};
   }

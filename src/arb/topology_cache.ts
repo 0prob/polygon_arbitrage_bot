@@ -153,12 +153,7 @@ export function createTopologyCache(maxTotalPaths: number) {
         continue;
       }
 
-      const key = routeIdentityFromSerializedPath(
-        s.startToken,
-        s.poolAddresses,
-        s.tokenIns,
-        s.tokenOuts,
-      );
+      const key = routeIdentityFromSerializedPath(s.startToken, s.poolAddresses, s.tokenIns, s.tokenOuts);
       if (seen.has(key)) continue;
       seen.add(key);
 
@@ -168,9 +163,7 @@ export function createTopologyCache(maxTotalPaths: number) {
         const pool = s.poolAddresses[i];
         const tokenIn = s.tokenIns[i];
         const tokenOut = s.tokenOuts[i];
-        const candidate =
-          hub.getPoolEdge(pool, tokenIn, tokenOut) ||
-          full.getPoolEdge(pool, tokenIn, tokenOut);
+        const candidate = hub.getPoolEdge(pool, tokenIn, tokenOut) || full.getPoolEdge(pool, tokenIn, tokenOut);
         if (!candidate || (s.zeroForOnes != null && candidate.zeroForOne !== s.zeroForOnes[i])) {
           ok = false;
           break;
@@ -238,11 +231,7 @@ export function createTopologyCache(maxTotalPaths: number) {
     }
   }
 
-  function writePersistentRouteCycles(
-    cacheFile: string | null | undefined,
-    cacheKey: string,
-    paths: ArbPathLike[],
-  ) {
+  function writePersistentRouteCycles(cacheFile: string | null | undefined, cacheKey: string, paths: ArbPathLike[]) {
     if (!cacheFile) return false;
     if (paths.length === 0) return false;
     try {

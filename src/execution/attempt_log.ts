@@ -86,7 +86,15 @@ function redactPrivateKey(meta: Record<string, unknown> | undefined): Record<str
 
 export function logAttemptStage(entry: AttemptLogEntry): void {
   const { stage, outcome } = entry;
-  if (outcome && (outcome === "dry_run_failed" || outcome === "sign_failed" || outcome === "submission_failed" || outcome === "reverted" || outcome === "receipt_timeout" || outcome === "dropped")) {
+  if (
+    outcome &&
+    (outcome === "dry_run_failed" ||
+      outcome === "sign_failed" ||
+      outcome === "submission_failed" ||
+      outcome === "reverted" ||
+      outcome === "receipt_timeout" ||
+      outcome === "dropped")
+  ) {
     attemptLogger.error({ ...entry, meta: redactPrivateKey(entry.meta) }, `attempt ${stage}: ${outcome}`);
   } else if (outcome === "confirmed") {
     attemptLogger.info({ ...entry, meta: redactPrivateKey(entry.meta) }, `attempt ${stage}: ${outcome}`);
@@ -121,7 +129,9 @@ export function stageFromBuiltTx(attemptId: string, builtTx: BuiltTx, txHash?: s
     routeSummary: [
       meta.protocol ? (meta.protocol as string[]).join("->") : "",
       meta.pools ? (meta.pools as string[]).slice(0, 2).map(String).join(",") : "",
-    ].filter(Boolean).join(" "),
+    ]
+      .filter(Boolean)
+      .join(" "),
     meta,
   };
 }

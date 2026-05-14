@@ -1,4 +1,3 @@
-
 /**
  * src/config/index.ts — Centralized configuration
  *
@@ -47,7 +46,9 @@ function _loadPerfJson() {
     if (fs.existsSync(p)) {
       return JSON.parse(fs.readFileSync(p, "utf8")).params || {};
     }
-  } catch { /* ignore parse errors */ }
+  } catch {
+    /* ignore parse errors */
+  }
   return {};
 }
 
@@ -167,8 +168,7 @@ function withEnvioToken(rawUrl: string, token: string) {
   try {
     const url = new URL(rawUrl);
     const isHostedHypersync =
-      url.protocol.startsWith("http") &&
-      (url.hostname.endsWith(".hypersync.xyz") || url.hostname === "hypersync.xyz");
+      url.protocol.startsWith("http") && (url.hostname.endsWith(".hypersync.xyz") || url.hostname === "hypersync.xyz");
 
     if (!isHostedHypersync) return rawUrl;
     if (url.username || url.password) return rawUrl;
@@ -184,8 +184,7 @@ function withEnvioToken(rawUrl: string, token: string) {
 
 // Direct HyperSync streaming endpoint — used by the StateWatcher native client.
 // Uses its own binary protocol, not standard JSON-RPC.
-export const HYPERSYNC_URL =
-  process.env.HYPERSYNC_URL || "https://polygon.hypersync.xyz";
+export const HYPERSYNC_URL = process.env.HYPERSYNC_URL || "https://polygon.hypersync.xyz";
 
 export const ENVIO_API_TOKEN = process.env.ENVIO_API_TOKEN || "";
 
@@ -196,53 +195,30 @@ export const METRICS_PORT = _port("METRICS_PORT", "METRICS_PORT", 9090);
 export const ENABLE_V3_PROTOCOLS = _bool("ENABLE_V3_PROTOCOLS", true);
 
 /** Native HyperSync HTTP timeout in milliseconds. */
-export const HYPERSYNC_HTTP_REQ_TIMEOUT_MS = _num(
-  "HYPERSYNC_HTTP_REQ_TIMEOUT_MS",
-  "HYPERSYNC_HTTP_REQ_TIMEOUT_MS",
-  30_000,
-);
+export const HYPERSYNC_HTTP_REQ_TIMEOUT_MS = _num("HYPERSYNC_HTTP_REQ_TIMEOUT_MS", "HYPERSYNC_HTTP_REQ_TIMEOUT_MS", 30_000);
 
 /** Native HyperSync request retry count. */
-export const HYPERSYNC_MAX_RETRIES = _num(
-  "HYPERSYNC_MAX_RETRIES",
-  "HYPERSYNC_MAX_RETRIES",
-  6,
-);
+export const HYPERSYNC_MAX_RETRIES = _num("HYPERSYNC_MAX_RETRIES", "HYPERSYNC_MAX_RETRIES", 6);
 
 /** Native HyperSync retry backoff increment in milliseconds. */
-export const HYPERSYNC_RETRY_BACKOFF_MS = _num(
-  "HYPERSYNC_RETRY_BACKOFF_MS",
-  "HYPERSYNC_RETRY_BACKOFF_MS",
-  500,
-);
+export const HYPERSYNC_RETRY_BACKOFF_MS = _num("HYPERSYNC_RETRY_BACKOFF_MS", "HYPERSYNC_RETRY_BACKOFF_MS", 500);
 
 /** Native HyperSync initial retry delay in milliseconds. */
-export const HYPERSYNC_RETRY_BASE_MS = _num(
-  "HYPERSYNC_RETRY_BASE_MS",
-  "HYPERSYNC_RETRY_BASE_MS",
-  200,
-);
+export const HYPERSYNC_RETRY_BASE_MS = _num("HYPERSYNC_RETRY_BASE_MS", "HYPERSYNC_RETRY_BASE_MS", 200);
 
 /** Native HyperSync retry delay ceiling in milliseconds. */
-export const HYPERSYNC_RETRY_CEILING_MS = _num(
-  "HYPERSYNC_RETRY_CEILING_MS",
-  "HYPERSYNC_RETRY_CEILING_MS",
-  5_000,
-);
+export const HYPERSYNC_RETRY_CEILING_MS = _num("HYPERSYNC_RETRY_CEILING_MS", "HYPERSYNC_RETRY_CEILING_MS", 5_000);
 
 // HyperRPC JSON-RPC endpoint — used exclusively for multicall token metadata
 // hydration so batch reads don't compete with hot-path RPC scoring.
 // Hosted *.rpc.hypersync.xyz endpoints automatically inherit ENVIO_API_TOKEN.
 // Local/custom endpoints are left untouched.
-export const HYPERRPC_URL = withEnvioToken(
-  process.env.HYPERRPC_URL || "https://polygon.rpc.hypersync.xyz",
-  ENVIO_API_TOKEN,
-);
+export const HYPERRPC_URL = withEnvioToken(process.env.HYPERRPC_URL || "https://polygon.rpc.hypersync.xyz", ENVIO_API_TOKEN);
 
 if (!ENVIO_API_TOKEN) {
   console.warn(
     "WARNING: ENVIO_API_TOKEN not set. HyperSync streaming (StateWatcher) will reject requests.\n" +
-    "         Set ENVIO_API_TOKEN in .env."
+      "         Set ENVIO_API_TOKEN in .env.",
   );
 }
 
@@ -253,11 +229,7 @@ export const HYPERSYNC_BATCH_SIZE = _num("HYPERSYNC_BATCH_SIZE", "HYPERSYNC_BATC
  * Max number of blocks a single historical HyperSync `get()` page may scan.
  * Bounding block span keeps sparse backfills within HyperSync's query-time budget.
  */
-export const HYPERSYNC_MAX_BLOCKS_PER_REQUEST = _num(
-  "HYPERSYNC_MAX_BLOCKS_PER_REQUEST",
-  "HYPERSYNC_MAX_BLOCKS_PER_REQUEST",
-  1_000_000
-);
+export const HYPERSYNC_MAX_BLOCKS_PER_REQUEST = _num("HYPERSYNC_MAX_BLOCKS_PER_REQUEST", "HYPERSYNC_MAX_BLOCKS_PER_REQUEST", 1_000_000);
 
 /** Max number of addresses to include in a HyperSync filter before falling back to topic-only */
 export const HYPERSYNC_MAX_ADDRESS_FILTER = _num("HYPERSYNC_MAX_ADDRESS_FILTER", "HYPERSYNC_MAX_ADDRESS_FILTER", 1000);
@@ -267,18 +239,10 @@ export const HYPERSYNC_MAX_ADDRESS_FILTER = _num("HYPERSYNC_MAX_ADDRESS_FILTER",
  * Splitting large watchlists across multiple requests avoids HyperSync payload
  * limits once the bot tracks many pools.
  */
-export const HYPERSYNC_MAX_FILTERS_PER_REQUEST = _num(
-  "HYPERSYNC_MAX_FILTERS_PER_REQUEST",
-  "HYPERSYNC_MAX_FILTERS_PER_REQUEST",
-  8
-);
+export const HYPERSYNC_MAX_FILTERS_PER_REQUEST = _num("HYPERSYNC_MAX_FILTERS_PER_REQUEST", "HYPERSYNC_MAX_FILTERS_PER_REQUEST", 8);
 
 /** Idle sleep between caught-up HyperSync watcher polls. Tune to 250-500ms only with CPU/API telemetry. */
-export const HYPERSYNC_WATCHER_IDLE_SLEEP_MS = _num(
-  "HYPERSYNC_WATCHER_IDLE_SLEEP_MS",
-  "HYPERSYNC_WATCHER_IDLE_SLEEP_MS",
-  1_000,
-);
+export const HYPERSYNC_WATCHER_IDLE_SLEEP_MS = _num("HYPERSYNC_WATCHER_IDLE_SLEEP_MS", "HYPERSYNC_WATCHER_IDLE_SLEEP_MS", 1_000);
 
 /** Recent-block window for targeted HyperSync backfills of newly admitted pools. */
 export const HYPERSYNC_TARGETED_BACKFILL_LOOKBACK_BLOCKS = _num(
@@ -300,11 +264,7 @@ export const HYPERSYNC_TARGETED_BACKFILL_MAX_POOLS = _num(
 export const DISCOVERY_INTERVAL_MS = _num("DISCOVERY_INTERVAL_MS", "DISCOVERY_INTERVAL_MS", 30 * 60 * 1000);
 
 /** Max number of protocol discovery scans to run concurrently */
-export const DISCOVERY_PROTOCOL_CONCURRENCY = _num(
-  "DISCOVERY_PROTOCOL_CONCURRENCY",
-  "DISCOVERY_PROTOCOL_CONCURRENCY",
-  3,
-);
+export const DISCOVERY_PROTOCOL_CONCURRENCY = _num("DISCOVERY_PROTOCOL_CONCURRENCY", "DISCOVERY_PROTOCOL_CONCURRENCY", 3);
 
 // ─── RPC ───────────────────────────────────────────────────────
 
@@ -325,7 +285,7 @@ const _envRpcUrls = _dedupeRpcUrls(
   (process.env.POLYGON_RPC_URLS || "")
     .split(",")
     .map((s) => s.trim())
-    .filter(Boolean)
+    .filter(Boolean),
 );
 
 /**
@@ -335,10 +295,7 @@ const _envRpcUrls = _dedupeRpcUrls(
  * Priority: POLYGON_RPC env → first POLYGON_RPC_URLS entry → Alchemy demo
  *           (rate-limited, for dev only).
  */
-export const POLYGON_RPC =
-  process.env.POLYGON_RPC ||
-  _envRpcUrls[0] ||
-  "https://polygon-mainnet.g.alchemy.com/v2/demo";
+export const POLYGON_RPC = process.env.POLYGON_RPC || _envRpcUrls[0] || "https://polygon-mainnet.g.alchemy.com/v2/demo";
 
 // ─── Gas Price Defaults ─────────────────────────────────────────
 
@@ -362,27 +319,21 @@ export const GWEI = 10n ** 9n;
  * The manager probes all endpoints every 15 s and routes to the healthiest one.
  */
 const _defaultFreeRpcs = [
-  "https://poly.api.pocket.network",        // Pocket Network
+  "https://poly.api.pocket.network", // Pocket Network
   "https://polygon-bor-rpc.publicnode.com", // PublicNode
-  "https://polygon-rpc.com",                // Official Polygon public RPC
-  "https://rpc.ankr.com/polygon",           // Ankr public
-  "https://polygon.llamarpc.com",           // LlamaNodes public
-  "https://polygon-public.nodies.app",      // Nodies
+  "https://polygon-rpc.com", // Official Polygon public RPC
+  "https://rpc.ankr.com/polygon", // Ankr public
+  "https://polygon.llamarpc.com", // LlamaNodes public
+  "https://polygon-public.nodies.app", // Nodies
   "https://polygon.api.onfinality.io/public", // OnFinality
   "https://tenderly.rpc.polygon.community", // Tenderly community RPC
 ];
 
-const _paidRpc =
-  process.env.POLYGON_RPC && !process.env.POLYGON_RPC.includes("/v2/demo")
-    ? [process.env.POLYGON_RPC]
-    : [];
+const _paidRpc = process.env.POLYGON_RPC && !process.env.POLYGON_RPC.includes("/v2/demo") ? [process.env.POLYGON_RPC] : [];
 
 const _publicRpcUrls = _envRpcUrls.length ? _envRpcUrls : _defaultFreeRpcs;
 
-const _allUrls = [
-  ..._paidRpc,
-  ..._publicRpcUrls,
-];
+const _allUrls = [..._paidRpc, ..._publicRpcUrls];
 
 export const FREE_RPC_URLS = [...new Set(_allUrls)];
 
@@ -401,37 +352,32 @@ export const PRIVATE_MEMPOOL_URL = process.env.PRIVATE_MEMPOOL_URL || "";
  *   "eth_sendBundle"             — bundle-capable private relay
  *   "eth_sendRawTransaction"     — standard submission (default if unset)
  */
-export const PRIVATE_MEMPOOL_METHOD =
-  process.env.PRIVATE_MEMPOOL_METHOD || "eth_sendRawTransaction";
+export const PRIVATE_MEMPOOL_METHOD = process.env.PRIVATE_MEMPOOL_METHOD || "eth_sendRawTransaction";
 
 /**
  * Dedicated Polygon private mempool endpoint. Keep this separate from the
  * generic PRIVATE_MEMPOOL_URL so provider-specific rollout does not affect
  * other private relay paths.
  */
-export const POLYGON_PRIVATE_MEMPOOL_URL =
-  process.env.POLYGON_PRIVATE_MEMPOOL_URL || "";
+export const POLYGON_PRIVATE_MEMPOOL_URL = process.env.POLYGON_PRIVATE_MEMPOOL_URL || "";
 
 /**
  * RPC method used by the Polygon private mempool endpoint. Default assumes
  * a drop-in eth_sendRawTransaction-style interface.
  */
-export const POLYGON_PRIVATE_MEMPOOL_METHOD =
-  process.env.POLYGON_PRIVATE_MEMPOOL_METHOD || "eth_sendRawTransaction";
+export const POLYGON_PRIVATE_MEMPOOL_METHOD = process.env.POLYGON_PRIVATE_MEMPOOL_METHOD || "eth_sendRawTransaction";
 
 /**
  * Optional auth header for Polygon private mempool access. Example:
  *   "Authorization"
  *   "x-api-key"
  */
-export const POLYGON_PRIVATE_MEMPOOL_AUTH_HEADER =
-  process.env.POLYGON_PRIVATE_MEMPOOL_AUTH_HEADER || "";
+export const POLYGON_PRIVATE_MEMPOOL_AUTH_HEADER = process.env.POLYGON_PRIVATE_MEMPOOL_AUTH_HEADER || "";
 
 /**
  * Optional auth token/value paired with POLYGON_PRIVATE_MEMPOOL_AUTH_HEADER.
  */
-export const POLYGON_PRIVATE_MEMPOOL_AUTH_TOKEN =
-  process.env.POLYGON_PRIVATE_MEMPOOL_AUTH_TOKEN || "";
+export const POLYGON_PRIVATE_MEMPOOL_AUTH_TOKEN = process.env.POLYGON_PRIVATE_MEMPOOL_AUTH_TOKEN || "";
 
 // ─── Profit / Execution Constants (centralized) ────────────────
 
@@ -467,9 +413,9 @@ export const CONFIG_GAS_ADJUSTMENT_ALPHA = _numFloat("GAS_ADJUSTMENT_ALPHA", "GA
  * for the token's decimal precision.
  */
 export const PROBE_BY_DECIMALS: Record<number, bigint> = {
-  6: 1_000_000n,   // $1.00 USDC (6 dec)
+  6: 1_000_000n, // $1.00 USDC (6 dec)
   18: 1_000_000_000_000_000_000n, // 1e18 raw (18 dec, e.g. WETH/WMATIC)
-  8: 1_000_000_000n,  // 1e9 raw (8 dec, e.g. WBTC)
+  8: 1_000_000_000n, // 1e9 raw (8 dec, e.g. WBTC)
 };
 
 /** Fallback probe amount when decimals are unknown (18-dec equivalent). */
@@ -520,38 +466,19 @@ function _polygonWsRpcUrl() {
 export const POLYGON_WS_RPC_URL = _polygonWsRpcUrl();
 
 /** Enable pending transaction + block subscriptions when a valid POLYGON_WS_RPC_URL is set. */
-export const PENDING_TX_WATCHER_ENABLED = Boolean(POLYGON_WS_RPC_URL) && _bool(
-  "PENDING_TX_WATCHER_ENABLED",
-  true,
-);
+export const PENDING_TX_WATCHER_ENABLED = Boolean(POLYGON_WS_RPC_URL) && _bool("PENDING_TX_WATCHER_ENABLED", true);
 
 /** Coalescing TTL for state refreshes triggered by pending txs or blocks. */
-export const PENDING_STATE_REFRESH_TTL_MS = _num(
-  "PENDING_STATE_REFRESH_TTL_MS",
-  "PENDING_STATE_REFRESH_TTL_MS",
-  100,
-);
+export const PENDING_STATE_REFRESH_TTL_MS = _num("PENDING_STATE_REFRESH_TTL_MS", "PENDING_STATE_REFRESH_TTL_MS", 100);
 
 /** Max touched pools to refresh in one pending-state batch. */
-export const PENDING_STATE_REFRESH_BATCH_SIZE = _num(
-  "PENDING_STATE_REFRESH_BATCH_SIZE",
-  "PENDING_STATE_REFRESH_BATCH_SIZE",
-  32,
-);
+export const PENDING_STATE_REFRESH_BATCH_SIZE = _num("PENDING_STATE_REFRESH_BATCH_SIZE", "PENDING_STATE_REFRESH_BATCH_SIZE", 32);
 
 /** Max pending transaction hashes to fetch per watcher callback. */
-export const PENDING_TX_FETCH_BATCH_SIZE = _num(
-  "PENDING_TX_FETCH_BATCH_SIZE",
-  "PENDING_TX_FETCH_BATCH_SIZE",
-  24,
-);
+export const PENDING_TX_FETCH_BATCH_SIZE = _num("PENDING_TX_FETCH_BATCH_SIZE", "PENDING_TX_FETCH_BATCH_SIZE", 24);
 
 /** Max parallel getTransaction calls per pending watcher callback. */
-export const PENDING_TX_FETCH_CONCURRENCY = _num(
-  "PENDING_TX_FETCH_CONCURRENCY",
-  "PENDING_TX_FETCH_CONCURRENCY",
-  4,
-);
+export const PENDING_TX_FETCH_CONCURRENCY = _num("PENDING_TX_FETCH_CONCURRENCY", "PENDING_TX_FETCH_CONCURRENCY", 4);
 
 // ─── RPC Retry / Rate-Limit ───────────────────────────────────
 
@@ -582,11 +509,7 @@ export const V2_POLL_CONCURRENCY = _num("V2_POLL_CONCURRENCY", "V2_POLL_CONCURRE
  * Number of V2 getReserves() calls to pack into one Multicall3 request.
  * This keeps discovery hydration bounded when V2 coverage is large.
  */
-export const V2_RESERVES_MULTICALL_CHUNK_SIZE = _num(
-  "V2_RESERVES_MULTICALL_CHUNK_SIZE",
-  "V2_RESERVES_MULTICALL_CHUNK_SIZE",
-  128
-);
+export const V2_RESERVES_MULTICALL_CHUNK_SIZE = _num("V2_RESERVES_MULTICALL_CHUNK_SIZE", "V2_RESERVES_MULTICALL_CHUNK_SIZE", 128);
 
 /**
  * Max concurrent slot0 / liquidity calls during V3 state polling.
@@ -598,22 +521,14 @@ export const V3_POLL_CONCURRENCY = _num("V3_POLL_CONCURRENCY", "V3_POLL_CONCURRE
  * Lower this to reduce per-request RPC payload size/memory spikes; raise only
  * when the RPC endpoint handles large multicalls reliably.
  */
-export const V3_BITMAP_MULTICALL_CHUNK_SIZE = _num(
-  "V3_BITMAP_MULTICALL_CHUNK_SIZE",
-  "V3_BITMAP_MULTICALL_CHUNK_SIZE",
-  128,
-);
+export const V3_BITMAP_MULTICALL_CHUNK_SIZE = _num("V3_BITMAP_MULTICALL_CHUNK_SIZE", "V3_BITMAP_MULTICALL_CHUNK_SIZE", 128);
 
 /**
  * Number of V3 ticks() calls packed into one Multicall3 request.
  * This is the heaviest V3 hydration batch knob: lower values reduce RPC
  * response size and heap pressure at the cost of more network round trips.
  */
-export const V3_TICKS_MULTICALL_CHUNK_SIZE = _num(
-  "V3_TICKS_MULTICALL_CHUNK_SIZE",
-  "V3_TICKS_MULTICALL_CHUNK_SIZE",
-  200,
-);
+export const V3_TICKS_MULTICALL_CHUNK_SIZE = _num("V3_TICKS_MULTICALL_CHUNK_SIZE", "V3_TICKS_MULTICALL_CHUNK_SIZE", 200);
 
 /** V3 warmup state rows buffered before each registry persistence write. */
 export const WARMUP_V3_PROGRESS_PERSIST_BATCH_SIZE = _num(
@@ -628,11 +543,7 @@ export const WARMUP_V3_PROGRESS_PERSIST_BATCH_SIZE = _num(
  * Number of persistent worker threads in the simulation pool.
  * Default: (CPU cores − 1), leaving one core for the main thread.
  */
-export const WORKER_COUNT = _num(
-  "WORKER_COUNT",
-  "WORKER_COUNT",
-  Math.max(1, os.cpus().length - 1)
-);
+export const WORKER_COUNT = _num("WORKER_COUNT", "WORKER_COUNT", Math.max(1, os.cpus().length - 1));
 
 /**
  * Minimum path count before offloading to worker threads.
@@ -665,48 +576,28 @@ export const ENABLE_PREDICTIVE_CACHE = _bool("ENABLE_PREDICTIVE_CACHE", false);
 /**
  * Max paths to track in predictive cache shadow state.
  */
-export const PREDICTIVE_CACHE_MAX_PATHS = _num(
-  "PREDICTIVE_CACHE_MAX_PATHS",
-  "PREDICTIVE_CACHE_MAX_PATHS",
-  500
-);
+export const PREDICTIVE_CACHE_MAX_PATHS = _num("PREDICTIVE_CACHE_MAX_PATHS", "PREDICTIVE_CACHE_MAX_PATHS", 500);
 
 /**
  * Top N paths to always keep pre-computed in background.
  */
-export const PREDICTIVE_CACHE_PRECOMPUTE_N = _num(
-  "PREDICTIVE_CACHE_PRECOMPUTE_N",
-  "PREDICTIVE_CACHE_PRECOMPUTE_N",
-  50
-);
+export const PREDICTIVE_CACHE_PRECOMPUTE_N = _num("PREDICTIVE_CACHE_PRECOMPUTE_N", "PREDICTIVE_CACHE_PRECOMPUTE_N", 50);
 
 /**
  * Background pre-computation refresh interval in milliseconds.
  */
-export const PREDICTIVE_CACHE_REFRESH_MS = _num(
-  "PREDICTIVE_CACHE_REFRESH_MS",
-  "PREDICTIVE_CACHE_REFRESH_MS",
-  100
-);
+export const PREDICTIVE_CACHE_REFRESH_MS = _num("PREDICTIVE_CACHE_REFRESH_MS", "PREDICTIVE_CACHE_REFRESH_MS", 100);
 
 /**
  * Staleness threshold in milliseconds before path is marked stale.
  */
-export const PREDICTIVE_CACHE_STALENESS_MS = _num(
-  "PREDICTIVE_CACHE_STALENESS_MS",
-  "PREDICTIVE_CACHE_STALENESS_MS",
-  5000
-);
+export const PREDICTIVE_CACHE_STALENESS_MS = _num("PREDICTIVE_CACHE_STALENESS_MS", "PREDICTIVE_CACHE_STALENESS_MS", 5000);
 
 /**
  * Maximum number of hub-pair pools to fetch synchronously during startup warmup.
  * Remaining pools are deferred to watcher-driven admission to bound cold-start latency.
  */
-export const MAX_SYNC_WARMUP_POOLS = _num(
-  "MAX_SYNC_WARMUP_POOLS",
-  "MAX_SYNC_WARMUP_POOLS",
-  800
-);
+export const MAX_SYNC_WARMUP_POOLS = _num("MAX_SYNC_WARMUP_POOLS", "MAX_SYNC_WARMUP_POOLS", 800);
 
 /**
  * Maximum number of V3 pools to fully hydrate during synchronous startup warmup.
@@ -716,62 +607,42 @@ export const MAX_SYNC_WARMUP_POOLS = _num(
 export const MAX_SYNC_WARMUP_V3_POOLS = _num(
   "MAX_SYNC_WARMUP_V3_POOLS",
   "MAX_SYNC_WARMUP_V3_POOLS",
-  Math.min(48, Math.max(16, Math.floor(MAX_SYNC_WARMUP_POOLS * 0.1)))
+  Math.min(48, Math.max(16, Math.floor(MAX_SYNC_WARMUP_POOLS * 0.1))),
 );
 
 /**
  * Secondary startup warmup budget for pools that touch at least one hub token.
  * This widens token coverage while still capping cold-start latency.
  */
-export const MAX_SYNC_WARMUP_ONE_HUB_POOLS = _num(
-  "MAX_SYNC_WARMUP_ONE_HUB_POOLS",
-  "MAX_SYNC_WARMUP_ONE_HUB_POOLS",
-  400
-);
+export const MAX_SYNC_WARMUP_ONE_HUB_POOLS = _num("MAX_SYNC_WARMUP_ONE_HUB_POOLS", "MAX_SYNC_WARMUP_ONE_HUB_POOLS", 400);
 
 /**
  * Secondary startup warmup budget specifically for one-hub V3 pools.
  * Defaults to 0 because large V3 catalogs can otherwise make every restart
  * spend synchronous warmup on a long tail better handled by deferred hydration.
  */
-export const MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS = _num(
-  "MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS",
-  "MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS",
-  0
-);
+export const MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS = _num("MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS", "MAX_SYNC_WARMUP_ONE_HUB_V3_POOLS", 0);
 
 /**
  * Number of bitmap words on each side of the active tick to hydrate for
  * staged V3 admission when full tick hydration would be too expensive.
  */
-export const V3_NEARBY_WORD_RADIUS = _num(
-  "V3_NEARBY_WORD_RADIUS",
-  "V3_NEARBY_WORD_RADIUS",
-  2
-);
+export const V3_NEARBY_WORD_RADIUS = _num("V3_NEARBY_WORD_RADIUS", "V3_NEARBY_WORD_RADIUS", 2);
 
 /**
  * Background sweeper budget for active pools that still lack routable state
  * after startup and have not emitted watcher events yet.
  */
-export const QUIET_POOL_SWEEP_BATCH_SIZE = _num(
-  "QUIET_POOL_SWEEP_BATCH_SIZE",
-  "QUIET_POOL_SWEEP_BATCH_SIZE",
-  24
-);
+export const QUIET_POOL_SWEEP_BATCH_SIZE = _num("QUIET_POOL_SWEEP_BATCH_SIZE", "QUIET_POOL_SWEEP_BATCH_SIZE", 24);
 
 /** Pending missing-state backlog size that enables larger quiet-pool catch-up sweeps. */
-export const QUIET_POOL_SWEEP_CATCHUP_THRESHOLD = _num(
-  "QUIET_POOL_SWEEP_CATCHUP_THRESHOLD",
-  "QUIET_POOL_SWEEP_CATCHUP_THRESHOLD",
-  10_000
-);
+export const QUIET_POOL_SWEEP_CATCHUP_THRESHOLD = _num("QUIET_POOL_SWEEP_CATCHUP_THRESHOLD", "QUIET_POOL_SWEEP_CATCHUP_THRESHOLD", 10_000);
 
 /** Larger bounded sweep size used only while quiet-pool missing-state backlog is high. */
 export const QUIET_POOL_SWEEP_CATCHUP_BATCH_SIZE = _num(
   "QUIET_POOL_SWEEP_CATCHUP_BATCH_SIZE",
   "QUIET_POOL_SWEEP_CATCHUP_BATCH_SIZE",
-  Math.max(QUIET_POOL_SWEEP_BATCH_SIZE, QUIET_POOL_SWEEP_BATCH_SIZE * 10)
+  Math.max(QUIET_POOL_SWEEP_BATCH_SIZE, QUIET_POOL_SWEEP_BATCH_SIZE * 10),
 );
 
 /**
@@ -797,91 +668,56 @@ export function getResourceTunedRunParameters() {
 export const RESOURCE_TUNED_RUN_PARAMETERS = getResourceTunedRunParameters();
 
 /** Minimum delay between quiet-pool sweep passes (ms). */
-export const QUIET_POOL_SWEEP_INTERVAL_MS = _num(
-  "QUIET_POOL_SWEEP_INTERVAL_MS",
-  "QUIET_POOL_SWEEP_INTERVAL_MS",
-  60_000
-);
+export const QUIET_POOL_SWEEP_INTERVAL_MS = _num("QUIET_POOL_SWEEP_INTERVAL_MS", "QUIET_POOL_SWEEP_INTERVAL_MS", 60_000);
 
 /** Maximum number of V3-family pools to hydrate in one legacy poller pass. */
-export const V3_POLL_MAX_POOLS = _num(
-  "V3_POLL_MAX_POOLS",
-  "V3_POLL_MAX_POOLS",
-  750
-);
+export const V3_POLL_MAX_POOLS = _num("V3_POLL_MAX_POOLS", "V3_POLL_MAX_POOLS", 750);
 
 /** Max age of per-pool state allowed for execution-triggered route revalidation (ms). */
-export const ROUTE_STATE_MAX_AGE_MS = _num(
-  "ROUTE_STATE_MAX_AGE_MS",
-  "ROUTE_STATE_MAX_AGE_MS",
-  10_000
-);
+export const ROUTE_STATE_MAX_AGE_MS = _num("ROUTE_STATE_MAX_AGE_MS", "ROUTE_STATE_MAX_AGE_MS", 10_000);
 
 /** Max timestamp skew allowed across pools in one route before execution (ms). */
-export const ROUTE_STATE_MAX_SKEW_MS = _num(
-  "ROUTE_STATE_MAX_SKEW_MS",
-  "ROUTE_STATE_MAX_SKEW_MS",
-  3_000
-);
+export const ROUTE_STATE_MAX_SKEW_MS = _num("ROUTE_STATE_MAX_SKEW_MS", "ROUTE_STATE_MAX_SKEW_MS", 3_000);
 
 /**
  * How often to rebuild the full cycle cache (ms).
  * The HyperSync watcher keeps state fresh; this only needs to run when
  * new pools are discovered.  Default: 2 minutes (was 10 minutes).
  */
-export const CYCLE_REFRESH_INTERVAL_MS = _num(
-  "CYCLE_REFRESH_INTERVAL_MS",
-  "CYCLE_REFRESH_INTERVAL_MS",
-  2 * 60 * 1000
-);
+export const CYCLE_REFRESH_INTERVAL_MS = _num("CYCLE_REFRESH_INTERVAL_MS", "CYCLE_REFRESH_INTERVAL_MS", 2 * 60 * 1000);
 
 /** Number of high-liquidity extra start tokens to include in selective 4-hop enumeration. */
-export const SELECTIVE_4HOP_TOKEN_LIMIT = _num(
-  "SELECTIVE_4HOP_TOKEN_LIMIT",
-  "SELECTIVE_4HOP_TOKEN_LIMIT",
-  6
-);
+export const SELECTIVE_4HOP_TOKEN_LIMIT = _num("SELECTIVE_4HOP_TOKEN_LIMIT", "SELECTIVE_4HOP_TOKEN_LIMIT", 6);
 
 /** Number of liquidity-ranked pivot tokens to use for full-graph route generation. */
 export const DYNAMIC_PIVOT_TOKEN_LIMIT = _num(
   "DYNAMIC_PIVOT_TOKEN_LIMIT",
   "DYNAMIC_PIVOT_TOKEN_LIMIT",
-  Math.max(8, SELECTIVE_4HOP_TOKEN_LIMIT * 2)
+  Math.max(8, SELECTIVE_4HOP_TOKEN_LIMIT * 2),
 );
 
 /** Optional persistent cache file for precomputed route cycles. */
 export const ROUTE_CYCLE_CACHE_FILE = process.env.ROUTE_CYCLE_CACHE_FILE || "graphify-out/cache/route_cycles.json";
 
 /** Max age for the persistent route-cycle cache before forcing re-enumeration. */
-export const ROUTE_CYCLE_CACHE_MAX_AGE_MS = _num(
-  "ROUTE_CYCLE_CACHE_MAX_AGE_MS",
-  "ROUTE_CYCLE_CACHE_MAX_AGE_MS",
-  6 * 60 * 60 * 1000
-);
+export const ROUTE_CYCLE_CACHE_MAX_AGE_MS = _num("ROUTE_CYCLE_CACHE_MAX_AGE_MS", "ROUTE_CYCLE_CACHE_MAX_AGE_MS", 6 * 60 * 60 * 1000);
 
 /** Path budget reserved for selective 4-hop exploration beyond the core hub graph. */
 export const SELECTIVE_4HOP_PATH_BUDGET = _num(
   "SELECTIVE_4HOP_PATH_BUDGET",
   "SELECTIVE_4HOP_PATH_BUDGET",
-  Math.max(800, Math.floor(MAX_TOTAL_PATHS * 0.2))
+  Math.max(800, Math.floor(MAX_TOTAL_PATHS * 0.2)),
 );
 
 /** Max selective 4-hop paths kept per token. */
-export const SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN = _num(
-  "SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN",
-  "SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN",
-  1_500
-);
+export const SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN = _num("SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN", "SELECTIVE_4HOP_MAX_PATHS_PER_TOKEN", 1_500);
 
 /**
  * Maximum routing hop count considered during bounded path search.
  * Keep the default at 4: extended 5+ hop DFS is opt-in because it is CPU-heavy
  * during the mandatory post-warmup route refresh.
  */
-const CONFIGURED_ROUTING_MAX_HOPS = Math.max(
-  2,
-  Math.floor(_num("ROUTING_MAX_HOPS", "ROUTING_MAX_HOPS", 4))
-);
+const CONFIGURED_ROUTING_MAX_HOPS = Math.max(2, Math.floor(_num("ROUTING_MAX_HOPS", "ROUTING_MAX_HOPS", 4)));
 
 export const ROUTING_MAX_HOPS = CONFIGURED_ROUTING_MAX_HOPS;
 
@@ -890,13 +726,7 @@ export const ROUTING_MAX_HOPS = CONFIGURED_ROUTING_MAX_HOPS;
  * Collapses to ROUTING_MAX_HOPS when env/perf values are inverted so a
  * misconfigured lower bound cannot raise the configured max-hop resource cap.
  */
-export const ROUTING_MIN_HOPS = Math.min(
-  ROUTING_MAX_HOPS,
-  Math.max(
-    2,
-    Math.floor(_num("ROUTING_MIN_HOPS", "ROUTING_MIN_HOPS", 2))
-  )
-);
+export const ROUTING_MIN_HOPS = Math.min(ROUTING_MAX_HOPS, Math.max(2, Math.floor(_num("ROUTING_MIN_HOPS", "ROUTING_MIN_HOPS", 2))));
 
 /**
  * Route search mode.

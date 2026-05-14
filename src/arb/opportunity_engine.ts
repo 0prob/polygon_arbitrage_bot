@@ -11,11 +11,7 @@ type OpportunityEngineDeps = {
 
 export function createOpportunityEngine(deps: OpportunityEngineDeps) {
   const executionCoordinator = createExecutionCoordinator(deps.execution);
-  const {
-    clearExecutionRouteQuarantine,
-    executeBatchIfIdle,
-    filterQuarantinedCandidates,
-  } = executionCoordinator;
+  const { clearExecutionRouteQuarantine, executeBatchIfIdle, filterQuarantinedCandidates } = executionCoordinator;
 
   const searcher = createArbSearcher({
     ...deps.search,
@@ -32,8 +28,7 @@ export function createOpportunityEngine(deps: OpportunityEngineDeps) {
     search: searcher,
     revalidateCachedRoutes,
     clearExecutionRouteQuarantine,
-    executeBatchIfIdle: (candidates: ExecutableCandidate[], source?: string) =>
-      executeBatchIfIdle(candidates, source),
+    executeBatchIfIdle: (candidates: ExecutableCandidate[], source?: string) => executeBatchIfIdle(candidates, source),
     filterQuarantinedCandidates: <T extends { path: ArbPathLike }>(candidates: T[], source: string) =>
       filterQuarantinedCandidates(candidates, source),
     toRouteResultLike,

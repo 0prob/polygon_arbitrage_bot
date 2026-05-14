@@ -4,17 +4,9 @@ import type { RouteStateCache } from "../routing/simulation_types.ts";
 import { createWatcherRefreshAdapters, type WatcherRefreshRegistry } from "./watcher_refresh.ts";
 import { handleWatcherLogs } from "./watcher_state_ops.ts";
 import type { WatcherStateAdapters } from "./watcher_state_adapters.ts";
-import {
-  WATCHER_SIGNATURES,
-  WATCHER_TOPIC0,
-} from "./watcher_query.ts";
+import { WATCHER_SIGNATURES, WATCHER_TOPIC0 } from "./watcher_query.ts";
 import { recordWatcherPollTelemetry } from "../utils/metrics.ts";
-import type {
-  DecodedWatcherLog,
-  WatcherEnqueueEnrichment,
-  WatcherPoolMeta,
-  WatcherTopicMap,
-} from "./watcher_types.ts";
+import type { DecodedWatcherLog, WatcherEnqueueEnrichment, WatcherPoolMeta, WatcherTopicMap } from "./watcher_types.ts";
 
 export type WatcherLogHandlerRegistry = WatcherRefreshRegistry & {
   getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
@@ -24,10 +16,7 @@ export type WatcherLogDecoder = {
   decodeLogs: (logs: HyperSyncRawLog[]) => Promise<Array<DecodedWatcherLog | null | undefined>>;
 };
 
-export type WatcherLogHandlerStateAdapters = Pick<
-  WatcherStateAdapters,
-  "mergeState" | "commitState" | "commitStates"
->;
+export type WatcherLogHandlerStateAdapters = Pick<WatcherStateAdapters, "mergeState" | "commitState" | "commitStates">;
 
 export type WatcherLogHandlerOptions = {
   registry: WatcherLogHandlerRegistry;

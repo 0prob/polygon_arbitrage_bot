@@ -1,4 +1,3 @@
-
 /**
  * src/routing/worker_pool.ts — Persistent worker thread pool for route simulation
  *
@@ -20,13 +19,7 @@ import { logger } from "../utils/logger.ts";
 import { toFiniteNumber as normaliseLogWeight } from "../utils/bigint.ts";
 import { normalizeEvmAddress } from "../utils/pool_record.ts";
 import { routeIdentityFromEdges, routeIdentityFromSerializedPath } from "./route_identity.ts";
-import type {
-  EvaluatedRoute,
-  EvaluatePathsOptions,
-  RouteState,
-  RouteStateCache,
-  SimulationPath,
-} from "./simulation_types.ts";
+import type { EvaluatedRoute, EvaluatePathsOptions, RouteState, RouteStateCache, SimulationPath } from "./simulation_types.ts";
 import type {
   EvaluationResult,
   SerializedEnumeratedPath,
@@ -43,13 +36,11 @@ const WORKER_URL = new URL("./persistent_worker.ts", import.meta.url);
 const hasImportArg = (flag: string) => {
   for (let i = 0; i < process.execArgv.length; i++) {
     if (process.execArgv[i] === `--import=${flag}`) return true;
-    if (process.execArgv[i] === '--import' && process.execArgv[i + 1] === flag) return true;
+    if (process.execArgv[i] === "--import" && process.execArgv[i + 1] === flag) return true;
   }
   return false;
 };
-const WORKER_EXEC_ARGV = hasImportArg('tsx')
-  ? [...process.execArgv]
-  : [...process.execArgv, '--import', 'tsx'];
+const WORKER_EXEC_ARGV = hasImportArg("tsx") ? [...process.execArgv] : [...process.execArgv, "--import", "tsx"];
 const workerLogger = logger.child({ component: "worker_pool" });
 const STARTUP_OOM_FAILURE_LIMIT = 3;
 
@@ -184,9 +175,7 @@ function buildEvaluationChunks<TPath extends PathLike>(paths: TPath[], workerCou
     for (const pool of group.pools) bestChunk.pools.add(pool);
   }
 
-  return chunks
-    .map((chunk) => chunk.paths)
-    .filter((chunk) => chunk.length > 0);
+  return chunks.map((chunk) => chunk.paths).filter((chunk) => chunk.length > 0);
 }
 
 function normalizeTopologyToken(token: unknown) {
@@ -197,11 +186,11 @@ function normalizeTopologyToken(token: unknown) {
 
 function topologyEdges(adjacency: SerializedTopology, token: unknown) {
   const normalized = normalizeTopologyToken(token);
-  return normalized ? adjacency[normalized] ?? [] : [];
+  return normalized ? (adjacency[normalized] ?? []) : [];
 }
 
 function booleanOption(options: Record<string, unknown>, key: string, fallback: boolean) {
-  return typeof options[key] === "boolean" ? options[key] as boolean : fallback;
+  return typeof options[key] === "boolean" ? (options[key] as boolean) : fallback;
 }
 
 function numberOption(options: Record<string, unknown>, key: string, fallback: number) {
@@ -209,11 +198,7 @@ function numberOption(options: Record<string, unknown>, key: string, fallback: n
   return Number.isFinite(numeric) ? numeric : fallback;
 }
 
-function estimateEnumerationTokenWork(
-  adjacency: SerializedTopology,
-  startToken: string,
-  options: Record<string, unknown> = {},
-) {
+function estimateEnumerationTokenWork(adjacency: SerializedTopology, startToken: string, options: Record<string, unknown> = {}) {
   const token = normalizeTopologyToken(startToken);
   if (!token) return 0;
 
@@ -277,10 +262,7 @@ function buildEnumerationChunks(
   for (const weightedToken of weightedTokens) {
     let bestChunk = chunks[0];
     for (const chunk of chunks) {
-      if (
-        chunk.work < bestChunk.work ||
-        (chunk.work === bestChunk.work && chunk.tokens.length < bestChunk.tokens.length)
-      ) {
+      if (chunk.work < bestChunk.work || (chunk.work === bestChunk.work && chunk.tokens.length < bestChunk.tokens.length)) {
         bestChunk = chunk;
       }
     }
@@ -288,9 +270,7 @@ function buildEnumerationChunks(
     bestChunk.work += weightedToken.work;
   }
 
-  return chunks
-    .map((chunk) => chunk.tokens)
-    .filter((chunk) => chunk.length > 0);
+  return chunks.map((chunk) => chunk.tokens).filter((chunk) => chunk.length > 0);
 }
 
 function summariseChunkPools(chunk: PathLike[]) {
@@ -333,12 +313,7 @@ function summariseEvaluationChunks(chunks: PathLike[][]) {
 }
 
 function serialisedPathKey(path: SerializedEnumeratedPath) {
-  return routeIdentityFromSerializedPath(
-    path.startToken,
-    path.poolAddresses,
-    path.tokenIns,
-    path.tokenOuts,
-  );
+  return routeIdentityFromSerializedPath(path.startToken, path.poolAddresses, path.tokenIns, path.tokenOuts);
 }
 
 function serialiseEvaluationPath(path: PathLike): SerializedEvaluationPath {
@@ -368,7 +343,7 @@ function serialiseEvaluationPaths(paths: PathLike[]) {
 
 function rehydrateEvaluationResults<TPath extends PathLike>(
   results: EvaluationResult[],
-  originalPathsByKey: Map<string, TPath>
+  originalPathsByKey: Map<string, TPath>,
 ): Array<EvaluatedRoute<TPath>> {
   return results
     .map(({ path, result }) => {
@@ -376,21 +351,19 @@ function rehydrateEvaluationResults<TPath extends PathLike>(
       if (!originalPath) return null;
       return { path: originalPath, result };
     })
-    .filter(
-      (entry): entry is EvaluatedRoute<TPath> => entry != null
-    );
+    .filter((entry): entry is EvaluatedRoute<TPath> => entry != null);
 }
 
 function serialiseEnumeratedPath(path: SerializedPathSource): SerializedEnumeratedPath {
   return {
-    startToken:        path.startToken,
-    hopCount:          path.hopCount,
-    logWeight:         path.logWeight,
+    startToken: path.startToken,
+    hopCount: path.hopCount,
+    logWeight: path.logWeight,
     cumulativeFeesBps: path.cumulativeFeesBps,
-    poolAddresses:     path.edges.map((edge) => edge.poolAddress),
-    tokenIns:          path.edges.map((edge) => edge.tokenIn),
-    tokenOuts:         path.edges.map((edge) => edge.tokenOut),
-    zeroForOnes:       path.edges.map((edge) => edge.zeroForOne),
+    poolAddresses: path.edges.map((edge) => edge.poolAddress),
+    tokenIns: path.edges.map((edge) => edge.tokenIn),
+    tokenOuts: path.edges.map((edge) => edge.tokenOut),
+    zeroForOnes: path.edges.map((edge) => edge.zeroForOne),
   };
 }
 
@@ -517,7 +490,7 @@ export class WorkerPool {
           totalPaths: paths.length,
           ...summariseEvaluationChunks(chunks),
         },
-        "[worker_pool] Evaluation chunk summary"
+        "[worker_pool] Evaluation chunk summary",
       );
     }
 
@@ -535,20 +508,13 @@ export class WorkerPool {
     // persistent worker-side state mirror, sending only changed pool states.
     // Only requires as many idle slots as there are chunks, not all slots.
     const idleEvalSlots = this._slots.filter((s) => isUsableSlot(s));
-    const canUsePersistentMirror =
-      this._queue.length === 0 &&
-      idleEvalSlots.length >= chunks.length;
+    const canUsePersistentMirror = this._queue.length === 0 && idleEvalSlots.length >= chunks.length;
 
     const chunkPromises = canUsePersistentMirror
       ? chunks.map((chunk, i) =>
-          this._evaluateOnSlot(
-            idleEvalSlots[i],
-            chunk,
-            serialisedChunks[i],
-            stateCache,
-            amountStr,
-            options
-          ).then((results) => rehydrateEvaluationResults(results, originalPathMaps[i]))
+          this._evaluateOnSlot(idleEvalSlots[i], chunk, serialisedChunks[i], stateCache, amountStr, options).then((results) =>
+            rehydrateEvaluationResults(results, originalPathMaps[i]),
+          ),
         )
       : chunks.map((chunk, i) =>
           this._submit<EvaluationResult[]>({
@@ -557,7 +523,7 @@ export class WorkerPool {
             stateObj: buildChunkStateObject(chunk, stateCache),
             testAmount: amountStr,
             options,
-          }).then((results) => rehydrateEvaluationResults(results, originalPathMaps[i]))
+          }).then((results) => rehydrateEvaluationResults(results, originalPathMaps[i])),
         );
 
     const chunkResults = await Promise.all(chunkPromises);
@@ -605,7 +571,7 @@ export class WorkerPool {
     // Below threshold or single worker: run inline to avoid IPC overhead
     if (startTokens.length < 2 || activeWorkerCount < 2) {
       const { deserializeTopology } = await import("./graph.ts");
-      const { findArbPaths }        = await import("./finder.ts");
+      const { findArbPaths } = await import("./finder.ts");
       const graph = deserializeTopology(adjacency);
       const paths = findArbPaths(graph, startTokens, enumerateOptions);
       return paths.map((path) => serialiseEnumeratedPath(path));
@@ -614,39 +580,31 @@ export class WorkerPool {
     const chunks = buildEnumerationChunks(adjacency, startTokens, activeWorkerCount, enumerateOptions);
 
     const idleEnumSlots = this._slots.filter((s) => isUsableSlot(s));
-    const canUsePersistentTopology =
-      Boolean(topologyKey) &&
-      this._queue.length === 0 &&
-      idleEnumSlots.length >= chunks.length;
+    const canUsePersistentTopology = Boolean(topologyKey) && this._queue.length === 0 && idleEnumSlots.length >= chunks.length;
 
     const results = await Promise.all(
       canUsePersistentTopology
-        ? chunks.map((tokenChunk, i) =>
-            this._enumerateOnSlot(
-              idleEnumSlots[i],
-              adjacency,
-              topologyKey!,
-              tokenChunk,
-              enumerateOptions
-            )
-          )
+        ? chunks.map((tokenChunk, i) => this._enumerateOnSlot(idleEnumSlots[i], adjacency, topologyKey!, tokenChunk, enumerateOptions))
         : chunks.map((tokenChunk) =>
             this._submit<SerializedEnumeratedPath[]>({
               type: "ENUMERATE",
               adjacency,
               startTokens: tokenChunk,
               options: enumerateOptions,
-            })
-          )
+            }),
+          ),
     );
 
     // Merge and deduplicate by ordered route key
-    const seen  = new Set<string>();
-    const all: SerializedEnumeratedPath[]   = [];
+    const seen = new Set<string>();
+    const all: SerializedEnumeratedPath[] = [];
     for (const chunk of results) {
       for (const p of chunk) {
         const key = serialisedPathKey(p);
-        if (!seen.has(key)) { seen.add(key); all.push(p); }
+        if (!seen.has(key)) {
+          seen.add(key);
+          all.push(p);
+        }
       }
     }
 
@@ -717,11 +675,7 @@ export class WorkerPool {
     amountStr: string,
     options: EvaluatePathsOptions,
   ): Promise<EvaluationResult[]> {
-    const { delta: stateDeltaObj, count, poolAddresses, retainPools } = this._buildStateDelta(
-      chunk,
-      stateCache,
-      slot.syncedStateVersions
-    );
+    const { delta: stateDeltaObj, count, poolAddresses, retainPools } = this._buildStateDelta(chunk, stateCache, slot.syncedStateVersions);
     const poolMembershipChanged = !samePoolAddressSet(slot.syncedPoolAddresses, retainPools);
 
     if (workerLogger.isLevelEnabled("debug")) {
@@ -735,7 +689,7 @@ export class WorkerPool {
           pathPools: poolAddresses.length,
           poolMembershipChanged,
         },
-        "[worker_pool] Evaluation slot delta"
+        "[worker_pool] Evaluation slot delta",
       );
     }
 
@@ -843,9 +797,7 @@ export class WorkerPool {
       if (failureHandled) return;
       failureHandled = true;
 
-      const isStartupOom =
-        slot.currentJobId == null &&
-        /out of memory/i.test(err?.message ?? message);
+      const isStartupOom = slot.currentJobId == null && /out of memory/i.test(err?.message ?? message);
 
       if (isStartupOom) {
         slot.startupFailures += 1;
@@ -857,7 +809,7 @@ export class WorkerPool {
               slotIndex: i,
               startupFailures: slot.startupFailures,
             },
-            `[worker_pool] Worker ${i} disabled after repeated startup Wasm OOM failures`
+            `[worker_pool] Worker ${i} disabled after repeated startup Wasm OOM failures`,
           );
         }
       } else {
@@ -985,12 +937,18 @@ export class WorkerPool {
   }
 
   /** Number of paths currently queued or in-flight */
-  get queueDepth() { return this._queue.length + this._pending.size; }
+  get queueDepth() {
+    return this._queue.length + this._pending.size;
+  }
 
   /** Pool size */
-  get size() { return this._size; }
+  get size() {
+    return this._size;
+  }
 
-  get initialized() { return this._initialized; }
+  get initialized() {
+    return this._initialized;
+  }
 }
 
 // ─── Singleton ─────────────────────────────────────────────────

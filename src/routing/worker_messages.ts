@@ -1,8 +1,4 @@
-import type {
-  EvaluatePathsOptions,
-  RouteSimulationResult,
-  RouteState,
-} from "./simulation_types.ts";
+import type { EvaluatePathsOptions, RouteSimulationResult, RouteState } from "./simulation_types.ts";
 
 export type SerializedEvaluationEdge = {
   poolAddress: string;
@@ -87,11 +83,7 @@ export type WorkerEnumeratePayload = {
   options?: Record<string, unknown>;
 };
 
-export type WorkerPayload =
-  | WorkerEvaluatePayload
-  | WorkerSyncStatePayload
-  | WorkerSyncTopologyPayload
-  | WorkerEnumeratePayload;
+export type WorkerPayload = WorkerEvaluatePayload | WorkerSyncStatePayload | WorkerSyncTopologyPayload | WorkerEnumeratePayload;
 
 export type WorkerRequest = WorkerPayload & { id: number };
 
@@ -117,10 +109,6 @@ export type WorkerErrorResponse = {
   error: string;
 };
 
-export type WorkerResponse =
-  | WorkerEvaluateResponse
-  | WorkerEnumerateResponse
-  | WorkerAckResponse
-  | WorkerErrorResponse;
+export type WorkerResponse = WorkerEvaluateResponse | WorkerEnumerateResponse | WorkerAckResponse | WorkerErrorResponse;
 
 export type WorkerResult = EvaluationResult[] | SerializedEnumeratedPath[] | true;

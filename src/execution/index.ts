@@ -1,4 +1,3 @@
-
 /**
  * src/execution/index.js — Execution module barrel export
  */
@@ -49,13 +48,7 @@ export {
 } from "./calldata.ts";
 
 // Gas estimation
-export {
-  fetchGasPrice,
-  fetchEIP1559Fees,
-  estimateGas,
-  recommendGasParams,
-  quickGasCheck,
-} from "./gas.ts";
+export { fetchGasPrice, fetchEIP1559Fees, estimateGas, recommendGasParams, quickGasCheck } from "./gas.ts";
 
 // Nonce management
 export { NonceManager } from "./nonce_manager.ts";
@@ -64,11 +57,7 @@ export { NonceManager } from "./nonce_manager.ts";
 export { buildArbTx, buildTransferTx } from "./build_tx.ts";
 
 // Private mempool submission
-export {
-  signTransaction,
-  sendPrivateTx,
-  sendBundleAlchemy,
-} from "./private_tx.ts";
+export { signTransaction, sendPrivateTx, sendBundleAlchemy } from "./private_tx.ts";
 
 // Transaction sending (dry-run + private mempool)
 export { sendTx } from "./send_tx.ts";

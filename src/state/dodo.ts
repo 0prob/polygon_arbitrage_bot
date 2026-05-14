@@ -1,8 +1,4 @@
-import {
-  isNoDataReadContractError,
-  readContractWithRetry,
-  throttledMap,
-} from "../state/enrichment/rpc.ts";
+import { isNoDataReadContractError, readContractWithRetry, throttledMap } from "../state/enrichment/rpc.ts";
 import { ENRICH_CONCURRENCY } from "../config/index.ts";
 import { normalizeEvmAddress } from "../utils/pool_record.ts";
 import { errorMessage } from "../utils/errors.ts";
@@ -111,9 +107,7 @@ export type DodoStateMap = Map<string, DodoPoolState> & {
   noDataFailures?: Set<string>;
 };
 
-type DodoFetchResult =
-  | { addr: string; state: DodoPoolState; error: null }
-  | { addr: string; state: null; error: unknown };
+type DodoFetchResult = { addr: string; state: DodoPoolState; error: null } | { addr: string; state: null; error: unknown };
 
 function tupleValue(state: unknown, index: number, key: string) {
   if (state == null || (typeof state !== "object" && typeof state !== "function")) return undefined;
@@ -126,12 +120,7 @@ function toBigIntValue(value: unknown, fallback?: bigint) {
     if (fallback !== undefined) return fallback;
     throw new Error("missing bigint value");
   }
-  if (
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    typeof value === "number" ||
-    typeof value === "string"
-  ) {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
     return BigInt(value as BigIntish);
   }
   throw new Error(`invalid bigint value: ${String(value)}`);
@@ -215,10 +204,7 @@ export async function fetchDodoPoolState(poolAddress: string): Promise<DodoPoolS
   };
 }
 
-export async function fetchMultipleDodoStates(
-  poolAddresses: string[],
-  concurrency = ENRICH_CONCURRENCY,
-): Promise<DodoStateMap> {
+export async function fetchMultipleDodoStates(poolAddresses: string[], concurrency = ENRICH_CONCURRENCY): Promise<DodoStateMap> {
   const states: DodoStateMap = new Map();
   const noDataFailures = new Set<string>();
 

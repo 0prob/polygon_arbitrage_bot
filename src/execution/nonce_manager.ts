@@ -1,4 +1,3 @@
-
 /**
  * src/execution/nonce_manager.js — Per-account nonce manager
  *
@@ -137,7 +136,6 @@ export class NonceManager {
     // for the *next* nonce. We need to account for in-flight submissions.
     const entry = this._state.get(key);
     const currentBase = entry?.nonce ?? 0n;
-    const currentPending = entry?.pending ?? 0;
 
     if (onchainNonce > currentBase) {
       logger.warn(

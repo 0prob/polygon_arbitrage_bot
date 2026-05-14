@@ -1,4 +1,3 @@
-
 /**
  * src/math/sqrt_price_math.js — Q64.96 sqrt price math
  *
@@ -31,12 +30,7 @@ const Q96 = 1n << 96n;
  * @param {boolean} add       Whether adding or removing token0
  * @returns {bigint}          Next sqrt price (Q64.96)
  */
-export function getNextSqrtPriceFromAmount0RoundingUp(
-  sqrtPX96: bigint,
-  liquidity: bigint,
-  amount: bigint,
-  add: boolean
-): bigint {
+export function getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96: bigint, liquidity: bigint, amount: bigint, add: boolean): bigint {
   if (amount === 0n) return sqrtPX96;
 
   const numerator1 = liquidity << 96n;
@@ -74,12 +68,7 @@ export function getNextSqrtPriceFromAmount0RoundingUp(
  * @param {boolean} add       Whether adding or removing token1
  * @returns {bigint}          Next sqrt price (Q64.96)
  */
-export function getNextSqrtPriceFromAmount1RoundingDown(
-  sqrtPX96: bigint,
-  liquidity: bigint,
-  amount: bigint,
-  add: boolean
-): bigint {
+export function getNextSqrtPriceFromAmount1RoundingDown(sqrtPX96: bigint, liquidity: bigint, amount: bigint, add: boolean): bigint {
   if (add) {
     const quotient = mulDiv(amount, Q96, liquidity);
     return sqrtPX96 + quotient;
@@ -103,23 +92,13 @@ export function getNextSqrtPriceFromAmount1RoundingDown(
  * @param {boolean} zeroForOne Whether swapping token0 for token1
  * @returns {bigint}          Next sqrt price
  */
-export function getNextSqrtPriceFromInput(
-  sqrtPX96: bigint,
-  liquidity: bigint,
-  amountIn: bigint,
-  zeroForOne: boolean
-): bigint {
+export function getNextSqrtPriceFromInput(sqrtPX96: bigint, liquidity: bigint, amountIn: bigint, zeroForOne: boolean): bigint {
   if (sqrtPX96 <= 0n) throw new Error("SqrtPriceMath: sqrtPX96 must be > 0");
   if (liquidity <= 0n) throw new Error("SqrtPriceMath: liquidity must be > 0");
 
   return zeroForOne
     ? getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96, liquidity, amountIn, true)
-    : getNextSqrtPriceFromAmount1RoundingDown(
-        sqrtPX96,
-        liquidity,
-        amountIn,
-        true
-      );
+    : getNextSqrtPriceFromAmount1RoundingDown(sqrtPX96, liquidity, amountIn, true);
 }
 
 /**
@@ -131,28 +110,13 @@ export function getNextSqrtPriceFromInput(
  * @param {boolean} zeroForOne Whether swapping token0 for token1
  * @returns {bigint}          Next sqrt price
  */
-export function getNextSqrtPriceFromOutput(
-  sqrtPX96: bigint,
-  liquidity: bigint,
-  amountOut: bigint,
-  zeroForOne: boolean
-): bigint {
+export function getNextSqrtPriceFromOutput(sqrtPX96: bigint, liquidity: bigint, amountOut: bigint, zeroForOne: boolean): bigint {
   if (sqrtPX96 <= 0n) throw new Error("SqrtPriceMath: sqrtPX96 must be > 0");
   if (liquidity <= 0n) throw new Error("SqrtPriceMath: liquidity must be > 0");
 
   return zeroForOne
-    ? getNextSqrtPriceFromAmount1RoundingDown(
-        sqrtPX96,
-        liquidity,
-        amountOut,
-        false
-      )
-    : getNextSqrtPriceFromAmount0RoundingUp(
-        sqrtPX96,
-        liquidity,
-        amountOut,
-        false
-      );
+    ? getNextSqrtPriceFromAmount1RoundingDown(sqrtPX96, liquidity, amountOut, false)
+    : getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96, liquidity, amountOut, false);
 }
 
 // ─── Token amount deltas ──────────────────────────────────────
@@ -182,10 +146,7 @@ export function getAmount0Delta(sqrtRatioAX96: bigint, sqrtRatioBX96: bigint, li
   }
 
   if (roundUp) {
-    return divRoundingUp(
-      mulDivRoundingUp(numerator1, numerator2, sqrtRatioBX96),
-      sqrtRatioAX96
-    );
+    return divRoundingUp(mulDivRoundingUp(numerator1, numerator2, sqrtRatioBX96), sqrtRatioAX96);
   } else {
     return mulDiv(numerator1, numerator2, sqrtRatioBX96) / sqrtRatioAX96;
   }
@@ -209,11 +170,7 @@ export function getAmount1Delta(sqrtRatioAX96: bigint, sqrtRatioBX96: bigint, li
   }
 
   if (roundUp) {
-    return mulDivRoundingUp(
-      liquidity,
-      sqrtRatioBX96 - sqrtRatioAX96,
-      Q96
-    );
+    return mulDivRoundingUp(liquidity, sqrtRatioBX96 - sqrtRatioAX96, Q96);
   } else {
     return mulDiv(liquidity, sqrtRatioBX96 - sqrtRatioAX96, Q96);
   }

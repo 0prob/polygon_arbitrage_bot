@@ -1,4 +1,3 @@
-
 /**
  * src/protocols/index.js — Protocol registry
  *
@@ -27,16 +26,16 @@ import { createPairCreatedProtocol, createUniV3PoolProtocol } from "./factories.
 const V2_PROTOCOL_DEFS: Array<[string, string, string, number?]> = [
   ["QuickSwap V2", "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32", "QUICKSWAP_V2", 13950000],
   ["SushiSwap V2", "0xc35dadb65012ec5796536bd9864ed8773abc74c4", "SUSHISWAP_V2", 15700000],
-  ["Dfyn V2",       "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B", "DFYN_V2", 13000000],
-  ["ApeSwap V2",    "0xCf083Be4164828f00cAE704EC15a36D711491284", "APESWAP_V2", 15000000],
-  ["Uniswap V2",    "0x9e5A52f57b3038F1B8EeE45F28b3C1967e22799C", "UNISWAP_V2", 14026000],
+  ["Dfyn V2", "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B", "DFYN_V2", 13000000],
+  ["ApeSwap V2", "0xCf083Be4164828f00cAE704EC15a36D711491284", "APESWAP_V2", 15000000],
+  ["Uniswap V2", "0x9e5A52f57b3038F1B8EeE45F28b3C1967e22799C", "UNISWAP_V2", 14026000],
 ];
 
 // ─── Inline V3 pool-created protocols ─────────────────────────
 
 const V3_PROTOCOL_DEFS: Array<[string, string, string, number?]> = [
-  ["Uniswap V3",    "0x1F98431c8aD98523631AE4a59f267346ea31F984", "UNISWAP_V3", 26000000],
-  ["SushiSwap V3",  "0x917933899c6a5F8E37F31E19f92CdBFF7e8FF0e2", "SUSHISWAP_V3", 26000000],
+  ["Uniswap V3", "0x1F98431c8aD98523631AE4a59f267346ea31F984", "UNISWAP_V3", 26000000],
+  ["SushiSwap V3", "0x917933899c6a5F8E37F31E19f92CdBFF7e8FF0e2", "SUSHISWAP_V3", 26000000],
 ];
 
 /** Build PROTOCOLS map from inline definitions plus standalone modules. */

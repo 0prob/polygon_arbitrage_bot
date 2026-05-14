@@ -1,4 +1,3 @@
-
 /**
  * src/enrichment/curve.js — Curve on-chain enrichment
  *
@@ -7,11 +6,7 @@
  */
 
 import { errorMessage } from "../../utils/errors.ts";
-import {
-  isNoDataReadContractError,
-  readContractWithRetry,
-  type ReadContractWithRetryParams,
-} from "./rpc.ts";
+import { isNoDataReadContractError, readContractWithRetry, type ReadContractWithRetryParams } from "./rpc.ts";
 
 const ZERO = "0x0000000000000000000000000000000000000000";
 
@@ -36,7 +31,6 @@ function normalizeCurveTokenList(values: unknown) {
 
 type CurveReadContract = <T = unknown>(params: ReadContractWithRetryParams) => Promise<T>;
 
-
 /**
  * Fetch token addresses for a Curve pool via the registry.
  * Retries automatically on HTTP 429 / 5xx with exponential backoff.
@@ -60,14 +54,10 @@ export async function getCurveTokens(
     return normalizeCurveTokenList(tokens);
   } catch (error: unknown) {
     if (isNoDataReadContractError(error)) {
-      console.error(
-        `  Curve registry returned no token data for ${poolAddress}: ${errorMessage(error)}`
-      );
+      console.error(`  Curve registry returned no token data for ${poolAddress}: ${errorMessage(error)}`);
       return [];
     }
-    console.error(
-      `  Error fetching Curve tokens for ${poolAddress}: ${errorMessage(error)}`
-    );
+    console.error(`  Error fetching Curve tokens for ${poolAddress}: ${errorMessage(error)}`);
     throw error;
   }
 }

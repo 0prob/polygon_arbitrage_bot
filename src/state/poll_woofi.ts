@@ -30,9 +30,7 @@ export async function fetchAndNormalizeWoofiPool(
   const addr = pool.pool_address.toLowerCase();
   const fallbackTokens = parsePoolTokens(pool.tokens);
   const rawState = await fetchWoofiPoolState(addr, { tokens: fallbackTokens });
-  const tokens = Array.isArray(rawState.tokens) && rawState.tokens.length >= 2
-    ? rawState.tokens
-    : fallbackTokens;
+  const tokens = Array.isArray(rawState.tokens) && rawState.tokens.length >= 2 ? rawState.tokens : fallbackTokens;
   const metadata = metadataWithTokenDecimals(pool, tokens, options.tokenDecimals);
   const normalized = normalizeWoofiState(addr, pool.protocol, tokens, rawState, metadata) as RouteState;
 
@@ -54,9 +52,7 @@ export class PollWoofi extends TimedPoller {
   async poll() {
     const t0 = Date.now();
 
-    const pools = this._registry.getActivePoolsMeta().filter((p) =>
-      WOOFI_PROTOCOLS.has(normalizeProtocolKey(p.protocol))
-    );
+    const pools = this._registry.getActivePoolsMeta().filter((p) => WOOFI_PROTOCOLS.has(normalizeProtocolKey(p.protocol)));
 
     if (pools.length === 0) {
       return { updated: 0, failed: 0, durationMs: Date.now() - t0 };
@@ -78,15 +74,10 @@ export class PollWoofi extends TimedPoller {
       this._concurrency,
     );
 
-    const { updated, failed } = this._storeBatchResults(
-      "poll_woofi",
-      this._cache,
-      results,
-      ({ addr, normalized }) => {
-        const tokenCount = Array.isArray(normalized.tokens) ? normalized.tokens.length : 0;
-        return `[poll_woofi] ${addr} tokens=${tokenCount}`;
-      },
-    );
+    const { updated, failed } = this._storeBatchResults("poll_woofi", this._cache, results, ({ addr, normalized }) => {
+      const tokenCount = Array.isArray(normalized.tokens) ? normalized.tokens.length : 0;
+      return `[poll_woofi] ${addr} tokens=${tokenCount}`;
+    });
 
     return this._completePass("poll_woofi", t0, updated, failed);
   }

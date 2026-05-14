@@ -1,4 +1,3 @@
-
 /**
  * src/routing/worker.ts — One-shot worker wrapper
  *
@@ -28,12 +27,7 @@ try {
     stateCache.set(normalizedPool, state);
   }
 
-  const profitable = evaluatePaths(
-    paths || [],
-    stateCache,
-    BigInt(testAmount ?? 0),
-    options || {}
-  );
+  const profitable = evaluatePaths(paths || [], stateCache, BigInt(testAmount ?? 0), options || {});
 
   parentPort.postMessage({ profitable });
 } catch (err: unknown) {

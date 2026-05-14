@@ -1,24 +1,12 @@
 import type { HyperSyncRawLog } from "../hypersync/logs.ts";
-import type {
-  HyperSyncGetResponse,
-  HyperSyncLogQuery,
-} from "../hypersync/query_policy.ts";
-import {
-  classifyWatcherPollError,
-  isRollbackGuardMismatchError,
-  watcherShardRetryDelayMs,
-} from "./watcher_poll_utils.ts";
-import {
-  mergeWatcherShardSettledResults,
-  type WatcherPollResponse,
-} from "./watcher_shards.ts";
+import type { HyperSyncGetResponse, HyperSyncLogQuery } from "../hypersync/query_policy.ts";
+import { classifyWatcherPollError, isRollbackGuardMismatchError, watcherShardRetryDelayMs } from "./watcher_poll_utils.ts";
+import { mergeWatcherShardSettledResults, type WatcherPollResponse } from "./watcher_shards.ts";
 
 export const WATCHER_SHARD_TRANSIENT_RETRY_ATTEMPTS = 3;
 export type { WatcherPollResponse } from "./watcher_shards.ts";
 
-export type WatcherPollGetter = (
-  query: HyperSyncLogQuery,
-) => Promise<HyperSyncGetResponse<HyperSyncRawLog>>;
+export type WatcherPollGetter = (query: HyperSyncLogQuery) => Promise<HyperSyncGetResponse<HyperSyncRawLog>>;
 
 export type WatcherPollingLogger = {
   warn: (meta: unknown, message: string) => unknown;
@@ -58,9 +46,7 @@ export async function pollWatcherOnce({
     if (pendingShards.length === 0) break;
 
     try {
-      const settled = await Promise.allSettled(
-        pendingShards.map((s) => getLogs(s.query)),
-      );
+      const settled = await Promise.allSettled(pendingShards.map((s) => getLogs(s.query)));
       if (!isRunning()) return null;
 
       // Process results and mark failures for retry
@@ -74,10 +60,7 @@ export async function pollWatcherOnce({
           shard.failed = true;
           shard.retries++;
           const error = result.reason;
-          if (
-            !isRollbackGuardMismatchError(error) &&
-            classifyWatcherPollError(error) !== "transient"
-          ) {
+          if (!isRollbackGuardMismatchError(error) && classifyWatcherPollError(error) !== "transient") {
             throw error;
           }
         }
@@ -94,8 +77,7 @@ export async function pollWatcherOnce({
       await sleep(watcherShardRetryDelayMs(attempt));
     } catch (error) {
       if (
-        (!isRollbackGuardMismatchError(error) &&
-          classifyWatcherPollError(error) !== "transient") ||
+        (!isRollbackGuardMismatchError(error) && classifyWatcherPollError(error) !== "transient") ||
         attempt + 1 >= retryAttempts ||
         !isRunning()
       ) {
@@ -106,9 +88,7 @@ export async function pollWatcherOnce({
   }
 
   // Merge results from all shards
-  const results = shardStates
-    .filter((s) => s.result !== null)
-    .map((s) => s.result!);
+  const results = shardStates.filter((s) => s.result !== null).map((s) => s.result!);
 
   if (results.length === 0) {
     throw new Error("All watcher shard queries failed after retries");

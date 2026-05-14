@@ -44,9 +44,7 @@ export function createArbActivityTracker(options: ArbActivityTrackerOptions) {
     const timestamp = now();
     prune(timestamp);
     const changedPools = window.reduce((total, entry) => total + entry.changedPools, 0);
-    return changedPools > options.burstPoolThreshold
-      ? options.fastDebounceMs
-      : options.baseDebounceMs;
+    return changedPools > options.burstPoolThreshold ? options.fastDebounceMs : options.baseDebounceMs;
   }
 
   return {
@@ -138,11 +136,7 @@ type StartupBannerOptions = {
   writeLine?: (line: string) => void;
 };
 
-export function printStartupBanner({
-  workerCount,
-  maxTotalPaths,
-  writeLine = console.log,
-}: StartupBannerOptions) {
+export function printStartupBanner({ workerCount, maxTotalPaths, writeLine = console.log }: StartupBannerOptions) {
   writeLine("╔══════════════════════════════════════════════╗");
   writeLine("║   Polygon Arbitrage Bot — Event-Driven       ║");
   writeLine(`║   Workers: ${String(workerCount).padEnd(3)}  Paths: ${String(maxTotalPaths).padEnd(7)}          ║`);
@@ -181,11 +175,7 @@ function formatConsoleArg(value: unknown) {
   }
 }
 
-export async function routeConsoleOutputToLog<T>(
-  run: () => Promise<T>,
-  log: LoggerFn,
-  eventPrefix = "routed_console",
-): Promise<T> {
+export async function routeConsoleOutputToLog<T>(run: () => Promise<T>, log: LoggerFn, eventPrefix = "routed_console"): Promise<T> {
   const original = {
     log: console.log,
     warn: console.warn,
@@ -221,10 +211,7 @@ type PoolLike = {
 
 type TokenDecimals = Map<string, number> | null;
 
-type DecimalAwareFetcher<Result> = (
-  pool: PoolLike,
-  options: { tokenDecimals?: TokenDecimals },
-) => Promise<Result>;
+type DecimalAwareFetcher<Result> = (pool: PoolLike, options: { tokenDecimals?: TokenDecimals }) => Promise<Result>;
 
 type DecimalAwarePoolStateFetchersDeps<CurveResult, DodoResult, WoofiResult> = {
   getPoolTokens: (pool: PoolLike) => string[];
@@ -246,12 +233,9 @@ export function createDecimalAwarePoolStateFetchers<CurveResult, DodoResult, Woo
   }
 
   return {
-    fetchAndNormalizeCurvePool: (pool: PoolLike) =>
-      fetchAndNormalizeCurvePool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
-    fetchAndNormalizeDodoPool: (pool: PoolLike) =>
-      fetchAndNormalizeDodoPool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
-    fetchAndNormalizeWoofiPool: (pool: PoolLike) =>
-      fetchAndNormalizeWoofiPool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
+    fetchAndNormalizeCurvePool: (pool: PoolLike) => fetchAndNormalizeCurvePool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
+    fetchAndNormalizeDodoPool: (pool: PoolLike) => fetchAndNormalizeDodoPool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
+    fetchAndNormalizeWoofiPool: (pool: PoolLike) => fetchAndNormalizeWoofiPool(pool, { tokenDecimals: tokenDecimalsForPool(pool) }),
   };
 }
 
@@ -304,12 +288,7 @@ type RouteFreshnessReaderDeps = {
   nowMs?: () => number;
 };
 
-export function createRouteFreshnessReader({
-  stateCache,
-  maxAgeMs,
-  maxSkewMs,
-  nowMs,
-}: RouteFreshnessReaderDeps) {
+export function createRouteFreshnessReader({ stateCache, maxAgeMs, maxSkewMs, nowMs }: RouteFreshnessReaderDeps) {
   return function getRouteFreshness(path: ArbPathLike) {
     return getPathFreshness(path, stateCache, {
       maxAgeMs,
@@ -331,16 +310,8 @@ type PreparedCandidateErrorLoggerDeps = {
   now?: () => number;
 };
 
-export function createPreparedCandidateErrorLogger({
-  log,
-  fmtPath,
-  now = Date.now,
-}: PreparedCandidateErrorLoggerDeps) {
-  return function onPreparedCandidateError(
-    candidate: CandidateEntry,
-    reason: string,
-    quarantine: ExecutionQuarantine,
-  ) {
+export function createPreparedCandidateErrorLogger({ log, fmtPath, now = Date.now }: PreparedCandidateErrorLoggerDeps) {
+  return function onPreparedCandidateError(candidate: CandidateEntry, reason: string, quarantine: ExecutionQuarantine) {
     log(`[runner] Quarantining route after execution preparation failure: ${reason}`, "warn", {
       event: "execute_quarantine_add",
       route: fmtPath(candidate.path),
@@ -405,15 +376,9 @@ export function roiForCandidate(candidate: CandidateEntry | null | undefined) {
   return roiMicroUnits(result.profit, result.amountIn);
 }
 
-export function deriveOnChainMinProfit(
-  assessment: AssessmentLike | null | undefined,
-  tokenToMaticRate: bigint,
-  minProfitWei: bigint,
-) {
+export function deriveOnChainMinProfit(assessment: AssessmentLike | null | undefined, tokenToMaticRate: bigint, minProfitWei: bigint) {
   const minProfitTokens = minProfitInTokenUnits(tokenToMaticRate, minProfitWei);
-  const modeledNet = assessment && assessment.netProfitAfterGas > 0n
-    ? assessment.netProfitAfterGas
-    : assessment?.netProfit ?? 0n;
+  const modeledNet = assessment && assessment.netProfitAfterGas > 0n ? assessment.netProfitAfterGas : (assessment?.netProfit ?? 0n);
   const buffered = modeledNet > 0n ? (modeledNet * 50n) / 100n : 0n;
   return buffered > minProfitTokens ? buffered : minProfitTokens;
 }
@@ -440,10 +405,7 @@ type OpportunityRouteCacheAdaptersDeps = {
   getOpportunityEngine: () => OpportunityEngineLike | null | undefined;
 };
 
-export function createOpportunityRouteCacheAdapters({
-  routeCache,
-  getOpportunityEngine,
-}: OpportunityRouteCacheAdaptersDeps) {
+export function createOpportunityRouteCacheAdapters({ routeCache, getOpportunityEngine }: OpportunityRouteCacheAdaptersDeps) {
   return {
     updateCandidates(candidates: CandidateEntry[]) {
       return routeCache.update(candidates);
@@ -508,10 +470,8 @@ export function createWatcherConfigurator({
 const MAX_OPERATOR_LOGS = 200;
 
 export function createOperatorLogger(
-  state: Pick<BotState, "logs"> & Partial<Pick<
-    BotState,
-    "currentActivity" | "currentActivityDetail" | "currentActivityUpdatedMs" | "currentActivityProgress"
-  >>,
+  state: Pick<BotState, "logs"> &
+    Partial<Pick<BotState, "currentActivity" | "currentActivityDetail" | "currentActivityUpdatedMs" | "currentActivityProgress">>,
   logger: Pick<PinoLogger, Level | "isLevelEnabled">,
 ) {
   return function log(msg: string, level: Level = "info", meta: OperatorLogMetaInput = undefined) {
@@ -538,11 +498,7 @@ function parseNonNegativeBps(raw: string | undefined, name: string) {
   return value;
 }
 
-export function resolveRunnerOptions(
-  args: string[],
-  env: RunnerEnv,
-  defaultPollIntervalSec = DEFAULT_POLL_INTERVAL_SEC,
-) {
+export function resolveRunnerOptions(args: string[], env: RunnerEnv, defaultPollIntervalSec = DEFAULT_POLL_INTERVAL_SEC) {
   const parsedArgs = parseRunnerArgs(args, defaultPollIntervalSec);
   const pollIntervalSec = parsedArgs.pollIntervalSec;
 
@@ -554,9 +510,7 @@ export function resolveRunnerOptions(
     pollIntervalSec,
     privateKey: env.PRIVATE_KEY || null,
     executorAddress: env.EXECUTOR_ADDRESS || null,
-    minProfitWei: env.MIN_PROFIT_WEI != null && env.MIN_PROFIT_WEI !== ""
-      ? BigInt(env.MIN_PROFIT_WEI)
-      : BigInt("1000000000000000"),
+    minProfitWei: env.MIN_PROFIT_WEI != null && env.MIN_PROFIT_WEI !== "" ? BigInt(env.MIN_PROFIT_WEI) : BigInt("1000000000000000"),
     flashLoanFeeBps: parseNonNegativeBps(env.BALANCER_FLASH_LOAN_FEE_BPS, "BALANCER_FLASH_LOAN_FEE_BPS"),
     testAmountWei: 10n ** 18n,
     maxExecutionBatch: 3,

@@ -168,20 +168,19 @@ export function createRegistryRepositories(registry: RegistryService): RegistryR
     tokens: {
       getMeta: (address) => registry.getTokenMeta(address) as RegistryTokenMeta | null,
       getDecimals: (addresses) => registry.getTokenDecimals(addresses),
-      upsertMeta: (address, decimals, symbol = null, name = null) =>
-        registry.upsertTokenMeta(address, decimals, symbol, name),
-      batchUpsertMeta: (rows) => registry.batchUpsertTokenMeta(
-        rows.map((row) => ({
-          ...row,
-          symbol: row.symbol ?? undefined,
-          name: row.name ?? undefined,
-        })),
-      ),
+      upsertMeta: (address, decimals, symbol = null, name = null) => registry.upsertTokenMeta(address, decimals, symbol, name),
+      batchUpsertMeta: (rows) =>
+        registry.batchUpsertTokenMeta(
+          rows.map((row) => ({
+            ...row,
+            symbol: row.symbol ?? undefined,
+            name: row.name ?? undefined,
+          })),
+        ),
     },
     fees: {
       getPoolFee: (poolAddress) => registry.getPoolFee(poolAddress),
-      upsertPoolFee: (poolAddress, feeBps, feeRaw = null, protocol = null) =>
-        registry.upsertPoolFee(poolAddress, feeBps, feeRaw, protocol),
+      upsertPoolFee: (poolAddress, feeBps, feeRaw = null, protocol = null) => registry.upsertPoolFee(poolAddress, feeBps, feeRaw, protocol),
     },
     history: {
       logArbResult: (arb) => registry.logArbResult(arb),

@@ -57,9 +57,7 @@ export type ProtocolDiscoveryResult = {
 };
 
 export function decodedValue(value: unknown) {
-  return value && typeof value === "object" && "val" in value
-    ? (value as DecodedValueWrapper).val
-    : value;
+  return value && typeof value === "object" && "val" in value ? (value as DecodedValueWrapper).val : value;
 }
 
 export function decodedValueToString(value: unknown) {
@@ -87,9 +85,7 @@ export function rawLogAddressToString(rawLog: DecodedRawLog | undefined) {
 }
 
 export function protocolMetadata(poolMeta: Record<string, unknown>) {
-  return poolMeta.metadata && typeof poolMeta.metadata === "object"
-    ? poolMeta.metadata as Record<string, unknown>
-    : {};
+  return poolMeta.metadata && typeof poolMeta.metadata === "object" ? (poolMeta.metadata as Record<string, unknown>) : {};
 }
 
 export const FULLY_SUPPORTED_CAPABILITIES: ProtocolCapabilities = Object.freeze({
@@ -107,18 +103,13 @@ export function createPairCreatedProtocol(
   return {
     name,
     address,
-    ...(Number.isSafeInteger(options.startBlock) && options.startBlock! >= 0
-      ? { startBlock: options.startBlock }
-      : {}),
+    ...(Number.isSafeInteger(options.startBlock) && options.startBlock! >= 0 ? { startBlock: options.startBlock } : {}),
     capabilities: FULLY_SUPPORTED_CAPABILITIES,
     signature: "event PairCreated(address indexed token0, address indexed token1, address pair, uint256)",
     decode(decoded: DecodedEvent) {
       return {
         pool_address: decodedBodyString(decoded, 0),
-        tokens: [
-          decodedIndexedString(decoded, 0),
-          decodedIndexedString(decoded, 1),
-        ],
+        tokens: [decodedIndexedString(decoded, 0), decodedIndexedString(decoded, 1)],
         metadata,
       };
     },
@@ -135,19 +126,13 @@ export function createUniV3PoolProtocol(
   return {
     name,
     address,
-    ...(Number.isSafeInteger(options.startBlock) && options.startBlock! >= 0
-      ? { startBlock: options.startBlock }
-      : {}),
+    ...(Number.isSafeInteger(options.startBlock) && options.startBlock! >= 0 ? { startBlock: options.startBlock } : {}),
     capabilities,
-    signature:
-      "event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)",
+    signature: "event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)",
     decode(decoded: DecodedEvent) {
       return {
         pool_address: decodedBodyString(decoded, 1),
-        tokens: [
-          decodedIndexedString(decoded, 0),
-          decodedIndexedString(decoded, 1),
-        ],
+        tokens: [decodedIndexedString(decoded, 0), decodedIndexedString(decoded, 1)],
         metadata: {
           ...metadata,
           fee: decodedIndexedString(decoded, 2),

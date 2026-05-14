@@ -1,4 +1,3 @@
-
 /**
  * src/profit/price_oracle.js — Token-to-MATIC price oracle
  *
@@ -72,12 +71,12 @@ const MATIC_USD_POLL_INTERVAL_MS = 30_000; // poll every 30s
  */
 export const TOKENS = {
   WMATIC: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
-  USDC:   "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",  // USDC.e (bridged)
-  USDC_N: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",  // USDC (native)
-  USDT:   "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
-  WETH:   "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
-  DAI:    "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
-  WBTC:   "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+  USDC: "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC.e (bridged)
+  USDC_N: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC (native)
+  USDT: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+  WETH: "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+  DAI: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+  WBTC: "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
 };
 
 type PoolMetaLike = {
@@ -101,22 +100,15 @@ export type PriceOracleRegistry = {
  */
 const KNOWN_DECIMALS = new Map([
   [TOKENS.WMATIC, 18],
-  [TOKENS.USDC,   6],
+  [TOKENS.USDC, 6],
   [TOKENS.USDC_N, 6],
-  [TOKENS.USDT,   6],
-  [TOKENS.WETH,   18],
-  [TOKENS.DAI,    18],
-  [TOKENS.WBTC,   8],
+  [TOKENS.USDT, 6],
+  [TOKENS.WETH, 18],
+  [TOKENS.DAI, 18],
+  [TOKENS.WBTC, 8],
 ]);
 
-const PIVOT_TOKENS = [
-  TOKENS.USDC_N,
-  TOKENS.USDC,
-  TOKENS.USDT,
-  TOKENS.DAI,
-  TOKENS.WETH,
-  TOKENS.WBTC,
-];
+const PIVOT_TOKENS = [TOKENS.USDC_N, TOKENS.USDC, TOKENS.USDT, TOKENS.DAI, TOKENS.WETH, TOKENS.WBTC];
 
 type PoolQuote = {
   base: string;
@@ -150,7 +142,7 @@ export class PriceOracle {
     registry: PriceOracleRegistry,
     readContract?: (params: { address: string; abi: readonly unknown[]; functionName: string }) => Promise<unknown>,
   ) {
-    this._cache    = stateCache;
+    this._cache = stateCache;
     this._registry = registry;
     this._updatedAt = 0;
     this._updatedAtByToken = new Map();
@@ -170,7 +162,9 @@ export class PriceOracle {
     if (this._readContract) return;
     try {
       const mod = await import("../config/rpc_env.ts");
-      const createFn = (mod as Record<string, unknown>).createGasEstimationClient as unknown as () => { readContract: (params: Record<string, unknown>) => Promise<unknown> };
+      const createFn = (mod as Record<string, unknown>).createGasEstimationClient as unknown as () => {
+        readContract: (params: Record<string, unknown>) => Promise<unknown>;
+      };
       const c = createFn();
       this._readContract = (params) => c.readContract(params as Record<string, unknown>);
     } catch {
@@ -198,12 +192,12 @@ export class PriceOracle {
     //
     // These are conservative estimates. update() replaces them with live prices.
     this._rates.set(TOKENS.WMATIC, 1n);
-    this._rates.set(TOKENS.USDC,   1_000_000_000_000n);  // 1e12
-    this._rates.set(TOKENS.USDC_N, 1_000_000_000_000n);  // 1e12
-    this._rates.set(TOKENS.USDT,   1_000_000_000_000n);  // 1e12
-    this._rates.set(TOKENS.WETH,   2_500n);               // 1 wei WETH ≈ 2500 wei MATIC
-    this._rates.set(TOKENS.DAI,    1n);                   // 1 wei DAI  ≈ 1 wei MATIC
-    this._rates.set(TOKENS.WBTC,   600_000_000_000_000n); // 6e14: 1 sat ≈ 6e14 wei MATIC
+    this._rates.set(TOKENS.USDC, 1_000_000_000_000n); // 1e12
+    this._rates.set(TOKENS.USDC_N, 1_000_000_000_000n); // 1e12
+    this._rates.set(TOKENS.USDT, 1_000_000_000_000n); // 1e12
+    this._rates.set(TOKENS.WETH, 2_500n); // 1 wei WETH ≈ 2500 wei MATIC
+    this._rates.set(TOKENS.DAI, 1n); // 1 wei DAI  ≈ 1 wei MATIC
+    this._rates.set(TOKENS.WBTC, 600_000_000_000_000n); // 6e14: 1 sat ≈ 6e14 wei MATIC
   }
 
   // ─── Public API ───────────────────────────────────────────────
@@ -223,11 +217,11 @@ export class PriceOracle {
     if (!this._readContract) return false;
 
     try {
-      const data = await this._readContract({
+      const data = (await this._readContract({
         address: MATIC_USD_FEED,
         abi: CHAINLINK_ABI as unknown as readonly unknown[],
         functionName: "latestRoundData",
-      }) as unknown[];
+      })) as unknown[];
       const answer = data?.[1];
       const updatedAt = Number(data?.[3] ?? 0);
       if (typeof answer === "bigint" && answer > 0n && updatedAt > 0 && now - updatedAt * 1000 < MATIC_USD_STALE_AFTER_MS) {
@@ -261,7 +255,7 @@ export class PriceOracle {
    */
   maticWeiToUsd(maticWei: bigint): bigint {
     if (this._maticUsdAnswer <= 0n || maticWei <= 0n) return 0n;
-    return (maticWei * this._maticUsdAnswer) / (10n ** 18n * 10n ** CHAINLINK_DECIMALS / 1_000_000n);
+    return (maticWei * this._maticUsdAnswer) / ((10n ** 18n * 10n ** CHAINLINK_DECIMALS) / 1_000_000n);
   }
 
   /**
@@ -275,23 +269,16 @@ export class PriceOracle {
    * @param tokenAddress Token address
    * @param maxDeviationBps Max allowed deviation in basis points (default 200 = 2%)
    */
-  getCrossCheckedRate(
-    spotRateWei: bigint,
-    tokenAddress: string,
-    maxDeviationBps = 200n,
-  ): bigint {
+  getCrossCheckedRate(spotRateWei: bigint, tokenAddress: string, maxDeviationBps = 200n): bigint {
     if (spotRateWei <= 0n) return 0n;
 
-    const pairKey = [tokenAddress.toLowerCase(), TOKENS.WMATIC].sort().join(":");
     const pairQuote = this._pairQuotes.get(tokenAddress.toLowerCase())?.get(TOKENS.WMATIC);
     if (!pairQuote || pairQuote.scaledRate <= 0n) return spotRateWei;
 
     const twapRateWei = this._scaledRateToWei(pairQuote.scaledRate);
     if (twapRateWei <= 0n) return spotRateWei;
 
-    const diff = spotRateWei > twapRateWei
-      ? spotRateWei - twapRateWei
-      : twapRateWei - spotRateWei;
+    const diff = spotRateWei > twapRateWei ? spotRateWei - twapRateWei : twapRateWei - spotRateWei;
     const deviationBps = (diff * 10_000n) / twapRateWei;
 
     if (deviationBps > maxDeviationBps) {
@@ -406,10 +393,7 @@ export class PriceOracle {
         if (derived <= 0n) continue;
 
         const derivedUpdatedAt = Math.min(quoteToPivot.updatedAt, pivotUpdatedAt);
-        if (
-          derivedUpdatedAt > bestUpdatedAt ||
-          (derivedUpdatedAt === bestUpdatedAt && (bestDerived === 0n || derived < bestDerived))
-        ) {
+        if (derivedUpdatedAt > bestUpdatedAt || (derivedUpdatedAt === bestUpdatedAt && (bestDerived === 0n || derived < bestDerived))) {
           bestDerived = derived;
           bestUpdatedAt = derivedUpdatedAt;
         }
@@ -610,11 +594,7 @@ export class PriceOracle {
     let best: PairQuote | null = null;
     if (quotesByPool) {
       for (const quote of quotesByPool.values()) {
-        if (
-          !best ||
-          quote.updatedAt > best.updatedAt ||
-          (quote.updatedAt === best.updatedAt && quote.scaledRate < best.scaledRate)
-        ) {
+        if (!best || quote.updatedAt > best.updatedAt || (quote.updatedAt === best.updatedAt && quote.scaledRate < best.scaledRate)) {
           best = quote;
         }
       }
@@ -667,11 +647,7 @@ export class PriceOracle {
     const key = tokenAddress.toLowerCase();
     const existingRate = rates.get(key);
     const existingUpdatedAt = updatedAtByToken.get(key) ?? 0;
-    if (
-      existingRate == null ||
-      updatedAt > existingUpdatedAt ||
-      (updatedAt === existingUpdatedAt && rate < existingRate)
-    ) {
+    if (existingRate == null || updatedAt > existingUpdatedAt || (updatedAt === existingUpdatedAt && rate < existingRate)) {
       rates.set(key, rate);
       updatedAtByToken.set(key, updatedAt);
     }
@@ -725,9 +701,7 @@ export class PriceOracle {
       if (r0 != null && r1 != null) {
         if (r0 === 0n || r1 === 0n) return 0n;
 
-        return token0AsBase
-          ? (r1 * RATE_SCALE) / r0
-          : (r0 * RATE_SCALE) / r1;
+        return token0AsBase ? (r1 * RATE_SCALE) / r0 : (r0 * RATE_SCALE) / r1;
       }
 
       // ── Uniswap V3 ──────────────────────────────────────────
@@ -738,9 +712,7 @@ export class PriceOracle {
         if (sqrtP === 0n) return 0n;
         const priceX192 = sqrtP * sqrtP; // = (token1/token0) * 2^192
 
-        return token0AsBase
-          ? (priceX192 * RATE_SCALE) / Q192
-          : (Q192 * RATE_SCALE) / priceX192;
+        return token0AsBase ? (priceX192 * RATE_SCALE) / Q192 : (Q192 * RATE_SCALE) / priceX192;
       }
     } catch {
       return 0n;

@@ -53,9 +53,7 @@ export abstract class TimedPoller {
   protected _completePass(label: string, startedAt: number, updated: number, failed: number) {
     const durationMs = Date.now() - startedAt;
     this._passCount++;
-    console.log(
-      `[${label}] Pass #${this._passCount}: ${updated} updated, ${failed} failed (${durationMs}ms)`
-    );
+    console.log(`[${label}] Pass #${this._passCount}: ${updated} updated, ${failed} failed (${durationMs}ms)`);
     return { updated, failed, durationMs };
   }
 
@@ -63,7 +61,7 @@ export abstract class TimedPoller {
     label: string,
     cache: Map<string, TNormalized>,
     results: BatchFetchResult<TNormalized>[],
-    onVerboseSuccess?: (entry: BatchFetchSuccess<TNormalized>) => string
+    onVerboseSuccess?: (entry: BatchFetchSuccess<TNormalized>) => string,
   ) {
     let updated = 0;
     let failed = 0;

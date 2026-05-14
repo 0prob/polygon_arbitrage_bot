@@ -6,11 +6,5 @@ export function normalizeTokenHydrationAddress(address: unknown) {
 
 export function normalizeHydrationAddresses(tokenAddresses: unknown) {
   if (!Array.isArray(tokenAddresses) || tokenAddresses.length === 0) return [];
-  return [
-    ...new Set(
-      tokenAddresses
-        .map(normalizeTokenHydrationAddress)
-        .filter((address): address is string => address != null),
-    ),
-  ];
+  return [...new Set(tokenAddresses.map(normalizeTokenHydrationAddress).filter((address): address is string => address != null))];
 }

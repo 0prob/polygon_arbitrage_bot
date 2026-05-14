@@ -1,4 +1,3 @@
-
 /**
  * src/state/watcher.ts — HyperSync Event Watcher
  *
@@ -14,31 +13,13 @@
 import { client, Decoder } from "../hypersync/client.ts";
 import type { HyperSyncGetResponse } from "../hypersync/query_policy.ts";
 import type { HyperSyncRawLog } from "../hypersync/logs.ts";
-import {
-  buildWatcherLogQueries,
-  WATCHER_SIGNATURES,
-  WATCHER_TOPIC0,
-  watcherFilterMode,
-} from "./watcher_query.ts";
-import {
-  HYPERSYNC_TARGETED_BACKFILL_LOOKBACK_BLOCKS,
-  HYPERSYNC_TARGETED_BACKFILL_MAX_POOLS,
-} from "../config/index.ts";
+import { buildWatcherLogQueries, WATCHER_SIGNATURES, watcherFilterMode } from "./watcher_query.ts";
+import { HYPERSYNC_TARGETED_BACKFILL_LOOKBACK_BLOCKS, HYPERSYNC_TARGETED_BACKFILL_MAX_POOLS } from "../config/index.ts";
 import { updateWatcherAddressFilter } from "./watcher_filter.ts";
-import {
-  initializeWatcherStart,
-  WATCHER_LOOKBACK_BLOCKS,
-  type WatcherStartRegistry,
-} from "./watcher_startup.ts";
-import {
-  waitForWatcherHeightAdvance,
-  WATCHER_IDLE_SLEEP_MS,
-} from "./watcher_height_wait.ts";
+import { initializeWatcherStart, WATCHER_LOOKBACK_BLOCKS, type WatcherStartRegistry } from "./watcher_startup.ts";
+import { waitForWatcherHeightAdvance, WATCHER_IDLE_SLEEP_MS } from "./watcher_height_wait.ts";
 import { WatcherSleeper } from "./watcher_sleep.ts";
-import {
-  pollWatcherOnce,
-  type WatcherPollResponse,
-} from "./watcher_polling.ts";
+import { pollWatcherOnce, type WatcherPollResponse } from "./watcher_polling.ts";
 import { WatcherPollErrorTracker } from "./watcher_poll_errors.ts";
 import {
   clearPendingWatcherEnrichment,
@@ -47,12 +28,7 @@ import {
   type PendingWatcherEnrichment,
   type WatcherEnrichmentRetryState,
 } from "./watcher_enrichment.ts";
-import {
-  handleWatcherPollResponse,
-  runWatcherLoop,
-  type WatcherLoopRegistry,
-} from "./watcher_loop.ts";
-import { reloadWatcherCache } from "./watcher_state_ops.ts";
+import { handleWatcherPollResponse, runWatcherLoop, type WatcherLoopRegistry } from "./watcher_loop.ts";
 import {
   createWatcherRuntimeAdapters,
   type WatcherRuntimeDecoder,
@@ -198,27 +174,19 @@ export class StateWatcher {
     this._watchedAddressSet = filter.addressSet;
 
     if (filter.rejectedCount > 0) {
-      watcherLogger.warn(
-        { rejectedCount: filter.rejectedCount },
-        "Rejected invalid watcher pool addresses while updating filter",
-      );
+      watcherLogger.warn({ rejectedCount: filter.rejectedCount }, "Rejected invalid watcher pool addresses while updating filter");
     }
     if (filter.added.length > 0) {
       watcherLogger.info({ addedPools: filter.added.length }, "Adding new pools to watcher filter");
     }
   }
 
-  async backfillPools(
-    poolAddresses: unknown,
-    options: { lookbackBlocks?: number; maxPools?: number } = {},
-  ) {
+  async backfillPools(poolAddresses: unknown, options: { lookbackBlocks?: number; maxPools?: number } = {}) {
     if (this._closed || !this._running) return { logs: 0, changedPools: 0 };
-    const input = Array.isArray(poolAddresses) || poolAddresses instanceof Set
-      ? [...poolAddresses]
-      : [poolAddresses];
+    const input = Array.isArray(poolAddresses) || poolAddresses instanceof Set ? [...poolAddresses] : [poolAddresses];
     const maxPools = Math.max(0, Math.floor(Number(options.maxPools ?? HYPERSYNC_TARGETED_BACKFILL_MAX_POOLS) || 0));
     const addresses = input
-      .map((addr) => typeof addr === "string" ? addr.trim().toLowerCase() : "")
+      .map((addr) => (typeof addr === "string" ? addr.trim().toLowerCase() : ""))
       .filter((addr) => /^0x[0-9a-f]{40}$/.test(addr))
       .slice(0, maxPools);
     if (addresses.length === 0) return { logs: 0, changedPools: 0 };
@@ -313,7 +281,7 @@ export class StateWatcher {
   async _loop() {
     watcherLogger.info(
       { fromBlock: this._lastBlock + 1, filterMode: watcherFilterMode(this._watchedAddresses.length) },
-      "Starting manual HyperSync loop"
+      "Starting manual HyperSync loop",
     );
 
     await runWatcherLoop({
@@ -327,7 +295,8 @@ export class StateWatcher {
         this._lastBlock = block;
       },
       pollOnce: this._pollOnce.bind(this),
-      handlePollResponse: (response) => handleWatcherPollResponse({
+      handlePollResponse: (response) =>
+        handleWatcherPollResponse({
           response,
           registry: this._registry,
           checkpointKey: this._checkpointKey,

@@ -22,12 +22,16 @@ import { partitionFreshCandidates } from "../routing/filter_fresh_candidates.ts"
 import { routeKeyFromEdges } from "../routing/finder.ts";
 import { evaluatePathsParallel, optimizeInputAmount, simulateRoute } from "../routing/simulator.ts";
 import { buildArbTx } from "../execution/build_tx.ts";
-import { hasTrackedPendingTx, getPendingPools, sendTx, sendTxBundle, type NonceManagerLike } from "../execution/send_tx.ts";
+import { getPendingPools, sendTx, sendTxBundle, type NonceManagerLike } from "../execution/send_tx.ts";
 import { scalePriorityFeeByProfitMargin } from "../execution/gas.ts";
 import type { RuntimeStateCache } from "../app/runner.ts";
 import type { PoolRecord } from "../state/warmup.ts";
 import { deriveOnChainMinProfit, type ExecutionQuarantine } from "./helpers.ts";
-import { PredictiveCacheAdapter, createPredictiveCacheAdapter, type PredictiveCacheAdapterDeps } from "../routing/predictive_cache_adapter.ts";
+import {
+  PredictiveCacheAdapter,
+  createPredictiveCacheAdapter,
+  type PredictiveCacheAdapterDeps,
+} from "../routing/predictive_cache_adapter.ts";
 import { RouteCache } from "../routing/route_cache.ts";
 import { logger } from "../utils/logger.ts";
 
@@ -78,7 +82,9 @@ type RunnerOpportunityEngineDeps = {
   }) => void;
   onArbsFound: (count: number) => void;
   workerCount?: number;
-  getAffectedRoutes: (changedPools: Set<string>) => Array<{ path: ArbPathLike; result: RouteResultLike }> | Promise<Array<{ path: ArbPathLike; result: RouteResultLike }>>;
+  getAffectedRoutes: (
+    changedPools: Set<string>,
+  ) => Array<{ path: ArbPathLike; result: RouteResultLike }> | Promise<Array<{ path: ArbPathLike; result: RouteResultLike }>>;
   testAmountWei: bigint;
   getPoolRecord?: (poolAddress: string) => PoolRecord | null | undefined;
   fetchAndCacheStates?: (pools: PoolRecord[], options?: Record<string, unknown>) => Promise<unknown>;
@@ -139,13 +145,10 @@ async function refreshCandidateBeforeExecution(
     return { candidate: null, reason: "route produced zero or negative profit after pending-state refresh" };
   }
 
-  const refreshedAssessment = assessRouteResult(
-    candidate.path,
-    refreshedResult,
-    context.gasPriceWei,
-    context.tokenToMaticRate,
-    { minProfitWei: deps.minProfitWei, flashLoanFeeBps: deps.flashLoanFeeBps },
-  );
+  const refreshedAssessment = assessRouteResult(candidate.path, refreshedResult, context.gasPriceWei, context.tokenToMaticRate, {
+    minProfitWei: deps.minProfitWei,
+    flashLoanFeeBps: deps.flashLoanFeeBps,
+  });
 
   if (!refreshedAssessment.shouldExecute) {
     return {
@@ -187,8 +190,7 @@ export function buildRunnerOpportunityEngineConfig(deps: RunnerOpportunityEngine
       sendTxBundle,
       getPendingPools,
       scalePriorityFeeByProfitMargin,
-      refreshCandidateBeforeExecution: (candidate, context) =>
-        refreshCandidateBeforeExecution(deps, candidate, context),
+      refreshCandidateBeforeExecution: (candidate, context) => refreshCandidateBeforeExecution(deps, candidate, context),
       onPreparedCandidateError: deps.onPreparedCandidateError,
     },
     search: {
@@ -233,8 +235,7 @@ export function buildRunnerOpportunityEngineConfig(deps: RunnerOpportunityEngine
       getCurrentFeeSnapshot: deps.getCurrentFeeSnapshot,
       getFreshTokenToMaticRate: deps.getFreshTokenToMaticRate,
       getRouteFreshness: deps.getRouteFreshness,
-      simulateRoute: (path: ArbPathLike, amountIn: bigint, cache: RuntimeStateCache) =>
-        simulateRoute(path, amountIn, cache),
+      simulateRoute: (path: ArbPathLike, amountIn: bigint, cache: RuntimeStateCache) => simulateRoute(path, amountIn, cache),
       optimizeInputAmount: (path: ArbPathLike, cache: RuntimeStateCache, options: AssessmentOptimizationOptions) =>
         optimizeInputAmount(path, cache, options),
       routeCacheUpdate: (candidates) => deps.routeCacheUpdate(candidates),

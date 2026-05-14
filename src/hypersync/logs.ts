@@ -33,28 +33,24 @@ export function normalizeHyperSyncLogInteger(value: unknown) {
 }
 
 export function topicArrayFromHyperSyncLog(log: HyperSyncRawLog) {
-  const fromTopicArray = Array.isArray(log?.topics) && log.topics.length > 0
-    ? log.topics.flatMap((topic: unknown) =>
-        Array.isArray(topic) ? topic : [topic],
-      ).map(normalizeTopic).filter((topic: string) => topic.length > 0)
-    : null;
+  const fromTopicArray =
+    Array.isArray(log?.topics) && log.topics.length > 0
+      ? log.topics
+          .flatMap((topic: unknown) => (Array.isArray(topic) ? topic : [topic]))
+          .map(normalizeTopic)
+          .filter((topic: string) => topic.length > 0)
+      : null;
   if (fromTopicArray && fromTopicArray.length > 0) return fromTopicArray;
 
-  const fromIndividual = [log?.topic0, log?.topic1, log?.topic2, log?.topic3]
-    .map(normalizeTopic)
-    .filter((topic) => topic.length > 0);
+  const fromIndividual = [log?.topic0, log?.topic1, log?.topic2, log?.topic3].map(normalizeTopic).filter((topic) => topic.length > 0);
   if (fromIndividual.length > 0) return fromIndividual;
 
   return fromTopicArray ?? [];
 }
 
 export function normalizeHyperSyncLogMeta(log: HyperSyncRawLog): NormalizedHyperSyncLogMeta {
-  const transactionHash = typeof log?.transactionHash === "string"
-    ? log.transactionHash.trim().toLowerCase()
-    : null;
-  const blockHash = typeof log?.blockHash === "string"
-    ? log.blockHash.trim().toLowerCase()
-    : null;
+  const transactionHash = typeof log?.transactionHash === "string" ? log.transactionHash.trim().toLowerCase() : null;
+  const blockHash = typeof log?.blockHash === "string" ? log.blockHash.trim().toLowerCase() : null;
   return {
     address: normalizeEvmAddress(log?.address),
     blockNumber: normalizeHyperSyncLogInteger(log?.blockNumber),
@@ -72,12 +68,7 @@ export function hyperSyncLogIdentityKey(log: HyperSyncRawLog) {
     return `${meta.transactionHash}:${meta.logIndex}`;
   }
 
-  if (
-    meta.blockNumber != null &&
-    meta.transactionIndex != null &&
-    meta.logIndex != null &&
-    meta.address != null
-  ) {
+  if (meta.blockNumber != null && meta.transactionIndex != null && meta.logIndex != null && meta.address != null) {
     return `${meta.blockNumber}:${meta.transactionIndex}:${meta.logIndex}:${meta.address}`;
   }
 

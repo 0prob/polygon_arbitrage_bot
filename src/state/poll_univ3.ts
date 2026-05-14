@@ -1,4 +1,3 @@
-
 /**
  * src/state/poll_univ3.ts — Continuous V3 tick + liquidity state poller
  *
@@ -44,7 +43,9 @@ function metadataFee(value: unknown): V3PoolMeta["swapFeeBps"] {
 function isAlgebraPool(pool: ProtocolPoolRecord) {
   const metadata = parsePoolMetadata(pool?.metadata);
   const protocol = normalizeProtocolKey(pool?.protocol);
-  return protocol === "QUICKSWAP_V3" || protocol === "KYBERSWAP_ELASTIC" || metadata?.isAlgebra === true || metadata?.isKyberElastic === true;
+  return (
+    protocol === "QUICKSWAP_V3" || protocol === "KYBERSWAP_ELASTIC" || metadata?.isAlgebra === true || metadata?.isKyberElastic === true
+  );
 }
 
 // ─── Poller class ─────────────────────────────────────────────
@@ -73,7 +74,8 @@ export class PollUniv3 extends TimedPoller {
   async poll() {
     const t0 = Date.now();
 
-    const pools = this._registry.getActivePoolsMeta()
+    const pools = this._registry
+      .getActivePoolsMeta()
       .filter((p) => V3_PROTOCOLS().has(normalizeProtocolKey(p.protocol)))
       .slice(0, this._maxPools);
 
@@ -123,9 +125,7 @@ export class PollUniv3 extends TimedPoller {
       updated++;
 
       if (this._verbose) {
-        console.log(
-          `[poll_univ3] ${addr} tick=${rawState.tick} liq=${rawState.liquidity}`
-        );
+        console.log(`[poll_univ3] ${addr} tick=${rawState.tick} liq=${rawState.liquidity}`);
       }
     }
 

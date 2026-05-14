@@ -1,4 +1,3 @@
-
 /**
  * src/routing/index.js — Routing module barrel export
  */
@@ -20,7 +19,7 @@ export {
   find2HopPaths,
   find3HopPaths,
   find4HopPathsBidirectional,
-  find4HopPaths,              // backward-compat alias
+  find4HopPaths, // backward-compat alias
   findArbPaths,
   deduplicatePaths,
   routeKeyFromEdges,
@@ -30,24 +29,13 @@ export {
 } from "./finder.ts";
 
 // Cycle enumerator
-export {
-  enumerateCycles,
-  enumerateCyclesDual,
-  enumerateCyclesForToken,
-  cycleSummary,
-} from "./enumerate_cycles.ts";
+export { enumerateCycles, enumerateCyclesDual, enumerateCyclesForToken, cycleSummary } from "./enumerate_cycles.ts";
 
 // Route cache
 export { RouteCache } from "./route_cache.ts";
 
 // Route simulator
-export {
-  simulateHop,
-  simulateRoute,
-  optimizeInputAmount,
-  evaluatePaths,
-  evaluatePathsParallel,
-} from "./simulator.ts";
+export { simulateHop, simulateRoute, optimizeInputAmount, evaluatePaths, evaluatePathsParallel } from "./simulator.ts";
 export type {
   EvaluatedRoute,
   EvaluatePathsOptions,

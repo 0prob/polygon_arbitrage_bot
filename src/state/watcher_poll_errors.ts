@@ -33,21 +33,12 @@ export function resolveWatcherPollError({
 }: ResolveWatcherPollErrorOptions): WatcherPollErrorResolution {
   const nextConsecutivePollErrors = consecutivePollErrors + 1;
   const errorCategory = classifyWatcherPollError(error);
-  const nextConsecutiveIntegrityPollErrors = errorCategory === "integrity"
-    ? consecutiveIntegrityPollErrors + 1
-    : 0;
+  const nextConsecutiveIntegrityPollErrors = errorCategory === "integrity" ? consecutiveIntegrityPollErrors + 1 : 0;
   const backoffMs = watcherErrorBackoffMs(error, nextConsecutivePollErrors);
-  const haltMeta = (
-    errorCategory === "integrity" &&
-    watcherShouldHaltAfterIntegrityError(nextConsecutiveIntegrityPollErrors)
-  )
-    ? watcherHaltMeta(
-        error,
-        nextConsecutiveIntegrityPollErrors,
-        WATCHER_MAX_CONSECUTIVE_INTEGRITY_ERRORS,
-        lastBlock,
-      )
-    : null;
+  const haltMeta =
+    errorCategory === "integrity" && watcherShouldHaltAfterIntegrityError(nextConsecutiveIntegrityPollErrors)
+      ? watcherHaltMeta(error, nextConsecutiveIntegrityPollErrors, WATCHER_MAX_CONSECUTIVE_INTEGRITY_ERRORS, lastBlock)
+      : null;
 
   return {
     errorCategory,
@@ -55,13 +46,7 @@ export function resolveWatcherPollError({
     consecutiveIntegrityPollErrors: nextConsecutiveIntegrityPollErrors,
     backoffMs,
     errorLogMeta: {
-      ...watcherErrorBackoffMeta(
-        error,
-        nextConsecutivePollErrors,
-        backoffMs,
-        lastBlock,
-        errorCategory,
-      ),
+      ...watcherErrorBackoffMeta(error, nextConsecutivePollErrors, backoffMs, lastBlock, errorCategory),
       consecutiveIntegrityPollErrors: nextConsecutiveIntegrityPollErrors,
     },
     errorLogMessage: errorCategory === "integrity" ? "Watcher integrity error" : "HyperSync poll error",

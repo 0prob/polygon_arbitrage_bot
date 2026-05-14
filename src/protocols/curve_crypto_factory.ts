@@ -1,4 +1,3 @@
-
 /**
  * src/protocols/curve_crypto_factory.js — Curve Crypto Factory definition
  */
@@ -39,9 +38,7 @@ const protocol: ProtocolDefinition = {
     const coins = decodedBodyValue(decoded, 1) || [];
     return {
       pool_address: rawLogAddressToString(rawLog),
-      tokens: (Array.isArray(coins) ? coins : [coins]).map((c) =>
-        decodedValueToString(c)
-      ),
+      tokens: (Array.isArray(coins) ? coins : [coins]).map((c) => decodedValueToString(c)),
       metadata: {
         token: decodedBodyString(decoded, 0),
         A: decodedBodyString(decoded, 2),

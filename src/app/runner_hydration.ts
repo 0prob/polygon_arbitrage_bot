@@ -119,9 +119,8 @@ export function createRunnerHydrationAdapters(deps: RunnerHydrationAdaptersDeps)
   const normalizePoolState = deps.normalizePoolState ?? defaultNormalizePoolState;
   const v3NearWordRadius = deps.v3NearWordRadius ?? V3_NEARBY_WORD_RADIUS;
   const discoverPools = deps.discoverPools ?? defaultDiscoverPools;
-  const runDiscoverPools = deps.discoveryOutputMode === "log"
-    ? () => routeConsoleOutputToLog(discoverPools, deps.log, "discovery_console")
-    : discoverPools;
+  const runDiscoverPools =
+    deps.discoveryOutputMode === "log" ? () => routeConsoleOutputToLog(discoverPools, deps.log, "discovery_console") : discoverPools;
   const warmupManager = createWarmupManager({
     getRegistry: deps.getRegistry,
     stateCache: deps.stateCache,
@@ -160,8 +159,7 @@ export function createRunnerHydrationAdapters(deps: RunnerHydrationAdaptersDeps)
     log: deps.log,
     isHydratablePool: (pool: PoolRecord) => isSupportedWarmupProtocol(pool.protocol),
     validatePoolState,
-    fetchAndCacheStates: (pools: PoolRecord[], options: FetchAndCacheOptions) =>
-      warmupManager.fetchAndCacheStates(pools, options),
+    fetchAndCacheStates: (pools: PoolRecord[], options: FetchAndCacheOptions) => warmupManager.fetchAndCacheStates(pools, options),
     admitPools: deps.admitPools,
     refreshCycles: deps.refreshCycles,
     quietPoolSweepBatchSize: deps.quietPoolSweepBatchSize ?? QUIET_POOL_SWEEP_BATCH_SIZE,
@@ -184,11 +182,11 @@ export function createRunnerHydrationAdapters(deps: RunnerHydrationAdaptersDeps)
     isHydratablePool: (pool: any) => isSupportedWarmupProtocol(pool.protocol),
     claimDeferredHydration: (pools: any[]) => quietPoolSweepCoordinator.claimDeferredHydration(pools),
     releaseDeferredHydration: (pools: any[]) => quietPoolSweepCoordinator.releaseDeferredHydration(pools),
-    fetchAndCacheStates: (pools: any[], options: FetchAndCacheOptions) =>
-      warmupManager.fetchAndCacheStates(pools, options),
+    fetchAndCacheStates: (pools: any[], options: FetchAndCacheOptions) => warmupManager.fetchAndCacheStates(pools, options),
     validatePoolState,
     clearDeferredHydrationRetry: (address: string) => quietPoolSweepCoordinator.clearDeferredHydrationRetry(address),
-    recordDeferredHydrationFailure: (address: string, reason: string) => quietPoolSweepCoordinator.recordDeferredHydrationFailure(address, reason),
+    recordDeferredHydrationFailure: (address: string, reason: string) =>
+      quietPoolSweepCoordinator.recordDeferredHydrationFailure(address, reason),
     topology: {
       invalidate: deps.invalidateTopology,
     },

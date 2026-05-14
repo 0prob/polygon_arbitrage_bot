@@ -1,4 +1,3 @@
-
 /**
  * src/hypersync/paginate.js — Paginated HyperSync fetching
  *
@@ -15,11 +14,7 @@
  */
 
 import { client } from "./client.ts";
-import {
-  applyHistoricalHyperSyncQueryPolicy,
-  type HyperSyncGetResponse,
-  type HyperSyncLogQuery,
-} from "./query_policy.ts";
+import { applyHistoricalHyperSyncQueryPolicy, type HyperSyncGetResponse, type HyperSyncLogQuery } from "./query_policy.ts";
 
 type HyperSyncPageResult<TLog> = {
   logs: TLog[];
@@ -55,12 +50,7 @@ function clampNextBlockToExclusiveTarget(query: HyperSyncLogQuery, nextBlock: nu
   return Number.isFinite(targetEnd) && nextBlock > targetEnd ? targetEnd : nextBlock;
 }
 
-function isTerminalBoundedCursor(
-  query: HyperSyncLogQuery,
-  pageFromBlock: number,
-  nextBlock: number,
-  pageLogCount: number,
-) {
+function isTerminalBoundedCursor(query: HyperSyncLogQuery, pageFromBlock: number, nextBlock: number, pageLogCount: number) {
   if (query.toBlock == null) return false;
   const targetEnd = Number(query.toBlock);
   if (!Number.isFinite(targetEnd)) return false;
@@ -112,9 +102,7 @@ export async function fetchAllLogsWithClient<TLog>(
   const initialFromBlock = parseBlockInteger("query fromBlock", query?.fromBlock);
   const initialToBlock = parseOptionalBlockInteger("query toBlock", query?.toBlock);
   if (initialToBlock != null && initialToBlock < initialFromBlock) {
-    throw new Error(
-      `HyperSync query has invalid block range: fromBlock ${initialFromBlock} exceeds toBlock ${initialToBlock}.`,
-    );
+    throw new Error(`HyperSync query has invalid block range: fromBlock ${initialFromBlock} exceeds toBlock ${initialToBlock}.`);
   }
   const maxPages = parsePositiveInteger("pagination maxPages", options.maxPages, 10_000);
 
@@ -146,14 +134,15 @@ export async function fetchAllLogsWithClient<TLog>(
   while (true) {
     const pageFromBlock = parseBlockInteger("page fromBlock", currentQuery.fromBlock);
     if (pages >= maxPages) {
-      throw new Error(
-        `HyperSync pagination exceeded maxPages ${maxPages} before reaching a terminal cursor.`,
-      );
+      throw new Error(`HyperSync pagination exceeded maxPages ${maxPages} before reaching a terminal cursor.`);
     }
     const res = await Promise.race([
       hypersyncClient.get(currentQuery),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`HyperSync page ${pages} timed out after ${PAGE_TIMEOUT_MS}ms at block ${pageFromBlock}`)), PAGE_TIMEOUT_MS)
+        setTimeout(
+          () => reject(new Error(`HyperSync page ${pages} timed out after ${PAGE_TIMEOUT_MS}ms at block ${pageFromBlock}`)),
+          PAGE_TIMEOUT_MS,
+        ),
       ),
     ]);
     pages++;
@@ -172,7 +161,7 @@ export async function fetchAllLogsWithClient<TLog>(
           `HyperSync pagination exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs (${allLogs.length} + ${pageLogs.length} from page ${pages}). Consider reducing batch size, narrowing block range, or increasing filter specificity.`,
         );
       }
-      allLogs.push.apply(allLogs, pageLogs);
+      allLogs.push(...pageLogs);
       consecutiveEmptyPages = 0;
     } else {
       consecutiveEmptyPages++;
@@ -198,18 +187,14 @@ export async function fetchAllLogsWithClient<TLog>(
     }
     const targetEnd = resolvePaginationTarget(currentQuery, nextBlock, archiveHeight);
     if (responseNextBlock < pageFromBlock) {
-      throw new Error(
-        `HyperSync nextBlock cursor regressed from ${pageFromBlock} to ${responseNextBlock}; refusing to paginate.`,
-      );
+      throw new Error(`HyperSync nextBlock cursor regressed from ${pageFromBlock} to ${responseNextBlock}; refusing to paginate.`);
     }
     if (nextBlock === pageFromBlock) {
       if (targetEnd <= pageFromBlock) {
         lastNextBlock = nextBlock;
         break;
       }
-      throw new Error(
-        `HyperSync nextBlock cursor stalled at ${nextBlock}; refusing to loop forever.`,
-      );
+      throw new Error(`HyperSync nextBlock cursor stalled at ${nextBlock}; refusing to loop forever.`);
     }
 
     lastNextBlock = nextBlock;

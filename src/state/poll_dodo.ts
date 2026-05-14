@@ -29,9 +29,7 @@ export async function fetchAndNormalizeDodoPool(
   const addr = pool.pool_address.toLowerCase();
   const rawState = await fetchDodoPoolState(addr);
   const fallbackTokens = parsePoolTokens(pool.tokens);
-  const tokens = rawState.baseToken && rawState.quoteToken
-    ? [rawState.baseToken, rawState.quoteToken]
-    : fallbackTokens;
+  const tokens = rawState.baseToken && rawState.quoteToken ? [rawState.baseToken, rawState.quoteToken] : fallbackTokens;
   const metadata = metadataWithTokenDecimals(pool, tokens, options.tokenDecimals);
   const normalized = normalizeDodoState(addr, pool.protocol, tokens, rawState, metadata) as RouteState;
 
@@ -53,9 +51,7 @@ export class PollDodo extends TimedPoller {
   async poll() {
     const t0 = Date.now();
 
-    const pools = this._registry.getActivePoolsMeta().filter((p) =>
-      DODO_PROTOCOLS.has(normalizeProtocolKey(p.protocol))
-    );
+    const pools = this._registry.getActivePoolsMeta().filter((p) => DODO_PROTOCOLS.has(normalizeProtocolKey(p.protocol)));
 
     if (pools.length === 0) {
       return { updated: 0, failed: 0, durationMs: Date.now() - t0 };
@@ -77,14 +73,9 @@ export class PollDodo extends TimedPoller {
       this._concurrency,
     );
 
-    const { updated, failed } = this._storeBatchResults(
-      "poll_dodo",
-      this._cache,
-      results,
-      ({ addr, normalized }) => {
-        return `[poll_dodo] ${addr} B=${normalized.baseReserve} Q=${normalized.quoteReserve}`;
-      },
-    );
+    const { updated, failed } = this._storeBatchResults("poll_dodo", this._cache, results, ({ addr, normalized }) => {
+      return `[poll_dodo] ${addr} B=${normalized.baseReserve} Q=${normalized.quoteReserve}`;
+    });
 
     return this._completePass("poll_dodo", t0, updated, failed);
   }

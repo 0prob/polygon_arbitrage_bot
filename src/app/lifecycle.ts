@@ -219,17 +219,21 @@ export function configureWatcherCallbacks(deps: {
 }) {
   deps.watcher.onBatch = (changedAddrs: unknown) => {
     const changedPools = normalizeChangedPools(changedAddrs);
-    Promise.resolve(deps.onPoolsChanged({
-      type: "pools_changed",
-      changedPools,
-    })).catch((err: unknown) => {
-      deps.log(`Watcher batch handling failed: ${errorMessage(err)}`, "warn", {
-        event: "watcher_batch_error",
-        err,
+    Promise.resolve(
+      deps.onPoolsChanged({
+        type: "pools_changed",
+        changedPools,
+      }),
+    )
+      .catch((err: unknown) => {
+        deps.log(`Watcher batch handling failed: ${errorMessage(err)}`, "warn", {
+          event: "watcher_batch_error",
+          err,
+        });
+      })
+      .finally(() => {
+        deps.scheduleArb(changedPools.size);
       });
-    }).finally(() => {
-      deps.scheduleArb(changedPools.size);
-    });
   };
 
   deps.watcher.onReorg = (payload: { reorgBlock?: unknown; changedAddrs?: unknown } | unknown) => {
@@ -246,25 +250,31 @@ export function configureWatcherCallbacks(deps: {
       return;
     }
 
-    Promise.resolve(deps.onReorgDetected({
-      type: "reorg_detected",
-      reorgBlock,
-      changedPools,
-    })).catch((err: unknown) => {
-      deps.log(`Watcher reorg handling failed: ${errorMessage(err)}`, "warn", {
-        event: "watcher_reorg_error",
-        err,
+    Promise.resolve(
+      deps.onReorgDetected({
+        type: "reorg_detected",
+        reorgBlock,
+        changedPools,
+      }),
+    )
+      .catch((err: unknown) => {
+        deps.log(`Watcher reorg handling failed: ${errorMessage(err)}`, "warn", {
+          event: "watcher_reorg_error",
+          err,
+        });
+      })
+      .finally(() => {
+        deps.scheduleArb(changedPools.size);
       });
-    }).finally(() => {
-      deps.scheduleArb(changedPools.size);
-    });
   };
 
   deps.watcher.onHalt = (payload: unknown) => {
-    Promise.resolve(deps.onHaltDetected?.({
-      type: "watcher_halt",
-      payload: normalizeEventPayload(payload),
-    })).catch((err: unknown) => {
+    Promise.resolve(
+      deps.onHaltDetected?.({
+        type: "watcher_halt",
+        payload: normalizeEventPayload(payload),
+      }),
+    ).catch((err: unknown) => {
       deps.log(`Watcher halt handling failed: ${errorMessage(err)}`, "warn", {
         event: "watcher_halt_error",
         err,

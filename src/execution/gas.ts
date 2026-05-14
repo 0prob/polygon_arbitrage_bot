@@ -1,4 +1,3 @@
-
 /**
  * src/execution/gas.ts — Gas estimation and fee management
  *
@@ -15,10 +14,7 @@
 
 import { dynamicPublicClient } from "../utils/rpc_manager.ts";
 import { gasPriceGwei } from "../utils/metrics.ts";
-import {
-  createGasEstimationClient,
-  createExecutionReadClient,
-} from "../config/rpc_env.ts";
+import { createGasEstimationClient, createExecutionReadClient } from "../config/rpc_env.ts";
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 // The dynamic proxy delegates to the best available RPC endpoint for general reads.
@@ -140,15 +136,9 @@ export function capGasFeesToBudget(
     throw new Error("gas cost budget is below current baseFee");
   }
 
-  const maxFeePerGas =
-    fees.maxFeePerGas > maxAffordableGasPrice
-      ? maxAffordableGasPrice
-      : fees.maxFeePerGas;
+  const maxFeePerGas = fees.maxFeePerGas > maxAffordableGasPrice ? maxAffordableGasPrice : fees.maxFeePerGas;
   const maxPriorityFromBudget = maxAffordableGasPrice - fees.baseFee;
-  const maxPriorityFeePerGas =
-    fees.maxPriorityFeePerGas > maxPriorityFromBudget
-      ? maxPriorityFromBudget
-      : fees.maxPriorityFeePerGas;
+  const maxPriorityFeePerGas = fees.maxPriorityFeePerGas > maxPriorityFromBudget ? maxPriorityFromBudget : fees.maxPriorityFeePerGas;
 
   return {
     maxFeePerGas,
@@ -183,10 +173,7 @@ function normalizeGasEstimate(value: unknown) {
     }
     return BigInt(value);
   }
-  if (
-    typeof value !== "string" &&
-    typeof value !== "boolean"
-  ) {
+  if (typeof value !== "string" && typeof value !== "boolean") {
     return null;
   }
   try {
@@ -308,17 +295,15 @@ class GasOracle {
 
         // ── Priority fee via eth_feeHistory ──────────────────────
         try {
-          const feeHistory = await gasOracleClient.getFeeHistory({
+          const feeHistory = (await gasOracleClient.getFeeHistory({
             blockCount: 10,
             rewardPercentiles: [25, 50, 75],
             blockTag: "latest",
-          }) as { reward?: Array<Array<BigIntInput | null | undefined>> };
+          })) as { reward?: Array<Array<BigIntInput | null | undefined>> };
 
           // Extract p50 (index 1) priority fee rewards from the last 10 blocks
           const rewards: Array<Array<BigIntInput | null | undefined>> = feeHistory?.reward ?? [];
-          const p50s = rewards
-            .map((r) => (r && r[1] != null ? BigInt(r[1]) : null))
-            .filter((r): r is bigint => r !== null && r > 0n);
+          const p50s = rewards.map((r) => (r && r[1] != null ? BigInt(r[1]) : null)).filter((r): r is bigint => r !== null && r > 0n);
 
           if (p50s.length > 0) {
             const sorted = [...p50s].sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
@@ -326,10 +311,8 @@ class GasOracle {
             // Clamp: never below 25 gwei (Polygon minimum for prompt inclusion),
             // never above 500 gwei (avoids outliers)
             const floor = 25n * 10n ** 9n;
-            const ceil  = 500n * 10n ** 9n;
-            this.priorityFee = medianPriority < floor ? floor
-                             : medianPriority > ceil  ? ceil
-                             : medianPriority;
+            const ceil = 500n * 10n ** 9n;
+            this.priorityFee = medianPriority < floor ? floor : medianPriority > ceil ? ceil : medianPriority;
             gasPriceGwei.set(Number(this.priorityFee) / 1e9);
           }
           // If no valid rewards returned, keep the previous priorityFee
@@ -383,7 +366,7 @@ class GasOracle {
 
 export const oracle = new GasOracle();
 // Start oracle automatically in production-like environments
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   oracle.start();
 }
 
@@ -410,9 +393,9 @@ export async function estimateGas(tx: GasTxRequest, fromAddress: string) {
   // simulation-quality endpoint (e.g. Tenderly, Alchemy Simulation API).
   const { estimateGas: estimateGasFromModule } = await import("./gas_estimator.ts");
   return estimateGasFromModule({
-    to:    tx.to    as `0x${string}`,
-    data:  tx.data  as `0x${string}`,
-    from:  fromAddress as `0x${string}`,
+    to: tx.to as `0x${string}`,
+    data: tx.data as `0x${string}`,
+    from: fromAddress as `0x${string}`,
     value: tx.value ?? 0n,
   });
 }
@@ -438,10 +421,7 @@ export function isGasOracleStale(updatedAt: number, options: GasOracleFreshnessO
 }
 
 export async function ensureFreshGasOracle(options: GasOracleFreshnessOptions = {}) {
-  const {
-    maxAgeMs = GAS_ORACLE_MAX_AGE_MS,
-    allowStaleOnFailure = true,
-  } = options;
+  const { maxAgeMs = GAS_ORACLE_MAX_AGE_MS, allowStaleOnFailure = true } = options;
 
   const before = oracle.getFees();
   if (!isGasOracleStale(before.updatedAt, { maxAgeMs })) {
@@ -502,11 +482,8 @@ export function scalePriorityFeeByProfitMargin(
   }
 
   const margin = clampBigInt(BigInt(profitMarginBps ?? 0), 0n, fullRampMarginBps);
-  const multiplierBps =
-    minMultiplierBps +
-    ((maxMultiplierBps - minMultiplierBps) * margin) / fullRampMarginBps;
-  const maxPriorityFeePerGas =
-    (normalizedFees.priorityFee * multiplierBps + 9_999n) / 10_000n;
+  const multiplierBps = minMultiplierBps + ((maxMultiplierBps - minMultiplierBps) * margin) / fullRampMarginBps;
+  const maxPriorityFeePerGas = (normalizedFees.priorityFee * multiplierBps + 9_999n) / 10_000n;
   const maxFeePerGas = normalizedFees.baseFee * 2n + maxPriorityFeePerGas;
 
   return {
@@ -563,14 +540,15 @@ export async function recommendGasParams(
       rememberGasEstimate(gasEstimateCacheKey, gasEstimate, nowMs, cacheMaxEntries);
     }
   }
-  const fees = normalizeFeeSnapshot(feeSnapshot ?? (
-    requireFreshFees
-      ? await ensureFreshGasOracle({
-          maxAgeMs: gasOracleMaxAgeMs,
-          allowStaleOnFailure: allowStaleFeesOnRefreshFailure,
-        })
-      : oracle.getFees()
-  ));
+  const fees = normalizeFeeSnapshot(
+    feeSnapshot ??
+      (requireFreshFees
+        ? await ensureFreshGasOracle({
+            maxAgeMs: gasOracleMaxAgeMs,
+            allowStaleOnFailure: allowStaleFeesOnRefreshFailure,
+          })
+        : oracle.getFees()),
+  );
 
   const baseFee = fees.baseFee;
   let maxPriorityFeePerGas = priorityFeeOverride ?? fees.priorityFee;

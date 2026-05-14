@@ -1,11 +1,7 @@
 import type { RollbackGuard } from "./watcher_poll_utils.ts";
 
 export type WatcherProgressRegistry = {
-  commitWatcherProgress?: (
-    key: string,
-    block: number,
-    rollbackGuard: RollbackGuard | null,
-  ) => unknown;
+  commitWatcherProgress?: (key: string, block: number, rollbackGuard: RollbackGuard | null) => unknown;
   setCheckpoint?: (key: string, block: number) => unknown;
   setRollbackGuard?: (rollbackGuard: RollbackGuard) => unknown;
 };
@@ -55,9 +51,5 @@ export function commitWatcherProgressCheckpoint({
 }
 
 export function watcherProgressShouldLog(progress: WatcherProgressSnapshot) {
-  return (
-    progress.advancedBlocks > 0 ||
-    progress.waitReason != null ||
-    Boolean(progress.constrainedBySlowestShardArchiveHeight)
-  );
+  return progress.advancedBlocks > 0 || progress.waitReason != null || Boolean(progress.constrainedBySlowestShardArchiveHeight);
 }

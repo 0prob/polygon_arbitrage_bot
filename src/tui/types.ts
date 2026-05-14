@@ -12,7 +12,7 @@ export interface BotActivityProgress {
 }
 
 export interface BotState {
-  status: 'idle' | 'running' | 'error';
+  status: "idle" | "running" | "error";
   mode: string;
   passCount: number;
   consecutiveErrors: number;
@@ -34,7 +34,7 @@ export interface BotState {
   currentActivityProgress?: BotActivityProgress | null;
   opportunities: BotOpportunityRow[];
   logs: string[];
-  
+
   // Transaction metrics
   totalTxAttempted: number;
   totalTxSuccessful: number;

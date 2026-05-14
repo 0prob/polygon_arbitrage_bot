@@ -183,11 +183,7 @@ export function createPoolTokenPairIndexCache(deps: PoolTokenPairIndexCacheDeps)
   };
 }
 
-function addPoolsForTokenPath(
-  touched: Set<string>,
-  addresses: readonly string[],
-  tokenPairIndex: PoolTokenPairIndex | null | undefined,
-) {
+function addPoolsForTokenPath(touched: Set<string>, addresses: readonly string[], tokenPairIndex: PoolTokenPairIndex | null | undefined) {
   if (!tokenPairIndex || addresses.length < 2) return;
   for (let i = 0; i + 1 < addresses.length; i++) {
     const tokenA = addresses[i];
@@ -199,11 +195,7 @@ function addPoolsForTokenPath(
   }
 }
 
-function addPoolsForPackedV3Paths(
-  touched: Set<string>,
-  input: unknown,
-  tokenPairIndex: PoolTokenPairIndex | null | undefined,
-) {
+function addPoolsForPackedV3Paths(touched: Set<string>, input: unknown, tokenPairIndex: PoolTokenPairIndex | null | undefined) {
   if (!tokenPairIndex) return;
   const data = String(input ?? "");
   if (!/^0x[0-9a-fA-F]+$/.test(data) || data.length < 88) return;
@@ -242,11 +234,12 @@ export function touchedPoolsFromPendingTransaction(
     if (stateCache.has(candidate)) touched.add(candidate);
   }
 
-  const tokenPairIndex = tokenPairIndexOrPools instanceof Map
-    ? tokenPairIndexOrPools
-    : tokenPairIndexOrPools
-      ? buildPoolTokenPairIndex([...tokenPairIndexOrPools], stateCache, { includeV3Protocols })
-      : null;
+  const tokenPairIndex =
+    tokenPairIndexOrPools instanceof Map
+      ? tokenPairIndexOrPools
+      : tokenPairIndexOrPools
+        ? buildPoolTokenPairIndex([...tokenPairIndexOrPools], stateCache, { includeV3Protocols })
+        : null;
   addPoolsForTokenPath(touched, encodedAddresses, tokenPairIndex);
   if (includeV3Protocols) addPoolsForPackedV3Paths(touched, calldata, tokenPairIndex);
   return touched;
@@ -324,9 +317,7 @@ export function createPendingTxStateWatcher(deps: PendingTxWatcherDeps) {
 
       if (selected.length === 0) return;
 
-      const records = selected
-        .map((addr) => deps.getPoolRecord(addr))
-        .filter((pool): pool is PoolRecord => pool != null);
+      const records = selected.map((addr) => deps.getPoolRecord(addr)).filter((pool): pool is PoolRecord => pool != null);
       if (records.length === 0) return;
       attemptedRefreshPools = records.length;
 

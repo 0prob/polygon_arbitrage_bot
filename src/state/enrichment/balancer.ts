@@ -1,4 +1,3 @@
-
 /**
  * src/enrichment/balancer.js — Balancer V2 on-chain enrichment
  *
@@ -7,11 +6,7 @@
  */
 
 import { errorMessage } from "../../utils/errors.ts";
-import {
-  isNoDataReadContractError,
-  readContractWithRetry,
-  type ReadContractWithRetryParams,
-} from "./rpc.ts";
+import { isNoDataReadContractError, readContractWithRetry, type ReadContractWithRetryParams } from "./rpc.ts";
 
 const VAULT_ADDRESS = "0xBA12222222228d8Ba445958a75a0704d566BF2C8";
 
@@ -40,7 +35,6 @@ function normalizeAddressList(values: unknown) {
 type BalancerReadContract = <T = unknown>(params: ReadContractWithRetryParams) => Promise<T>;
 type BalancerPoolTokensResult = readonly [unknown, ...unknown[]];
 
-
 /**
  * Fetch token addresses for a Balancer pool by its poolId.
  * Retries automatically on HTTP 429 / 5xx with exponential backoff.
@@ -59,14 +53,10 @@ export async function getBalancerTokens(poolId: unknown, readContractImpl: Balan
     return normalizeAddressList(tokens);
   } catch (error: unknown) {
     if (isNoDataReadContractError(error)) {
-      console.error(
-        `  Balancer vault returned no token data for poolId ${poolId}: ${errorMessage(error)}`
-      );
+      console.error(`  Balancer vault returned no token data for poolId ${poolId}: ${errorMessage(error)}`);
       return [];
     }
-    console.error(
-      `  Error fetching Balancer tokens for poolId ${poolId}: ${errorMessage(error)}`
-    );
+    console.error(`  Error fetching Balancer tokens for poolId ${poolId}: ${errorMessage(error)}`);
     throw error;
   }
 }

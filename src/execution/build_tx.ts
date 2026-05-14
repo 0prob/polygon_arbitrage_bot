@@ -1,4 +1,3 @@
-
 /**
  * src/execution/build_tx.js — Transaction builder
  *
@@ -28,7 +27,6 @@ import {
   CONFIG_DEFAULT_SLIPPAGE_BPS,
   CONFIG_DEFAULT_GAS_MULTIPLIER,
   CONFIG_DEFAULT_MIN_PROFIT_WEI,
-  CONFIG_JSON_RPC_TIMEOUT_MS,
 } from "../config/index.ts";
 
 // ─── Defaults ─────────────────────────────────────────────────
@@ -73,12 +71,14 @@ export type ExecutionRouteInput = {
 type ValidatedExecutionRoute = {
   path: {
     startToken: string;
-    edges: Array<ExecutionRouteEdge & {
-      poolAddress: string;
-      tokenIn: string;
-      tokenOut: string;
-      protocol: string;
-    }>;
+    edges: Array<
+      ExecutionRouteEdge & {
+        poolAddress: string;
+        tokenIn: string;
+        tokenOut: string;
+        protocol: string;
+      }
+    >;
     hopCount?: unknown;
     [key: string]: unknown;
   };
@@ -330,11 +330,7 @@ export function gasEstimateCacheKeyForRoute(
  * @param {{maxFeePerGas: bigint, maxPriorityFeePerGas: bigint, gasLimit: bigint, estimatedCostWei: bigint}} [options.gasParamsOverride]
  * @returns {Promise<BuiltTx>}
  */
-export async function buildArbTx(
-  route: ExecutionRouteInput,
-  config: BuildArbTxConfig,
-  options: BuildArbTxOptions = {},
-): Promise<BuiltTx> {
+export async function buildArbTx(route: ExecutionRouteInput, config: BuildArbTxConfig, options: BuildArbTxOptions = {}): Promise<BuiltTx> {
   const { executorAddress, fromAddress } = config;
   const {
     minProfit = CONFIG_DEFAULT_MIN_PROFIT_WEI,
@@ -402,13 +398,15 @@ export async function buildArbTx(
       callCount: calls.length,
     });
 
-  const gasParams = gasParamsOverride ?? await recommendGasParams(skelTx, fromAddress, {
-    gasMultiplier,
-    maxFeeOverride,
-    priorityFeeOverride,
-    maxEstimatedCostWei,
-    gasEstimateCacheKey: gasEstimateKey,
-  });
+  const gasParams =
+    gasParamsOverride ??
+    (await recommendGasParams(skelTx, fromAddress, {
+      gasMultiplier,
+      maxFeeOverride,
+      priorityFeeOverride,
+      maxEstimatedCostWei,
+      gasEstimateCacheKey: gasEstimateKey,
+    }));
 
   // Metadata for logging
   const meta = {

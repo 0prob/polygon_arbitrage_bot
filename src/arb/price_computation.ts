@@ -63,17 +63,10 @@ export function computeSpotPriceScaled(state: RouteState, zeroForOne: boolean) {
   const sqrtPriceX96 = toBigIntOrNull(state.sqrtPriceX96);
   if (sqrtPriceX96 == null || sqrtPriceX96 <= 0n) return 0n;
   const priceX192 = sqrtPriceX96 * sqrtPriceX96;
-  return zeroForOne
-    ? (priceX192 * PRICE_SCALE) / Q192
-    : (Q192 * PRICE_SCALE) / priceX192;
+  return zeroForOne ? (priceX192 * PRICE_SCALE) / Q192 : (Q192 * PRICE_SCALE) / priceX192;
 }
 
-export function computeVirtualAmountOutAfterFees(
-  state: RouteState,
-  amountIn: bigint,
-  zeroForOne: boolean,
-  fee?: number,
-) {
+export function computeVirtualAmountOutAfterFees(state: RouteState, amountIn: bigint, zeroForOne: boolean, fee?: number) {
   if (amountIn <= 0n) return 0n;
   const reserve0 = toBigIntOrNull(state.reserve0);
   const reserve1 = toBigIntOrNull(state.reserve1);
@@ -90,32 +83,19 @@ export function computeVirtualAmountOutAfterFees(
   return 0n;
 }
 
-export function computeVirtualPriceAfterFeesScaled(
-  state: RouteState,
-  amountIn: bigint,
-  zeroForOne: boolean,
-  fee?: number,
-) {
+export function computeVirtualPriceAfterFeesScaled(state: RouteState, amountIn: bigint, zeroForOne: boolean, fee?: number) {
   if (amountIn <= 0n) return 0n;
   const amountOut = computeVirtualAmountOutAfterFees(state, amountIn, zeroForOne, fee);
   if (amountOut <= 0n) return 0n;
   return (amountOut * PRICE_SCALE) / amountIn;
 }
 
-export function computeSlippageBps(
-  spotPriceScaled: bigint,
-  virtualPriceAfterFeesScaled: bigint,
-) {
+export function computeSlippageBps(spotPriceScaled: bigint, virtualPriceAfterFeesScaled: bigint) {
   if (spotPriceScaled <= 0n || virtualPriceAfterFeesScaled >= spotPriceScaled) return 0n;
   return ((spotPriceScaled - virtualPriceAfterFeesScaled) * 10_000n) / spotPriceScaled;
 }
 
-export function computeGasAdjustedProfit(
-  grossProfitRaw: bigint,
-  gasUnits: bigint | number,
-  gasPriceWei: bigint,
-  tokenToMaticRate: bigint,
-) {
+export function computeGasAdjustedProfit(grossProfitRaw: bigint, gasUnits: bigint | number, gasPriceWei: bigint, tokenToMaticRate: bigint) {
   const gas = typeof gasUnits === "bigint" ? gasUnits : BigInt(Math.max(0, Math.floor(gasUnits)));
   if (tokenToMaticRate <= 0n || gasPriceWei <= 0n) {
     return {
@@ -146,12 +126,7 @@ export function computePoolPriceQuote(input: {
   fee?: number;
 }) {
   const spotPriceScaled = computeSpotPriceScaled(input.state, input.zeroForOne);
-  const virtualPriceAfterFeesScaled = computeVirtualPriceAfterFeesScaled(
-    input.state,
-    input.amountIn,
-    input.zeroForOne,
-    input.fee,
-  );
+  const virtualPriceAfterFeesScaled = computeVirtualPriceAfterFeesScaled(input.state, input.amountIn, input.zeroForOne, input.fee);
   const slippageBps = computeSlippageBps(spotPriceScaled, virtualPriceAfterFeesScaled);
   const gasAdjusted = computeGasAdjustedProfit(
     input.grossProfitRaw ?? 0n,

@@ -4,7 +4,9 @@ import type { AbiEvent } from "viem";
 const topic0Cache = new Map<string, string>();
 
 export function normalizeTopic(topic: unknown) {
-  const value = String(topic ?? "").trim().toLowerCase();
+  const value = String(topic ?? "")
+    .trim()
+    .toLowerCase();
   return /^0x[0-9a-f]{64}$/.test(value) ? value : "";
 }
 
@@ -25,7 +27,9 @@ export function topic0ForSignature(signature: string) {
   try {
     encoded = encodeEventTopics({ abi: [abiItem], eventName: abiItem.name })[0];
   } catch (err) {
-    console.warn(`[topics] Failed to encode event topics for signature: "${signature}" — ${err instanceof Error ? err.message : String(err)}`);
+    console.warn(
+      `[topics] Failed to encode event topics for signature: "${signature}" — ${err instanceof Error ? err.message : String(err)}`,
+    );
     topic0Cache.set(normalizedSignature, "");
     return "";
   }

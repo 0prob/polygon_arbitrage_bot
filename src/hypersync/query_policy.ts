@@ -1,8 +1,5 @@
 import { BlockField, JoinMode, LogField } from "./client.ts";
-import {
-  HYPERSYNC_BATCH_SIZE,
-  HYPERSYNC_MAX_BLOCKS_PER_REQUEST,
-} from "../config/index.ts";
+import { HYPERSYNC_BATCH_SIZE, HYPERSYNC_MAX_BLOCKS_PER_REQUEST } from "../config/index.ts";
 import { normalizeTopic } from "./topics.ts";
 import { normalizeEvmAddress } from "../utils/identity.ts";
 
@@ -46,10 +43,7 @@ export type HyperSyncGetResponse<TLog = unknown> = {
   };
 };
 
-export const DEFAULT_HYPERSYNC_BLOCK_FIELDS = [
-  BlockField.Number,
-  BlockField.Timestamp,
-];
+export const DEFAULT_HYPERSYNC_BLOCK_FIELDS = [BlockField.Number, BlockField.Timestamp];
 
 export const DEFAULT_HYPERSYNC_LOG_FIELDS = [
   LogField.Address,
@@ -137,28 +131,19 @@ function normalizeJoinMode(joinMode: unknown) {
 
 function normalizeLogFilter(filter: HyperSyncLogFilterInput, index: number): HyperSyncLogFilter {
   const address = Array.isArray(filter?.address)
-    ? filter.address
-        .map((entry) => normalizeEvmAddress(entry))
-        .filter((entry): entry is string => entry != null)
+    ? filter.address.map((entry) => normalizeEvmAddress(entry)).filter((entry): entry is string => entry != null)
     : [];
   const normalizedAddress = [...new Set(address)];
   const topics = Array.isArray(filter?.topics)
-    ? filter.topics
-        .map((group) =>
-          Array.isArray(group)
-            ? [...new Set(group.map(normalizeTopic).filter((entry) => entry.length > 0))]
-            : [],
-        )
+    ? filter.topics.map((group) =>
+        Array.isArray(group) ? [...new Set(group.map(normalizeTopic).filter((entry) => entry.length > 0))] : [],
+      )
     : [];
   const lastConstrainedTopicIndex = topics.findLastIndex((group) => group.length > 0);
-  const normalizedTopics = lastConstrainedTopicIndex >= 0
-    ? topics.slice(0, lastConstrainedTopicIndex + 1).map((group) => [...group])
-    : [];
+  const normalizedTopics = lastConstrainedTopicIndex >= 0 ? topics.slice(0, lastConstrainedTopicIndex + 1).map((group) => [...group]) : [];
 
   if (normalizedAddress.length === 0 && normalizedTopics.length === 0) {
-    throw new Error(
-      `HyperSync query log filter #${index} must include at least one valid address or topic constraint.`,
-    );
+    throw new Error(`HyperSync query log filter #${index} must include at least one valid address or topic constraint.`);
   }
 
   return {
@@ -167,11 +152,7 @@ function normalizeLogFilter(filter: HyperSyncLogFilterInput, index: number): Hyp
   };
 }
 
-function normalizeFieldSelection(
-  name: string,
-  fields: unknown[],
-  requiredFields: unknown[] = [],
-) {
+function normalizeFieldSelection(name: string, fields: unknown[], requiredFields: unknown[] = []) {
   const seen = new Set<string>();
   const normalized: unknown[] = [];
   for (const field of Array.isArray(fields) ? fields : []) {
@@ -191,9 +172,7 @@ function normalizeFieldSelection(
 
   const missing = requiredFields.filter((field) => !seen.has(fieldKey(field)));
   if (missing.length > 0) {
-    throw new Error(
-      `HyperSync query ${name} fields must include ${missing.map(fieldLabel).join(", ")}.`,
-    );
+    throw new Error(`HyperSync query ${name} fields must include ${missing.map(fieldLabel).join(", ")}.`);
   }
 
   return normalized;
@@ -213,9 +192,7 @@ export function buildHyperSyncLogQuery(options: HyperSyncLogQueryOptions): Hyper
   const normalizedFromBlock = normalizeQueryBlock("fromBlock", fromBlock);
   const normalizedToBlock = toBlock != null ? normalizeQueryBlock("toBlock", toBlock) : undefined;
   if (normalizedToBlock != null && normalizedToBlock < normalizedFromBlock) {
-    throw new Error(
-      `HyperSync query has invalid block range: fromBlock ${normalizedFromBlock} exceeds toBlock ${normalizedToBlock}.`,
-    );
+    throw new Error(`HyperSync query has invalid block range: fromBlock ${normalizedFromBlock} exceeds toBlock ${normalizedToBlock}.`);
   }
   if (!Array.isArray(logs) || logs.length === 0) {
     throw new Error("HyperSync query must include at least one log filter.");
@@ -224,8 +201,7 @@ export function buildHyperSyncLogQuery(options: HyperSyncLogQueryOptions): Hyper
   const normalizedLogFields = normalizeFieldSelection("log", logFields, [LogField.BlockNumber]);
   const normalizedBlockFields = normalizeFieldSelection("block", blockFields, [BlockField.Number]);
   const normalizedMaxNumLogs = normalizePositiveQueryLimit("maxNumLogs", maxNumLogs);
-  const normalizedMaxNumBlocks =
-    maxNumBlocks != null ? normalizePositiveQueryLimit("maxNumBlocks", maxNumBlocks) : undefined;
+  const normalizedMaxNumBlocks = maxNumBlocks != null ? normalizePositiveQueryLimit("maxNumBlocks", maxNumBlocks) : undefined;
   const normalizedJoinMode = normalizeJoinMode(joinMode);
 
   return {

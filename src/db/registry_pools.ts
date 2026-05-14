@@ -3,14 +3,7 @@
  */
 
 import fs from "fs";
-import {
-  lowerCaseAddressList,
-  mapPoolMetaRow,
-  mapPoolRow,
-  mapStalePoolRow,
-  parseJson,
-  stringifyWithBigInt,
-} from "./registry_codec.ts";
+import { lowerCaseAddressList, mapPoolMetaRow, mapPoolRow, mapStalePoolRow, parseJson, stringifyWithBigInt } from "./registry_codec.ts";
 import { normalizeEvmAddress, parsePoolMetadataValue, parsePoolTokensValue } from "../utils/pool_record.ts";
 import { isBalancerProtocol, isV3Protocol, normalizeProtocolKey } from "../protocols/classification.ts";
 import { toBigIntOrNull } from "../utils/bigint.ts";
@@ -80,14 +73,10 @@ type LiquidityEventRecorder = (
   newValue: unknown,
 ) => unknown;
 
-
-
 function normalizeRequiredAddress(value: unknown, label: string) {
   const normalizedAddress = normalizeEvmAddress(value);
   if (!normalizedAddress) {
-    throw new Error(
-      `RegistryService: valid ${label} is required`
-    );
+    throw new Error(`RegistryService: valid ${label} is required`);
   }
   return normalizedAddress;
 }
@@ -134,9 +123,7 @@ function normalizePoolUpsertRecord(pool: unknown): NormalizedPoolUpsertRecord {
     pool_address: normalizeRequiredAddress(pool.pool_address, `pool_address for protocol ${protocol}`),
     protocol,
     block: normalizePoolBlock(pool.block ?? pool.created_block ?? pool.createdBlock, "created block", 0),
-    tokens: lowerCaseAddressList(
-      Array.isArray(pool.tokens) ? pool.tokens : parsePoolTokensValue(pool.tokens),
-    ),
+    tokens: lowerCaseAddressList(Array.isArray(pool.tokens) ? pool.tokens : parsePoolTokensValue(pool.tokens)),
     tx: pool.tx != null ? String(pool.tx) : "",
     metadata: parsePoolMetadataValue(pool.metadata),
     status,
@@ -210,14 +197,12 @@ function normalizeStateUpdateBatch(stateList: unknown[]) {
   return { records: [...latestByAddress.values()], skipped };
 }
 
-export function upsertPool(
-  stmt: StatementFactory,
-  invalidatePoolMetaCache: InvalidatePoolMetaCache,
-  metadata: unknown,
-) {
+export function upsertPool(stmt: StatementFactory, invalidatePoolMetaCache: InvalidatePoolMetaCache, metadata: unknown) {
   const normalized = normalizePoolUpsertRecord(metadata);
 
-  const upsertPoolStmt = stmt("upsertPool", `
+  const upsertPoolStmt = stmt(
+    "upsertPool",
+    `
     INSERT INTO pools (address, protocol, tokens, created_block, created_tx, metadata, status, removed_block)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(address) DO UPDATE SET
@@ -228,7 +213,8 @@ export function upsertPool(
       metadata = excluded.metadata,
       status   = excluded.status,
       removed_block = excluded.removed_block
-  `);
+  `,
+  );
 
   const result = upsertPoolStmt.run(
     normalized.pool_address,
@@ -244,16 +230,9 @@ export function upsertPool(
   return result;
 }
 
-export function removePool(
-  stmt: StatementFactory,
-  invalidatePoolMetaCache: InvalidatePoolMetaCache,
-  address: unknown,
-) {
+export function removePool(stmt: StatementFactory, invalidatePoolMetaCache: InvalidatePoolMetaCache, address: unknown) {
   const normalizedAddress = normalizeRequiredAddress(address, "pool address");
-  const result = stmt(
-    "removePool",
-    `UPDATE pools SET status = 'removed' WHERE address = ?`
-  ).run(normalizedAddress);
+  const result = stmt("removePool", `UPDATE pools SET status = 'removed' WHERE address = ?`).run(normalizedAddress);
   invalidatePoolMetaCache();
   return result;
 }
@@ -274,25 +253,17 @@ export function batchRemovePools(
            WHEN removed_block IS NULL THEN ?
            ELSE removed_block
          END
-     WHERE address = ?`
+     WHERE address = ?`,
   );
 
   const removalByAddress = new Map<string, number | null>();
   for (const removal of removals as Array<string | PoolRemovalRecord>) {
-    const addressValue =
-      typeof removal === "string"
-        ? removal
-        : removal?.address ?? removal?.pool_address ?? null;
+    const addressValue = typeof removal === "string" ? removal : (removal?.address ?? removal?.pool_address ?? null);
     const normalizedAddress = normalizeEvmAddress(addressValue);
     if (!normalizedAddress) continue;
     const removalBlockRaw =
-      typeof removal === "string"
-        ? null
-        : removal?.removed_block ?? removal?.removedBlock ?? removal?.block ?? null;
-    const removalBlock =
-      removalBlockRaw == null || removalBlockRaw === ""
-        ? null
-        : Number(removalBlockRaw);
+      typeof removal === "string" ? null : (removal?.removed_block ?? removal?.removedBlock ?? removal?.block ?? null);
+    const removalBlock = removalBlockRaw == null || removalBlockRaw === "" ? null : Number(removalBlockRaw);
     const finiteRemovalBlock = Number.isFinite(removalBlock) ? removalBlock : null;
     const prior = removalByAddress.get(normalizedAddress);
     if (prior == null) {
@@ -308,7 +279,7 @@ export function batchRemovePools(
 
   const transaction = db.transaction((entries: unknown) => {
     let removed = 0;
-    const removalEntries = Array.isArray(entries) ? entries as Array<[string, number | null]> : [];
+    const removalEntries = Array.isArray(entries) ? (entries as Array<[string, number | null]>) : [];
     for (const [address, removedBlock] of removalEntries) {
       const result = removePoolStmt.run(removedBlock, address);
       removed += Number(result?.changes ?? 0);
@@ -324,18 +295,17 @@ export function batchRemovePools(
 export function updatePoolState(stmt: StatementFactory, state: unknown) {
   const normalized = normalizeStateUpdateRecord(state);
 
-  return stmt("updatePoolState", `
+  return stmt(
+    "updatePoolState",
+    `
     INSERT INTO pool_state (address, last_updated_block, state_data)
     VALUES (?, ?, ?)
     ON CONFLICT(address) DO UPDATE SET
       last_updated_block = excluded.last_updated_block,
       state_data         = excluded.state_data
     WHERE excluded.last_updated_block >= pool_state.last_updated_block
-  `).run(
-    normalized.pool_address,
-    normalized.block,
-    stringifyWithBigInt(normalized.data)
-  );
+  `,
+  ).run(normalized.pool_address, normalized.block, stringifyWithBigInt(normalized.data));
 }
 
 export function getPools(db: RegistryDatabase, opts: Record<string, unknown> = {}) {
@@ -367,7 +337,10 @@ export function getPools(db: RegistryDatabase, opts: Record<string, unknown> = {
     params.push(maxResults);
   }
 
-  return db.prepare(sql).all(...params).map((row) => mapPoolRow(row));
+  return db
+    .prepare(sql)
+    .all(...params)
+    .map((row) => mapPoolRow(row));
 }
 
 export function loadPoolMetaCache(stmt: StatementFactory, status: string | null = null) {
@@ -376,7 +349,7 @@ export function loadPoolMetaCache(stmt: StatementFactory, status: string | null 
   const rows = stmt(
     cacheKey,
     `SELECT address, protocol, tokens, created_block, created_tx, metadata, status, removed_block
-     FROM pools${statusSql}`
+     FROM pools${statusSql}`,
   ).all(...(status ? [status] : []));
   const pools = rows.map((row) => mapPoolMetaRow(row));
 
@@ -396,7 +369,7 @@ export function getPool(stmt: StatementFactory, address: unknown) {
     `SELECT p.*, s.last_updated_block, s.state_data
      FROM pools p
      LEFT JOIN pool_state s ON p.address = s.address
-     WHERE p.address = ?`
+     WHERE p.address = ?`,
   ).get(normalizedAddress);
   return row ? mapPoolRow(row) : null;
 }
@@ -407,18 +380,13 @@ export function getPoolCount(stmt: StatementFactory) {
 }
 
 export function getActivePoolCount(stmt: StatementFactory) {
-  const row = stmt(
-    "getActivePoolCount",
-    `SELECT COUNT(*) as count FROM pools WHERE status = 'active'`
-  ).get() as CountRow | undefined;
+  const row = stmt("getActivePoolCount", `SELECT COUNT(*) as count FROM pools WHERE status = 'active'`).get() as CountRow | undefined;
   return Number(row?.count ?? 0);
 }
 
 export function getPoolCountForProtocol(stmt: StatementFactory, protocol: string, status: string | null = null) {
   const protocolKey = normalizeProtocolKey(protocol);
-  const cacheKey = status
-    ? `getPoolCountForProtocol:${protocolKey}:${status}`
-    : `getPoolCountForProtocol:${protocolKey}:all`;
+  const cacheKey = status ? `getPoolCountForProtocol:${protocolKey}:${status}` : `getPoolCountForProtocol:${protocolKey}:all`;
   const sql = status
     ? `SELECT COUNT(*) as count FROM pools WHERE protocol = ? AND status = ?`
     : `SELECT COUNT(*) as count FROM pools WHERE protocol = ?`;
@@ -428,12 +396,8 @@ export function getPoolCountForProtocol(stmt: StatementFactory, protocol: string
 
 export function getPoolAddressesForProtocol(stmt: StatementFactory, protocol: string, status: string | null = null) {
   const protocolKey = normalizeProtocolKey(protocol);
-  const cacheKey = status
-    ? `getPoolAddressesForProtocol:${protocolKey}:${status}`
-    : `getPoolAddressesForProtocol:${protocolKey}:all`;
-  const sql = status
-    ? `SELECT address FROM pools WHERE protocol = ? AND status = ?`
-    : `SELECT address FROM pools WHERE protocol = ?`;
+  const cacheKey = status ? `getPoolAddressesForProtocol:${protocolKey}:${status}` : `getPoolAddressesForProtocol:${protocolKey}:all`;
+  const sql = status ? `SELECT address FROM pools WHERE protocol = ? AND status = ?` : `SELECT address FROM pools WHERE protocol = ?`;
   return stmt(cacheKey, sql)
     .all(...(status ? [protocolKey, status] : [protocolKey]))
     .map((row) => normalizeEvmAddress((row as AddressRow).address))
@@ -450,7 +414,9 @@ export function batchUpsertPools(
   const { records: normalizedPools, skipped } = normalizePoolUpsertBatch(poolList);
   if (normalizedPools.length === 0) return { upserted: 0, skipped };
 
-  const upsertPoolStmt = stmt("upsertPool", `
+  const upsertPoolStmt = stmt(
+    "upsertPool",
+    `
     INSERT INTO pools (address, protocol, tokens, created_block, created_tx, metadata, status, removed_block)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(address) DO UPDATE SET
@@ -461,11 +427,12 @@ export function batchUpsertPools(
       metadata = excluded.metadata,
       status   = excluded.status,
       removed_block = excluded.removed_block
-  `);
+  `,
+  );
 
   const upsertPools = db.transaction((pools: unknown) => {
     let changes = 0;
-    const normalizedList = Array.isArray(pools) ? pools as NormalizedPoolUpsertRecord[] : [];
+    const normalizedList = Array.isArray(pools) ? (pools as NormalizedPoolUpsertRecord[]) : [];
     for (const pool of normalizedList) {
       const result = upsertPoolStmt.run(
         pool.pool_address,
@@ -492,24 +459,23 @@ export function batchUpdateStates(db: RegistryDatabase, stmt: StatementFactory, 
   const { records: normalizedStates, skipped } = normalizeStateUpdateBatch(stateList);
   if (normalizedStates.length === 0) return { updated: 0, skipped };
 
-  const updatePoolStateStmt = stmt("updatePoolState", `
+  const updatePoolStateStmt = stmt(
+    "updatePoolState",
+    `
     INSERT INTO pool_state (address, last_updated_block, state_data)
     VALUES (?, ?, ?)
     ON CONFLICT(address) DO UPDATE SET
       last_updated_block = excluded.last_updated_block,
       state_data         = excluded.state_data
     WHERE excluded.last_updated_block >= pool_state.last_updated_block
-  `);
+  `,
+  );
 
   const updateStates = db.transaction((states: unknown) => {
     let changes = 0;
-    const normalizedList = Array.isArray(states) ? states as NormalizedStateUpdate[] : [];
+    const normalizedList = Array.isArray(states) ? (states as NormalizedStateUpdate[]) : [];
     for (const state of normalizedList) {
-      const result = updatePoolStateStmt.run(
-        state.pool_address,
-        state.block,
-        stringifyWithBigInt(state.data),
-      );
+      const result = updatePoolStateStmt.run(state.pool_address, state.block, stringifyWithBigInt(state.data));
       changes += Number(result?.changes ?? 0);
     }
     return changes;
@@ -532,7 +498,10 @@ export function getPoolsWithState(db: RegistryDatabase, opts: Record<string, unk
     params.push(normalizeProtocolKey(opts.protocol));
   }
 
-  return db.prepare(sql).all(...params).map((row) => mapPoolRow(row));
+  return db
+    .prepare(sql)
+    .all(...params)
+    .map((row) => mapPoolRow(row));
 }
 
 export function getActivePoolsByProtocol(db: RegistryDatabase, protocol: unknown) {
@@ -540,11 +509,7 @@ export function getActivePoolsByProtocol(db: RegistryDatabase, protocol: unknown
 }
 
 export function getHubAdjacentPools(db: RegistryDatabase, hubTokens: Iterable<unknown>) {
-  const hubs = new Set(
-    [...hubTokens]
-      .map((token) => normalizeEvmAddress(token))
-      .filter((token): token is string => token != null),
-  );
+  const hubs = new Set([...hubTokens].map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null));
   if (hubs.size === 0) return [];
   return getPools(db, { status: "active" }).filter((pool) => {
     const tokens = parsePoolTokensValue(pool.tokens);
@@ -562,7 +527,10 @@ export function getRecentlyChangedPools(db: RegistryDatabase, sinceBlock: unknow
     WHERE p.status = 'active'
       AND l.block_number >= ?
   `;
-  return db.prepare(sql).all(threshold).map((row) => mapPoolRow(row));
+  return db
+    .prepare(sql)
+    .all(threshold)
+    .map((row) => mapPoolRow(row));
 }
 
 export function getPoolsWithRecentLiquidityEvents(db: RegistryDatabase, sinceBlock: unknown) {
@@ -577,7 +545,10 @@ export function getPoolsMissingState(db: RegistryDatabase) {
     WHERE p.status = 'active'
       AND s.address IS NULL
   `;
-  return db.prepare(sql).all().map((row) => mapPoolRow(row));
+  return db
+    .prepare(sql)
+    .all()
+    .map((row) => mapPoolRow(row));
 }
 
 export function getStaleStatePools(db: RegistryDatabase, staleThreshold: unknown) {
@@ -589,13 +560,16 @@ export function getStaleStatePools(db: RegistryDatabase, staleThreshold: unknown
     WHERE p.status = 'active'
       AND (s.address IS NULL OR s.last_updated_block < ?)
   `;
-  return db.prepare(sql).all(threshold).map((row) => mapStalePoolRow(row));
+  return db
+    .prepare(sql)
+    .all(threshold)
+    .map((row) => mapStalePoolRow(row));
 }
 
 export function getPoolCountByProtocol(stmt: StatementFactory) {
   const rows = stmt(
     "getPoolCountByProtocol",
-    `SELECT protocol, COUNT(*) as count FROM pools WHERE status = 'active' GROUP BY protocol`
+    `SELECT protocol, COUNT(*) as count FROM pools WHERE status = 'active' GROUP BY protocol`,
   ).all() as ProtocolCountRow[];
   const result: Record<string, number> = {};
   for (const row of rows) result[String(row.protocol)] = Number(row.count ?? 0);
@@ -626,22 +600,16 @@ export function disablePool(
   const normalizedAddress = normalizeRequiredAddress(poolAddress, "pool address");
 
   db.transaction(() => {
-    stmt("disablePool", `UPDATE pools SET status = 'disabled' WHERE address = ?`)
-      .run(normalizedAddress);
+    stmt("disablePool", `UPDATE pools SET status = 'disabled' WHERE address = ?`).run(normalizedAddress);
     recordLiquidityEventImpl(normalizedAddress, 0, "disabled", null, reason);
   })();
 
   invalidatePoolMetaCache();
 }
 
-export function enablePool(
-  stmt: StatementFactory,
-  invalidatePoolMetaCache: InvalidatePoolMetaCache,
-  poolAddress: unknown,
-) {
+export function enablePool(stmt: StatementFactory, invalidatePoolMetaCache: InvalidatePoolMetaCache, poolAddress: unknown) {
   const normalizedAddress = normalizeRequiredAddress(poolAddress, "pool address");
-  stmt("enablePool", `UPDATE pools SET status = 'active' WHERE address = ?`)
-    .run(normalizedAddress);
+  stmt("enablePool", `UPDATE pools SET status = 'active' WHERE address = ?`).run(normalizedAddress);
   invalidatePoolMetaCache();
 }
 
@@ -658,13 +626,13 @@ export function recordLiquidityEvent(
   stmt(
     "recordLiquidityEvent",
     `INSERT INTO liquidity_events (address, block_number, event_type, old_value, new_value)
-     VALUES (?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?)`,
   ).run(
     normalizedAddress,
     normalizedBlock,
     String(eventType),
     oldValue != null ? String(oldValue) : null,
-    newValue != null ? String(newValue) : null
+    newValue != null ? String(newValue) : null,
   );
 }
 
@@ -676,7 +644,7 @@ export function hasRecentLiquidityEvent(stmt: StatementFactory, poolAddress: unk
   const row = stmt(
     "hasRecentLiquidityEvent",
     `SELECT COUNT(*) as count FROM liquidity_events
-     WHERE address = ? AND block_number >= ? AND event_type != 'disabled'`
+     WHERE address = ? AND block_number >= ? AND event_type != 'disabled'`,
   ).get(normalizedAddress, normalizedSinceBlock) as CountRow | undefined;
   return Number(row?.count ?? 0) > 0;
 }
@@ -718,25 +686,13 @@ export function detectLiquidityChange(
     if (oldR > 0n) {
       const changePct = ((newR > oldR ? newR - oldR : oldR - newR) * 100n) / oldR;
       if (changePct >= threshold) {
-        recordLiquidityEventImpl(
-          normalizedAddress,
-          normalizedBlock,
-          "large_change",
-          oldR.toString(),
-          newR.toString()
-        );
+        recordLiquidityEventImpl(normalizedAddress, normalizedBlock, "large_change", oldR.toString(), newR.toString());
         changed = true;
       }
     }
 
     if (newReserve1 != null && (newReserve0 < 1000n || newReserve1 < 1000n)) {
-      recordLiquidityEventImpl(
-        normalizedAddress,
-        normalizedBlock,
-        "near_empty",
-        null,
-        `${newReserve0},${newReserve1}`
-      );
+      recordLiquidityEventImpl(normalizedAddress, normalizedBlock, "near_empty", null, `${newReserve0},${newReserve1}`);
       changed = true;
     }
   }
@@ -749,13 +705,7 @@ export function detectLiquidityChange(
     if (oldL > 0n) {
       const changePct = ((newL > oldL ? newL - oldL : oldL - newL) * 100n) / oldL;
       if (changePct >= threshold) {
-        recordLiquidityEventImpl(
-          normalizedAddress,
-          normalizedBlock,
-          "large_change",
-          oldL.toString(),
-          newL.toString()
-        );
+        recordLiquidityEventImpl(normalizedAddress, normalizedBlock, "large_change", oldL.toString(), newL.toString());
         changed = true;
       }
     }
@@ -808,10 +758,7 @@ export function validatePoolMetadata(pool: unknown) {
   return issues;
 }
 
-export function validateAllPools(
-  getActivePoolsImpl: () => PersistedPoolRecord[],
-  validatePoolMetadataImpl: (pool: unknown) => string[],
-) {
+export function validateAllPools(getActivePoolsImpl: () => PersistedPoolRecord[], validatePoolMetadataImpl: (pool: unknown) => string[]) {
   const pools = getActivePoolsImpl();
   const invalid: Array<{ pool: PersistedPoolRecord; issues: string[] }> = [];
   if (!Array.isArray(pools)) return invalid;

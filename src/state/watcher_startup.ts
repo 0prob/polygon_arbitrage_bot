@@ -1,7 +1,4 @@
-import {
-  buildWatcherAddressFilter,
-  type WatcherAddressFilter,
-} from "./watcher_filter.ts";
+import { buildWatcherAddressFilter, type WatcherAddressFilter } from "./watcher_filter.ts";
 
 export const WATCHER_LOOKBACK_BLOCKS = 100;
 
@@ -14,12 +11,7 @@ export type WatcherStartRegistry = {
   getGlobalCheckpoint?: () => unknown;
 };
 
-export type WatcherStartBlockSource =
-  | "explicit"
-  | "checkpoint"
-  | "global_checkpoint"
-  | "lookback"
-  | "fallback_zero";
+export type WatcherStartBlockSource = "explicit" | "checkpoint" | "global_checkpoint" | "lookback" | "fallback_zero";
 
 export type WatcherStartBlockResolution = {
   startBlock: number;
@@ -97,10 +89,7 @@ export async function initializeWatcherStart({
 }: InitializeWatcherStartOptions): Promise<WatcherStartInitialization> {
   const startBlock = await resolveWatcherStartBlock(startOptions);
   if (startBlock.source === "global_checkpoint") {
-    logger?.info(
-      { startBlock: startBlock.startBlock },
-      "No watcher checkpoint found; resuming from global checkpoint",
-    );
+    logger?.info({ startBlock: startBlock.startBlock }, "No watcher checkpoint found; resuming from global checkpoint");
   } else if (startBlock.source === "lookback") {
     logger?.info(
       {

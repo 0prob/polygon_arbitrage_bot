@@ -70,9 +70,6 @@ export function errorMessage(err: unknown, options: { includeStack?: boolean } =
   return String(err);
 }
 
-
 export function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }

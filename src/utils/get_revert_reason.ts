@@ -1,5 +1,5 @@
-import type { PublicClient, Hex } from 'viem';
-import { decodeErrorResult } from 'viem';
+import type { PublicClient, Hex } from "viem";
+import { decodeErrorResult } from "viem";
 
 export type RevertContext = {
   to?: Hex;
@@ -24,7 +24,7 @@ export type RevertContext = {
 export async function getRevertReason(
   client: PublicClient | null | undefined,
   ctx: RevertContext,
-  fallbackReason: string
+  fallbackReason: string,
 ): Promise<string> {
   if (!client || !ctx.to || !ctx.data) {
     return fallbackReason;
@@ -40,31 +40,34 @@ export async function getRevertReason(
     // No revert on re-simulation — race condition, tx succeeded. Use fallback.
     return fallbackReason;
   } catch (err: unknown) {
-    const viemErr = err as {
-      shortMessage?: string;
-      message?: string;
-      data?: unknown;
-      cause?: { data?: unknown };
-    } | null | undefined;
+    const viemErr = err as
+      | {
+          shortMessage?: string;
+          message?: string;
+          data?: unknown;
+          cause?: { data?: unknown };
+        }
+      | null
+      | undefined;
 
     // 1. viem's shortMessage is already human-readable when available.
-    if (viemErr?.shortMessage && !viemErr.shortMessage.includes('execution reverted')) {
+    if (viemErr?.shortMessage && !viemErr.shortMessage.includes("execution reverted")) {
       return viemErr.shortMessage;
     }
 
     // 2. Try to decode the revert data using viem's ABI decoder.
     const rawData = viemErr?.data ?? viemErr?.cause?.data;
-    if (typeof rawData === 'string' && rawData.startsWith('0x') && rawData.length > 10) {
+    if (typeof rawData === "string" && rawData.startsWith("0x") && rawData.length > 10) {
       // Standard Error(string) and Panic(uint256) selectors.
-      const ERROR_SELECTOR = '0x08c379a0'; // keccak256("Error(string)")[:4]
-      const PANIC_SELECTOR = '0x4e487b71'; // keccak256("Panic(uint256)")[:4]
+      const ERROR_SELECTOR = "0x08c379a0"; // keccak256("Error(string)")[:4]
+      const PANIC_SELECTOR = "0x4e487b71"; // keccak256("Panic(uint256)")[:4]
 
       const selector = rawData.slice(0, 10).toLowerCase();
 
       if (selector === ERROR_SELECTOR) {
         try {
           const decoded = decodeErrorResult({
-            abi: [{ type: 'error', name: 'Error', inputs: [{ type: 'string', name: 'message' }] }],
+            abi: [{ type: "error", name: "Error", inputs: [{ type: "string", name: "message" }] }],
             data: rawData as Hex,
           });
           const msg = (decoded?.args as [string] | undefined)?.[0];
@@ -77,7 +80,7 @@ export async function getRevertReason(
       if (selector === PANIC_SELECTOR) {
         try {
           const decoded = decodeErrorResult({
-            abi: [{ type: 'error', name: 'Panic', inputs: [{ type: 'uint256', name: 'code' }] }],
+            abi: [{ type: "error", name: "Panic", inputs: [{ type: "uint256", name: "code" }] }],
             data: rawData as Hex,
           });
           const code = (decoded?.args as [bigint] | undefined)?.[0];
@@ -88,12 +91,12 @@ export async function getRevertReason(
       }
 
       // Unknown custom error — return the hex data.
-      return rawData.length <= 200 ? rawData : rawData.slice(0, 200) + '…';
+      return rawData.length <= 200 ? rawData : rawData.slice(0, 200) + "…";
     }
 
     // 3. Parse "execution reverted: <reason>" from message text.
-    const message = viemErr?.shortMessage ?? viemErr?.message ?? '';
-    if (message.includes('execution reverted')) {
+    const message = viemErr?.shortMessage ?? viemErr?.message ?? "";
+    if (message.includes("execution reverted")) {
       const match = message.match(/execution reverted:?\s*(.+?)(?:\n|$)/i);
       if (match?.[1]) return match[1].trim();
     }

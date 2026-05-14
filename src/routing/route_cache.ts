@@ -1,4 +1,3 @@
-
 /**
  * src/routing/route_cache.js — Top-N profitable route cache
  *
@@ -130,7 +129,9 @@ export class RouteCache {
       let changed = false;
       for (const entry of toAdd) {
         const idx = this._routes.findIndex((e) => e.key === entry.key);
-        if (idx >= 0 && this._routes[idx].profit !== entry.profit) { changed = true; }
+        if (idx >= 0 && this._routes[idx].profit !== entry.profit) {
+          changed = true;
+        }
         if (idx >= 0) this._routes[idx] = entry;
       }
       if (!changed) return;
@@ -209,12 +210,10 @@ export class RouteCache {
     const normalisedStatePools = new Set(
       [...stateCache.keys()]
         .map((poolAddress) => normalisePoolAddress(poolAddress))
-        .filter((poolAddress): poolAddress is string => poolAddress != null)
+        .filter((poolAddress): poolAddress is string => poolAddress != null),
     );
     const before = this._routes.length;
-    const newRoutes = this._routes.filter((entry) =>
-      entry.pools.every((pool) => normalisedStatePools.has(pool))
-    );
+    const newRoutes = this._routes.filter((entry) => entry.pools.every((pool) => normalisedStatePools.has(pool)));
     if (newRoutes.length < before) {
       const newIndex = this._buildIndex(newRoutes);
       this._routes = newRoutes;
@@ -232,11 +231,7 @@ export class RouteCache {
    * @returns {number} number of removed routes
    */
   removeByPools(poolAddresses: Set<string> | string[]) {
-    const blocked = new Set(
-      [...poolAddresses]
-        .map((pool) => normalisePoolAddress(pool))
-        .filter((pool): pool is string => pool != null)
-    );
+    const blocked = new Set([...poolAddresses].map((pool) => normalisePoolAddress(pool)).filter((pool): pool is string => pool != null));
     if (blocked.size === 0 || this._routes.length === 0) return 0;
 
     const blockedIndexes = new Set<number>();
@@ -276,7 +271,7 @@ export class RouteCache {
    * Clear the cache.
    */
   clear() {
-    this._routes  = [];
+    this._routes = [];
     this._poolIndex.clear();
   }
 

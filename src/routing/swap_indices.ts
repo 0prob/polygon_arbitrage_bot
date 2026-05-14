@@ -14,18 +14,10 @@ export type SwapTokenIndexes = {
   tokenOutIdx: number;
 };
 
-
-
 export function resolveSwapTokenIndexes(edge: SwapIndexEdge, state: RouteState | null | undefined): SwapTokenIndexes | null {
   const explicitIn = Number(edge?.tokenInIdx);
   const explicitOut = Number(edge?.tokenOutIdx);
-  if (
-    Number.isInteger(explicitIn) &&
-    explicitIn >= 0 &&
-    Number.isInteger(explicitOut) &&
-    explicitOut >= 0 &&
-    explicitIn !== explicitOut
-  ) {
+  if (Number.isInteger(explicitIn) && explicitIn >= 0 && Number.isInteger(explicitOut) && explicitOut >= 0 && explicitIn !== explicitOut) {
     return { tokenInIdx: explicitIn, tokenOutIdx: explicitOut };
   }
 
@@ -42,9 +34,7 @@ export function resolveSwapTokenIndexes(edge: SwapIndexEdge, state: RouteState |
   }
 
   if (tokens.length === 2) {
-    return edge?.zeroForOne
-      ? { tokenInIdx: 0, tokenOutIdx: 1 }
-      : { tokenInIdx: 1, tokenOutIdx: 0 };
+    return edge?.zeroForOne ? { tokenInIdx: 0, tokenOutIdx: 1 } : { tokenInIdx: 1, tokenOutIdx: 0 };
   }
 
   return null;

@@ -1,4 +1,3 @@
-
 /**
  * src/execution/private_tx.js — Polygon private mempool transaction submitter
  *
@@ -8,7 +7,6 @@
  */
 
 import { keccak256 } from "viem";
-import { polygon } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   FREE_RPC_URLS,
@@ -23,9 +21,7 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────
 
-const FAST_PUBLIC_RPCS = [
-  ...FREE_RPC_URLS,
-];
+const FAST_PUBLIC_RPCS = [...FREE_RPC_URLS];
 
 const DEFAULT_JSON_RPC_TIMEOUT_MS = CONFIG_JSON_RPC_TIMEOUT_MS;
 const MAX_ERROR_BODY_CHARS = 300;
@@ -111,33 +107,25 @@ export async function jsonRpc(
     text = await res.text();
   } catch (err: unknown) {
     const error = err as { name?: unknown; message?: unknown } | null | undefined;
-    const reason = error?.name === "AbortError"
-      ? `timeout after ${timeoutMs}ms`
-      : error?.message ?? String(err);
+    const reason = error?.name === "AbortError" ? `timeout after ${timeoutMs}ms` : (error?.message ?? String(err));
     throw new Error(`JSON-RPC ${method} to ${rpcManagerShortUrl(url)} failed: ${reason}`);
   } finally {
     clearTimeout(timer);
   }
 
   if (!res.ok) {
-    throw new Error(
-      `JSON-RPC ${method} to ${rpcManagerShortUrl(url)} failed: HTTP ${res.status}: ${summarizeBody(text)}`
-    );
+    throw new Error(`JSON-RPC ${method} to ${rpcManagerShortUrl(url)} failed: HTTP ${res.status}: ${summarizeBody(text)}`);
   }
 
   let payload;
   try {
     payload = text ? JSON.parse(text) : null;
   } catch {
-    throw new Error(
-      `JSON-RPC ${method} to ${rpcManagerShortUrl(url)} returned invalid JSON: ${summarizeBody(text)}`
-    );
+    throw new Error(`JSON-RPC ${method} to ${rpcManagerShortUrl(url)} returned invalid JSON: ${summarizeBody(text)}`);
   }
 
   if (!payload || typeof payload !== "object") {
-    throw new Error(
-      `JSON-RPC ${method} to ${rpcManagerShortUrl(url)} returned empty or invalid response`
-    );
+    throw new Error(`JSON-RPC ${method} to ${rpcManagerShortUrl(url)} returned empty or invalid response`);
   }
 
   if (payload.error) {
@@ -150,7 +138,9 @@ export async function jsonRpc(
 }
 
 function summarizeBody(value: string) {
-  const compact = String(value || "").replace(/\s+/g, " ").trim();
+  const compact = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
   return compact.slice(0, MAX_ERROR_BODY_CHARS) || "<empty response>";
 }
 
@@ -183,11 +173,7 @@ function requireRpcResultString(response: JsonRpcResponse, label: string) {
 function isAlreadyKnownSubmission(error: unknown) {
   const err = error as { shortMessage?: unknown; message?: unknown } | null | undefined;
   const message = String(err?.shortMessage ?? err?.message ?? error ?? "").toLowerCase();
-  return (
-    message.includes("already known") ||
-    message.includes("already imported") ||
-    message.includes("known transaction")
-  );
+  return message.includes("already known") || message.includes("already imported") || message.includes("known transaction");
 }
 
 function submittedRawTxHash(rawTx: RawTransaction) {
@@ -256,13 +242,7 @@ export async function sendPrivateTransaction(rawTx: RawTransaction, rpcUrl?: str
 
   let response: JsonRpcResponse;
   try {
-    response = await jsonRpc(
-      url,
-      "eth_sendPrivateTransaction",
-      [{ tx: rawTx }],
-      {},
-      { timeoutMs: options.timeoutMs },
-    );
+    response = await jsonRpc(url, "eth_sendPrivateTransaction", [{ tx: rawTx }], {}, { timeoutMs: options.timeoutMs });
   } catch (err) {
     if (isAlreadyKnownSubmission(err)) return submittedRawTxHash(rawTx);
     throw err;
@@ -275,20 +255,11 @@ export async function sendPolygonPrivateTransaction(rawTx: RawTransaction, rpcUr
   if (!url) throw new Error("sendPolygonPrivateTransaction: no URL");
 
   const method = POLYGON_PRIVATE_MEMPOOL_METHOD || "eth_sendRawTransaction";
-  const params =
-    method === "eth_sendPrivateTransaction"
-      ? [{ tx: rawTx }]
-      : [rawTx];
+  const params = method === "eth_sendPrivateTransaction" ? [{ tx: rawTx }] : [rawTx];
 
   let response: JsonRpcResponse;
   try {
-    response = await jsonRpc(
-      url,
-      method,
-      params,
-      polygonPrivateMempoolHeaders(),
-      { timeoutMs: options.timeoutMs },
-    );
+    response = await jsonRpc(url, method, params, polygonPrivateMempoolHeaders(), { timeoutMs: options.timeoutMs });
   } catch (err) {
     if (isAlreadyKnownSubmission(err)) return submittedRawTxHash(rawTx);
     throw err;
@@ -308,12 +279,14 @@ export async function sendBundleAlchemy(rawTxs: RawTransaction[], options: Bundl
   const response = await jsonRpc(
     url,
     "eth_sendBundle",
-    [{
-      txs: rawTxs,
-      blockNumber: `0x${blockNumber.toString(16)}`,
-      minTimestamp: options.minTimestamp,
-      maxTimestamp: options.maxTimestamp,
-    }],
+    [
+      {
+        txs: rawTxs,
+        blockNumber: `0x${blockNumber.toString(16)}`,
+        minTimestamp: options.minTimestamp,
+        maxTimestamp: options.maxTimestamp,
+      },
+    ],
     {},
     { timeoutMs: options.timeoutMs },
   );
@@ -333,8 +306,10 @@ export async function sendPrivateBundle(rawTxs: RawTransaction[], options: Bundl
 
   if (privateMempoolSupportsBundles()) {
     submissions.push(
-      sendBundleAlchemy(rawTxs, { ...options, blockNumber }, PRIVATE_MEMPOOL_URL)
-        .then((bundleHash) => ({ bundleHash, method: "eth_sendBundle" }))
+      sendBundleAlchemy(rawTxs, { ...options, blockNumber }, PRIVATE_MEMPOOL_URL).then((bundleHash) => ({
+        bundleHash,
+        method: "eth_sendBundle",
+      })),
     );
   }
 
@@ -356,18 +331,12 @@ export async function sendPrivateBundle(rawTxs: RawTransaction[], options: Bundl
 }
 
 export async function racePublicRPCs(rawTx: RawTransaction, rpcs?: string[] | null, options: JsonRpcOptions = {}) {
-  const targets = (rpcs && rpcs.length > 0) ? rpcs : FAST_PUBLIC_RPCS;
+  const targets = rpcs && rpcs.length > 0 ? rpcs : FAST_PUBLIC_RPCS;
 
   const submissions = targets.map(async (url: string) => {
     let response: JsonRpcResponse;
     try {
-      response = await jsonRpc(
-        url,
-        "eth_sendRawTransaction",
-        [rawTx],
-        {},
-        { timeoutMs: options.timeoutMs },
-      );
+      response = await jsonRpc(url, "eth_sendRawTransaction", [rawTx], {}, { timeoutMs: options.timeoutMs });
     } catch (err) {
       if (isAlreadyKnownSubmission(err)) return submittedRawTxHash(rawTx);
       throw err;
@@ -382,47 +351,38 @@ export async function racePublicRPCs(rawTx: RawTransaction, rpcs?: string[] | nu
 
 /**
  * Submit a signed transaction via parallel racing across all private relays.
- * 
- * Instead of sequential attempts, we fire to all configured endpoints 
+ *
+ * Instead of sequential attempts, we fire to all configured endpoints
  * simultaneously. This ensures the fastest relay wins and minimizes latency.
  */
 export async function sendPrivateTx(rawTx: RawTransaction, options: PrivateTxOptions = {}): Promise<SubmissionResult> {
-  const {
-    allowPublicFallback = true,
-    publicRpcs = undefined,
-    requestTimeoutMs = DEFAULT_JSON_RPC_TIMEOUT_MS,
-  } = options;
+  const { allowPublicFallback = true, publicRpcs = undefined, requestTimeoutMs = DEFAULT_JSON_RPC_TIMEOUT_MS } = options;
   const submissions: Array<Promise<{ txHash: string; method: string }>> = [];
 
   // 1. Dedicated Polygon private mempool
   if (POLYGON_PRIVATE_MEMPOOL_URL) {
     submissions.push(
-      sendPolygonPrivateTransaction(rawTx, POLYGON_PRIVATE_MEMPOOL_URL, { timeoutMs: requestTimeoutMs })
-        .then(txHash => ({ txHash, method: `polygon_private_mempool:${POLYGON_PRIVATE_MEMPOOL_METHOD}` }))
+      sendPolygonPrivateTransaction(rawTx, POLYGON_PRIVATE_MEMPOOL_URL, { timeoutMs: requestTimeoutMs }).then((txHash) => ({
+        txHash,
+        method: `polygon_private_mempool:${POLYGON_PRIVATE_MEMPOOL_METHOD}`,
+      })),
     );
   }
 
   // 2. eth_sendPrivateTransaction (Alchemy/QuickNode)
   if (PRIVATE_MEMPOOL_URL && PRIVATE_MEMPOOL_METHOD === "eth_sendPrivateTransaction") {
     submissions.push(
-      sendPrivateTransaction(rawTx, PRIVATE_MEMPOOL_URL, { timeoutMs: requestTimeoutMs })
-        .then(txHash => ({ txHash, method: "eth_sendPrivateTransaction" }))
+      sendPrivateTransaction(rawTx, PRIVATE_MEMPOOL_URL, { timeoutMs: requestTimeoutMs }).then((txHash) => ({
+        txHash,
+        method: "eth_sendPrivateTransaction",
+      })),
     );
   }
 
   // 3. eth_sendRawTransaction to private endpoint
-  if (
-    PRIVATE_MEMPOOL_URL &&
-    (!PRIVATE_MEMPOOL_METHOD || PRIVATE_MEMPOOL_METHOD === "eth_sendRawTransaction")
-  ) {
+  if (PRIVATE_MEMPOOL_URL && (!PRIVATE_MEMPOOL_METHOD || PRIVATE_MEMPOOL_METHOD === "eth_sendRawTransaction")) {
     submissions.push(
-      jsonRpc(
-        PRIVATE_MEMPOOL_URL,
-        "eth_sendRawTransaction",
-        [rawTx],
-        {},
-        { timeoutMs: requestTimeoutMs },
-      )
+      jsonRpc(PRIVATE_MEMPOOL_URL, "eth_sendRawTransaction", [rawTx], {}, { timeoutMs: requestTimeoutMs })
         .then((res: JsonRpcResponse) => {
           return { txHash: requireRpcResultString(res, "eth_sendRawTransaction_private"), method: "eth_sendRawTransaction_private" };
         })
@@ -431,7 +391,7 @@ export async function sendPrivateTx(rawTx: RawTransaction, options: PrivateTxOpt
             return { txHash: submittedRawTxHash(rawTx), method: "eth_sendRawTransaction_private_known" };
           }
           throw err;
-        })
+        }),
     );
   }
 

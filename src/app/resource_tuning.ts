@@ -74,7 +74,7 @@ function readHwmonTemperatureInputs(root: string, entries: string[]) {
     try {
       const temp = normalizeThermalMilliC(fs.readFileSync(path.join(root, entry), "utf8"));
       if (temp != null) values.push(temp);
-    } catch { }
+    } catch {}
   }
   return values;
 }
@@ -105,7 +105,7 @@ function readTemperatureInputs(root: string) {
           const temp = normalizeThermalMilliC(fs.readFileSync(tempPath, "utf8"));
           if (temp != null) values.push(temp);
         }
-      } catch { }
+      } catch {}
       continue;
     }
 

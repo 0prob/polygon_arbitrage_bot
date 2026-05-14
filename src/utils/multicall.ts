@@ -18,8 +18,7 @@ import type { PublicClient } from "viem";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const MULTICALL3_ADDRESS: Address =
-  "0xcA11bde05977b3631167028862bE2a173976CA11";
+export const MULTICALL3_ADDRESS: Address = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,10 +50,7 @@ export interface MulticallResult<T> {
  * @param calls   Array of contract calls to batch.
  * @returns       Parallel array of {success, result, error} per call.
  */
-export async function multicall<T = unknown>(
-  client: PublicClient,
-  calls: MulticallCall<Abi>[],
-): Promise<MulticallResult<T>[]> {
+export async function multicall<T = unknown>(client: PublicClient, calls: MulticallCall<Abi>[]): Promise<MulticallResult<T>[]> {
   if (calls.length === 0) return [];
 
   const raw = await client.multicall({
@@ -98,8 +94,8 @@ export async function multicallChunked<T = unknown>(
 
 const ERC20_META_ABI = [
   { name: "decimals", type: "function", inputs: [], outputs: [{ type: "uint8" }], stateMutability: "view" },
-  { name: "symbol",   type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
-  { name: "name",     type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { name: "symbol", type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { name: "name", type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
 ] as const;
 
 export interface TokenMetadata {
@@ -117,15 +113,11 @@ export interface TokenMetadata {
  * @param tokens     Token addresses to hydrate.
  * @param chunkSize  Max tokens per batch (default 64, i.e. 192 calls/batch).
  */
-export async function fetchTokenMetadata(
-  client: PublicClient,
-  tokens: Address[],
-  chunkSize = 64,
-): Promise<TokenMetadata[]> {
+export async function fetchTokenMetadata(client: PublicClient, tokens: Address[], chunkSize = 64): Promise<TokenMetadata[]> {
   const calls = tokens.flatMap((address) => [
     { address, abi: ERC20_META_ABI, functionName: "decimals" as const },
-    { address, abi: ERC20_META_ABI, functionName: "symbol"   as const },
-    { address, abi: ERC20_META_ABI, functionName: "name"     as const },
+    { address, abi: ERC20_META_ABI, functionName: "symbol" as const },
+    { address, abi: ERC20_META_ABI, functionName: "name" as const },
   ]);
 
   const results = await multicallChunked<number | string>(
@@ -139,8 +131,8 @@ export async function fetchTokenMetadata(
     return {
       address,
       decimals: dec.success && typeof dec.result === "number" ? dec.result : 18,
-      symbol:   sym.success && typeof sym.result === "string" ? sym.result : "???",
-      name:     nam.success && typeof nam.result === "string" ? nam.result : "Unknown",
+      symbol: sym.success && typeof sym.result === "string" ? sym.result : "???",
+      name: nam.success && typeof nam.result === "string" ? nam.result : "Unknown",
     };
   });
 }
@@ -159,7 +151,7 @@ const ERC20_BALANCE_ABI = [
     name: "allowance",
     type: "function",
     inputs: [
-      { name: "owner",   type: "address" },
+      { name: "owner", type: "address" },
       { name: "spender", type: "address" },
     ],
     outputs: [{ type: "uint256" }],
@@ -211,7 +203,7 @@ export async function fetchBalanceAndAllowance(
   });
 
   return {
-    balance:   balance   as bigint,
+    balance: balance as bigint,
     allowance: allowance as bigint,
   };
 }

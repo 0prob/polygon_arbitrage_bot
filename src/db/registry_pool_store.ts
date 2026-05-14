@@ -39,11 +39,7 @@ export class RegistryPoolStore {
   private readonly invalidatePoolMetaCache: () => void;
   private readonly recordLiquidityEventFn: (...args: unknown[]) => void;
 
-  constructor(
-    db: CompatDatabase,
-    stmt: StatementGetter,
-    invalidatePoolMetaCache: () => void,
-  ) {
+  constructor(db: CompatDatabase, stmt: StatementGetter, invalidatePoolMetaCache: () => void) {
     this.db = db;
     this.stmt = stmt;
     this.invalidatePoolMetaCache = invalidatePoolMetaCache;
@@ -143,14 +139,7 @@ export class RegistryPoolStore {
   }
 
   disablePool(poolAddress: unknown, reason = "manual") {
-    disablePoolRecord(
-      this.db,
-      this.stmt,
-      this.invalidatePoolMetaCache,
-      this.recordLiquidityEventFn,
-      poolAddress,
-      reason,
-    );
+    disablePoolRecord(this.db, this.stmt, this.invalidatePoolMetaCache, this.recordLiquidityEventFn, poolAddress, reason);
   }
 
   enablePool(poolAddress: unknown) {
@@ -169,21 +158,8 @@ export class RegistryPoolStore {
     return hasRecentLiquidityEventRecord(this.stmt, poolAddress, sinceBlock);
   }
 
-  detectLiquidityChange(
-    poolAddress: unknown,
-    oldState: unknown,
-    newState: unknown,
-    blockNumber: unknown,
-    thresholdPct = 50,
-  ) {
-    return detectLiquidityChangeRecord(
-      this.recordLiquidityEventFn,
-      poolAddress,
-      oldState,
-      newState,
-      blockNumber,
-      thresholdPct,
-    );
+  detectLiquidityChange(poolAddress: unknown, oldState: unknown, newState: unknown, blockNumber: unknown, thresholdPct = 50) {
+    return detectLiquidityChangeRecord(this.recordLiquidityEventFn, poolAddress, oldState, newState, blockNumber, thresholdPct);
   }
 
   validatePoolMetadata(pool: unknown) {
@@ -191,9 +167,6 @@ export class RegistryPoolStore {
   }
 
   validateAllPools() {
-    return validateAllPoolsRecord(
-      this.getActivePools.bind(this),
-      this.validatePoolMetadata.bind(this),
-    );
+    return validateAllPoolsRecord(this.getActivePools.bind(this), this.validatePoolMetadata.bind(this));
   }
 }

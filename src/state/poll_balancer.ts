@@ -1,4 +1,3 @@
-
 /**
  * src/state/poll_balancer.js — Balancer V2 vault balances poller
  *
@@ -168,10 +167,7 @@ function withTimeout<T>(promise: Promise<T>, label: string, ms = BALANCER_READ_T
   });
 }
 
-async function readContractWithTimeout<T = unknown>(
-  params: Parameters<typeof readContractWithRetry>[0],
-  label: string,
-): Promise<T> {
+async function readContractWithTimeout<T = unknown>(params: Parameters<typeof readContractWithRetry>[0], label: string): Promise<T> {
   return withTimeout(readContractWithRetry(params) as Promise<T>, label, BALANCER_READ_TIMEOUT_MS);
 }
 
@@ -198,7 +194,7 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
         abi: GET_AMPLIFICATION_PARAMETER_ABI,
         functionName: "getAmplificationParameter",
       },
-      `Balancer getAmplificationParameter ${poolAddress}`
+      `Balancer getAmplificationParameter ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -206,7 +202,7 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
         abi: GET_SCALING_FACTORS_ABI,
         functionName: "getScalingFactors",
       },
-      `Balancer getScalingFactors ${poolAddress}`
+      `Balancer getScalingFactors ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -214,7 +210,7 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
         abi: GET_BPT_INDEX_ABI,
         functionName: "getBptIndex",
       },
-      `Balancer getBptIndex ${poolAddress}`
+      `Balancer getBptIndex ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -222,7 +218,7 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
         abi: VERSION_ABI,
         functionName: "version",
       },
-      `Balancer version ${poolAddress}`
+      `Balancer version ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -230,27 +226,21 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
         abi: GET_SWAP_FEE_ABI,
         functionName: "getSwapFeePercentage",
       },
-      `Balancer getSwapFeePercentage ${poolAddress}`
+      `Balancer getSwapFeePercentage ${poolAddress}`,
     ),
   ]);
 
   if (ampResult.status === "rejected") {
-    throw new Error(
-      `getAmplificationParameter failed: unsupported Balancer pool math (${ampResult.reason?.message ?? "unknown error"})`
-    );
+    throw new Error(`getAmplificationParameter failed: unsupported Balancer pool math (${ampResult.reason?.message ?? "unknown error"})`);
   }
   if (scalingResult.status === "rejected") {
-    throw new Error(
-      `getScalingFactors failed: unsupported Balancer pool math (${scalingResult.reason?.message ?? "unknown error"})`
-    );
+    throw new Error(`getScalingFactors failed: unsupported Balancer pool math (${scalingResult.reason?.message ?? "unknown error"})`);
   }
 
   const ampTuple = ampResult.value;
   const scalingFactors = toBigIntArray(scalingResult.value);
   const rawBptIndex = bptIndexResult.status === "fulfilled" ? Number(bptIndexResult.value) : null;
-  const bptIndex = Number.isInteger(rawBptIndex) && rawBptIndex! >= 0 && rawBptIndex! < tokens.length
-    ? rawBptIndex
-    : null;
+  const bptIndex = Number.isInteger(rawBptIndex) && rawBptIndex! >= 0 && rawBptIndex! < tokens.length ? rawBptIndex : null;
   const compactTokens = removeArrayIndex(tokens, bptIndex);
   const compactBalances = removeArrayIndex(balances, bptIndex);
   const compactScalingFactors = removeArrayIndex(scalingFactors, bptIndex);
@@ -259,17 +249,14 @@ async function fetchBalancerStableState(poolAddress: string, tokens: string[], b
   return {
     tokens: compactTokens,
     balances: compactBalances,
-    scalingFactors: compactScalingFactors.length === compactBalances.length
-      ? compactScalingFactors
-      : compactBalances.map(() => 10n ** 18n),
+    scalingFactors: compactScalingFactors.length === compactBalances.length ? compactScalingFactors : compactBalances.map(() => 10n ** 18n),
     amp: toBigIntValue(tupleValue(ampTuple, "value", 0)),
     ampIsUpdating: Boolean(tupleValue(ampTuple, "isUpdating", 1) ?? false),
     ampPrecision: toBigIntValue(tupleValue(ampTuple, "precision", 2), 1000n),
     swapFee:
       feeResult.status === "fulfilled"
         ? toBigIntValue(feeResult.value)
-        : (console.warn(`[poll_balancer] Swap fee fetch failed for %s`, poolAddress),
-           3_000_000_000_000_000n),
+        : (console.warn(`[poll_balancer] Swap fee fetch failed for %s`, poolAddress), 3_000_000_000_000_000n),
     bptIndex,
     poolType: version ?? (bptIndex == null ? "StablePool" : "ComposableStablePool"),
     isStable: true,
@@ -286,7 +273,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
           abi: GET_POOL_ID_ABI,
           functionName: "getPoolId",
         },
-        `Balancer getPoolId ${poolAddress}`
+        `Balancer getPoolId ${poolAddress}`,
       );
     } catch {
       throw new Error(`Cannot resolve poolId for ${poolAddress}`);
@@ -301,7 +288,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
         functionName: "getPoolTokens",
         args: [resolvedPoolId],
       },
-      `Balancer getPoolTokens ${poolAddress}`
+      `Balancer getPoolTokens ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -309,7 +296,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
         abi: GET_NORMALIZED_WEIGHTS_ABI,
         functionName: "getNormalizedWeights",
       },
-      `Balancer getNormalizedWeights ${poolAddress}`
+      `Balancer getNormalizedWeights ${poolAddress}`,
     ),
     readContractWithTimeout(
       {
@@ -317,7 +304,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
         abi: GET_SWAP_FEE_ABI,
         functionName: "getSwapFeePercentage",
       },
-      `Balancer getSwapFeePercentage ${poolAddress}`
+      `Balancer getSwapFeePercentage ${poolAddress}`,
     ),
   ]);
 
@@ -329,10 +316,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
   const vaultTokens = toLowerStringArray(vaultTokensRaw);
   const balances = toBigIntArray(vaultBalancesRaw);
 
-  const swapFee =
-    feeResult.status === "fulfilled"
-      ? toBigIntValue(feeResult.value)
-      : 3_000_000_000_000_000n;
+  const swapFee = feeResult.status === "fulfilled" ? toBigIntValue(feeResult.value) : 3_000_000_000_000_000n;
 
   if (weightsResult.status === "rejected") {
     const stableState = await fetchBalancerStableState(poolAddress, vaultTokens, balances);
@@ -346,9 +330,7 @@ export async function fetchBalancerPoolState(poolAddress: string, poolId: string
 
   const weights = toBigIntArray(weightsResult.value);
   if (weights.length !== balances.length) {
-    throw new Error(
-      `getNormalizedWeights length mismatch: weights=${weights.length} balances=${balances.length}`
-    );
+    throw new Error(`getNormalizedWeights length mismatch: weights=${weights.length} balances=${balances.length}`);
   }
 
   return {
@@ -397,9 +379,7 @@ export class PollBalancer extends TimedPoller {
   async poll() {
     const t0 = Date.now();
 
-    const pools = this._registry.getActivePoolsMeta().filter((p) =>
-      BALANCER_PROTOCOLS.has(normalizeProtocolKey(p.protocol))
-    );
+    const pools = this._registry.getActivePoolsMeta().filter((p) => BALANCER_PROTOCOLS.has(normalizeProtocolKey(p.protocol)));
 
     if (pools.length === 0) {
       return { updated: 0, failed: 0, durationMs: Date.now() - t0 };
@@ -418,17 +398,12 @@ export class PollBalancer extends TimedPoller {
           return asBatchResult<RouteState>(addr, null, err);
         }
       },
-      this._concurrency
+      this._concurrency,
     );
 
-    const { updated, failed } = this._storeBatchResults(
-      "poll_balancer",
-      this._cache,
-      results,
-      ({ addr, normalized }) => {
-        return `[poll_balancer] ${addr} balances=${normalized.balances}`;
-      }
-    );
+    const { updated, failed } = this._storeBatchResults("poll_balancer", this._cache, results, ({ addr, normalized }) => {
+      return `[poll_balancer] ${addr} balances=${normalized.balances}`;
+    });
 
     return this._completePass("poll_balancer", t0, updated, failed);
   }

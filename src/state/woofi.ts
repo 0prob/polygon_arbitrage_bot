@@ -1,8 +1,4 @@
-import {
-  isNoDataReadContractError,
-  readContractWithRetry,
-  throttledMap,
-} from "../state/enrichment/rpc.ts";
+import { isNoDataReadContractError, readContractWithRetry, throttledMap } from "../state/enrichment/rpc.ts";
 import { ENRICH_CONCURRENCY } from "../config/index.ts";
 import { normalizeEvmAddress } from "../utils/pool_record.ts";
 import { errorMessage } from "../utils/errors.ts";
@@ -41,13 +37,14 @@ export type WoofiOracleState = {
   priceDec: bigint;
 };
 
-export type WoofiBaseState = WoofiTokenInfo & WoofiOracleState & {
-  token: string;
-  baseDecimals: number;
-  quoteDecimals: number;
-  baseDec: bigint;
-  quoteDec: bigint;
-};
+export type WoofiBaseState = WoofiTokenInfo &
+  WoofiOracleState & {
+    token: string;
+    baseDecimals: number;
+    quoteDecimals: number;
+    baseDec: bigint;
+    quoteDec: bigint;
+  };
 
 export type WoofiPoolState = {
   address: string;
@@ -66,9 +63,7 @@ export type WoofiStateMap = Map<string, WoofiPoolState> & {
   noDataFailures?: Set<string>;
 };
 
-type WoofiFetchResult =
-  | { addr: string; state: WoofiPoolState; error: null }
-  | { addr: string; state: null; error: unknown };
+type WoofiFetchResult = { addr: string; state: WoofiPoolState; error: null } | { addr: string; state: null; error: unknown };
 
 function pow10(decimals: number) {
   if (!Number.isInteger(decimals) || decimals < 0 || decimals > 38) return 1n;
@@ -76,11 +71,13 @@ function pow10(decimals: number) {
 }
 
 async function readAddress(poolAddress: string, functionName: "quoteToken" | "wooracle"): Promise<string | null> {
-  return normalizeEvmAddress(await readContractWithRetry({
-    address: poolAddress,
-    abi: WOOFI_POOL_ABI,
-    functionName,
-  }));
+  return normalizeEvmAddress(
+    await readContractWithRetry({
+      address: poolAddress,
+      abi: WOOFI_POOL_ABI,
+      functionName,
+    }),
+  );
 }
 
 async function readTokenDecimals(token: string): Promise<number> {
@@ -144,12 +141,7 @@ async function fetchOracleState(wooracle: string, token: string): Promise<WoofiO
   };
 }
 
-async function fetchWoofiBaseState(
-  poolAddress: string,
-  wooracle: string,
-  quoteDecimals: number,
-  token: string,
-): Promise<WoofiBaseState> {
+async function fetchWoofiBaseState(poolAddress: string, wooracle: string, quoteDecimals: number, token: string): Promise<WoofiBaseState> {
   const [tokenInfo, oracle, baseDecimals] = await Promise.all([
     fetchTokenInfo(poolAddress, token),
     fetchOracleState(wooracle, token),
@@ -181,14 +173,11 @@ export async function fetchWoofiPoolState(
   }
 
   const wooracle = wooracleAddress ?? normalizeEvmAddress(WOOFI_WOORACLE_V2)!;
-  const candidateTokens = [...new Set((options.tokens ?? [])
-    .map((token) => normalizeEvmAddress(token))
-    .filter((token): token is string => token != null))];
+  const candidateTokens = [
+    ...new Set((options.tokens ?? []).map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null)),
+  ];
   const baseTokens = candidateTokens.filter((token) => token !== quoteToken);
-  const [quoteInfo, quoteDecimals] = await Promise.all([
-    fetchTokenInfo(addr, quoteToken),
-    readTokenDecimals(quoteToken),
-  ]);
+  const [quoteInfo, quoteDecimals] = await Promise.all([fetchTokenInfo(addr, quoteToken), readTokenDecimals(quoteToken)]);
 
   const baseResults = await throttledMap(
     baseTokens,

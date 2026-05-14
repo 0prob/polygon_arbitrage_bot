@@ -2,12 +2,10 @@ import type { BotState } from "../tui/types.ts";
 
 export type OperatorLogMeta = Record<string, unknown>;
 export type OperatorLogMetaInput = OperatorLogMeta | (() => OperatorLogMeta) | unknown;
-type OperatorLogState = Pick<BotState, "logs"> & Partial<Pick<
-  BotState,
-  "currentActivity" | "currentActivityDetail" | "currentActivityUpdatedMs" | "currentActivityProgress"
->> & {
-  lastRoutingUniverseMeta?: OperatorLogMeta;
-};
+type OperatorLogState = Pick<BotState, "logs"> &
+  Partial<Pick<BotState, "currentActivity" | "currentActivityDetail" | "currentActivityUpdatedMs" | "currentActivityProgress">> & {
+    lastRoutingUniverseMeta?: OperatorLogMeta;
+  };
 
 const ACTIVITY_BY_EVENT: Record<string, string> = {
   pass_start: "Starting pass",
@@ -95,9 +93,8 @@ function displayBasisPoints(value: unknown) {
 function normalizeActivityProgress(payload: OperatorLogMeta | undefined) {
   if (!payload) return null;
   const rawProgress = payload.progress;
-  const progress = rawProgress && typeof rawProgress === "object" && !Array.isArray(rawProgress)
-    ? rawProgress as Record<string, unknown>
-    : {};
+  const progress =
+    rawProgress && typeof rawProgress === "object" && !Array.isArray(rawProgress) ? (rawProgress as Record<string, unknown>) : {};
   const completed = finiteCount(payload.progressCompleted ?? progress.completed);
   const total = finiteCount(payload.progressTotal ?? progress.total);
   const unit = cleanText(payload.progressUnit ?? progress.unit) ?? undefined;
@@ -127,9 +124,7 @@ function recordValue(value: unknown) {
 }
 
 function recordObject(value: unknown) {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : undefined;
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 }
 
 function errorReason(value: unknown) {
@@ -137,10 +132,7 @@ function errorReason(value: unknown) {
   const text = cleanText(value);
   if (text) return text;
   const record = recordObject(value);
-  return cleanText(record?.message)
-    ?? cleanText(record?.shortMessage)
-    ?? cleanText(record?.reason)
-    ?? cleanText(record?.details);
+  return cleanText(record?.message) ?? cleanText(record?.shortMessage) ?? cleanText(record?.reason) ?? cleanText(record?.details);
 }
 
 function quietPoolFetchFailureReason(value: unknown) {
@@ -230,11 +222,7 @@ function yieldSummary(value: unknown, labelKey: string, limit = 3) {
       const routableRateBps = Math.min(10_000, Math.floor((routablePools * 10_000) / entry.selectedPools));
       return { ...entry, routablePools, routableRateBps };
     })
-    .sort((a, b) =>
-      a.routableRateBps - b.routableRateBps ||
-      b.selectedPools - a.selectedPools ||
-      a.label.localeCompare(b.label)
-    );
+    .sort((a, b) => a.routableRateBps - b.routableRateBps || b.selectedPools - a.selectedPools || a.label.localeCompare(b.label));
   const parts = entries
     .slice(0, limit)
     .map((entry) => `${entry.label}:${entry.routablePools}/${entry.selectedPools}@${entry.routableRateBps}`);
@@ -254,26 +242,25 @@ function protocolCohortCooldownSummary(value: unknown) {
         : null;
     })
     .filter((entry): entry is { protocol: string; selectedPools: number; failedPools: number } => Boolean(entry))
-    .sort((a, b) =>
-      b.selectedPools - a.selectedPools ||
-      b.failedPools - a.failedPools ||
-      a.protocol.localeCompare(b.protocol)
-    )[0];
+    .sort((a, b) => b.selectedPools - a.selectedPools || b.failedPools - a.failedPools || a.protocol.localeCompare(b.protocol))[0];
   return top ? `${top.protocol}:${top.selectedPools}/${top.failedPools}` : null;
 }
 
 function coverageGapRows(value: unknown) {
   if (!Array.isArray(value)) return [];
-  const groups = new Map<string, {
-    protocol: string;
-    rows: number;
-    activePools: number;
-    stateRows: number;
-    missingStatePools: number;
-    stateCoverageBps: number;
-    routablePools: number;
-    routableCoverageBps: number;
-  }>();
+  const groups = new Map<
+    string,
+    {
+      protocol: string;
+      rows: number;
+      activePools: number;
+      stateRows: number;
+      missingStatePools: number;
+      stateCoverageBps: number;
+      routablePools: number;
+      routableCoverageBps: number;
+    }
+  >();
   for (const entry of value) {
     const record = recordObject(entry);
     if (!record) continue;
@@ -292,7 +279,8 @@ function coverageGapRows(value: unknown) {
       stateCoverageBps == null ||
       routablePools == null ||
       routableCoverageBps == null
-    ) continue;
+    )
+      continue;
     const group = groups.get(protocol) ?? {
       protocol,
       rows: 0,
@@ -308,12 +296,14 @@ function coverageGapRows(value: unknown) {
     group.stateRows += stateRows;
     group.missingStatePools += missingStatePools;
     group.routablePools += routablePools;
-    group.stateCoverageBps = group.rows > 1 && group.activePools > 0
-      ? displayBasisPoints(Math.floor((group.stateRows * 10_000) / group.activePools)) ?? 0
-      : stateCoverageBps;
-    group.routableCoverageBps = group.rows > 1 && group.activePools > 0
-      ? displayBasisPoints(Math.floor((group.routablePools * 10_000) / group.activePools)) ?? 0
-      : routableCoverageBps;
+    group.stateCoverageBps =
+      group.rows > 1 && group.activePools > 0
+        ? (displayBasisPoints(Math.floor((group.stateRows * 10_000) / group.activePools)) ?? 0)
+        : stateCoverageBps;
+    group.routableCoverageBps =
+      group.rows > 1 && group.activePools > 0
+        ? (displayBasisPoints(Math.floor((group.routablePools * 10_000) / group.activePools)) ?? 0)
+        : routableCoverageBps;
     groups.set(protocol, group);
   }
   return Array.from(groups.values()).map((entry) => ({
@@ -324,10 +314,8 @@ function coverageGapRows(value: unknown) {
 }
 
 function stateCoverageGapSummary(value: unknown, limit = 3) {
-  const entries = coverageGapRows(value).sort((a, b) =>
-    b.missingStatePools - a.missingStatePools ||
-    a.stateCoverageBps - b.stateCoverageBps ||
-    a.protocol.localeCompare(b.protocol)
+  const entries = coverageGapRows(value).sort(
+    (a, b) => b.missingStatePools - a.missingStatePools || a.stateCoverageBps - b.stateCoverageBps || a.protocol.localeCompare(b.protocol),
   );
   const parts = entries
     .slice(0, limit)
@@ -336,10 +324,8 @@ function stateCoverageGapSummary(value: unknown, limit = 3) {
 }
 
 function routableCoverageGapSummary(value: unknown, limit = 3) {
-  const entries = coverageGapRows(value).sort((a, b) =>
-    a.routableCoverageBps - b.routableCoverageBps ||
-    b.activePools - a.activePools ||
-    a.protocol.localeCompare(b.protocol)
+  const entries = coverageGapRows(value).sort(
+    (a, b) => a.routableCoverageBps - b.routableCoverageBps || b.activePools - a.activePools || a.protocol.localeCompare(b.protocol),
   );
   const parts = entries
     .slice(0, limit)
@@ -355,17 +341,17 @@ function stateYieldSummary(value: unknown, limit = 3) {
       const routableStateYieldBps = Math.min(10_000, Math.floor((routablePools * 10_000) / entry.stateRows));
       return { protocol: entry.protocol, routablePools, stateRows: entry.stateRows, routableStateYieldBps };
     })
-    .filter((entry): entry is {
-      protocol: string;
-      routablePools: number;
-      stateRows: number;
-      routableStateYieldBps: number;
-    } => Boolean(entry))
-    .sort((a, b) =>
-      a.routableStateYieldBps - b.routableStateYieldBps ||
-      b.stateRows - a.stateRows ||
-      a.protocol.localeCompare(b.protocol)
-    );
+    .filter(
+      (
+        entry,
+      ): entry is {
+        protocol: string;
+        routablePools: number;
+        stateRows: number;
+        routableStateYieldBps: number;
+      } => Boolean(entry),
+    )
+    .sort((a, b) => a.routableStateYieldBps - b.routableStateYieldBps || b.stateRows - a.stateRows || a.protocol.localeCompare(b.protocol));
   const parts = entries
     .slice(0, limit)
     .map((entry) => `${entry.protocol}:${entry.routablePools}/${entry.stateRows}@${entry.routableStateYieldBps}`);
@@ -382,29 +368,26 @@ function pendingReasonSummary(value: unknown, limit = 3, sortByPools = false) {
       const hubClass = cleanText(record.hubClass);
       const reason = cleanText(record.reason);
       const pools = finiteCount(record.pools);
-      return protocol && hubClass && reason && pools != null && pools > 0
-        ? { protocol, hubClass, reason, pools }
-        : null;
+      return protocol && hubClass && reason && pools != null && pools > 0 ? { protocol, hubClass, reason, pools } : null;
     })
     .filter((entry): entry is { protocol: string; hubClass: string; reason: string; pools: number } => Boolean(entry));
   if (sortByPools) {
-    entries.sort((a, b) =>
-      b.pools - a.pools ||
-      [a.protocol, a.hubClass, a.reason].join("/").localeCompare([b.protocol, b.hubClass, b.reason].join("/"))
+    entries.sort(
+      (a, b) =>
+        b.pools - a.pools || [a.protocol, a.hubClass, a.reason].join("/").localeCompare([b.protocol, b.hubClass, b.reason].join("/")),
     );
   }
-  const parts = entries
-    .slice(0, limit)
-    .map((entry) => `${entry.protocol}/${entry.hubClass}:${entry.reason}:${entry.pools}`);
+  const parts = entries.slice(0, limit).map((entry) => `${entry.protocol}/${entry.hubClass}:${entry.reason}:${entry.pools}`);
   return parts.length > 0 ? parts.join(",") : null;
 }
 
 function topRejectSummary(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const [reason, count] = Object.entries(value as Record<string, unknown>)
-    .map(([entryReason, entryCount]) => [entryReason, finiteCount(entryCount)] as const)
-    .filter((entry): entry is readonly [string, number] => entry[1] != null && entry[1] > 0)
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? [];
+  const [reason, count] =
+    Object.entries(value as Record<string, unknown>)
+      .map(([entryReason, entryCount]) => [entryReason, finiteCount(entryCount)] as const)
+      .filter((entry): entry is readonly [string, number] => entry[1] != null && entry[1] > 0)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? [];
   return reason && typeof count === "number" ? `${reason}:${count}` : null;
 }
 
@@ -487,8 +470,9 @@ function hasCoreHubInFlightForProtocol(payload: OperatorLogMeta | undefined, pro
 }
 
 function hub4HydrationSuppressionDetail(protocol: string, payload: OperatorLogMeta | undefined) {
-  return coreHubCooldownDetailForProtocol(payload, protocol) ??
-    (hasCoreHubInFlightForProtocol(payload, protocol) ? "in_flight" : undefined);
+  return (
+    coreHubCooldownDetailForProtocol(payload, protocol) ?? (hasCoreHubInFlightForProtocol(payload, protocol) ? "in_flight" : undefined)
+  );
 }
 
 function coreHubValidationFailureReasonForProtocol(payload: OperatorLogMeta | undefined, protocol: string) {
@@ -605,22 +589,19 @@ function buildHub4HydrationAlignment(routingUniverse: OperatorLogMeta | undefine
       const selectedCoreHubPools = selectedCoreHub.get(protocol) ?? 0;
       const pendingCoreHubPools = pendingCoreHub.get(protocol) ?? 0;
       const broadSelectedPools = yieldEntry?.selectedPools ?? selected.get(protocol) ?? selectedCoreHubPools;
-      const selectedPools = hasSelectedCoreHubBreakdown && selectedCoreHubPools > 0
-        ? selectedCoreHubPools
-        : broadSelectedPools;
+      const selectedPools = hasSelectedCoreHubBreakdown && selectedCoreHubPools > 0 ? selectedCoreHubPools : broadSelectedPools;
       const hasHydrationOutcome = event !== "quiet_pool_sweep_start";
       const routablePools = hasHydrationOutcome
         ? hasCoreRoutableBreakdown && selectedCoreHubPools > 0
-          ? coreRoutable.get(protocol) ?? 0
-          : yieldEntry?.routablePools ?? 0
+          ? (coreRoutable.get(protocol) ?? 0)
+          : (yieldEntry?.routablePools ?? 0)
         : undefined;
-      const observedUnroutableCoreHubPools = hasHydrationOutcome
-        ? coreObservedUnroutable.get(protocol) ?? 0
-        : undefined;
+      const observedUnroutableCoreHubPools = hasHydrationOutcome ? (coreObservedUnroutable.get(protocol) ?? 0) : undefined;
       const suppressionDetail = hub4HydrationSuppressionDetail(protocol, payload);
-      const validationFailureReason = event === "quiet_pool_sweep_complete" && selectedCoreHubPools > 0
-        ? coreHubValidationFailureReasonForProtocol(payload, protocol)
-        : undefined;
+      const validationFailureReason =
+        event === "quiet_pool_sweep_complete" && selectedCoreHubPools > 0
+          ? coreHubValidationFailureReasonForProtocol(payload, protocol)
+          : undefined;
       const baseSelectionGap = hub4HydrationSelectionGap(
         pendingCoreHubPools,
         selectedCoreHubPools,
@@ -630,31 +611,24 @@ function buildHub4HydrationAlignment(routingUniverse: OperatorLogMeta | undefine
         event,
         Boolean(suppressionDetail),
       );
-      const selectionGap = (baseSelectionGap === "zero_yield" || baseSelectionGap === "observed_unroutable") && validationFailureReason
-        ? "validation_failed"
-        : baseSelectionGap;
-      const selectionGapDetail = validationFailureReason && selectionGap === "validation_failed"
-        ? validationFailureReason
-        : hub4HydrationSelectionGapDetail(
-          selectionGap,
-          payload,
-          selectedCoreHubPools,
-          selectedPools,
-          suppressionDetail,
-        );
+      const selectionGap =
+        (baseSelectionGap === "zero_yield" || baseSelectionGap === "observed_unroutable") && validationFailureReason
+          ? "validation_failed"
+          : baseSelectionGap;
+      const selectionGapDetail =
+        validationFailureReason && selectionGap === "validation_failed"
+          ? validationFailureReason
+          : hub4HydrationSelectionGapDetail(selectionGap, payload, selectedCoreHubPools, selectedPools, suppressionDetail);
       return {
         protocol,
         hub4ActionableMissingPools,
         pendingCoreHubPools,
         selectedCoreHubPools,
-        selectedCoreHubCoverageBps: hub4ActionableMissingPools > 0
-          ? Math.min(10000, Math.floor((selectedCoreHubPools * 10000) / hub4ActionableMissingPools))
-          : 0,
+        selectedCoreHubCoverageBps:
+          hub4ActionableMissingPools > 0 ? Math.min(10000, Math.floor((selectedCoreHubPools * 10000) / hub4ActionableMissingPools)) : 0,
         selectedPools,
         ...(routablePools != null ? { routablePools } : {}),
-        ...(observedUnroutableCoreHubPools != null && observedUnroutableCoreHubPools > 0
-          ? { observedUnroutableCoreHubPools }
-          : {}),
+        ...(observedUnroutableCoreHubPools != null && observedUnroutableCoreHubPools > 0 ? { observedUnroutableCoreHubPools } : {}),
         ...(selectionGap ? { selectionGap } : {}),
         ...(selectionGapDetail ? { selectionGapDetail } : {}),
       };
@@ -673,10 +647,7 @@ const QUIET_POOL_HUB4_ALIGNMENT_EVENTS = new Set([
   "quiet_pool_sweep_skipped",
 ]);
 
-function augmentQuietPoolHydrationAlignment(
-  payload: OperatorLogMeta | undefined,
-  routingUniverse: OperatorLogMeta | undefined,
-) {
+function augmentQuietPoolHydrationAlignment(payload: OperatorLogMeta | undefined, routingUniverse: OperatorLogMeta | undefined) {
   const event = cleanText(payload?.event);
   if (!payload || !routingUniverse || !event || !QUIET_POOL_HUB4_ALIGNMENT_EVENTS.has(event)) return payload;
   if (payload.hub4HydrationAlignment) return payload;
@@ -697,7 +668,7 @@ function activityLabelForLog(msg: string, payload: OperatorLogMeta | undefined) 
 }
 
 function activityDetailForLog(msg: string, payload: OperatorLogMeta | undefined) {
-  const truncateDetail = (detail: string) => detail.length <= 120 ? detail : `${detail.slice(0, 117)}...`;
+  const truncateDetail = (detail: string) => (detail.length <= 120 ? detail : `${detail.slice(0, 117)}...`);
   const explicit = cleanText(payload?.activityDetail);
   if (explicit) return truncateDetail(explicit);
   const event = cleanText(payload?.event);
@@ -708,8 +679,8 @@ function activityDetailForLog(msg: string, payload: OperatorLogMeta | undefined)
       const detail = cleanMsg.includes("quiet_pool_sweep_fetch_failed:")
         ? `Quiet-pool sweep error: ${reason}`
         : cleanMsg.includes(reason)
-        ? cleanMsg
-        : `Quiet-pool sweep error: ${reason}`;
+          ? cleanMsg
+          : `Quiet-pool sweep error: ${reason}`;
       return truncateDetail(detail);
     }
   }
@@ -722,12 +693,7 @@ function activityDetailForLog(msg: string, payload: OperatorLogMeta | undefined)
   return truncateDetail(msg);
 }
 
-function updateActivityFromLog(
-  state: OperatorLogState,
-  msg: string,
-  payload: OperatorLogMeta | undefined,
-  now: () => number,
-) {
+function updateActivityFromLog(state: OperatorLogState, msg: string, payload: OperatorLogMeta | undefined, now: () => number) {
   const activity = activityLabelForLog(msg, payload);
   if (!activity) return;
   state.currentActivity = activity;
@@ -792,9 +758,8 @@ export function summarizeLogForTui(msg: string, payload: OperatorLogMeta | undef
     }
     const protocolDiversityCap = displayCount(payload.protocolDiversityCap);
     if (protocolDiversityCap != null) {
-      const diversityCap = event === "quiet_pool_sweep_skipped" && payload.reason === "quiet_pool_sweep_batch_size_zero"
-        ? 0
-        : protocolDiversityCap;
+      const diversityCap =
+        event === "quiet_pool_sweep_skipped" && payload.reason === "quiet_pool_sweep_batch_size_zero" ? 0 : protocolDiversityCap;
       parts.push(`diversityCap=${diversityCap}`);
     } else if (event === "quiet_pool_sweep_skipped" && payload.reason === "quiet_pool_sweep_batch_size_zero") {
       parts.push("diversityCap=0");
@@ -1015,9 +980,7 @@ export function summarizeLogForTui(msg: string, payload: OperatorLogMeta | undef
     if (hubObserved != null) parts.push(`hubObservedUnroutable=${hubObserved}`);
     if (hubUnsupported != null && hubUnsupported > 0) parts.push(`hubUnsupported=${hubUnsupported}`);
     const hubTopMissing = protocolCountTopSummary(
-      payload.hubAdjacentActionableMissingByProtocol
-        ?? payload.actionableMissingByProtocol
-        ?? payload.hubAdjacentMissingByProtocol,
+      payload.hubAdjacentActionableMissingByProtocol ?? payload.actionableMissingByProtocol ?? payload.hubAdjacentMissingByProtocol,
     );
     if (hubTopMissing) parts.push(`hubTopMissing=${hubTopMissing}`);
     const hubTopInvalid = protocolCountTopSummary(payload.hubAdjacentInvalidByProtocol);
@@ -1132,16 +1095,15 @@ export function summarizeLogForTui(msg: string, payload: OperatorLogMeta | undef
         const hubClass = cleanText(record.hubClass);
         const reason = cleanText(record.reason);
         const pools = finiteCount(record.pools);
-        return protocol && hubClass && reason && pools != null && pools > 0
-          ? { protocol, hubClass, reason, pools }
-          : null;
+        return protocol && hubClass && reason && pools != null && pools > 0 ? { protocol, hubClass, reason, pools } : null;
       })
       .filter((entry): entry is { protocol: string; hubClass: string; reason: string; pools: number } => Boolean(entry))
-      .sort((a, b) =>
-        b.pools - a.pools ||
-        a.protocol.localeCompare(b.protocol) ||
-        a.hubClass.localeCompare(b.hubClass) ||
-        a.reason.localeCompare(b.reason)
+      .sort(
+        (a, b) =>
+          b.pools - a.pools ||
+          a.protocol.localeCompare(b.protocol) ||
+          a.hubClass.localeCompare(b.hubClass) ||
+          a.reason.localeCompare(b.reason),
       )
       .slice(0, 3)
       .map((entry) => `${entry.protocol}/${entry.hubClass}:${entry.reason}:${entry.pools}`);

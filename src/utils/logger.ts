@@ -17,5 +17,5 @@ export const logger = pino(
     level: LOG_LEVEL,
     base: undefined,
   },
-  createDestination()
+  createDestination(),
 );

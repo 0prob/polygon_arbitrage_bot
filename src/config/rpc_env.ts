@@ -29,10 +29,7 @@ function requireEnv(key: string): string {
     // Defer to a runtime error with a clear message rather than crashing at
     // module-load time (which produces a cryptic "Cannot read properties of
     // undefined" stack trace before any logging is initialized).
-    console.error(
-      `[rpc_env] FATAL: required env var ${key} is not set. ` +
-      `Set it in your .env file before starting.`
-    );
+    console.error(`[rpc_env] FATAL: required env var ${key} is not set. ` + `Set it in your .env file before starting.`);
     // Return a placeholder that will produce a clear fetch error if used,
     // rather than silently substituting a demo endpoint.
     return `__missing_${key}__`;
@@ -52,9 +49,7 @@ export const POLYGON_RPC_URL: string = requireEnv("POLYGON_RPC");
  * Comma-separated fallback RPC pool. Tenderly (simulation-only) endpoints
  * must NOT appear here — they belong in GAS_ESTIMATION_RPC.
  */
-export const POLYGON_RPC_URLS: string[] = (
-  process.env.POLYGON_RPC_URLS ?? POLYGON_RPC_URL
-)
+export const POLYGON_RPC_URLS: string[] = (process.env.POLYGON_RPC_URLS ?? POLYGON_RPC_URL)
   .split(",")
   .map((u) => u.trim())
   .filter(Boolean);
@@ -67,10 +62,7 @@ export const POLYGON_RPC_URLS: string[] = (
  * or any full-node with accurate pending-state support).
  * This URL is NEVER added to the fallback pool.
  */
-export const GAS_ESTIMATION_RPC_URL: string = optionalEnv(
-  "GAS_ESTIMATION_RPC",
-  POLYGON_RPC_URL
-);
+export const GAS_ESTIMATION_RPC_URL: string = optionalEnv("GAS_ESTIMATION_RPC", POLYGON_RPC_URL);
 
 // ─── Execution RPC (sendRawTransaction) ──────────────────────────────────────
 
@@ -80,10 +72,7 @@ export const GAS_ESTIMATION_RPC_URL: string = optionalEnv(
  * pool — a missing or failing execution RPC is treated as a hard error, not
  * silently retried through public nodes.
  */
-export const EXECUTION_RPC_URL: string = optionalEnv(
-  "EXECUTION_RPC",
-  POLYGON_RPC_URL
-);
+export const EXECUTION_RPC_URL: string = optionalEnv("EXECUTION_RPC", POLYGON_RPC_URL);
 
 // ─── Viem clients ─────────────────────────────────────────────────────────────
 

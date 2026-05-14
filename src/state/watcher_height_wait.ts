@@ -6,32 +6,29 @@ export const WATCHER_IDLE_SLEEP_MS = HYPERSYNC_WATCHER_IDLE_SLEEP_MS;
  * Adaptive sleep calculation based on poll lag.
  * Reduces idle time when behind, increases when caught up.
  */
-export function calculateAdaptiveSleepMs(
-  pollLagBlocks: number | null | undefined,
-  baseSleepMs: number,
-): number {
+export function calculateAdaptiveSleepMs(pollLagBlocks: number | null | undefined, baseSleepMs: number): number {
   if (pollLagBlocks == null || pollLagBlocks <= 0) {
     // Caught up - use base sleep
     return baseSleepMs;
   }
-  
+
   // Behind on blocks - aggressive polling but with rate limiting.
   // Don't poll faster than 200ms to avoid hammering HyperSync with
   // thousands of requests per second after a restart or extended downtime.
   if (pollLagBlocks >= 10) {
     return Math.max(200, Math.floor(baseSleepMs * 0.05));
   }
-  
+
   // Moderate lag
   if (pollLagBlocks >= 3) {
     return Math.max(100, Math.floor(baseSleepMs * 0.3)); // 100ms min
   }
-  
+
   // Slight lag
   if (pollLagBlocks >= 1) {
     return Math.max(200, Math.floor(baseSleepMs * 0.5)); // 200ms min
   }
-  
+
   return baseSleepMs;
 }
 
@@ -57,11 +54,7 @@ export async function waitForWatcherHeightAdvance({
   const numericTargetNextBlock = Number(targetNextBlock);
   let currentHeight = Number(knownArchiveHeight);
 
-  if (
-    !Number.isFinite(numericTargetNextBlock) ||
-    !Number.isFinite(currentHeight) ||
-    currentHeight >= numericTargetNextBlock
-  ) {
+  if (!Number.isFinite(numericTargetNextBlock) || !Number.isFinite(currentHeight) || currentHeight >= numericTargetNextBlock) {
     const adaptiveSleep = calculateAdaptiveSleepMs(pollLagBlocks ?? null, idleSleepMs);
     await sleep(adaptiveSleep);
     return;

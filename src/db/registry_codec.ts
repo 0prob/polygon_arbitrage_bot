@@ -34,18 +34,18 @@ function recordField(value: unknown): Record<string, unknown> {
 }
 
 const BIGINT_SCALAR_FIELDS: Record<string, string[]> = {
-  V2:      ["fee", "feeDenominator", "reserve0", "reserve1"],
-  V3:      ["fee", "sqrtPriceX96", "liquidity"],
-  CURVE:   ["fee", "A", "swapFee", "virtualPrice"],
-  BALANCER:["fee", "swapFee", "amp", "ampPrecision"],
-  DODO:    ["fee", "baseReserve", "quoteReserve", "baseTarget", "quoteTarget", "i", "k", "lpFeeRate", "mtFeeRate"],
-  WOOFI:   ["fee", "feeDenominator", "quoteReserve", "quoteFeeRate", "quoteDec"],
+  V2: ["fee", "feeDenominator", "reserve0", "reserve1"],
+  V3: ["fee", "sqrtPriceX96", "liquidity"],
+  CURVE: ["fee", "A", "swapFee", "virtualPrice"],
+  BALANCER: ["fee", "swapFee", "amp", "ampPrecision"],
+  DODO: ["fee", "baseReserve", "quoteReserve", "baseTarget", "quoteTarget", "i", "k", "lpFeeRate", "mtFeeRate"],
+  WOOFI: ["fee", "feeDenominator", "quoteReserve", "quoteFeeRate", "quoteDec"],
 };
 
 const BIGINT_ARRAY_FIELDS: Record<string, string[]> = {
-  CURVE:   ["balances", "rates"],
-  BALANCER:["balances", "weights", "scalingFactors"],
-  WOOFI:   ["balances"],
+  CURVE: ["balances", "rates"],
+  BALANCER: ["balances", "weights", "scalingFactors"],
+  WOOFI: ["balances"],
 };
 
 function protocolClass(protocol: string): string {
@@ -104,10 +104,13 @@ export function rehydrateV3Ticks(ticks: unknown) {
     if (!isRecord(liquidity)) continue;
     const tickNumber = Number(tick);
     if (!Number.isInteger(tickNumber)) continue;
-    entries.push([tickNumber, {
-      liquidityGross: toBigIntOrZero(liquidity?.liquidityGross),
-      liquidityNet: toBigIntOrZero(liquidity?.liquidityNet),
-    }]);
+    entries.push([
+      tickNumber,
+      {
+        liquidityGross: toBigIntOrZero(liquidity?.liquidityGross),
+        liquidityNet: toBigIntOrZero(liquidity?.liquidityNet),
+      },
+    ]);
   }
   entries.sort(([a], [b]) => a - b);
   return new Map(entries);
@@ -147,7 +150,7 @@ export function rehydrateStateData(protocol: string, data: unknown): unknown {
   }
   for (const field of BIGINT_ARRAY_FIELDS[cls] || []) {
     if (Array.isArray(data[field])) {
-      data[field] = data[field].map(v => toBigInt(v));
+      data[field] = data[field].map((v) => toBigInt(v));
     }
   }
   if (cls === "V3") {
@@ -164,7 +167,7 @@ export function stringifyWithBigInt(obj: unknown) {
       ? value.toString()
       : value instanceof Map
         ? Object.fromEntries([...value.entries()].map(([key, entry]) => [String(key), entry]))
-        : value
+        : value,
   );
 }
 
@@ -203,11 +206,19 @@ export function mapPoolRow(row: unknown) {
 }
 
 const METADATA_BIGINT_FIELDS = new Set([
-  "fee", "feeNumerator", "feeDenominator",
-  "swapFee", "swapFeeUnits", "swapFeeBps",
-  "amp", "A", "virtualPrice",
-  "poolId", "pool_id",
-  "baseToken", "quoteToken",
+  "fee",
+  "feeNumerator",
+  "feeDenominator",
+  "swapFee",
+  "swapFeeUnits",
+  "swapFeeBps",
+  "amp",
+  "A",
+  "virtualPrice",
+  "poolId",
+  "pool_id",
+  "baseToken",
+  "quoteToken",
 ]);
 
 function rehydrateMetadataBigints(metadata: Record<string, unknown>): Record<string, unknown> {

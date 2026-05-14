@@ -1,4 +1,3 @@
-
 /**
  * src/db/registry.js — SQLite-backed pool registry
  *
@@ -92,7 +91,9 @@ export class RegistryService {
     return this._poolStore.removePool(address);
   }
 
-  batchRemovePools(removals: Array<string | { address?: string; pool_address?: string; removed_block?: number; removedBlock?: number; block?: number }>) {
+  batchRemovePools(
+    removals: Array<string | { address?: string; pool_address?: string; removed_block?: number; removedBlock?: number; block?: number }>,
+  ) {
     return this._poolStore.batchRemovePools(removals);
   }
 
@@ -364,13 +365,7 @@ export class RegistryService {
    * @param {*}      [oldValue]  Previous value
    * @param {*}      [newValue]  New value
    */
-  recordLiquidityEvent(
-    poolAddress: string,
-    blockNumber: number,
-    eventType: string,
-    oldValue: unknown,
-    newValue: unknown,
-  ) {
+  recordLiquidityEvent(poolAddress: string, blockNumber: number, eventType: string, oldValue: unknown, newValue: unknown) {
     this._poolStore.recordLiquidityEvent(poolAddress, blockNumber, eventType, oldValue, newValue);
   }
 
@@ -398,13 +393,7 @@ export class RegistryService {
    * @param {number} [thresholdPct=50]  % change threshold
    * @returns {boolean}  true if a significant change was detected
    */
-  detectLiquidityChange(
-    poolAddress: string,
-    oldState: unknown,
-    newState: unknown,
-    blockNumber: number,
-    thresholdPct = 50,
-  ) {
+  detectLiquidityChange(poolAddress: string, oldState: unknown, newState: unknown, blockNumber: number, thresholdPct = 50) {
     return this._poolStore.detectLiquidityChange(poolAddress, oldState, newState, blockNumber, thresholdPct);
   }
 

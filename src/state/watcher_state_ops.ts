@@ -1,4 +1,3 @@
-
 /**
  * src/state/watcher_state_ops.js — State mutation helpers for StateWatcher
  */
@@ -221,30 +220,34 @@ export async function handleWatcherLogs({
     const state = pending.state;
 
     try {
-      if (handler({
-        addr,
-        log,
-        pool,
-        state,
-        decoded: dec,
-        enqueueEnrichment,
-        refreshBalancer,
-        refreshCurve,
-        refreshDodo: refreshDodo ?? noopPoolRefresh,
-        refreshWoofi: refreshWoofi ?? noopPoolRefresh,
-        refreshV3,
-      })) {
-        pending.rawLog = log;
-        if (recoverInvalidV3LiquidityMutation({
+      if (
+        handler({
           addr,
           log,
           pool,
           state,
-          topic,
-          topic0,
+          decoded: dec,
           enqueueEnrichment,
+          refreshBalancer,
+          refreshCurve,
+          refreshDodo: refreshDodo ?? noopPoolRefresh,
+          refreshWoofi: refreshWoofi ?? noopPoolRefresh,
           refreshV3,
-        })) {
+        })
+      ) {
+        pending.rawLog = log;
+        if (
+          recoverInvalidV3LiquidityMutation({
+            addr,
+            log,
+            pool,
+            state,
+            topic,
+            topic0,
+            enqueueEnrichment,
+            refreshV3,
+          })
+        ) {
           pendingStateUpdates.delete(addr);
           refreshingV3Addrs.add(addr);
         }
@@ -298,7 +301,7 @@ function recoverInvalidV3LiquidityMutation({
         topic0: topic,
         validationReason: errorValidationReason(err, "watcher integrity failure"),
       },
-      "Watcher V3 liquidity delta failed integrity; refreshing pool state"
+      "Watcher V3 liquidity delta failed integrity; refreshing pool state",
     );
     enqueueEnrichment(addr, () => refreshV3(addr, pool, log));
     return true;
@@ -324,22 +327,13 @@ function decodedValue(decoded: DecodedWatcherLog, section: "indexed" | "body", i
 function decodedBigInt(decoded: DecodedWatcherLog, section: "indexed" | "body", index: number) {
   const value = decodedValue(decoded, section, index);
   if (value == null) return 0n;
-  if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "bigint" ||
-    typeof value === "boolean"
-  ) {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
     return BigInt(value);
   }
   return 0n;
 }
 
-export function updateV2State(
-  state: MutableWatcherState,
-  decoded: DecodedWatcherLog,
-  pool: WatcherPoolMeta | null = null,
-) {
+export function updateV2State(state: MutableWatcherState, decoded: DecodedWatcherLog, pool: WatcherPoolMeta | null = null) {
   state.reserve0 = decodedBigInt(decoded, "body", 0);
   state.reserve1 = decodedBigInt(decoded, "body", 1);
   const metadata = parsePoolMetadataValue(pool?.metadata);
@@ -355,9 +349,7 @@ export function updateV2State(
     const feeDenominator = resolveV2FeeDenominator(metadata);
     state.fee = resolveV2FeeNumerator(metadata, 997n, feeDenominator);
     state.feeDenominator = feeDenominator;
-    state.feeSource = metadata?.feeNumerator != null || metadata?.fee != null
-      ? "metadata"
-      : "default";
+    state.feeSource = metadata?.feeNumerator != null || metadata?.fee != null ? "metadata" : "default";
   }
 }
 
@@ -370,11 +362,7 @@ function ensureV3Fee(state: MutableWatcherState, pool: WatcherPoolMeta | null = 
   state.feeSource = metadata?.fee != null ? "metadata" : "default";
 }
 
-export function updateV3SwapState(
-  state: MutableWatcherState,
-  decoded: DecodedWatcherLog,
-  pool: WatcherPoolMeta | null = null,
-) {
+export function updateV3SwapState(state: MutableWatcherState, decoded: DecodedWatcherLog, pool: WatcherPoolMeta | null = null) {
   state.sqrtPriceX96 = decodedBigInt(decoded, "body", 2);
   state.liquidity = decodedBigInt(decoded, "body", 3);
   state.tick = Number(decodedValue(decoded, "body", 4));
@@ -406,12 +394,7 @@ export function updateV3LiquidityState(
   updateTickState(state, tickUpper, liquidityGrossDelta, isMint ? -amount : amount);
 }
 
-export function updateTickState(
-  state: MutableWatcherState,
-  tick: number,
-  liquidityGrossDelta: bigint,
-  liquidityNetDelta: bigint,
-) {
+export function updateTickState(state: MutableWatcherState, tick: number, liquidityGrossDelta: bigint, liquidityNetDelta: bigint) {
   state.ticks = normalizeWatcherTicks(state.ticks);
   const data = state.ticks.get(tick) ?? { liquidityGross: 0n, liquidityNet: 0n };
 
@@ -421,9 +404,7 @@ export function updateTickState(
   if (data.liquidityGross === 0n) state.ticks.delete(tick);
   else state.ticks.set(tick, data);
 
-  state.tickVersion = Number.isFinite(Number(state.tickVersion))
-    ? Number(state.tickVersion) + 1
-    : 1;
+  state.tickVersion = Number.isFinite(Number(state.tickVersion)) ? Number(state.tickVersion) + 1 : 1;
 }
 
 function cloneWatcherState(state: Record<string, unknown> | undefined) {
@@ -435,10 +416,7 @@ function cloneWatcherState(state: Record<string, unknown> | undefined) {
   return cloned;
 }
 
-function watcherStateIntegrityError(
-  reason: string,
-  context: WatcherStateIntegrityContext = {},
-): WatcherStateIntegrityError {
+function watcherStateIntegrityError(reason: string, context: WatcherStateIntegrityContext = {}): WatcherStateIntegrityError {
   const addr = String(context?.addr ?? context?.poolAddress ?? "unknown").toLowerCase();
   const err = new Error(`watcher state integrity failed for ${addr}: ${reason}`) as WatcherStateIntegrityError;
   err.name = "WatcherStateIntegrityError";
@@ -450,10 +428,7 @@ function watcherStateIntegrityError(
   return err;
 }
 
-function validateWatcherStateOrThrow(
-  state: MutableWatcherState,
-  context: WatcherStateIntegrityContext = {},
-) {
+function validateWatcherStateOrThrow(state: MutableWatcherState, context: WatcherStateIntegrityContext = {}) {
   const verdict = validatePoolState(state);
   if (!verdict.valid) {
     if (allowsObservedUnroutableWatcherState(state, verdict.reason)) {
@@ -523,11 +498,7 @@ function toObservedBigInt(value: unknown) {
   }
 }
 
-export function mergeWatcherState(
-  cache: RouteStateCache,
-  addr: string,
-  nextState: MutableWatcherState,
-) {
+export function mergeWatcherState(cache: RouteStateCache, addr: string, nextState: MutableWatcherState) {
   return mergeStateIntoCache(cache, addr, nextState) as MutableWatcherState;
 }
 
@@ -609,13 +580,11 @@ export function persistWatcherStates(
   states: Array<WatcherPersistedStateInput | null | undefined>,
   fallbackBlock: unknown,
 ) {
-  const normalized = states
-    .filter(hasPersistedWatcherStateInput)
-    .map((state) => ({
-      pool_address: state.pool_address.toLowerCase(),
-      block: Number(state.block ?? fallbackBlock),
-      data: state.data,
-    }));
+  const normalized = states.filter(hasPersistedWatcherStateInput).map((state) => ({
+    pool_address: state.pool_address.toLowerCase(),
+    block: Number(state.block ?? fallbackBlock),
+    data: state.data,
+  }));
 
   if (normalized.length === 0) return;
   registry.batchUpdateStates(normalized);

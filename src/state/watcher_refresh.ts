@@ -11,27 +11,15 @@ import { metadataWithRegistryTokenDecimals } from "./pool_metadata.ts";
 import { parsePoolTokens } from "./pool_record.ts";
 import { fetchV3PoolState, type V3PoolMeta, type V3PoolState } from "./uniswap_v3.ts";
 import { toMutableWatcherState } from "./watcher_normalized_state.ts";
-import type {
-  MutableWatcherState,
-  WatcherPoolMeta,
-  WatcherPoolRefresh,
-  WatcherV3Refresh,
-} from "./watcher_types.ts";
+import type { MutableWatcherState, WatcherPoolMeta, WatcherPoolRefresh, WatcherV3Refresh } from "./watcher_types.ts";
 
 export type WatcherRefreshRegistry = {
   getTokenDecimals?: (tokens: string[]) => Map<string, number> | null | undefined;
 };
 
-export type WatcherRefreshMergeState = (
-  addr: string,
-  nextState: MutableWatcherState,
-) => MutableWatcherState;
+export type WatcherRefreshMergeState = (addr: string, nextState: MutableWatcherState) => MutableWatcherState;
 
-export type WatcherRefreshCommitState = (
-  addr: string,
-  state: MutableWatcherState,
-  rawLog: HyperSyncRawLog,
-) => void;
+export type WatcherRefreshCommitState = (addr: string, state: MutableWatcherState, rawLog: HyperSyncRawLog) => void;
 
 export type WatcherNormalizedStateFetcher = (
   pool: ProtocolPoolRecord,
@@ -52,13 +40,9 @@ export type WatcherNormalizedRefreshArgs = WatcherRefreshBaseArgs & {
   fetchNormalized: WatcherNormalizedStateFetcher;
 };
 
-export type WatcherPoolRefresher = (
-  args: WatcherRefreshBaseArgs,
-) => unknown | Promise<unknown>;
+export type WatcherPoolRefresher = (args: WatcherRefreshBaseArgs) => unknown | Promise<unknown>;
 
-export type WatcherV3PoolRefresher = (
-  args: WatcherV3RefreshArgs,
-) => unknown | Promise<unknown>;
+export type WatcherV3PoolRefresher = (args: WatcherV3RefreshArgs) => unknown | Promise<unknown>;
 
 export type WatcherRefreshers = {
   refreshBalancer: WatcherPoolRefresher;
@@ -75,12 +59,7 @@ export type WatcherRefreshAdapterContext = {
   isClosed: () => boolean;
   isCurrentEpoch: (epoch: number) => boolean;
   mergeState: WatcherRefreshMergeState;
-  commitState: (
-    addr: string,
-    state: MutableWatcherState,
-    rawLog: HyperSyncRawLog,
-    expectedEpoch: number,
-  ) => void;
+  commitState: (addr: string, state: MutableWatcherState, rawLog: HyperSyncRawLog, expectedEpoch: number) => void;
 };
 
 export type WatcherRefreshAdapters = {
@@ -148,10 +127,7 @@ export function refreshWoofiWatcherPool(args: WatcherRefreshBaseArgs) {
   });
 }
 
-export type WatcherV3StateFetcher = (
-  addr: string,
-  options: Parameters<typeof fetchV3PoolState>[1],
-) => Promise<V3PoolState>;
+export type WatcherV3StateFetcher = (addr: string, options: Parameters<typeof fetchV3PoolState>[1]) => Promise<V3PoolState>;
 
 export type WatcherV3RefreshArgs = WatcherRefreshBaseArgs & {
   rawLog?: HyperSyncRawLog | null;
@@ -216,31 +192,36 @@ export function createWatcherRefreshAdapters(
   };
 
   return {
-    refreshBalancer: (addr, pool) => resolvedRefreshers.refreshBalancer({
-      ...buildBaseArgs(),
-      addr,
-      pool,
-    }),
-    refreshCurve: (addr, pool) => resolvedRefreshers.refreshCurve({
-      ...buildBaseArgs(),
-      addr,
-      pool,
-    }),
-    refreshDodo: (addr, pool) => resolvedRefreshers.refreshDodo({
-      ...buildBaseArgs(),
-      addr,
-      pool,
-    }),
-    refreshWoofi: (addr, pool) => resolvedRefreshers.refreshWoofi({
-      ...buildBaseArgs(),
-      addr,
-      pool,
-    }),
-    refreshV3: (addr, pool, rawLog) => resolvedRefreshers.refreshV3({
-      ...buildBaseArgs(),
-      addr,
-      pool,
-      rawLog,
-    }),
+    refreshBalancer: (addr, pool) =>
+      resolvedRefreshers.refreshBalancer({
+        ...buildBaseArgs(),
+        addr,
+        pool,
+      }),
+    refreshCurve: (addr, pool) =>
+      resolvedRefreshers.refreshCurve({
+        ...buildBaseArgs(),
+        addr,
+        pool,
+      }),
+    refreshDodo: (addr, pool) =>
+      resolvedRefreshers.refreshDodo({
+        ...buildBaseArgs(),
+        addr,
+        pool,
+      }),
+    refreshWoofi: (addr, pool) =>
+      resolvedRefreshers.refreshWoofi({
+        ...buildBaseArgs(),
+        addr,
+        pool,
+      }),
+    refreshV3: (addr, pool, rawLog) =>
+      resolvedRefreshers.refreshV3({
+        ...buildBaseArgs(),
+        addr,
+        pool,
+        rawLog,
+      }),
   };
 }

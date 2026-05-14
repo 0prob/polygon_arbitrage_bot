@@ -13,11 +13,7 @@
  *   https://github.com/DODOEX/dodo-smart-contract/blob/master/contracts/lib/DecimalMath.sol
  */
 
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigInt,
-} from "../utils/bigint.ts";
+import { toBigInt } from "../utils/bigint.ts";
 
 /** 1e18 fixed-point precision (DODO's VIRTUAL_RESERVE_RATIO) */
 const ONE = 10n ** 18n;
@@ -34,7 +30,7 @@ export const DODO_RSTATE_BELOW_ONE = 2;
 type DodoPoolState = Record<string, unknown>;
 
 function asPoolState(value: unknown): DodoPoolState {
-  return value != null && typeof value === "object" ? value as DodoPoolState : {};
+  return value != null && typeof value === "object" ? (value as DodoPoolState) : {};
 }
 
 function sqrt(value: bigint) {
@@ -156,8 +152,7 @@ export function getDodoGrossAmountOut(poolState: unknown, amountIn: bigint, base
         return receiveQuote > backToOneReceiveQuote ? backToOneReceiveQuote : receiveQuote;
       }
       if (amount === backToOnePayBase) return backToOneReceiveQuote;
-      return backToOneReceiveQuote +
-        solveQuadraticFunctionForTrade(state.Q0, state.Q0, amount - backToOnePayBase, state.i, state.K);
+      return backToOneReceiveQuote + solveQuadraticFunctionForTrade(state.Q0, state.Q0, amount - backToOnePayBase, state.i, state.K);
     }
     return solveQuadraticFunctionForTrade(state.Q0, state.Q, amount, state.i, state.K);
   }
@@ -178,8 +173,7 @@ export function getDodoGrossAmountOut(poolState: unknown, amountIn: bigint, base
     return receiveBase > backToOneReceiveBase ? backToOneReceiveBase : receiveBase;
   }
   if (amount === backToOnePayQuote) return backToOneReceiveBase;
-  return backToOneReceiveBase +
-    solveQuadraticFunctionForTrade(state.B0, state.B0, amount - backToOnePayQuote, inverseI, state.K);
+  return backToOneReceiveBase + solveQuadraticFunctionForTrade(state.B0, state.B0, amount - backToOnePayQuote, inverseI, state.K);
 }
 
 export function getDodoAmountOut(poolState: unknown, amountIn: bigint, baseToQuote: boolean) {
@@ -194,11 +188,7 @@ export function getDodoAmountOut(poolState: unknown, amountIn: bigint, baseToQuo
   return gross - mulFloor(gross, lpFeeRate) - mulFloor(gross, mtFeeRate);
 }
 
-export function simulateDodoSwap(
-  poolState: unknown,
-  amountIn: bigint,
-  baseToQuote: boolean,
-): { amountOut: bigint; gasEstimate: number } {
+export function simulateDodoSwap(poolState: unknown, amountIn: bigint, baseToQuote: boolean): { amountOut: bigint; gasEstimate: number } {
   if (amountIn <= 0n) return { amountOut: 0n, gasEstimate: 0 };
   return {
     amountOut: getDodoAmountOut(poolState, amountIn, baseToQuote),

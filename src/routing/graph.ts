@@ -1,4 +1,3 @@
-
 /**
  * src/routing/graph.js — Token adjacency graph builder
  *
@@ -49,12 +48,7 @@ type PoolRecordLike = {
   metadata?: unknown;
   [key: string]: unknown;
 };
-type SwapFn = (
-  state: RouteState,
-  amountIn: bigint,
-  zeroForOne: boolean,
-  fee?: number,
-) => SimulatedHopResult;
+type SwapFn = (state: RouteState, amountIn: bigint, zeroForOne: boolean, fee?: number) => SimulatedHopResult;
 
 export type SwapEdge = {
   protocol: string;
@@ -93,7 +87,9 @@ function normalizeGraphKey(value: unknown) {
     const trimmed = value.trim().toLowerCase();
     return trimmed || null;
   }
-  const key = String(value ?? "").trim().toLowerCase();
+  const key = String(value ?? "")
+    .trim()
+    .toLowerCase();
   return key || null;
 }
 
@@ -162,7 +158,8 @@ function getFeeBps(
     return fractionFeeBps(fee, 100_000n);
   }
   if (CURVE_PROTOCOLS.has(protocolKey)) return fractionFeeBps(stateRef?.fee ?? fee ?? metadata?.fee, 10n ** 10n);
-  if (BALANCER_PROTOCOLS.has(protocolKey)) return fractionFeeBps(stateRef?.swapFee ?? stateRef?.fee ?? fee ?? metadata?.swapFee ?? metadata?.fee, 10n ** 18n);
+  if (BALANCER_PROTOCOLS.has(protocolKey))
+    return fractionFeeBps(stateRef?.swapFee ?? stateRef?.fee ?? fee ?? metadata?.swapFee ?? metadata?.fee, 10n ** 18n);
   return 0;
 }
 
@@ -217,20 +214,10 @@ function createSwapEdge({
 
 function normalizeTokenListForRouting(tokens: unknown) {
   if (!Array.isArray(tokens)) return [];
-  return [
-    ...new Set(
-      tokens
-        .map((token) => normalizeEvmAddress(token))
-        .filter((token): token is string => token != null),
-    ),
-  ];
+  return [...new Set(tokens.map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null))];
 }
 
-function pickFee(
-  protocol: string,
-  stateRef: Record<string, unknown> | null,
-  metadata: Record<string, unknown>,
-): number | undefined {
+function pickFee(protocol: string, stateRef: Record<string, unknown> | null, metadata: Record<string, unknown>): number | undefined {
   if (V3_PROTOCOLS().has(protocol)) {
     return stateRef?.fee != null ? Number(stateRef.fee) : metadata?.fee !== undefined ? Number(metadata.fee) : undefined;
   }
@@ -272,13 +259,14 @@ function getRoutablePoolContext(pool: PoolRecordLike, stateMap: RouteStateCache)
   const metadata = getPoolMetadata(pool);
   const isV3 = V3_PROTOCOLS().has(protocol);
   const fee = pickFee(protocol, stateRef, metadata);
-  const swapFeeBps = isV3 && protocol === "KYBERSWAP_ELASTIC"
-    ? stateRef?.swapFeeBps != null
-      ? Number(stateRef.swapFeeBps)
-      : metadata?.swapFeeBps != null
-        ? Number(metadata.swapFeeBps)
-        : undefined
-    : undefined;
+  const swapFeeBps =
+    isV3 && protocol === "KYBERSWAP_ELASTIC"
+      ? stateRef?.swapFeeBps != null
+        ? Number(stateRef.swapFeeBps)
+        : metadata?.swapFeeBps != null
+          ? Number(metadata.swapFeeBps)
+          : undefined
+      : undefined;
   const feeDenominator = !isV3
     ? stateRef?.feeDenominator != null
       ? Number(stateRef.feeDenominator)
@@ -306,7 +294,7 @@ function addPoolEdges(
   graph: RoutingGraph,
   pool: PoolRecordLike,
   stateMap: RouteStateCache,
-  shouldInclude: (context: NonNullable<ReturnType<typeof getRoutablePoolContext>>) => boolean = () => true
+  shouldInclude: (context: NonNullable<ReturnType<typeof getRoutablePoolContext>>) => boolean = () => true,
 ) {
   const context = getRoutablePoolContext(pool, stateMap);
   if (!context || !shouldInclude(context)) return false;
@@ -316,31 +304,29 @@ function addPoolEdges(
   for (let tokenInIdx = 0; tokenInIdx < tokens.length; tokenInIdx++) {
     for (let tokenOutIdx = 0; tokenOutIdx < tokens.length; tokenOutIdx++) {
       if (tokenInIdx === tokenOutIdx) continue;
-      const edgeFee = isWoofi && stateRef
-        ? getWoofiFeeRate(stateRef, tokens[tokenInIdx], tokens[tokenOutIdx])
-        : fee;
-      graph.addEdge(createSwapEdge({
-        protocol,
-        poolAddress,
-        tokenIn: tokens[tokenInIdx],
-        tokenOut: tokens[tokenOutIdx],
-        tokenInIdx,
-        tokenOutIdx,
-        zeroForOne: tokenInIdx < tokenOutIdx,
-        fee: edgeFee,
-        swapFeeBps,
-        feeDenominator,
-        swapFn,
-        stateRef,
-        metadata: {
-          ...metadata,
+      const edgeFee = isWoofi && stateRef ? getWoofiFeeRate(stateRef, tokens[tokenInIdx], tokens[tokenOutIdx]) : fee;
+      graph.addEdge(
+        createSwapEdge({
+          protocol,
+          poolAddress,
+          tokenIn: tokens[tokenInIdx],
+          tokenOut: tokens[tokenOutIdx],
           tokenInIdx,
           tokenOutIdx,
-          ...(isWoofi && stateRef
-            ? { feeBps: getWoofiEdgeFeeBps(stateRef, tokens[tokenInIdx], tokens[tokenOutIdx]) }
-            : {}),
-        },
-      }));
+          zeroForOne: tokenInIdx < tokenOutIdx,
+          fee: edgeFee,
+          swapFeeBps,
+          feeDenominator,
+          swapFn,
+          stateRef,
+          metadata: {
+            ...metadata,
+            tokenInIdx,
+            tokenOutIdx,
+            ...(isWoofi && stateRef ? { feeBps: getWoofiEdgeFeeBps(stateRef, tokens[tokenInIdx], tokens[tokenOutIdx]) } : {}),
+          },
+        }),
+      );
     }
   }
 
@@ -350,7 +336,7 @@ function addPoolEdges(
 function buildPoolEdgeSnapshot(
   pool: PoolRecordLike,
   stateMap: RouteStateCache,
-  shouldInclude: (context: NonNullable<ReturnType<typeof getRoutablePoolContext>>) => boolean = () => true
+  shouldInclude: (context: NonNullable<ReturnType<typeof getRoutablePoolContext>>) => boolean = () => true,
 ) {
   const poolAddress = normalizeEvmAddress(pool?.pool_address);
   if (!poolAddress) return { poolAddress: null, edges: [] };
@@ -646,11 +632,7 @@ export class RoutingGraph {
   }
 
   upsertPool(pool: PoolRecordLike, stateMap: RouteStateCache = new Map<string, RouteState>()) {
-    const { poolAddress, edges } = buildPoolEdgeSnapshot(
-      pool,
-      stateMap,
-      (context) => !!context?.stateRef,
-    );
+    const { poolAddress, edges } = buildPoolEdgeSnapshot(pool, stateMap, (context) => !!context?.stateRef);
     if (!poolAddress) return "skipped";
 
     const currentEdges = this._edgesByPool.get(poolAddress) ?? [];
@@ -748,8 +730,7 @@ export class RoutingGraph {
     const protocolCounts: Record<string, number> = {};
     for (const [, edges] of this.adjacency) {
       for (const edge of edges) {
-        protocolCounts[edge.protocol] =
-          (protocolCounts[edge.protocol] || 0) + 1;
+        protocolCounts[edge.protocol] = (protocolCounts[edge.protocol] || 0) + 1;
       }
     }
 
@@ -799,17 +780,11 @@ export function buildGraph(pools: PoolRecordLike[], stateMap: RouteStateCache = 
  * @param {Map<string,Object>} [stateMap] Lowercase pool address → pool state
  * @returns {RoutingGraph}
  */
-export function buildHubGraph(
-  pools: PoolRecordLike[],
-  hubTokens: Set<string>,
-  stateMap: RouteStateCache = new Map<string, RouteState>(),
-) {
+export function buildHubGraph(pools: PoolRecordLike[], hubTokens: Set<string>, stateMap: RouteStateCache = new Map<string, RouteState>()) {
   const graph = new RoutingGraph();
 
   for (const pool of pools) {
-    addPoolEdges(graph, pool, stateMap, (context) =>
-      context.tokens.some((token: string) => hubTokens.has(token))
-    );
+    addPoolEdges(graph, pool, stateMap, (context) => context.tokens.some((token: string) => hubTokens.has(token)));
   }
 
   return graph;
@@ -825,39 +800,37 @@ export function buildHubGraph(
  * competitive but also the most reliably profitable.
  */
 const DEFAULT_POLYGON_HUB_TOKENS = [
-  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",  // WETH
-  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",  // USDC
-  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",  // USDT
-  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",  // DAI
-  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",  // WMATIC
-  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",  // WBTC
-  "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",  // agEUR
-  "0xfa68fb4628dff1028cfec22b4162fccd0d45efb6",  // MATICX
-  "0x3a58a54c066fdc0f2d55fc9c89f0415c92ebf3c4",  // stMATIC
-  "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",  // LINK
-  "0xb33eaad8d922b1083446ed23f610c2567fb5180f",  // UNI
-  "0x85955046df4668e1dd369d2de9f3aeb98dd2a369",  // QI
-  "0xcc27b35e00a9b2c45672ae9973141f03fc9c9ec2",  // QUICK
-  "0x172370d5cd63279efa6d502dab29171933a610af",  // CRV
-  "0xd6df932a45c0f255f85145f286ea0b292b21c90b",  // AAVE
-  "0xda537104d98c79f50cf2bf53d04e1c00bf9a3b9f",  // BAL
-  "0x282d8efce846a88b159800bd4130ad774c60b026",  // OCEAN
-  "0x8a953cfe442c5e8855cc6c61b12934fa48b10a1f",  // IDLE
-  "0x8f4e54f7bf7063e285a205cff0ee0cbbdb3f7fa6",  // OTOKENS
-  "0xfc088326178251fc9f4e1d1e918df3c3c6f1a3d2",  // OTOKENS
-  "0xa3fa99a148fa48d14ed51d610c367c61876997f1",  // MAI
-  "0x580a84c73811e1839f75d86d75d88cca0c241ff4",  // QI
-  "0x42bb22cb70223b38755d46c210b1d99e2f3af5cf",  // GNS
-  "0xd024ac1195762f6f13f8cfdf3cdd2c97b33b248b",  // FUSDC
-  "0xd1258e0cb0c1b376819534b07214b8dfa33e9991",  // FRAX
-  "0x104592a158490a9228070e0a8e5343b499e125d0",  // GRAIN
-  "0xd6b3ebf0ef3b73d0f9a5d00a167602371563cff2",  // agEUR
-  "0x2b066e4fef9cc3d1417d39ea57dfdf3fe9b40f83",  // TRY
-  "0xe2c0a40e7b5f8306ab6c5d28613462f18549b7de",  // GAINS
-  "0x2c9e77a59933e16b4c2a6b7e10a48c8c500e1e85",  // INJ
+  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
+  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC
+  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
+  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
+  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
+  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
+  "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f", // agEUR
+  "0xfa68fb4628dff1028cfec22b4162fccd0d45efb6", // MATICX
+  "0x3a58a54c066fdc0f2d55fc9c89f0415c92ebf3c4", // stMATIC
+  "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39", // LINK
+  "0xb33eaad8d922b1083446ed23f610c2567fb5180f", // UNI
+  "0x85955046df4668e1dd369d2de9f3aeb98dd2a369", // QI
+  "0xcc27b35e00a9b2c45672ae9973141f03fc9c9ec2", // QUICK
+  "0x172370d5cd63279efa6d502dab29171933a610af", // CRV
+  "0xd6df932a45c0f255f85145f286ea0b292b21c90b", // AAVE
+  "0xda537104d98c79f50cf2bf53d04e1c00bf9a3b9f", // BAL
+  "0x282d8efce846a88b159800bd4130ad774c60b026", // OCEAN
+  "0x8a953cfe442c5e8855cc6c61b12934fa48b10a1f", // IDLE
+  "0x8f4e54f7bf7063e285a205cff0ee0cbbdb3f7fa6", // OTOKENS
+  "0xfc088326178251fc9f4e1d1e918df3c3c6f1a3d2", // OTOKENS
+  "0xa3fa99a148fa48d14ed51d610c367c61876997f1", // MAI
+  "0x580a84c73811e1839f75d86d75d88cca0c241ff4", // QI
+  "0x42bb22cb70223b38755d46c210b1d99e2f3af5cf", // GNS
+  "0xd024ac1195762f6f13f8cfdf3cdd2c97b33b248b", // FUSDC
+  "0xd1258e0cb0c1b376819534b07214b8dfa33e9991", // FRAX
+  "0x104592a158490a9228070e0a8e5343b499e125d0", // GRAIN
+  "0xd6b3ebf0ef3b73d0f9a5d00a167602371563cff2", // agEUR
+  "0x2b066e4fef9cc3d1417d39ea57dfdf3fe9b40f83", // TRY
+  "0xe2c0a40e7b5f8306ab6c5d28613462f18549b7de", // GAINS
+  "0x2c9e77a59933e16b4c2a6b7e10a48c8c500e1e85", // INJ
 ];
-const DEFAULT_POLYGON_HUB_TOKENS_SET = new Set(DEFAULT_POLYGON_HUB_TOKENS);
-
 let _polygonHubTokens: Set<string> | null = null;
 let _hub4Tokens: Set<string> | null = null;
 
@@ -867,10 +840,16 @@ function _lazyInit() {
   let extra4: string[] = [];
   try {
     extraHub = (process.env.POLYGON_HUB_TOKENS || process.env.EXTRA_POLYGON_HUB_TOKENS || "")
-      .split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
+      .split(",")
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
     extra4 = (process.env.EXTRA_HUB_4_TOKENS || "")
-      .split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
-  } catch { /* config not ready */ }
+      .split(",")
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+  } catch {
+    /* config not ready */
+  }
   _polygonHubTokens = new Set([...DEFAULT_POLYGON_HUB_TOKENS, ...extraHub]);
   _hub4Tokens = new Set([...DEFAULT_HUB_4_TOKENS, ...extra4]);
 }
@@ -897,12 +876,12 @@ export const POLYGON_HUB_TOKENS: Set<string> = new Proxy({} as Set<string>, {
  * any of these tokens, so every extra entry roughly doubles pool count.
  */
 const DEFAULT_HUB_4_TOKENS = [
-  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",  // WETH
-  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",  // USDC
-  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",  // USDT
-  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",  // DAI
-  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",  // WMATIC
-  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",  // WBTC
+  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
+  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC
+  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
+  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
+  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
+  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
 ];
 
 export const HUB_4_TOKENS: Set<string> = new Proxy({} as Set<string>, {
@@ -932,21 +911,23 @@ export const HUB_4_TOKENS: Set<string> = new Proxy({} as Set<string>, {
 export function serializeTopology(graph: Pick<RoutingGraph, "adjacency">): SerializedTopology {
   const adjacency: SerializedTopology = {};
   for (const [token, edges] of graph.adjacency) {
-    adjacency[token] = edges.map((edge): SerializedTopologyEdge => ({
-      protocol: edge.protocol,
-      protocolKind: edge.protocolKind,
-      poolAddress: edge.poolAddress,
-      tokenIn: edge.tokenIn,
-      tokenOut: edge.tokenOut,
-      tokenInIdx: edge.tokenInIdx,
-      tokenOutIdx: edge.tokenOutIdx,
-      zeroForOne: edge.zeroForOne,
-      fee: edge.fee ?? null,
-      swapFeeBps: edge.swapFeeBps ?? null,
-      feeDenominator: edge.feeDenominator ?? null,
-      feeBps: edge.feeBps ?? null,
-      stateRef: serializeTopologyStateRef(edge.stateRef),
-    }));
+    adjacency[token] = edges.map(
+      (edge): SerializedTopologyEdge => ({
+        protocol: edge.protocol,
+        protocolKind: edge.protocolKind,
+        poolAddress: edge.poolAddress,
+        tokenIn: edge.tokenIn,
+        tokenOut: edge.tokenOut,
+        tokenInIdx: edge.tokenInIdx,
+        tokenOutIdx: edge.tokenOutIdx,
+        zeroForOne: edge.zeroForOne,
+        fee: edge.fee ?? null,
+        swapFeeBps: edge.swapFeeBps ?? null,
+        feeDenominator: edge.feeDenominator ?? null,
+        feeBps: edge.feeBps ?? null,
+        stateRef: serializeTopologyStateRef(edge.stateRef),
+      }),
+    );
   }
   return adjacency;
 }

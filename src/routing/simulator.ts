@@ -1,4 +1,3 @@
-
 /**
  * src/routing/simulator.js — Full-protocol route simulator
  *
@@ -93,11 +92,7 @@ function sameRouteToken(a: unknown, b: unknown) {
  * @param {Map<string, Object>}          stateCache  Canonical pool state map
  * @returns {{ amountOut: bigint, gasEstimate: number }}
  */
-export function simulateHop(
-  edge: SimulationEdge,
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-): SimulatedHopResult {
+export function simulateHop(edge: SimulationEdge, amountIn: bigint, stateCache: RouteStateCache): SimulatedHopResult {
   if (amountIn <= 0n) return { amountOut: 0n, gasEstimate: 0 };
 
   // Prefer pre-attached state from graph edges, but normalize fallback lookups
@@ -130,12 +125,7 @@ export function simulateHop(
     if (!indexes) {
       return { amountOut: 0n, gasEstimate: 0 };
     }
-    return simulateCurveSwap(
-      amountIn,
-      state,
-      indexes.tokenInIdx,
-      indexes.tokenOutIdx,
-    );
+    return simulateCurveSwap(amountIn, state, indexes.tokenInIdx, indexes.tokenOutIdx);
   }
 
   if (BALANCER_PROTOCOLS.has(protocol)) {
@@ -143,12 +133,7 @@ export function simulateHop(
     if (!indexes) {
       return { amountOut: 0n, gasEstimate: 0 };
     }
-    return simulateBalancerSwap(
-      amountIn,
-      state,
-      indexes.tokenInIdx,
-      indexes.tokenOutIdx,
-    );
+    return simulateBalancerSwap(amountIn, state, indexes.tokenInIdx, indexes.tokenOutIdx);
   }
 
   if (DODO_PROTOCOLS.has(protocol)) {
@@ -160,12 +145,7 @@ export function simulateHop(
     if (!indexes) {
       return { amountOut: 0n, gasEstimate: 0 };
     }
-    return simulateWoofiSwap(
-      amountIn,
-      state,
-      indexes.tokenInIdx,
-      indexes.tokenOutIdx,
-    );
+    return simulateWoofiSwap(amountIn, state, indexes.tokenInIdx, indexes.tokenOutIdx);
   }
 
   console.warn(`[simulator] Unsupported protocol: ${protocol}`);
@@ -196,11 +176,7 @@ export function simulateHop(
  * @param {Map<string, Object>} stateCache Canonical pool state map
  * @returns {RouteSimResult}
  */
-export function simulateRoute(
-  path: SimulationPath,
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-): RouteSimulationResult {
+export function simulateRoute(path: SimulationPath, amountIn: bigint, stateCache: RouteStateCache): RouteSimulationResult {
   return simulateRouteUncached(path, amountIn, stateCache);
 }
 
@@ -209,11 +185,7 @@ export function simulateRoute(
  * Exported so the predictive cache can call it directly without contaminating
  * the hot-path cache with pre-computed (potentially stale) results.
  */
-export function simulateRouteUncached(
-  path: SimulationPath,
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-): RouteSimulationResult {
+export function simulateRouteUncached(path: SimulationPath, amountIn: bigint, stateCache: RouteStateCache): RouteSimulationResult {
   const hopCount = getPathHopCount(path);
   const hopAmounts = [amountIn];
   const poolPath: string[] = [];
@@ -258,7 +230,6 @@ export function simulateRouteUncached(
   if (current > 0n && !sameRouteToken(expectedTokenIn, path.startToken)) {
     current = 0n;
   }
-
 
   const profit = current - amountIn;
 
@@ -308,7 +279,7 @@ export function optimizeInputAmount(
   // For a 10¹⁰ range, 14 steps suffice. Clamp to [12, 24].
   const rangeWidth = maxAmount > minAmount ? maxAmount - minAmount : 1n;
   const rangeDigits = rangeWidth.toString().length;
-  const adaptiveIterations = Math.max(12, Math.min(24, iterations ?? (rangeDigits + 8)));
+  const adaptiveIterations = Math.max(12, Math.min(24, iterations ?? rangeDigits + 8));
   const effectiveIterations = iterations ?? adaptiveIterations;
 
   let lo = minAmount;

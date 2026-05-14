@@ -1,8 +1,4 @@
-import {
-  type BigIntConvertible,
-  isBigIntConvertible,
-  toBigInt,
-} from "../utils/bigint.ts";
+import { toBigInt } from "../utils/bigint.ts";
 import { asRecord } from "../utils/errors.ts";
 
 const ONE = 10n ** 18n;
@@ -20,7 +16,7 @@ function getBaseState(poolState: unknown, token: unknown): WoofiBaseState | null
   const pool = asRecord(poolState);
   const states = asRecord(pool.baseTokenStates ?? pool.baseStates);
   const state = states[key];
-  return state != null && typeof state === "object" ? state as WoofiBaseState : null;
+  return state != null && typeof state === "object" ? (state as WoofiBaseState) : null;
 }
 
 function getQuoteToken(poolState: unknown) {
@@ -46,10 +42,10 @@ function calcQuoteAmountSellBase(baseState: WoofiBaseState, baseAmount: bigint, 
   if (baseAmount <= 0n || price <= 0n || baseDec <= 0n || quoteDec <= 0n || priceDec <= 0n) return 0n;
   if (baseState?.feasible === false || baseState?.woFeasible === false) return 0n;
 
-  const notionalSwap = (((baseAmount * price) * quoteDec) / baseDec) / priceDec;
+  const notionalSwap = (baseAmount * price * quoteDec) / baseDec / priceDec;
   if (maxNotionalSwap > 0n && notionalSwap > maxNotionalSwap) return 0n;
 
-  const gamma = (((baseAmount * price) * coeff) / priceDec) / baseDec;
+  const gamma = (baseAmount * price * coeff) / priceDec / baseDec;
   if (maxGamma > 0n && gamma > maxGamma) return 0n;
   if (!hasPositiveSwapFactor(gamma, spread)) return 0n;
 

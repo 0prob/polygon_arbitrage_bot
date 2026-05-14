@@ -34,19 +34,11 @@ type TokenDecimalsRow = {
   decimals?: unknown;
 };
 
-type UpsertTokenMeta = (
-  db: AssetDatabase,
-  address: string,
-  decimals: number,
-  symbol?: string | null,
-  name?: string | null,
-) => unknown;
+type UpsertTokenMeta = (db: AssetDatabase, address: string, decimals: number, symbol?: string | null, name?: string | null) => unknown;
 
 function assetStmt(db: AssetDatabase, key: string, sql: string) {
   return db.statement(key, sql);
 }
-
-
 
 function normalizeTokenAddress(address: unknown) {
   return normalizeEvmAddress(address);
@@ -78,13 +70,7 @@ export function normalizeTokenDecimals(decimals: unknown) {
   return numeric;
 }
 
-export function upsertTokenMeta(
-  db: AssetDatabase,
-  address: unknown,
-  decimals: unknown,
-  symbol: unknown = null,
-  name: unknown = null,
-) {
+export function upsertTokenMeta(db: AssetDatabase, address: unknown, decimals: unknown, symbol: unknown = null, name: unknown = null) {
   const normalizedAddress = normalizeTokenAddress(address);
   if (!normalizedAddress) {
     throw new Error("Token address is required");
@@ -92,32 +78,24 @@ export function upsertTokenMeta(
   assetStmt(
     db,
     "upsertTokenMeta",
-      `INSERT INTO token_meta (address, decimals, symbol, name, updated_at)
+    `INSERT INTO token_meta (address, decimals, symbol, name, updated_at)
        VALUES (?, ?, ?, ?, datetime('now'))
        ON CONFLICT(address) DO UPDATE SET
          decimals   = excluded.decimals,
          symbol     = COALESCE(excluded.symbol, token_meta.symbol),
          name       = COALESCE(excluded.name, token_meta.name),
-         updated_at = excluded.updated_at`
-  )
-    .run(
-      normalizedAddress,
-      normalizeTokenDecimals(decimals),
-      normalizeTokenText(symbol),
-      normalizeTokenText(name),
-    );
+         updated_at = excluded.updated_at`,
+  ).run(normalizedAddress, normalizeTokenDecimals(decimals), normalizeTokenText(symbol), normalizeTokenText(name));
 }
 
 export function getTokenMeta(db: AssetDatabase, address: unknown): TokenMetaRow | null {
   const normalizedAddress = normalizeTokenAddress(address);
   if (!normalizedAddress) return null;
   return (
-    assetStmt(
-      db,
-      "getTokenMeta",
-      `SELECT address, decimals, symbol, name, updated_at FROM token_meta WHERE address = ?`
-    ).get(normalizedAddress) as TokenMetaRow | undefined
-  ) || null;
+    (assetStmt(db, "getTokenMeta", `SELECT address, decimals, symbol, name, updated_at FROM token_meta WHERE address = ?`).get(
+      normalizedAddress,
+    ) as TokenMetaRow | undefined) || null
+  );
 }
 
 export function getTokenDecimals(db: AssetDatabase, addresses: unknown): Map<string, number> {
@@ -125,13 +103,7 @@ export function getTokenDecimals(db: AssetDatabase, addresses: unknown): Map<str
   if (!Array.isArray(addresses) || addresses.length === 0) return result;
 
   const CHUNK = 900;
-  const lower = [
-    ...new Set(
-      addresses
-        .map(normalizeTokenAddress)
-        .filter((address): address is string => address != null),
-    ),
-  ];
+  const lower = [...new Set(addresses.map(normalizeTokenAddress).filter((address): address is string => address != null))];
 
   for (let i = 0; i < lower.length; i += CHUNK) {
     const batch = lower.slice(i, i + CHUNK);
@@ -139,7 +111,7 @@ export function getTokenDecimals(db: AssetDatabase, addresses: unknown): Map<str
     const rows = assetStmt(
       db,
       `getTokenDecimals:${batch.length}`,
-      `SELECT address, decimals FROM token_meta WHERE address IN (${placeholders})`
+      `SELECT address, decimals FROM token_meta WHERE address IN (${placeholders})`,
     ).all(...batch) as TokenDecimalsRow[];
     for (const row of rows) {
       const normalizedAddress = normalizeTokenAddress(row.address);
@@ -151,11 +123,7 @@ export function getTokenDecimals(db: AssetDatabase, addresses: unknown): Map<str
   return result;
 }
 
-export function batchUpsertTokenMeta(
-  db: AssetDatabase,
-  tokens: unknown,
-  upsertTokenMetaImpl: UpsertTokenMeta = upsertTokenMeta,
-) {
+export function batchUpsertTokenMeta(db: AssetDatabase, tokens: unknown, upsertTokenMetaImpl: UpsertTokenMeta = upsertTokenMeta) {
   if (!Array.isArray(tokens) || tokens.length === 0) return { upserted: 0, skipped: 0, tokens: [] };
 
   const merged = new Map<string, NormalizedTokenMeta>();
@@ -199,7 +167,7 @@ export function batchUpsertTokenMeta(
   const persisted = [...merged.values()];
   const upsertTokens = db.transaction((list: unknown) => {
     let changes = 0;
-    const normalizedList = Array.isArray(list) ? list as NormalizedTokenMeta[] : [];
+    const normalizedList = Array.isArray(list) ? (list as NormalizedTokenMeta[]) : [];
     for (const t of normalizedList) {
       upsertTokenMetaImpl(db, t.address, t.decimals, t.symbol, t.name);
       changes++;
@@ -211,13 +179,7 @@ export function batchUpsertTokenMeta(
   return { upserted, skipped, tokens: persisted };
 }
 
-export function upsertPoolFee(
-  db: AssetDatabase,
-  poolAddress: unknown,
-  feeBps: unknown,
-  feeRaw: unknown = null,
-  protocol: unknown = null,
-) {
+export function upsertPoolFee(db: AssetDatabase, poolAddress: unknown, feeBps: unknown, feeRaw: unknown = null, protocol: unknown = null) {
   const normalizedAddress = normalizePoolAddress(poolAddress);
   if (!normalizedAddress) {
     throw new Error("Pool address is required");
@@ -229,37 +191,28 @@ export function upsertPoolFee(
   assetStmt(
     db,
     "upsertPoolFee",
-      `INSERT INTO pool_fees (address, fee_bps, fee_raw, protocol, updated_at)
+    `INSERT INTO pool_fees (address, fee_bps, fee_raw, protocol, updated_at)
        VALUES (?, ?, ?, ?, datetime('now'))
        ON CONFLICT(address) DO UPDATE SET
          fee_bps    = excluded.fee_bps,
          fee_raw    = excluded.fee_raw,
          protocol   = COALESCE(excluded.protocol, pool_fees.protocol),
-         updated_at = excluded.updated_at`
-  )
-    .run(normalizedAddress, normalizedFeeBps, normalizedFeeRaw, normalizedProtocol);
+         updated_at = excluded.updated_at`,
+  ).run(normalizedAddress, normalizedFeeBps, normalizedFeeRaw, normalizedProtocol);
 }
 
 export function getAllTokenAddresses(db: AssetDatabase): string[] {
-  const rows = assetStmt(
-    db,
-    "getAllTokenAddresses",
-    `SELECT address FROM token_meta ORDER BY address`
-  ).all() as { address?: unknown }[];
-  return rows
-    .map((row) => normalizeTokenAddress(row.address))
-    .filter((addr): addr is string => addr != null);
+  const rows = assetStmt(db, "getAllTokenAddresses", `SELECT address FROM token_meta ORDER BY address`).all() as { address?: unknown }[];
+  return rows.map((row) => normalizeTokenAddress(row.address)).filter((addr): addr is string => addr != null);
 }
 
 export function getPoolFee(db: AssetDatabase, poolAddress: unknown) {
   const normalizedAddress = normalizePoolAddress(poolAddress);
   if (!normalizedAddress) return null;
 
-  const row = assetStmt(
-    db,
-    "getPoolFee",
-    `SELECT fee_bps, fee_raw FROM pool_fees WHERE address = ?`
-  ).get(normalizedAddress) as PoolFeeRow | undefined;
+  const row = assetStmt(db, "getPoolFee", `SELECT fee_bps, fee_raw FROM pool_fees WHERE address = ?`).get(normalizedAddress) as
+    | PoolFeeRow
+    | undefined;
   return row
     ? {
         feeBps: normalizePoolFeeBps(row.fee_bps),

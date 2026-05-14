@@ -1,4 +1,3 @@
-
 /**
  * src/execution/calldata.js — Multihop calldata encoder
  *
@@ -31,7 +30,6 @@ import {
   CURVE_EXCHANGE_INT128_ABI,
   CURVE_EXCHANGE_UINT256_ABI,
   CURVE_EXCHANGE_INT128_RECEIVER_ABI,
-  CURVE_EXCHANGE_UINT256_USE_ETH_ABI,
   BALANCER_VAULT_SWAP_ABI,
   EXECUTOR_ABI,
   EXECUTOR_APPROVE_IF_NEEDED_ABI,
@@ -160,9 +158,7 @@ const MAX_UINT24 = 16_777_215n;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 function normalizeBytes32(value: unknown) {
-  return typeof value === "string" && /^0x[0-9a-fA-F]{64}$/.test(value)
-    ? value
-    : null;
+  return typeof value === "string" && /^0x[0-9a-fA-F]{64}$/.test(value) ? value : null;
 }
 
 function callbackProtocolId(protocol: unknown) {
@@ -186,13 +182,7 @@ function poolTokensFromHop(hop: CalldataHop) {
     : { token0: asAddress(hop.tokenOut), token1: asAddress(hop.tokenIn) };
 }
 
-function deriveTightV3PriceLimit(
-  hop: CalldataHop,
-  amountIn: bigint,
-  expectedAmountOut: bigint,
-  fee: number,
-  label: string,
-) {
+function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string) {
   const state = asRecord(hop.stateRef);
   let sqrtBefore: bigint;
   let liquidity: bigint;
@@ -273,12 +263,7 @@ function slippageAdjustedAmountOut(amountOut: unknown, slippageBps: unknown, lab
   return minimumOutput;
 }
 
-function encodeDynamicApprovalCall(
-  executor: string,
-  token: string,
-  spender: string,
-  amount: bigint,
-) {
+function encodeDynamicApprovalCall(executor: string, token: string, spender: string, amount: bigint) {
   const approvalAmount = normalizeUint(amount, "approval amount");
   return {
     target: getAddress(executor),
@@ -374,43 +359,35 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string): ExecutorCall[]
   // sqrtPriceLimitX96: fail closed to the exact simulated post-swap price
   // instead of protocol extremes, so execution cannot move materially beyond
   // the off-chain simulation used for profitability/slippage decisions.
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(
-    hop,
-    amountSpecified,
-    amountOut,
-    fee,
-    "encodeV3Hop",
-  );
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, fee, "encodeV3Hop");
 
   // Callback data is rich enough for the executor to authenticate the pool caller.
   const callbackData = encodeAbiParameters(
-    [{
-      type: "tuple",
-      components: [
-        { name: "protocolId", type: "uint8" },
-        { name: "token0", type: "address" },
-        { name: "token1", type: "address" },
-        { name: "fee", type: "uint24" },
-      ],
-    }],
-    [{
-      protocolId: callbackProtocolId(hop.protocol),
-      token0,
-      token1,
-      fee,
-    }]
+    [
+      {
+        type: "tuple",
+        components: [
+          { name: "protocolId", type: "uint8" },
+          { name: "token0", type: "address" },
+          { name: "token1", type: "address" },
+          { name: "fee", type: "uint24" },
+        ],
+      },
+    ],
+    [
+      {
+        protocolId: callbackProtocolId(hop.protocol),
+        token0,
+        token1,
+        fee,
+      },
+    ],
   );
 
   const swapData = encodeFunctionData({
     abi: V3_POOL_SWAP_ABI,
     functionName: "swap",
-    args: [
-      asAddress(recipient),
-      Boolean(hop.zeroForOne),
-      amountSpecified,
-      sqrtPriceLimitX96,
-      callbackData,
-    ],
+    args: [asAddress(recipient), Boolean(hop.zeroForOne), amountSpecified, sqrtPriceLimitX96, callbackData],
   });
 
   return [
@@ -472,49 +449,36 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string): Exec
   const isToken0 = Boolean(hop.zeroForOne);
   const swapFeeBps = normalizeKyberSwapFeePips(hop);
   // Simulate the swap to get the exact expected amountOut for tight price limit derivation.
-  const simulated = simulateV3Swap(
-    hop.stateRef,
-    amountSpecified,
-    isToken0,
-    swapFeeBps
-  );
+  const simulated = simulateV3Swap(hop.stateRef, amountSpecified, isToken0, swapFeeBps);
   const amountOut = simulated.amountOut;
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(
-    hop,
-    amountSpecified,
-    amountOut,
-    swapFeeBps,
-    "encodeKyberElasticHop",
-  );
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, swapFeeBps, "encodeKyberElasticHop");
 
   const callbackData = encodeAbiParameters(
-    [{
-      type: "tuple",
-      components: [
-        { name: "protocolId", type: "uint8" },
-        { name: "token0", type: "address" },
-        { name: "token1", type: "address" },
-        { name: "fee", type: "uint24" },
-      ],
-    }],
-    [{
-      protocolId: callbackProtocolId("KYBERSWAP_ELASTIC"),
-      token0,
-      token1,
-      fee: swapFeeBps,
-    }],
+    [
+      {
+        type: "tuple",
+        components: [
+          { name: "protocolId", type: "uint8" },
+          { name: "token0", type: "address" },
+          { name: "token1", type: "address" },
+          { name: "fee", type: "uint24" },
+        ],
+      },
+    ],
+    [
+      {
+        protocolId: callbackProtocolId("KYBERSWAP_ELASTIC"),
+        token0,
+        token1,
+        fee: swapFeeBps,
+      },
+    ],
   );
 
   const swapData = encodeFunctionData({
     abi: KYBER_ELASTIC_POOL_SWAP_ABI,
     functionName: "swap",
-    args: [
-      asAddress(recipient),
-      amountSpecified,
-      isToken0,
-      sqrtPriceLimitX96,
-      callbackData,
-    ],
+    args: [asAddress(recipient), amountSpecified, isToken0, sqrtPriceLimitX96, callbackData],
   });
 
   return [
@@ -591,8 +555,8 @@ export function encodeWoofiHop(hop: CalldataHop, executor: string, options: Rout
  */
 export function encodeCurveHop(hop: CalldataHop, executor: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const { slippageBps = 50 } = options;
-  const pool     = asAddress(hop.poolAddress);
-  const tokenIn  = asAddress(hop.tokenIn);
+  const pool = asAddress(hop.poolAddress);
+  const tokenIn = asAddress(hop.tokenIn);
   const tokenInIdx = Number(hop.tokenInIdx);
   const tokenOutIdx = Number(hop.tokenOutIdx);
 
@@ -667,10 +631,10 @@ export function encodeBalancerHop(hop: CalldataHop, executor: string, options: R
     throw new Error(`encodeBalancerHop: deadline required for pool ${hop.poolAddress}`);
   }
 
-  const vault    = asAddress(BALANCER_VAULT);
-  const tokenIn  = asAddress(hop.tokenIn);
+  const vault = asAddress(BALANCER_VAULT);
+  const tokenIn = asAddress(hop.tokenIn);
   const tokenOut = asAddress(hop.tokenOut);
-  const exec     = asAddress(executor);
+  const exec = asAddress(executor);
 
   // Minimum acceptable output with slippage
   const amountIn = normalizePositiveUint(hop.amountIn, "encodeBalancerHop amountIn");
@@ -692,18 +656,18 @@ export function encodeBalancerHop(hop: CalldataHop, executor: string, options: R
         // SingleSwap
         {
           poolId,
-          kind:     0,          // GIVEN_IN
-          assetIn:  tokenIn,
+          kind: 0, // GIVEN_IN
+          assetIn: tokenIn,
           assetOut: tokenOut,
-          amount:   amountIn,
+          amount: amountIn,
           userData: "0x",
         },
         // FundManagement
         {
-          sender:              exec,
+          sender: exec,
           fromInternalBalance: false,
-          recipient:           exec,
-          toInternalBalance:   false,
+          recipient: exec,
+          toInternalBalance: false,
         },
         limit,
         deadline,
@@ -726,34 +690,30 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
 
   for (let i = 0; i < path.edges.length; i++) {
     const edge = path.edges[i];
-    const amountIn  = result.hopAmounts[i];
+    const amountIn = result.hopAmounts[i];
     const amountOut = result.hopAmounts[i + 1];
     const proto = normalizeProtocolKey(edge.protocol);
 
     const meta = asRecord(edge.metadata);
 
     const hop = {
-      protocol:     proto,
-      poolAddress:  edge.poolAddress,
-      tokenIn:      edge.tokenIn,
-      tokenOut:     edge.tokenOut,
-      zeroForOne:   edge.zeroForOne,
+      protocol: proto,
+      poolAddress: edge.poolAddress,
+      tokenIn: edge.tokenIn,
+      tokenOut: edge.tokenOut,
+      zeroForOne: edge.zeroForOne,
       amountIn,
       amountOut,
-      fee:          edge.fee ?? meta.fee ?? 0,
-      swapFeeBps:   edge.swapFeeBps ?? meta.swapFeeBps,
-      router:       meta.router,
-      metadata:     meta,
-      stateRef:     edge.stateRef,
-      tokenInIdx:   edge.tokenInIdx ?? meta.tokenInIdx ?? (edge.zeroForOne ? 0 : 1),
-      tokenOutIdx:  edge.tokenOutIdx ?? meta.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0),
-      isCrypto:     CURVE_CRYPTO_PROTOCOLS.has(proto),
-      poolId:       normalizeBytes32(
-        meta.poolId ??
-        meta.pool_id ??
-        edge.poolId ??
-        asRecord(edge.stateRef).balancerPoolId ??
-        asRecord(edge.stateRef).poolId
+      fee: edge.fee ?? meta.fee ?? 0,
+      swapFeeBps: edge.swapFeeBps ?? meta.swapFeeBps,
+      router: meta.router,
+      metadata: meta,
+      stateRef: edge.stateRef,
+      tokenInIdx: edge.tokenInIdx ?? meta.tokenInIdx ?? (edge.zeroForOne ? 0 : 1),
+      tokenOutIdx: edge.tokenOutIdx ?? meta.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0),
+      isCrypto: CURVE_CRYPTO_PROTOCOLS.has(proto),
+      poolId: normalizeBytes32(
+        meta.poolId ?? meta.pool_id ?? edge.poolId ?? asRecord(edge.stateRef).balancerPoolId ?? asRecord(edge.stateRef).poolId,
       ),
     };
 
@@ -801,12 +761,7 @@ export function computeRouteHash(calls: unknown) {
 /**
  * Build the complete FlashParams struct.
  */
-export function buildFlashParams({
-  profitToken,
-  minProfit,
-  deadline,
-  calls,
-}: FlashParamsInput) {
+export function buildFlashParams({ profitToken, minProfit, deadline, calls }: FlashParamsInput) {
   const normalizedCalls = normalizeExecutorCalls(calls);
   const routeHash = computeRouteHash(normalizedCalls);
 
@@ -824,15 +779,7 @@ export function buildFlashParams({
 /**
  * Encode the complete executeArb transaction calldata.
  */
-export function encodeExecuteArb({
-  executorAddress,
-  flashToken,
-  flashAmount,
-  profitToken,
-  minProfit,
-  deadline,
-  calls,
-}: ExecuteArbInput) {
+export function encodeExecuteArb({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls }: ExecuteArbInput) {
   const flashParams = buildFlashParams({
     profitToken,
     minProfit,
@@ -843,11 +790,7 @@ export function encodeExecuteArb({
   const data = encodeFunctionData({
     abi: EXECUTOR_ABI,
     functionName: "executeArb",
-    args: [
-      getAddress(flashToken),
-      flashAmount,
-      flashParams,
-    ],
+    args: [getAddress(flashToken), flashAmount, flashParams],
   });
 
   return {

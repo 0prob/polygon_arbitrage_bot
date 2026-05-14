@@ -1,4 +1,3 @@
-
 /**
  * src/execution/send_tx.js — Transaction signer and submitter
  *
@@ -17,13 +16,7 @@ import { updateGasEstimateMultiplier } from "./gas_adjustment.ts";
 import { txLatency } from "../utils/metrics.ts";
 import { TransactionSniper, createSniperFromConfig } from "./tx_sniper.ts";
 import { mapWithConcurrency } from "../utils/concurrency.ts";
-import {
-  nextAttemptId,
-  logAttemptStage,
-  stageFromBuiltTx,
-  type AttemptLogEntry,
-  type AttemptEndpointResult,
-} from "./attempt_log.ts";
+import { nextAttemptId, logAttemptStage, stageFromBuiltTx, type AttemptEndpointResult } from "./attempt_log.ts";
 
 // ─── Constants ────────────────────────────────────────────────
 
@@ -32,13 +25,12 @@ const MIN_RECEIPT_TIMEOUT_MS = 15_000;
 const MAX_RECEIPT_TIMEOUT_MS = 60_000;
 const DEFAULT_DRY_RUN = true;
 const MAX_SUBMISSION_RETRIES = 3;
-const RECEIPT_POLL_INTERVAL_MS = 5_000;
 const RECEIPT_DROP_AFTER_MS = 45_000;
 const RECEIPT_MISS_THRESHOLD = 3;
 
 // Adaptive profit thresholds for receipt timeout scaling
-const PROFIT_TINY_WEI = BigInt("50000000000000");    // 0.00005 MATIC — tight timeout
-const PROFIT_SMALL_WEI = BigInt("500000000000000");   // 0.0005 MATIC — moderate timeout
+const PROFIT_TINY_WEI = BigInt("50000000000000"); // 0.00005 MATIC — tight timeout
+const PROFIT_SMALL_WEI = BigInt("500000000000000"); // 0.0005 MATIC — moderate timeout
 const PROFIT_MEDIUM_WEI = BigInt("5000000000000000"); // 0.005 MATIC — generous timeout
 
 /**
@@ -52,9 +44,7 @@ function parseUnsignedBigInt(value: unknown) {
 
 export function expectedProfitWei(builtTx: BuiltTx) {
   const meta = builtTx.meta ?? {};
-  const explicitWei = parseUnsignedBigInt(
-    meta.expectedProfitWei ?? meta.expectedProfitMaticWei ?? meta.expectedProfitNativeWei,
-  );
+  const explicitWei = parseUnsignedBigInt(meta.expectedProfitWei ?? meta.expectedProfitMaticWei ?? meta.expectedProfitNativeWei);
   if (explicitWei != null) return explicitWei;
 
   // Backward compatibility for older BuiltTx objects: expectedProfit was a raw
@@ -66,10 +56,10 @@ export function expectedProfitWei(builtTx: BuiltTx) {
 function adaptiveReceiptTimeoutMs(builtTx: BuiltTx): number {
   const profit = expectedProfitWei(builtTx);
 
-  if (profit <= PROFIT_TINY_WEI) return MIN_RECEIPT_TIMEOUT_MS;      // 15s for tiny
-  if (profit <= PROFIT_SMALL_WEI) return 30_000;                     // 30s for small
-  if (profit <= PROFIT_MEDIUM_WEI) return 45_000;                    // 45s for medium
-  return MAX_RECEIPT_TIMEOUT_MS;                                      // 60s for large
+  if (profit <= PROFIT_TINY_WEI) return MIN_RECEIPT_TIMEOUT_MS; // 15s for tiny
+  if (profit <= PROFIT_SMALL_WEI) return 30_000; // 30s for small
+  if (profit <= PROFIT_MEDIUM_WEI) return 45_000; // 45s for medium
+  return MAX_RECEIPT_TIMEOUT_MS; // 60s for large
 }
 
 /**
@@ -83,7 +73,7 @@ type PendingReceiptEntry = {
   txHash: string;
   fromAddress: string;
   builtTx: BuiltTx;
-  touchedPools: string[];  // Pool addresses touched by this tx (for conflict detection)
+  touchedPools: string[]; // Pool addresses touched by this tx (for conflict detection)
   publicClient: PublicClientLike;
   nonceManager?: NonceManagerLike;
   submittedAt: number;
@@ -175,8 +165,7 @@ export type SendTxBundleResult = {
   error?: string | null;
 };
 
-const defaultAccountFromPrivateKey = (privateKey: string): AccountLike =>
-  privateKeyToAccount(privateKey as TxHash);
+const defaultAccountFromPrivateKey = (privateKey: string): AccountLike => privateKeyToAccount(privateKey as TxHash);
 
 function asTxHash(value: string) {
   return value as TxHash;
@@ -202,10 +191,12 @@ async function getSniper(): Promise<TransactionSniper> {
 }
 
 export function classifySubmissionError(error: unknown) {
-  const message = String((error as { shortMessage?: string; message?: string } | null | undefined)?.shortMessage
-    ?? (error as { message?: string } | null | undefined)?.message
-    ?? error
-    ?? "").toLowerCase();
+  const message = String(
+    (error as { shortMessage?: string; message?: string } | null | undefined)?.shortMessage ??
+      (error as { message?: string } | null | undefined)?.message ??
+      error ??
+      "",
+  ).toLowerCase();
 
   if (message.includes("nonce too low") || message.includes("nonce too high") || message.includes("already known")) {
     return "nonce";
@@ -237,12 +228,7 @@ function clearTrackedReceipt(txHash: string | null | undefined) {
 
 type TimeoutApi = Pick<typeof globalThis, "setTimeout" | "clearTimeout">;
 
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  message: string,
-  timeoutApi: TimeoutApi = globalThis,
-): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string, timeoutApi: TimeoutApi = globalThis): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | null = null;
   try {
     return await Promise.race([
@@ -291,10 +277,7 @@ async function pollTrackedReceipt(entry: PendingReceiptEntry) {
       logFailure(entry.txHash, entry.builtTx, receipt);
     } else {
       logAttemptStage({ ...pollEntry, stage: "receipt_result", outcome: "confirmed", txHash: entry.txHash });
-      sendTxLogger.info(
-        { txHash: entry.txHash, blockNumber: receipt.blockNumber?.toString?.() },
-        "Transaction confirmed via poller"
-      );
+      sendTxLogger.info({ txHash: entry.txHash, blockNumber: receipt.blockNumber?.toString?.() }, "Transaction confirmed via poller");
     }
     // Update gas estimation multiplier based on actual vs estimated gas
     const gasUsed = receipt.gasUsed ? Number(receipt.gasUsed) : null;
@@ -320,9 +303,10 @@ async function pollTrackedReceipt(entry: PendingReceiptEntry) {
   const ageMs = Date.now() - entry.submittedAt;
   // Use adaptive drop threshold: smaller profits get shorter grace period
   const profit = expectedProfitWei(entry.builtTx);
-  const adaptiveDropAfterMs = profit <= PROFIT_TINY_WEI
-    ? Math.min(RECEIPT_DROP_AFTER_MS, 25_000)  // 25s for tiny profits
-    : RECEIPT_DROP_AFTER_MS;                    // 45s standard
+  const adaptiveDropAfterMs =
+    profit <= PROFIT_TINY_WEI
+      ? Math.min(RECEIPT_DROP_AFTER_MS, 25_000) // 25s for tiny profits
+      : RECEIPT_DROP_AFTER_MS; // 45s standard
 
   if (ageMs < adaptiveDropAfterMs || entry.missCount < RECEIPT_MISS_THRESHOLD) {
     return;
@@ -347,7 +331,7 @@ async function pollPendingReceipts() {
     const now = Date.now();
     // Only poll entries that have had enough time since their last attempt
     // (implements adaptive per-entry polling with exponential backoff)
-    for (const [hash, entry] of [...pendingReceiptPolls.entries()]) {
+    for (const [, entry] of [...pendingReceiptPolls.entries()]) {
       const elapsedMs = now - entry.lastSeenAt;
       const minDelayMs = receiptPollDelayMs(entry.pollAttempt);
       if (elapsedMs < minDelayMs) continue;
@@ -360,7 +344,14 @@ async function pollPendingReceipts() {
   }
 }
 
-function trackSubmittedTx(txHash: string, builtTx: BuiltTx, fromAddress: string, publicClient: PublicClientLike, touchedPools: string[] = [], nonceManager?: NonceManagerLike | null) {
+function trackSubmittedTx(
+  txHash: string,
+  builtTx: BuiltTx,
+  fromAddress: string,
+  publicClient: PublicClientLike,
+  touchedPools: string[] = [],
+  nonceManager?: NonceManagerLike | null,
+) {
   pendingReceiptPolls.set(txHash, {
     txHash,
     builtTx,
@@ -392,7 +383,7 @@ function trackSubmittedTx(txHash: string, builtTx: BuiltTx, fromAddress: string,
 async function dryRun(
   tx: BuiltTx,
   fromAddress: string,
-  _publicClient: PublicClientLike  // kept for signature compat; simulation now uses gas_estimator
+  _publicClient: PublicClientLike, // kept for signature compat; simulation now uses gas_estimator
 ): Promise<DryRunResult> {
   try {
     // Fix #6: simulate via the dedicated GAS_ESTIMATION_RPC_URL rather than the
@@ -401,25 +392,25 @@ async function dryRun(
     // nodes (Tenderly, Alchemy Simulation API) for pre-flight checking.
     const { simulateCall } = await import("./gas_estimator.ts");
     await simulateCall({
-      to:    tx.to    as `0x${string}`,
-      data:  tx.data  as `0x${string}`,
-      from:  fromAddress as `0x${string}`,
+      to: tx.to as `0x${string}`,
+      data: tx.data as `0x${string}`,
+      from: fromAddress as `0x${string}`,
       value: tx.value ?? 0n,
       blockTag: "pending",
     });
     return { success: true, error: null };
   } catch (err: unknown) {
-    const { getRevertReason } = await import('../utils/get_revert_reason.js');
+    const { getRevertReason } = await import("../utils/get_revert_reason.js");
 
     const betterReason = await getRevertReason(
       null, // reason already extracted by simulateCall; no second eth_call needed
       {
-        to:    tx.to   as `0x${string}`,
-        data:  tx.data as `0x${string}`,
-        from:  fromAddress as `0x${string}`,
+        to: tx.to as `0x${string}`,
+        data: tx.data as `0x${string}`,
+        from: fromAddress as `0x${string}`,
         value: tx.value ?? 0n,
       },
-      String((err as any)?.shortMessage ?? (err as any)?.message ?? err)
+      String((err as any)?.shortMessage ?? (err as any)?.message ?? err),
     );
 
     return { success: false, error: betterReason };
@@ -440,15 +431,13 @@ async function submitSignedTransactionsIndividually(
     sendPrivateTxFn: (rawTx: RawTransaction, options: { allowPublicFallback: boolean }) => Promise<SubmissionResult>;
     allowPublicFallback: boolean;
   },
-) : Promise<SendTxBundleResult> {
+): Promise<SendTxBundleResult> {
   const { fromAddress, publicClient, nonceManager, sendPrivateTxFn, allowPublicFallback } = context;
   const txHashes: string[] = [];
   let firstError: string | null = null;
 
   // Submit all transactions in parallel for maximum speed
-  const results = await Promise.allSettled(
-    rawTxs.map((rawTx) => sendPrivateTxFn(rawTx, { allowPublicFallback }))
-  );
+  const results = await Promise.allSettled(rawTxs.map((rawTx) => sendPrivateTxFn(rawTx, { allowPublicFallback })));
 
   for (let index = 0; index < results.length; index++) {
     const settled = results[index];
@@ -501,10 +490,7 @@ async function submitSignedTransactionsIndividually(
  * @param {Object} [options]
  */
 export async function sendTx(builtTx: BuiltTx, config: SendTxConfig, options: SendTxOptions = {}): Promise<SendTxResult> {
-  const {
-    privateKey,
-    nonceManager,
-  } = config;
+  const { privateKey, nonceManager } = config;
 
   const {
     dryRunFirst = DEFAULT_DRY_RUN,
@@ -527,7 +513,7 @@ export async function sendTx(builtTx: BuiltTx, config: SendTxConfig, options: Se
 
   const attemptId = nextAttemptId();
   const baseEntry = stageFromBuiltTx(attemptId, builtTx);
-  logAttemptStage({ ...baseEntry, stage: "dry_run_start", ...baseEntry.meta as Record<string, unknown> });
+  logAttemptStage({ ...baseEntry, stage: "dry_run_start", ...(baseEntry.meta as Record<string, unknown>) });
 
   // 1. Dry run (skip if pre-execution assessment already verified)
   let dryRunResult: DryRunResult = { success: true, error: null };
@@ -572,7 +558,13 @@ export async function sendTx(builtTx: BuiltTx, config: SendTxConfig, options: Se
     if (nonceManager?.revert) nonceManager.revert(fromAddress);
     const error = err as { message?: unknown } | null | undefined;
     const errorMsg = `Sign failed: ${String(error?.message ?? err)}`;
-    logAttemptStage({ ...baseEntry, stage: "sign_result", outcome: "sign_failed", error: errorMsg, nonce: nonce != null ? Number(nonce) : undefined });
+    logAttemptStage({
+      ...baseEntry,
+      stage: "sign_result",
+      outcome: "sign_failed",
+      error: errorMsg,
+      nonce: nonce != null ? Number(nonce) : undefined,
+    });
     return {
       submitted: false,
       confirmed: false,
@@ -582,133 +574,161 @@ export async function sendTx(builtTx: BuiltTx, config: SendTxConfig, options: Se
   }
 
   // 4. Submit via multi-endpoint sniper (parallel submission)
-let txHash: string | null = null;
-let submitError: string | null = null;
-const tSubmissionStart = Date.now();
+  let txHash: string | null = null;
+  let submitError: string | null = null;
+  const tSubmissionStart = Date.now();
 
-// Track nonce usage to prevent duplicate submissions.
-// Retained across the fallback loop to ensure no stale nonce is reused
-// with a freshly signed rawTx.
-const usedNonces = new Set<bigint | number>();
-let _nonceResult = nonce;
-if (_nonceResult != null) {
-  usedNonces.add(_nonceResult);
-}
-
-logAttemptStage({ ...baseEntry, stage: "submit_start", nonce: nonce != null ? Number(nonce) : undefined });
-
-try {
-  // Use TransactionSniper for parallel multi-endpoint submission
-  const sniper = await getSniper();
-  const result = sniper.hasPrivateEndpoints
-    ? await sniper.submitPrivate(rawTx as Hex)
-    : await sniper.submit(rawTx as Hex);
-
-  txLatency.observe({ stage: "submission" }, Date.now() - tSubmissionStart);
-
-  if (!result.success) {
-    const errorMsg = "error" in result ? String(result.error) : "TransactionSniper: all endpoints failed";
-    throw new Error(errorMsg);
+  // Track nonce usage to prevent duplicate submissions.
+  // Retained across the fallback loop to ensure no stale nonce is reused
+  // with a freshly signed rawTx.
+  const usedNonces = new Set<bigint | number>();
+  const _nonceResult = nonce;
+  if (_nonceResult != null) {
+    usedNonces.add(_nonceResult);
   }
 
-  txHash = result.hash as `0x${string}`;
-  const endpointResults: AttemptEndpointResult[] = (result as { allAttempts?: (AttemptEndpointResult | { hash?: string; endpoint: string; latencyMs: number; error?: unknown })[] }).allAttempts?.map(a => ({
-    endpoint: a.endpoint,
-    latencyMs: a.latencyMs,
-    error: "error" in a ? String(a.error) : undefined,
-    hash: "hash" in a ? a.hash as string : undefined,
-  })) ?? [];
-  logAttemptStage({
-    ...baseEntry,
-    stage: "submit_result",
-    outcome: "submitted",
-    txHash,
-    nonce: nonce != null ? Number(nonce) : undefined,
-    endpoint: result.endpoint,
-    latencyMs: result.latencyMs,
-    endpointResults,
-  });
-  sendTxLogger.info({
-    txHash,
-    endpoint: result.endpoint,
-    latencyMs: result.latencyMs,
-    attempt: 1
-  }, "Transaction submitted via multi-endpoint sniper");
+  logAttemptStage({ ...baseEntry, stage: "submit_start", nonce: nonce != null ? Number(nonce) : undefined });
 
-  if (nonceManager?.confirm) nonceManager.confirm(fromAddress);
-  trackSubmittedTx(txHash, builtTx, fromAddress, publicClient, options.touchedPools ?? [], nonceManager);
-  submitError = null;
-} catch (err: unknown) {
-  const error = err as { shortMessage?: unknown; message?: unknown } | null | undefined;
-  submitError = String(error?.shortMessage ?? error?.message ?? err);
-  logAttemptStage({ ...baseEntry, stage: "submit_result", outcome: "submission_failed", error: submitError, nonce: nonce != null ? Number(nonce) : undefined });
-  sendTxLogger.warn({ error: submitError }, "Sniper submission failed, trying fallback");
+  try {
+    // Use TransactionSniper for parallel multi-endpoint submission
+    const sniper = await getSniper();
+    const result = sniper.hasPrivateEndpoints ? await sniper.submitPrivate(rawTx as Hex) : await sniper.submit(rawTx as Hex);
 
-  logAttemptStage({ ...baseEntry, stage: "fallback_start", error: submitError, nonce: nonce != null ? Number(nonce) : undefined });
-  for (let attempt = 0; attempt < MAX_SUBMISSION_RETRIES; attempt++) {
-    try {
-      const retryNonce = nonceManager
-        ? await nonceManager.next(fromAddress)
-        : undefined;
-      if (retryNonce != null) {
-        if (usedNonces.has(retryNonce)) {
-          sendTxLogger.warn({ retryNonce, attempt: attempt + 1 }, "Re-requested stale nonce, retrying");
-          logAttemptStage({
-            ...baseEntry, stage: "fallback_attempt", outcome: "skipped",
-            nonce: Number(retryNonce), error: "stale nonce reused",
-          });
-          continue;
+    txLatency.observe({ stage: "submission" }, Date.now() - tSubmissionStart);
+
+    if (!result.success) {
+      const errorMsg = "error" in result ? String(result.error) : "TransactionSniper: all endpoints failed";
+      throw new Error(errorMsg);
+    }
+
+    txHash = result.hash as `0x${string}`;
+    const endpointResults: AttemptEndpointResult[] =
+      (
+        result as { allAttempts?: (AttemptEndpointResult | { hash?: string; endpoint: string; latencyMs: number; error?: unknown })[] }
+      ).allAttempts?.map((a) => ({
+        endpoint: a.endpoint,
+        latencyMs: a.latencyMs,
+        error: "error" in a ? String(a.error) : undefined,
+        hash: "hash" in a ? (a.hash as string) : undefined,
+      })) ?? [];
+    logAttemptStage({
+      ...baseEntry,
+      stage: "submit_result",
+      outcome: "submitted",
+      txHash,
+      nonce: nonce != null ? Number(nonce) : undefined,
+      endpoint: result.endpoint,
+      latencyMs: result.latencyMs,
+      endpointResults,
+    });
+    sendTxLogger.info(
+      {
+        txHash,
+        endpoint: result.endpoint,
+        latencyMs: result.latencyMs,
+        attempt: 1,
+      },
+      "Transaction submitted via multi-endpoint sniper",
+    );
+
+    if (nonceManager?.confirm) nonceManager.confirm(fromAddress);
+    trackSubmittedTx(txHash, builtTx, fromAddress, publicClient, options.touchedPools ?? [], nonceManager);
+    submitError = null;
+  } catch (err: unknown) {
+    const error = err as { shortMessage?: unknown; message?: unknown } | null | undefined;
+    submitError = String(error?.shortMessage ?? error?.message ?? err);
+    logAttemptStage({
+      ...baseEntry,
+      stage: "submit_result",
+      outcome: "submission_failed",
+      error: submitError,
+      nonce: nonce != null ? Number(nonce) : undefined,
+    });
+    sendTxLogger.warn({ error: submitError }, "Sniper submission failed, trying fallback");
+
+    logAttemptStage({ ...baseEntry, stage: "fallback_start", error: submitError, nonce: nonce != null ? Number(nonce) : undefined });
+    for (let attempt = 0; attempt < MAX_SUBMISSION_RETRIES; attempt++) {
+      try {
+        const retryNonce = nonceManager ? await nonceManager.next(fromAddress) : undefined;
+        if (retryNonce != null) {
+          if (usedNonces.has(retryNonce)) {
+            sendTxLogger.warn({ retryNonce, attempt: attempt + 1 }, "Re-requested stale nonce, retrying");
+            logAttemptStage({
+              ...baseEntry,
+              stage: "fallback_attempt",
+              outcome: "skipped",
+              nonce: Number(retryNonce),
+              error: "stale nonce reused",
+            });
+            continue;
+          }
+          usedNonces.add(retryNonce);
         }
-        usedNonces.add(retryNonce);
-      }
-      const retryRawTx = await signTransactionFn(builtTx, privateKey, retryNonce, 137);
-      logAttemptStage({
-        ...baseEntry, stage: "fallback_attempt", outcome: "submitted",
-        nonce: retryNonce != null ? Number(retryNonce) : undefined,
-      });
-      const result = await sendPrivateTxFn(retryRawTx, { allowPublicFallback });
-    
-      if (!result.submitted) {
-        throw new Error(result.error || "sendPrivateTx: no method succeeded");
-      }
-      if (!result.txHash) {
-        throw new Error("sendPrivateTx: submitted without txHash");
-      }
+        const retryRawTx = await signTransactionFn(builtTx, privateKey, retryNonce, 137);
+        logAttemptStage({
+          ...baseEntry,
+          stage: "fallback_attempt",
+          outcome: "submitted",
+          nonce: retryNonce != null ? Number(retryNonce) : undefined,
+        });
+        const result = await sendPrivateTxFn(retryRawTx, { allowPublicFallback });
 
-      txHash = result.txHash;
-      logAttemptStage({ ...baseEntry, stage: "submit_result", outcome: "submitted", txHash, nonce: undefined, endpoint: result.method, error: undefined });
-      sendTxLogger.info({ txHash, method: result.method, attempt: attempt + 1 }, "Transaction submitted (fallback)");
+        if (!result.submitted) {
+          throw new Error(result.error || "sendPrivateTx: no method succeeded");
+        }
+        if (!result.txHash) {
+          throw new Error("sendPrivateTx: submitted without txHash");
+        }
 
-      if (nonceManager?.confirm) nonceManager.confirm(fromAddress);
-      trackSubmittedTx(txHash, builtTx, fromAddress, publicClient, options.touchedPools ?? [], nonceManager);
-      submitError = null;
-      break;
-    } catch (fallbackErr: unknown) {
-      const fallbackError = fallbackErr as { shortMessage?: unknown; message?: unknown } | null | undefined;
-      submitError = String(fallbackError?.shortMessage ?? fallbackError?.message ?? fallbackErr);
-      const errorCategory = classifySubmissionError(fallbackErr);
-      logAttemptStage({ ...baseEntry, stage: "fallback_attempt", outcome: "submission_failed", error: submitError, errorCategory, nonce: undefined });
-      sendTxLogger.warn({ error: submitError, attempt: attempt + 1 }, "Fallback attempt failed");
+        txHash = result.txHash;
+        logAttemptStage({
+          ...baseEntry,
+          stage: "submit_result",
+          outcome: "submitted",
+          txHash,
+          nonce: undefined,
+          endpoint: result.method,
+          error: undefined,
+        });
+        sendTxLogger.info({ txHash, method: result.method, attempt: attempt + 1 }, "Transaction submitted (fallback)");
 
-      if (errorCategory !== "transient") {
-        if (nonceManager?.resync && errorCategory === "nonce") {
-          try {
-            if (nonceManager.recoverFromNonceTooHigh) {
-              await nonceManager.recoverFromNonceTooHigh(fromAddress, 1);
-            } else {
+        if (nonceManager?.confirm) nonceManager.confirm(fromAddress);
+        trackSubmittedTx(txHash, builtTx, fromAddress, publicClient, options.touchedPools ?? [], nonceManager);
+        submitError = null;
+        break;
+      } catch (fallbackErr: unknown) {
+        const fallbackError = fallbackErr as { shortMessage?: unknown; message?: unknown } | null | undefined;
+        submitError = String(fallbackError?.shortMessage ?? fallbackError?.message ?? fallbackErr);
+        const errorCategory = classifySubmissionError(fallbackErr);
+        logAttemptStage({
+          ...baseEntry,
+          stage: "fallback_attempt",
+          outcome: "submission_failed",
+          error: submitError,
+          errorCategory,
+          nonce: undefined,
+        });
+        sendTxLogger.warn({ error: submitError, attempt: attempt + 1 }, "Fallback attempt failed");
+
+        if (errorCategory !== "transient") {
+          if (nonceManager?.resync && errorCategory === "nonce") {
+            try {
+              if (nonceManager.recoverFromNonceTooHigh) {
+                await nonceManager.recoverFromNonceTooHigh(fromAddress, 1);
+              } else {
+                nonceManager.resync(fromAddress);
+              }
+            } catch {
               nonceManager.resync(fromAddress);
             }
-          } catch {
-            nonceManager.resync(fromAddress);
           }
+          break;
         }
-        break;
-      }
 
-      await sleepFn(500 * (attempt + 1));
+        await sleepFn(500 * (attempt + 1));
+      }
     }
   }
-}
 
   if (!txHash) {
     if (nonceManager?.revert) nonceManager.revert(fromAddress);
@@ -731,17 +751,15 @@ try {
 
   // Use profit-weighted adaptive timeout
   const adaptiveTimeout = adaptiveReceiptTimeoutMs(builtTx);
-  const effectiveTimeout = receiptTimeoutMs === DEFAULT_RECEIPT_TIMEOUT_MS
-    ? adaptiveTimeout
-    : receiptTimeoutMs;
+  const effectiveTimeout = receiptTimeoutMs === DEFAULT_RECEIPT_TIMEOUT_MS ? adaptiveTimeout : receiptTimeoutMs;
 
   try {
     const tConfirmationStart = Date.now();
-    const receipt = await withTimeout(
+    const receipt = (await withTimeout(
       publicClient.waitForTransactionReceipt({ hash: asTxHash(txHash) }),
       effectiveTimeout,
       "Receipt timeout",
-    ) as TxReceiptLike;
+    )) as TxReceiptLike;
 
     // Metric: confirmation latency
     txLatency.observe({ stage: "confirmation" }, Date.now() - tConfirmationStart);
@@ -778,11 +796,12 @@ try {
   }
 }
 
-export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, options: SendTxBundleOptions = {}): Promise<SendTxBundleResult> {
-  const {
-    privateKey,
-    nonceManager,
-  } = config;
+export async function sendTxBundle(
+  builtTxs: BuiltTx[],
+  config: SendTxConfig,
+  options: SendTxBundleOptions = {},
+): Promise<SendTxBundleResult> {
+  const { privateKey, nonceManager } = config;
 
   const {
     dryRunFirst = DEFAULT_DRY_RUN,
@@ -811,24 +830,20 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
     for (const entry of attemptEntries) {
       logAttemptStage({ ...entry, stage: "dry_run_start" });
     }
-    const dryRunResults = await mapWithConcurrency(
-      builtTxs,
-      builtTxs.length,
-      (builtTx) => dryRun(builtTx, fromAddress, publicClient),
-    );
+    const dryRunResults = await mapWithConcurrency(builtTxs, builtTxs.length, (builtTx) => dryRun(builtTx, fromAddress, publicClient));
     dryRunResults.forEach((result, index) => {
       logAttemptStage({
         ...attemptEntries[index],
         stage: "dry_run_result",
         outcome: result.success ? "submitted" : "dry_run_failed",
-        error: result.success ? undefined : result.error ?? undefined,
+        error: result.success ? undefined : (result.error ?? undefined),
       });
     });
     const failedDryRun = dryRunResults.find((result) => !result.success);
     if (failedDryRun) {
       sendTxLogger.warn(
         { event: "bundle_dry_run_failed", error: failedDryRun.error, bundleSize: builtTxs.length },
-        "Bundle dry run failed"
+        "Bundle dry run failed",
       );
       return {
         submitted: false,
@@ -860,10 +875,12 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
         reservedNonces.push(BigInt(await nonceManager.next(fromAddress)));
       }
     } else {
-      const startingNonce = BigInt(await publicClient.getTransactionCount({
-        address: asTxHash(fromAddress),
-        blockTag: "pending",
-      }));
+      const startingNonce = BigInt(
+        await publicClient.getTransactionCount({
+          address: asTxHash(fromAddress),
+          blockTag: "pending",
+        }),
+      );
       for (let i = 0; i < builtTxs.length; i++) {
         reservedNonces.push(startingNonce + BigInt(i));
       }
@@ -879,10 +896,16 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
           return rawTx;
         } catch (err: unknown) {
           const errorMsg = `Sign failed: ${String((err as { message?: unknown } | null | undefined)?.message ?? err)}`;
-          logAttemptStage({ ...attemptEntries[index], stage: "sign_result", outcome: "sign_failed", error: errorMsg, nonce: Number(nonce) });
+          logAttemptStage({
+            ...attemptEntries[index],
+            stage: "sign_result",
+            outcome: "sign_failed",
+            error: errorMsg,
+            nonce: Number(nonce),
+          });
           throw err;
         }
-      })
+      }),
     );
     for (const entry of attemptEntries) {
       logAttemptStage({ ...entry, stage: "submit_start" });
@@ -904,7 +927,7 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
           bundleSize: builtTxs.length,
           blockNumber: blockNumber.toString(),
         },
-        "Bundle relay unavailable; falling back to individual private submissions"
+        "Bundle relay unavailable; falling back to individual private submissions",
       );
       const fallbackResult = await submitSignedTransactionsIndividually(rawTxs, builtTxs, {
         fromAddress,
@@ -927,14 +950,27 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
       }
       txHashes = fallbackResult.txHashes ?? [];
       txHashes.forEach((hash, index) => {
-        logAttemptStage({ ...attemptEntries[index], stage: "submit_result", outcome: "submitted", txHash: hash, endpoint: "individual_fallback" });
+        logAttemptStage({
+          ...attemptEntries[index],
+          stage: "submit_result",
+          outcome: "submitted",
+          txHash: hash,
+          endpoint: "individual_fallback",
+        });
       });
       bundleHash = undefined;
     } else if (!result.submitted) {
       throw new Error(result.error || "sendPrivateBundle: no method succeeded");
     } else {
       txHashes.forEach((hash, index) => {
-        logAttemptStage({ ...attemptEntries[index], stage: "submit_result", outcome: "submitted", txHash: hash, endpoint: "bundle", latencyMs: Date.now() - tSubmissionStart });
+        logAttemptStage({
+          ...attemptEntries[index],
+          stage: "submit_result",
+          outcome: "submitted",
+          txHash: hash,
+          endpoint: "bundle",
+          latencyMs: Date.now() - tSubmissionStart,
+        });
       });
       if (nonceManager?.confirm) {
         for (let i = 0; i < builtTxs.length; i++) {
@@ -957,11 +993,11 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
     }
 
     try {
-      const receipts = await withTimeout(
+      const receipts = (await withTimeout(
         Promise.all(txHashes.map((hash) => publicClient.waitForTransactionReceipt({ hash: asTxHash(hash) }))),
         receiptTimeoutMs,
         "Bundle receipt timeout",
-      ) as TxReceiptLike[];
+      )) as TxReceiptLike[];
 
       for (const hash of txHashes) clearTrackedReceipt(hash);
       const confirmed = receipts.every((receipt) => receipt?.status === "success");
@@ -1007,7 +1043,13 @@ export async function sendTxBundle(builtTxs: BuiltTx[], config: SendTxConfig, op
       }
     }
     for (const entry of attemptEntries) {
-      logAttemptStage({ ...entry, stage: "submit_result", outcome: "submission_failed", error: errorMessage, errorCategory: classifySubmissionError(err) });
+      logAttemptStage({
+        ...entry,
+        stage: "submit_result",
+        outcome: "submission_failed",
+        error: errorMessage,
+        errorCategory: classifySubmissionError(err),
+      });
     }
     return {
       submitted: false,
