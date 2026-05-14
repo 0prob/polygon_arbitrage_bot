@@ -117,6 +117,15 @@ const PROBE_INTERVAL_MS = 15_000;
 const MAX_CONSECUTIVE_ERRORS = 5;
 const DEFAULT_RPC_METHOD = "eth_call";
 
+// ─── Helpers ──────────────────────────────────────────────────
+
+function ensureHttps(url: string): string {
+  if (url.startsWith("http://")) {
+    return "https://" + url.slice(7);
+  }
+  return url;
+}
+
 // ─── RpcEndpoint ──────────────────────────────────────────────
 
 class RpcEndpoint {
@@ -132,7 +141,7 @@ class RpcEndpoint {
   client: ReturnType<typeof createPublicClient>;
 
   constructor(url: string) {
-    this.url = url;
+    this.url = ensureHttps(url);
     this.latencyMs = Infinity;
     this.consecutiveErrors = 0;
     this.rateLimitedUntil = 0;
@@ -504,6 +513,7 @@ export function isRetryableError(err: unknown): boolean {
     /\b50[0-9]\b|\b5[0-9]{2}\b/.test(msg) ||
     msg.includes("-32000") ||
     msg.includes("header not found") ||
-    msg.includes("missing trie node")
+    msg.includes("missing trie node") ||
+    msg.includes("http request failed")
   );
 }

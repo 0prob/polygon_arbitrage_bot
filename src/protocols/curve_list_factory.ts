@@ -183,13 +183,20 @@ export async function discoverCurveListedFactory({
     }),
   );
 
-  const poolCount = Number(
-    await readContractWithRetry({
-      address: factoryAddress,
-      abi: POOL_COUNT_ABI,
-      functionName: "pool_count",
-    }),
-  );
+  let poolCount = 0;
+  try {
+    poolCount = Number(
+      await readContractWithRetry({
+        address: factoryAddress,
+        abi: POOL_COUNT_ABI,
+        functionName: "pool_count",
+      }),
+    );
+  } catch (error: unknown) {
+    console.warn(`  [${protocolName}] Failed to get pool count: ${errorMessage(error)}`);
+    if (checkpointBlock != null) curveRegistry.setCheckpoint(protocolKey, checkpointBlock);
+    return { discovered: 0, checkpointBlock: checkpointBlock ?? 0, rollbackGuard, hydrationPromise: null };
+  }
 
   if (!Number.isFinite(poolCount) || poolCount <= 0) {
     if (checkpointBlock != null) curveRegistry.setCheckpoint(protocolKey, checkpointBlock);

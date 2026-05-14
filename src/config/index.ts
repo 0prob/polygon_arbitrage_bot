@@ -268,11 +268,15 @@ export const DISCOVERY_PROTOCOL_CONCURRENCY = _num("DISCOVERY_PROTOCOL_CONCURREN
 
 // ─── RPC ───────────────────────────────────────────────────────
 
+function _ensureHttps(url: string): string {
+  return url.startsWith("http://") ? "https://" + url.slice(7) : url;
+}
+
 function _dedupeRpcUrls(urls: string[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const raw of urls) {
-    const url = String(raw || "").trim();
+    const url = _ensureHttps(String(raw || "").trim());
     if (!url || seen.has(url)) continue;
     seen.add(url);
     out.push(url);
@@ -295,7 +299,7 @@ const _envRpcUrls = _dedupeRpcUrls(
  * Priority: POLYGON_RPC env → first POLYGON_RPC_URLS entry → Alchemy demo
  *           (rate-limited, for dev only).
  */
-export const POLYGON_RPC = process.env.POLYGON_RPC || _envRpcUrls[0] || "https://polygon-mainnet.g.alchemy.com/v2/demo";
+export const POLYGON_RPC = _ensureHttps(process.env.POLYGON_RPC || _envRpcUrls[0] || "https://polygon-mainnet.g.alchemy.com/v2/demo");
 
 // ─── Gas Price Defaults ─────────────────────────────────────────
 
@@ -309,12 +313,12 @@ export const DEFAULT_GAS_PRICE_GWEI = 30;
 export const GWEI = 10n ** 9n;
 
 /**
- * Pool of Polygon RPC endpoints managed by the latency-based RPC manager.
+ * Free public Polygon RPC endpoints (fallback only — used when no
+ * POLYGON_RPC or POLYGON_RPC_URLS env vars are set).
  *
- * Priority order (highest first):
- *   1. POLYGON_RPC      — paid/private endpoint if explicitly configured
- *   2. POLYGON_RPC_URLS — comma-separated env override
- *   3. Built-in free public endpoints (fallback)
+ * When any user endpoint is configured, these hardcoded entries
+ * are excluded to avoid polluting the pool with slow / rate-limited
+ * public nodes.
  *
  * The manager probes all endpoints every 15 s and routes to the healthiest one.
  */
@@ -328,11 +332,11 @@ const _defaultFreeRpcs = [
   "https://tenderly.rpc.polygon.community", // Tenderly community RPC
 ];
 
-const _paidRpc = process.env.POLYGON_RPC && !process.env.POLYGON_RPC.includes("/v2/demo") ? [process.env.POLYGON_RPC] : [];
+const _rawRpc = process.env.POLYGON_RPC || "";
+const _paidRpc = _rawRpc && !_rawRpc.includes("/v2/demo") ? [_ensureHttps(_rawRpc)] : [];
 
-const _publicRpcUrls = _envRpcUrls.length ? [..._envRpcUrls, ..._defaultFreeRpcs] : _defaultFreeRpcs;
-
-const _allUrls = [..._paidRpc, ..._publicRpcUrls];
+const _hasUserEndpoints = _paidRpc.length > 0 || _envRpcUrls.length > 0;
+const _allUrls = _hasUserEndpoints ? [..._paidRpc, ..._envRpcUrls] : _defaultFreeRpcs;
 
 export const FREE_RPC_URLS = [...new Set(_allUrls)];
 

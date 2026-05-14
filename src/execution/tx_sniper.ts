@@ -309,7 +309,7 @@ function shortenUrl(url: string): string {
  * Includes public RPCs from config plus optional private mempool endpoints.
  */
 export async function createSniperFromConfig(): Promise<TransactionSniper> {
-  const { POLYGON_RPC } = await import("../config/index.ts");
+  const { POLYGON_RPC, FREE_RPC_URLS } = await import("../config/index.ts");
 
   const endpoints: string[] = [];
 
@@ -319,7 +319,7 @@ export async function createSniperFromConfig(): Promise<TransactionSniper> {
   }
 
   if (endpoints.length === 0) {
-    endpoints.push("https://polygon-mainnet.g.alchemy.com/v2/demo", "https://polygon-rpc.com", "https://polygon-bor-rpc.publicnode.com");
+    endpoints.push(...FREE_RPC_URLS);
   }
 
   const uniqueEndpoints = [...new Set(endpoints)];
