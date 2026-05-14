@@ -10,9 +10,6 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env --import=tsx runner.ts --loop --live",
     "start:tui": "node --env-file-if-exists=.env --import=tsx runner.ts --loop --live --tui",
-    "tune:performance": "node --import=tsx scripts/tune_performance.ts",
-    "test": "node --import=tsx scripts/run_ts_test.mjs scripts/run_all_tests.ts",
-    "test:e2e": "node --import=tsx scripts/run_ts_test.mjs scripts/test_engine_e2e.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
