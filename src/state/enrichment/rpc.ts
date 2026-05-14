@@ -235,7 +235,7 @@ function multicallBatchTransportFailure(params: MulticallWithRetryParams, result
   if (!everyReturnedResultFailed && !resultCountMismatch) return null;
 
   const retryableFailures = failures.filter(
-    (result) => isRetryableError(result.error) || isEndpointCapabilityError(result.error) || isRateLimitError(result.error),
+    (result) => isRetryableError(result.error) || isRateLimitError(result.error),
   );
   if (retryableFailures.length !== failures.length) return null;
   return retryableFailures[0]?.error ?? null;

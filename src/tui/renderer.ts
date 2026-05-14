@@ -141,6 +141,7 @@ function metricRow(metrics: { label: string; value: string; color?: string }[]) 
 
 function renderFrame(state: BotState, now: number): string {
   const w = termWidth();
+  const h = process.stdout.rows || 30;
   const signal = latestEvent(state.logs);
   const topReject = latestMatch(state.logs, /topReject=([^|]+)/) ?? "none";
   const missing = latestMatch(state.logs, /missingRates=(\d+)/) ?? "0";
@@ -150,13 +151,11 @@ function renderFrame(state: BotState, now: number): string {
   const txRate = state.lastTxSuccessRate;
   const rateColor = !txRate ? WHITE : txRate >= 0.9 ? GREEN : txRate >= 0.7 ? YELLOW : RED;
 
-  const lines: string[] = [];
-
-  lines.push(`${HOME}${CLEAR}`);
+  const topLines: string[] = [];
 
   // Header
-  lines.push(` ${CYAN}${BOLD}ARB${RESET}  ${BOLD}Polygon Arbitrage Bot${RESET}  ${DIM}Live execution monitor${RESET}`);
-  lines.push(` ${statusStyle(state.status)} ${state.status.toUpperCase()}`);
+  topLines.push(` ${CYAN}${BOLD}ARB${RESET}  ${BOLD}Polygon Arbitrage Bot${RESET}  ${DIM}Live execution monitor${RESET}`);
+  topLines.push(` ${statusStyle(state.status)} ${state.status.toUpperCase()}`);
 
   // Activity
   const act = state.currentActivity || "Idle";
@@ -165,12 +164,12 @@ function renderFrame(state: BotState, now: number): string {
   let al = ` ${GREEN}${act}${RESET}`;
   if (prog) al += ` ${CYAN}${prog}${RESET}`;
   al += ` ${DIM}(${age(state.currentActivityUpdatedMs, now)})${RESET}`;
-  lines.push(al);
-  if (det) lines.push(` ${DIM}${trunc(det, w - 2)}${RESET}`);
-  lines.push("");
+  topLines.push(al);
+  if (det) topLines.push(` ${DIM}${trunc(det, w - 2)}${RESET}`);
+  topLines.push("");
 
   // Metrics row 1
-  lines.push(
+  topLines.push(
     metricRow([
       { label: "mode", value: state.mode, color: CYAN },
       { label: "passes", value: fmt(state.passCount), color: CYAN },
@@ -180,7 +179,7 @@ function renderFrame(state: BotState, now: number): string {
   );
 
   // Metrics row 2
-  lines.push(
+  topLines.push(
     metricRow([
       { label: "gas", value: `${state.gasPrice} gwei`, color: YELLOW },
       { label: "eval", value: fmt(state.lastPathsEvaluated), color: CYAN },
@@ -190,7 +189,7 @@ function renderFrame(state: BotState, now: number): string {
   );
 
   // Metrics row 3
-  lines.push(
+  topLines.push(
     metricRow([
       { label: "pools", value: fmt(state.stateCacheSize), color: CYAN },
       { label: "paths", value: fmt(state.cachedPathCount), color: CYAN },
@@ -200,7 +199,7 @@ function renderFrame(state: BotState, now: number): string {
   );
 
   // Metrics row 4 - signal
-  lines.push(
+  topLines.push(
     metricRow([
       { label: "signal", value: signal, color: CYAN },
       { label: "reject", value: topReject, color: topReject === "none" ? GREEN : YELLOW },
@@ -211,7 +210,7 @@ function renderFrame(state: BotState, now: number): string {
 
   // TX row
   const txColor = sev.err > 0 ? RED : sev.warn > 0 ? YELLOW : GREEN;
-  lines.push(
+  topLines.push(
     metricRow([
       {
         label: "tx",
@@ -223,39 +222,52 @@ function renderFrame(state: BotState, now: number): string {
       { label: "profit", value: fmtWei(state.totalProfitWei), color: GREEN },
     ]),
   );
-  lines.push("");
+  topLines.push("");
 
   // Separator
-  lines.push(` ${DIM}${"─".repeat(Math.min(w - 2, 100))}${RESET}`);
-  lines.push("");
+  topLines.push(` ${DIM}${"─".repeat(Math.min(w - 2, 100))}${RESET}`);
+  topLines.push("");
 
   // Opportunities
   if (state.opportunities.length === 0) {
-    lines.push(` ${DIM}No opportunities found yet.${RESET}`);
+    topLines.push(` ${DIM}No opportunities found yet.${RESET}`);
   } else {
-    lines.push(` ${MAGENTA}${BOLD}Top Opportunities${RESET}`);
+    topLines.push(` ${MAGENTA}${BOLD}Top Opportunities${RESET}`);
     for (let i = 0; i < Math.min(state.opportunities.length, MAX_OPPORTUNITIES); i++) {
       const o = state.opportunities[i];
       const route = trunc(o.Route || "n/a", 30);
       const profit = trunc(o.Profit || "n/a", 22);
       const roi = trunc(o.ROI || "n/a", 10);
-      lines.push(
+      topLines.push(
         ` ${CYAN}${String(i + 1).padStart(2, "0")}${RESET} ${pad(route, 30)} ${GREEN}${pad(profit, 22)}${RESET} ${MAGENTA}${roi}${RESET}`,
       );
     }
   }
-  lines.push("");
+  topLines.push("");
 
-  // Logs
-  lines.push(` ${BLUE}${BOLD}Recent Logs${RESET}`);
-  const logs = state.logs.slice(0, MAX_LOGS);
-  if (logs.length === 0) {
-    lines.push(` ${DIM}No logs yet.${RESET}`);
+  // Calculate available lines for log section
+  // Reserve: log header (1) + log lines + trailing blank (1)
+  const overhead = topLines.length + 1;
+  const maxLogLines = Math.max(1, h - overhead);
+  const logLineCount = Math.min(MAX_LOGS, maxLogLines);
+
+  // Build log section
+  const logSection: string[] = [];
+  logSection.push(` ${BLUE}${BOLD}Recent Logs${RESET}`);
+  const recentLogs = state.logs.slice(0, logLineCount);
+  if (recentLogs.length === 0) {
+    logSection.push(` ${DIM}No logs yet.${RESET}`);
   } else {
-    for (const line of logs) {
-      lines.push(` ${logTone(line)}${trunc(normLog(line), w - 3)}${RESET}`);
+    for (const line of recentLogs) {
+      logSection.push(` ${logTone(line)}${trunc(normLog(line), w - 3)}${RESET}`);
     }
   }
+  // Pad to fill the reserved log area so the frame height is fixed
+  while (logSection.length < 1 + logLineCount) {
+    logSection.push("");
+  }
+
+  const lines: string[] = [`${HOME}${CLEAR}`, ...topLines, ...logSection];
 
   return lines.join("\n");
 }

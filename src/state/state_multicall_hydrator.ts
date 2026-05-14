@@ -10,7 +10,8 @@
 import { createPublicClient, http, getAddress } from "viem";
 import { polygon } from "viem/chains";
 import { HYPERRPC_URL } from "../config/index.ts";
-import { isEndpointCapabilityError } from "../utils/rpc_manager.ts";
+import { isEndpointCapabilityError, isRateLimitError, isRetryableError } from "../utils/rpc_manager.ts";
+import { errorMessage } from "../utils/errors.ts";
 import { logger } from "../utils/logger.ts";
 import { multicallWithRetry } from "./enrichment/rpc.ts";
 
@@ -149,6 +150,8 @@ const hyperRpcStateClient = createPublicClient({
 });
 
 let hyperRpcMulticallAvailable = true;
+let hyperRpcMulticallDisabledAt = 0;
+const HYPERRPC_MULTICALL_RECOVERY_MS = 60_000;
 
 function requireStateMulticallClient(client: unknown, label: string): StateMulticallClient {
   const multicall = client != null && typeof client === "object" ? (client as { multicall?: unknown }).multicall : null;
@@ -176,26 +179,36 @@ function successScalar(result: StateMulticallResult | null | undefined) {
 
 export async function stateMulticallWithFallback<T = StateMulticallResult[]>(params: StateMulticallParams): Promise<T> {
   if (hyperRpcMulticallAvailable) {
-    try {
-      const hyperRpcMulticallClient = requireStateMulticallClient(hyperRpcStateClient, "HyperRPC state");
-      const results = await hyperRpcMulticallClient.multicall<T>(params);
-      if (Array.isArray(results) && results.length > 0 && results.every((r) => r?.status !== "success")) {
-        stateHydratorLogger.warn(
-          "[state_multicall_hydrator] HyperRPC returned all failures (likely unsupported eth_call); permanently disabled.",
-        );
-        hyperRpcMulticallAvailable = false;
-      } else {
-        return results;
-      }
-    } catch (err) {
-      if (isEndpointCapabilityError(err)) {
-        hyperRpcMulticallAvailable = false;
-        stateHydratorLogger.warn("[state_multicall_hydrator] HyperRPC does not support multicall here; falling back to RPC manager");
-      } else {
-        stateHydratorLogger.debug(
-          { err, blockTag: params.blockTag, callCount: params.contracts.length },
-          "[state_multicall_hydrator] HyperRPC multicall failed; falling back to RPC manager",
-        );
+    if (hyperRpcMulticallDisabledAt > 0 && Date.now() >= hyperRpcMulticallDisabledAt) {
+      hyperRpcMulticallDisabledAt = 0;
+      stateHydratorLogger.info("[state_multicall_hydrator] HyperRPC cooldown elapsed — retrying");
+    }
+    if (hyperRpcMulticallDisabledAt === 0) {
+      try {
+        const hyperRpcMulticallClient = requireStateMulticallClient(hyperRpcStateClient, "HyperRPC state");
+        const results = await hyperRpcMulticallClient.multicall<T>(params);
+        if (Array.isArray(results) && results.length > 0 && results.every((r) => r?.status !== "success")) {
+          stateHydratorLogger.warn(
+            "[state_multicall_hydrator] HyperRPC returned all failures — falling back to RPC manager for this request",
+          );
+        } else {
+          return results;
+        }
+      } catch (err) {
+        if (isEndpointCapabilityError(err)) {
+          hyperRpcMulticallDisabledAt = Date.now() + HYPERRPC_MULTICALL_RECOVERY_MS;
+          stateHydratorLogger.warn(
+            "[state_multicall_hydrator] HyperRPC does not support multicall — cooling down for %dms",
+            HYPERRPC_MULTICALL_RECOVERY_MS,
+          );
+        } else {
+          hyperRpcMulticallDisabledAt = Date.now() + HYPERRPC_MULTICALL_RECOVERY_MS;
+          stateHydratorLogger.debug(
+            { err, blockTag: params.blockTag, callCount: params.contracts.length },
+            "[state_multicall_hydrator] HyperRPC multicall failed — cooling down for %dms",
+            HYPERRPC_MULTICALL_RECOVERY_MS,
+          );
+        }
       }
     }
   }

@@ -512,7 +512,7 @@ export const V2_POLL_CONCURRENCY = _num("V2_POLL_CONCURRENCY", "V2_POLL_CONCURRE
  * Number of V2 getReserves() calls to pack into one Multicall3 request.
  * This keeps discovery hydration bounded when V2 coverage is large.
  */
-export const V2_RESERVES_MULTICALL_CHUNK_SIZE = _num("V2_RESERVES_MULTICALL_CHUNK_SIZE", "V2_RESERVES_MULTICALL_CHUNK_SIZE", 128);
+export const V2_RESERVES_MULTICALL_CHUNK_SIZE = _num("V2_RESERVES_MULTICALL_CHUNK_SIZE", "V2_RESERVES_MULTICALL_CHUNK_SIZE", 32);
 
 /**
  * Max concurrent slot0 / liquidity calls during V3 state polling.
@@ -524,14 +524,14 @@ export const V3_POLL_CONCURRENCY = _num("V3_POLL_CONCURRENCY", "V3_POLL_CONCURRE
  * Lower this to reduce per-request RPC payload size/memory spikes; raise only
  * when the RPC endpoint handles large multicalls reliably.
  */
-export const V3_BITMAP_MULTICALL_CHUNK_SIZE = _num("V3_BITMAP_MULTICALL_CHUNK_SIZE", "V3_BITMAP_MULTICALL_CHUNK_SIZE", 128);
+export const V3_BITMAP_MULTICALL_CHUNK_SIZE = _num("V3_BITMAP_MULTICALL_CHUNK_SIZE", "V3_BITMAP_MULTICALL_CHUNK_SIZE", 32);
 
 /**
  * Number of V3 ticks() calls packed into one Multicall3 request.
  * This is the heaviest V3 hydration batch knob: lower values reduce RPC
  * response size and heap pressure at the cost of more network round trips.
  */
-export const V3_TICKS_MULTICALL_CHUNK_SIZE = _num("V3_TICKS_MULTICALL_CHUNK_SIZE", "V3_TICKS_MULTICALL_CHUNK_SIZE", 200);
+export const V3_TICKS_MULTICALL_CHUNK_SIZE = _num("V3_TICKS_MULTICALL_CHUNK_SIZE", "V3_TICKS_MULTICALL_CHUNK_SIZE", 50);
 
 /** V3 warmup state rows buffered before each registry persistence write. */
 export const WARMUP_V3_PROGRESS_PERSIST_BATCH_SIZE = _num(
