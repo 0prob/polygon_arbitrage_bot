@@ -13,18 +13,19 @@ export interface LoggerOptions {
 }
 
 /** Create a root logger. */
-export function createRootLogger(opts: LoggerOptions): Logger {
+export function createRootLogger(opts?: Partial<LoggerOptions>): Logger {
+  const level = (opts?.level ?? "info") as Level;
   const baseConfig: pino.LoggerOptions = {
-    level: opts.level as Level,
+    level,
     base: undefined, // omit pid/hostname
     timestamp: pino.stdTimeFunctions.isoTime,
   };
 
-  if (opts.fileMode && opts.filePath) {
+  if (opts?.fileMode && opts?.filePath) {
     return pino(baseConfig, pino.destination({ dest: opts.filePath, sync: false }));
   }
 
-  if (opts.pretty) {
+  if (opts?.pretty) {
     return pino({
       ...baseConfig,
       transport: { target: "pino-pretty", options: { colorize: true, translateTime: "HH:MM:ss.l" } },
