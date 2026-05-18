@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 152 files · ~51,159 words
+- 152 files · ~51,164 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 392 nodes · 462 edges · 49 communities (35 shown, 14 thin omitted)
+- 397 nodes · 466 edges · 51 communities (36 shown, 15 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c60b7a58`
+- Built from commit: `723effd1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -60,6 +60,8 @@
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
+- [[_COMMUNITY_Community 49|Community 49]]
+- [[_COMMUNITY_Community 50|Community 50]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `pollLoop()` - 9 edges
@@ -78,12 +80,12 @@
   src/services/watcher/poll_loop.ts → src/services/strategy/backrunner.test.ts
 - `pollLoop()` --calls--> `checkReorg()`  [EXTRACTED]
   src/services/watcher/poll_loop.ts → src/services/watcher/reorg.ts
-- `pollLoop()` --calls--> `dispatchLog()`  [EXTRACTED]
-  src/services/watcher/poll_loop.ts → src/services/watcher/log_handler.ts
 - `pollLoop()` --calls--> `commitWatcherStatesBatch()`  [EXTRACTED]
   src/services/watcher/poll_loop.ts → src/services/watcher/state_ops.ts
+- `pollLoop()` --calls--> `dispatchLog()`  [EXTRACTED]
+  src/services/watcher/poll_loop.ts → src/services/watcher/log_handler.ts
 
-## Communities (49 total, 14 thin omitted)
+## Communities (51 total, 15 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -94,20 +96,20 @@ Cohesion: 0.12
 Nodes (16): Architecture, CLI (`src/cli/`), code:block1 (git clone <repo>), code:block2 (pnpm start), Config (`src/config/`), Configuration, Core (`src/core/`), Development (+8 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.08
-Nodes (50): buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext, TOPIC0, topicArray() (+42 more)
+Cohesion: 0.16
+Nodes (27): asStateRecord(), commitWatcherStatesBatch(), CORE_STATE_KEYS, decodedBigInt(), decodedValue(), ensureV3Fee(), isTickRecord(), mergeStateIntoCache() (+19 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
 Nodes (23): log, r, filter, filters, first, query, result, second (+15 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.13
-Nodes (20): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+12 more)
+Cohesion: 0.19
+Nodes (14): BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient(), ensureModule(), HypersyncError (+6 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (14): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+6 more)
+Cohesion: 0.14
+Nodes (13): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+5 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.13
@@ -209,25 +211,29 @@ Nodes (3): service, signals, tx
 Cohesion: 0.50
 Nodes (3): customRetryable, fn, logger
 
+### Community 49 - "Community 49"
+Cohesion: 0.11
+Nodes (30): client, Decoder, HypersyncDecoderRuntime, signal, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap() (+22 more)
+
 ## Knowledge Gaps
-- **235 isolated node(s):** `name`, `version`, `type`, `main`, `packageManager` (+230 more)
+- **237 isolated node(s):** `Logger`, `LoggerOptions`, `name`, `version`, `type` (+232 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `pollLoop()` connect `Community 2` to `Community 13`, `Community 20`, `Community 4`, `Community 5`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `signal` connect `Community 5` to `Community 2`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `WatcherService` connect `Community 20` to `Community 4`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **What connects `name`, `version`, `type` to the rest of the system?**
-  _235 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `pollLoop()` connect `Community 49` to `Community 2`, `Community 20`, `Community 13`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
+- **Why does `signal` connect `Community 49` to `Community 5`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
+- **Why does `WatcherService` connect `Community 20` to `Community 49`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **What connects `Logger`, `LoggerOptions`, `name` to the rest of the system?**
+  _237 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.0625 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.08282828282828283 - nodes in this community are weakly interconnected._
+- **Should `Community 3` be split into smaller, more focused modules?**
+  _Cohesion score 0.08307692307692308 - nodes in this community are weakly interconnected._
