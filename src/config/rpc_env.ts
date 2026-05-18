@@ -96,9 +96,13 @@ export function createGasEstimationClient() {
     transport: http(GAS_ESTIMATION_RPC_URL, {
       // Tight timeout — if the simulation RPC is slow, fail fast and skip the
       // opportunity rather than holding up the hot path.
+      batch: true,
       timeout: 5_000,
+      fetchOptions: { headers: { Connection: "keep-alive" } },
     }),
-    batch: { multicall: true },
+    batch: { 
+      multicall: { wait: 16 },
+    },
   });
   return _gasEstimationClient;
 }
@@ -122,6 +126,7 @@ export function createExecutionClient(account: Parameters<typeof createWalletCli
     transport: http(EXECUTION_RPC_URL, {
       timeout: 10_000,
       retryCount: 0,
+      fetchOptions: { headers: { Connection: "keep-alive" } },
     }),
   });
   return _executionWalletClient;
@@ -137,10 +142,14 @@ export function createExecutionReadClient() {
   _executionReadClient = createPublicClient({
     chain: polygon,
     transport: http(EXECUTION_RPC_URL, {
+      batch: true,
       timeout: 10_000,
       retryCount: 0,
+      fetchOptions: { headers: { Connection: "keep-alive" } },
     }),
-    batch: { multicall: true },
+    batch: { 
+      multicall: { wait: 16 },
+    },
   });
   return _executionReadClient;
 }
