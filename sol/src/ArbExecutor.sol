@@ -41,6 +41,28 @@ interface IKyberElasticFactoryLike {
     function getPool(address tokenA, address tokenB, uint24 swapFeeUnits) external view returns (address);
 }
 
+interface IAavePool {
+    function flashLoan(
+        address receiverAddress,
+        address[] calldata assets,
+        uint256[] calldata amounts,
+        uint256[] calldata interestRateModes,
+        address onBehalfOf,
+        bytes calldata params,
+        uint16 referralCode
+    ) external;
+}
+
+interface IFlashLoanSimpleReceiver {
+    function executeOperation(
+        address asset,
+        uint256 amount,
+        uint256 premium,
+        address initiator,
+        bytes calldata params
+    ) external returns (bool);
+}
+
 contract ArbExecutor is IFlashLoanRecipient {
     struct Call {
         address target;
@@ -104,6 +126,13 @@ contract ArbExecutor is IFlashLoanRecipient {
     );
     event TokenRescued(address indexed token, address indexed to, uint256 amount);
     event NativeRescued(address indexed to, uint256 amount);
+    event ArbitrageExecutedWithAave(
+        address indexed executor,
+        address indexed profitToken,
+        uint256 profitAmount,
+        bytes32 indexed routeHash,
+        address flashProvider
+    );
 
     address public owner;
     mapping(address => bool) public operators;
@@ -113,6 +142,7 @@ contract ArbExecutor is IFlashLoanRecipient {
     address public immutable sushiV3Factory;
     address public immutable quickswapV3Factory;
     address public immutable kyberElasticFactory;
+    address public immutable aavePool;
 
     uint8 private _phase;
     bytes32 private _activeRouteHash;
@@ -145,7 +175,8 @@ contract ArbExecutor is IFlashLoanRecipient {
         address uniswapV3Factory_,
         address sushiV3Factory_,
         address quickswapV3Factory_,
-        address kyberElasticFactory_
+        address kyberElasticFactory_,
+        address aavePool_
     ) {
         if (
             owner_ == address(0) ||
@@ -153,7 +184,8 @@ contract ArbExecutor is IFlashLoanRecipient {
             uniswapV3Factory_ == address(0) ||
             sushiV3Factory_ == address(0) ||
             quickswapV3Factory_ == address(0) ||
-            kyberElasticFactory_ == address(0)
+            kyberElasticFactory_ == address(0) ||
+            aavePool_ == address(0)
         ) revert ZeroAddress();
 
         owner = owner_;
@@ -162,6 +194,7 @@ contract ArbExecutor is IFlashLoanRecipient {
         sushiV3Factory = sushiV3Factory_;
         quickswapV3Factory = quickswapV3Factory_;
         kyberElasticFactory = kyberElasticFactory_;
+        aavePool = aavePool_;
         emit OwnershipTransferred(address(0), owner_);
     }
 
@@ -276,6 +309,90 @@ contract ArbExecutor is IFlashLoanRecipient {
 
         _phase = PHASE_IDLE;
         _assertProfit();
+    }
+
+    function executeArbWithAave(
+        address flashToken,
+        uint256 flashAmount,
+        FlashParams calldata params
+    ) external onlyAuthorized {
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
+        if (block.timestamp > params.deadline) revert DeadlineExpired();
+        uint256 callsLen = params.calls.length;
+        if (callsLen == 0) revert EmptyRoute();
+        if (callsLen > MAX_CALLS) revert TooManyCalls();
+        if (flashAmount == 0) revert FlashLoanRequired();
+        if (flashToken == address(0) || params.profitToken == address(0)) revert ZeroAddress();
+
+        bytes32 routeHash = keccak256(abi.encode(params.calls));
+        if (routeHash != params.routeHash) revert InvalidRouteHash();
+
+        uint256 initialProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
+
+        _phase = PHASE_FLASHLOAN;
+        _activeRouteHash = routeHash;
+        _activeProfitToken = params.profitToken;
+        _activeMinProfit = params.minProfit;
+        _activeInitialProfitBalance = initialProfitBalance;
+
+        address[] memory assets = new address[](1);
+        assets[0] = flashToken;
+        uint256[] memory amounts = new uint256[](1);
+        amounts[0] = flashAmount;
+        uint256[] memory modes = new uint256[](1);
+        modes[0] = 0;
+
+        IAavePool(aavePool).flashLoan(
+            address(this),
+            assets,
+            amounts,
+            modes,
+            address(this),
+            abi.encode(params),
+            0
+        );
+
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
+
+        uint256 finalProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
+        uint256 profitAmount;
+        unchecked {
+            profitAmount = finalProfitBalance >= initialProfitBalance
+                ? finalProfitBalance - initialProfitBalance
+                : 0;
+        }
+
+        _clearExecutionContext();
+
+        emit ArbitrageExecutedWithAave(msg.sender, params.profitToken, profitAmount, routeHash, aavePool);
+    }
+
+    function executeOperation(
+        address asset,
+        uint256 amount,
+        uint256 premium,
+        address initiator,
+        bytes calldata params
+    ) external returns (bool) {
+        if (msg.sender != aavePool) revert FlashLoanOnly();
+        if (_phase != PHASE_FLASHLOAN) revert InvalidFlashLoanContext();
+        if (initiator != address(this)) revert Unauthorized();
+
+        FlashParams memory decodedParams = abi.decode(params, (FlashParams));
+        if (decodedParams.routeHash != _activeRouteHash) revert InvalidRouteHash();
+        if (decodedParams.profitToken != _activeProfitToken) revert InvalidFlashLoanContext();
+        if (decodedParams.minProfit != _activeMinProfit) revert InvalidFlashLoanContext();
+        if (block.timestamp > decodedParams.deadline) revert DeadlineExpired();
+
+        _phase = PHASE_CALLBACK;
+        _executeCalls(decodedParams.calls);
+
+        uint256 totalRepay = amount + premium;
+        _safeTransfer(asset, aavePool, totalRepay);
+
+        _phase = PHASE_IDLE;
+        _assertProfit();
+        return true;
     }
 
     function uniswapV3SwapCallback(int256 amount0Delta, int256 amount1Delta, bytes calldata data) external {

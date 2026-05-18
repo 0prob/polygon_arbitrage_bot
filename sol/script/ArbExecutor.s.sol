@@ -16,6 +16,8 @@ contract ArbExecutorScript is Script {
         0x411b0fAcC3489691f28ad58c47006AF5E3Ab3A28;
     address internal constant DEFAULT_KYBER_ELASTIC_FACTORY =
         0x5F1dddbf348aC2fbe22a163e30F99F9ECE3DD50a;
+    address internal constant DEFAULT_AAVE_POOL =
+        0x794a61358D6845594F94dc1DB02A252b5b4814aD;
 
     function run() external returns (ArbExecutor executor) {
         address owner = vm.envAddress("OWNER");
@@ -28,6 +30,8 @@ contract ArbExecutorScript is Script {
             vm.envOr("QUICKSWAP_V3_FACTORY", DEFAULT_QUICKSWAP_V3_FACTORY);
         address kyberElasticFactory =
             vm.envOr("KYBER_ELASTIC_FACTORY", DEFAULT_KYBER_ELASTIC_FACTORY);
+        address aavePool =
+            vm.envOr("AAVE_POOL", DEFAULT_AAVE_POOL);
         address initialOperator = vm.envOr("INITIAL_OPERATOR", address(0));
 
         vm.startBroadcast();
@@ -38,7 +42,8 @@ contract ArbExecutorScript is Script {
             uniswapV3Factory,
             sushiV3Factory,
             quickswapV3Factory,
-            kyberElasticFactory
+            kyberElasticFactory,
+            aavePool
         );
 
         // Post-deployment operator setup (only works if broadcaster == owner)
@@ -64,5 +69,6 @@ contract ArbExecutorScript is Script {
         console2.log("sushiV3Factory:", sushiV3Factory);
         console2.log("quickswapV3Factory:", quickswapV3Factory);
         console2.log("kyberElasticFactory:", kyberElasticFactory);
+        console2.log("aavePool:", aavePool);
     }
 }

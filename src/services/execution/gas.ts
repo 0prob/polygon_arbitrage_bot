@@ -16,15 +16,23 @@ export interface GasOracleConfig {
 }
 
 export const DEFAULT_GAS_CONFIG: GasOracleConfig = {
-  pollIntervalMs: 2_000,
-  priorityFeeFloorGwei: 30,
-  priorityFeeCeilingGwei: 500,
-  maxBidMultiplier: 5,
+  pollIntervalMs: 1_000,
+  priorityFeeFloorGwei: 1,
+  priorityFeeCeilingGwei: 50,
+  maxBidMultiplier: 3,
 };
+
+export interface PolygonGasHints {
+  congestion: number;
+  recommendedPriorityFee: bigint;
+  isSpiking: boolean;
+}
 
 export class GasOracle {
   private current: FeeSnapshot | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private history: FeeSnapshot[] = [];
+  private static readonly HISTORY_SIZE = 10;
 
   constructor(
     private config: GasOracleConfig = DEFAULT_GAS_CONFIG,
@@ -33,6 +41,20 @@ export class GasOracle {
 
   getSnapshot(): FeeSnapshot | null {
     return this.current;
+  }
+
+  estimateCongestion(): PolygonGasHints {
+    const current = this.current;
+    if (!current || this.history.length < 2) {
+      return { congestion: 0, recommendedPriorityFee: 0n, isSpiking: false };
+    }
+    const sum = this.history.reduce((a, b) => a + b.baseFee, 0n);
+    const avg = sum / BigInt(this.history.length);
+    const ratio = avg === 0n ? 1 : Number(current.baseFee) / Number(avg);
+    const congestion = Math.min(1, Math.max(0, ratio - 1));
+    const isSpiking = ratio > 1.5;
+    const recommendedPriorityFee = BigInt(Math.round(Number(current.baseFee) * ratio * 0.1));
+    return { congestion, recommendedPriorityFee, isSpiking };
   }
 
   async start(): Promise<void> {
@@ -53,6 +75,10 @@ export class GasOracle {
         baseFee, priorityFee: clampedPriority, maxFee, gasPrice: baseFee + clampedPriority,
         timestamp: Date.now(),
       };
+      this.history.push(this.current);
+      if (this.history.length > GasOracle.HISTORY_SIZE) {
+        this.history.shift();
+      }
     } catch {
       // Keep last known values on fetch failure
     }

@@ -7,4 +7,7 @@ export default defineConfig({
       include: ["src/core/**", "src/infra/**"],
     },
   },
+  bench: {
+    include: ["src/benchmarks/**/*.ts"],
+  },
 });

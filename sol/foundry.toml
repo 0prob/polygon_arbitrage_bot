@@ -18,3 +18,9 @@ libs = ["lib"]
 # --- RPC (optional) ---
 # Leave the default profile RPC-free so pure unit tests run locally.
 # Pass `--rpc-url` (or use a separate profile) only for forked tests/scripts.
+
+# --- Amoy Testnet Profile ---
+[profile.amoy]
+src = "src"
+out = "out"
+libs = ["lib"]

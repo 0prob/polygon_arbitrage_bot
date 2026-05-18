@@ -1,7 +1,5 @@
 # Polygon DEX Arbitrage Bot
 
-Clean-room rewrite of a Polygon DEX arbitrage bot with Aave V3 flash loans, backrunning, and comprehensive test coverage.
-
 ## Architecture
 
 ### Core (`src/core/`)
@@ -49,7 +47,7 @@ ArbExecutor.sol — flash loan receiver compatible with:
 | `EXECUTION_RPC_URL` | RPC for tx submission | - |
 | `ENVIO_API_KEY` or `ENVIO_AI_API_KEY` | HyperSync API key | - |
 | `LOG_LEVEL` | Logging level | `info` |
-| `ETH_RPC_URL` | Foundry RPC for contract deploys | - |
+| `RPC_URL` | RPC for contract deploys | - |
 | `PRIVATE_KEY` | Deployer/managed wallet key | - |
 | `OWNER` | Contract owner address | - |
 
@@ -58,7 +56,7 @@ ArbExecutor.sol — flash loan receiver compatible with:
 ### Prerequisites
 - Node.js 25+
 - pnpm 11+
-- Foundry (for Solidity contracts)
+- Foundry (for Solidity contract)
 
 ### Setup
 ```
@@ -66,34 +64,3 @@ git clone <repo>
 pnpm install
 ```
 
-### Testing
-```
-# All tests
-pnpm test
-
-# Specific test file
-pnpm test -- src/core/math/uniswap_v2.test.ts
-
-# Solidity tests
-cd sol && forge test
-
-# Benchmarks
-npx vitest bench --run
-```
-
-### Deployment
-```
-# Contract deployment (requires ETH_RPC_URL + PRIVATE_KEY)
-cd sol && ./d
-```
-
-## Phases
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Core + Infrastructure | ✅ Complete |
-| 2 | Services | ✅ Complete |
-| 3 | Orchestrator + CLI | ✅ Complete |
-| 4 | Backrunning + Circuit Breaker + Aave V3 | ✅ Complete |
-| 5 | Smart Contracts | ✅ Complete |
-| 6 | Optimization + Docs | ✅ Complete |
