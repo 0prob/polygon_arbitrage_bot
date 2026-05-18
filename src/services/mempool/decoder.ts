@@ -40,9 +40,13 @@ export function decodeSwapCalldata(
     const amount0Out = BigInt("0x" + input.slice(10, 74));
     const amount1Out = BigInt("0x" + input.slice(74, 138));
     if (amount0Out > 0n) {
-      return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: amount0Out };
+      // amount0Out > 0 means token0 is being sent out, so tokenIn is token0, tokenOut is token1
+      // Extract "to" address from calldata (3rd param after 2 uint256 values)
+      const toAddr = ("0x" + input.slice(202, 242)) as Address;
+      return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: toAddr, amountIn: amount0Out };
     }
-    return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: amount1Out };
+    const toAddr = ("0x" + input.slice(202, 242)) as Address;
+    return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: toAddr, amountIn: amount1Out };
   }
 
   return null;

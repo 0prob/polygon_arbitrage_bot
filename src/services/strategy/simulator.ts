@@ -58,7 +58,7 @@ export function simulateHop(
   amountIn: bigint,
   stateCache: RouteStateCache,
 ): SimulatedHopResult {
-  const state = edge.stateRef ?? stateCache.get(edge.poolAddress.toLowerCase());
+  const state = stateCache.get(edge.poolAddress.toLowerCase()) ?? edge.stateRef;
   if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
 
   switch (normalizeProtocol(edge.protocol)) {
@@ -100,7 +100,7 @@ export function simulateRoute(
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
-    const state = (edge.stateRef ?? stateCache.get(edge.poolAddress.toLowerCase())) as Record<string, unknown> | undefined;
+    const state = (stateCache.get(edge.poolAddress.toLowerCase()) ?? edge.stateRef) as Record<string, unknown> | undefined;
     if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
 
     const simEdge: SimulationEdge = {

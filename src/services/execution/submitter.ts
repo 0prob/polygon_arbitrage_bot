@@ -146,10 +146,11 @@ export function createSubmitter(config: SubmitterConfig): Submitter {
         }
       }
 
+      const profitVal = tx.meta.expectedProfit;
       logAttempt({
         timestamp: Date.now(),
         routeKey: tx.routeHash,
-        profit: BigInt((tx.meta.expectedProfit as string) ?? "0"),
+        profit: typeof profitVal === "bigint" ? profitVal : BigInt(String(profitVal ?? "0")),
         gasCost: 0n,
         success: result.success,
         error: result.error,

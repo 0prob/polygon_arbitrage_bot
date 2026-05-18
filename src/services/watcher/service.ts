@@ -2,7 +2,7 @@ import { Decoder, client as hypersyncClient } from "../../infra/hypersync/client
 import type { HypersyncDecoderRuntime } from "../../infra/hypersync/types.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { createRootLogger } from "../../infra/observability/logger.ts";
-import type { RouteStateCache, WatcherPoolMeta, WatcherEnqueueEnrichment } from "./types.ts";
+import type { RouteStateCache, WatcherPoolMeta, WatcherEnrichmentQueue } from "./types.ts";
 import { WatcherFilter } from "./filter.ts";
 import { pollLoop } from "./poll_loop.ts";
 
@@ -38,6 +38,20 @@ export class WatcherService {
     getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
   };
   private _enrichmentQueue: Map<string, () => unknown> = new Map();
+  private _enrichmentDrain: WatcherEnrichmentQueue = {
+    enqueue: (addr, task) => { this._enrichmentQueue.set(addr.toLowerCase(), task); return undefined; },
+    drain: () => {
+      for (const task of this._enrichmentQueue.values()) {
+        try {
+          task();
+        } catch (err) {
+          logger.error({ err }, "Enrichment task failed");
+        }
+      }
+      this._enrichmentQueue.clear();
+    },
+    size: () => this._enrichmentQueue.size,
+  };
 
   onBatch: ((changed: Set<string>) => void) | null = null;
   onReorg: ((reorg: { reorgBlock: number; changedAddrs: Set<string> }) => void) | null = null;
@@ -79,11 +93,6 @@ export class WatcherService {
     return this._stateCache;
   }
 
-  private enqueueEnrichment: WatcherEnqueueEnrichment = (addr, task) => {
-    this._enrichmentQueue.set(addr.toLowerCase(), task);
-    return undefined;
-  };
-
   private noopRefresh = (_addr: string, _pool: WatcherPoolMeta | null) => {};
 
   private _run(): Promise<void> {
@@ -94,7 +103,7 @@ export class WatcherService {
       this._stateCache,
       this._decoder,
       this._registry,
-      this.enqueueEnrichment,
+      this._enrichmentDrain,
       this.noopRefresh,
       this.noopRefresh,
       this.noopRefresh,

@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 152 files · ~51,188 words
+- 151 files · ~50,514 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 400 nodes · 469 edges · 51 communities (35 shown, 16 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
+- 733 nodes · 962 edges · 74 communities (53 shown, 21 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6ffa04de`
+- Built from commit: `6f27814b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,46 +62,67 @@
 - [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_Community 49|Community 49]]
 - [[_COMMUNITY_Community 50|Community 50]]
+- [[_COMMUNITY_Community 51|Community 51]]
+- [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
+- [[_COMMUNITY_Community 61|Community 61]]
+- [[_COMMUNITY_Community 62|Community 62]]
+- [[_COMMUNITY_Community 66|Community 66]]
+- [[_COMMUNITY_Community 67|Community 67]]
+- [[_COMMUNITY_Community 68|Community 68]]
+- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 70|Community 70]]
+- [[_COMMUNITY_Community 71|Community 71]]
+- [[_COMMUNITY_Community 72|Community 72]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `pollLoop()` - 9 edges
-2. `scripts` - 8 edges
-3. `updateV3LiquidityState()` - 7 edges
-4. `Architecture` - 7 edges
-5. `createHypersyncClient()` - 6 edges
-6. `WatcherService` - 6 edges
-7. `updateV2State()` - 6 edges
-8. `createHyperSyncUnavailableError()` - 5 edges
-9. `dispatchLog()` - 5 edges
-10. `checkReorg()` - 5 edges
+1. `renderFrame()` - 16 edges
+2. `RpcEndpointPool` - 14 edges
+3. `compilerOptions` - 12 edges
+4. `scripts` - 11 edges
+5. `RpcEndpoint` - 9 edges
+6. `NonceManager` - 9 edges
+7. `pollLoop()` - 9 edges
+8. `GasOracle` - 9 edges
+9. `MempoolService` - 9 edges
+10. `runPassLoop()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `createRootLogger()` --calls--> `pino`  [INFERRED]
+  src/infra/observability/logger.ts → package.json
 - `pollLoop()` --calls--> `signal`  [INFERRED]
   src/services/watcher/poll_loop.ts → src/services/strategy/backrunner.test.ts
+- `bootApplication()` --calls--> `createRootLogger()`  [EXTRACTED]
+  src/orchestrator/boot.ts → src/infra/observability/logger.ts
 - `pollLoop()` --calls--> `checkReorg()`  [EXTRACTED]
   src/services/watcher/poll_loop.ts → src/services/watcher/reorg.ts
-- `pollLoop()` --calls--> `commitWatcherStatesBatch()`  [EXTRACTED]
-  src/services/watcher/poll_loop.ts → src/services/watcher/state_ops.ts
-- `pollLoop()` --calls--> `dispatchLog()`  [EXTRACTED]
-  src/services/watcher/poll_loop.ts → src/services/watcher/log_handler.ts
+- `main()` --calls--> `loadConfig()`  [EXTRACTED]
+  src/cli/main.ts → src/config/loader.ts
 
-## Communities (51 total, 16 thin omitted)
+## Communities (74 total, 21 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (31): dependencies, @envio-dev/hypersync-client, pino, tsx, viem, zod, devDependencies, eslint (+23 more)
+Nodes (34): dependencies, @envio-dev/hypersync-client, pino, tsx, viem, zod, devDependencies, eslint (+26 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.12
 Nodes (16): Architecture, CLI (`src/cli/`), code:block1 (git clone <repo>), code:block2 (pnpm start), Config (`src/config/`), Configuration, Core (`src/core/`), Development (+8 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.16
-Nodes (27): asStateRecord(), commitWatcherStatesBatch(), CORE_STATE_KEYS, decodedBigInt(), decodedValue(), ensureV3Fee(), isTickRecord(), mergeStateIntoCache() (+19 more)
+Cohesion: 0.06
+Nodes (35): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), loadConfigOrDie(), AppConfig, AppConfigSchema (+27 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.06
-Nodes (37): log, r, BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient() (+29 more)
+Nodes (35): log, r, buildLogQuery(), computeTopic0(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeTopic() (+27 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.14
@@ -184,8 +205,8 @@ Cohesion: 0.40
 Nodes (4): DEFAULT_RATES, out, result, state
 
 ### Community 26 - "Community 26"
-Cohesion: 0.40
-Nodes (4): c, g, h, rendered
+Cohesion: 0.09
+Nodes (12): NonceFetcher, NonceManager, EndpointPoolOptions, ensureHttps(), RpcEndpoint, errorMessage(), isAuthError(), isNoDataError() (+4 more)
 
 ### Community 27 - "Community 27"
 Cohesion: 0.67
@@ -207,29 +228,85 @@ Nodes (3): service, signals, tx
 Cohesion: 0.50
 Nodes (3): customRetryable, fn, logger
 
+### Community 32 - "Community 32"
+Cohesion: 0.16
+Nodes (17): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+9 more)
+
 ### Community 49 - "Community 49"
-Cohesion: 0.11
-Nodes (30): client, Decoder, HypersyncDecoderRuntime, signal, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap() (+22 more)
+Cohesion: 0.07
+Nodes (56): HypersyncDecoderRuntime, signal, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext (+48 more)
+
+### Community 50 - "Community 50"
+Cohesion: 0.24
+Nodes (8): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, LoggerOptions, CircuitBreakerOptions, CircuitState, DEFAULT_CIRCUIT_BREAKER_OPTIONS
+
+### Community 51 - "Community 51"
+Cohesion: 0.10
+Nodes (35): createBotState(), main(), age(), BotActivityProgress, BotOpportunityRow, BotState, fmt(), fmtDur() (+27 more)
+
+### Community 53 - "Community 53"
+Cohesion: 0.16
+Nodes (16): computeProfit(), ComputeProfitOptions, gasCostMaticWei(), invalidAssessment(), maticWeiToTokens(), roiMicroUnits(), tokensToMaticWei(), CandidateEntry (+8 more)
+
+### Community 54 - "Community 54"
+Cohesion: 0.14
+Nodes (8): clampPriorityFee(), DEFAULT_GAS_CONFIG, FeeSnapshot, GasOracle, GasOracleConfig, PolygonGasHints, CandidateExecution, ExecutionResult
+
+### Community 55 - "Community 55"
+Cohesion: 0.15
+Nodes (6): DecodedSwap, decodeSwapCalldata(), SELECTORS, DEFAULT_MEMPOOL_OPTIONS, MempoolService, MempoolServiceOptions
+
+### Community 56 - "Community 56"
+Cohesion: 0.14
+Nodes (13): compilerOptions, allowImportingTsExtensions, esModuleInterop, module, moduleResolution, noEmit, noUnusedLocals, noUnusedParameters (+5 more)
+
+### Community 57 - "Community 57"
+Cohesion: 0.36
+Nodes (6): DecodedPoolEvent, DiscoveryResult, DiscoveryServiceDeps, PoolStateFetcher, StateCache, Logger
+
+### Community 58 - "Community 58"
+Cohesion: 0.08
+Nodes (17): AttemptEntry, AttemptLogSink, logAttempt(), sinks, assertValidRoute(), buildArbTx(), BuilderConfig, BuilderOptions (+9 more)
+
+### Community 62 - "Community 62"
+Cohesion: 0.38
+Nodes (5): DEFAULT_WARMUP_OPTIONS, PoolStateFetcher, syncBatch(), WarmupOptions, warmupStateCache()
+
+### Community 66 - "Community 66"
+Cohesion: 0.25
+Nodes (8): normalizeAddressForDb(), parseJson(), poolMetaRowToObject(), poolRowToObject(), PROTOCOL_BIGINT_ARRAY_FIELDS, PROTOCOL_BIGINT_SCALAR_FIELDS, protocolClass(), rehydrateStateData()
+
+### Community 67 - "Community 67"
+Cohesion: 0.43
+Nodes (7): extractGasResult(), inferTokenIdx(), inferZeroForOne(), normalizeProtocol(), simulateHop(), simulateRoute(), SimulationEdge
+
+### Community 68 - "Community 68"
+Cohesion: 0.52
+Nodes (6): decodeCurvePoolAdded(), decodePairCreated(), decodePoolDeployed(), decodePoolRegistered(), extractAddress(), extractAddressFromTopic()
+
+### Community 69 - "Community 69"
+Cohesion: 0.33
+Nodes (5): code:typescript (<<<<), code:bash (git add .), Task 1: Fix WatcherService Drain, Task 2: Final Verification & Commit, Workspace Repair Implementation Plan
 
 ## Knowledge Gaps
-- **237 isolated node(s):** `Logger`, `LoggerOptions`, `name`, `version`, `type` (+232 more)
+- **320 isolated node(s):** `code:typescript (<<<<)`, `code:bash (git add .)`, `BotOpportunityRow`, `BotActivityProgress`, `REQUIRED_ENV` (+315 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `pollLoop()` connect `Community 49` to `Community 2`, `Community 20`, `Community 13`?**
-  _High betweenness centrality (0.025) - this node is a cross-community bridge._
-- **Why does `signal` connect `Community 49` to `Community 5`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
-- **Why does `WatcherService` connect `Community 20` to `Community 49`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **What connects `Logger`, `LoggerOptions`, `name` to the rest of the system?**
-  _237 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `createRootLogger()` connect `Community 50` to `Community 0`, `Community 57`, `Community 51`, `Community 49`?**
+  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `pino` connect `Community 0` to `Community 50`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **What connects `code:typescript (<<<<)`, `code:bash (git add .)`, `BotOpportunityRow` to the rest of the system?**
+  _320 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.0625 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.059379217273954114 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.06201550387596899 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05919661733615222 - nodes in this community are weakly interconnected._

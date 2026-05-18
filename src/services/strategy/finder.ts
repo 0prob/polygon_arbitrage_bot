@@ -16,6 +16,12 @@ export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): strin
   return parts.join(":");
 }
 
+function feeLogWeight(feeBps: bigint): number {
+  const feeNum = Math.min(Number(feeBps), 9999);
+  const factor = Math.max(1, 10000 - feeNum) / 10000;
+  return -Math.log(factor);
+}
+
 function find2HopCycles(graph: RoutingGraph): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [tokenIn, outEdges] of graph.adjacency) {
@@ -26,7 +32,7 @@ function find2HopCycles(graph: RoutingGraph): FoundCycle[] {
         if (e2.tokenOut.toLowerCase() !== tokenIn) continue;
         cycles.push({
           startToken: tokenIn as Address, edges: [e1, e2], hopCount: 2,
-          logWeight: -Math.log(Number(10000n - e1.feeBps)/10000) - Math.log(Number(10000n - e2.feeBps)/10000),
+          logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps),
           cumulativeFeeBps: e1.feeBps + e2.feeBps,
         });
       }
@@ -49,7 +55,7 @@ function find3HopCycles(graph: RoutingGraph): FoundCycle[] {
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
           cycles.push({
             startToken: startToken as Address, edges: [e1, e2, e3], hopCount: 3,
-            logWeight: [-Math.log(Number(10000n - e1.feeBps)/10000), -Math.log(Number(10000n - e2.feeBps)/10000), -Math.log(Number(10000n - e3.feeBps)/10000)].reduce((a,b)=>a+b),
+            logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps),
             cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps,
           });
         }

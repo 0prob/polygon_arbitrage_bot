@@ -39,12 +39,22 @@ export class HydrationService {
     return result.size;
   }
 
+  private _sweepPromise: Promise<void> | null = null;
+
   startSweep(intervalMs = 60_000): void {
     this.sweepTimer = setInterval(async () => {
-      if (!this.running) return;
-      const { sweepQuietPools } = await import("./sweep.ts");
-      const hydrated = await sweepQuietPools(this.pools(), this.stateCache, this.fetchPoolState);
-      if (hydrated > 0) this.logger.info({ hydrated }, "Quiet pool sweep");
+      if (!this.running || this._sweepPromise) return;
+      this._sweepPromise = (async () => {
+        try {
+          const { sweepQuietPools } = await import("./sweep.ts");
+          const hydrated = await sweepQuietPools(this.pools(), this.stateCache, this.fetchPoolState);
+          if (hydrated > 0) this.logger.info({ hydrated }, "Quiet pool sweep");
+        } catch (err) {
+          this.logger.error({ err }, "Sweep error");
+        } finally {
+          this._sweepPromise = null;
+        }
+      })();
     }, intervalMs);
   }
 }

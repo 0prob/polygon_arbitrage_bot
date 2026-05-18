@@ -244,7 +244,7 @@ function validateWatcherStateOrThrow(state: MutableWatcherState, context: { addr
     if ((state.liquidity as bigint | undefined) == null || (state.liquidity as bigint) < 0n) throw watcherStateIntegrityError("V3: negative liquidity", context);
     if (state.ticks instanceof Map) {
       for (const [, data] of state.ticks.entries()) {
-        if (data.liquidityGross < 0n) watcherStateIntegrityError("V3: negative liquidityGross", context);
+        if (data.liquidityGross < 0n) throw watcherStateIntegrityError("V3: negative liquidityGross", context);
       }
     }
   }

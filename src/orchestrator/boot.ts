@@ -151,7 +151,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);
 
-  const account = privateKeyToAccount(config.execution.privateKey as `0x${string}`);
+  const pk = config.execution.privateKey.startsWith("0x") ? config.execution.privateKey : `0x${config.execution.privateKey}`;
+  const account = privateKeyToAccount(pk as `0x${string}`);
   const walletClient = createWalletClient({
     account,
     chain: polygon,

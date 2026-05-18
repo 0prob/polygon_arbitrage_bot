@@ -136,7 +136,7 @@ export async function fetchAllLogs<TLog = unknown>(
         if (lastNextBlock === initialFromBlock) break;
       }
 
-      if (targetEnd == null) break;
+      if (lastNextBlock == null) break;
 
       currentQuery = { ...currentQuery, fromBlock: responseNextBlock };
     }

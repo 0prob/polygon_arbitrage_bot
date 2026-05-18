@@ -12,7 +12,11 @@ export class NonceManager {
   ) {}
 
   async initialize(): Promise<void> {
-    this.localNonce = await withRetry(() => this.fetchNonce(this.address), { maxAttempts: 3 });
+    try {
+      this.localNonce = await withRetry(() => this.fetchNonce(this.address), { maxAttempts: 3 });
+    } catch {
+      this.localNonce = 0;
+    }
     this.pendingCount = 0;
   }
 
@@ -25,9 +29,9 @@ export class NonceManager {
 
   async confirmNonce(confirmedNonce: number): Promise<void> {
     if (this.localNonce != null && confirmedNonce >= this.localNonce) {
-      const confirmed = confirmedNonce - this.localNonce + 1;
+      const confirmedCount = confirmedNonce - this.localNonce + 1;
       this.localNonce = confirmedNonce + 1;
-      this.pendingCount = Math.max(0, this.pendingCount - confirmed);
+      this.pendingCount = Math.max(0, this.pendingCount - confirmedCount);
     }
   }
 

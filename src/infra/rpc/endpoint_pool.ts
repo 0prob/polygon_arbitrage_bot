@@ -142,28 +142,34 @@ export class RpcEndpointPool {
       cooling.sort((a, b) => a.errorCooldownUntil - b.errorCooldownUntil);
       return cooling[0];
     }
-    available.sort((a, b) => a.rateLimitedUntil - b.rateLimitedUntil);
-    return available[0];
+    if (available.length > 0) {
+      available.sort((a, b) => a.rateLimitedUntil - b.rateLimitedUntil);
+      return available[0];
+    }
+    return this.endpoints[0];
   }
+
+  private _safetyTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   checkoutBestEndpoint(method: string = DEFAULT_METHOD): RpcEndpoint {
     const ep = this.getBestEndpoint(method);
     ep.inFlight++;
     const timer = setTimeout(() => {
       ep.inFlight = Math.max(0, ep.inFlight - 1);
+      this._safetyTimers.delete(ep.url);
     }, 30_000);
     timer.unref();
-    (ep as any)._safetyTimer = timer;
+    this._safetyTimers.set(ep.url, timer);
     return ep;
   }
 
   releaseEndpoint(url: string): void {
     const ep = this.endpoints.find((e) => e.url === url);
     if (!ep) return;
-    const timer = (ep as any)._safetyTimer as ReturnType<typeof setTimeout> | undefined;
+    const timer = this._safetyTimers.get(url);
     if (timer) {
       clearTimeout(timer);
-      (ep as any)._safetyTimer = null;
+      this._safetyTimers.delete(url);
     }
     ep.inFlight = Math.max(0, ep.inFlight - 1);
   }

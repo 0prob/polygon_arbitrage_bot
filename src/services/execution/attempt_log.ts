@@ -9,7 +9,7 @@ export interface AttemptEntry {
 
 export type AttemptLogSink = (entry: AttemptEntry) => void;
 
-let sinks: AttemptLogSink[] = [];
+const sinks: AttemptLogSink[] = [];
 
 export function setAttemptLogSink(sink: AttemptLogSink): void {
   sinks.push(sink);

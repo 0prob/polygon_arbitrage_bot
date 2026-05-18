@@ -44,7 +44,7 @@ export function parseJson<T>(value: unknown, fallback: T): unknown {
 
 export function rehydrateStateData(protocol: string, data: unknown): unknown {
   if (data == null || typeof data !== "object") return data;
-  const dataRecord = data as Record<string, unknown>;
+  const dataRecord = { ...(data as Record<string, unknown>) };
   const cls = protocolClass(protocol);
   const scalarFields = PROTOCOL_BIGINT_SCALAR_FIELDS[cls] || [];
   for (const field of scalarFields) {
@@ -84,9 +84,11 @@ export function rehydrateV3Ticks(
     if (!Number.isInteger(tickNum)) continue;
     const liqRecord = liq as Record<string, unknown> | null | undefined;
     if (!liqRecord) continue;
+    const lGross = liqRecord.liquidityGross;
+    const lNet = liqRecord.liquidityNet;
     result.set(tickNum, {
-      liquidityGross: typeof liqRecord.liquidityGross === "string" ? BigInt(liqRecord.liquidityGross) : BigInt(liqRecord.liquidityGross as number),
-      liquidityNet: typeof liqRecord.liquidityNet === "string" ? BigInt(liqRecord.liquidityNet) : BigInt(liqRecord.liquidityNet as number),
+      liquidityGross: typeof lGross === "bigint" ? lGross : BigInt(lGross as number),
+      liquidityNet: typeof lNet === "bigint" ? lNet : BigInt(lNet as number),
     });
   }
   return result;

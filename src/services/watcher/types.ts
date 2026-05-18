@@ -14,7 +14,11 @@ export interface WatcherPoolMeta {
   metadata?: Record<string, unknown>;
 }
 
-export type WatcherEnqueueEnrichment = (addr: string, task: () => unknown) => undefined;
+export interface WatcherEnrichmentQueue {
+  enqueue: (addr: string, task: () => unknown) => undefined;
+  drain: () => void;
+  size: () => number;
+}
 
 export type WatcherPoolRefresh = (addr: string, pool: WatcherPoolMeta | null) => unknown;
 

@@ -36,7 +36,7 @@ export function getExecutionStats(db: CompatDatabase, sinceMs: number) {
      FROM arb_history
      WHERE executed_at >= ?`,
   );
-  const row = stmt.get(sinceMs) as Record<string, unknown> | undefined;
+  const row = stmt.get(Math.floor(sinceMs / 1000)) as Record<string, unknown> | undefined;
   return {
     total: Number(row?.total ?? 0),
     successes: Number(row?.successes ?? 0),

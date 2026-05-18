@@ -64,13 +64,23 @@ let _module: Record<string, unknown> | null = null;
 let _moduleError: Error | null = null;
 
 async function ensureModule(): Promise<void> {
-  if (_module !== null || _moduleError !== null) return;
+  if (_module !== null) return;
+  if (_moduleError !== null && !shouldRetryLoad()) return;
   try {
     const mod = await import("@envio-dev/hypersync-client");
     _module = mod as Record<string, unknown>;
+    _moduleError = null;
   } catch (err) {
     _moduleError = err instanceof Error ? err : new Error(String(err));
   }
+}
+
+let _lastModuleAttempt = 0;
+function shouldRetryLoad(): boolean {
+  const now = Date.now();
+  if (now - _lastModuleAttempt < 10_000) return false;
+  _lastModuleAttempt = now;
+  return true;
 }
 
 export async function createHypersyncClient(config: HyperSyncClientConfig): Promise<HypersyncClientRuntime> {
@@ -98,6 +108,9 @@ function ensureClient(): Promise<HypersyncClientRuntime> {
     _clientPromise = createHypersyncClient({
       url: "https://polygon.hypersync.xyz",
       apiToken: "",
+    }).catch((err) => {
+      _clientPromise = null;
+      throw err;
     });
   }
   return _clientPromise;

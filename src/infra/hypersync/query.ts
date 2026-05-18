@@ -4,6 +4,7 @@ import type { Address } from "../../core/types/common.ts";
 import type { HyperSyncLogFilter, HyperSyncQuery, HyperSyncFieldSelection } from "./types.ts";
 
 const topic0Cache = new Map<string, string>();
+const TOPIC0_CACHE_MAX = 500;
 
 const DEFAULT_LOG_FIELDS = [
   "Address",
@@ -60,6 +61,10 @@ export function computeTopic0(eventSignature: string): string {
   }
 
   const topic0 = normalizeTopic(encoded);
+  if (topic0Cache.size >= TOPIC0_CACHE_MAX) {
+    const firstKey = topic0Cache.keys().next().value;
+    if (firstKey != null) topic0Cache.delete(firstKey);
+  }
   topic0Cache.set(normalizedSig, topic0);
   return topic0;
 }
@@ -73,6 +78,9 @@ function isAddress(a: Address | null): a is Address {
 }
 
 export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilter {
+  if (!filter || typeof filter !== "object") {
+    return {};
+  }
   const address = Array.isArray(filter?.address)
     ? filter.address.map((addr) => normalizeEvmAddress(addr)).filter(isAddress)
     : [];
@@ -86,19 +94,16 @@ export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilt
       )
     : [];
 
-  const lastConstrained = topics.length - 1;
-  const lastConstrainedIndex = lastConstrained >= 0
-    ? topics.reduce((last, group, i) => (group.length > 0 ? i : last), -1)
-    : -1;
+  const lastConstrainedIndex = topics.reduce((last, group, i) => (group.length > 0 ? i : last), -1);
 
   const trimmedTopics = lastConstrainedIndex >= 0
     ? topics.slice(0, lastConstrainedIndex + 1).map((g) => [...g])
     : [];
 
-  return {
-    ...(dedupedAddress.length > 0 ? { address: dedupedAddress } : {}),
-    ...(trimmedTopics.length > 0 ? { topics: trimmedTopics } : {}),
-  };
+  const result: HyperSyncLogFilter = {};
+  if (dedupedAddress.length > 0) result.address = dedupedAddress;
+  if (trimmedTopics.length > 0) result.topics = trimmedTopics;
+  return result;
 }
 
 export function buildLogQuery(

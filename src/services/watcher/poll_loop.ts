@@ -7,7 +7,7 @@ import type {
   DecodedWatcherLog,
   MutableWatcherState,
   WatcherPoolMeta,
-  WatcherEnqueueEnrichment,
+  WatcherEnrichmentQueue,
   HyperSyncLogLike,
   RouteStateCache,
 } from "./types.ts";
@@ -57,7 +57,7 @@ export async function pollLoop(
     setRollbackGuard?: (guard: RollbackGuard) => unknown;
     getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
   },
-  enqueueEnrichment: WatcherEnqueueEnrichment,
+  enrichmentQueue: WatcherEnrichmentQueue,
   refreshBalancer: (addr: string, pool: WatcherPoolMeta | null) => unknown,
   refreshCurve: (addr: string, pool: WatcherPoolMeta | null) => unknown,
   refreshDodo: (addr: string, pool: WatcherPoolMeta | null) => unknown,
@@ -86,11 +86,9 @@ export async function pollLoop(
         if (resp.rollbackGuard) {
           const reorgResult = checkReorg(db, registry, resp.rollbackGuard);
           if (reorgResult.reorgDetected) {
-            const changedAddrs = new Set<string>();
-            for (const key of stateCache.keys()) {
-              stateCache.delete(key);
-            }
-            logger.warn({ reorgBlock: reorgResult.reorgBlock }, "Reorg detected; state cleared");
+            const changedAddrs = new Set(stateCache.keys());
+            stateCache.clear();
+            logger.warn({ reorgBlock: reorgResult.reorgBlock, statesRemoved: reorgResult.statesRemoved, cacheCleared: changedAddrs.size }, "Reorg detected; state cache cleared");
             onReorg?.({ reorgBlock: reorgResult.reorgBlock, changedAddrs });
             lastBlock = reorgResult.checkpointBlock;
             continue;
@@ -132,7 +130,7 @@ export async function pollLoop(
           state = { ...state } as MutableWatcherState;
 
           const applied = dispatchLog(log, dec as unknown as DecodedWatcherLog, pool, state, {
-            addr, enqueueEnrichment, refreshBalancer, refreshCurve, refreshDodo, refreshWoofi, refreshV3,
+            addr, enqueueEnrichment: enrichmentQueue.enqueue, refreshBalancer, refreshCurve, refreshDodo, refreshWoofi, refreshV3,
           });
           if (applied) pendingUpdates.push({ addr, state, rawLog: log });
         }
@@ -144,6 +142,11 @@ export async function pollLoop(
           const changed = commitWatcherStatesBatch(stateCache, persistStates, pendingUpdates);
           const changedSet = new Set(changed);
           if (changedSet.size > 0) onBatch?.(changedSet);
+        }
+
+        if (enrichmentQueue.size() > 0) {
+          logger.debug({ queued: enrichmentQueue.size() }, "Draining enrichment queue");
+          enrichmentQueue.drain();
         }
 
         const nextBlock = Number(response.nextBlock);

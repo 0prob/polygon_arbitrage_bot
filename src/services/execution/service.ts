@@ -55,6 +55,7 @@ export class ExecutionService {
         maxFee: fee.maxFee,
       });
 
+      this.nonceManager.confirmNonce(nonce).catch(() => {});
       this.logger.info({ txHash, routeKey: candidate.routeKey }, "Transaction submitted");
       return { success: true, txHash };
     } catch (err) {

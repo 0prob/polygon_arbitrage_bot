@@ -38,9 +38,10 @@ export async function runPassLoop(
 
   ctx.logger.info({ intervalMs }, "Pass loop started");
 
+  let consecutiveErrors = 0;
+
   while (ctx.isRunning) {
     const startTime = Date.now();
-    let consecutiveErrors = 0;
 
     const state: Partial<BotState> = {
       status: "running",

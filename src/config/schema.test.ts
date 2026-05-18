@@ -18,7 +18,7 @@ describe("loadConfig", () => {
   });
 
   it("throws clearly when required env var is missing", () => {
-    const { ENVIO_API_TOKEN, ...incomplete } = REQUIRED_ENV;
+    const { ENVIO_API_TOKEN: _, ...incomplete } = REQUIRED_ENV;
     expect(() => loadConfig(incomplete)).toThrow(/envioApiToken/);
   });
 

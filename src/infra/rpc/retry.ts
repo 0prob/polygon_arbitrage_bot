@@ -24,13 +24,15 @@ function errorMessage(err: unknown): string {
 
 export function isRateLimitError(err: unknown): boolean {
   const msg = errorMessage(err).toLowerCase();
-  const status = (err as Record<string, unknown>).status ?? (err as Record<string, unknown>).statusCode;
+  const errObj = err && typeof err === "object" ? (err as Record<string, unknown>) : undefined;
+  const status = errObj?.status ?? errObj?.statusCode;
   if (status === 429) return true;
   return msg.includes("rate limit") || msg.includes("too many requests") || msg.includes("429");
 }
 
 export function isAuthError(err: unknown): boolean {
-  const status = (err as Record<string, unknown>).status ?? (err as Record<string, unknown>).statusCode;
+  const errObj = err && typeof err === "object" ? (err as Record<string, unknown>) : undefined;
+  const status = errObj?.status ?? errObj?.statusCode;
   if (status === 401) return true;
   const msg = errorMessage(err).toLowerCase();
   if (status === 403) {
@@ -43,7 +45,8 @@ export function isRetryableError(err: unknown): boolean {
   if (isRateLimitError(err)) return true;
   if (isAuthError(err)) return false;
   const msg = errorMessage(err).toLowerCase();
-  const status = (err as Record<string, unknown>).status ?? (err as Record<string, unknown>).statusCode;
+  const errObj = err && typeof err === "object" ? (err as Record<string, unknown>) : undefined;
+  const status = errObj?.status ?? errObj?.statusCode;
   const httpStatus = Number(status);
   if (Number.isInteger(httpStatus) && httpStatus >= 400) {
     return httpStatus >= 500;
@@ -64,7 +67,7 @@ export function isRetryableError(err: unknown): boolean {
 
 export function isNoDataError(err: unknown): boolean {
   const msg = errorMessage(err).toLowerCase();
-  return msg.includes('returned no data ("0x")');
+  return msg.includes('returned no data ("0x")') || msg.includes("no data");
 }
 
 export async function withRetry<T>(

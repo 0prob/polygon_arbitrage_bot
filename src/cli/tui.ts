@@ -154,16 +154,16 @@ function logSeverity(logs: string[]) {
 }
 
 function latestMatch(logs: string[], pattern: RegExp) {
-  for (const line of logs) {
-    const m = normLog(line).match(pattern);
+  for (let i = logs.length - 1; i >= 0; i--) {
+    const m = normLog(logs[i]).match(pattern);
     if (m?.[1]) return m[1].trim();
   }
   return null;
 }
 
 function latestEvent(logs: string[]) {
-  for (const line of logs) {
-    const m = normLog(line).match(/^\[[^\]]+\]\s+([a-z][a-z0-9_]*)/i);
+  for (let i = logs.length - 1; i >= 0; i--) {
+    const m = normLog(logs[i]).match(/^\[[^\]]+\]\s+([a-z][a-z0-9_]*)/i);
     if (m?.[1]) return m[1];
   }
   return "none";
@@ -334,10 +334,11 @@ export function startTui(state: BotState): () => void {
   _timer = setInterval(tick, REFRESH_INTERVAL_MS);
   _timer.unref();
 
-  process.on("SIGWINCH", () => {
+  const onSigwinch = () => {
     lastRenderedVersion = -1;
     tick();
-  });
+  };
+  process.on("SIGWINCH", onSigwinch);
 
   return () => {
     if (_timer) {
@@ -348,7 +349,7 @@ export function startTui(state: BotState): () => void {
     stdin.setRawMode?.(wasRaw ?? false);
     stdin.pause();
     stdin.removeListener("data", onData);
-    process.removeListener("SIGWINCH", tick);
+    process.removeListener("SIGWINCH", onSigwinch);
     _state = null;
   };
 }

@@ -2,12 +2,13 @@ import { computeTopic0 } from "../../infra/hypersync/query.ts";
 import type {
   DecodedWatcherLog,
   MutableWatcherState,
-  WatcherEnqueueEnrichment,
   WatcherPoolMeta,
   WatcherPoolRefresh,
   WatcherV3Refresh,
   HyperSyncLogLike,
 } from "./types.ts";
+
+type WatcherEnqueueFn = (addr: string, task: () => unknown) => undefined;
 import { updateV2State, updateV3SwapState, updateV3LiquidityState } from "./state_ops.ts";
 
 const V2_SYNC_SIG = "event Sync(uint112 reserve0, uint112 reserve1)";
@@ -40,7 +41,7 @@ export type LogHandlerContext = {
   pool: WatcherPoolMeta | null;
   state: MutableWatcherState;
   decoded: DecodedWatcherLog;
-  enqueueEnrichment: WatcherEnqueueEnrichment;
+  enqueueEnrichment: WatcherEnqueueFn;
   refreshBalancer: WatcherPoolRefresh;
   refreshCurve: WatcherPoolRefresh;
   refreshDodo: WatcherPoolRefresh;
@@ -98,7 +99,7 @@ export function dispatchLog(
   state: MutableWatcherState,
   deps: {
     addr: string;
-    enqueueEnrichment: WatcherEnqueueEnrichment;
+  enqueueEnrichment: WatcherEnqueueFn;
     refreshBalancer: WatcherPoolRefresh;
     refreshCurve: WatcherPoolRefresh;
     refreshDodo: WatcherPoolRefresh;

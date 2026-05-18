@@ -66,7 +66,11 @@ export async function pollBalancerPool(
       balances: bigint[];
       lastChangeBlock: bigint;
     };
-    const poolType = await callContract(poolAddress, [], "getPoolId", []) ? "weighted" : "stable";
+    await callContract(poolAddress, [], "getPoolId", []);
+    const poolType = await callContract(poolAddress, [], "getAmplificationParameter", []).then(
+      () => "stable",
+      () => "weighted",
+    );
     return { balances: result.balances, poolType, fee: 0n };
   } catch {
     return null;

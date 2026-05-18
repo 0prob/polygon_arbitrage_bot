@@ -38,7 +38,8 @@ export function createReadClients(urls: string[], opts?: ClientFactoryOptions) {
 }
 
 export function createExecutionClient(rpcUrl: string, privateKey?: string) {
-  const account = privateKey ? privateKeyToAccount(privateKey as `0x${string}`) : undefined;
+  const pk = privateKey ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) : undefined;
+  const account = pk ? privateKeyToAccount(pk as `0x${string}`) : undefined;
   return createWalletClient({
     ...(account ? { account } : {}),
     chain: polygon,
