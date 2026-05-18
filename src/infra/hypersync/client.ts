@@ -1,4 +1,5 @@
-import type { HyperSyncClientConfig, HypersyncClientRuntime } from "./types.ts";
+import { createRequire } from "module";
+import type { HyperSyncClientConfig, HypersyncClientRuntime, HypersyncDecoderRuntime } from "./types.ts";
 
 type HypersyncError = Error & { cause?: unknown };
 
@@ -139,4 +140,41 @@ export const JoinMode = {
   Default: 0,
   JoinAll: 1,
   JoinNothing: 2,
+};
+
+function throwUnsupportedHyperSync(): never {
+  throw createHyperSyncUnavailableError(new Error("HyperSync LogDecoder unavailable on this runtime"));
+}
+
+function tryCreateDecoder(): { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | null {
+  try {
+    const req = createRequire(import.meta.url);
+    const mod = req("@envio-dev/hypersync-client") as Record<string, unknown>;
+    const LogDecoderCtor = mod.Decoder as {
+      new (): HypersyncDecoderRuntime;
+      fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime;
+    } | undefined;
+    if (LogDecoderCtor?.fromSignatures) {
+      return {
+        fromSignatures: (sigs: string[]) => LogDecoderCtor.fromSignatures(sigs),
+      };
+    }
+  } catch {
+    // native module not available
+  }
+  return null;
+}
+
+let _decoderFactory: { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | null = null;
+
+export const Decoder: { fromSignatures: (signatures: string[]) => HypersyncDecoderRuntime } = {
+  fromSignatures(signatures: string[]): HypersyncDecoderRuntime {
+    if (!_decoderFactory) {
+      _decoderFactory = tryCreateDecoder();
+    }
+    if (_decoderFactory) {
+      return _decoderFactory.fromSignatures(signatures);
+    }
+    return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
+  },
 };

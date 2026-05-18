@@ -1,0 +1,922 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "readme_md",
+      "community": 1,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "Polygon DEX Arbitrage Bot",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "id": "t_readme_polygon_dex_arbitrage_bot",
+      "community": 1,
+      "norm_label": "polygon dex arbitrage bot"
+    },
+    {
+      "label": "Architecture",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L3",
+      "id": "t_readme_architecture",
+      "community": 4,
+      "norm_label": "architecture"
+    },
+    {
+      "label": "Core (`src/core/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L5",
+      "id": "t_readme_core_src_core",
+      "community": 4,
+      "norm_label": "core (`src/core/`)"
+    },
+    {
+      "label": "Config (`src/config/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L11",
+      "id": "t_readme_config_src_config",
+      "community": 4,
+      "norm_label": "config (`src/config/`)"
+    },
+    {
+      "label": "Infrastructure (`src/infra/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L15",
+      "id": "t_readme_infrastructure_src_infra",
+      "community": 4,
+      "norm_label": "infrastructure (`src/infra/`)"
+    },
+    {
+      "label": "Services (`src/services/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L21",
+      "id": "t_readme_services_src_services",
+      "community": 4,
+      "norm_label": "services (`src/services/`)"
+    },
+    {
+      "label": "Orchestrator (`src/orchestrator/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L29",
+      "id": "t_readme_orchestrator_src_orchestrator",
+      "community": 4,
+      "norm_label": "orchestrator (`src/orchestrator/`)"
+    },
+    {
+      "label": "CLI (`src/cli/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L32",
+      "id": "t_readme_cli_src_cli",
+      "community": 4,
+      "norm_label": "cli (`src/cli/`)"
+    },
+    {
+      "label": "Smart Contracts (`sol/`)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L35",
+      "id": "t_readme_smart_contracts_sol",
+      "community": 1,
+      "norm_label": "smart contracts (`sol/`)"
+    },
+    {
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L42",
+      "id": "t_readme_configuration",
+      "community": 1,
+      "norm_label": "configuration"
+    },
+    {
+      "label": "Development",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "id": "t_readme_development",
+      "community": 1,
+      "norm_label": "development"
+    },
+    {
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L56",
+      "id": "t_readme_prerequisites",
+      "community": 1,
+      "norm_label": "prerequisites"
+    },
+    {
+      "label": "Setup",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L61",
+      "id": "t_readme_setup",
+      "community": 1,
+      "norm_label": "setup"
+    },
+    {
+      "label": "code:block1 (git clone <repo>)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L62",
+      "id": "t_readme_codeblock_1",
+      "community": 1,
+      "norm_label": "code:block1 (git clone <repo>)"
+    },
+    {
+      "label": "Operation",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L67",
+      "id": "t_readme_operation",
+      "community": 1,
+      "norm_label": "operation"
+    },
+    {
+      "label": "code:block2 (pnpm start)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L68",
+      "id": "t_readme_codeblock_2",
+      "community": 1,
+      "norm_label": "code:block2 (pnpm start)"
+    },
+    {
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L1",
+      "id": "package_json",
+      "community": 2,
+      "norm_label": "package.json"
+    },
+    {
+      "label": "name",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L2",
+      "id": "t_package_name",
+      "community": 2,
+      "norm_label": "name"
+    },
+    {
+      "label": "version",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L3",
+      "id": "t_package_version",
+      "community": 2,
+      "norm_label": "version"
+    },
+    {
+      "label": "type",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L4",
+      "id": "t_package_type",
+      "community": 2,
+      "norm_label": "type"
+    },
+    {
+      "label": "main",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "id": "t_package_main",
+      "community": 2,
+      "norm_label": "main"
+    },
+    {
+      "label": "packageManager",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L6",
+      "id": "t_package_packagemanager",
+      "community": 2,
+      "norm_label": "packagemanager"
+    },
+    {
+      "label": "engines",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L7",
+      "id": "t_package_engines",
+      "community": 2,
+      "norm_label": "engines"
+    },
+    {
+      "label": "node",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L8",
+      "id": "t_package_engines_node",
+      "community": 2,
+      "norm_label": "node"
+    },
+    {
+      "label": "scripts",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "id": "t_package_scripts",
+      "community": 3,
+      "norm_label": "scripts"
+    },
+    {
+      "label": "start",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L11",
+      "id": "t_package_scripts_start",
+      "community": 3,
+      "norm_label": "start"
+    },
+    {
+      "label": "start:tui",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "id": "t_package_scripts_start_tui",
+      "community": 3,
+      "norm_label": "start:tui"
+    },
+    {
+      "label": "typecheck",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "id": "t_package_scripts_typecheck",
+      "community": 3,
+      "norm_label": "typecheck"
+    },
+    {
+      "label": "lint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L14",
+      "id": "t_package_scripts_lint",
+      "community": 3,
+      "norm_label": "lint"
+    },
+    {
+      "label": "lint:fix",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "id": "t_package_scripts_lint_fix",
+      "community": 3,
+      "norm_label": "lint:fix"
+    },
+    {
+      "label": "fmt",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "id": "t_package_scripts_fmt",
+      "community": 3,
+      "norm_label": "fmt"
+    },
+    {
+      "label": "fmt:fix",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "id": "t_package_scripts_fmt_fix",
+      "community": 3,
+      "norm_label": "fmt:fix"
+    },
+    {
+      "label": "dependencies",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "id": "t_package_dependencies",
+      "community": 5,
+      "norm_label": "dependencies"
+    },
+    {
+      "label": "@envio-dev/hypersync-client",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L20",
+      "id": "t_package_dependencies_envio_dev_hypersync_client",
+      "community": 5,
+      "norm_label": "@envio-dev/hypersync-client"
+    },
+    {
+      "label": "pino",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "id": "t_package_dependencies_pino",
+      "community": 5,
+      "norm_label": "pino"
+    },
+    {
+      "label": "tsx",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "id": "t_package_dependencies_tsx",
+      "community": 5,
+      "norm_label": "tsx"
+    },
+    {
+      "label": "viem",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L23",
+      "id": "t_package_dependencies_viem",
+      "community": 5,
+      "norm_label": "viem"
+    },
+    {
+      "label": "zod",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L24",
+      "id": "t_package_dependencies_zod",
+      "community": 5,
+      "norm_label": "zod"
+    },
+    {
+      "label": "devDependencies",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L26",
+      "id": "t_package_devdependencies",
+      "community": 0,
+      "norm_label": "devdependencies"
+    },
+    {
+      "label": "@types/node",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L27",
+      "id": "t_package_devdependencies_types_node",
+      "community": 0,
+      "norm_label": "@types/node"
+    },
+    {
+      "label": "@vitest/coverage-v8",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "id": "t_package_devdependencies_vitest_coverage_v8",
+      "community": 0,
+      "norm_label": "@vitest/coverage-v8"
+    },
+    {
+      "label": "eslint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L29",
+      "id": "t_package_devdependencies_eslint",
+      "community": 0,
+      "norm_label": "eslint"
+    },
+    {
+      "label": "eslint-config-prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L30",
+      "id": "t_package_devdependencies_eslint_config_prettier",
+      "community": 0,
+      "norm_label": "eslint-config-prettier"
+    },
+    {
+      "label": "fast-check",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L31",
+      "id": "t_package_devdependencies_fast_check",
+      "community": 0,
+      "norm_label": "fast-check"
+    },
+    {
+      "label": "prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "id": "t_package_devdependencies_prettier",
+      "community": 0,
+      "norm_label": "prettier"
+    },
+    {
+      "label": "typescript",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L33",
+      "id": "t_package_devdependencies_typescript",
+      "community": 0,
+      "norm_label": "typescript"
+    },
+    {
+      "label": "typescript-eslint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L34",
+      "id": "t_package_devdependencies_typescript_eslint",
+      "community": 0,
+      "norm_label": "typescript-eslint"
+    },
+    {
+      "label": "vitest",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L35",
+      "id": "t_package_devdependencies_vitest",
+      "community": 0,
+      "norm_label": "vitest"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "readme_md",
+      "target": "t_readme_polygon_dex_arbitrage_bot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "t_readme_polygon_dex_arbitrage_bot",
+      "target": "t_readme_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "t_readme_polygon_dex_arbitrage_bot",
+      "target": "t_readme_smart_contracts_sol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "t_readme_polygon_dex_arbitrage_bot",
+      "target": "t_readme_configuration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "t_readme_polygon_dex_arbitrage_bot",
+      "target": "t_readme_development",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_core_src_core",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_config_src_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_infrastructure_src_infra",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_services_src_services",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_orchestrator_src_orchestrator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "t_readme_architecture",
+      "target": "t_readme_cli_src_cli",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "t_readme_development",
+      "target": "t_readme_prerequisites",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "t_readme_development",
+      "target": "t_readme_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "t_readme_development",
+      "target": "t_readme_operation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "t_readme_setup",
+      "target": "t_readme_codeblock_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "t_readme_operation",
+      "target": "t_readme_codeblock_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_version",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_type",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_packagemanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_engines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_scripts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_dependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "t_package_devdependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "t_package_engines",
+      "target": "t_package_engines_node",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_start",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_start_tui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_typecheck",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_lint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_lint_fix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_fmt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "t_package_scripts",
+      "target": "t_package_scripts_fmt_fix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "t_package_dependencies",
+      "target": "t_package_dependencies_envio_dev_hypersync_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "t_package_dependencies",
+      "target": "t_package_dependencies_pino",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "t_package_dependencies",
+      "target": "t_package_dependencies_tsx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "t_package_dependencies",
+      "target": "t_package_dependencies_viem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "t_package_dependencies",
+      "target": "t_package_dependencies_zod",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_types_node",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_vitest_coverage_v8",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_eslint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_eslint_config_prettier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_fast_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_prettier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_typescript",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_typescript_eslint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_vitest",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "61775fe5a1e7e7fb452bfb93e1927658c286acf3"
+}

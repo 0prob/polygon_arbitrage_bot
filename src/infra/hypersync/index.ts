@@ -1,6 +1,7 @@
 export {
   createHypersyncClient,
   client,
+  Decoder,
   LogField,
   BlockField,
   JoinMode,
@@ -16,4 +17,6 @@ export type {
   StreamConfig,
   StreamProgress,
   HypersyncClientRuntime,
+  HypersyncDecoderRuntime,
+  HypersyncDecodedLog,
 } from "./types.ts";

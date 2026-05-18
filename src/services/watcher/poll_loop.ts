@@ -1,20 +1,26 @@
-import type { HyperSyncRawLog } from "../../hypersync/logs.ts";
-import type { HypersyncDecoderRuntime, HyperSyncGetResponse } from "../../hypersync/client.ts";
+import type { HypersyncDecoderRuntime, HyperSyncGetResponse } from "../../infra/hypersync/types.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { getCheckpoint, saveCheckpoint } from "../../infra/db/checkpoints.ts";
 import { upsertPoolState } from "../../infra/db/pools.ts";
-import type { RouteStateCache } from "../../routing/simulation_types.ts";
-import type { DecodedWatcherLog, MutableWatcherState, WatcherPoolMeta, WatcherEnqueueEnrichment } from "../../state/watcher_types.ts";
+import { createRootLogger } from "../../infra/observability/logger.ts";
+import type {
+  DecodedWatcherLog,
+  MutableWatcherState,
+  WatcherPoolMeta,
+  WatcherEnqueueEnrichment,
+  HyperSyncLogLike,
+  RouteStateCache,
+} from "./types.ts";
 import { WatcherFilter } from "./filter.ts";
-import { buildLogQuery, commitWatcherStatesBatch } from "./state_ops.ts";
+import { buildLogQuery as buildLogQueryOrig, commitWatcherStatesBatch } from "./state_ops.ts";
 import { dispatchLog } from "./log_handler.ts";
 import { checkReorg, type RollbackGuard } from "./reorg.ts";
-import { logger } from "../../utils/logger.ts";
 
+const logger = createRootLogger();
 const IDLE_SLEEP_MS = 1_000;
 const WATCHER_CHECKPOINT_KEY = "HYPERSYNC_WATCHER";
 
-function sortLogs(logs: HyperSyncRawLog[]): HyperSyncRawLog[] {
+function sortLogs(logs: HyperSyncLogLike[]): HyperSyncLogLike[] {
   return [...logs].sort((a, b) => {
     const ab = Number(a.blockNumber ?? 0);
     const bb = Number(b.blockNumber ?? 0);
@@ -26,9 +32,9 @@ function sortLogs(logs: HyperSyncRawLog[]): HyperSyncRawLog[] {
   });
 }
 
-function dedupeLogs(logs: HyperSyncRawLog[]): HyperSyncRawLog[] {
+function dedupeLogs(logs: HyperSyncLogLike[]): HyperSyncLogLike[] {
   const seen = new Set<string>();
-  const result: HyperSyncRawLog[] = [];
+  const result: HyperSyncLogLike[] = [];
   for (const log of sortLogs(logs)) {
     const txHash = typeof log.transactionHash === "string" ? log.transactionHash : "";
     const logIdx = String(log.logIndex ?? "");
@@ -56,7 +62,7 @@ export async function pollLoop(
   refreshCurve: (addr: string, pool: WatcherPoolMeta | null) => unknown,
   refreshDodo: (addr: string, pool: WatcherPoolMeta | null) => unknown,
   refreshWoofi: (addr: string, pool: WatcherPoolMeta | null) => unknown,
-  refreshV3: (addr: string, pool: WatcherPoolMeta | null, log?: HyperSyncRawLog) => unknown,
+  refreshV3: (addr: string, pool: WatcherPoolMeta | null, rawLog?: HyperSyncLogLike) => unknown,
   signal: () => boolean,
   onBatch?: ((changed: Set<string>) => void) | null,
   onReorg?: ((reorg: { reorgBlock: number; changedAddrs: Set<string> }) => void) | null,
@@ -71,16 +77,12 @@ export async function pollLoop(
 
       for (const chunk of chunks) {
         if (!signal()) return;
-        const query = buildLogQuery(fromBlock, chunk);
-        const response = await client.get<HyperSyncGetResponse<HyperSyncRawLog>>(query);
+        const query = buildLogQueryOrig(fromBlock, chunk);
+        const response = await client.get<HyperSyncGetResponse<HyperSyncLogLike>>(query);
         if (!signal()) return;
 
         if (response.rollbackGuard) {
-          const reorgResult = checkReorg(
-            db,
-            registry,
-            response.rollbackGuard as RollbackGuard | null | undefined,
-          );
+          const reorgResult = checkReorg(db, registry, response.rollbackGuard as RollbackGuard | null | undefined);
           if (reorgResult.reorgDetected) {
             const changedAddrs = new Set<string>();
             for (const key of stateCache.keys()) {
@@ -94,18 +96,16 @@ export async function pollLoop(
           registry.setRollbackGuard?.(response.rollbackGuard as RollbackGuard);
         }
 
-        const logs = response.data?.logs ?? [];
+        const logs = (response.data?.logs ?? []) as unknown as HyperSyncLogLike[];
         if (logs.length === 0) {
           const nextBlock = Number(response.nextBlock);
-          if (Number.isFinite(nextBlock) && nextBlock > lastBlock) {
-            lastBlock = nextBlock - 1;
-          }
+          if (Number.isFinite(nextBlock) && nextBlock > lastBlock) lastBlock = nextBlock - 1;
           continue;
         }
 
         const sorted = dedupeLogs(logs);
-        const decoded = (await decoder.decodeLogs(sorted)) as DecodedWatcherLog[];
-        const pendingUpdates: Array<{ addr: string; state: MutableWatcherState; rawLog: HyperSyncRawLog }> = [];
+        const decoded = (await decoder.decodeLogs(sorted)) as unknown as DecodedWatcherLog[];
+        const pendingUpdates: Array<{ addr: string; state: MutableWatcherState; rawLog: HyperSyncLogLike }> = [];
         const poolMetaCache = new Map<string, WatcherPoolMeta | null>();
 
         for (let i = 0; i < sorted.length; i++) {
@@ -113,7 +113,6 @@ export async function pollLoop(
           const log = sorted[i];
           const dec = decoded[i];
           if (!dec) continue;
-
           const addrRaw = log.address;
           if (!addrRaw) continue;
           const addr = typeof addrRaw === "string" ? addrRaw.toLowerCase() : String(addrRaw).toLowerCase();
@@ -130,31 +129,19 @@ export async function pollLoop(
           if (!state) continue;
           state = { ...state } as MutableWatcherState;
 
-          const applied = dispatchLog(log, dec, pool, state, {
-            addr,
-            enqueueEnrichment,
-            refreshBalancer,
-            refreshCurve,
-            refreshDodo,
-            refreshWoofi,
-            refreshV3,
+          const applied = dispatchLog(log, dec as unknown as DecodedWatcherLog, pool, state, {
+            addr, enqueueEnrichment, refreshBalancer, refreshCurve, refreshDodo, refreshWoofi, refreshV3,
           });
-          if (applied) {
-            pendingUpdates.push({ addr, state, rawLog: log });
-          }
+          if (applied) pendingUpdates.push({ addr, state, rawLog: log });
         }
 
         if (pendingUpdates.length > 0) {
           const persistStates = (states: Array<{ pool_address: string; block: number; data: MutableWatcherState }>) => {
-            for (const s of states) {
-              upsertPoolState(db, s.pool_address, s.block, s.data);
-            }
+            for (const s of states) upsertPoolState(db, s.pool_address, s.block, s.data);
           };
           const changed = commitWatcherStatesBatch(stateCache, persistStates, pendingUpdates);
           const changedSet = new Set(changed);
-          if (changedSet.size > 0) {
-            onBatch?.(changedSet);
-          }
+          if (changedSet.size > 0) onBatch?.(changedSet);
         }
 
         const nextBlock = Number(response.nextBlock);

@@ -1,11 +1,8 @@
-import { JoinMode, LogField } from "../../hypersync/client.ts";
-import { buildHyperSyncLogQuery, DEFAULT_HYPERSYNC_BLOCK_FIELDS, type HyperSyncLogQuery } from "../../hypersync/query_policy.ts";
-import type { HyperSyncGetResponse } from "../../hypersync/client.ts";
-import { topicArrayFromHyperSyncLog, type HyperSyncRawLog } from "../../hypersync/logs.ts";
-import { parsePoolMetadataValue } from "../../utils/pool_record.ts";
-import { resolveV2FeeDenominator, resolveV2FeeNumerator, resolveV3Fee, validatePoolState } from "../../state/normalizer.ts";
-import { mergeStateIntoCache } from "../../state/cache_utils.ts";
-import type { RouteStateCache } from "../../routing/simulation_types.ts";
+import { JoinMode, LogField } from "../../infra/hypersync/client.ts";
+import { buildLogQuery as buildInfraLogQuery } from "../../infra/hypersync/query.ts";
+import type { HyperSyncLog } from "../../infra/hypersync/types.ts";
+import { toBigInt } from "../../core/utils/bigint.ts";
+import { asRecord } from "../../core/utils/errors.ts";
 import type {
   DecodedWatcherLog,
   MutableWatcherState,
@@ -13,19 +10,107 @@ import type {
   WatcherPoolMeta,
   WatcherPersistedStateUpdate,
   WatcherStateUpdate,
-} from "../../state/watcher_types.ts";
+  HyperSyncLogLike,
+  RouteStateCache,
+} from "./types.ts";
+
+const V2_DEFAULT_FEE = 997n;
+const V2_DEFAULT_DENOM = 1000n;
+const V3_DEFAULT_FEE = 3000n;
+const CORE_STATE_KEYS = new Set(["poolId", "protocol", "tokens", "timestamp", "token0", "token1"]);
+
+function toBigIntStrict(value: unknown): bigint {
+  if (typeof value === "bigint" || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+    return BigInt(value as string | number | bigint | boolean);
+  }
+  throw new Error(`invalid bigint: ${String(value)}`);
+}
+
+function asStateRecord(value: unknown): Record<string, unknown> {
+  const r = asRecord(value);
+  return r;
+}
+
+export function parsePoolMetadataValue(value: unknown): Record<string, unknown> {
+  try {
+    let parsed = value ?? {};
+    for (let depth = 0; depth < 3 && typeof parsed === "string"; depth++) {
+      parsed = JSON.parse(parsed || "{}");
+    }
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function resolveV2FeeDenominator(meta: unknown = {}, fallback = V2_DEFAULT_DENOM): bigint {
+  const m = asStateRecord(meta);
+  const raw = m.feeDenominator ?? m.fee_denominator;
+  if (raw == null) return fallback;
+  try { const d = toBigIntStrict(raw); return d > 0n ? d : fallback; } catch { return fallback; }
+}
+
+export function resolveV2FeeNumerator(meta: unknown = {}, fallback = V2_DEFAULT_FEE, denominator = resolveV2FeeDenominator(meta)): bigint {
+  const m = asStateRecord(meta);
+  const raw = m.feeNumerator ?? m.fee;
+  if (raw == null) return fallback;
+  try { const f = toBigIntStrict(raw); return f > 0n && f < denominator ? f : fallback; } catch { return fallback; }
+}
+
+export function resolveV3Fee(meta: unknown = {}, fallback = V3_DEFAULT_FEE): bigint {
+  const m = asStateRecord(meta);
+  const raw = m.fee;
+  if (raw == null) return fallback;
+  try { const f = toBigIntStrict(raw); return f >= 0n ? f : fallback; } catch { return fallback; }
+}
+
+function validateStateAddress(addr: string): string {
+  const s = String(addr).toLowerCase().trim();
+  return /^0x[0-9a-f]{40}$/.test(s) ? s : "";
+}
+
+export function validatePoolState(input: unknown): { valid: boolean; reason?: string } {
+  const state = asRecord(input);
+  if (!state) return { valid: false, reason: "null state" };
+  const poolId = typeof state.poolId === "string" ? state.poolId : "";
+  const protocol = typeof state.protocol === "string" ? state.protocol : "";
+  const tokenValues = Array.isArray(state.tokens) ? state.tokens : [];
+  if (!poolId) return { valid: false, reason: "missing poolId" };
+  if (!protocol) return { valid: false, reason: "missing protocol" };
+  if (tokenValues.length < 2) return { valid: false, reason: "fewer than 2 tokens" };
+  if (validateStateAddress(poolId) !== poolId) return { valid: false, reason: "invalid poolId" };
+  return { valid: true };
+}
+
+export function mergeStateIntoCache(cache: RouteStateCache, addr: string, nextState: MutableWatcherState): MutableWatcherState {
+  const current = cache.get(addr);
+  if (!current) {
+    cache.set(addr, nextState);
+    return nextState;
+  }
+  for (const key of Object.keys(current)) {
+    if (CORE_STATE_KEYS.has(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(nextState, key)) {
+      delete current[key];
+    }
+  }
+  for (const [key, value] of Object.entries(nextState)) {
+    current[key] = value;
+  }
+  return current;
+}
+
+function topicArrayFromHyperSyncLog(log: HyperSyncLogLike): string[] {
+  if (Array.isArray(log?.topics)) return log.topics.map((t) => String(t ?? ""));
+  return [];
+}
 
 function decodedValue(decoded: DecodedWatcherLog, section: "indexed" | "body", index: number) {
   return decoded[section]?.[index]?.val;
 }
 
 function decodedBigInt(decoded: DecodedWatcherLog, section: "indexed" | "body", index: number): bigint {
-  const value = decodedValue(decoded, section, index);
-  if (value == null) return 0n;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
-    return BigInt(value);
-  }
-  return 0n;
+  return toBigInt(decodedValue(decoded, section, index));
 }
 
 function isTickRecord(value: unknown): value is Partial<V3WatcherTickState> {
@@ -54,7 +139,7 @@ function tickEntriesFrom(value: unknown): Array<[unknown, unknown]> {
       })
       .filter((entry): entry is [unknown, unknown] => entry != null);
   }
-  if (typeof value === "object") return Object.entries(value);
+  if (typeof value === "object") return Object.entries(value as Record<string, unknown>);
   return [];
 }
 
@@ -87,13 +172,7 @@ export function updateV2State(state: MutableWatcherState, decoded: DecodedWatche
   const metadata = parsePoolMetadataValue(pool?.metadata);
   const currentFee = typeof state.fee === "bigint" ? state.fee : null;
   const currentFeeDenominator = typeof state.feeDenominator === "bigint" ? state.feeDenominator : null;
-  if (
-    currentFee == null ||
-    currentFeeDenominator == null ||
-    currentFeeDenominator <= 0n ||
-    currentFee <= 0n ||
-    currentFee >= currentFeeDenominator
-  ) {
+  if (currentFee == null || currentFeeDenominator == null || currentFeeDenominator <= 0n || currentFee <= 0n || currentFee >= currentFeeDenominator) {
     const feeDenominator = resolveV2FeeDenominator(metadata);
     state.fee = resolveV2FeeNumerator(metadata, 997n, feeDenominator);
     state.feeDenominator = feeDenominator;
@@ -119,12 +198,7 @@ export function updateTickState(state: MutableWatcherState, tick: number, liquid
   state.tickVersion = Number.isFinite(Number(state.tickVersion)) ? Number(state.tickVersion) + 1 : 1;
 }
 
-export function updateV3LiquidityState(
-  state: MutableWatcherState,
-  decoded: DecodedWatcherLog,
-  isMint: boolean,
-  pool: WatcherPoolMeta | null = null,
-) {
+export function updateV3LiquidityState(state: MutableWatcherState, decoded: DecodedWatcherLog, isMint: boolean, pool: WatcherPoolMeta | null = null) {
   ensureV3Fee(state, pool);
   const tickLower = Number(decodedValue(decoded, "indexed", 1));
   const tickUpper = Number(decodedValue(decoded, "indexed", 2));
@@ -140,7 +214,7 @@ export function updateV3LiquidityState(
 }
 
 export function mergeWatcherState(cache: RouteStateCache, addr: string, nextState: MutableWatcherState): MutableWatcherState {
-  return mergeStateIntoCache(cache, addr, nextState) as MutableWatcherState;
+  return mergeStateIntoCache(cache, addr, nextState);
 }
 
 export type WatcherStateIntegrityError = Error & {
@@ -151,11 +225,7 @@ export type WatcherStateIntegrityError = Error & {
   topic0?: string | null;
 };
 
-function toTopicArray(log: HyperSyncRawLog) {
-  return topicArrayFromHyperSyncLog(log);
-}
-
-function watcherStateIntegrityError(reason: string, context: { addr?: unknown; poolAddress?: unknown; rawLog?: HyperSyncRawLog | null } = {}): WatcherStateIntegrityError {
+function watcherStateIntegrityError(reason: string, context: { addr?: unknown; poolAddress?: unknown; rawLog?: HyperSyncLogLike | null } = {}): WatcherStateIntegrityError {
   const addr = String(context?.addr ?? context?.poolAddress ?? "unknown").toLowerCase();
   const err = new Error(`watcher state integrity failed for ${addr}: ${reason}`) as WatcherStateIntegrityError;
   err.name = "WatcherStateIntegrityError";
@@ -163,24 +233,18 @@ function watcherStateIntegrityError(reason: string, context: { addr?: unknown; p
   err.validationReason = reason;
   if (context?.rawLog?.blockNumber != null) err.blockNumber = Number(context.rawLog.blockNumber);
   if (context?.rawLog?.transactionHash != null) err.transactionHash = String(context.rawLog.transactionHash);
-  if (context?.rawLog != null) err.topic0 = toTopicArray(context.rawLog)[0] ?? null;
+  if (context?.rawLog != null) err.topic0 = topicArrayFromHyperSyncLog(context.rawLog)[0] ?? null;
   return err;
 }
 
-function validateWatcherStateOrThrow(state: MutableWatcherState, context: { addr?: unknown; rawLog?: HyperSyncRawLog | null } = {}) {
+function validateWatcherStateOrThrow(state: MutableWatcherState, context: { addr?: unknown; rawLog?: HyperSyncLogLike | null } = {}) {
   const verdict = validatePoolState(state);
-  if (!verdict.valid) {
-    throw watcherStateIntegrityError(verdict.reason ?? "invalid watcher state", context);
-  }
+  if (!verdict.valid) throw watcherStateIntegrityError(verdict.reason ?? "invalid watcher state", context);
   if (typeof state.protocol === "string" && state.protocol.includes("V3")) {
-    if (state.liquidity == null || state.liquidity < 0n) {
-      throw watcherStateIntegrityError("V3: negative liquidity", context);
-    }
+    if (state.liquidity == null || state.liquidity < 0n) throw watcherStateIntegrityError("V3: negative liquidity", context);
     if (state.ticks instanceof Map) {
-      for (const [tick, data] of state.ticks.entries()) {
-        if (data.liquidityGross < 0n) {
-          throw watcherStateIntegrityError(`V3: negative liquidityGross at tick ${tick}`, context);
-        }
+      for (const [, data] of state.ticks.entries()) {
+        if (data.liquidityGross < 0n) watcherStateIntegrityError("V3: negative liquidityGross", context);
       }
     }
   }
@@ -203,42 +267,19 @@ export function commitWatcherStatesBatch(
       state.timestamp = committedAt;
     }
     validateWatcherStateOrThrow(state, { addr, rawLog: update?.rawLog });
-    committed.push({
-      pool_address: addr,
-      block: Number(update?.rawLog?.blockNumber ?? 0),
-      data: state,
-    });
+    committed.push({ pool_address: addr, block: Number(update?.rawLog?.blockNumber ?? 0), data: state });
     nextStates.set(addr, state);
   }
-  if (committed.length > 0) {
-    persistStates(committed);
-  }
+  if (committed.length > 0) persistStates(committed);
   for (const [addr, state] of nextStates.entries()) {
     mergeStateIntoCache(cache, addr, state);
   }
   return [...nextStates.keys()];
 }
 
-export function buildLogQuery(fromBlock: number, addresses: string[]): HyperSyncLogQuery {
-  return buildHyperSyncLogQuery({
+export function buildLogQuery(fromBlock: number, addresses: string[]) {
+  return buildInfraLogQuery(
+    [{ address: addresses as import("../../core/types/common.ts").Address[] }],
     fromBlock,
-    logs: [{ address: addresses }],
-    maxNumLogs: 5000,
-    maxNumBlocks: 1_000_000,
-    joinMode: JoinMode.JoinNothing,
-    logFields: [
-      LogField.Address,
-      LogField.Data,
-      LogField.Topic0,
-      LogField.Topic1,
-      LogField.Topic2,
-      LogField.Topic3,
-      LogField.BlockNumber,
-      LogField.BlockHash,
-      LogField.TransactionHash,
-      LogField.LogIndex,
-      LogField.TransactionIndex,
-    ],
-    blockFields: DEFAULT_HYPERSYNC_BLOCK_FIELDS,
-  });
+  );
 }

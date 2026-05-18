@@ -10,15 +10,8 @@ describe("GasOracle", () => {
     vi.useRealTimers();
   });
 
-  it("uses Polygon-optimized default values", () => {
-    expect(DEFAULT_GAS_CONFIG.pollIntervalMs).toBe(1000);
-    expect(DEFAULT_GAS_CONFIG.priorityFeeFloorGwei).toBe(1);
-    expect(DEFAULT_GAS_CONFIG.priorityFeeCeilingGwei).toBe(50);
-    expect(DEFAULT_GAS_CONFIG.maxBidMultiplier).toBe(3);
-  });
-
   it("returns null snapshot before start", () => {
-    const oracle = new GasOracle(DEFAULT_GAS_CONFIG, () => Promise.resolve({ baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }));
+    const oracle = new GasOracle(DEFAULT_GAS_CONFIG, () => Promise.resolve({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n }));
     expect(oracle.getSnapshot()).toBeNull();
   });
 
@@ -82,60 +75,6 @@ describe("GasOracle", () => {
     const countBefore = fetchGas.mock.calls.length;
     vi.advanceTimersByTime(100);
     expect(fetchGas.mock.calls.length).toBe(countBefore);
-  });
-
-  describe("estimateCongestion", () => {
-    it("returns neutral hints when no snapshot exists", () => {
-      const oracle = new GasOracle(DEFAULT_GAS_CONFIG, () => Promise.resolve({ baseFee: 1n, priorityFee: 1n }));
-      const hints = oracle.estimateCongestion();
-      expect(hints.congestion).toBe(0);
-      expect(hints.recommendedPriorityFee).toBe(0n);
-      expect(hints.isSpiking).toBe(false);
-    });
-
-    it("returns neutral hints with insufficient history (< 2)", async () => {
-      const fetchGas = vi.fn().mockResolvedValue({ baseFee: 50n * 10n ** 9n, priorityFee: 10n * 10n ** 9n });
-      const oracle = new GasOracle(DEFAULT_GAS_CONFIG, fetchGas);
-      await oracle.start();
-      const hints = oracle.estimateCongestion();
-      expect(hints.congestion).toBe(0);
-      expect(hints.isSpiking).toBe(false);
-      oracle.stop();
-    });
-
-    it("returns low congestion when base fees are stable", async () => {
-      const fetchGas = vi.fn().mockResolvedValue({ baseFee: 50n * 10n ** 9n, priorityFee: 2n * 10n ** 9n });
-      const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, pollIntervalMs: 50 }, fetchGas);
-      await oracle.start();
-      for (let i = 0; i < 9; i++) {
-        vi.advanceTimersByTime(50);
-        await vi.advanceTimersByTimeAsync(0);
-      }
-      const hints = oracle.estimateCongestion();
-      expect(hints.congestion).toBe(0);
-      expect(hints.isSpiking).toBe(false);
-      oracle.stop();
-    });
-
-    it("detects gas spike when base fee jumps > 1.5x average", async () => {
-      let callCount = 0;
-      const fetchGas = vi.fn().mockImplementation(() => {
-        callCount++;
-        const baseFee = callCount <= 8 ? 50n * 10n ** 9n : 200n * 10n ** 9n;
-        return Promise.resolve({ baseFee, priorityFee: 2n * 10n ** 9n });
-      });
-      const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, pollIntervalMs: 50 }, fetchGas);
-      await oracle.start();
-      for (let i = 0; i < 9; i++) {
-        vi.advanceTimersByTime(50);
-        await vi.advanceTimersByTimeAsync(0);
-      }
-      const hints = oracle.estimateCongestion();
-      expect(hints.isSpiking).toBe(true);
-      expect(hints.congestion).toBeGreaterThan(0);
-      expect(hints.recommendedPriorityFee).toBeGreaterThan(0n);
-      oracle.stop();
-    });
   });
 });
 

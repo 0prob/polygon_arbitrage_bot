@@ -71,6 +71,19 @@ export interface HyperSyncGetResponse<TLog = unknown> {
   data?: { logs?: TLog[] };
 }
 
+export interface DecodedLogValue {
+  val?: unknown;
+}
+
+export interface HypersyncDecodedLog {
+  indexed: DecodedLogValue[];
+  body: DecodedLogValue[];
+}
+
+export interface HypersyncDecoderRuntime {
+  decodeLogs: (logs: unknown[]) => Promise<HypersyncDecodedLog[]>;
+}
+
 export interface HypersyncClientRuntime {
   getHeight: () => Promise<number>;
   getChainId: () => Promise<number>;
