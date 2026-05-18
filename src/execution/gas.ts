@@ -308,9 +308,9 @@ class GasOracle {
           if (p50s.length > 0) {
             const sorted = [...p50s].sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
             const medianPriority = sorted[Math.floor(sorted.length / 2)];
-            // Clamp: never below 25 gwei (Polygon minimum for prompt inclusion),
+            // Clamp: never below 30 gwei (Polygon minimum for prompt inclusion),
             // never above 500 gwei (avoids outliers)
-            const floor = 25n * 10n ** 9n;
+            const floor = 30n * 10n ** 9n;
             const ceil = 500n * 10n ** 9n;
             this.priorityFee = medianPriority < floor ? floor : medianPriority > ceil ? ceil : medianPriority;
             gasPriceGwei.set(Number(this.priorityFee) / 1e9);
