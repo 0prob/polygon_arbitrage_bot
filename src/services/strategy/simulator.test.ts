@@ -1,0 +1,222 @@
+import { describe, it, expect } from "vitest";
+import { simulateHop, simulateRoute } from "./simulator.ts";
+import type { SimulationEdge } from "./simulator.ts";
+import type { SwapEdge } from "./graph.ts";
+import type { Address } from "../../core/types/common.ts";
+
+describe("simulateHop", () => {
+  it("dispatches V2 swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V2",
+      zeroForOne: true,
+      stateRef: { reserve0: 10000n, reserve1: 20000n },
+    };
+    const result = simulateHop(edge, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+    expect(result.gasEstimate).toBeGreaterThan(0);
+  });
+
+  it("dispatches V3 swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V3",
+      zeroForOne: true,
+      stateRef: {
+        sqrtPriceX96: 2n ** 96n,
+        tick: 0,
+        liquidity: 100000n,
+        fee: 3000n,
+        initialized: true,
+      },
+    };
+    const result = simulateHop(edge, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("dispatches Curve swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "CURVE_STABLE",
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+      stateRef: {
+        balances: [1000000n, 1000000n],
+        rates: [10n ** 18n, 10n ** 18n],
+        fee: 4000000n,
+        A: 100n,
+      },
+    };
+    const result = simulateHop(edge, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("dispatches Balancer swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "BALANCER_V2",
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+      stateRef: {
+        balances: [1000000000000000000000n, 2000000000000000000000n],
+        weights: [500000000000000000n, 500000000000000000n],
+        swapFee: 3000000000000000n,
+      },
+    };
+    const result = simulateHop(edge, 1000000000000000000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("dispatches Dodo swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "DODO_V2",
+      zeroForOne: true,
+      stateRef: {
+        i: 10n ** 18n,
+        k: 0n,
+        baseReserve: 1000000n,
+        quoteReserve: 2000000n,
+        baseTarget: 1000000n,
+        quoteTarget: 2000000n,
+        rState: 0,
+        lpFeeRate: 0n,
+        mtFeeRate: 0n,
+      },
+    };
+    const result = simulateHop(edge, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("dispatches Woofi swap correctly", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "WOOFI",
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+      stateRef: {
+        quoteReserve: 1000000000000000000000n,
+        tokens: ["0xa", "0xb"],
+        baseTokenStates: {
+          "0xb": { price: 10n ** 18n, coeff: 0n, spread: 0n, feeRate: 100n, feasible: true, woFeasible: true, baseDec: 10n ** 18n, quoteDec: 10n ** 6n, priceDec: 10n ** 18n, reserve: 1000000000000000000000n },
+          "0xa": { price: 10n ** 18n, coeff: 0n, spread: 0n, feeRate: 100n, feasible: true, woFeasible: true, baseDec: 10n ** 18n, quoteDec: 10n ** 6n, priceDec: 10n ** 18n, reserve: 1000000000000000000000n },
+        },
+      },
+    };
+    const result = simulateHop(edge, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("throws for unknown protocol", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "MYSTERY_PROTOCOL",
+      zeroForOne: true,
+      stateRef: {},
+    };
+    expect(() => simulateHop(edge, 1000n, new Map())).toThrow("MYSTERY_PROTOCOL");
+  });
+
+  it("throws for missing state", () => {
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V2",
+      zeroForOne: true,
+    };
+    expect(() => simulateHop(edge, 1000n, new Map())).toThrow("No state for pool 0xpool");
+  });
+
+  it("falls back to stateCache when stateRef is not on edge", () => {
+    const cache = new Map();
+    cache.set("0xpool", { reserve0: 10000n, reserve1: 20000n });
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V2",
+      zeroForOne: true,
+    };
+    const result = simulateHop(edge, 1000n, cache);
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
+});
+
+describe("simulateRoute", () => {
+  it("computes a 2-hop route", () => {
+    const WETH = "0xa" as Address;
+    const USDC = "0xb" as Address;
+    const poolA = "0xpoolA" as Address;
+    const poolB = "0xpoolB" as Address;
+
+    const edges: SwapEdge[] = [
+      {
+        poolAddress: poolA, protocol: "UNISWAP_V2",
+        tokenIn: WETH, tokenOut: USDC, feeBps: 30n,
+        stateRef: { reserve0: 10000n, reserve1: 20000n, token0: WETH, token1: USDC },
+      },
+      {
+        poolAddress: poolB, protocol: "UNISWAP_V2",
+        tokenIn: USDC, tokenOut: WETH, feeBps: 30n,
+        stateRef: { reserve0: 20000n, reserve1: 10000n, token0: USDC, token1: WETH },
+      },
+    ];
+
+    const result = simulateRoute(edges, 1000n, new Map());
+    expect(result.amountOut).toBeGreaterThan(0n);
+    expect(result.amountOut).not.toBe(result.amountIn);
+    expect(result.hopCount).toBe(2);
+    expect(result.hopAmounts.length).toBe(3);
+    expect(result.poolPath).toEqual([poolA, poolB]);
+    expect(result.protocols).toEqual(["UNISWAP_V2", "UNISWAP_V2"]);
+  });
+
+  it("marks route as profitable when amountOut > amountIn", () => {
+    const A = "0xa" as Address;
+    const B = "0xb" as Address;
+    const p1 = "0xp1" as Address;
+    const p2 = "0xp2" as Address;
+    const edges: SwapEdge[] = [
+      {
+        poolAddress: p1, protocol: "UNISWAP_V2",
+        tokenIn: A, tokenOut: B, feeBps: 30n,
+        stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: A, token1: B },
+      },
+      {
+        poolAddress: p2, protocol: "UNISWAP_V2",
+        tokenIn: B, tokenOut: A, feeBps: 30n,
+        stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: B, token1: A },
+      },
+    ];
+    const result = simulateRoute(edges, 1000n, new Map());
+    expect(result.profitable).toBe(result.profit > 0n);
+  });
+
+  it("throws when state is missing for a hop", () => {
+    const edges: SwapEdge[] = [
+      {
+        poolAddress: "0xpool" as Address, protocol: "UNISWAP_V2",
+        tokenIn: "0xa" as Address, tokenOut: "0xb" as Address, feeBps: 30n,
+      },
+    ];
+    expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No state");
+  });
+});
