@@ -1,5 +1,3 @@
-import type { Address } from "../../core/types/common.ts";
-
 export function poolLiquidityWmatic(
   poolState: Record<string, unknown>, tokenDecimals: number, maticPrice: number,
 ): number {

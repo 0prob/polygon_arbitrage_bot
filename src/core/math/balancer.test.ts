@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getBalancerAmountOut, simulateBalancerSwap } from "./balancer.ts";
 
-const ONE = 10n ** 18n;
-
 describe("getBalancerAmountOut", () => {
   it("returns positive output for weighted pool", () => {
     const state = {

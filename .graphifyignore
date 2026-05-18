@@ -49,6 +49,10 @@ dist/
 esm/
 graphify-out/cache/
 graphify-out/workspace-audit-runs/
+graphify-out/*.json
+graphify-out/*.html
+graphify-out/*.md
+graphify-out/.*
 lib/
 logs/
 node_modules/

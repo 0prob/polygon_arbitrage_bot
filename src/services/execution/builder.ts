@@ -1,5 +1,5 @@
-import { getAddress, encodeFunctionData } from "viem";
-import { encodeRoute, encodeExecuteArb, buildFlashParams, computeRouteHash, type ExecutorCall } from "./calldata.ts";
+import { getAddress } from "viem";
+import { encodeRoute, encodeExecuteArb, computeRouteHash, type ExecutorCall } from "./calldata.ts";
 
 export interface BuilderRouteInput {
   path: {
@@ -118,7 +118,6 @@ export function buildArbTx(
     throw new Error(`buildArbTx: route expands to ${calls.length} calls (max ${maxCalls})`);
   }
 
-  const flashParams = buildFlashParams({ profitToken, minProfit, deadline, calls });
   const encodedTx = encodeExecuteArb({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls });
   const routeHash = computeRouteHash(calls);
 

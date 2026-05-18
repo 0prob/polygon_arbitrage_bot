@@ -4,49 +4,76 @@
   "graph": {},
   "nodes": [
     {
+      "label": "schema.ts",
+      "file_type": "code",
+      "source_file": "schema.ts",
+      "source_location": "L1",
+      "id": "schema_ts",
+      "community": 4,
+      "norm_label": "schema.ts"
+    },
+    {
+      "label": "ensureSchema()",
+      "file_type": "code",
+      "source_file": "schema.ts",
+      "source_location": "L69",
+      "id": "db_schema_ensureschema",
+      "community": 4,
+      "norm_label": "ensureschema()"
+    },
+    {
+      "label": "applyMigrationV1ToV2()",
+      "file_type": "code",
+      "source_file": "schema.ts",
+      "source_location": "L82",
+      "id": "db_schema_applymigrationv1tov2",
+      "community": 4,
+      "norm_label": "applymigrationv1tov2()"
+    },
+    {
       "label": "logger.ts",
       "file_type": "code",
       "source_file": "logger.ts",
       "source_location": "L1",
-      "id": "logger_ts",
       "community": 50,
-      "norm_label": "logger.ts"
+      "norm_label": "logger.ts",
+      "id": "logger_ts"
     },
     {
       "label": "Logger",
       "file_type": "code",
       "source_file": "logger.ts",
       "source_location": "L4",
-      "id": "observability_logger_logger",
       "community": 50,
-      "norm_label": "logger"
+      "norm_label": "logger",
+      "id": "observability_logger_logger"
     },
     {
       "label": "LoggerOptions",
       "file_type": "code",
       "source_file": "logger.ts",
       "source_location": "L6",
-      "id": "observability_logger_loggeroptions",
       "community": 50,
-      "norm_label": "loggeroptions"
+      "norm_label": "loggeroptions",
+      "id": "observability_logger_loggeroptions"
     },
     {
       "label": "createRootLogger()",
       "file_type": "code",
       "source_file": "logger.ts",
       "source_location": "L16",
-      "id": "observability_logger_createrootlogger",
       "community": 50,
-      "norm_label": "createrootlogger()"
+      "norm_label": "createrootlogger()",
+      "id": "observability_logger_createrootlogger"
     },
     {
       "label": "childLogger()",
       "file_type": "code",
       "source_file": "logger.ts",
       "source_location": "L39",
-      "id": "observability_logger_childlogger",
       "community": 50,
-      "norm_label": "childlogger()"
+      "norm_label": "childlogger()",
+      "id": "observability_logger_childlogger"
     },
     {
       "label": "package.json",
@@ -1169,7 +1196,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 3,
       "norm_label": "client.ts",
       "id": "src_infra_hypersync_client_ts"
     },
@@ -1178,7 +1205,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L4",
-      "community": 4,
+      "community": 3,
       "norm_label": "hypersyncerror",
       "id": "hypersync_client_hypersyncerror"
     },
@@ -1187,7 +1214,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L6",
-      "community": 4,
+      "community": 3,
       "norm_label": "createhypersyncunavailableerror()",
       "id": "hypersync_client_createhypersyncunavailableerror"
     },
@@ -1196,7 +1223,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L13",
-      "community": 4,
+      "community": 3,
       "norm_label": "createconfigerror()",
       "id": "hypersync_client_createconfigerror"
     },
@@ -1205,7 +1232,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L19",
-      "community": 4,
+      "community": 3,
       "norm_label": "throwunavailable()",
       "id": "hypersync_client_throwunavailable"
     },
@@ -1214,7 +1241,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L23",
-      "community": 4,
+      "community": 3,
       "norm_label": "normalizeoptionalint()",
       "id": "hypersync_client_normalizeoptionalint"
     },
@@ -1223,7 +1250,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L30",
-      "community": 4,
+      "community": 3,
       "norm_label": "normalizeclientconfig()",
       "id": "hypersync_client_normalizeclientconfig"
     },
@@ -1232,7 +1259,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L45",
-      "community": 4,
+      "community": 3,
       "norm_label": "createunavailablehypersyncclientimpl()",
       "id": "hypersync_client_createunavailablehypersyncclientimpl"
     },
@@ -1241,7 +1268,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L66",
-      "community": 4,
+      "community": 3,
       "norm_label": "ensuremodule()",
       "id": "hypersync_client_ensuremodule"
     },
@@ -1250,7 +1277,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L76",
-      "community": 4,
+      "community": 3,
       "norm_label": "createhypersyncclient()",
       "id": "hypersync_client_createhypersyncclient"
     },
@@ -1259,7 +1286,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L96",
-      "community": 4,
+      "community": 3,
       "norm_label": "ensureclient()",
       "id": "hypersync_client_ensureclient"
     },
@@ -1268,7 +1295,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L106",
-      "community": 4,
+      "community": 3,
       "norm_label": "proxyclient()",
       "id": "hypersync_client_proxyclient"
     },
@@ -1286,7 +1313,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L121",
-      "community": 4,
+      "community": 3,
       "norm_label": "logfield",
       "id": "hypersync_client_logfield"
     },
@@ -1295,7 +1322,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L134",
-      "community": 4,
+      "community": 3,
       "norm_label": "blockfield",
       "id": "hypersync_client_blockfield"
     },
@@ -1304,7 +1331,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L139",
-      "community": 4,
+      "community": 3,
       "norm_label": "joinmode",
       "id": "hypersync_client_joinmode"
     },
@@ -1313,7 +1340,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L145",
-      "community": 4,
+      "community": 3,
       "norm_label": "throwunsupportedhypersync()",
       "id": "hypersync_client_throwunsupportedhypersync"
     },
@@ -1322,7 +1349,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L149",
-      "community": 4,
+      "community": 3,
       "norm_label": "trycreatedecoder()",
       "id": "hypersync_client_trycreatedecoder"
     },
@@ -3392,7 +3419,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/types.ts",
       "source_location": "L29",
-      "community": 49,
+      "community": 2,
       "norm_label": "watcherstateupdate",
       "id": "watcher_types_watcherstateupdate"
     },
@@ -3401,7 +3428,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/types.ts",
       "source_location": "L35",
-      "community": 2,
+      "community": 49,
       "norm_label": "v3watchertickstate",
       "id": "watcher_types_v3watchertickstate"
     },
@@ -3581,12 +3608,43 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "schema.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "schema_ts",
+      "target": "db_schema_ensureschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "schema.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "schema_ts",
+      "target": "db_schema_applymigrationv1tov2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "schema.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "db_schema_ensureschema",
+      "target": "db_schema_applymigrationv1tov2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "logger.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "logger_ts",
-      "target": "observability_logger_logger",
-      "confidence_score": 1.0
+      "target": "observability_logger_logger"
     },
     {
       "relation": "contains",
@@ -3594,9 +3652,9 @@
       "source_file": "logger.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "logger_ts",
-      "target": "observability_logger_loggeroptions",
-      "confidence_score": 1.0
+      "target": "observability_logger_loggeroptions"
     },
     {
       "relation": "contains",
@@ -3604,9 +3662,9 @@
       "source_file": "logger.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "logger_ts",
-      "target": "observability_logger_createrootlogger",
-      "confidence_score": 1.0
+      "target": "observability_logger_createrootlogger"
     },
     {
       "relation": "contains",
@@ -3614,9 +3672,9 @@
       "source_file": "logger.ts",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "logger_ts",
-      "target": "observability_logger_childlogger",
-      "confidence_score": 1.0
+      "target": "observability_logger_childlogger"
     },
     {
       "relation": "contains",
@@ -8364,5 +8422,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "723effd19b31377a111825fc2098dc653adcfabd"
+  "built_at_commit": "6ffa04de1dabcf38fde0ebb167bac29de282ad47"
 }

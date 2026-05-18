@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
-import { getV2AmountOut, getV2AmountIn, simulateV2Swap } from "./uniswap_v2.ts";
+import { getV2AmountOut, simulateV2Swap } from "./uniswap_v2.ts";
 
 const bigUint40 = fc.bigInt({ min: 0n, max: 2n ** 40n - 1n });
 const bigUint20 = fc.bigInt({ min: 0n, max: 2n ** 20n - 1n });

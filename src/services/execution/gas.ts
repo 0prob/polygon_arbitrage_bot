@@ -1,5 +1,3 @@
-import type { Address } from "../../core/types/common.ts";
-
 export interface FeeSnapshot {
   baseFee: bigint;
   priorityFee: bigint;

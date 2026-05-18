@@ -1,5 +1,6 @@
 import type { Address } from "../../core/types/common.ts";
 import type { RoutingGraph, SwapEdge } from "./graph.ts";
+export type { SwapEdge };
 
 export interface FoundCycle {
   startToken: Address;

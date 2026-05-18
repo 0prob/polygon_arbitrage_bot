@@ -10,7 +10,10 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env --import=tsx src/cli/main.ts",
     "start:tui": "node --env-file-if-exists=.env --import=tsx src/cli/main.ts --tui",
-    "typecheck": "tsc --noEmit -p tsconfig.new.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bench": "vitest bench --run",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "fmt": "prettier --check src/",

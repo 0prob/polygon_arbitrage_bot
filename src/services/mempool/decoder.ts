@@ -1,5 +1,4 @@
 import type { Address } from "../../core/types/common.ts";
-import type { LargeSwapSignal } from "./signals.ts";
 
 // Known function selectors for swap methods
 const SELECTORS: Record<string, string> = {

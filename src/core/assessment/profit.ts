@@ -1,6 +1,6 @@
 import { mulDiv, divRoundingUp } from "../math/full_math.ts";
 import { bigintToApproxNumber } from "../utils/bigint.ts";
-import { revertPenalty, slippageDeduction, flashLoanFee, BPS_DENOM } from "./risk.ts";
+import { revertPenalty, slippageDeduction, flashLoanFee } from "./risk.ts";
 import { FlashLoanSource } from "../types/execution.ts";
 import type { ProfitAssessment } from "../types/execution.ts";
 

@@ -2,11 +2,6 @@ import { ZodError } from "zod";
 import { AppConfigSchema, type AppConfig } from "./schema.ts";
 import { DEFAULTS } from "./defaults.ts";
 
-/** Optional perf.json overrides */
-interface PerfJsonShape {
-  params?: Record<string, unknown>;
-}
-
 /** Map env var name -> nested config path. Used to translate flat env vars to nested config. */
 const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   POLYGON_RPC_URLS: ["rpc", "polygonRpcUrls"],
@@ -55,7 +50,6 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   MEMPOOL_WEBSOCKET_URL: ["mempool", "websocketUrl"],
   MEMPOOL_LARGE_SWAP_THRESHOLD_USD: ["mempool", "largeSwapThresholdUsd"],
 
-  METRICS_PORT: ["observability", "metricsPort"],
   LOG_LEVEL: ["observability", "logLevel"],
   TUI: ["observability", "tuiEnabled"],
 

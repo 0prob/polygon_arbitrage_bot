@@ -65,6 +65,7 @@ export interface BotState {
 }
 
 let _state: BotState | null = null;
+let _renderVersion = 0;
 
 function termWidth() {
   return Math.min(process.stdout.columns || 100, 120);
@@ -318,20 +319,13 @@ export function startTui(state: BotState): () => void {
   };
   stdin.on("data", onData);
 
-  let lastSig = "";
+  let lastRenderedVersion = 0;
 
   function tick() {
     if (!_state) return;
-    const now = Date.now();
-    const sig = JSON.stringify({
-      a: _state.lastUpdateMs,
-      b: _state.lastArbMs,
-      c: _state.currentActivityUpdatedMs,
-      d: _state.lastPathsEvaluated,
-    });
-    if (sig === lastSig) return;
-    lastSig = sig;
-    const frame = renderFrame(_state, now);
+    if (_renderVersion === lastRenderedVersion) return;
+    lastRenderedVersion = _renderVersion;
+    const frame = renderFrame(_state, Date.now());
     process.stdout.write(frame);
   }
 
@@ -340,7 +334,10 @@ export function startTui(state: BotState): () => void {
   _timer = setInterval(tick, REFRESH_INTERVAL_MS);
   _timer.unref();
 
-  process.on("SIGWINCH", tick);
+  process.on("SIGWINCH", () => {
+    lastRenderedVersion = -1;
+    tick();
+  });
 
   return () => {
     if (_timer) {
@@ -358,4 +355,5 @@ export function startTui(state: BotState): () => void {
 
 export function updateState(state: BotState) {
   _state = state;
+  _renderVersion++;
 }

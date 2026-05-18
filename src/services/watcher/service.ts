@@ -1,6 +1,5 @@
 import { Decoder, client as hypersyncClient } from "../../infra/hypersync/client.ts";
 import type { HypersyncDecoderRuntime } from "../../infra/hypersync/types.ts";
-import { computeTopic0s } from "../../infra/hypersync/query.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { createRootLogger } from "../../infra/observability/logger.ts";
 import type { RouteStateCache, WatcherPoolMeta, WatcherEnqueueEnrichment } from "./types.ts";

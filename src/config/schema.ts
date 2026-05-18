@@ -115,7 +115,6 @@ export const MempoolConfigSchema = z.object({
 export type MempoolConfig = z.infer<typeof MempoolConfigSchema>;
 
 export const ObservabilityConfigSchema = z.object({
-  metricsPort: numberFromString.int().min(0).max(65535),
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]),
   tuiEnabled: z.coerce.boolean(),
 });

@@ -38,7 +38,6 @@ export class RpcEndpoint {
   client: ReturnType<typeof createPublicClient>;
 
   private _backoffMs: number;
-  private _safetyTimer: ReturnType<typeof setTimeout> | null;
   private _logger: LoggerFn | null;
 
   constructor(url: string, logger?: LoggerFn) {
@@ -50,7 +49,6 @@ export class RpcEndpoint {
     this.methodUnavailableUntil = new Map();
     this.inFlight = 0;
     this._backoffMs = INITIAL_BACKOFF_MS;
-    this._safetyTimer = null;
     this._logger = logger ?? null;
 
     this.client = createPublicClient({
@@ -118,7 +116,6 @@ export class RpcEndpointPool {
   endpoints: RpcEndpoint[];
   private _probeInterval: ReturnType<typeof setInterval> | null;
   private _nextIndex: number;
-  private _logger: LoggerFn | null;
 
   constructor(opts: EndpointPoolOptions) {
     if (!opts.urls || opts.urls.length === 0) {
@@ -127,7 +124,6 @@ export class RpcEndpointPool {
     this.endpoints = opts.urls.map((u) => new RpcEndpoint(u, opts.logger));
     this._probeInterval = null;
     this._nextIndex = 0;
-    this._logger = opts.logger ?? null;
   }
 
   getBestEndpoint(method: string = DEFAULT_METHOD): RpcEndpoint {

@@ -35,8 +35,11 @@ export interface RuntimeContext {
   isRunning: boolean;
 }
 
-export async function bootApplication(config: AppConfig): Promise<RuntimeContext> {
-  const logger = createRootLogger({ level: config.observability.logLevel });
+export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
+  const logger = createRootLogger({
+    level: config.observability.logLevel,
+    logSink: logBuffer,
+  });
 
   const dbPath = path.join(config.paths.dataDir, config.paths.dbFile);
   const db = createDatabase(dbPath);

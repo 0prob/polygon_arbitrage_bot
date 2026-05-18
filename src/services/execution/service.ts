@@ -1,5 +1,5 @@
 import type { Logger } from "../../infra/observability/logger.ts";
-import type { GasOracle, FeeSnapshot } from "./gas.ts";
+import type { GasOracle } from "./gas.ts";
 import type { NonceManager } from "./nonce.ts";
 
 export interface CandidateExecution {
@@ -17,7 +17,6 @@ export interface ExecutionResult {
 }
 
 export class ExecutionService {
-  private running = false;
   private quarantine = new Set<string>();
 
   constructor(
@@ -28,14 +27,12 @@ export class ExecutionService {
   ) {}
 
   async start(): Promise<void> {
-    this.running = true;
     await this.gasOracle.start();
     await this.nonceManager.initialize();
     this.logger.info({}, "ExecutionService started");
   }
 
   stop(): void {
-    this.running = false;
     this.gasOracle.stop();
     this.logger.info({}, "ExecutionService stopped");
   }

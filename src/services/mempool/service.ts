@@ -14,7 +14,6 @@ export const DEFAULT_MEMPOOL_OPTIONS: MempoolServiceOptions = {
 
 export class MempoolService {
   private handlers: SignalHandler[] = [];
-  private running = false;
   private knownPools = new Set<string>();
 
   constructor(
@@ -31,12 +30,10 @@ export class MempoolService {
   }
 
   async start(): Promise<void> {
-    this.running = true;
     this.logger.info({}, "MempoolService started");
   }
 
   stop(): void {
-    this.running = false;
     this.logger.info({}, "MempoolService stopped");
   }
 

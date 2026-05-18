@@ -86,7 +86,6 @@ export const DEFAULTS = {
     largeSwapThresholdUsd: 10_000,
   },
   observability: {
-    metricsPort: 9090,
     logLevel: "info" as const,
     tuiEnabled: false,
   },

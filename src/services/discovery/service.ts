@@ -18,16 +18,13 @@ export interface DiscoveryServiceDeps {
 }
 
 export class DiscoveryService {
-  private running = false;
   constructor(private deps: DiscoveryServiceDeps) {}
 
   async start(): Promise<void> {
-    this.running = true;
     this.deps.logger.info({}, "DiscoveryService started");
   }
 
   stop(): void {
-    this.running = false;
     this.deps.logger.info({}, "DiscoveryService stopped");
   }
 

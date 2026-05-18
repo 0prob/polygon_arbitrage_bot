@@ -22,7 +22,6 @@ export class CircuitBreaker {
   private state: CircuitState = CircuitState.CLOSED;
   private failureTimestamps: number[] = [];
   private openedAt: number = 0;
-  private halfOpenAt: number = 0;
 
   constructor(
     private options: CircuitBreakerOptions = DEFAULT_CIRCUIT_BREAKER_OPTIONS,
@@ -59,7 +58,6 @@ export class CircuitBreaker {
     const now = Date.now();
     if (now - this.openedAt >= this.options.cooldownMs) {
       this.state = CircuitState.HALF_OPEN;
-      this.halfOpenAt = now;
       this.logger?.info({ circuitState: CircuitState.HALF_OPEN }, "Circuit breaker entering half-open");
       return true;
     }
@@ -70,6 +68,5 @@ export class CircuitBreaker {
     this.state = CircuitState.CLOSED;
     this.failureTimestamps = [];
     this.openedAt = 0;
-    this.halfOpenAt = 0;
   }
 }

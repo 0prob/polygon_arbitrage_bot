@@ -1,6 +1,4 @@
-import { JoinMode, LogField } from "../../infra/hypersync/client.ts";
 import { buildLogQuery as buildInfraLogQuery } from "../../infra/hypersync/query.ts";
-import type { HyperSyncLog } from "../../infra/hypersync/types.ts";
 import { toBigInt } from "../../core/utils/bigint.ts";
 import { asRecord } from "../../core/utils/errors.ts";
 import type {
@@ -189,12 +187,13 @@ export function updateV3SwapState(state: MutableWatcherState, decoded: DecodedWa
 }
 
 export function updateTickState(state: MutableWatcherState, tick: number, liquidityGrossDelta: bigint, liquidityNetDelta: bigint) {
-  state.ticks = normalizeWatcherTicks(state.ticks);
-  const data = state.ticks.get(tick) ?? { liquidityGross: 0n, liquidityNet: 0n };
+  const ticks = normalizeWatcherTicks(state.ticks as Map<number, { liquidityGross: bigint; liquidityNet: bigint }> | undefined);
+  state.ticks = ticks;
+  const data = ticks.get(tick) ?? { liquidityGross: 0n, liquidityNet: 0n };
   data.liquidityGross += liquidityGrossDelta;
   data.liquidityNet += liquidityNetDelta;
-  if (data.liquidityGross === 0n) state.ticks.delete(tick);
-  else state.ticks.set(tick, data);
+  if (data.liquidityGross === 0n) ticks.delete(tick);
+  else ticks.set(tick, data);
   state.tickVersion = Number.isFinite(Number(state.tickVersion)) ? Number(state.tickVersion) + 1 : 1;
 }
 
@@ -203,7 +202,8 @@ export function updateV3LiquidityState(state: MutableWatcherState, decoded: Deco
   const tickLower = Number(decodedValue(decoded, "indexed", 1));
   const tickUpper = Number(decodedValue(decoded, "indexed", 2));
   const amount = decodedBigInt(decoded, "body", isMint ? 1 : 0);
-  if (state.tick != null && state.tick >= tickLower && state.tick < tickUpper) {
+  const st = state.tick as number | undefined;
+  if (st != null && st >= tickLower && st < tickUpper) {
     const currentLiquidity = toTickBigInt(state.liquidity);
     if (isMint) state.liquidity = currentLiquidity + amount;
     else state.liquidity = currentLiquidity >= amount ? currentLiquidity - amount : 0n;
@@ -241,7 +241,7 @@ function validateWatcherStateOrThrow(state: MutableWatcherState, context: { addr
   const verdict = validatePoolState(state);
   if (!verdict.valid) throw watcherStateIntegrityError(verdict.reason ?? "invalid watcher state", context);
   if (typeof state.protocol === "string" && state.protocol.includes("V3")) {
-    if (state.liquidity == null || state.liquidity < 0n) throw watcherStateIntegrityError("V3: negative liquidity", context);
+    if ((state.liquidity as bigint | undefined) == null || (state.liquidity as bigint) < 0n) throw watcherStateIntegrityError("V3: negative liquidity", context);
     if (state.ticks instanceof Map) {
       for (const [, data] of state.ticks.entries()) {
         if (data.liquidityGross < 0n) watcherStateIntegrityError("V3: negative liquidityGross", context);

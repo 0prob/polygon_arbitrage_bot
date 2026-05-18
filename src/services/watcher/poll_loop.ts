@@ -81,8 +81,10 @@ export async function pollLoop(
         const response = await client.get<HyperSyncGetResponse<HyperSyncLogLike>>(query);
         if (!signal()) return;
 
-        if (response.rollbackGuard) {
-          const reorgResult = checkReorg(db, registry, response.rollbackGuard as RollbackGuard | null | undefined);
+        const resp = response as { rollbackGuard?: RollbackGuard | null; data?: { logs?: HyperSyncLogLike[] }; nextBlock?: string };
+
+        if (resp.rollbackGuard) {
+          const reorgResult = checkReorg(db, registry, resp.rollbackGuard);
           if (reorgResult.reorgDetected) {
             const changedAddrs = new Set<string>();
             for (const key of stateCache.keys()) {
@@ -93,10 +95,10 @@ export async function pollLoop(
             lastBlock = reorgResult.checkpointBlock;
             continue;
           }
-          registry.setRollbackGuard?.(response.rollbackGuard as RollbackGuard);
+          registry.setRollbackGuard?.(resp.rollbackGuard);
         }
 
-        const logs = (response.data?.logs ?? []) as unknown as HyperSyncLogLike[];
+        const logs = (resp.data?.logs ?? []) as unknown as HyperSyncLogLike[];
         if (logs.length === 0) {
           const nextBlock = Number(response.nextBlock);
           if (Number.isFinite(nextBlock) && nextBlock > lastBlock) lastBlock = nextBlock - 1;

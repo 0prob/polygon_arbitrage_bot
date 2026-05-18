@@ -14,10 +14,11 @@ function pick(obj: unknown, camelKey: string, snakeKey: string) {
   return r[camelKey] ?? r[snakeKey];
 }
 
-function storedRollbackGuard(registry: { getRollbackGuard?: () => unknown }) {
+function storedRollbackGuard(registry: { getRollbackGuard?: () => unknown }): Record<string, unknown> | null {
   if (typeof registry.getRollbackGuard !== "function") return null;
   const guard = registry.getRollbackGuard();
-  return asRecord(guard) ? guard : null;
+  const rec = asRecord(guard);
+  return rec ? rec : null;
 }
 
 function detectReorg(registry: { getRollbackGuard?: () => unknown }, newGuard: unknown): number | false {
@@ -28,7 +29,7 @@ function detectReorg(registry: { getRollbackGuard?: () => unknown }, newGuard: u
   const storedBlock = Number(stored.block_number);
   const storedFirstBlock = Number(pick(stored, "firstBlockNumber", "first_block_number"));
   const storedFirstParent = pick(stored, "firstParentHash", "first_parent_hash");
-  const newFirstParent = pick(newGuard, "firstParentHash", "first_parent_hash");
+  const newFirstParent = pick(newGuard, "firstParentHash", "first_parent_hash") as string | undefined;
   const newFirstBlockRaw = pick(newGuard, "firstBlockNumber", "first_block_number");
   const newFirstBlock = Number(newFirstBlockRaw);
   if (!Number.isFinite(newFirstBlock) || !newFirstParent) return false;

@@ -11,10 +11,6 @@ export interface DecodedPoolEvent {
   additionalParams?: Record<string, unknown>;
 }
 
-const V2_PAIR_CREATED = "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9";
-const BAL_POOL_REGISTERED = "0x3c63d46a78b72d3d9b52a0b0c8e1df8a1c0d1f1d";
-const CURVE_POOL_ADDED = "0xfc684b9a5f4e6a7c9f8d2a5b6c7d8e9f0a1b2c3d";
-
 export function decodePairCreated(log: HyperSyncLog): DecodedPoolEvent | null {
   if (!log.topics || log.topics.length < 3) return null;
   return {

@@ -1,5 +1,5 @@
-import type { Address, FeeSnapshot } from "./common.ts";
-import type { ArbPath, RouteSimulationResult, RouteIdentityEdge } from "./route.ts";
+import type { Address } from "./common.ts";
+import type { ArbPath, RouteSimulationResult } from "./route.ts";
 
 export enum FlashLoanSource {
   BALANCER = "BALANCER",

@@ -32,8 +32,6 @@ export async function warmupStateCache(
 
   const v2Pools = pools.filter((p) => p.protocol.includes("V2"));
   const v3Pools = pools.filter((p) => p.protocol.includes("V3"));
-  const otherPools = pools.filter((p) => !p.protocol.includes("V2") && !p.protocol.includes("V3"));
-
   const hubV2 = v2Pools.filter((p) => (p.tokens ?? []).some((t) => hubSet.has(t.toLowerCase())));
   let fetched = 0;
   for (const pool of hubV2.slice(0, maxSyncPools)) {

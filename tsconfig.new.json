@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
-  },
-  "include": ["src/core/**/*.ts", "src/infra/**/*.ts", "src/config/**/*.ts"]
-}

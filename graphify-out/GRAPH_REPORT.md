@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 152 files · ~51,164 words
+- 152 files · ~51,188 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 397 nodes · 466 edges · 51 communities (36 shown, 15 thin omitted)
+- 400 nodes · 469 edges · 51 communities (35 shown, 16 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `723effd1`
+- Built from commit: `6ffa04de`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -85,7 +85,7 @@
 - `pollLoop()` --calls--> `dispatchLog()`  [EXTRACTED]
   src/services/watcher/poll_loop.ts → src/services/watcher/log_handler.ts
 
-## Communities (51 total, 15 thin omitted)
+## Communities (51 total, 16 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -100,12 +100,8 @@ Cohesion: 0.16
 Nodes (27): asStateRecord(), commitWatcherStatesBatch(), CORE_STATE_KEYS, decodedBigInt(), decodedValue(), ensureV3Fee(), isTickRecord(), mergeStateIntoCache() (+19 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.08
-Nodes (23): log, r, filter, filters, first, query, result, second (+15 more)
-
-### Community 4 - "Community 4"
-Cohesion: 0.19
-Nodes (14): BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient(), ensureModule(), HypersyncError (+6 more)
+Cohesion: 0.06
+Nodes (37): log, r, BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient() (+29 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.14
@@ -218,7 +214,7 @@ Nodes (30): client, Decoder, HypersyncDecoderRuntime, signal, buildHandlerMap(),
 ## Knowledge Gaps
 - **237 isolated node(s):** `Logger`, `LoggerOptions`, `name`, `version`, `type` (+232 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -236,4 +232,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.08307692307692308 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06201550387596899 - nodes in this community are weakly interconnected._
