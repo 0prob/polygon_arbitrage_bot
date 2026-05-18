@@ -1,9 +1,11 @@
 import { errorMessage } from "../utils/errors.ts";
 import { isRecord } from "../utils/identity.ts";
-import { fetchBlockRollbackGuard, readContractWithRetry, multicallWithRetry } from "../state/enrichment/rpc.ts";
+import { fetchBlockRollbackGuard, readContractWithRetry, multicallWithRetry, throttledMap } from "../state/enrichment/rpc.ts";
 import { hydrateNewTokens } from "../state/enrichment/token_hydrator.ts";
 import { logger } from "../utils/logger.ts";
 import { normalizeEvmAddress } from "../utils/pool_record.ts";
+import { chunk } from "../utils/concurrency.ts";
+import { ENRICH_CONCURRENCY } from "../config/index.ts";
 import type { ProtocolDiscoveryResult } from "./factories.ts";
 
 const ZERO = "0x0000000000000000000000000000000000000000";
@@ -243,16 +245,14 @@ export async function discoverCurveListedFactory({
 
   const poolListResults: { status: string; result?: unknown; error?: unknown }[] = [];
   try {
-    const chunks = [];
-    for (let i = 0; i < poolListContracts.length; i += 100) {
-      chunks.push(poolListContracts.slice(i, i + 100));
-    }
-    for (const chunk of chunks) {
-      const chunkResults = (await multicallWithRetry({
-        contracts: chunk,
-        allowFailure: true,
-      })) as { status: string; result?: unknown; error?: unknown }[];
-      poolListResults.push(...chunkResults);
+    const chunks = chunk(poolListContracts, 100);
+    const results = await throttledMap(
+      chunks,
+      async (c) => multicallWithRetry({ contracts: c, allowFailure: true }),
+      ENRICH_CONCURRENCY,
+    );
+    for (const r of results) {
+      poolListResults.push(...(r as { status: string; result?: unknown; error?: unknown }[]));
     }
   } catch (error: unknown) {
     console.warn(`  [${protocolName}] Multicall for pool_list failed: ${errorMessage(error)}`);
@@ -316,16 +316,14 @@ export async function discoverCurveListedFactory({
   if (getCoinsContracts.length > 0) {
     try {
       // get_coins can be very slow on Curve factories; use small chunks to avoid RPC timeouts
-      const chunks = [];
-      for (let i = 0; i < getCoinsContracts.length; i += 5) {
-        chunks.push(getCoinsContracts.slice(i, i + 5));
-      }
-      for (const chunk of chunks) {
-        const chunkResults = (await multicallWithRetry({
-          contracts: chunk,
-          allowFailure: true,
-        })) as { status: string; result?: unknown; error?: unknown }[];
-        getCoinsResults.push(...chunkResults);
+      const chunks = chunk(getCoinsContracts, 5);
+      const results = await throttledMap(
+        chunks,
+        async (c) => multicallWithRetry({ contracts: c, allowFailure: true }),
+        ENRICH_CONCURRENCY,
+      );
+      for (const r of results) {
+        getCoinsResults.push(...(r as { status: string; result?: unknown; error?: unknown }[]));
       }
     } catch (error: unknown) {
       console.warn(`  [${protocolName}] Multicall for get_coins failed: ${errorMessage(error)}`);

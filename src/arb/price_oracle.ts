@@ -61,7 +61,7 @@ const CHAINLINK_ABI = [
 ] as const;
 
 /** Max acceptable age for a Chainlink MATIC/USD round, in ms */
-const MATIC_USD_STALE_AFTER_MS = 3_600_000; // 1 hour
+const MATIC_USD_STALE_AFTER_MS = 300_000; // 5 minutes (reduced from 1 hour)
 
 /** Minimum MATIC/USD round update interval on Polygon: 25s target, 1h ceiling */
 const MATIC_USD_POLL_INTERVAL_MS = 30_000; // poll every 30s

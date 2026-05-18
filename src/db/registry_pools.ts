@@ -509,12 +509,22 @@ export function getActivePoolsByProtocol(db: RegistryDatabase, protocol: unknown
 }
 
 export function getHubAdjacentPools(db: RegistryDatabase, hubTokens: Iterable<unknown>) {
-  const hubs = new Set([...hubTokens].map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null));
-  if (hubs.size === 0) return [];
-  return getPools(db, { status: "active" }).filter((pool) => {
-    const tokens = parsePoolTokensValue(pool.tokens);
-    return tokens.some((token) => hubs.has(token.toLowerCase()));
-  });
+  const hubs = [...hubTokens].map((token) => normalizeEvmAddress(token)).filter((token): token is string => token != null);
+  if (hubs.length === 0) return [];
+
+  const placeholders = hubs.map(() => "?").join(",");
+  const sql = `
+    SELECT DISTINCT p.*, s.last_updated_block, s.state_data
+    FROM pools p
+    JOIN json_each(p.tokens) j
+    LEFT JOIN pool_state s ON p.address = s.address
+    WHERE p.status = 'active' AND j.value IN (${placeholders})
+  `;
+
+  return db
+    .prepare(sql)
+    .all(...hubs)
+    .map((row) => mapPoolRow(row));
 }
 
 export function getRecentlyChangedPools(db: RegistryDatabase, sinceBlock: unknown) {

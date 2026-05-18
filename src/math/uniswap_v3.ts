@@ -196,7 +196,10 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
       // Cross the tick — adjust liquidity
       const tickData = asTickData(ticks?.get(nextTick));
       if (tickData) {
-        const liquidityNet = toBigIntOrNull(tickData.liquidityNet);
+        // OPTIMIZATION: Assume internal state is already BigInt or cast once
+        const liquidityNetRaw = tickData.liquidityNet;
+        const liquidityNet = typeof liquidityNetRaw === "bigint" ? liquidityNetRaw : toBigIntOrNull(liquidityNetRaw);
+        
         if (liquidityNet == null) break;
         // When moving left (zeroForOne), we subtract liquidityNet
         // When moving right (!zeroForOne), we add liquidityNet

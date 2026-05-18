@@ -93,6 +93,7 @@ const REGISTRY_INDEXES_SQL = `
   CREATE INDEX IF NOT EXISTS idx_arb_history_recorded ON arb_history(recorded_at);
   CREATE INDEX IF NOT EXISTS idx_arb_history_token ON arb_history(start_token);
   CREATE INDEX IF NOT EXISTS idx_arb_history_status ON arb_history(status);
+  CREATE INDEX IF NOT EXISTS idx_arb_history_block ON arb_history(block_number);
   CREATE INDEX IF NOT EXISTS idx_pools_created_block ON pools(created_block);
   CREATE INDEX IF NOT EXISTS idx_pools_removed_block ON pools(removed_block);
   CREATE INDEX IF NOT EXISTS idx_pools_protocol_status ON pools(protocol, status);

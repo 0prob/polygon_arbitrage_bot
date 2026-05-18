@@ -47,6 +47,9 @@ export class RegistryService {
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("synchronous = NORMAL");
+    this.db.pragma("mmap_size = 268435456"); // 256MB
+    this.db.pragma("cache_size = -64000"); // 64MB
+    this.db.pragma("temp_store = MEMORY");
     initRegistrySchema(this.db);
     this._stmtFn = this._stmt.bind(this);
     this._invalidatePoolMetaCacheFn = this._invalidatePoolMetaCache.bind(this);

@@ -263,9 +263,9 @@ export function computeProfit(routeResult: RouteResultLike, options: ProfitOptio
   if (tokenToMaticRate != null && tokenToMaticRate > 0n) {
     gasCostInTokens = gasCostInTokenUnits(gasCost, tokenToMaticRate);
     netProfitAfterGas = netProfit - gasCostInTokens;
-    // Gas sanity: if gas cost alone (in MATIC wei) already exceeds minNetProfit,
+    // Gas sanity: if gas cost alone already exceeds minNetProfit,
     // the route is uneconomical regardless of token unit conversion quirks.
-    if (gasCost > 0n && minNetProfit > 0n && gasCost >= minNetProfit) {
+    if (gasCostInTokens > 0n && minNetProfit > 0n && gasCostInTokens >= minNetProfit) {
       gasWiped = true;
     }
   }
