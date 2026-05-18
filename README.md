@@ -64,3 +64,10 @@ git clone <repo>
 pnpm install
 ```
 
+### Operation
+```
+pnpm start
+
+## Or with TUI
+pnpm start:tui
+```
