@@ -277,12 +277,15 @@ export function createPendingTxStateWatcher(deps: PendingTxWatcherDeps) {
     return createPublicClient({
       chain: polygon,
       transport: webSocket(wsUrl, {
+        batch: true,
         reconnect: true,
         retryCount: 10,
         retryDelay: 500,
         timeout: 10_000,
       }),
-      batch: { multicall: true },
+      batch: {
+        multicall: { wait: 16 },
+      },
     }) as PendingTxClient;
   }
 
