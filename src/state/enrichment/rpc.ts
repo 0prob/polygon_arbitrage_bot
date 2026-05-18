@@ -19,25 +19,6 @@ import {
 } from "../../utils/rpc_manager.ts";
 import { RPC_MAX_RETRIES, RPC_BASE_DELAY_MS, RPC_MAX_DELAY_MS } from "../../config/index.ts";
 
-// ─── Warn about demo endpoint ──────────────────────────────────
-// Lazy-initialized to avoid circular module initialization deadlock.
-
-let _demoWarned = false;
-function _warnDemoEndpoint() {
-  if (_demoWarned) return;
-  _demoWarned = true;
-  try {
-    if (process.env.NODE_ENV !== "test" && (process.env.POLYGON_RPC || "").includes("/v2/demo")) {
-      console.warn(
-        "WARNING: Using Alchemy demo RPC endpoint — rate limits are extremely low.\n" +
-          "         Set POLYGON_RPC in .env to a real endpoint for production use.",
-      );
-    }
-  } catch {
-    // Config not yet loaded — skip warning
-  }
-}
-
 // ─── Public client ─────────────────────────────────────────────
 // Re-export the dynamic proxy so existing callers don't need changes.
 
