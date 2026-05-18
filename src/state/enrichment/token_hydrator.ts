@@ -37,10 +37,11 @@ function getHyperRpcClient() {
     _hyperRpcClient = createPublicClient({
       chain: polygon,
       transport: http(HYPERRPC_URL, {
+        batch: true,
         timeout: 30_000,
         fetchOptions: { headers: { Connection: "keep-alive" } },
       }),
-      batch: { multicall: true },
+      batch: { multicall: { wait: 16 } },
     });
   }
   return _hyperRpcClient;

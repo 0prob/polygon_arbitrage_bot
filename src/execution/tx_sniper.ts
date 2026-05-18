@@ -74,6 +74,7 @@ function createRpcClient(url: string): RpcClient {
   const client = createPublicClient({
     chain: polygon,
     transport: http(url, {
+      batch: true,
       timeout: SUBMISSION_TIMEOUT_MS,
       fetchOptions: { headers: { Connection: "keep-alive" } },
     }),

@@ -143,10 +143,11 @@ const stateHydratorLogger = logger.child({ component: "state_multicall_hydrator"
 const hyperRpcStateClient = createPublicClient({
   chain: polygon,
   transport: http(HYPERRPC_URL, {
+    batch: true,
     timeout: 30_000,
     fetchOptions: { headers: { Connection: "keep-alive" } },
   }),
-  batch: { multicall: true },
+  batch: { multicall: { wait: 16 } },
 });
 
 const hyperRpcMulticallAvailable = true;
