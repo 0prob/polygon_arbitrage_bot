@@ -469,7 +469,7 @@ export function scalePriorityFeeByProfitMargin(
 ) {
   const normalizedFees = normalizeFeeSnapshot(fees);
   const minMultiplierBps = BigInt(options.minMultiplierBps ?? 10_000n);
-  const maxMultiplierBps = BigInt(options.maxMultiplierBps ?? 30_000n);
+  const maxMultiplierBps = BigInt(options.maxMultiplierBps ?? 50_000n);
   const fullRampMarginBps = BigInt(options.fullRampMarginBps ?? 500n);
   if (minMultiplierBps < 0n || maxMultiplierBps < 0n) {
     throw new Error("priority fee multipliers must be >= 0");
