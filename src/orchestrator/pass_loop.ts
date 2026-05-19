@@ -113,7 +113,19 @@ export async function runPassLoop(
         profitable: result.profitableCount,
       }, "Pipeline evaluation");
 
-      for (const profitable of result.profitable) {
+      state.currentActivity = "Executing opportunities";
+      state.currentActivityDetail = `Processing ${result.profitable.length} opportunities`;
+      onStateUpdate?.(state);
+
+      for (const [index, profitable] of result.profitable.entries()) {
+        state.currentActivityProgress = {
+          label: "Executing",
+          completed: index + 1,
+          total: result.profitable.length,
+          unit: "txs"
+        };
+        onStateUpdate?.(state);
+
         const routeKey = routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
         const candidate: CandidateExecution = {
           routeKey,
@@ -132,7 +144,9 @@ export async function runPassLoop(
         }]);
         onStateUpdate?.(state);
 
+        ctx.logger.debug({ routeKey }, "Starting execution");
         const execResult = await ctx.executionService.execute(candidate);
+        ctx.logger.debug({ routeKey, success: execResult.success }, "Execution completed");
         if (execResult.success) {
           state.totalTxSuccessful = (state.totalTxSuccessful ?? 0) + 1;
           ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted");

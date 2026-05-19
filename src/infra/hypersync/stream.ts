@@ -133,7 +133,7 @@ export async function fetchAllLogs<TLog = unknown>(
       const targetEnd = initialToBlock ?? archiveHeight;
       if (targetEnd != null && lastNextBlock != null) {
         if (lastNextBlock >= targetEnd) break;
-        if (lastNextBlock === initialFromBlock) break;
+        if (lastNextBlock === currentQuery.fromBlock) break;
       }
 
       if (lastNextBlock == null) break;

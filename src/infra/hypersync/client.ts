@@ -27,19 +27,37 @@ function normalizeOptionalInt(value: unknown): number | undefined {
   return n;
 }
 
-function normalizeClientConfig(config: HyperSyncClientConfig): Record<string, unknown> {
+export function normalizeClientConfig(config: HyperSyncClientConfig): Record<string, unknown> {
   const url = String(config.url ?? "").trim();
   if (!url) throw createConfigError("url must be a non-empty string");
-  return {
+
+  const normalized: Record<string, unknown> = {
     url,
     apiToken: String(config.apiToken ?? ""),
-    ...(config.httpReqTimeoutMillis != null ? { httpReqTimeoutMillis: normalizeOptionalInt(config.httpReqTimeoutMillis) } : {}),
-    ...(config.maxNumRetries != null ? { maxNumRetries: normalizeOptionalInt(config.maxNumRetries) } : {}),
-    ...(config.retryBackoffMs != null ? { retryBackoffMs: normalizeOptionalInt(config.retryBackoffMs) } : {}),
-    ...(config.retryBaseMs != null ? { retryBaseMs: normalizeOptionalInt(config.retryBaseMs) } : {}),
-    ...(config.retryCeilingMs != null ? { retryCeilingMs: normalizeOptionalInt(config.retryCeilingMs) } : {}),
-    ...(config.proactiveRateLimitSleep !== undefined ? { proactiveRateLimitSleep: config.proactiveRateLimitSleep } : {}),
   };
+
+  const optionalInts: (keyof HyperSyncClientConfig)[] = [
+    "httpReqTimeoutMillis",
+    "maxNumRetries",
+    "retryBackoffMs",
+    "retryBaseMs",
+    "retryCeilingMs",
+  ];
+
+  for (const key of optionalInts) {
+    if (config[key] != null) {
+      const normalizedValue = normalizeOptionalInt(config[key]);
+      if (normalizedValue !== undefined) {
+        normalized[key] = normalizedValue;
+      }
+    }
+  }
+
+  if (config.proactiveRateLimitSleep !== undefined) {
+    normalized.proactiveRateLimitSleep = config.proactiveRateLimitSleep;
+  }
+
+  return normalized;
 }
 
 function createUnavailableHypersyncClientImpl(error: unknown): HypersyncClientRuntime {

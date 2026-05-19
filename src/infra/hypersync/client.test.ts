@@ -1,15 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
+import type { HyperSyncClientConfig } from "./types.ts";
 
+// Mocks
 const mockGetHeight = vi.fn().mockResolvedValue(12345);
 const mockGet = vi.fn().mockResolvedValue({ nextBlock: 1000, data: { logs: [] } });
 const mockRecv = vi.fn().mockResolvedValue(null);
 const mockStream = vi.fn().mockResolvedValue({ recv: mockRecv });
+
+let mockClientInstanceCount = 0;
 
 vi.mock("@envio-dev/hypersync-client", () => {
   class MockHypersyncClient {
     config: any;
     constructor(config: any) {
       this.config = config;
+      mockClientInstanceCount++;
     }
     getHeight = mockGetHeight;
     get = mockGet;
@@ -27,6 +32,8 @@ vi.mock("@envio-dev/hypersync-client", () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockClientInstanceCount = 0;
+  vi.resetModules();
 });
 
 describe("createHypersyncClient", () => {
@@ -59,12 +66,69 @@ describe("lazy singleton proxy", () => {
     expect(mod.client).toBeDefined();
     const height = await mod.client.getHeight();
     expect(height).toBe(12345);
+    expect(mockClientInstanceCount).toBe(1);
   });
 
   it("reuses same client instance across multiple accesses", async () => {
     const mod = await import("./client.ts");
-    const h1 = await mod.client.getHeight();
-    const h2 = await mod.client.getHeight();
-    expect(h1).toBe(h2);
+    await mod.client.getHeight();
+    await mod.client.getHeight();
+    expect(mockClientInstanceCount).toBe(1);
   });
+
+  it("does not create multiple clients when called concurrently", async () => {
+    const mod = await import("./client.ts");
+    
+    await Promise.all([
+        mod.client.getHeight(),
+        mod.client.getHeight(),
+        mod.client.getHeight(),
+        mod.client.getHeight(),
+        mod.client.getHeight(),
+    ]);
+
+    expect(mockClientInstanceCount).toBe(1);
+  });
+});
+
+describe("normalizeClientConfig", () => {
+    let normalizeClientConfig: (config: HyperSyncClientConfig) => Record<string, unknown>;
+
+    beforeAll(async () => {
+        const mod = await import("./client.ts");
+        normalizeClientConfig = mod.normalizeClientConfig;
+    });
+
+    it("should throw if url is missing", () => {
+        expect(() => normalizeClientConfig({} as any)).toThrow("url must be a non-empty string");
+    });
+
+    it("should create a valid config object", () => {
+        const config = {
+            url: "https://example.com",
+            apiToken: "test-token",
+            httpReqTimeoutMillis: 1000,
+            maxNumRetries: 5,
+            retryBackoffMs: 100,
+            retryBaseMs: 200,
+            retryCeilingMs: 2000,
+            proactiveRateLimitSleep: true,
+        };
+        const normalized = normalizeClientConfig(config);
+        expect(normalized).toEqual(config);
+    });
+
+    it("should ignore invalid optional parameters", () => {
+        const config = {
+            url: "https://example.com",
+            httpReqTimeoutMillis: "invalid",
+            maxNumRetries: -5,
+            retryBackoffMs: 0,
+        };
+        const normalized = normalizeClientConfig(config as any);
+        expect(normalized).toEqual({
+            url: "https://example.com",
+            apiToken: "",
+        });
+    });
 });
