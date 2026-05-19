@@ -13,19 +13,36 @@ import { DiscoveryService, type DiscoveryServiceDeps } from "../services/discove
 import { decodePairCreated, decodePoolRegistered, decodePoolDeployed, decodeCurvePoolAdded, type DecodedPoolEvent } from "../services/discovery/decoder.ts";
 import type { TokenMetaFetcher } from "../services/discovery/enrichment.ts";
 import { fetchCurvePools } from "../services/discovery/curve_discovery.ts";
+import { fetchV2Pools } from "../services/discovery/v2_discovery.ts";
+import { discoverV3Pools } from "../services/discovery/v3_discovery.ts";
 import { WatcherService, type WatcherRefreshFns } from "../services/watcher/service.ts";
 import type { WatcherPoolMeta, HyperSyncLogLike } from "../services/watcher/types.ts";
 import { mergeStateIntoCache } from "../services/watcher/state_ops.ts";
 import { createDbRollbackRegistry } from "../services/watcher/reorg.ts";
-import { setHypersyncDefaults } from "../infra/hypersync/client.ts";
+import { setHypersyncDefaults, client as hypersyncClient } from "../infra/hypersync/client.ts";
 import { computeTopic0 } from "../infra/hypersync/query.ts";
 import type { HyperSyncLog } from "../infra/hypersync/types.ts";
 import { HydrationService, type PoolStateFetcher } from "../services/hydration/service.ts";
-import { getAllPoolStates, getPoolState as getPoolStateFromDb } from "../infra/db/pools.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
+import {
+  QUICKSWAP_V2_FACTORY,
+  SUSHISWAP_V2_FACTORY,
+  UNISWAP_V2_FACTORY,
+  DFYN_V2_FACTORY,
+  APESWAP_V2_FACTORY,
+  MESHSWAP_V2_FACTORY,
+  JETSWAP_V2_FACTORY,
+  COMETHSWAP_V2_FACTORY,
+  UNISWAP_V3_FACTORY,
+  SUSHISWAP_V3_FACTORY,
+  QUICKSWAP_V3_FACTORY,
+  KYBERSWAP_ELASTIC_FACTORY,
+  BALANCER_VAULT,
+} from "../config/addresses.ts";
+import { getAllPoolStates, getPoolState as getPoolStateFromDb } from "../infra/db/pools.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -112,7 +129,26 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     decodeLog,
     fetchTokenMeta,
     fetchCurvePools: fetchCurvePoolsImpl,
+    fetchV2Pools: (factoryAddress: Address, protocolLabel: string) => fetchV2Pools(publicClient, factoryAddress, protocolLabel),
+    discoverV3Pools: (factoryAddresses: Address[]) => discoverV3Pools(hypersyncClient, factoryAddresses),
     savePool,
+    v2Factories: [
+      { address: QUICKSWAP_V2_FACTORY, label: "quickswap_v2" },
+      { address: SUSHISWAP_V2_FACTORY, label: "sushiswap_v2" },
+      { address: UNISWAP_V2_FACTORY, label: "uniswap_v2" },
+      { address: DFYN_V2_FACTORY, label: "dfyn_v2" },
+      { address: APESWAP_V2_FACTORY, label: "apeswap_v2" },
+      { address: MESHSWAP_V2_FACTORY, label: "meshswap_v2" },
+      { address: JETSWAP_V2_FACTORY, label: "jetswap_v2" },
+      { address: COMETHSWAP_V2_FACTORY, label: "comethswap_v2" },
+    ],
+    v3FactoryAddresses: [
+      UNISWAP_V3_FACTORY,
+      SUSHISWAP_V3_FACTORY,
+      QUICKSWAP_V3_FACTORY,
+      KYBERSWAP_ELASTIC_FACTORY,
+    ] as Address[],
+    balancerVaultAddress: BALANCER_VAULT,
   };
   const discoveryService = new DiscoveryService(discoveryDeps);
 
@@ -126,17 +162,50 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     { type: "function", name: "liquidity", inputs: [], outputs: [{ type: "uint128" }], stateMutability: "view" },
   ] as const;
 
+  const v2GetReservesAbi = [
+    { type: "function", name: "getReserves", inputs: [], outputs: [{ type: "uint112" }, { type: "uint112" }, { type: "uint32" }], stateMutability: "view" },
+  ] as const;
+
+  const erc20DecimalsAbi = [
+    { type: "function", name: "decimals", inputs: [], outputs: [{ type: "uint8" }], stateMutability: "view" },
+  ] as const;
+
+  const tokenDecimalsCache = new Map<string, number>();
+
+  async function fetchTokenDecimals(tokenAddresses: Address[]): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+    const uncached = tokenAddresses.filter((a) => !tokenDecimalsCache.has(a.toLowerCase()));
+    if (uncached.length > 0) {
+      const results = await Promise.allSettled(
+        uncached.map((addr) =>
+          publicClient.readContract({ address: addr, abi: erc20DecimalsAbi, functionName: "decimals" }).then((d) => [addr.toLowerCase(), Number(d)] as const),
+        ),
+      );
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          const [addr, decimals] = r.value;
+          tokenDecimalsCache.set(addr, decimals);
+        }
+      }
+    }
+    for (const addr of tokenAddresses) {
+      const d = tokenDecimalsCache.get(addr.toLowerCase());
+      if (d != null) result.set(addr.toLowerCase(), d);
+    }
+    return result;
+  }
+
   const watcherRefreshFns: WatcherRefreshFns = {
-    refreshBalancer: (addr: string, _pool: WatcherPoolMeta | null) => {
+    refreshBalancer: async (addr: string, _pool: WatcherPoolMeta | null) => {
       logger.debug({ addr }, "Balancer refresh not implemented");
     },
-    refreshCurve: (addr: string, _pool: WatcherPoolMeta | null) => {
+    refreshCurve: async (addr: string, _pool: WatcherPoolMeta | null) => {
       logger.debug({ addr }, "Curve refresh not implemented");
     },
-    refreshDodo: (addr: string, _pool: WatcherPoolMeta | null) => {
+    refreshDodo: async (addr: string, _pool: WatcherPoolMeta | null) => {
       logger.debug({ addr }, "Dodo refresh not implemented");
     },
-    refreshWoofi: (addr: string, _pool: WatcherPoolMeta | null) => {
+    refreshWoofi: async (addr: string, _pool: WatcherPoolMeta | null) => {
       logger.debug({ addr }, "Woofi refresh not implemented");
     },
     refreshV3: async (addr: string, _pool: WatcherPoolMeta | null, _rawLog?: HyperSyncLogLike) => {
@@ -152,6 +221,17 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     },
   };
 
+  async function refreshV2PoolState(addr: string) {
+    try {
+      const address = addr as Address;
+      const reserves = await publicClient.readContract({ address, abi: v2GetReservesAbi, functionName: "getReserves" });
+      const [reserve0, reserve1] = reserves as [bigint, bigint, number];
+      mergeStateIntoCache(stateCache, addr, { reserve0, reserve1 });
+    } catch {
+      // pool may not exist or query timed out — skip
+    }
+  }
+
   const watcherService = new WatcherService(db, stateCache, watcherRegistry, watcherRefreshFns);
 
   const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
@@ -166,6 +246,11 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     if (fromDb?.state_data) {
       stateCache.set(addr, fromDb.state_data as Record<string, unknown>);
       return fromDb.state_data as Record<string, unknown>;
+    }
+    if (protocol.toUpperCase().includes("V2")) {
+      await refreshV2PoolState(addr);
+      const refreshed = stateCache.get(addr);
+      if (refreshed) return refreshed as Record<string, unknown>;
     }
     logger.debug({ address, protocol, token0, token1 }, "No cached state for pool");
     return { reserve0: 0n, reserve1: 0n };
@@ -254,11 +339,14 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   };
   const mempoolService = new MempoolService(logger, mempoolOptions);
 
-  // Trigger pool discovery and await before hydration
-  await Promise.all([
-    discoveryService.discoverProtocol("balancer").catch((err) => logger.error(err)),
-    discoveryService.discoverProtocol("curve").catch((err) => logger.error(err)),
-  ]);
+  // Trigger pool discovery for all protocols
+  await discoveryService.discoverAll().catch((err) => logger.error({ err }, "Full discovery failed"));
+
+  // Fetch token decimals for pricing
+  const allPools = getPools();
+  const allTokenAddresses = [...new Set(allPools.flatMap((p) => [p.token0, p.token1].filter(Boolean)))];
+  const tokenDecimals = await fetchTokenDecimals(allTokenAddresses as Address[]);
+  logger.info({ decimalsFetched: tokenDecimals.size }, "Token decimals cached");
 
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
   hydrationService.startSweep();

@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/reorg.ts": {
-    "mtime": 1779164142.662715,
-    "ast_hash": "113b80536cbbc9710cf941164e16c23d",
+    "mtime": 1779173537.9367125,
+    "ast_hash": "6b760ffb16c931148c475f317408157e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/poll_loop.ts": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779165614.9171379,
-    "ast_hash": "f2f4d96812598255cbaaa68a2ea20f3a",
+    "mtime": 1779173486.3654313,
+    "ast_hash": "bfe9e25e4910642837db71f7fe24ba82",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -445,8 +445,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/pools.ts": {
-    "mtime": 1779155515.2427754,
-    "ast_hash": "2f43908c30957532d8516b4880617166",
+    "mtime": 1779173427.894271,
+    "ast_hash": "241ab8f16949d85fb624716f2d6a98de",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/assets.ts": {
