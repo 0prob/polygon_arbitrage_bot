@@ -29,10 +29,10 @@ const MOCK_BUILD_ARB_TX_RETURN = {
 
 vi.mock("../services/execution/builder.ts", () => ({
   buildArbTx: vi.fn(() => MOCK_BUILD_ARB_TX_RETURN),
-  BuilderRouteInput: Object,
-  BuilderConfig: Object,
-  BuilderOptions: Object,
-  BuiltTransaction: Object,
+}));
+
+vi.mock("../infra/db/hyperindex_reader.ts", () => ({
+  buildStateCacheFromHyperIndex: vi.fn().mockReturnValue(new Map()),
 }));
 
 const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
@@ -40,27 +40,31 @@ const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
 const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
 
 describe("runPassLoop", () => {
-  it("updates currentActivityProgress during execution", async () => {
-    const mockStateUpdate = vi.fn();
+  it("executes profitable cycles", async () => {
     const mockExecute = vi.fn().mockResolvedValue({ success: true, txHash: "0x1" });
 
     const mockContext = {
       config: {
         routing: { cycleRefreshIntervalMs: 0, maxHops: 2 },
-        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A },
+        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
+        gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
+        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
+        mempool: { coalesceTtlMs: 100 },
+        paths: { dataDir: "/tmp", dbFile: "test.db" },
+        observability: { logLevel: "silent" },
+        envioApiToken: "",
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
       isRunning: true,
-      watcherService: { start: vi.fn(), getStateCache: vi.fn().mockReturnValue(new Map()) },
-      hydrationService: { start: vi.fn() },
-      discoveryService: { start: vi.fn() },
+      db: {},
+      stateCache: new Map() as any,
+      hiDbPath: "/tmp/test.db",
       mempoolService: { start: vi.fn() },
       executionService: { start: vi.fn(), execute: mockExecute },
-      getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", tokens: [] }]),
+      getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
     } as unknown as RuntimeContext;
 
-    // Stop the loop after both profitable items execute
     let execCalls = 0;
     mockExecute.mockImplementation(async () => {
       execCalls++;
@@ -68,13 +72,12 @@ describe("runPassLoop", () => {
       return { success: true, txHash: "0x1" };
     });
 
-    // Mock graph/cycles
     vi.mocked(buildGraph).mockReturnValue({
       adjacency: new Map(),
       poolMeta: new Map(),
       stateRefs: new Map(),
       tokens: new Set(),
-    });
+    } as any);
     vi.mocked(enumerateCycles).mockReturnValue([
       {
         edges: [{
@@ -91,7 +94,6 @@ describe("runPassLoop", () => {
       },
     ]);
 
-    // Mock profitable opportunities
     const mockProfitable = [
       {
         cycle: {
@@ -142,15 +144,8 @@ describe("runPassLoop", () => {
     ];
     vi.mocked(evaluatePipeline).mockReturnValue({ profitable: mockProfitable as any, attempted: 2, profitableCount: 2 });
 
-    await runPassLoop(mockContext, mockStateUpdate);
+    await runPassLoop(mockContext);
 
-    // Verify both profitable items were executed
-    expect(mockStateUpdate).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        passCount: 1,
-        totalTxAttempted: 2,
-        totalTxSuccessful: 2,
-      }),
-    );
+    expect(mockExecute).toHaveBeenCalledTimes(2);
   });
 });

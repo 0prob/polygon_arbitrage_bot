@@ -370,13 +370,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779185361.205369,
-    "ast_hash": "e55f5492bd7a52c3e5e609e22ff40656",
+    "mtime": 1779215094.698087,
+    "ast_hash": "f92774bc91c27a6020cdebb0b5059e28",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779185378.4972043,
-    "ast_hash": "162c1e72f64ea224bc135f12ca94c2ab",
+    "mtime": 1779215002.590117,
+    "ast_hash": "ef5d8055498ebb4e77d5e3a55c71d1cf",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -480,13 +480,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779185476.6602614,
-    "ast_hash": "d1dbbaaa2fd46f1808c63d1bea18b7e0",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/src/cli/tui.ts": {
-    "mtime": 1779155514.6787703,
-    "ast_hash": "1d32191d826e35eb35e36a953414ae22",
+    "mtime": 1779207813.318789,
+    "ast_hash": "29bc54fed1e0e8d8b686dce7a2c1f233",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -510,8 +505,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.ts": {
-    "mtime": 1779167079.8625686,
-    "ast_hash": "7efd7b66070053870d49bd00339e69de",
+    "mtime": 1779214681.1859322,
+    "ast_hash": "9da11f59c09e076710cef9fdf34c4abe",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/rpc_env.ts": {
@@ -750,8 +745,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779181904.2892118,
-    "ast_hash": "cefcde09ef9247ec837c00042720ee0b",
+    "mtime": 1779208118.584232,
+    "ast_hash": "2b52df809e64ce8823923c599049ca0b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/stream.test.ts": {
@@ -800,8 +795,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/activity.ts": {
-    "mtime": 1779175074.5979705,
-    "ast_hash": "cc51f4762a85fcfc64c5c781028f825a",
+    "mtime": 1779208007.347846,
+    "ast_hash": "4a92808f0a337041d6f284b896710ba0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/diagnostic/runner.ts": {
@@ -875,8 +870,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1779206173.726502,
-    "ast_hash": "186025b9cecb805df71d31f9669b9bd7",
+    "mtime": 1779214909.3672142,
+    "ast_hash": "0d976776d8481241f17c40493383f2d3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md": {
@@ -900,13 +895,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/hyperindex_reader.ts": {
-    "mtime": 1779206270.7052214,
-    "ast_hash": "05784fa0bff7c3c2f6894053a6dfe06c",
+    "mtime": 1779214922.0510645,
+    "ast_hash": "b87dc8fa762bca79c2862ceab858db5a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/hyperindex_integration.test.ts": {
-    "mtime": 1779206614.0247808,
-    "ast_hash": "fe562e71d31b7619715a2daad0e7e1f8",
+    "mtime": 1779207497.2754781,
+    "ast_hash": "909232e91e18f54c9466e9bcd7cbc1b8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
@@ -925,33 +920,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779206178.7304354,
-    "ast_hash": "f4c4d3cb7ddfb1c57e418ab88ee9e2f1",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/v2_pool.ts": {
-    "mtime": 1779193717.7853932,
-    "ast_hash": "366d791163aaed18a89322cc78ecea17",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/v3_factory.ts": {
-    "mtime": 1779200741.8196425,
-    "ast_hash": "8edd94ed2ac71876828a05c05f41054f",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/curve_factory.ts": {
-    "mtime": 1779201413.8825302,
-    "ast_hash": "273ba3b15f6bdd1886b3b1599ed4475f",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/v3_pool.ts": {
-    "mtime": 1779193525.0917065,
-    "ast_hash": "8c313d28ac3211f48a91c2b85616556a",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/v2_factory.ts": {
-    "mtime": 1779200737.855635,
-    "ast_hash": "04fc10b372431a767bce1030048e8883",
+    "mtime": 1779207674.0816278,
+    "ast_hash": "8833d7cfe8226be51020133183d8063f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-19-uniswap-v4-arbitrage-integration-design.md": {
@@ -969,9 +939,79 @@
     "ast_hash": "65df23896c70041621a5eeb514235bed",
     "semantic_hash": ""
   },
-  "/home/x/arb/t/hyperindex/src/handlers_ts/v4.ts": {
+  "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
     "mtime": 1779206240.2256224,
     "ast_hash": "1c1055be734ee7352e444dcfc13a5bd0",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
+    "mtime": 1779193717.7853932,
+    "ast_hash": "366d791163aaed18a89322cc78ecea17",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
+    "mtime": 1779200741.8196425,
+    "ast_hash": "8edd94ed2ac71876828a05c05f41054f",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/handlers/curve_factory.ts": {
+    "mtime": 1779201413.8825302,
+    "ast_hash": "273ba3b15f6bdd1886b3b1599ed4475f",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/handlers/v3_pool.ts": {
+    "mtime": 1779193525.0917065,
+    "ast_hash": "8c313d28ac3211f48a91c2b85616556a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/handlers/v2_factory.ts": {
+    "mtime": 1779200737.855635,
+    "ast_hash": "04fc10b372431a767bce1030048e8883",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-19-cross-chain-arbitrage.md": {
+    "mtime": 1779214459.428637,
+    "ast_hash": "eddeb0f49ade69ae0007c539a83b3a51",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-19-cross-chain-arbitrage-design.md": {
+    "mtime": 1779214144.4446573,
+    "ast_hash": "e9e88505e1a9d7b67371387f28fb2049",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/crosschain/scanner.ts": {
+    "mtime": 1779214658.446206,
+    "ast_hash": "0613e2d59946f21fa309b06467d54be7",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/crosschain/types.ts": {
+    "mtime": 1779214610.1467905,
+    "ast_hash": "81db40b3d9453e950ca32f6933d7f17b",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/execution/crosschain_calldata.ts": {
+    "mtime": 1779214608.3308125,
+    "ast_hash": "c84c08d999ee7c20e8c242a90d022bae",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/config/crosschain_schema.ts": {
+    "mtime": 1779214644.134379,
+    "ast_hash": "bf6c39cbcab77181acd10f4558d4b085",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/crosschain/order.ts": {
+    "mtime": 1779214972.358472,
+    "ast_hash": "44a7974153f2d8861c75188d0ef6b67e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/crosschain/solver.ts": {
+    "mtime": 1779215055.820219,
+    "ast_hash": "08c89c09f1873f702416c131d29ecf92",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/crosschain_arb.test.ts": {
+    "mtime": 1779215156.562915,
+    "ast_hash": "d4f7cb51abd261b808566d1cb669f512",
     "semantic_hash": ""
   }
 }

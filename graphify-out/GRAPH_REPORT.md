@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-19)
 
 ## Corpus Check
-- 189 files · ~74,547 words
+- 197 files · ~81,377 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1278 nodes · 1864 edges · 125 communities (103 shown, 22 thin omitted)
+- 1368 nodes · 2015 edges · 132 communities (108 shown, 24 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7d1f0db6`
+- Built from commit: `945ec110`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -84,16 +84,19 @@
 - [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 75|Community 75]]
 - [[_COMMUNITY_Community 76|Community 76]]
+- [[_COMMUNITY_Community 78|Community 78]]
 - [[_COMMUNITY_Community 80|Community 80]]
-- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 81|Community 81]]
 - [[_COMMUNITY_Community 85|Community 85]]
 - [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_Community 91|Community 91]]
+- [[_COMMUNITY_Community 96|Community 96]]
 - [[_COMMUNITY_Community 97|Community 97]]
 - [[_COMMUNITY_Community 98|Community 98]]
 - [[_COMMUNITY_Community 99|Community 99]]
 - [[_COMMUNITY_Community 100|Community 100]]
 - [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_Community 103|Community 103]]
 - [[_COMMUNITY_Community 104|Community 104]]
 - [[_COMMUNITY_Community 105|Community 105]]
@@ -110,60 +113,63 @@
 - [[_COMMUNITY_Community 116|Community 116]]
 - [[_COMMUNITY_Community 117|Community 117]]
 - [[_COMMUNITY_Community 118|Community 118]]
+- [[_COMMUNITY_Community 125|Community 125]]
 - [[_COMMUNITY_Community 126|Community 126]]
 - [[_COMMUNITY_Community 127|Community 127]]
 - [[_COMMUNITY_Community 128|Community 128]]
 - [[_COMMUNITY_Community 129|Community 129]]
+- [[_COMMUNITY_Community 130|Community 130]]
+- [[_COMMUNITY_Community 134|Community 134]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `CompatDatabase` - 19 edges
+1. `CompatDatabase` - 20 edges
 2. `File Structure` - 17 edges
 3. `runPassLoop()` - 16 edges
 4. `renderFrame()` - 16 edges
-5. `encodeRoute()` - 14 edges
-6. `scripts` - 14 edges
+5. `scripts` - 14 edges
+6. `encodeRoute()` - 14 edges
 7. `RpcEndpointPool` - 14 edges
 8. `simulateV3Swap()` - 14 edges
 9. `simulateRoute()` - 12 edges
 10. `HyperIndex Ingestion Layer` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `pollLoop()` --calls--> `signal`  [INFERRED]
-  services/watcher/poll_loop.ts → src/services/strategy/backrunner.test.ts
 - `createRootLogger()` --calls--> `pino`  [INFERRED]
   src/infra/observability/logger.ts → package.json
+- `pollLoop()` --calls--> `signal`  [INFERRED]
+  services/watcher/poll_loop.ts → src/services/strategy/backrunner.test.ts
 - `withRetry()` --calls--> `fn`  [INFERRED]
   infra/rpc/retry.ts → src/infra/rpc/retry.test.ts
-- `deriveTightV3PriceLimit()` --calls--> `simulateV3Swap()`  [EXTRACTED]
-  calldata.ts → src/core/math/uniswap_v3.ts
-- `encodeKyberElasticHop()` --calls--> `simulateV3Swap()`  [EXTRACTED]
-  calldata.ts → src/core/math/uniswap_v3.ts
+- `bootApplication()` --calls--> `createDbRollbackRegistry()`  [EXTRACTED]
+  boot.ts → src/services/watcher/reorg.ts
+- `main()` --calls--> `bootApplication()`  [EXTRACTED]
+  src/cli/main.ts → boot.ts
 
-## Communities (125 total, 22 thin omitted)
+## Communities (132 total, 24 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (45): dependencies, envio, viem, devDependencies, typescript, name, private, scripts (+37 more)
+Cohesion: 0.14
+Nodes (14): scripts, bench, fmt, fmt:fix, hi:codegen, hi:compile, hi:start, lint (+6 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
-Nodes (26): 1. HyperIndex Schema, 2. HyperIndex Config, 3. HyperIndex Handlers, 4. Bot-side Simulation, 5. Calldata Encoding, 6. ArbExecutor Contract, 7. Execution Integration, 8. ABI File (+18 more)
+Nodes (26): 1. HyperIndex Schema, 2. HyperIndex Config, 3. HyperIndex Handler, 4. Bot-side Simulation, 5. Calldata Encoding, 6. ArbExecutor Contract, 7. Execution Integration, 8. ABI File (+18 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (35): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), loadConfigOrDie(), AppConfig, AppConfigSchema (+27 more)
+Cohesion: 0.07
+Nodes (40): CrossChainArbConfig, crossChainArbSchema, AppConfig, AppConfigSchema, bigintFromString, DiscoveryConfig, DiscoveryConfigSchema, ExecutionConfig (+32 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.07
-Nodes (35): buildLogQuery(), computeTopic0(), computeTopic0s(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeLogFilter(), normalizeTopic() (+27 more)
+Nodes (36): buildLogQuery(), computeTopic0(), computeTopic0s(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeLogFilter(), normalizeTopic() (+28 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.12
 Nodes (14): BALANCER_FAMILY_KEYS, CURVE_FAMILY_KEYS, DecodedPool, DODO_FAMILY_KEYS, isBalancerProtocol(), isCurveProtocol(), isV2Protocol(), isV3Protocol() (+6 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (14): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+6 more)
+Cohesion: 0.04
+Nodes (47): code:bash (cat /home/x/arb/t/hyperindex/abis/uniswap_v4_pool_manager.js), code:bash (git add hyperindex/config.yaml hyperindex/.envio/), code:typescript (import { indexer } from "envio";), code:bash (cd /home/x/arb/t/hyperindex && npx tsc --outDir src/handlers), code:bash (git add hyperindex/src/handlers_ts/v4.ts hyperindex/src/hand), code:typescript (export const V3_FAMILY_KEYS = new Set(["UNISWAP_V3", "SUSHIS), code:typescript (export type V4PoolStateRow = {), code:typescript (const v4 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tic) (+39 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.13
@@ -177,13 +183,9 @@ Nodes (36): Architecture, Bun Migration, code:block1 (┌───────�
 Cohesion: 0.15
 Nodes (12): EvaluatedRoute, evaluatePaths(), evaluatePathsParallel(), A, B, badEdges, cycles, edges (+4 more)
 
-### Community 9 - "Community 9"
-Cohesion: 0.18
-Nodes (4): CircuitBreaker, CircuitBreakerOptions, CircuitState, DEFAULT_CIRCUIT_BREAKER_OPTIONS
-
 ### Community 10 - "Community 10"
-Cohesion: 0.20
-Nodes (8): A, B, badEdge, baseOpts, cycles, edges, highMinProfit, result
+Cohesion: 0.17
+Nodes (10): FoundCycle, PipelineResult, A, B, badEdge, baseOpts, cycles, edges (+2 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.22
@@ -202,8 +204,8 @@ Cohesion: 0.25
 Nodes (7): bigUint20, bigUint40, out, out1, out2, result, state
 
 ### Community 15 - "Community 15"
-Cohesion: 0.11
-Nodes (18): A, all, cache, edges, edges1, edges2, touched, buildGraph() (+10 more)
+Cohesion: 0.22
+Nodes (7): A, all, cache, edges, edges1, edges2, touched
 
 ### Community 16 - "Community 16"
 Cohesion: 0.18
@@ -219,7 +221,7 @@ Nodes (6): best, ep, make(), makePool(), pool, spy
 
 ### Community 19 - "Community 19"
 Cohesion: 0.07
-Nodes (59): assertValidRoute(), buildArbTx(), BuilderConfig, BuilderOptions, BuilderRouteInput, normalizeEvmAddress(), asAddress(), BALANCER_PROTOCOLS (+51 more)
+Nodes (58): assertValidRoute(), buildArbTx(), BuilderOptions, BuiltTransaction, normalizeEvmAddress(), asAddress(), BALANCER_PROTOCOLS, BALANCER_VAULT_SWAP_ABI (+50 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.18
@@ -230,8 +232,8 @@ Cohesion: 0.22
 Nodes (8): code:typescript (import { type PublicClient, getContract } from "viem";), code:typescript (// src/orchestrator/boot.ts), code:typescript (// Add an optional progress callback to DiscoveryService), code:bash (git add src/services/discovery/curve_discovery.ts src/orches), Curve Pool Discovery Implementation Plan, Task 1: Create Curve Discovery Logic, Task 2: Instrument DiscoveryService for TUI, Task 3: Verify and Commit
 
 ### Community 22 - "Community 22"
-Cohesion: 0.35
-Nodes (9): createDatabase(), buildStateCacheFromHyperIndex(), getHiDbPath(), readHyperIndexPools(), readHyperIndexState(), V4PoolStateRow, getAllPoolStates(), setHypersyncDefaults() (+1 more)
+Cohesion: 0.17
+Nodes (12): devDependencies, bun, eslint, eslint-config-prettier, fast-check, pino-pretty, prettier, @types/node (+4 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.40
@@ -246,8 +248,8 @@ Cohesion: 0.06
 Nodes (19): NonceFetcher, NonceManager, fetchNonce, nm, EndpointPoolOptions, ensureHttps(), errorMessage(), RpcEndpoint (+11 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.38
-Nodes (9): extractGasResult(), inferTokenIdx(), inferZeroForOne(), normalizeProtocol(), simulateHop(), simulateRoute(), SimulationEdge, RouteStateCache (+1 more)
+Cohesion: 0.21
+Nodes (14): BackrunCandidate, Backrunner, BackrunnerOptions, LargeSwapSignal, SwapEdge, extractGasResult(), inferTokenIdx(), inferZeroForOne() (+6 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.50
@@ -262,8 +264,8 @@ Cohesion: 0.50
 Nodes (3): service, signals, tx
 
 ### Community 31 - "Community 31"
-Cohesion: 0.08
-Nodes (15): CompatDatabase, CompatStatement, createInMemoryDatabase(), SQLInputValue, applyMigrationV1ToV2(), ensureSchema(), addrCol, colNames (+7 more)
+Cohesion: 0.16
+Nodes (4): CompatDatabase, CompatStatement, createInMemoryDatabase(), SQLInputValue
 
 ### Community 32 - "Community 32"
 Cohesion: 0.09
@@ -274,20 +276,20 @@ Cohesion: 0.29
 Nodes (5): FACTORY_ABI, fetchCurvePools(), factoryAddress, mockClient, mockFactory
 
 ### Community 47 - "Community 47"
-Cohesion: 0.29
-Nodes (5): BackrunCandidate, Backrunner, BackrunnerOptions, LargeSwapSignal, FoundCycle
+Cohesion: 0.13
+Nodes (14): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+6 more)
 
 ### Community 49 - "Community 49"
-Cohesion: 0.06
-Nodes (68): ActivityLog, getCheckpoint(), saveCheckpoint(), getPoolMeta(), HypersyncDecoderRuntime, WATCHER_SIGNATURES, buildHandlerMap(), dispatchLog() (+60 more)
+Cohesion: 0.05
+Nodes (69): ActivityLog, getCheckpoint(), saveCheckpoint(), getPoolMeta(), WATCHER_SIGNATURES, buildHandlerMap(), dispatchLog(), getHandler() (+61 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.22
-Nodes (8): EvmAddress, isEvmAddress(), isFastEvmAddress(), isPolygonSystemContract(), normalizeEvmAddress(), normalizeProtocolKey(), POLYGON_SYSTEM_PREFIXES, ProtocolKey
+Cohesion: 0.27
+Nodes (9): MOCK_BUILD_ARB_TX_RETURN, mockContext, mockExecute, mockProfitable, mockStateUpdate, enumerateCycles(), feeLogWeight(), find2HopCycles() (+1 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.12
-Nodes (30): createActivityLog(), createBotState(), main(), age(), BotActivityProgress, BotOpportunityRow, BotState, fmt() (+22 more)
+Cohesion: 0.08
+Nodes (38): createActivityLog(), createBotState(), main(), age(), BotActivityProgress, BotOpportunityRow, BotState, fmt() (+30 more)
 
 ### Community 52 - "Community 52"
 Cohesion: 0.22
@@ -298,12 +300,12 @@ Cohesion: 0.10
 Nodes (24): computeProfit(), ComputeProfitOptions, gasCostMaticWei(), invalidAssessment(), maticWeiToTokens(), roiMicroUnits(), baseOpts, r2 (+16 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.08
-Nodes (15): clampPriorityFee(), DEFAULT_GAS_CONFIG, FeeSnapshot, GasOracle, GasOracleConfig, PolygonGasHints, scalePriorityFeeByProfitMargin(), fetchGas (+7 more)
+Cohesion: 0.13
+Nodes (12): clampPriorityFee(), DEFAULT_GAS_CONFIG, FeeSnapshot, GasOracle, PolygonGasHints, scalePriorityFeeByProfitMargin(), fetchGas, first (+4 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.14
-Nodes (6): DecodedSwap, decodeSwapCalldata(), SELECTORS, DEFAULT_MEMPOOL_OPTIONS, MempoolService, MempoolServiceOptions
+Cohesion: 0.15
+Nodes (5): DecodedSwap, decodeSwapCalldata(), SELECTORS, DEFAULT_MEMPOOL_OPTIONS, MempoolService
 
 ### Community 56 - "Community 56"
 Cohesion: 0.09
@@ -311,19 +313,19 @@ Nodes (21): compilerOptions, esModuleInterop, module, moduleResolution, outDir, 
 
 ### Community 57 - "Community 57"
 Cohesion: 0.17
-Nodes (11): DecodedPoolEvent, TokenMetaFetcher, TokenMetaRemote, DiscoveryResult, DiscoveryServiceDeps, V2FactoryConfig, fetchV2Pools(), V2_FACTORY_ABI (+3 more)
+Nodes (10): DecodedPoolEvent, TokenMetaFetcher, TokenMetaRemote, DiscoveryResult, DiscoveryServiceDeps, V2FactoryConfig, fetchV2Pools(), V2_FACTORY_ABI (+2 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.09
-Nodes (12): AttemptEntry, AttemptLogSink, logAttempt(), sinks, BuiltTransaction, AlchemyPrivateTxSubmitter, hostnameFromUrl(), PrivateRelaySubmitter (+4 more)
+Cohesion: 0.10
+Nodes (11): AttemptEntry, AttemptLogSink, logAttempt(), sinks, AlchemyPrivateTxSubmitter, hostnameFromUrl(), PrivateRelaySubmitter, PublicSubmitter (+3 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.21
-Nodes (10): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, LoggerOptions, dependencies, @envio-dev/hypersync-client, pino (+2 more)
+Cohesion: 0.17
+Nodes (12): ExecutionResult, PoolStateFetcher, StateCache, childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, Logger (+4 more)
 
 ### Community 60 - "Community 60"
-Cohesion: 0.36
-Nodes (11): CandidateExecution, RuntimeContext, buildCandidate(), getGasPriceWei(), runPassLoop(), sleep(), weiToGwei(), withTimeout() (+3 more)
+Cohesion: 0.23
+Nodes (16): buildStateCacheFromHyperIndex(), readHyperIndexState(), BuilderConfig, BuilderRouteInput, CandidateExecution, RuntimeContext, buildCandidate(), getGasPriceWei() (+8 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.21
@@ -350,20 +352,24 @@ Cohesion: 0.33
 Nodes (5): code:typescript (<<<<), code:bash (git add .), Task 1: Fix WatcherService Drain, Task 2: Final Verification & Commit, Workspace Repair Implementation Plan
 
 ### Community 75 - "Community 75"
-Cohesion: 0.33
-Nodes (4): DEFAULT_WEIGHTS, rankRoutes(), ScoringWeights, EvaluatedRoute
+Cohesion: 0.22
+Nodes (8): dependencies, envio, viem, devDependencies, typescript, name, private, type
 
 ### Community 76 - "Community 76"
-Cohesion: 0.23
-Nodes (10): MOCK_BUILD_ARB_TX_RETURN, mockContext, mockExecute, mockProfitable, mockStateUpdate, enumerateCycles(), feeLogWeight(), find2HopCycles() (+2 more)
+Cohesion: 0.22
+Nodes (8): EvmAddress, isEvmAddress(), isFastEvmAddress(), isPolygonSystemContract(), normalizeEvmAddress(), normalizeProtocolKey(), POLYGON_SYSTEM_PREFIXES, ProtocolKey
 
 ### Community 80 - "Community 80"
-Cohesion: 0.18
-Nodes (4): FlashLoanQuote, LiquidityChecker, RpcClientForLiquidity, FlashLoanSource
-
-### Community 83 - "Community 83"
 Cohesion: 0.25
-Nodes (3): HydrationService, PoolStateFetcher, StateCache
+Nodes (7): engines, bun, main, name, packageManager, type, version
+
+### Community 81 - "Community 81"
+Cohesion: 0.21
+Nodes (10): buildGraph(), buildHubGraph(), RoutingGraph, graph, hubTokens, pool, pool1, pool2 (+2 more)
+
+### Community 97 - "Community 97"
+Cohesion: 0.60
+Nodes (4): decodePoolCreated(), discoverV3Pools(), extractAddress(), V3PoolInfo
 
 ### Community 98 - "Community 98"
 Cohesion: 0.40
@@ -376,6 +382,10 @@ Nodes (3): client, CURVE_ABI, fetchCurveMetadata
 ### Community 100 - "Community 100"
 Cohesion: 0.50
 Nodes (3): client, ERC20_ABI, fetchTokenDecimals
+
+### Community 102 - "Community 102"
+Cohesion: 0.50
+Nodes (4): scripts, codegen, dev, run
 
 ### Community 103 - "Community 103"
 Cohesion: 0.25
@@ -437,37 +447,49 @@ Nodes (3): code:typescript (import { indexer } from "envio";), code:bash (git ad
 Cohesion: 0.67
 Nodes (3): code:bash (git rm -r src/services/discovery/), code:bash (git add -A), Task 13: Clean up old services
 
+### Community 125 - "Community 125"
+Cohesion: 0.09
+Nodes (18): buildOrderData(), computeOrderId(), OrderParams, CrossChainScanner, CrossChainScannerConfig, GOLDEN_ASSETS, APPROVE_ABI, EXEC_ARB_ORDER_ABI (+10 more)
+
 ### Community 127 - "Community 127"
-Cohesion: 0.17
-Nodes (12): optimizeInputAmount(), OptimizeOptions, mkResult(), result, simulate(), ArbPath, CycleEnumerationOptions, RouteEdge (+4 more)
+Cohesion: 0.12
+Nodes (16): optimizeInputAmount(), OptimizeOptions, mkResult(), result, simulate(), DEFAULT_WEIGHTS, rankRoutes(), ScoringWeights (+8 more)
 
 ### Community 128 - "Community 128"
-Cohesion: 0.60
-Nodes (4): decodePoolCreated(), discoverV3Pools(), extractAddress(), V3PoolInfo
+Cohesion: 0.40
+Nodes (5): dependencies, @envio-dev/hypersync-client, pino, viem, zod
 
 ### Community 129 - "Community 129"
-Cohesion: 0.50
-Nodes (3): currency0, currency1, poolId
+Cohesion: 0.29
+Nodes (6): currency0, currency1, poolId, currency0, currency1, poolId
+
+### Community 130 - "Community 130"
+Cohesion: 0.22
+Nodes (3): FlashLoanQuote, LiquidityChecker, RpcClientForLiquidity
+
+### Community 134 - "Community 134"
+Cohesion: 0.38
+Nodes (9): createDatabase(), getHiDbPath(), readHyperIndexPools(), V4PoolStateRow, getAllPoolStates(), GasOracleConfig, setHypersyncDefaults(), MempoolServiceOptions (+1 more)
 
 ## Knowledge Gaps
-- **570 isolated node(s):** `__filename`, `__dirname`, `HYPERINDEX_DIR`, `abiDir`, `handlerDir` (+565 more)
+- **594 isolated node(s):** `OrderParams`, `APPROVE_ABI`, `EXEC_ARB_ORDER_ABI`, `katanaChain`, `SolverBotConfig` (+589 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `createRootLogger()` connect `Community 59` to `Community 49`, `Community 51`, `Community 22`?**
-  _High betweenness centrality (0.080) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `Community 59` to `Community 0`?**
-  _High betweenness centrality (0.075) - this node is a cross-community bridge._
-- **What connects `__filename`, `__dirname`, `HYPERINDEX_DIR` to the rest of the system?**
-  _570 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `createRootLogger()` connect `Community 59` to `Community 128`, `Community 49`, `Community 51`, `Community 134`?**
+  _High betweenness centrality (0.060) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `Community 128` to `Community 80`?**
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `pino` connect `Community 128` to `Community 59`?**
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **What connects `OrderParams`, `APPROVE_ABI`, `EXEC_ARB_ORDER_ABI` to the rest of the system?**
+  _594 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.04625346901017576 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.058029689608636977 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.06968641114982578 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07373737373737374 - nodes in this community are weakly interconnected._

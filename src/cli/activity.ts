@@ -1,9 +1,7 @@
-import type { BotState } from "./tui.ts";
-
 export type ActivityLog = (component: string, message: string) => void;
 
 export function createActivityLog(
-  onUpdate?: (update: Partial<BotState>) => void,
+  onUpdate?: (update: Record<string, unknown>) => void,
   quiet?: boolean,
 ): ActivityLog {
   return (component, message) => {
