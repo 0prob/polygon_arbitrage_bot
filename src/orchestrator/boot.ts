@@ -182,8 +182,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   // Trigger pool discovery and await before hydration
   await Promise.all([
-    discoveryService.discoverProtocol("balancer").catch(logger.error),
-    discoveryService.discoverProtocol("curve").catch(logger.error),
+    discoveryService.discoverProtocol("balancer").catch((err) => logger.error(err)),
+    discoveryService.discoverProtocol("curve").catch((err) => logger.error(err)),
   ]);
 
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
