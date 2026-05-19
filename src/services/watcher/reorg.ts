@@ -46,7 +46,10 @@ export function createDbRollbackRegistry(db: CompatDatabase): {
         protocol: String(meta.protocol ?? ""),
         token0: (tokens[0] ?? "") as Address,
         token1: (tokens[1] ?? "") as Address,
-        metadata: (meta.metadata as Record<string, unknown>) ?? {},
+        metadata: {
+          ...((meta.metadata as Record<string, unknown>) ?? {}),
+          tokens,
+        },
       } as WatcherPoolMeta;
     },
   };

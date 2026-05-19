@@ -18,7 +18,7 @@ export function upsertPoolMeta(db: CompatDatabase, pool: Record<string, unknown>
   return stmt.run(
     pool.address as string,
     pool.protocol as string,
-    stringifyWithBigInt(pool.tokens ?? []),
+    typeof pool.tokens === "string" ? pool.tokens : stringifyWithBigInt(pool.tokens ?? []),
     (pool.block ?? pool.created_block ?? 0) as number,
     (pool.tx ?? "") as string,
     stringifyWithBigInt(pool.metadata ?? {}),

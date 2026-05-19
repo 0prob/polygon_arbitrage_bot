@@ -1,0 +1,85 @@
+<h2>My Recommendation: Targeted HyperIndex Ingestion</h2>
+<p class="subtitle">Framed around your exact problem: limited RPC endpoints → poor hydration → stale state → missed profit</p>
+
+<div class="section">
+  <h3>The core insight</h3>
+  <p>RPC polling is the bottleneck for profitable arbitrage. HyperSync gives you <strong>~2000x faster</strong> historical data, and event-driven updates eliminate RPC polling entirely for the hot path.</p>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;">
+  <div style="background:#1a1a2e; border-radius:8px; padding:12px;">
+    <div style="color:#e94560; font-weight:bold; margin-bottom:8px;">Current: RPC-heavy</div>
+    <ul style="margin:0; padding-left:16px; font-size:13px; line-height:1.8;">
+      <li><code>getReserves()</code> every poll</li>
+      <li><code>slot0()</code> every poll</li>
+      <li><code>liquidity()</code> every poll</li>
+      <li><code>decimals()</code> on discovery</li>
+      <li><code>balances(i)</code> for Curve</li>
+      <li><code>getPoolTokens()</code> for Balancer</li>
+    </ul>
+    <div style="margin-top:8px; color:#e94560;">~10-20 RPC calls per pool per refresh</div>
+  </div>
+  <div style="background:#1a1a2e; border-radius:8px; padding:12px;">
+    <div style="color:#4ecca3; font-weight:bold; margin-bottom:8px;">Proposed: Event-driven</div>
+    <ul style="margin:0; padding-left:16px; font-size:13px; line-height:1.8;">
+      <li><code>Sync</code> event → reserves ✓</li>
+      <li><code>Swap</code> event → sqrtPriceX96 + liq ✓</li>
+      <li>Decimals via <code>createEffect</code> (cached)</li>
+      <li>Curve A/fee via <code>createEffect</code> (cached)</li>
+      <li>Balancer via <code>createEffect</code> (cached)</li>
+    </ul>
+    <div style="margin-top:8px; color:#4ecca3;">~0-2 RPC calls per pool (one-time metadata)</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;">
+  <h3>What this looks like</h3>
+  <div style="background:#1a1a2e; border-radius:8px; padding:16px; font-family:monospace; font-size:13px; line-height:1.8; color:#ccc;">
+    <div style="color:#4ecca3;">// config.yaml — contracts + chain config</div>
+    <div style="color:#4ecca3;">// schema.graphql — PoolState entities</div>
+    <div style="color:#888;">...</div><br/>
+    <div style="color:#4ecca3;">// handlers.ts — event-driven state</div>
+    <div style="color:#4ecca3;">contractRegister</div>
+    <div>  PairCreated (V2) → track pool address</div>
+    <div>  PoolCreated (V3) → track pool address</div>
+    <div>  PoolAdded (Curve) → track pool address</div>
+    <br/>
+    <div style="color:#4ecca3;">onEvent(wildcard:true)</div>
+    <div>  Sync → { reserve0, reserve1 } → DB</div>
+    <div>  Swap → { sqrtPriceX96, liquidity } → DB</div>
+    <br/>
+    <div style="color:#4ecca3;">createEffect (RPC, cached, rate-limited)</div>
+    <div>  tokenDecimals → cache (never re-fetch)</div>
+    <div>  curveA, curveFee → cache (rarely changes)</div>
+    <div>  balancerPoolTokens → cache</div>
+    <br/>
+    <div style="color:#888;">// Strategy engine (unchanged)</div>
+    <div style="color:#533483;">pass_loop reads PoolState from DB instead of in-memory Map</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;">
+  <h3>Trade-offs</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Pros</h4>
+      <ul>
+        <li>Zero RPC polling for live pool state</li>
+        <li>Auto-dedup + caching + rate limiting via createEffect</li>
+        <li>Reorg-safe (HyperIndex handles it)</li>
+        <li>Typed handlers (no manual decoding)</li>
+        <li>Strategy engine completely unchanged</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Cons</h4>
+      <ul>
+        <li>Must adopt HyperIndex project structure (~5 new files)</li>
+        <li>DB-based state sharing (instead of in-memory Map)</li>
+        <li>Learning curve for config.yaml + schema.graphql</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:24px; color:#888;">This is <strong>not</strong> a full rewrite — ~300 lines of new code, ~500 lines removed. The strategy, execution, mempool, CLI, and config stay untouched.</p>

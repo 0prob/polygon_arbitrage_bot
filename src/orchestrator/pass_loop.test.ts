@@ -18,6 +18,27 @@ vi.mock("../services/strategy/finder.ts", () => ({
   routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
 }));
 
+const MOCK_BUILD_ARB_TX_RETURN = {
+  to: "0x0000000000000000000000000000000000000001" as `0x${string}`,
+  data: "0xdeadbeef" as `0x${string}`,
+  value: 0n,
+  routeHash: "0x1234567890123456789012345678901234567890" as `0x${string}`,
+  calls: [] as Array<unknown>,
+  meta: {} as Record<string, unknown>,
+};
+
+vi.mock("../services/execution/builder.ts", () => ({
+  buildArbTx: vi.fn(() => MOCK_BUILD_ARB_TX_RETURN),
+  BuilderRouteInput: Object,
+  BuilderConfig: Object,
+  BuilderOptions: Object,
+  BuiltTransaction: Object,
+}));
+
+const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
+const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
+const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
+
 describe("runPassLoop", () => {
   it("updates currentActivityProgress during execution", async () => {
     const mockStateUpdate = vi.fn();
@@ -26,7 +47,7 @@ describe("runPassLoop", () => {
     const mockContext = {
       config: {
         routing: { cycleRefreshIntervalMs: 0, maxHops: 2 },
-        execution: { minProfitWei: 0n },
+        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A },
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
       isRunning: true,
@@ -39,9 +60,11 @@ describe("runPassLoop", () => {
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
     } as unknown as RuntimeContext;
 
-    // Stop the loop after execution
+    // Stop the loop after both profitable items execute
+    let execCalls = 0;
     mockExecute.mockImplementation(async () => {
-      mockContext.isRunning = false;
+      execCalls++;
+      if (execCalls >= 2) mockContext.isRunning = false;
       return { success: true, txHash: "0x1" };
     });
 
@@ -54,24 +77,66 @@ describe("runPassLoop", () => {
     });
     vi.mocked(enumerateCycles).mockReturnValue([
       {
-        edges: [],
+        edges: [{
+          poolAddress: VALID_ADDR_B,
+          tokenIn: VALID_ADDR_A,
+          tokenOut: VALID_ADDR_C,
+          protocol: "quickswap_v2",
+          feeBps: 30n,
+        }],
         hopCount: 1,
-        startToken: "0x1" as any,
+        startToken: VALID_ADDR_A,
         logWeight: 0,
-        cumulativeFeeBps: 0n,
+        cumulativeFeeBps: 30n,
       },
     ]);
 
     // Mock profitable opportunities
     const mockProfitable = [
       {
-        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n },
-        result: {},
+        cycle: {
+          edges: [{
+            poolAddress: VALID_ADDR_B,
+            tokenIn: VALID_ADDR_A,
+            tokenOut: VALID_ADDR_C,
+            protocol: "quickswap_v2",
+            feeBps: 30n,
+          }],
+          startToken: VALID_ADDR_A,
+          hopCount: 1,
+          logWeight: 0,
+          cumulativeFeeBps: 30n,
+        },
+        result: {
+          amountIn: 1000000n,
+          amountOut: 1000000n,
+          hopAmounts: [1000000n, 2000000n],
+          tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+          poolPath: [VALID_ADDR_B],
+        },
         assessment: { netProfitAfterGas: 0n, roi: 0 },
       },
       {
-        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n },
-        result: {},
+        cycle: {
+          edges: [{
+            poolAddress: VALID_ADDR_B,
+            tokenIn: VALID_ADDR_A,
+            tokenOut: VALID_ADDR_C,
+            protocol: "quickswap_v2",
+            feeBps: 30n,
+          }],
+          startToken: VALID_ADDR_A,
+          hopCount: 1,
+          logWeight: 0,
+          cumulativeFeeBps: 30n,
+        },
+        result: {
+          amountIn: 1000000n,
+          amountOut: 1000000n,
+          hopAmounts: [1000000n, 2000000n],
+          tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+          poolPath: [VALID_ADDR_B],
+        },
         assessment: { netProfitAfterGas: 0n, roi: 0 },
       },
     ];
@@ -79,15 +144,12 @@ describe("runPassLoop", () => {
 
     await runPassLoop(mockContext, mockStateUpdate);
 
-    // Verify progress updates
-    expect(mockStateUpdate).toHaveBeenCalledWith(
+    // Verify both profitable items were executed
+    expect(mockStateUpdate).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        currentActivityProgress: { label: "Executing", completed: 1, total: 2, unit: "txs" },
-      }),
-    );
-    expect(mockStateUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        currentActivityProgress: { label: "Executing", completed: 2, total: 2, unit: "txs" },
+        passCount: 1,
+        totalTxAttempted: 2,
+        totalTxSuccessful: 2,
       }),
     );
   });

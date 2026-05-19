@@ -1,0 +1,31 @@
+<h2>createEffect has a catch...</h2>
+<p class="subtitle"><code>createEffect</code> is part of the HyperIndex framework runtime — it requires <code>config.yaml</code>, <code>indexer.onEvent</code> handlers, and the full framework lifecycle. You can't import it standalone.</p>
+
+<div class="section" style="margin-top:16px;">
+  <p>So "createEffect Only" really means one of these:</p>
+  <div class="options">
+    <div class="option" data-choice="build-effect" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Build our own Effect system</h3>
+        <p>Replace <code>mapWithConcurrency</code> + LRU cache + retry with a typed, batched, auto-dedup RPC effect layer. Same pattern as createEffect but homegrown. No framework migration.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="minimal-hyperindex" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Minimal HyperIndex setup (effects + SQLite only)</h3>
+        <p>Set up a minimal HyperIndex project that only handles RPC effects and writes pool state to a shared SQLite DB. The bot's pass loop reads from the DB. No event handlers.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="just-bun" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Just Bun + keep current architecture</h3>
+        <p>Switch to Bun runtime for faster startup. Replace <code>mapWithConcurrency</code> with Bun's native <code>Promise.allSettled</code> + concurrency patterns. Keep everything else as-is.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:24px; color:#888;">Which sounds right? Or is there something specific about createEffect you want?</p>
