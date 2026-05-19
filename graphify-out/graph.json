@@ -4,445 +4,1660 @@
   "graph": {},
   "nodes": [
     {
+      "label": "2026-05-19-hyperindex-ingestion-layer.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1",
+      "id": "docs_superpowers_plans_2026_05_19_hyperindex_ingestion_layer_md",
+      "community": 104,
+      "norm_label": "2026-05-19-hyperindex-ingestion-layer.md"
+    },
+    {
+      "label": "HyperIndex Ingestion Layer Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_hyperindex_ingestion_layer_implementation_plan",
+      "community": 104,
+      "norm_label": "hyperindex ingestion layer implementation plan"
+    },
+    {
+      "label": "File Structure",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L13",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "community": 104,
+      "norm_label": "file structure"
+    },
+    {
+      "label": "code:block1 (hyperindex/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L15",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_1",
+      "community": 104,
+      "norm_label": "code:block1 (hyperindex/)"
+    },
+    {
+      "label": "Task 1: Create HyperIndex project scaffolding",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L57",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "community": 107,
+      "norm_label": "task 1: create hyperindex project scaffolding"
+    },
+    {
+      "label": "code:json ({)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L66",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_2",
+      "community": 107,
+      "norm_label": "code:json ({)"
+    },
+    {
+      "label": "code:json ({)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L87",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_3",
+      "community": 107,
+      "norm_label": "code:json ({)"
+    },
+    {
+      "label": "code:block4 (node_modules/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L103",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_4",
+      "community": 107,
+      "norm_label": "code:block4 (node_modules/)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/package.json hyperindex/tsconfig.json hyp)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L117",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_5",
+      "community": 107,
+      "norm_label": "code:bash (git add hyperindex/package.json hyperindex/tsconfig.json hyp)"
+    },
+    {
+      "label": "Task 2: Create ABI JSON files",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L124",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "community": 103,
+      "norm_label": "task 2: create abi json files"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L136",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_6",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L154",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_7",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L182",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_8",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L201",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_9",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L222",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_10",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:json ([)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L237",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_11",
+      "community": 103,
+      "norm_label": "code:json ([)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/abis/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L251",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_12",
+      "community": 103,
+      "norm_label": "code:bash (git add hyperindex/abis/)"
+    },
+    {
+      "label": "Task 3: Create config.yaml",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L258",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_3_create_config_yaml",
+      "community": 110,
+      "norm_label": "task 3: create config.yaml"
+    },
+    {
+      "label": "code:yaml (name: arb_bot_ingestion)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L267",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_13",
+      "community": 110,
+      "norm_label": "code:yaml (name: arb_bot_ingestion)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/config.yaml)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L379",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_14",
+      "community": 110,
+      "norm_label": "code:bash (git add hyperindex/config.yaml)"
+    },
+    {
+      "label": "Task 4: Create schema.graphql",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L386",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_4_create_schema_graphql",
+      "community": 111,
+      "norm_label": "task 4: create schema.graphql"
+    },
+    {
+      "label": "code:graphql (type PoolMeta {)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L393",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_15",
+      "community": 111,
+      "norm_label": "code:graphql (type poolmeta {)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/schema.graphql)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L453",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_16",
+      "community": 111,
+      "norm_label": "code:bash (git add hyperindex/schema.graphql)"
+    },
+    {
+      "label": "Task 5: Write V2 factory handler (contractRegister)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L460",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_5_write_v2_factory_handler_contractregister",
+      "community": 112,
+      "norm_label": "task 5: write v2 factory handler (contractregister)"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L469",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_17",
+      "community": 112,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/v2_factory.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L513",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_18",
+      "community": 112,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/v2_factory.ts)"
+    },
+    {
+      "label": "Task 6: Write V2 pool handler (Sync/Swap \u2192 state)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L520",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_6_write_v2_pool_handler_sync_swap_state",
+      "community": 113,
+      "norm_label": "task 6: write v2 pool handler (sync/swap \u2192 state)"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L527",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_19",
+      "community": 113,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/v2_pool.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L565",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_20",
+      "community": 113,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/v2_pool.ts)"
+    },
+    {
+      "label": "Task 7: Write V3 factory handler (contractRegister)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L572",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_7_write_v3_factory_handler_contractregister",
+      "community": 114,
+      "norm_label": "task 7: write v3 factory handler (contractregister)"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L579",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_21",
+      "community": 114,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/v3_factory.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L612",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_22",
+      "community": 114,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/v3_factory.ts)"
+    },
+    {
+      "label": "Task 8: Write V3 pool handler (Swap \u2192 state)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L619",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_8_write_v3_pool_handler_swap_state",
+      "community": 115,
+      "norm_label": "task 8: write v3 pool handler (swap \u2192 state)"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L626",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_23",
+      "community": 115,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/v3_pool.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L646",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_24",
+      "community": 115,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/v3_pool.ts)"
+    },
+    {
+      "label": "Task 9: Write Curve factory handler",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L653",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_9_write_curve_factory_handler",
+      "community": 116,
+      "norm_label": "task 9: write curve factory handler"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L660",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_25",
+      "community": 116,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/curve_factory.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L684",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_26",
+      "community": 116,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/curve_factory.ts)"
+    },
+    {
+      "label": "Task 10: Write Curve pool handler",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L691",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_10_write_curve_pool_handler",
+      "community": 117,
+      "norm_label": "task 10: write curve pool handler"
+    },
+    {
+      "label": "code:typescript (import { indexer } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L698",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_27",
+      "community": 117,
+      "norm_label": "code:typescript (import { indexer } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/handlers/curve_pool.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L721",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_28",
+      "community": 117,
+      "norm_label": "code:bash (git add hyperindex/src/handlers/curve_pool.ts)"
+    },
+    {
+      "label": "Task 11: Write createEffect functions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L728",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "community": 108,
+      "norm_label": "task 11: write createeffect functions"
+    },
+    {
+      "label": "code:typescript (import { createEffect, S } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L737",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_29",
+      "community": 108,
+      "norm_label": "code:typescript (import { createeffect, s } from \"envio\";)"
+    },
+    {
+      "label": "code:typescript (import { createEffect, S } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L774",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_30",
+      "community": 108,
+      "norm_label": "code:typescript (import { createeffect, s } from \"envio\";)"
+    },
+    {
+      "label": "code:typescript (import { createEffect, S } from \"envio\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L820",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_31",
+      "community": 108,
+      "norm_label": "code:typescript (import { createeffect, s } from \"envio\";)"
+    },
+    {
+      "label": "code:bash (git add hyperindex/src/effects/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L871",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_32",
+      "community": 108,
+      "norm_label": "code:bash (git add hyperindex/src/effects/)"
+    },
+    {
+      "label": "Task 12: Integrate pass loop with HyperIndex DB",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L878",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "community": 106,
+      "norm_label": "task 12: integrate pass loop with hyperindex db"
+    },
+    {
+      "label": "code:typescript (// In boot.ts, add after the DB initialization:)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L890",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_33",
+      "community": 106,
+      "norm_label": "code:typescript (// in boot.ts, add after the db initialization:)"
+    },
+    {
+      "label": "code:typescript (const getPools = (): PoolMeta[] => {)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L929",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_34",
+      "community": 106,
+      "norm_label": "code:typescript (const getpools = (): poolmeta[] => {)"
+    },
+    {
+      "label": "code:typescript (// At the top of pass_loop.ts or as a helper)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L974",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_35",
+      "community": 106,
+      "norm_label": "code:typescript (// at the top of pass_loop.ts or as a helper)"
+    },
+    {
+      "label": "code:typescript (// Remove these lines:)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1001",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_36",
+      "community": 106,
+      "norm_label": "code:typescript (// remove these lines:)"
+    },
+    {
+      "label": "code:bash (git add src/orchestrator/boot.ts src/orchestrator/pass_loop.)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1018",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_37",
+      "community": 106,
+      "norm_label": "code:bash (git add src/orchestrator/boot.ts src/orchestrator/pass_loop.)"
+    },
+    {
+      "label": "Task 13: Clean up old services",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1025",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_13_clean_up_old_services",
+      "community": 118,
+      "norm_label": "task 13: clean up old services"
+    },
+    {
+      "label": "code:bash (git rm -r src/services/discovery/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1037",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_38",
+      "community": 118,
+      "norm_label": "code:bash (git rm -r src/services/discovery/)"
+    },
+    {
+      "label": "code:bash (git add -A)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1057",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_39",
+      "community": 118,
+      "norm_label": "code:bash (git add -a)"
+    },
+    {
+      "label": "Task 14: Switch to Bun runtime",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1064",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_14_switch_to_bun_runtime",
+      "community": 104,
+      "norm_label": "task 14: switch to bun runtime"
+    },
+    {
+      "label": "code:json ({)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1071",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_40",
+      "community": 104,
+      "norm_label": "code:json ({)"
+    },
+    {
+      "label": "code:bash (git add package.json)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1093",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_41",
+      "community": 104,
+      "norm_label": "code:bash (git add package.json)"
+    },
+    {
+      "label": "Task 15: End-to-end integration test",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1100",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "community": 109,
+      "norm_label": "task 15: end-to-end integration test"
+    },
+    {
+      "label": "code:typescript (import { spawn, type ChildProcess } from \"child_process\";)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1107",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_42",
+      "community": 109,
+      "norm_label": "code:typescript (import { spawn, type childprocess } from \"child_process\";)"
+    },
+    {
+      "label": "code:typescript (// In main.ts boot sequence:)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1139",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_43",
+      "community": 109,
+      "norm_label": "code:typescript (// in main.ts boot sequence:)"
+    },
+    {
+      "label": "code:block44 (hyperindex/.hyperindex/)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1149",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_44",
+      "community": 109,
+      "norm_label": "code:block44 (hyperindex/.hyperindex/)"
+    },
+    {
+      "label": "code:bash (git add src/cli/main.ts)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1156",
+      "id": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_45",
+      "community": 109,
+      "norm_label": "code:bash (git add src/cli/main.ts)"
+    },
+    {
+      "label": "runner.ts",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L1",
+      "id": "src_diagnostic_runner_ts",
+      "community": 12,
+      "norm_label": "runner.ts"
+    },
+    {
+      "label": "DIAG_RESULTS",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L7",
+      "id": "diagnostic_runner_diag_results",
+      "community": 12,
+      "norm_label": "diag_results"
+    },
+    {
+      "label": "diag()",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L8",
+      "id": "diagnostic_runner_diag",
+      "community": 12,
+      "norm_label": "diag()"
+    },
+    {
+      "label": "Address",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L21",
+      "id": "diagnostic_runner_address",
+      "community": 12,
+      "norm_label": "address"
+    },
+    {
+      "label": "ZERO_ADDR",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L24",
+      "id": "diagnostic_runner_zero_addr",
+      "community": 12,
+      "norm_label": "zero_addr"
+    },
+    {
+      "label": "ADDR_A",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L25",
+      "id": "diagnostic_runner_addr_a",
+      "community": 12,
+      "norm_label": "addr_a"
+    },
+    {
+      "label": "ADDR_B",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L26",
+      "id": "diagnostic_runner_addr_b",
+      "community": 12,
+      "norm_label": "addr_b"
+    },
+    {
+      "label": "ADDR_C",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L27",
+      "id": "diagnostic_runner_addr_c",
+      "community": 12,
+      "norm_label": "addr_c"
+    },
+    {
+      "label": "EXECUTOR",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L28",
+      "id": "diagnostic_runner_executor",
+      "community": 12,
+      "norm_label": "executor"
+    },
+    {
+      "label": "BASE_ENV",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L34",
+      "id": "diagnostic_runner_base_env",
+      "community": 12,
+      "norm_label": "base_env"
+    },
+    {
+      "label": "diagConfig",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L43",
+      "id": "diagnostic_runner_diagconfig",
+      "community": 12,
+      "norm_label": "diagconfig"
+    },
+    {
+      "label": "diagConfigEdgeCases",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L49",
+      "id": "diagnostic_runner_diagconfigedgecases",
+      "community": 12,
+      "norm_label": "diagconfigedgecases"
+    },
+    {
+      "label": "diagDbSchema",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L70",
+      "id": "diagnostic_runner_diagdbschema",
+      "community": 12,
+      "norm_label": "diagdbschema"
+    },
+    {
+      "label": "diagDbCrud",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L81",
+      "id": "diagnostic_runner_diagdbcrud",
+      "community": 12,
+      "norm_label": "diagdbcrud"
+    },
+    {
+      "label": "diagMathMulDiv",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L116",
+      "id": "diagnostic_runner_diagmathmuldiv",
+      "community": 12,
+      "norm_label": "diagmathmuldiv"
+    },
+    {
+      "label": "diagMathTick",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L127",
+      "id": "diagnostic_runner_diagmathtick",
+      "community": 12,
+      "norm_label": "diagmathtick"
+    },
+    {
+      "label": "diagMathV2",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L136",
+      "id": "diagnostic_runner_diagmathv2",
+      "community": 12,
+      "norm_label": "diagmathv2"
+    },
+    {
+      "label": "diagMathV3Simulate",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L152",
+      "id": "diagnostic_runner_diagmathv3simulate",
+      "community": 12,
+      "norm_label": "diagmathv3simulate"
+    },
+    {
+      "label": "diagMathV3SwapStep",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L169",
+      "id": "diagnostic_runner_diagmathv3swapstep",
+      "community": 12,
+      "norm_label": "diagmathv3swapstep"
+    },
+    {
+      "label": "diagProfitBasic",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "id": "diagnostic_runner_diagprofitbasic",
+      "community": 12,
+      "norm_label": "diagprofitbasic"
+    },
+    {
+      "label": "diagProfitRoi",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L205",
+      "id": "diagnostic_runner_diagprofitroi",
+      "community": 12,
+      "norm_label": "diagprofitroi"
+    },
+    {
+      "label": "diagGraphBasic",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L233",
+      "id": "diagnostic_runner_diaggraphbasic",
+      "community": 12,
+      "norm_label": "diaggraphbasic"
+    },
+    {
+      "label": "diagCyclesBasic",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L248",
+      "id": "diagnostic_runner_diagcyclesbasic",
+      "community": 12,
+      "norm_label": "diagcyclesbasic"
+    },
+    {
+      "label": "diagPipeline",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L265",
+      "id": "diagnostic_runner_diagpipeline",
+      "community": 12,
+      "norm_label": "diagpipeline"
+    },
+    {
+      "label": "diagTxBuilder",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L296",
+      "id": "diagnostic_runner_diagtxbuilder",
+      "community": 12,
+      "norm_label": "diagtxbuilder"
+    },
+    {
+      "label": "diagStateOps",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L321",
+      "id": "diagnostic_runner_diagstateops",
+      "community": 12,
+      "norm_label": "diagstateops"
+    },
+    {
+      "label": "diagValidatePoolState",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L337",
+      "id": "diagnostic_runner_diagvalidatepoolstate",
+      "community": 12,
+      "norm_label": "diagvalidatepoolstate"
+    },
+    {
+      "label": "diagRpcClassifiers",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L349",
+      "id": "diagnostic_runner_diagrpcclassifiers",
+      "community": 12,
+      "norm_label": "diagrpcclassifiers"
+    },
+    {
+      "label": "diagDecoderBasic",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L364",
+      "id": "diagnostic_runner_diagdecoderbasic",
+      "community": 12,
+      "norm_label": "diagdecoderbasic"
+    },
+    {
+      "label": "diagDecoderV3",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L380",
+      "id": "diagnostic_runner_diagdecoderv3",
+      "community": 12,
+      "norm_label": "diagdecoderv3"
+    },
+    {
+      "label": "diagDecoderBalancer",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L393",
+      "id": "diagnostic_runner_diagdecoderbalancer",
+      "community": 12,
+      "norm_label": "diagdecoderbalancer"
+    },
+    {
+      "label": "diagDecoderCurve",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L405",
+      "id": "diagnostic_runner_diagdecodercurve",
+      "community": 12,
+      "norm_label": "diagdecodercurve"
+    },
+    {
+      "label": "diagCalldata",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L421",
+      "id": "diagnostic_runner_diagcalldata",
+      "community": 12,
+      "norm_label": "diagcalldata"
+    },
+    {
+      "label": "diagSimulateV2",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L456",
+      "id": "diagnostic_runner_diagsimulatev2",
+      "community": 12,
+      "norm_label": "diagsimulatev2"
+    },
+    {
+      "label": "diagSimulateBalancer",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L461",
+      "id": "diagnostic_runner_diagsimulatebalancer",
+      "community": 12,
+      "norm_label": "diagsimulatebalancer"
+    },
+    {
+      "label": "diagSimulateCurve",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L467",
+      "id": "diagnostic_runner_diagsimulatecurve",
+      "community": 12,
+      "norm_label": "diagsimulatecurve"
+    },
+    {
+      "label": "diagCoreIdentity",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L480",
+      "id": "diagnostic_runner_diagcoreidentity",
+      "community": 12,
+      "norm_label": "diagcoreidentity"
+    },
+    {
+      "label": "diagCoreBigint",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L488",
+      "id": "diagnostic_runner_diagcorebigint",
+      "community": 12,
+      "norm_label": "diagcorebigint"
+    },
+    {
+      "label": "diagCoreConcurrency",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L495",
+      "id": "diagnostic_runner_diagcoreconcurrency",
+      "community": 12,
+      "norm_label": "diagcoreconcurrency"
+    },
+    {
+      "label": "diagScorer",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L508",
+      "id": "diagnostic_runner_diagscorer",
+      "community": 12,
+      "norm_label": "diagscorer"
+    },
+    {
+      "label": "diagRiskHelpers",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L518",
+      "id": "diagnostic_runner_diagriskhelpers",
+      "community": 12,
+      "norm_label": "diagriskhelpers"
+    },
+    {
+      "label": "diagProtocolHelpers",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L538",
+      "id": "diagnostic_runner_diagprotocolhelpers",
+      "community": 12,
+      "norm_label": "diagprotocolhelpers"
+    },
+    {
+      "label": "diagRouteCache",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L565",
+      "id": "diagnostic_runner_diagroutecache",
+      "community": 12,
+      "norm_label": "diagroutecache"
+    },
+    {
+      "label": "diagFeeResolvers",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L592",
+      "id": "diagnostic_runner_diagfeeresolvers",
+      "community": 12,
+      "norm_label": "diagfeeresolvers"
+    },
+    {
+      "label": "diagCodec",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L603",
+      "id": "diagnostic_runner_diagcodec",
+      "community": 12,
+      "norm_label": "diagcodec"
+    },
+    {
+      "label": "diagEndToEnd",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L621",
+      "id": "diagnostic_runner_diagendtoend",
+      "community": 12,
+      "norm_label": "diagendtoend"
+    },
+    {
+      "label": "ALL_TESTS",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L657",
+      "id": "diagnostic_runner_all_tests",
+      "community": 12,
+      "norm_label": "all_tests"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L696",
+      "id": "diagnostic_runner_main",
+      "community": 12,
+      "norm_label": "main()"
+    },
+    {
+      "label": "pools.ts",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L1",
+      "id": "src_infra_db_pools_ts",
+      "community": 66,
+      "norm_label": "pools.ts"
+    },
+    {
+      "label": "upsertPoolMeta()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L4",
+      "id": "db_pools_upsertpoolmeta",
+      "community": 66,
+      "norm_label": "upsertpoolmeta()"
+    },
+    {
+      "label": "getPoolMeta()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L30",
+      "id": "db_pools_getpoolmeta",
+      "community": 49,
+      "norm_label": "getpoolmeta()"
+    },
+    {
+      "label": "getAllActivePools()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L36",
+      "id": "db_pools_getallactivepools",
+      "community": 66,
+      "norm_label": "getallactivepools()"
+    },
+    {
+      "label": "getPoolsByProtocol()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L44",
+      "id": "db_pools_getpoolsbyprotocol",
+      "community": 66,
+      "norm_label": "getpoolsbyprotocol()"
+    },
+    {
+      "label": "updatePoolStatus()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L52",
+      "id": "db_pools_updatepoolstatus",
+      "community": 66,
+      "norm_label": "updatepoolstatus()"
+    },
+    {
+      "label": "upsertPoolState()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L57",
+      "id": "db_pools_upsertpoolstate",
+      "community": 66,
+      "norm_label": "upsertpoolstate()"
+    },
+    {
+      "label": "getPoolState()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L70",
+      "id": "db_pools_getpoolstate",
+      "community": 66,
+      "norm_label": "getpoolstate()"
+    },
+    {
+      "label": "getAllPoolStates()",
+      "file_type": "code",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L84",
+      "id": "db_pools_getallpoolstates",
+      "community": 20,
+      "norm_label": "getallpoolstates()"
+    },
+    {
+      "label": "pass_loop.test.ts",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L1",
+      "id": "src_orchestrator_pass_loop_test_ts",
+      "community": 76,
+      "norm_label": "pass_loop.test.ts"
+    },
+    {
+      "label": "MOCK_BUILD_ARB_TX_RETURN",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L21",
+      "id": "orchestrator_pass_loop_test_mock_build_arb_tx_return",
+      "community": 76,
+      "norm_label": "mock_build_arb_tx_return"
+    },
+    {
+      "label": "mockStateUpdate",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L44",
+      "id": "orchestrator_pass_loop_test_mockstateupdate",
+      "community": 76,
+      "norm_label": "mockstateupdate"
+    },
+    {
+      "label": "mockExecute",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L45",
+      "id": "orchestrator_pass_loop_test_mockexecute",
+      "community": 76,
+      "norm_label": "mockexecute"
+    },
+    {
+      "label": "mockContext",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L47",
+      "id": "orchestrator_pass_loop_test_mockcontext",
+      "community": 76,
+      "norm_label": "mockcontext"
+    },
+    {
+      "label": "mockProfitable",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L95",
+      "id": "orchestrator_pass_loop_test_mockprofitable",
+      "community": 76,
+      "norm_label": "mockprofitable"
+    },
+    {
+      "label": "reorg.ts",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L1",
+      "id": "src_services_watcher_reorg_ts",
+      "community": 49,
+      "norm_label": "reorg.ts"
+    },
+    {
+      "label": "RollbackGuard",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L8",
+      "id": "watcher_reorg_rollbackguard",
+      "community": 49,
+      "norm_label": "rollbackguard"
+    },
+    {
+      "label": "ReorgResult",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L10",
+      "id": "watcher_reorg_reorgresult",
+      "community": 49,
+      "norm_label": "reorgresult"
+    },
+    {
+      "label": "createDbRollbackRegistry()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L16",
+      "id": "watcher_reorg_createdbrollbackregistry",
+      "community": 20,
+      "norm_label": "createdbrollbackregistry()"
+    },
+    {
+      "label": "pick()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L58",
+      "id": "watcher_reorg_pick",
+      "community": 49,
+      "norm_label": "pick()"
+    },
+    {
+      "label": "storedRollbackGuard()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L64",
+      "id": "watcher_reorg_storedrollbackguard",
+      "community": 49,
+      "norm_label": "storedrollbackguard()"
+    },
+    {
+      "label": "detectReorg()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L71",
+      "id": "watcher_reorg_detectreorg",
+      "community": 49,
+      "norm_label": "detectreorg()"
+    },
+    {
+      "label": "checkReorg()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L97",
+      "id": "watcher_reorg_checkreorg",
+      "community": 49,
+      "norm_label": "checkreorg()"
+    },
+    {
+      "label": "rollbackToBlock()",
+      "file_type": "code",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L114",
+      "id": "watcher_reorg_rollbacktoblock",
+      "community": 49,
+      "norm_label": "rollbacktoblock()"
+    },
+    {
       "label": "package.json",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L1",
-      "id": "hyperindex_package_json",
       "community": 0,
-      "norm_label": "package.json"
+      "norm_label": "package.json",
+      "id": "hyperindex_package_json"
     },
     {
       "label": "name",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L2",
-      "id": "hyperindex_package_name",
       "community": 0,
-      "norm_label": "name"
+      "norm_label": "name",
+      "id": "hyperindex_package_name"
     },
     {
       "label": "private",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L3",
-      "id": "hyperindex_package_private",
       "community": 0,
-      "norm_label": "private"
+      "norm_label": "private",
+      "id": "hyperindex_package_private"
     },
     {
       "label": "scripts",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L4",
-      "id": "hyperindex_package_scripts",
       "community": 0,
-      "norm_label": "scripts"
+      "norm_label": "scripts",
+      "id": "hyperindex_package_scripts"
     },
     {
       "label": "codegen",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L5",
-      "id": "hyperindex_package_scripts_codegen",
       "community": 0,
-      "norm_label": "codegen"
+      "norm_label": "codegen",
+      "id": "hyperindex_package_scripts_codegen"
     },
     {
       "label": "dev",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L6",
-      "id": "hyperindex_package_scripts_dev",
       "community": 0,
-      "norm_label": "dev"
+      "norm_label": "dev",
+      "id": "hyperindex_package_scripts_dev"
     },
     {
       "label": "run",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L7",
-      "id": "hyperindex_package_scripts_run",
       "community": 0,
-      "norm_label": "run"
+      "norm_label": "run",
+      "id": "hyperindex_package_scripts_run"
     },
     {
       "label": "dependencies",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L9",
-      "id": "hyperindex_package_dependencies",
       "community": 0,
-      "norm_label": "dependencies"
+      "norm_label": "dependencies",
+      "id": "hyperindex_package_dependencies"
     },
     {
       "label": "envio",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L10",
-      "id": "hyperindex_package_dependencies_envio",
       "community": 0,
-      "norm_label": "envio"
+      "norm_label": "envio",
+      "id": "hyperindex_package_dependencies_envio"
     },
     {
       "label": "viem",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L11",
-      "id": "hyperindex_package_dependencies_viem",
       "community": 0,
-      "norm_label": "viem"
+      "norm_label": "viem",
+      "id": "hyperindex_package_dependencies_viem"
     },
     {
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L13",
-      "id": "hyperindex_package_devdependencies",
       "community": 0,
-      "norm_label": "devdependencies"
+      "norm_label": "devdependencies",
+      "id": "hyperindex_package_devdependencies"
     },
     {
       "label": "typescript",
       "file_type": "code",
       "source_file": "hyperindex/package.json",
       "source_location": "L14",
-      "id": "hyperindex_package_devdependencies_typescript",
       "community": 0,
-      "norm_label": "typescript"
+      "norm_label": "typescript",
+      "id": "hyperindex_package_devdependencies_typescript"
     },
     {
       "label": "package.json",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L1",
-      "id": "package_json",
       "community": 0,
-      "norm_label": "package.json"
+      "norm_label": "package.json",
+      "id": "package_json"
     },
     {
       "label": "name",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L2",
-      "id": "t_package_name",
       "community": 0,
-      "norm_label": "name"
+      "norm_label": "name",
+      "id": "t_package_name"
     },
     {
       "label": "version",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L3",
-      "id": "t_package_version",
       "community": 0,
-      "norm_label": "version"
+      "norm_label": "version",
+      "id": "t_package_version"
     },
     {
       "label": "type",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L4",
-      "id": "t_package_type",
       "community": 0,
-      "norm_label": "type"
+      "norm_label": "type",
+      "id": "t_package_type"
     },
     {
       "label": "main",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L5",
-      "id": "t_package_main",
       "community": 0,
-      "norm_label": "main"
+      "norm_label": "main",
+      "id": "t_package_main"
     },
     {
       "label": "packageManager",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L6",
-      "id": "t_package_packagemanager",
       "community": 0,
-      "norm_label": "packagemanager"
+      "norm_label": "packagemanager",
+      "id": "t_package_packagemanager"
     },
     {
       "label": "engines",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L7",
-      "id": "t_package_engines",
       "community": 0,
-      "norm_label": "engines"
+      "norm_label": "engines",
+      "id": "t_package_engines"
     },
     {
       "label": "bun",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L8",
-      "id": "t_package_engines_bun",
       "community": 0,
-      "norm_label": "bun"
+      "norm_label": "bun",
+      "id": "t_package_engines_bun"
     },
     {
       "label": "scripts",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L10",
-      "id": "t_package_scripts",
       "community": 0,
-      "norm_label": "scripts"
+      "norm_label": "scripts",
+      "id": "t_package_scripts"
     },
     {
       "label": "start",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L11",
-      "id": "t_package_scripts_start",
       "community": 0,
-      "norm_label": "start"
+      "norm_label": "start",
+      "id": "t_package_scripts_start"
     },
     {
       "label": "start:tui",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L12",
-      "id": "t_package_scripts_start_tui",
       "community": 0,
-      "norm_label": "start:tui"
+      "norm_label": "start:tui",
+      "id": "t_package_scripts_start_tui"
     },
     {
       "label": "typecheck",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L13",
-      "id": "t_package_scripts_typecheck",
       "community": 0,
-      "norm_label": "typecheck"
+      "norm_label": "typecheck",
+      "id": "t_package_scripts_typecheck"
     },
     {
       "label": "test",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L14",
-      "id": "t_package_scripts_test",
       "community": 0,
-      "norm_label": "test"
+      "norm_label": "test",
+      "id": "t_package_scripts_test"
     },
     {
       "label": "test:watch",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L15",
-      "id": "t_package_scripts_test_watch",
       "community": 0,
-      "norm_label": "test:watch"
+      "norm_label": "test:watch",
+      "id": "t_package_scripts_test_watch"
     },
     {
       "label": "bench",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L16",
-      "id": "t_package_scripts_bench",
       "community": 0,
-      "norm_label": "bench"
+      "norm_label": "bench",
+      "id": "t_package_scripts_bench"
     },
     {
       "label": "lint",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L17",
-      "id": "t_package_scripts_lint",
       "community": 0,
-      "norm_label": "lint"
+      "norm_label": "lint",
+      "id": "t_package_scripts_lint"
     },
     {
       "label": "lint:fix",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L18",
-      "id": "t_package_scripts_lint_fix",
       "community": 0,
-      "norm_label": "lint:fix"
+      "norm_label": "lint:fix",
+      "id": "t_package_scripts_lint_fix"
     },
     {
       "label": "fmt",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L19",
-      "id": "t_package_scripts_fmt",
       "community": 0,
-      "norm_label": "fmt"
+      "norm_label": "fmt",
+      "id": "t_package_scripts_fmt"
     },
     {
       "label": "fmt:fix",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L20",
-      "id": "t_package_scripts_fmt_fix",
       "community": 0,
-      "norm_label": "fmt:fix"
+      "norm_label": "fmt:fix",
+      "id": "t_package_scripts_fmt_fix"
     },
     {
       "label": "hi:start",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L21",
-      "id": "t_package_scripts_hi_start",
       "community": 0,
-      "norm_label": "hi:start"
+      "norm_label": "hi:start",
+      "id": "t_package_scripts_hi_start"
     },
     {
       "label": "hi:codegen",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L22",
-      "id": "t_package_scripts_hi_codegen",
       "community": 0,
-      "norm_label": "hi:codegen"
+      "norm_label": "hi:codegen",
+      "id": "t_package_scripts_hi_codegen"
     },
     {
       "label": "dependencies",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L24",
-      "id": "t_package_dependencies",
       "community": 96,
-      "norm_label": "dependencies"
+      "norm_label": "dependencies",
+      "id": "t_package_dependencies"
     },
     {
       "label": "@envio-dev/hypersync-client",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L25",
-      "id": "t_package_dependencies_envio_dev_hypersync_client",
       "community": 96,
-      "norm_label": "@envio-dev/hypersync-client"
+      "norm_label": "@envio-dev/hypersync-client",
+      "id": "t_package_dependencies_envio_dev_hypersync_client"
     },
     {
       "label": "pino",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L26",
-      "id": "t_package_dependencies_pino",
       "community": 96,
-      "norm_label": "pino"
+      "norm_label": "pino",
+      "id": "t_package_dependencies_pino"
     },
     {
       "label": "viem",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L27",
-      "id": "t_package_dependencies_viem",
       "community": 96,
-      "norm_label": "viem"
+      "norm_label": "viem",
+      "id": "t_package_dependencies_viem"
     },
     {
       "label": "zod",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L28",
-      "id": "t_package_dependencies_zod",
       "community": 96,
-      "norm_label": "zod"
+      "norm_label": "zod",
+      "id": "t_package_dependencies_zod"
     },
     {
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L30",
-      "id": "t_package_devdependencies",
       "community": 0,
-      "norm_label": "devdependencies"
+      "norm_label": "devdependencies",
+      "id": "t_package_devdependencies"
     },
     {
       "label": "@types/node",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L31",
-      "id": "t_package_devdependencies_types_node",
       "community": 0,
-      "norm_label": "@types/node"
+      "norm_label": "@types/node",
+      "id": "t_package_devdependencies_types_node"
     },
     {
       "label": "@vitest/coverage-v8",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L32",
-      "id": "t_package_devdependencies_vitest_coverage_v8",
       "community": 0,
-      "norm_label": "@vitest/coverage-v8"
+      "norm_label": "@vitest/coverage-v8",
+      "id": "t_package_devdependencies_vitest_coverage_v8"
     },
     {
       "label": "eslint",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L33",
-      "id": "t_package_devdependencies_eslint",
       "community": 0,
-      "norm_label": "eslint"
+      "norm_label": "eslint",
+      "id": "t_package_devdependencies_eslint"
     },
     {
       "label": "eslint-config-prettier",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L34",
-      "id": "t_package_devdependencies_eslint_config_prettier",
       "community": 0,
-      "norm_label": "eslint-config-prettier"
+      "norm_label": "eslint-config-prettier",
+      "id": "t_package_devdependencies_eslint_config_prettier"
     },
     {
       "label": "fast-check",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L35",
-      "id": "t_package_devdependencies_fast_check",
       "community": 0,
-      "norm_label": "fast-check"
+      "norm_label": "fast-check",
+      "id": "t_package_devdependencies_fast_check"
     },
     {
       "label": "pino-pretty",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L36",
-      "id": "t_package_devdependencies_pino_pretty",
       "community": 0,
-      "norm_label": "pino-pretty"
+      "norm_label": "pino-pretty",
+      "id": "t_package_devdependencies_pino_pretty"
     },
     {
       "label": "prettier",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L37",
-      "id": "t_package_devdependencies_prettier",
       "community": 0,
-      "norm_label": "prettier"
+      "norm_label": "prettier",
+      "id": "t_package_devdependencies_prettier"
     },
     {
       "label": "typescript",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L38",
-      "id": "t_package_devdependencies_typescript",
       "community": 0,
-      "norm_label": "typescript"
+      "norm_label": "typescript",
+      "id": "t_package_devdependencies_typescript"
     },
     {
       "label": "typescript-eslint",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L39",
-      "id": "t_package_devdependencies_typescript_eslint",
       "community": 0,
-      "norm_label": "typescript-eslint"
+      "norm_label": "typescript-eslint",
+      "id": "t_package_devdependencies_typescript_eslint"
     },
     {
       "label": "vitest",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L40",
-      "id": "t_package_devdependencies_vitest",
       "community": 0,
-      "norm_label": "vitest"
+      "norm_label": "vitest",
+      "id": "t_package_devdependencies_vitest"
     },
     {
       "label": "main.ts",
@@ -1705,78 +2920,6 @@
       "id": "infra_db_pools_ts"
     },
     {
-      "label": "upsertPoolMeta()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L4",
-      "community": 66,
-      "norm_label": "upsertpoolmeta()",
-      "id": "db_pools_upsertpoolmeta"
-    },
-    {
-      "label": "getPoolMeta()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L30",
-      "community": 66,
-      "norm_label": "getpoolmeta()",
-      "id": "db_pools_getpoolmeta"
-    },
-    {
-      "label": "getAllActivePools()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L36",
-      "community": 66,
-      "norm_label": "getallactivepools()",
-      "id": "db_pools_getallactivepools"
-    },
-    {
-      "label": "getPoolsByProtocol()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L44",
-      "community": 66,
-      "norm_label": "getpoolsbyprotocol()",
-      "id": "db_pools_getpoolsbyprotocol"
-    },
-    {
-      "label": "updatePoolStatus()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L52",
-      "community": 66,
-      "norm_label": "updatepoolstatus()",
-      "id": "db_pools_updatepoolstatus"
-    },
-    {
-      "label": "upsertPoolState()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L57",
-      "community": 66,
-      "norm_label": "upsertpoolstate()",
-      "id": "db_pools_upsertpoolstate"
-    },
-    {
-      "label": "getPoolState()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L70",
-      "community": 66,
-      "norm_label": "getpoolstate()",
-      "id": "db_pools_getpoolstate"
-    },
-    {
-      "label": "getAllPoolStates()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L84",
-      "community": 20,
-      "norm_label": "getallpoolstates()",
-      "id": "db_pools_getallpoolstates"
-    },
-    {
       "label": "reorg.ts",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
@@ -1784,78 +2927,6 @@
       "community": 49,
       "norm_label": "reorg.ts",
       "id": "services_watcher_reorg_ts"
-    },
-    {
-      "label": "RollbackGuard",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L8",
-      "community": 49,
-      "norm_label": "rollbackguard",
-      "id": "watcher_reorg_rollbackguard"
-    },
-    {
-      "label": "ReorgResult",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L10",
-      "community": 49,
-      "norm_label": "reorgresult",
-      "id": "watcher_reorg_reorgresult"
-    },
-    {
-      "label": "createDbRollbackRegistry()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L16",
-      "community": 20,
-      "norm_label": "createdbrollbackregistry()",
-      "id": "watcher_reorg_createdbrollbackregistry"
-    },
-    {
-      "label": "pick()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L55",
-      "community": 49,
-      "norm_label": "pick()",
-      "id": "watcher_reorg_pick"
-    },
-    {
-      "label": "storedRollbackGuard()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L61",
-      "community": 49,
-      "norm_label": "storedrollbackguard()",
-      "id": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "label": "detectReorg()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L68",
-      "community": 49,
-      "norm_label": "detectreorg()",
-      "id": "watcher_reorg_detectreorg"
-    },
-    {
-      "label": "checkReorg()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L94",
-      "community": 49,
-      "norm_label": "checkreorg()",
-      "id": "watcher_reorg_checkreorg"
-    },
-    {
-      "label": "rollbackToBlock()",
-      "file_type": "code",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L111",
-      "community": 49,
-      "norm_label": "rollbacktoblock()",
-      "id": "watcher_reorg_rollbacktoblock"
     },
     {
       "label": "rpc_env.ts",
@@ -2195,7 +3266,7 @@
       "file_type": "code",
       "source_file": "config/schema.ts",
       "source_location": "L141",
-      "community": 2,
+      "community": 50,
       "norm_label": "appconfigschema",
       "id": "config_schema_appconfigschema"
     },
@@ -2204,7 +3275,7 @@
       "file_type": "code",
       "source_file": "config/schema.ts",
       "source_location": "L155",
-      "community": 2,
+      "community": 50,
       "norm_label": "appconfig",
       "id": "config_schema_appconfig"
     },
@@ -2312,7 +3383,7 @@
       "file_type": "code",
       "source_file": "infra/db/codec.ts",
       "source_location": "L64",
-      "community": 66,
+      "community": 105,
       "norm_label": "rehydratev3ticks()",
       "id": "db_codec_rehydratev3ticks"
     },
@@ -3320,7 +4391,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L55",
-      "community": 8,
+      "community": 27,
       "norm_label": "routestatecache",
       "id": "types_route_routestatecache"
     },
@@ -3851,7 +4922,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 55,
       "norm_label": "service.ts",
       "id": "services_mempool_service_ts"
     },
@@ -3860,7 +4931,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L5",
-      "community": 20,
+      "community": 55,
       "norm_label": "mempoolserviceoptions",
       "id": "mempool_service_mempoolserviceoptions"
     },
@@ -3869,7 +4940,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L10",
-      "community": 20,
+      "community": 55,
       "norm_label": "default_mempool_options",
       "id": "mempool_service_default_mempool_options"
     },
@@ -3995,7 +5066,7 @@
       "file_type": "code",
       "source_file": "services/strategy/simulator.ts",
       "source_location": "L11",
-      "community": 27,
+      "community": 67,
       "norm_label": "simulationedge",
       "id": "strategy_simulator_simulationedge"
     },
@@ -5066,7 +6137,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/risk.test.ts",
       "source_location": "L1",
-      "community": 53,
+      "community": 80,
       "norm_label": "risk.test.ts",
       "id": "src_core_assessment_risk_test_ts"
     },
@@ -5246,7 +6317,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L1",
-      "community": 50,
+      "community": 19,
       "norm_label": "uniswap_v3.test.ts",
       "id": "src_core_math_uniswap_v3_test_ts"
     },
@@ -5255,7 +6326,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L5",
-      "community": 50,
+      "community": 19,
       "norm_label": "makepoolstate()",
       "id": "math_uniswap_v3_test_makepoolstate"
     },
@@ -5264,7 +6335,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L22",
-      "community": 50,
+      "community": 19,
       "norm_label": "state",
       "id": "math_uniswap_v3_test_state"
     },
@@ -5273,7 +6344,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L31",
-      "community": 50,
+      "community": 19,
       "norm_label": "result",
       "id": "math_uniswap_v3_test_result"
     },
@@ -5282,7 +6353,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L43",
-      "community": 50,
+      "community": 19,
       "norm_label": "sim",
       "id": "math_uniswap_v3_test_sim"
     },
@@ -5291,7 +6362,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L44",
-      "community": 50,
+      "community": 19,
       "norm_label": "quote",
       "id": "math_uniswap_v3_test_quote"
     },
@@ -5300,7 +6371,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L1",
-      "community": 50,
+      "community": 19,
       "norm_label": "uniswap_v3.ts",
       "id": "src_core_math_uniswap_v3_ts"
     },
@@ -5309,7 +6380,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L19",
-      "community": 50,
+      "community": 19,
       "norm_label": "v3poolstatelike",
       "id": "math_uniswap_v3_v3poolstatelike"
     },
@@ -5318,7 +6389,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L20",
-      "community": 50,
+      "community": 19,
       "norm_label": "v3tickdata",
       "id": "math_uniswap_v3_v3tickdata"
     },
@@ -5327,7 +6398,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L22",
-      "community": 50,
+      "community": 19,
       "norm_label": "sortedtickscache",
       "id": "math_uniswap_v3_sortedtickscache"
     },
@@ -5336,7 +6407,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L31",
-      "community": 50,
+      "community": 19,
       "norm_label": "aspoolstate()",
       "id": "math_uniswap_v3_aspoolstate"
     },
@@ -5345,7 +6416,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L35",
-      "community": 50,
+      "community": 19,
       "norm_label": "astickdata()",
       "id": "math_uniswap_v3_astickdata"
     },
@@ -5354,7 +6425,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L39",
-      "community": 50,
+      "community": 19,
       "norm_label": "poolcachekey()",
       "id": "math_uniswap_v3_poolcachekey"
     },
@@ -5363,7 +6434,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L54",
-      "community": 50,
+      "community": 19,
       "norm_label": "nextinitializedtickoptimized()",
       "id": "math_uniswap_v3_nextinitializedtickoptimized"
     },
@@ -5372,7 +6443,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L88",
-      "community": 50,
+      "community": 19,
       "norm_label": "getsortedticks()",
       "id": "math_uniswap_v3_getsortedticks"
     },
@@ -5381,7 +6452,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L125",
-      "community": 50,
+      "community": 19,
       "norm_label": "simulatev3swap()",
       "id": "math_uniswap_v3_simulatev3swap"
     },
@@ -5390,7 +6461,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L248",
-      "community": 50,
+      "community": 19,
       "norm_label": "quotev3()",
       "id": "math_uniswap_v3_quotev3"
     },
@@ -5633,7 +6704,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
       "source_location": "L1",
-      "community": 66,
+      "community": 105,
       "norm_label": "codec.test.ts",
       "id": "src_infra_db_codec_test_ts"
     },
@@ -5642,7 +6713,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
       "source_location": "L7",
-      "community": 66,
+      "community": 105,
       "norm_label": "result",
       "id": "db_codec_test_result"
     },
@@ -5651,7 +6722,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
       "source_location": "L12",
-      "community": 66,
+      "community": 105,
       "norm_label": "m",
       "id": "db_codec_test_m"
     },
@@ -5660,7 +6731,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
       "source_location": "L46",
-      "community": 66,
+      "community": 105,
       "norm_label": "data",
       "id": "db_codec_test_data"
     },
@@ -5669,7 +6740,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
       "source_location": "L71",
-      "community": 66,
+      "community": 105,
       "norm_label": "ticks",
       "id": "db_codec_test_ticks"
     },
@@ -6149,51 +7220,6 @@
       "community": 26,
       "norm_label": "logger",
       "id": "rpc_retry_test_logger"
-    },
-    {
-      "label": "pass_loop.test.ts",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L1",
-      "community": 76,
-      "norm_label": "pass_loop.test.ts",
-      "id": "src_orchestrator_pass_loop_test_ts"
-    },
-    {
-      "label": "mockStateUpdate",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L23",
-      "community": 76,
-      "norm_label": "mockstateupdate",
-      "id": "orchestrator_pass_loop_test_mockstateupdate"
-    },
-    {
-      "label": "mockExecute",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L24",
-      "community": 76,
-      "norm_label": "mockexecute",
-      "id": "orchestrator_pass_loop_test_mockexecute"
-    },
-    {
-      "label": "mockContext",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L26",
-      "community": 76,
-      "norm_label": "mockcontext",
-      "id": "orchestrator_pass_loop_test_mockcontext"
-    },
-    {
-      "label": "mockProfitable",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L66",
-      "community": 76,
-      "norm_label": "mockprofitable",
-      "id": "orchestrator_pass_loop_test_mockprofitable"
     },
     {
       "label": "curve_discovery.test.ts",
@@ -6839,7 +7865,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L1",
-      "community": 53,
+      "community": 80,
       "norm_label": "flash_loans.ts",
       "id": "src_services_execution_flash_loans_ts"
     },
@@ -6848,7 +7874,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L3",
-      "community": 53,
+      "community": 80,
       "norm_label": "flashloanquote",
       "id": "execution_flash_loans_flashloanquote"
     },
@@ -6857,7 +7883,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L10",
-      "community": 53,
+      "community": 80,
       "norm_label": "liquiditychecker",
       "id": "execution_flash_loans_liquiditychecker"
     },
@@ -6866,7 +7892,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L12",
-      "community": 53,
+      "community": 80,
       "norm_label": "rpcclientforliquidity",
       "id": "execution_flash_loans_rpcclientforliquidity"
     },
@@ -6875,7 +7901,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L19",
-      "community": 53,
+      "community": 80,
       "norm_label": "encodeaddress()",
       "id": "execution_flash_loans_encodeaddress"
     },
@@ -6884,7 +7910,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L23",
-      "community": 53,
+      "community": 80,
       "norm_label": "hextobigint()",
       "id": "execution_flash_loans_hextobigint"
     },
@@ -6893,7 +7919,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L28",
-      "community": 53,
+      "community": 80,
       "norm_label": "createliquiditychecker()",
       "id": "execution_flash_loans_createliquiditychecker"
     },
@@ -6902,7 +7928,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L53",
-      "community": 53,
+      "community": 80,
       "norm_label": "selectflashloansource()",
       "id": "execution_flash_loans_selectflashloansource"
     },
@@ -6911,7 +7937,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/flash_loans.ts",
       "source_location": "L60",
-      "community": 53,
+      "community": 80,
       "norm_label": "computeflashloanfee()",
       "id": "execution_flash_loans_computeflashloanfee"
     },
@@ -7028,7 +8054,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L29",
-      "community": 54,
+      "community": 81,
       "norm_label": "gasoracle",
       "id": "execution_gas_gasoracle"
     },
@@ -7037,7 +8063,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L35",
-      "community": 54,
+      "community": 81,
       "norm_label": ".constructor()",
       "id": "execution_gas_gasoracle_constructor"
     },
@@ -7046,7 +8072,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L40",
-      "community": 54,
+      "community": 81,
       "norm_label": ".getsnapshot()",
       "id": "execution_gas_gasoracle_getsnapshot"
     },
@@ -7055,7 +8081,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L44",
-      "community": 54,
+      "community": 81,
       "norm_label": ".estimatecongestion()",
       "id": "execution_gas_gasoracle_estimatecongestion"
     },
@@ -7064,7 +8090,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L58",
-      "community": 54,
+      "community": 81,
       "norm_label": ".start()",
       "id": "execution_gas_gasoracle_start"
     },
@@ -7073,7 +8099,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L63",
-      "community": 54,
+      "community": 81,
       "norm_label": ".stop()",
       "id": "execution_gas_gasoracle_stop"
     },
@@ -7082,7 +8108,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L67",
-      "community": 54,
+      "community": 81,
       "norm_label": ".refresh()",
       "id": "execution_gas_gasoracle_refresh"
     },
@@ -7091,7 +8117,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L89",
-      "community": 54,
+      "community": 81,
       "norm_label": "clamppriorityfee()",
       "id": "execution_gas_clamppriorityfee"
     },
@@ -7217,7 +8243,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L13",
-      "community": 81,
+      "community": 62,
       "norm_label": "hydrationservice",
       "id": "hydration_service_hydrationservice"
     },
@@ -7226,7 +8252,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L17",
-      "community": 81,
+      "community": 62,
       "norm_label": ".constructor()",
       "id": "hydration_service_hydrationservice_constructor"
     },
@@ -7235,7 +8261,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L24",
-      "community": 81,
+      "community": 62,
       "norm_label": ".start()",
       "id": "hydration_service_hydrationservice_start"
     },
@@ -7244,7 +8270,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L29",
-      "community": 81,
+      "community": 62,
       "norm_label": ".stop()",
       "id": "hydration_service_hydrationservice_stop"
     },
@@ -7262,7 +8288,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L49",
-      "community": 81,
+      "community": 62,
       "norm_label": ".startsweep()",
       "id": "hydration_service_hydrationservice_startsweep"
     },
@@ -7415,7 +8441,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L1",
-      "community": 53,
+      "community": 27,
       "norm_label": "backrunner.ts",
       "id": "src_services_strategy_backrunner_ts"
     },
@@ -7424,7 +8450,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L9",
-      "community": 53,
+      "community": 27,
       "norm_label": "largeswapsignal",
       "id": "strategy_backrunner_largeswapsignal"
     },
@@ -7433,7 +8459,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L18",
-      "community": 53,
+      "community": 27,
       "norm_label": "backruncandidate",
       "id": "strategy_backrunner_backruncandidate"
     },
@@ -7442,7 +8468,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L29",
-      "community": 53,
+      "community": 27,
       "norm_label": "backrunneroptions",
       "id": "strategy_backrunner_backrunneroptions"
     },
@@ -7478,7 +8504,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 15,
       "norm_label": "cache.test.ts",
       "id": "src_services_strategy_cache_test_ts"
     },
@@ -7487,7 +8513,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L7",
-      "community": 12,
+      "community": 15,
       "norm_label": "makecycle()",
       "id": "strategy_cache_test_makecycle"
     },
@@ -7496,7 +8522,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L19",
-      "community": 12,
+      "community": 15,
       "norm_label": "cache",
       "id": "strategy_cache_test_cache"
     },
@@ -7505,7 +8531,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L20",
-      "community": 12,
+      "community": 15,
       "norm_label": "a",
       "id": "strategy_cache_test_a"
     },
@@ -7514,7 +8540,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L21",
-      "community": 12,
+      "community": 15,
       "norm_label": "edges",
       "id": "strategy_cache_test_edges"
     },
@@ -7523,7 +8549,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L27",
-      "community": 12,
+      "community": 15,
       "norm_label": "all",
       "id": "strategy_cache_test_all"
     },
@@ -7532,7 +8558,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L35",
-      "community": 12,
+      "community": 15,
       "norm_label": "edges1",
       "id": "strategy_cache_test_edges1"
     },
@@ -7541,7 +8567,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L39",
-      "community": 12,
+      "community": 15,
       "norm_label": "edges2",
       "id": "strategy_cache_test_edges2"
     },
@@ -7550,7 +8576,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/cache.test.ts",
       "source_location": "L47",
-      "community": 12,
+      "community": 15,
       "norm_label": "touched",
       "id": "strategy_cache_test_touched"
     },
@@ -7829,7 +8855,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L1",
-      "community": 80,
+      "community": 76,
       "norm_label": "finder.ts",
       "id": "src_services_strategy_finder_ts"
     },
@@ -7838,7 +8864,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L5",
-      "community": 10,
+      "community": 8,
       "norm_label": "foundcycle",
       "id": "strategy_finder_foundcycle"
     },
@@ -7856,7 +8882,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L19",
-      "community": 80,
+      "community": 76,
       "norm_label": "feelogweight()",
       "id": "strategy_finder_feelogweight"
     },
@@ -7865,7 +8891,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L25",
-      "community": 80,
+      "community": 76,
       "norm_label": "find2hopcycles()",
       "id": "strategy_finder_find2hopcycles"
     },
@@ -7874,7 +8900,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L46",
-      "community": 80,
+      "community": 76,
       "norm_label": "find3hopcycles()",
       "id": "strategy_finder_find3hopcycles"
     },
@@ -7883,7 +8909,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L72",
-      "community": 80,
+      "community": 76,
       "norm_label": "enumeratecycles()",
       "id": "strategy_finder_enumeratecycles"
     },
@@ -7973,7 +8999,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L4",
-      "community": 12,
+      "community": 15,
       "norm_label": "swapedge",
       "id": "strategy_graph_swapedge"
     },
@@ -7982,7 +9008,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L13",
-      "community": 80,
+      "community": 15,
       "norm_label": "routinggraph",
       "id": "strategy_graph_routinggraph"
     },
@@ -8099,7 +9125,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L1",
-      "community": 10,
+      "community": 76,
       "norm_label": "pipeline.ts",
       "id": "src_services_strategy_pipeline_ts"
     },
@@ -8117,7 +9143,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L17",
-      "community": 10,
+      "community": 76,
       "norm_label": "pipelineresult",
       "id": "strategy_pipeline_pipelineresult"
     },
@@ -8720,7 +9746,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 50,
       "norm_label": "schema.test.ts",
       "id": "src_config_schema_test_ts"
     },
@@ -8729,7 +9755,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L4",
-      "community": 2,
+      "community": 50,
       "norm_label": "required_env",
       "id": "config_schema_test_required_env"
     },
@@ -8738,7 +9764,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L14",
-      "community": 2,
+      "community": 50,
       "norm_label": "cfg",
       "id": "config_schema_test_cfg"
     },
@@ -8801,7 +9827,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
-      "community": 54,
+      "community": 102,
       "norm_label": "service.ts",
       "id": "src_services_execution_service_ts"
     },
@@ -8819,7 +9845,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L12",
-      "community": 54,
+      "community": 102,
       "norm_label": "executionresult",
       "id": "execution_service_executionresult"
     },
@@ -8828,7 +9854,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L19",
-      "community": 54,
+      "community": 102,
       "norm_label": "executionservice",
       "id": "execution_service_executionservice"
     },
@@ -8837,7 +9863,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L22",
-      "community": 54,
+      "community": 102,
       "norm_label": ".constructor()",
       "id": "execution_service_executionservice_constructor"
     },
@@ -8846,7 +9872,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L29",
-      "community": 54,
+      "community": 102,
       "norm_label": ".start()",
       "id": "execution_service_executionservice_start"
     },
@@ -8855,7 +9881,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L35",
-      "community": 54,
+      "community": 102,
       "norm_label": ".stop()",
       "id": "execution_service_executionservice_stop"
     },
@@ -8864,7 +9890,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L40",
-      "community": 54,
+      "community": 102,
       "norm_label": ".execute()",
       "id": "execution_service_executionservice_execute"
     },
@@ -8873,7 +9899,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L68",
-      "community": 54,
+      "community": 102,
       "norm_label": ".isquarantined()",
       "id": "execution_service_executionservice_isquarantined"
     },
@@ -8990,7 +10016,7 @@
       "file_type": "code",
       "source_file": "src/config/defaults.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 50,
       "norm_label": "defaults.ts",
       "id": "src_config_defaults_ts"
     },
@@ -8999,7 +10025,7 @@
       "file_type": "code",
       "source_file": "src/config/defaults.ts",
       "source_location": "L4",
-      "community": 2,
+      "community": 50,
       "norm_label": "defaults",
       "id": "config_defaults_defaults"
     },
@@ -9008,7 +10034,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 50,
       "norm_label": "loader.ts",
       "id": "src_config_loader_ts"
     },
@@ -9017,7 +10043,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L6",
-      "community": 2,
+      "community": 50,
       "norm_label": "env_to_path",
       "id": "config_loader_env_to_path"
     },
@@ -9026,7 +10052,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L60",
-      "community": 2,
+      "community": 50,
       "norm_label": "deepmerge()",
       "id": "config_loader_deepmerge"
     },
@@ -9035,7 +10061,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L77",
-      "community": 2,
+      "community": 50,
       "norm_label": "envtooverrides()",
       "id": "config_loader_envtooverrides"
     },
@@ -9044,7 +10070,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L96",
-      "community": 2,
+      "community": 50,
       "norm_label": "loadconfig()",
       "id": "config_loader_loadconfig"
     },
@@ -9053,7 +10079,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L111",
-      "community": 2,
+      "community": 50,
       "norm_label": "loadconfigordie()",
       "id": "config_loader_loadconfigordie"
     },
@@ -9107,7 +10133,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L4",
-      "community": 53,
+      "community": 80,
       "norm_label": "flashloansource",
       "id": "types_execution_flashloansource"
     },
@@ -9197,7 +10223,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/circuit_breaker.ts",
       "source_location": "L1",
-      "community": 83,
+      "community": 59,
       "norm_label": "circuit_breaker.ts",
       "id": "src_orchestrator_circuit_breaker_ts"
     },
@@ -9206,7 +10232,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/circuit_breaker.ts",
       "source_location": "L3",
-      "community": 83,
+      "community": 59,
       "norm_label": "circuitbreakeroptions",
       "id": "orchestrator_circuit_breaker_circuitbreakeroptions"
     },
@@ -9215,7 +10241,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/circuit_breaker.ts",
       "source_location": "L9",
-      "community": 83,
+      "community": 59,
       "norm_label": "default_circuit_breaker_options",
       "id": "orchestrator_circuit_breaker_default_circuit_breaker_options"
     },
@@ -9224,7 +10250,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/circuit_breaker.ts",
       "source_location": "L15",
-      "community": 83,
+      "community": 59,
       "norm_label": "circuitstate",
       "id": "orchestrator_circuit_breaker_circuitstate"
     },
@@ -10160,12 +11186,2407 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_05_19_hyperindex_ingestion_layer_md",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_hyperindex_ingestion_layer_implementation_plan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_hyperindex_ingestion_layer_implementation_plan",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L124",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L258",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_3_create_config_yaml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L386",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_4_create_schema_graphql",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L460",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_5_write_v2_factory_handler_contractregister",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L520",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_6_write_v2_pool_handler_sync_swap_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L572",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_7_write_v3_factory_handler_contractregister",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L619",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_8_write_v3_pool_handler_swap_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L653",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_9_write_curve_factory_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L691",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_10_write_curve_pool_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L728",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L878",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1025",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_13_clean_up_old_services",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1064",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_14_switch_to_bun_runtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1100",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_file_structure",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L117",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_1_create_hyperindex_project_scaffolding",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_5",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_6",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_7",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_8",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L201",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_9",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_10",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L237",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_11",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L251",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_2_create_abi_json_files",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_12",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L267",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_3_create_config_yaml",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_13",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L379",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_3_create_config_yaml",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_14",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L393",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_4_create_schema_graphql",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_15",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L453",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_4_create_schema_graphql",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_16",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L469",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_5_write_v2_factory_handler_contractregister",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_17",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L513",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_5_write_v2_factory_handler_contractregister",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_18",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L527",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_6_write_v2_pool_handler_sync_swap_state",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_19",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L565",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_6_write_v2_pool_handler_sync_swap_state",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_20",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L579",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_7_write_v3_factory_handler_contractregister",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_21",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L612",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_7_write_v3_factory_handler_contractregister",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_22",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L626",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_8_write_v3_pool_handler_swap_state",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_23",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L646",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_8_write_v3_pool_handler_swap_state",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_24",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L660",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_9_write_curve_factory_handler",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_25",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L684",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_9_write_curve_factory_handler",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_26",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L698",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_10_write_curve_pool_handler",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_27",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L721",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_10_write_curve_pool_handler",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_28",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L737",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_29",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L774",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_30",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L820",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_31",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L871",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_11_write_createeffect_functions",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_32",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L890",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_33",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L929",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_34",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L974",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_35",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1001",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_36",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1018",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_12_integrate_pass_loop_with_hyperindex_db",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_37",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1037",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_13_clean_up_old_services",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_38",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1057",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_13_clean_up_old_services",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_39",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1071",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_14_switch_to_bun_runtime",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_40",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1093",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_14_switch_to_bun_runtime",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_41",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1107",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_42",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1139",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_43",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1149",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_44",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-05-19-hyperindex-ingestion-layer.md",
+      "source_location": "L1156",
+      "weight": 1.0,
+      "source": "plans_2026_05_19_hyperindex_ingestion_layer_task_15_end_to_end_integration_test",
+      "target": "plans_2026_05_19_hyperindex_ingestion_layer_codeblock_45",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diag_results",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_address",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_zero_addr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_addr_a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_addr_b",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_addr_c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_executor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "config_loader_loadconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_base_env",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagconfigedgecases",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_connection_createinmemorydatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_schema_ensureschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_infra_db_pools_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_upsertpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_getpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_getallpoolstates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_upsertpoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_getpoolsbyprotocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_pools_getallactivepools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdbschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdbcrud",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "math_uniswap_v3_simulatev3swap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L116",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagmathmuldiv",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagmathtick",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagmathv2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L152",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagmathv3simulate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L169",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagmathv3swapstep",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_computeprofit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_tokenstomaticwei",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_gascostmaticwei",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_execution_flashloansource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagprofitbasic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagprofitroi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L229",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_graph_buildgraph",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L230",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_finder_enumeratecycles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_route_routestatecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diaggraphbasic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcyclesbasic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_pipeline_evaluatepipeline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L265",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagpipeline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L294",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "execution_builder_buildarbtx",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L296",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagtxbuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L319",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "watcher_state_ops_mergestateintocache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L319",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "watcher_state_ops_validatepoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L321",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagstateops",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L337",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagvalidatepoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L347",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "rpc_retry_isratelimiterror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L347",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "rpc_retry_isautherror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L347",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "rpc_retry_isretryableerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L349",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagrpcclassifiers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L362",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "discovery_decoder_decodepaircreated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L362",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "discovery_decoder_decodepoolregistered",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L362",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "discovery_decoder_decodepooldeployed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L362",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "discovery_decoder_decodecurvepooladded",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdecoderbasic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L380",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdecoderv3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L393",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdecoderbalancer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L405",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagdecodercurve",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L419",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "execution_calldata_encodeexecutearb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L419",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "execution_calldata_buildflashparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L419",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "execution_calldata_computeroutehash",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L421",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcalldata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L456",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagsimulatev2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L461",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagsimulatebalancer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L467",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagsimulatecurve",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L476",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "core_identity_isfastevmaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L476",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "core_identity_ispolygonsystemcontract",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L477",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "utils_bigint_biginttoapproxnumber",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L478",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "utils_concurrency_mapwithconcurrency",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L480",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcoreidentity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L488",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcorebigint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L495",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcoreconcurrency",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L505",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_scorer_rankroutes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L508",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagscorer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L518",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagriskhelpers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_protocol_protocolfamily",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_protocol_isv2protocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_protocol_isv3protocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_protocol_iscurveprotocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "types_protocol_isbalancerprotocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L538",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagprotocolhelpers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L565",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagroutecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L590",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "watcher_state_ops_resolvev2feedenominator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L590",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "watcher_state_ops_resolvev3fee",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L592",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagfeeresolvers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L601",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_codec_stringifywithbigint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L601",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_codec_parsejson",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L601",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "db_codec_rehydratestatedata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L603",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagcodec",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L621",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_diagendtoend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L657",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_all_tests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L696",
+      "weight": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "diagnostic_runner_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_codec_stringifywithbigint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_codec_parsejson",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_codec_rehydratestatedata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_codec_poolrowtoobject",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_upsertpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_getpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_getallactivepools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_getpoolsbyprotocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_updatepoolstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_upsertpoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_getpoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "src_infra_db_pools_ts",
+      "target": "db_pools_getallpoolstates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "src_infra_db_pools_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_upsertpoolmeta"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "db_pools_upsertpoolmeta",
+      "target": "db_codec_stringifywithbigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "db_pools_getpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolmeta"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "db_pools_getpoolmeta"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "db_pools_getpoolmeta",
+      "target": "db_codec_poolrowtoobject"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getallactivepools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolsbyprotocol"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_updatepoolstatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_upsertpoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "db_pools_upsertpoolstate",
+      "target": "db_codec_stringifywithbigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_pools_upsertpoolstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_pools_getpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "db_pools_getpoolstate",
+      "target": "db_codec_parsejson"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "db_pools_getpoolstate",
+      "target": "db_codec_rehydratestatedata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_boot_runtimecontext"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "strategy_graph_buildgraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_test_mock_build_arb_tx_return",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_test_mockstateupdate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_test_mockexecute"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_test_mockcontext"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_test_mockprofitable"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "src_services_strategy_graph_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "db_checkpoints_getcheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_types_watcherpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbackguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_reorgresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_createdbrollbackregistry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_pick",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_storedrollbackguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_detectreorg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_checkreorg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "src_services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbacktoblock",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbackguard"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_reorg_rollbackguard"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_reorgresult"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "watcher_reorg_createdbrollbackregistry"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "watcher_reorg_createdbrollbackregistry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_createdbrollbackregistry"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_detectreorg",
+      "target": "watcher_reorg_pick"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_pick"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_detectreorg",
+      "target": "watcher_reorg_storedrollbackguard"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_storedrollbackguard"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_checkreorg",
+      "target": "watcher_reorg_detectreorg"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_detectreorg"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_checkreorg",
+      "target": "watcher_reorg_rollbacktoblock"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_checkreorg"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_reorg_checkreorg"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_reorg_checkreorg"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L94",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbacktoblock"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "watcher_reorg_rollbacktoblock",
+      "target": "db_checkpoints_getcheckpoint"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "hyperindex/package.json",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_package_json",
-      "target": "hyperindex_package_name",
-      "confidence_score": 1.0
+      "target": "hyperindex_package_name"
     },
     {
       "relation": "contains",
@@ -10173,9 +13594,9 @@
       "source_file": "hyperindex/package.json",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_package_json",
-      "target": "hyperindex_package_private",
-      "confidence_score": 1.0
+      "target": "hyperindex_package_private"
     },
     {
       "relation": "contains",
@@ -10183,9 +13604,9 @@
       "source_file": "hyperindex/package.json",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_package_json",
-      "target": "hyperindex_package_scripts",
-      "confidence_score": 1.0
+      "target": "hyperindex_package_scripts"
     },
     {
       "relation": "contains",
@@ -10193,9 +13614,9 @@
       "source_file": "hyperindex/package.json",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_package_json",
-      "target": "hyperindex_package_dependencies",
-      "confidence_score": 1.0
+      "target": "hyperindex_package_dependencies"
     },
     {
       "relation": "contains",
@@ -10203,9 +13624,9 @@
       "source_file": "hyperindex/package.json",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_package_json",
-      "target": "hyperindex_package_devdependencies",
-      "confidence_score": 1.0
+      "target": "hyperindex_package_devdependencies"
     },
     {
       "relation": "contains",
@@ -10413,9 +13834,9 @@
       "source_file": "package.json",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_engines",
-      "target": "t_package_engines_bun",
-      "confidence_score": 1.0
+      "target": "t_package_engines_bun"
     },
     {
       "relation": "contains",
@@ -10523,9 +13944,9 @@
       "source_file": "package.json",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_scripts",
-      "target": "t_package_scripts_hi_start",
-      "confidence_score": 1.0
+      "target": "t_package_scripts_hi_start"
     },
     {
       "relation": "contains",
@@ -10533,9 +13954,9 @@
       "source_file": "package.json",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_scripts",
-      "target": "t_package_scripts_hi_codegen",
-      "confidence_score": 1.0
+      "target": "t_package_scripts_hi_codegen"
     },
     {
       "relation": "contains",
@@ -11477,17 +14898,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "orchestrator/boot.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "watcher_reorg_createdbrollbackregistry"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
       "source_location": "L18",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11614,28 +15024,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_boot_ts",
       "target": "mempool_service_mempoolserviceoptions"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "db_pools_getallpoolstates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "db_pools_getpoolstate"
     },
     {
       "relation": "contains",
@@ -11870,45 +15258,12 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "cli/main.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "cli_main_ts",
       "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L65",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "db_pools_getallpoolstates"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L109",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "watcher_reorg_createdbrollbackregistry"
     },
     {
       "relation": "calls",
@@ -12262,17 +15617,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "pass_loop_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
       "target": "orchestrator_pass_loop_runpassloop"
     },
     {
@@ -13737,86 +17081,6 @@
       "target": "db_codec_poolrowtoobject"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_upsertpoolmeta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolmeta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getallactivepools"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolsbyprotocol"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L52",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_updatepoolstatus"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_upsertpoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L84",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getallpoolstates"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -13826,83 +17090,6 @@
       "confidence_score": 1.0,
       "source": "services_watcher_reorg_ts",
       "target": "infra_db_pools_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "db_pools_upsertpoolmeta",
-      "target": "db_codec_stringifywithbigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "db_pools_getpoolmeta"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "db_pools_getpoolmeta",
-      "target": "db_codec_poolrowtoobject"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "source": "db_pools_upsertpoolstate",
-      "target": "db_codec_stringifywithbigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/poll_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_poll_loop_ts",
-      "target": "db_pools_upsertpoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "db_pools_getpoolstate",
-      "target": "db_codec_parsejson"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L80",
-      "weight": 1.0,
-      "source": "db_pools_getpoolstate",
-      "target": "db_codec_rehydratestatedata"
     },
     {
       "relation": "imports",
@@ -13938,86 +17125,6 @@
       "target": "watcher_types_watcherpoolmeta"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_rollbackguard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_reorgresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_createdbrollbackregistry"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_pick"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_detectreorg"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L94",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "watcher_reorg_rollbacktoblock"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -14038,94 +17145,6 @@
       "confidence_score": 1.0,
       "source": "services_watcher_poll_loop_ts",
       "target": "services_watcher_reorg_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/poll_loop.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_poll_loop_ts",
-      "target": "watcher_reorg_rollbackguard"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_detectreorg",
-      "target": "watcher_reorg_pick"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_detectreorg",
-      "target": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_checkreorg",
-      "target": "watcher_reorg_detectreorg"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_checkreorg",
-      "target": "watcher_reorg_rollbacktoblock"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/poll_loop.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_poll_loop_ts",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L85",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "source": "watcher_reorg_rollbacktoblock",
-      "target": "db_checkpoints_getcheckpoint"
     },
     {
       "relation": "contains",
@@ -21386,112 +24405,6 @@
       "target": "rpc_retry_test_logger"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_services_strategy_graph_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_test_mockstateupdate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_test_mockexecute"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_test_mockcontext"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_test_mockprofitable"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/discovery/curve_discovery.test.ts",
@@ -27193,5 +30106,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "75222fcf005ac0741348a51a98d2fc1a1eb10ebe"
+  "built_at_commit": "0213ac4f9e4f70fd2f15217a30a41768d889ba03"
 }

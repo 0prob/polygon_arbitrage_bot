@@ -11,10 +11,13 @@ const FACTORY_PROTOCOLS: Record<string, string> = {
   "0x800b052609c355ca8103e06f022aa30647ead60a": "comethswap_v2",
 };
 
+async function handlePairCreatedRegister({ event, context }: any) {
+  context.chain.UniswapV2Pool.add(event.params.pair);
+}
+
 async function handlePairCreated({ event, context }: any) {
   const factoryAddr = event.srcAddress.toLowerCase();
   const protocol = FACTORY_PROTOCOLS[factoryAddr] ?? "unknown_v2";
-  context.chain.UniswapV2Pool.add(event.params.pair);
   context.PoolMeta.set({
     id: event.params.pair.toLowerCase(),
     address: event.params.pair.toLowerCase(),
@@ -26,11 +29,16 @@ async function handlePairCreated({ event, context }: any) {
   });
 }
 
-indexer.contractRegister({ contract: "QuickswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "SushiswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "UniswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "DfynV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "ApeswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "MeshswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "JetswapV2Factory", event: "PairCreated" }, handlePairCreated);
-indexer.contractRegister({ contract: "ComethswapV2Factory", event: "PairCreated" }, handlePairCreated);
+for (const factory of [
+  "QuickswapV2Factory",
+  "SushiswapV2Factory",
+  "UniswapV2Factory",
+  "DfynV2Factory",
+  "ApeswapV2Factory",
+  "MeshswapV2Factory",
+  "JetswapV2Factory",
+  "ComethswapV2Factory",
+] as const) {
+  indexer.contractRegister({ contract: factory, event: "PairCreated" }, handlePairCreatedRegister);
+  indexer.onEvent({ contract: factory, event: "PairCreated" }, handlePairCreated);
+}

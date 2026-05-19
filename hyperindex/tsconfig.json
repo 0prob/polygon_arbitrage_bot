@@ -7,5 +7,5 @@
     "esModuleInterop": true,
     "outDir": "./generated"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "envio-env.d.ts"]
 }

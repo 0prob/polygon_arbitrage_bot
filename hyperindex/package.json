@@ -1,5 +1,6 @@
 {
   "name": "arb-bot-ingestion",
+  "type": "module",
   "private": true,
   "scripts": {
     "codegen": "envio codegen",

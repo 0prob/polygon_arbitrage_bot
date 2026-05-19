@@ -1,4 +1,4 @@
-import { DatabaseSync, StatementSync } from "node:sqlite";
+import { Database, Statement } from "bun:sqlite";
 
 type SQLInputValue = null | number | bigint | string | NodeJS.ArrayBufferView;
 
@@ -23,8 +23,8 @@ export function createInMemoryDatabase(): CompatDatabase {
 }
 
 export class CompatStatement {
-  statement: StatementSync;
-  constructor(statement: StatementSync) {
+  statement: Statement;
+  constructor(statement: Statement) {
     this.statement = statement;
   }
 
@@ -46,7 +46,7 @@ export class CompatStatement {
 }
 
 export class CompatDatabase {
-  db: DatabaseSync;
+  db: Database;
   _statementCache: Map<string, CompatStatement>;
   _namedStatementCache: Map<string, CompatStatement>;
   _namedStatementSql: Map<string, string>;
@@ -55,7 +55,7 @@ export class CompatDatabase {
   _closed: boolean;
 
   constructor(path: string) {
-    this.db = new DatabaseSync(path);
+    this.db = new Database(path, { create: true });
     this._statementCache = new Map();
     this._namedStatementCache = new Map();
     this._namedStatementSql = new Map();

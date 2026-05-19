@@ -6,10 +6,10 @@ indexer.onEvent(
     context.V3PoolState.set({
       id: event.srcAddress.toLowerCase(),
       address: event.srcAddress.toLowerCase(),
-      lastUpdatedBlock: event.block.number,
+      lastUpdatedBlock: Number(event.block.number),
       sqrtPriceX96: event.params.sqrtPriceX96,
       liquidity: event.params.liquidity,
-      tick: event.params.tick,
+      tick: Number(event.params.tick),
     });
   },
 );

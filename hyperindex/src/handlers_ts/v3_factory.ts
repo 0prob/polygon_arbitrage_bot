@@ -7,10 +7,13 @@ const FACTORY_PROTOCOLS: Record<string, string> = {
   "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a": "kyberswap_elastic",
 };
 
+async function handlePoolCreatedRegister({ event, context }: any) {
+  context.chain.UniswapV3Pool.add(event.params.pool);
+}
+
 async function handlePoolCreated({ event, context }: any) {
   const factoryAddr = event.srcAddress.toLowerCase();
   const protocol = FACTORY_PROTOCOLS[factoryAddr] ?? "unknown_v3";
-  context.chain.UniswapV3Pool.add(event.params.pool);
   context.PoolMeta.set({
     id: event.params.pool.toLowerCase(),
     address: event.params.pool.toLowerCase(),
@@ -22,7 +25,12 @@ async function handlePoolCreated({ event, context }: any) {
   });
 }
 
-indexer.contractRegister({ contract: "UniswapV3Factory", event: "PoolCreated" }, handlePoolCreated);
-indexer.contractRegister({ contract: "SushiswapV3Factory", event: "PoolCreated" }, handlePoolCreated);
-indexer.contractRegister({ contract: "QuickswapV3Factory", event: "PoolCreated" }, handlePoolCreated);
-indexer.contractRegister({ contract: "KyberswapElasticFactory", event: "PoolCreated" }, handlePoolCreated);
+for (const factory of [
+  "UniswapV3Factory",
+  "SushiswapV3Factory",
+  "QuickswapV3Factory",
+  "KyberswapElasticFactory",
+] as const) {
+  indexer.contractRegister({ contract: factory, event: "PoolCreated" }, handlePoolCreatedRegister);
+  indexer.onEvent({ contract: factory, event: "PoolCreated" }, handlePoolCreated);
+}
