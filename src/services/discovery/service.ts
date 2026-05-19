@@ -33,7 +33,7 @@ export class DiscoveryService {
     let pools: Array<{ address: Address; protocol: string; tokens: Address[] }> = [];
 
     if (protocol === "curve") {
-      const curvePools = await this.deps.fetchCurvePools("0x7cD852c0D7613aA869e632929560f310D4059AC1"); // Curve Registry on Polygon
+      const curvePools = await this.deps.fetchCurvePools("0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"); // Curve Meta Registry on Polygon
       pools = curvePools.map(p => ({ address: p.poolAddress, protocol: "curve", tokens: p.coins }));
     } else if (protocol === "balancer") {
       // Placeholder for balancer discovery
