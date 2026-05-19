@@ -24,16 +24,17 @@ describe("HyperIndex ingestion layer", () => {
     expect(existsSync(path.join(abiDir, "uniswap_v3_pool.json"))).toBe(true);
     expect(existsSync(path.join(abiDir, "curve_factory.json"))).toBe(true);
     expect(existsSync(path.join(abiDir, "erc20.json"))).toBe(true);
+    expect(existsSync(path.join(abiDir, "uniswap_v4_pool_manager.json"))).toBe(true);
   });
 
   it("handler files exist for all protocols", () => {
-    const handlerDir = path.join(HYPERINDEX_DIR, "src", "handlers");
+    const handlerDir = path.join(HYPERINDEX_DIR, "src", "handlers_ts");
     expect(existsSync(path.join(handlerDir, "v2_factory.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "v2_pool.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "v3_factory.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "v3_pool.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "curve_factory.ts"))).toBe(true);
-    expect(existsSync(path.join(handlerDir, "curve_pool.ts"))).toBe(true);
+    expect(existsSync(path.join(handlerDir, "v4.ts"))).toBe(true);
   });
 
   it("createEffect files exist", () => {
