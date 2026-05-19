@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 158 files · ~52,801 words
+- 158 files · ~52,807 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 966 nodes · 1431 edges · 82 communities (64 shown, 18 thin omitted)
+- 967 nodes · 1432 edges · 90 communities (71 shown, 19 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `36633a11`
+- Built from commit: `6bf854bf`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -87,6 +87,14 @@
 - [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
+- [[_COMMUNITY_Community 87|Community 87]]
+- [[_COMMUNITY_Community 88|Community 88]]
+- [[_COMMUNITY_Community 89|Community 89]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `renderFrame()` - 16 edges
@@ -112,11 +120,11 @@
 - `main()` --calls--> `runPassLoop()`  [EXTRACTED]
   src/cli/main.ts → pass_loop.ts
 
-## Communities (82 total, 18 thin omitted)
+## Communities (90 total, 19 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (34): dependencies, @envio-dev/hypersync-client, pino, tsx, viem, zod, devDependencies, eslint (+26 more)
+Nodes (35): dependencies, @envio-dev/hypersync-client, pino, tsx, viem, zod, devDependencies, eslint (+27 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.12
@@ -127,8 +135,8 @@ Cohesion: 0.06
 Nodes (35): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), loadConfigOrDie(), AppConfig, AppConfigSchema (+27 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.07
-Nodes (36): buildLogQuery(), computeTopic0(), computeTopic0s(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeLogFilter(), normalizeTopic() (+28 more)
+Cohesion: 0.12
+Nodes (18): buildLogQuery(), computeTopic0(), computeTopic0s(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeLogFilter(), normalizeTopic() (+10 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.12
@@ -235,16 +243,16 @@ Cohesion: 0.15
 Nodes (5): CompatDatabase, CompatStatement, createDatabase(), createInMemoryDatabase(), SQLInputValue
 
 ### Community 32 - "Community 32"
-Cohesion: 0.10
-Nodes (23): BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient(), ensureModule(), HypersyncError (+15 more)
+Cohesion: 0.13
+Nodes (20): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+12 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (5): FACTORY_ABI, fetchCurvePools(), factoryAddress, mockClient, mockFactory
 
 ### Community 49 - "Community 49"
-Cohesion: 0.05
-Nodes (69): getCheckpoint(), rollbackToCheckpoint(), saveCheckpoint(), client, Decoder, buildHandlerMap(), dispatchLog(), getHandler() (+61 more)
+Cohesion: 0.16
+Nodes (22): dedupeLogs(), logger, sortLogs(), buildLogQuery(), commitWatcherStatesBatch(), CORE_STATE_KEYS, mergeStateIntoCache(), mergeWatcherState() (+14 more)
 
 ### Community 50 - "Community 50"
 Cohesion: 0.27
@@ -330,24 +338,52 @@ Nodes (5): RuntimeContext, mockContext, mockExecute, mockProfitable, mockStateUp
 Cohesion: 0.80
 Nodes (4): enumerateCycles(), feeLogWeight(), find2HopCycles(), find3HopCycles()
 
+### Community 82 - "Community 82"
+Cohesion: 0.20
+Nodes (13): getCheckpoint(), rollbackToCheckpoint(), saveCheckpoint(), pollLoop(), sleep(), checkReorg(), detectReorg(), pick() (+5 more)
+
+### Community 83 - "Community 83"
+Cohesion: 0.21
+Nodes (11): buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext, TOPIC0, topicArray() (+3 more)
+
+### Community 84 - "Community 84"
+Cohesion: 0.27
+Nodes (10): fetchAllLogs(), FetchAllLogsResult, pageLogsFromResponse(), parseBlock(), parseOptionalBlock(), mockClient, query, HypersyncClientRuntime (+2 more)
+
+### Community 85 - "Community 85"
+Cohesion: 0.29
+Nodes (12): asStateRecord(), decodedBigInt(), decodedValue(), ensureV3Fee(), parsePoolMetadataValue(), resolveV2FeeDenominator(), resolveV2FeeNumerator(), resolveV3Fee() (+4 more)
+
+### Community 86 - "Community 86"
+Cohesion: 0.20
+Nodes (8): config, mockGet, mockGetHeight, MockHypersyncClient, mockRecv, mockStream, normalized, HyperSyncClientConfig
+
+### Community 87 - "Community 87"
+Cohesion: 0.25
+Nodes (7): DecodedLogValue, HyperSyncBlockHeader, HypersyncDecodedLog, HyperSyncGetResponse, HyperSyncLogFilter, HyperSyncStream, StreamProgress
+
+### Community 89 - "Community 89"
+Cohesion: 0.40
+Nodes (5): isTickRecord(), normalizeWatcherTicks(), tickEntriesFrom(), toTickBigInt(), updateTickState()
+
 ## Knowledge Gaps
-- **403 isolated node(s):** `name`, `version`, `type`, `main`, `packageManager` (+398 more)
+- **404 isolated node(s):** `name`, `version`, `type`, `main`, `packageManager` (+399 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `createRootLogger()` connect `Community 50` to `Community 0`, `Community 32`, `Community 49`, `Community 51`, `Community 57`?**
+  _High betweenness centrality (0.083) - this node is a cross-community bridge._
 - **Why does `RouteStateCache` connect `Community 27` to `Community 8`, `Community 57`, `Community 76`, `Community 7`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
-- **Why does `createRootLogger()` connect `Community 50` to `Community 0`, `Community 57`, `Community 51`, `Community 49`?**
   _High betweenness centrality (0.081) - this node is a cross-community bridge._
 - **Why does `simulateV3Swap()` connect `Community 75` to `Community 19`, `Community 7`?**
   _High betweenness centrality (0.072) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `type` to the rest of the system?**
-  _403 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _404 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**

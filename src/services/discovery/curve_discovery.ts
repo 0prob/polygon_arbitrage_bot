@@ -9,18 +9,21 @@ const FACTORY_ABI = [
     name: "pool_count",
     inputs: [],
     outputs: [{ type: "uint256" }],
+    stateMutability: "view",
   },
   {
     type: "function",
     name: "pool_list",
     inputs: [{ type: "uint256" }],
     outputs: [{ type: "address" }],
+    stateMutability: "view",
   },
   {
     type: "function",
     name: "get_coins",
     inputs: [{ type: "address" }],
     outputs: [{ type: "address[8]" }],
+    stateMutability: "view",
   },
 ] as const;
 

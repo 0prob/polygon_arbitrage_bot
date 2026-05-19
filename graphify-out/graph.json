@@ -283,10 +283,19 @@
       "norm_label": "fast-check"
     },
     {
-      "label": "prettier",
+      "label": "pino-pretty",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L35",
+      "id": "t_package_devdependencies_pino_pretty",
+      "community": 0,
+      "norm_label": "pino-pretty"
+    },
+    {
+      "label": "prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L36",
       "id": "t_package_devdependencies_prettier",
       "community": 0,
       "norm_label": "prettier"
@@ -295,7 +304,7 @@
       "label": "typescript",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L36",
+      "source_location": "L37",
       "id": "t_package_devdependencies_typescript",
       "community": 0,
       "norm_label": "typescript"
@@ -304,7 +313,7 @@
       "label": "typescript-eslint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L38",
       "id": "t_package_devdependencies_typescript_eslint",
       "community": 0,
       "norm_label": "typescript-eslint"
@@ -313,181 +322,10 @@
       "label": "vitest",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L38",
+      "source_location": "L39",
       "id": "t_package_devdependencies_vitest",
       "community": 0,
       "norm_label": "vitest"
-    },
-    {
-      "label": "connection.ts",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L1",
-      "id": "src_infra_db_connection_ts",
-      "community": 31,
-      "norm_label": "connection.ts"
-    },
-    {
-      "label": "SQLInputValue",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L3",
-      "id": "db_connection_sqlinputvalue",
-      "community": 31,
-      "norm_label": "sqlinputvalue"
-    },
-    {
-      "label": "createDatabase()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L5",
-      "id": "db_connection_createdatabase",
-      "community": 31,
-      "norm_label": "createdatabase()"
-    },
-    {
-      "label": "createInMemoryDatabase()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L15",
-      "id": "db_connection_createinmemorydatabase",
-      "community": 31,
-      "norm_label": "createinmemorydatabase()"
-    },
-    {
-      "label": "CompatStatement",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L25",
-      "id": "db_connection_compatstatement",
-      "community": 31,
-      "norm_label": "compatstatement"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L27",
-      "id": "db_connection_compatstatement_constructor",
-      "community": 31,
-      "norm_label": ".constructor()"
-    },
-    {
-      "label": ".run()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L31",
-      "id": "db_connection_compatstatement_run",
-      "community": 31,
-      "norm_label": ".run()"
-    },
-    {
-      "label": ".get()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L35",
-      "id": "db_connection_compatstatement_get",
-      "community": 31,
-      "norm_label": ".get()"
-    },
-    {
-      "label": ".all()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L39",
-      "id": "db_connection_compatstatement_all",
-      "community": 31,
-      "norm_label": ".all()"
-    },
-    {
-      "label": ".iterate()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L43",
-      "id": "db_connection_compatstatement_iterate",
-      "community": 31,
-      "norm_label": ".iterate()"
-    },
-    {
-      "label": "CompatDatabase",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L48",
-      "id": "db_connection_compatdatabase",
-      "community": 31,
-      "norm_label": "compatdatabase"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L57",
-      "id": "db_connection_compatdatabase_constructor",
-      "community": 31,
-      "norm_label": ".constructor()"
-    },
-    {
-      "label": ".prepare()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L67",
-      "id": "db_connection_compatdatabase_prepare",
-      "community": 31,
-      "norm_label": ".prepare()"
-    },
-    {
-      "label": ".statement()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L75",
-      "id": "db_connection_compatdatabase_statement",
-      "community": 31,
-      "norm_label": ".statement()"
-    },
-    {
-      "label": ".exec()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L88",
-      "id": "db_connection_compatdatabase_exec",
-      "community": 31,
-      "norm_label": ".exec()"
-    },
-    {
-      "label": ".pragma()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L93",
-      "id": "db_connection_compatdatabase_pragma",
-      "community": 31,
-      "norm_label": ".pragma()"
-    },
-    {
-      "label": ".pragmaGet()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L97",
-      "id": "db_connection_compatdatabase_pragmaget",
-      "community": 31,
-      "norm_label": ".pragmaget()"
-    },
-    {
-      "label": ".transaction()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L101",
-      "id": "db_connection_compatdatabase_transaction",
-      "community": 31,
-      "norm_label": ".transaction()"
-    },
-    {
-      "label": ".close()",
-      "file_type": "code",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L138",
-      "id": "db_connection_compatdatabase_close",
-      "community": 31,
-      "norm_label": ".close()"
     },
     {
       "label": "boot.ts",
@@ -517,76 +355,247 @@
       "norm_label": "bootapplication()"
     },
     {
+      "label": "connection.ts",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L1",
+      "community": 31,
+      "norm_label": "connection.ts",
+      "id": "src_infra_db_connection_ts"
+    },
+    {
+      "label": "SQLInputValue",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L3",
+      "community": 31,
+      "norm_label": "sqlinputvalue",
+      "id": "db_connection_sqlinputvalue"
+    },
+    {
+      "label": "createDatabase()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L5",
+      "community": 31,
+      "norm_label": "createdatabase()",
+      "id": "db_connection_createdatabase"
+    },
+    {
+      "label": "createInMemoryDatabase()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L15",
+      "community": 31,
+      "norm_label": "createinmemorydatabase()",
+      "id": "db_connection_createinmemorydatabase"
+    },
+    {
+      "label": "CompatStatement",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L25",
+      "community": 31,
+      "norm_label": "compatstatement",
+      "id": "db_connection_compatstatement"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L27",
+      "community": 31,
+      "norm_label": ".constructor()",
+      "id": "db_connection_compatstatement_constructor"
+    },
+    {
+      "label": ".run()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L31",
+      "community": 31,
+      "norm_label": ".run()",
+      "id": "db_connection_compatstatement_run"
+    },
+    {
+      "label": ".get()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L35",
+      "community": 31,
+      "norm_label": ".get()",
+      "id": "db_connection_compatstatement_get"
+    },
+    {
+      "label": ".all()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L39",
+      "community": 31,
+      "norm_label": ".all()",
+      "id": "db_connection_compatstatement_all"
+    },
+    {
+      "label": ".iterate()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L43",
+      "community": 31,
+      "norm_label": ".iterate()",
+      "id": "db_connection_compatstatement_iterate"
+    },
+    {
+      "label": "CompatDatabase",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L48",
+      "community": 31,
+      "norm_label": "compatdatabase",
+      "id": "db_connection_compatdatabase"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L57",
+      "community": 31,
+      "norm_label": ".constructor()",
+      "id": "db_connection_compatdatabase_constructor"
+    },
+    {
+      "label": ".prepare()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L67",
+      "community": 31,
+      "norm_label": ".prepare()",
+      "id": "db_connection_compatdatabase_prepare"
+    },
+    {
+      "label": ".statement()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L75",
+      "community": 31,
+      "norm_label": ".statement()",
+      "id": "db_connection_compatdatabase_statement"
+    },
+    {
+      "label": ".exec()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L88",
+      "community": 31,
+      "norm_label": ".exec()",
+      "id": "db_connection_compatdatabase_exec"
+    },
+    {
+      "label": ".pragma()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L93",
+      "community": 31,
+      "norm_label": ".pragma()",
+      "id": "db_connection_compatdatabase_pragma"
+    },
+    {
+      "label": ".pragmaGet()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L97",
+      "community": 31,
+      "norm_label": ".pragmaget()",
+      "id": "db_connection_compatdatabase_pragmaget"
+    },
+    {
+      "label": ".transaction()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L101",
+      "community": 31,
+      "norm_label": ".transaction()",
+      "id": "db_connection_compatdatabase_transaction"
+    },
+    {
+      "label": ".close()",
+      "file_type": "code",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L138",
+      "community": 31,
+      "norm_label": ".close()",
+      "id": "db_connection_compatdatabase_close"
+    },
+    {
       "label": "service.ts",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L1",
-      "id": "src_services_discovery_service_ts",
       "community": 57,
-      "norm_label": "service.ts"
+      "norm_label": "service.ts",
+      "id": "src_services_discovery_service_ts"
     },
     {
       "label": "DiscoveryResult",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L7",
-      "id": "discovery_service_discoveryresult",
       "community": 57,
-      "norm_label": "discoveryresult"
+      "norm_label": "discoveryresult",
+      "id": "discovery_service_discoveryresult"
     },
     {
       "label": "DiscoveryServiceDeps",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L12",
-      "id": "discovery_service_discoveryservicedeps",
       "community": 57,
-      "norm_label": "discoveryservicedeps"
+      "norm_label": "discoveryservicedeps",
+      "id": "discovery_service_discoveryservicedeps"
     },
     {
       "label": "DiscoveryService",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L20",
-      "id": "discovery_service_discoveryservice",
       "community": 57,
-      "norm_label": "discoveryservice"
+      "norm_label": "discoveryservice",
+      "id": "discovery_service_discoveryservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L21",
-      "id": "discovery_service_discoveryservice_constructor",
       "community": 57,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "discovery_service_discoveryservice_constructor"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L23",
-      "id": "discovery_service_discoveryservice_start",
       "community": 57,
-      "norm_label": ".start()"
+      "norm_label": ".start()",
+      "id": "discovery_service_discoveryservice_start"
     },
     {
       "label": ".stop()",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L27",
-      "id": "discovery_service_discoveryservice_stop",
       "community": 57,
-      "norm_label": ".stop()"
+      "norm_label": ".stop()",
+      "id": "discovery_service_discoveryservice_stop"
     },
     {
       "label": ".discoverProtocol()",
       "file_type": "code",
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L31",
-      "id": "discovery_service_discoveryservice_discoverprotocol",
       "community": 57,
-      "norm_label": ".discoverprotocol()"
+      "norm_label": ".discoverprotocol()",
+      "id": "discovery_service_discoveryservice_discoverprotocol"
     },
     {
       "label": "pass_loop.ts",
@@ -2240,7 +2249,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 82,
       "norm_label": "checkpoints.ts",
       "id": "src_infra_db_checkpoints_ts"
     },
@@ -2249,7 +2258,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L3",
-      "community": 49,
+      "community": 82,
       "norm_label": "savecheckpoint()",
       "id": "db_checkpoints_savecheckpoint"
     },
@@ -2258,7 +2267,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L13",
-      "community": 49,
+      "community": 82,
       "norm_label": "getcheckpoint()",
       "id": "db_checkpoints_getcheckpoint"
     },
@@ -2267,7 +2276,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L18",
-      "community": 49,
+      "community": 82,
       "norm_label": "getlatestcheckpoint()",
       "id": "db_checkpoints_getlatestcheckpoint"
     },
@@ -2276,7 +2285,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L23",
-      "community": 49,
+      "community": 82,
       "norm_label": "rollbacktocheckpoint()",
       "id": "db_checkpoints_rollbacktocheckpoint"
     },
@@ -2285,7 +2294,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/checkpoints.ts",
       "source_location": "L44",
-      "community": 49,
+      "community": 82,
       "norm_label": "getblockrangeforreorg()",
       "id": "db_checkpoints_getblockrangeforreorg"
     },
@@ -2645,7 +2654,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 86,
       "norm_label": "client.test.ts",
       "id": "src_infra_hypersync_client_test_ts"
     },
@@ -2654,7 +2663,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L5",
-      "community": 32,
+      "community": 86,
       "norm_label": "mockgetheight",
       "id": "hypersync_client_test_mockgetheight"
     },
@@ -2663,7 +2672,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L6",
-      "community": 32,
+      "community": 86,
       "norm_label": "mockget",
       "id": "hypersync_client_test_mockget"
     },
@@ -2672,7 +2681,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L7",
-      "community": 32,
+      "community": 86,
       "norm_label": "mockrecv",
       "id": "hypersync_client_test_mockrecv"
     },
@@ -2681,7 +2690,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L8",
-      "community": 32,
+      "community": 86,
       "norm_label": "mockstream",
       "id": "hypersync_client_test_mockstream"
     },
@@ -2690,7 +2699,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L13",
-      "community": 32,
+      "community": 86,
       "norm_label": "mockhypersyncclient",
       "id": "hypersync_client_test_mockhypersyncclient"
     },
@@ -2699,7 +2708,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L15",
-      "community": 32,
+      "community": 86,
       "norm_label": ".constructor()",
       "id": "hypersync_client_test_mockhypersyncclient_constructor"
     },
@@ -2708,7 +2717,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L107",
-      "community": 32,
+      "community": 86,
       "norm_label": "config",
       "id": "hypersync_client_test_config"
     },
@@ -2717,7 +2726,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L117",
-      "community": 32,
+      "community": 86,
       "norm_label": "normalized",
       "id": "hypersync_client_test_normalized"
     },
@@ -2843,7 +2852,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L148",
-      "community": 49,
+      "community": 32,
       "norm_label": "client",
       "id": "hypersync_client_client"
     },
@@ -2897,7 +2906,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L201",
-      "community": 49,
+      "community": 32,
       "norm_label": "decoder",
       "id": "hypersync_client_decoder"
     },
@@ -3104,7 +3113,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 84,
       "norm_label": "stream.test.ts",
       "id": "src_infra_hypersync_stream_test_ts"
     },
@@ -3113,7 +3122,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L8",
-      "community": 3,
+      "community": 84,
       "norm_label": "mockclient",
       "id": "hypersync_stream_test_mockclient"
     },
@@ -3122,7 +3131,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L19",
-      "community": 3,
+      "community": 84,
       "norm_label": "query",
       "id": "hypersync_stream_test_query"
     },
@@ -3131,7 +3140,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 84,
       "norm_label": "stream.ts",
       "id": "src_infra_hypersync_stream_ts"
     },
@@ -3140,7 +3149,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L6",
-      "community": 3,
+      "community": 84,
       "norm_label": "parseblock()",
       "id": "hypersync_stream_parseblock"
     },
@@ -3149,7 +3158,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L14",
-      "community": 3,
+      "community": 84,
       "norm_label": "parseoptionalblock()",
       "id": "hypersync_stream_parseoptionalblock"
     },
@@ -3158,7 +3167,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L19",
-      "community": 3,
+      "community": 84,
       "norm_label": "pagelogsfromresponse()",
       "id": "hypersync_stream_pagelogsfromresponse"
     },
@@ -3167,7 +3176,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L28",
-      "community": 3,
+      "community": 84,
       "norm_label": "fetchalllogsresult",
       "id": "hypersync_stream_fetchalllogsresult"
     },
@@ -3176,7 +3185,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L35",
-      "community": 3,
+      "community": 84,
       "norm_label": "fetchalllogs()",
       "id": "hypersync_stream_fetchalllogs"
     },
@@ -5975,7 +5984,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 83,
       "norm_label": "log_handler.ts",
       "id": "src_services_watcher_log_handler_ts"
     },
@@ -5984,7 +5993,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L11",
-      "community": 49,
+      "community": 83,
       "norm_label": "watcherenqueuefn",
       "id": "watcher_log_handler_watcherenqueuefn"
     },
@@ -5993,7 +6002,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L34",
-      "community": 49,
+      "community": 83,
       "norm_label": "topic0",
       "id": "watcher_log_handler_topic0"
     },
@@ -6002,7 +6011,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L47",
-      "community": 49,
+      "community": 83,
       "norm_label": "loghandlercontext",
       "id": "watcher_log_handler_loghandlercontext"
     },
@@ -6011,7 +6020,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L61",
-      "community": 49,
+      "community": 83,
       "norm_label": "loghandler",
       "id": "watcher_log_handler_loghandler"
     },
@@ -6020,7 +6029,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L63",
-      "community": 49,
+      "community": 83,
       "norm_label": "hasinitializedv3basestate()",
       "id": "watcher_log_handler_hasinitializedv3basestate"
     },
@@ -6029,7 +6038,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L73",
-      "community": 49,
+      "community": 83,
       "norm_label": "topicarray()",
       "id": "watcher_log_handler_topicarray"
     },
@@ -6038,7 +6047,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L78",
-      "community": 49,
+      "community": 83,
       "norm_label": "buildhandlermap()",
       "id": "watcher_log_handler_buildhandlermap"
     },
@@ -6047,7 +6056,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L163",
-      "community": 49,
+      "community": 83,
       "norm_label": "gethandlermap()",
       "id": "watcher_log_handler_gethandlermap"
     },
@@ -6056,7 +6065,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L168",
-      "community": 49,
+      "community": 83,
       "norm_label": "gethandler()",
       "id": "watcher_log_handler_gethandler"
     },
@@ -6065,7 +6074,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/log_handler.ts",
       "source_location": "L172",
-      "community": 49,
+      "community": 83,
       "norm_label": "dispatchlog()",
       "id": "watcher_log_handler_dispatchlog"
     },
@@ -6110,7 +6119,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/poll_loop.ts",
       "source_location": "L49",
-      "community": 49,
+      "community": 82,
       "norm_label": "pollloop()",
       "id": "watcher_poll_loop_pollloop"
     },
@@ -6119,7 +6128,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/poll_loop.ts",
       "source_location": "L176",
-      "community": 49,
+      "community": 82,
       "norm_label": "sleep()",
       "id": "watcher_poll_loop_sleep"
     },
@@ -6128,7 +6137,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 82,
       "norm_label": "reorg.ts",
       "id": "src_services_watcher_reorg_ts"
     },
@@ -6137,7 +6146,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L5",
-      "community": 49,
+      "community": 82,
       "norm_label": "rollbackguard",
       "id": "watcher_reorg_rollbackguard"
     },
@@ -6146,7 +6155,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L7",
-      "community": 49,
+      "community": 82,
       "norm_label": "reorgresult",
       "id": "watcher_reorg_reorgresult"
     },
@@ -6155,7 +6164,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L11",
-      "community": 49,
+      "community": 82,
       "norm_label": "pick()",
       "id": "watcher_reorg_pick"
     },
@@ -6164,7 +6173,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L17",
-      "community": 49,
+      "community": 82,
       "norm_label": "storedrollbackguard()",
       "id": "watcher_reorg_storedrollbackguard"
     },
@@ -6173,7 +6182,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L24",
-      "community": 49,
+      "community": 82,
       "norm_label": "detectreorg()",
       "id": "watcher_reorg_detectreorg"
     },
@@ -6182,7 +6191,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L50",
-      "community": 49,
+      "community": 82,
       "norm_label": "checkreorg()",
       "id": "watcher_reorg_checkreorg"
     },
@@ -6191,7 +6200,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L67",
-      "community": 49,
+      "community": 82,
       "norm_label": "rollbacktoblock()",
       "id": "watcher_reorg_rollbacktoblock"
     },
@@ -6200,7 +6209,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/reorg.ts",
       "source_location": "L75",
-      "community": 49,
+      "community": 82,
       "norm_label": "savewatchercheckpoint()",
       "id": "watcher_reorg_savewatchercheckpoint"
     },
@@ -6209,7 +6218,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.test.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 88,
       "norm_label": "service.test.ts",
       "id": "src_services_watcher_service_test_ts"
     },
@@ -6218,7 +6227,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.test.ts",
       "source_location": "L6",
-      "community": 49,
+      "community": 88,
       "norm_label": "service",
       "id": "watcher_service_test_service"
     },
@@ -6227,7 +6236,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 32,
       "norm_label": "service.ts",
       "id": "src_services_watcher_service_ts"
     },
@@ -6236,7 +6245,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L9",
-      "community": 49,
+      "community": 32,
       "norm_label": "logger",
       "id": "watcher_service_logger"
     },
@@ -6245,7 +6254,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L31",
-      "community": 49,
+      "community": 32,
       "norm_label": "watcher_signatures",
       "id": "watcher_service_watcher_signatures"
     },
@@ -6254,7 +6263,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L44",
-      "community": 49,
+      "community": 88,
       "norm_label": "watcherservice",
       "id": "watcher_service_watcherservice"
     },
@@ -6263,7 +6272,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L78",
-      "community": 49,
+      "community": 88,
       "norm_label": ".constructor()",
       "id": "watcher_service_watcherservice_constructor"
     },
@@ -6272,7 +6281,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L94",
-      "community": 49,
+      "community": 88,
       "norm_label": ".start()",
       "id": "watcher_service_watcherservice_start"
     },
@@ -6281,7 +6290,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L102",
-      "community": 49,
+      "community": 88,
       "norm_label": ".stop()",
       "id": "watcher_service_watcherservice_stop"
     },
@@ -6290,7 +6299,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L111",
-      "community": 49,
+      "community": 88,
       "norm_label": ".getstatecache()",
       "id": "watcher_service_watcherservice_getstatecache"
     },
@@ -6299,7 +6308,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.ts",
       "source_location": "L117",
-      "community": 49,
+      "community": 88,
       "norm_label": "._run()",
       "id": "watcher_service_watcherservice_run"
     },
@@ -6326,7 +6335,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L20",
-      "community": 49,
+      "community": 85,
       "norm_label": "tobigintstrict()",
       "id": "watcher_state_ops_tobigintstrict"
     },
@@ -6335,7 +6344,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L27",
-      "community": 49,
+      "community": 85,
       "norm_label": "asstaterecord()",
       "id": "watcher_state_ops_asstaterecord"
     },
@@ -6344,7 +6353,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L32",
-      "community": 49,
+      "community": 85,
       "norm_label": "parsepoolmetadatavalue()",
       "id": "watcher_state_ops_parsepoolmetadatavalue"
     },
@@ -6353,7 +6362,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L44",
-      "community": 49,
+      "community": 85,
       "norm_label": "resolvev2feedenominator()",
       "id": "watcher_state_ops_resolvev2feedenominator"
     },
@@ -6362,7 +6371,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L56",
-      "community": 49,
+      "community": 85,
       "norm_label": "resolvev2feenumerator()",
       "id": "watcher_state_ops_resolvev2feenumerator"
     },
@@ -6371,7 +6380,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L68",
-      "community": 49,
+      "community": 85,
       "norm_label": "resolvev3fee()",
       "id": "watcher_state_ops_resolvev3fee"
     },
@@ -6416,7 +6425,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L121",
-      "community": 49,
+      "community": 85,
       "norm_label": "decodedvalue()",
       "id": "watcher_state_ops_decodedvalue"
     },
@@ -6425,7 +6434,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L125",
-      "community": 49,
+      "community": 85,
       "norm_label": "decodedbigint()",
       "id": "watcher_state_ops_decodedbigint"
     },
@@ -6434,7 +6443,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L129",
-      "community": 49,
+      "community": 89,
       "norm_label": "istickrecord()",
       "id": "watcher_state_ops_istickrecord"
     },
@@ -6443,7 +6452,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L133",
-      "community": 49,
+      "community": 89,
       "norm_label": "totickbigint()",
       "id": "watcher_state_ops_totickbigint"
     },
@@ -6452,7 +6461,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L140",
-      "community": 49,
+      "community": 89,
       "norm_label": "tickentriesfrom()",
       "id": "watcher_state_ops_tickentriesfrom"
     },
@@ -6461,7 +6470,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L159",
-      "community": 49,
+      "community": 89,
       "norm_label": "normalizewatcherticks()",
       "id": "watcher_state_ops_normalizewatcherticks"
     },
@@ -6470,7 +6479,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L174",
-      "community": 49,
+      "community": 85,
       "norm_label": "ensurev3fee()",
       "id": "watcher_state_ops_ensurev3fee"
     },
@@ -6479,7 +6488,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L182",
-      "community": 49,
+      "community": 85,
       "norm_label": "updatev2state()",
       "id": "watcher_state_ops_updatev2state"
     },
@@ -6488,7 +6497,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L202",
-      "community": 49,
+      "community": 85,
       "norm_label": "updatev3swapstate()",
       "id": "watcher_state_ops_updatev3swapstate"
     },
@@ -6497,7 +6506,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L210",
-      "community": 49,
+      "community": 89,
       "norm_label": "updatetickstate()",
       "id": "watcher_state_ops_updatetickstate"
     },
@@ -6506,7 +6515,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L221",
-      "community": 49,
+      "community": 85,
       "norm_label": "updatev3liquiditystate()",
       "id": "watcher_state_ops_updatev3liquiditystate"
     },
@@ -7172,7 +7181,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/types.ts",
       "source_location": "L23",
-      "community": 49,
+      "community": 83,
       "norm_label": "watcherpoolrefresh",
       "id": "watcher_types_watcherpoolrefresh"
     },
@@ -7181,7 +7190,7 @@
       "file_type": "code",
       "source_file": "src/services/watcher/types.ts",
       "source_location": "L25",
-      "community": 49,
+      "community": 83,
       "norm_label": "watcherv3refresh",
       "id": "watcher_types_watcherv3refresh"
     },
@@ -8054,7 +8063,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 87,
       "norm_label": "types.ts",
       "id": "src_infra_hypersync_types_ts"
     },
@@ -8063,7 +8072,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L3",
-      "community": 3,
+      "community": 87,
       "norm_label": "hypersynclogfilter",
       "id": "hypersync_types_hypersynclogfilter"
     },
@@ -8081,7 +8090,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L13",
-      "community": 3,
+      "community": 84,
       "norm_label": "hypersyncquery",
       "id": "hypersync_types_hypersyncquery"
     },
@@ -8090,7 +8099,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L23",
-      "community": 32,
+      "community": 86,
       "norm_label": "hypersyncclientconfig",
       "id": "hypersync_types_hypersyncclientconfig"
     },
@@ -8108,7 +8117,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L44",
-      "community": 3,
+      "community": 87,
       "norm_label": "hypersyncblockheader",
       "id": "hypersync_types_hypersyncblockheader"
     },
@@ -8117,7 +8126,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L50",
-      "community": 3,
+      "community": 87,
       "norm_label": "streamprogress",
       "id": "hypersync_types_streamprogress"
     },
@@ -8126,7 +8135,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L58",
-      "community": 3,
+      "community": 84,
       "norm_label": "streamconfig",
       "id": "hypersync_types_streamconfig"
     },
@@ -8135,7 +8144,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L64",
-      "community": 3,
+      "community": 87,
       "norm_label": "hypersyncstream",
       "id": "hypersync_types_hypersyncstream"
     },
@@ -8144,7 +8153,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L68",
-      "community": 3,
+      "community": 87,
       "norm_label": "hypersyncgetresponse",
       "id": "hypersync_types_hypersyncgetresponse"
     },
@@ -8153,7 +8162,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L74",
-      "community": 3,
+      "community": 87,
       "norm_label": "decodedlogvalue",
       "id": "hypersync_types_decodedlogvalue"
     },
@@ -8162,7 +8171,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L78",
-      "community": 3,
+      "community": 87,
       "norm_label": "hypersyncdecodedlog",
       "id": "hypersync_types_hypersyncdecodedlog"
     },
@@ -8171,7 +8180,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L83",
-      "community": 3,
+      "community": 32,
       "norm_label": "hypersyncdecoderruntime",
       "id": "hypersync_types_hypersyncdecoderruntime"
     },
@@ -8180,7 +8189,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L87",
-      "community": 3,
+      "community": 84,
       "norm_label": "hypersyncclientruntime",
       "id": "hypersync_types_hypersyncclientruntime"
     },
@@ -9014,6 +9023,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "t_package_devdependencies",
+      "target": "t_package_devdependencies_pino_pretty",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
       "source_location": "L32",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9049,318 +9068,6 @@
       "confidence_score": 1.0,
       "source": "t_package_devdependencies",
       "target": "t_package_devdependencies_vitest"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "src_infra_db_connection_ts",
-      "target": "db_connection_sqlinputvalue",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "src_infra_db_connection_ts",
-      "target": "db_connection_createdatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "source": "src_infra_db_connection_ts",
-      "target": "db_connection_createinmemorydatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "src_infra_db_connection_ts",
-      "target": "db_connection_compatstatement",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L48",
-      "weight": 1.0,
-      "source": "src_infra_db_connection_ts",
-      "target": "db_connection_compatdatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_infra_db_connection_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "db_connection_createdatabase",
-      "target": "db_connection_compatdatabase_pragma",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "db_connection_createdatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "db_connection_createdatabase"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "source": "db_connection_createinmemorydatabase",
-      "target": "db_connection_compatdatabase_pragma",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "db_connection_compatstatement",
-      "target": "db_connection_compatstatement_constructor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "source": "db_connection_compatstatement",
-      "target": "db_connection_compatstatement_run",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L35",
-      "weight": 1.0,
-      "source": "db_connection_compatstatement",
-      "target": "db_connection_compatstatement_get",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "db_connection_compatstatement",
-      "target": "db_connection_compatstatement_all",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "source": "db_connection_compatstatement",
-      "target": "db_connection_compatstatement_iterate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_prepare",
-      "target": "db_connection_compatstatement_get",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_statement",
-      "target": "db_connection_compatstatement_get",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L98",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_pragmaget",
-      "target": "db_connection_compatstatement_get",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_constructor",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_prepare",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_statement",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L88",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_exec",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L93",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_pragma",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_pragmaget",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L101",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_transaction",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L138",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase",
-      "target": "db_connection_compatdatabase_close",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "db_connection_compatdatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L82",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_statement",
-      "target": "db_connection_compatdatabase_prepare",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L98",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_pragmaget",
-      "target": "db_connection_compatdatabase_prepare",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/connection.ts",
-      "source_location": "L94",
-      "weight": 1.0,
-      "source": "db_connection_compatdatabase_pragma",
-      "target": "db_connection_compatdatabase_exec",
-      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -9400,6 +9107,28 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "db_connection_createdatabase"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "db_connection_compatdatabase"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9416,17 +9145,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_ts",
       "target": "types_route_routestatecache"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_discovery_service_ts"
     },
     {
       "relation": "imports",
@@ -9601,6 +9319,28 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_ts",
       "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "src_infra_db_connection_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "src_services_discovery_service_ts"
     },
     {
       "relation": "imports_from",
@@ -9784,6 +9524,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "db_connection_createdatabase"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L39",
       "weight": 1.0,
       "source": "orchestrator_boot_bootapplication",
@@ -9810,6 +9561,274 @@
       "weight": 1.0,
       "source": "cli_main_main",
       "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_db_connection_ts",
+      "target": "db_connection_sqlinputvalue"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_db_connection_ts",
+      "target": "db_connection_createdatabase"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_db_connection_ts",
+      "target": "db_connection_createinmemorydatabase"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_db_connection_ts",
+      "target": "db_connection_compatstatement"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_db_connection_ts",
+      "target": "db_connection_compatdatabase"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_createdatabase",
+      "target": "db_connection_compatdatabase_pragma"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_createinmemorydatabase",
+      "target": "db_connection_compatdatabase_pragma"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatstatement",
+      "target": "db_connection_compatstatement_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatstatement",
+      "target": "db_connection_compatstatement_run"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatstatement",
+      "target": "db_connection_compatstatement_get"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatstatement",
+      "target": "db_connection_compatstatement_all"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatstatement",
+      "target": "db_connection_compatstatement_iterate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_prepare",
+      "target": "db_connection_compatstatement_get"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_statement",
+      "target": "db_connection_compatstatement_get"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_pragmaget",
+      "target": "db_connection_compatstatement_get"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_prepare"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_statement"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L88",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_exec"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L93",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_pragma"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_pragmaget"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L101",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_transaction"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L138",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase",
+      "target": "db_connection_compatdatabase_close"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_statement",
+      "target": "db_connection_compatdatabase_prepare"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_pragmaget",
+      "target": "db_connection_compatdatabase_prepare"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/db/connection.ts",
+      "source_location": "L94",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "db_connection_compatdatabase_pragma",
+      "target": "db_connection_compatdatabase_exec"
     },
     {
       "relation": "imports",
@@ -9840,9 +9859,9 @@
       "source_file": "src/services/discovery/service.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_discovery_service_ts",
-      "target": "discovery_enrichment_tokenmetafetcher",
-      "confidence_score": 1.0
+      "target": "discovery_enrichment_tokenmetafetcher"
     },
     {
       "relation": "contains",
@@ -23593,5 +23612,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "36633a118b9ed1a62d64945a8178460c9b9984e0"
+  "built_at_commit": "6bf854bf318ba4d623d9d0a507d8601028fec6f1"
 }
