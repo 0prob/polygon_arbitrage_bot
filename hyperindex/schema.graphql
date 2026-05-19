@@ -1,0 +1,49 @@
+type PoolMeta {
+  id: ID!
+  address: String!
+  protocol: String!
+  tokens: [String!]!
+  token0: String
+  token1: String
+  createdBlock: Int!
+}
+
+type V2PoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  reserve0: BigInt!
+  reserve1: BigInt!
+}
+
+type V3PoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  sqrtPriceX96: BigInt!
+  liquidity: BigInt!
+  tick: Int!
+}
+
+type CurvePoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  balances: [BigInt!]!
+  A: BigInt!
+  fee: BigInt!
+}
+
+type TokenMeta {
+  id: ID!
+  address: String!
+  decimals: Int
+}
+
+type BalancerPoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  poolId: String!
+  balances: [BigInt!]!
+}

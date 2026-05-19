@@ -1,0 +1,16 @@
+{
+  "name": "arb-bot-ingestion",
+  "private": true,
+  "scripts": {
+    "codegen": "envio codegen",
+    "dev": "envio dev",
+    "run": "envio run"
+  },
+  "dependencies": {
+    "envio": "latest",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

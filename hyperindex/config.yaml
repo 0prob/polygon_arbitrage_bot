@@ -1,0 +1,107 @@
+name: arb_bot_ingestion
+networks:
+  - id: 137
+    startBlock: 0
+    contracts:
+      # V2 Factories (8)
+      - name: QuickswapV2Factory
+        address: "0x5757371414417b8c6caad45baef941abc7d3ab32"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: SushiswapV2Factory
+        address: "0xc35dadb65012ec5796536bd9864ed8773abc74c4"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: UniswapV2Factory
+        address: "0x9e5a52f57b3038f1b8eee45f28b3c1967e22799c"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: DfynV2Factory
+        address: "0xe7fb3e833efe5f9c441105eb65ef8b261266423b"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: ApeswapV2Factory
+        address: "0xcf083be4164828f00cae704ec15a36d711491284"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: MeshswapV2Factory
+        address: "0x9f3044f7f9fc8bc9ed615d54845b4577b833282d"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: JetswapV2Factory
+        address: "0x668ad0ed2622c62e24f0d5ab6b6ac1b9d2cd4ac7"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      - name: ComethswapV2Factory
+        address: "0x800b052609c355ca8103e06f022aa30647ead60a"
+        abi_file: abis/uniswap_v2_factory.json
+        handler: src/handlers/v2_factory.ts
+        events:
+          - event: PairCreated
+      # V2 Pools (wildcard)
+      - name: UniswapV2Pool
+        abi_file: abis/uniswap_v2_pool.json
+        handler: src/handlers/v2_pool.ts
+        wildcard: true
+        events:
+          - event: Swap
+          - event: Sync
+      # V3 Factories (4)
+      - name: UniswapV3Factory
+        address: "0x1f98431c8ad98523631ae4a59f267346ea31f984"
+        abi_file: abis/uniswap_v3_factory.json
+        handler: src/handlers/v3_factory.ts
+        events:
+          - event: PoolCreated
+      - name: SushiswapV3Factory
+        address: "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2"
+        abi_file: abis/uniswap_v3_factory.json
+        handler: src/handlers/v3_factory.ts
+        events:
+          - event: PoolCreated
+      - name: QuickswapV3Factory
+        address: "0x411b0facc3489691f28ad58c47006af5e3ab3a28"
+        abi_file: abis/uniswap_v3_factory.json
+        handler: src/handlers/v3_factory.ts
+        events:
+          - event: PoolCreated
+      - name: KyberswapElasticFactory
+        address: "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a"
+        abi_file: abis/uniswap_v3_factory.json
+        handler: src/handlers/v3_factory.ts
+        events:
+          - event: PoolCreated
+      # V3 Pools (wildcard)
+      - name: UniswapV3Pool
+        abi_file: abis/uniswap_v3_pool.json
+        handler: src/handlers/v3_pool.ts
+        wildcard: true
+        events:
+          - event: Swap
+      # Curve Registry
+      - name: CurveRegistry
+        address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
+        abi_file: abis/curve_factory.json
+        handler: src/handlers/curve_factory.ts
+        events:
+          - event: PoolAdded
+      - name: CurvePool
+        abi_file: abis/uniswap_v2_pool.json
+        handler: src/handlers/curve_pool.ts
+        wildcard: true
+        events:
+          - event: Sync
