@@ -8,6 +8,7 @@ import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "../servi
 import type { BotState } from "../cli/tui.ts";
 import type { ActivityLog } from "../cli/activity.ts";
 import { withTimeout } from "../infra/rpc/retry.ts";
+import { buildStateCacheFromHyperIndex } from "../infra/db/hyperindex_reader.ts";
 
 async function getGasPriceWei(ctx: RuntimeContext): Promise<bigint> {
   try {
@@ -112,7 +113,10 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
 
       activity?.("PASS", "Building graph...");
 
-      const stateCache = ctx.watcherService.getStateCache();
+      let stateCache = ctx.hiDbPath ? buildStateCacheFromHyperIndex(ctx.hiDbPath, pools.map(p => p.address)) : new Map();
+      if (stateCache.size === 0) {
+        stateCache = ctx.watcherService.getStateCache();
+      }
       const graph = buildGraph(pools, stateCache);
       const cycles = enumerateCycles(graph, ctx.config.routing.maxHops);
       state.cachedPathCount = cycles.length;

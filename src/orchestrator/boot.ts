@@ -44,12 +44,14 @@ import {
   BALANCER_VAULT,
 } from "../config/addresses.ts";
 import { getAllPoolStates, getPoolState as getPoolStateFromDb } from "../infra/db/pools.ts";
+import { getHiDbPath, readHyperIndexPools } from "../infra/db/hyperindex_reader.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
   logger: Logger;
   db: CompatDatabase;
   stateCache: RouteStateCache;
+  hiDbPath: string;
   discoveryService: DiscoveryService;
   watcherService: WatcherService;
   hydrationService: HydrationService;
@@ -172,6 +174,23 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
     { type: "function", name: "decimals", inputs: [], outputs: [{ type: "uint8" }], stateMutability: "view" },
   ] as const;
 
+  const poolGetPoolIdAbi = [
+    { type: "function", name: "getPoolId", inputs: [], outputs: [{ type: "bytes32" }], stateMutability: "view" },
+  ] as const;
+
+  const vaultGetPoolTokensAbi = [
+    { type: "function", name: "getPoolTokens", inputs: [{ type: "bytes32" }], outputs: [{ type: "address[]" }, { type: "uint256[]" }, { type: "uint256" }], stateMutability: "view" },
+  ] as const;
+
+  const curveBalancesAbi = [
+    { type: "function", name: "balances", inputs: [{ type: "uint256" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  ] as const;
+
+  const curveStateAbi = [
+    { type: "function", name: "A", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    { type: "function", name: "fee", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  ] as const;
+
   const tokenDecimalsCache = new Map<string, number>();
 
   async function fetchTokenDecimals(tokenAddresses: Address[]): Promise<Map<string, number>> {
@@ -199,10 +218,40 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
 
   const watcherRefreshFns: WatcherRefreshFns = {
     refreshBalancer: async (addr: string, _pool: WatcherPoolMeta | null) => {
-      logger.debug({ addr }, "Balancer refresh not implemented");
+      try {
+        const address = addr as Address;
+        const poolId = await publicClient.readContract({ address, abi: poolGetPoolIdAbi, functionName: "getPoolId" });
+        const [tokensRes, balancesRes, lastChangeBlock] = await publicClient.readContract({
+          address: BALANCER_VAULT,
+          abi: vaultGetPoolTokensAbi,
+          functionName: "getPoolTokens",
+          args: [poolId],
+        });
+        mergeStateIntoCache(stateCache, addr, {
+          balances: (balancesRes as readonly bigint[]).map((b) => BigInt(b)),
+          lastChangeBlock: BigInt(lastChangeBlock as bigint),
+          tokens: (tokensRes as readonly string[]).map((t) => t.toLowerCase()),
+        });
+      } catch (err) {
+        logger.warn({ err, addr }, "Balancer pool refresh failed");
+      }
     },
-    refreshCurve: async (addr: string, _pool: WatcherPoolMeta | null) => {
-      logger.debug({ addr }, "Curve refresh not implemented");
+    refreshCurve: async (addr: string, pool: WatcherPoolMeta | null) => {
+      try {
+        const address = addr as Address;
+        const tokenList = (pool?.metadata?.tokens ?? []) as string[];
+        const nCoins = tokenList.length > 0 ? tokenList.length : 2;
+        const balances: bigint[] = [];
+        for (let i = 0; i < nCoins; i++) {
+          const bal = await publicClient.readContract({ address, abi: curveBalancesAbi, functionName: "balances", args: [BigInt(i)] });
+          balances.push(bal as bigint);
+        }
+        const A = (await publicClient.readContract({ address, abi: curveStateAbi, functionName: "A" })) as bigint;
+        const fee = (await publicClient.readContract({ address, abi: curveStateAbi, functionName: "fee" })) as bigint;
+        mergeStateIntoCache(stateCache, addr, { balances, A, fee, nCoins });
+      } catch (err) {
+        logger.warn({ err, addr }, "Curve pool refresh failed");
+      }
     },
     refreshDodo: async (addr: string, _pool: WatcherPoolMeta | null) => {
       logger.debug({ addr }, "Dodo refresh not implemented");
@@ -259,30 +308,33 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
   };
 
   const getPools = (): PoolMeta[] => {
+    const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
+      address: string; protocol: string; tokens: string;
+    }>;
+    const seen = new Set(rows.map(r => r.address));
+
+    // Also read pools discovered by HyperIndex
     try {
-      const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
-        address: string;
-        protocol: string;
-        tokens: string;
-      }>;
-      return rows.map((r) => {
-        let tokens: string[];
-        try {
-          tokens = JSON.parse(r.tokens);
-        } catch {
-          tokens = [];
+      const hiPools = readHyperIndexPools(config.paths.dataDir);
+      for (const p of hiPools) {
+        if (!seen.has(p.address)) {
+          rows.push(p);
+          seen.add(p.address);
         }
-        return {
-          address: r.address as Address,
-          protocol: r.protocol,
-          token0: (tokens[0] ?? "") as Address,
-          token1: (tokens[1] ?? "") as Address,
-          tokens: tokens as Address[],
-        };
-      });
-    } catch {
-      return [];
-    }
+      }
+    } catch { /* HyperIndex DB may not exist yet */ }
+
+    return rows.map((r) => {
+      let tokens: string[];
+      try { tokens = JSON.parse(r.tokens); } catch { tokens = []; }
+      return {
+        address: r.address as Address,
+        protocol: r.protocol,
+        token0: (tokens[0] ?? "") as Address,
+        token1: (tokens[1] ?? "") as Address,
+        tokens: tokens as Address[],
+      };
+    });
   };
 
   const hydrationService = new HydrationService(logger, stateCache, fetchPoolState, getPools);
@@ -372,6 +424,7 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
     logger,
     db,
     stateCache,
+    hiDbPath: getHiDbPath(config.paths.dataDir),
     discoveryService,
     watcherService,
     hydrationService,
