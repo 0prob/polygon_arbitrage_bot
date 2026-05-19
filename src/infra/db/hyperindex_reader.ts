@@ -1,6 +1,18 @@
 import path from "path";
 import { createDatabase, type CompatDatabase } from "./connection.ts";
 
+export type V4PoolStateRow = {
+  id: string;
+  address: string;
+  lastUpdatedBlock: number;
+  sqrtPriceX96: string;
+  liquidity: string;
+  tick: number;
+  fee: string;
+  tickSpacing: number;
+  hooks: string;
+};
+
 export function getHiDbPath(dataDir: string): string {
   return path.join(dataDir, "../hyperindex/.hyperindex/db.sqlite");
 }
@@ -14,6 +26,10 @@ export function readHyperIndexState(hiDb: CompatDatabase, address: string): Reco
   const v3 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE id = ?").get(addr) as
     { sqrtPriceX96: string; liquidity: string; tick: number } | undefined;
   if (v3) return { sqrtPriceX96: BigInt(v3.sqrtPriceX96), liquidity: BigInt(v3.liquidity), tick: v3.tick };
+
+  const v4 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tick FROM v4_pool_state WHERE id = ?").get(addr) as
+    { sqrtPriceX96: string; liquidity: string; tick: number } | undefined;
+  if (v4) return { sqrtPriceX96: BigInt(v4.sqrtPriceX96), liquidity: BigInt(v4.liquidity), tick: v4.tick };
 
   const curve = hiDb.prepare("SELECT balances, A, fee FROM curve_pool_state WHERE id = ?").get(addr) as
     { balances: string; A: string; fee: string } | undefined;

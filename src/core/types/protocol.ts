@@ -33,7 +33,7 @@ export const V2_FAMILY_KEYS = new Set([
   "UNISWAP_V2",
 ]);
 
-export const V3_FAMILY_KEYS = new Set(["UNISWAP_V3", "SUSHISWAP_V3", "QUICKSWAP_V3", "KYBERSWAP_ELASTIC"]);
+export const V3_FAMILY_KEYS = new Set(["UNISWAP_V3", "SUSHISWAP_V3", "QUICKSWAP_V3", "KYBERSWAP_ELASTIC", "UNISWAP_V4"]);
 
 export const CURVE_FAMILY_KEYS = new Set([
   "CURVE_MAIN_REGISTRY",
