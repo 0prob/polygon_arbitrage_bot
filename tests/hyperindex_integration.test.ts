@@ -28,7 +28,7 @@ describe("HyperIndex ingestion layer", () => {
   });
 
   it("handler files exist for all protocols", () => {
-    const handlerDir = path.join(HYPERINDEX_DIR, "src", "handlers_ts");
+    const handlerDir = path.join(HYPERINDEX_DIR, "src", "handlers");
     expect(existsSync(path.join(handlerDir, "v2_factory.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "v2_pool.ts"))).toBe(true);
     expect(existsSync(path.join(handlerDir, "v3_factory.ts"))).toBe(true);
