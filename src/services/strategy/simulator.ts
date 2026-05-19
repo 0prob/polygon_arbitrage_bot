@@ -51,7 +51,7 @@ function normalizeProtocol(raw: string): string {
   if (u.startsWith("DODO")) return "DODO";
   if (u.startsWith("WOOFI")) return "WOOFI";
   // Everything else falls through to V2/V3 matching
-  if (u.includes("V3") || u === "KYBERSWAP_ELASTIC") return "V3";
+  if (u.includes("V3") || u === "KYBERSWAP_ELASTIC" || u === "UNISWAP_V4") return "V3";
   if (u.includes("V2")) return "V2";
   return u;
 }
