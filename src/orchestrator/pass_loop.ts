@@ -7,7 +7,6 @@ import type { CandidateExecution } from "../services/execution/service.ts";
 import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "../services/execution/builder.ts";
 import type { BotState } from "../cli/tui.ts";
 import type { ActivityLog } from "../cli/activity.ts";
-import { withTimeout } from "../infra/rpc/retry.ts";
 import { buildStateCacheFromHyperIndex } from "../infra/db/hyperindex_reader.ts";
 
 async function getGasPriceWei(ctx: RuntimeContext): Promise<bigint> {
@@ -72,8 +71,6 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
   const executorAddress = ctx.config.execution.executorAddress;
 
   await ctx.executionService.start();
-  await ctx.hydrationService.start();
-  await ctx.discoveryService.start();
   await ctx.mempoolService.start();
 
   ctx.logger.info({ intervalMs }, "Pass loop started");
@@ -94,29 +91,15 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       state.stateCacheSize = pools.length;
 
       if (pools.length === 0) {
-        activity?.("PASS", "No pools yet, triggering discovery (balancer, curve)");
-        ctx.logger.info({}, "No pools found, triggering discovery");
-        try {
-          await withTimeout(
-            Promise.all([
-              ctx.discoveryService.discoverProtocol("balancer"),
-              ctx.discoveryService.discoverProtocol("curve"),
-            ]),
-            30_000,
-          );
-        } catch (err) {
-          ctx.logger.error({ err }, "Pool discovery failed or timed out");
-        }
+        activity?.("PASS", "No pools yet — HyperIndex may still be discovering");
+        ctx.logger.info({}, "No pools found, waiting for HyperIndex discovery");
         await sleep(intervalMs);
         continue;
       }
 
       activity?.("PASS", "Building graph...");
 
-      let stateCache = ctx.hiDbPath ? buildStateCacheFromHyperIndex(ctx.hiDbPath, pools.map(p => p.address)) : new Map();
-      if (stateCache.size === 0) {
-        stateCache = ctx.watcherService.getStateCache();
-      }
+      const stateCache = buildStateCacheFromHyperIndex(ctx.hiDbPath, pools.map(p => p.address));
       const graph = buildGraph(pools, stateCache);
       const cycles = enumerateCycles(graph, ctx.config.routing.maxHops);
       state.cachedPathCount = cycles.length;
