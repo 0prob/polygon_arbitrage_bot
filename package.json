@@ -17,12 +17,13 @@
     "lint": "bunx eslint src/",
     "lint:fix": "bunx eslint src/ --fix",
     "fmt": "bunx prettier --check src/",
-    "fmt:fix": "bunx prettier --write src/"
+    "fmt:fix": "bunx prettier --write src/",
+    "hi:start": "cd hyperindex && bunx envio dev",
+    "hi:codegen": "cd hyperindex && bunx envio codegen"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "^1.3.0",
     "pino": "^10.3.1",
-    "tsx": "^4.22.1",
     "viem": "^2.49.3",
     "zod": "^4.4.3"
   },

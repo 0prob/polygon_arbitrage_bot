@@ -48,5 +48,8 @@ npm-debug.log
 out/
 playwright-report/
 Thumbs.db
+# HyperIndex ingestion layer — local DB + generated artifacts
+hyperindex/.hyperindex/
+hyperindex/generated/
 yarn-debug.log
 yarn-error.log
