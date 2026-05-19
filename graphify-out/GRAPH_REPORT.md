@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 158 files · ~52,655 words
+- 158 files · ~52,653 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 947 nodes · 1408 edges · 75 communities (58 shown, 17 thin omitted)
+- 947 nodes · 1400 edges · 83 communities (65 shown, 18 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `92d2afd0`
+- Built from commit: `e817648c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -80,13 +80,21 @@
 - [[_COMMUNITY_Community 70|Community 70]]
 - [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
+- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
+- [[_COMMUNITY_Community 79|Community 79]]
+- [[_COMMUNITY_Community 80|Community 80]]
+- [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `renderFrame()` - 16 edges
 2. `RpcEndpointPool` - 14 edges
 3. `encodeRoute()` - 13 edges
-4. `simulateV3Swap()` - 12 edges
-5. `runPassLoop()` - 12 edges
+4. `runPassLoop()` - 12 edges
+5. `simulateV3Swap()` - 12 edges
 6. `compilerOptions` - 12 edges
 7. `computeProfit()` - 11 edges
 8. `simulateRoute()` - 11 edges
@@ -96,32 +104,32 @@
 ## Surprising Connections (you probably didn't know these)
 - `createRootLogger()` --calls--> `pino`  [INFERRED]
   src/infra/observability/logger.ts → package.json
+- `runPassLoop()` --calls--> `withTimeout()`  [INFERRED]
+  pass_loop.ts → src/infra/rpc/retry.ts
+- `runPassLoop()` --calls--> `buildGraph()`  [EXTRACTED]
+  pass_loop.ts → src/services/strategy/graph.ts
+- `main()` --calls--> `runPassLoop()`  [EXTRACTED]
+  src/cli/main.ts → pass_loop.ts
 - `pollLoop()` --calls--> `signal`  [INFERRED]
   src/services/watcher/poll_loop.ts → src/services/strategy/backrunner.test.ts
-- `withRetry()` --calls--> `fn`  [INFERRED]
-  src/infra/rpc/retry.ts → src/infra/rpc/retry.test.ts
-- `runPassLoop()` --calls--> `withTimeout()`  [INFERRED]
-  src/orchestrator/pass_loop.ts → src/infra/rpc/retry.ts
-- `optimizeInputAmount()` --calls--> `simulate()`  [INFERRED]
-  src/core/assessment/optimizer.ts → src/core/assessment/optimizer.test.ts
 
-## Communities (75 total, 17 thin omitted)
+## Communities (83 total, 18 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
-Nodes (34): dependencies, @envio-dev/hypersync-client, pino, tsx, viem, zod, devDependencies, eslint (+26 more)
+Nodes (33): dependencies, @envio-dev/hypersync-client, tsx, viem, zod, devDependencies, eslint, eslint-config-prettier (+25 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.12
 Nodes (16): Architecture, CLI (`src/cli/`), code:block1 (git clone <repo>), code:block2 (pnpm start), Config (`src/config/`), Configuration, Core (`src/core/`), Development (+8 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.06
-Nodes (35): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), loadConfigOrDie(), AppConfig, AppConfigSchema (+27 more)
+Cohesion: 0.08
+Nodes (25): bigintFromString, DiscoveryConfig, DiscoveryConfigSchema, ExecutionConfig, ExecutionConfigSchema, GasConfig, GasConfigSchema, HypersyncConfig (+17 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.07
-Nodes (35): buildLogQuery(), computeTopic0(), computeTopic0s(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeLogFilter(), normalizeTopic() (+27 more)
+Cohesion: 0.05
+Nodes (43): config, mockGet, mockGetHeight, MockHypersyncClient, mockRecv, mockStream, normalized, buildLogQuery() (+35 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.12
@@ -136,12 +144,12 @@ Cohesion: 0.13
 Nodes (14): A, B, C, cycles, e1, e2, graph, key (+6 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.10
-Nodes (22): Backrunner, evaluatePaths(), extractGasResult(), inferTokenIdx(), inferZeroForOne(), normalizeProtocol(), simulateHop(), simulateRoute() (+14 more)
+Cohesion: 0.15
+Nodes (12): A, B, cache, edge, edges, p1, p2, poolA (+4 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.15
-Nodes (12): EvaluatedRoute, evaluatePathsParallel(), A, B, badEdges, cycles, edges, goodEdges (+4 more)
+Nodes (13): EvaluatedRoute, evaluatePaths(), evaluatePathsParallel(), A, B, badEdges, cycles, edges (+5 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.17
@@ -168,8 +176,8 @@ Cohesion: 0.25
 Nodes (7): bigUint20, bigUint40, out, out1, out2, result, state
 
 ### Community 15 - "Community 15"
-Cohesion: 0.25
-Nodes (7): graph, hubTokens, pool, pool1, pool2, state, stateMap
+Cohesion: 0.21
+Nodes (10): buildGraph(), buildHubGraph(), RoutingGraph, graph, hubTokens, pool, pool1, pool2 (+2 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.18
@@ -184,8 +192,8 @@ Cohesion: 0.33
 Nodes (6): best, ep, make(), makePool(), pool, spy
 
 ### Community 19 - "Community 19"
-Cohesion: 0.05
-Nodes (72): assertValidRoute(), buildArbTx(), BuilderConfig, BuilderOptions, BuilderRouteInput, BuiltTransaction, normalizeEvmAddress(), asAddress() (+64 more)
+Cohesion: 0.07
+Nodes (58): assertValidRoute(), buildArbTx(), BuilderConfig, BuilderOptions, BuilderRouteInput, BuiltTransaction, normalizeEvmAddress(), asAddress() (+50 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.22
@@ -209,7 +217,7 @@ Nodes (4): DEFAULT_RATES, out, result, state
 
 ### Community 26 - "Community 26"
 Cohesion: 0.08
-Nodes (18): NonceFetcher, NonceManager, fetchNonce, nm, EndpointPoolOptions, ensureHttps(), RpcEndpoint, errorMessage() (+10 more)
+Nodes (17): NonceFetcher, NonceManager, fetchNonce, nm, EndpointPoolOptions, ensureHttps(), RpcEndpoint, errorMessage() (+9 more)
 
 ### Community 27 - "Community 27"
 Cohesion: 0.13
@@ -228,32 +236,32 @@ Cohesion: 0.50
 Nodes (3): service, signals, tx
 
 ### Community 31 - "Community 31"
-Cohesion: 0.25
-Nodes (7): CandidateEntry, CandidatePipelineResult, DryRunResult, ExecutableCandidate, ExecutionOutcome, SubmissionResult, TransactionParams
+Cohesion: 0.20
+Nodes (13): getCheckpoint(), rollbackToCheckpoint(), saveCheckpoint(), pollLoop(), sleep(), checkReorg(), detectReorg(), pick() (+5 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.09
-Nodes (25): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+17 more)
+Cohesion: 0.13
+Nodes (20): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+12 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (5): FACTORY_ABI, fetchCurvePools(), factoryAddress, mockClient, mockFactory
 
 ### Community 49 - "Community 49"
-Cohesion: 0.05
-Nodes (68): getCheckpoint(), rollbackToCheckpoint(), saveCheckpoint(), HypersyncDecoderRuntime, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap() (+60 more)
+Cohesion: 0.16
+Nodes (22): dedupeLogs(), logger, sortLogs(), buildLogQuery(), commitWatcherStatesBatch(), CORE_STATE_KEYS, mergeStateIntoCache(), mergeWatcherState() (+14 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.24
-Nodes (9): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, Logger, LoggerOptions, CircuitBreakerOptions, CircuitState (+1 more)
+Cohesion: 0.36
+Nodes (6): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, LoggerOptions, pino
 
 ### Community 51 - "Community 51"
-Cohesion: 0.15
-Nodes (24): createBotState(), main(), age(), BotActivityProgress, BotOpportunityRow, BotState, fmt(), fmtDur() (+16 more)
+Cohesion: 0.20
+Nodes (19): age(), BotActivityProgress, BotOpportunityRow, fmt(), fmtDur(), fmtProgress(), fmtWei(), latestEvent() (+11 more)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.15
-Nodes (18): computeProfit(), ComputeProfitOptions, gasCostMaticWei(), invalidAssessment(), maticWeiToTokens(), roiMicroUnits(), baseOpts, r2 (+10 more)
+Cohesion: 0.12
+Nodes (22): computeProfit(), ComputeProfitOptions, gasCostMaticWei(), invalidAssessment(), maticWeiToTokens(), roiMicroUnits(), baseOpts, r2 (+14 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.12
@@ -268,16 +276,20 @@ Cohesion: 0.14
 Nodes (13): compilerOptions, allowImportingTsExtensions, esModuleInterop, module, moduleResolution, noEmit, noUnusedLocals, noUnusedParameters (+5 more)
 
 ### Community 57 - "Community 57"
-Cohesion: 0.19
-Nodes (6): DecodedPoolEvent, TokenMetaFetcher, TokenMetaRemote, DiscoveryResult, DiscoveryService, DiscoveryServiceDeps
+Cohesion: 0.16
+Nodes (9): DecodedPoolEvent, TokenMetaFetcher, TokenMetaRemote, DiscoveryResult, DiscoveryService, DiscoveryServiceDeps, PoolStateFetcher, StateCache (+1 more)
 
 ### Community 58 - "Community 58"
 Cohesion: 0.11
 Nodes (10): AttemptEntry, AttemptLogSink, logAttempt(), sinks, AlchemyPrivateTxSubmitter, PrivateRelaySubmitter, PublicSubmitter, SubmissionResult (+2 more)
 
-### Community 60 - "Community 60"
+### Community 59 - "Community 59"
 Cohesion: 0.18
-Nodes (19): RuntimeContext, getGasPriceWei(), runPassLoop(), sleep(), mockContext, mockExecute, mockProfitable, mockStateUpdate (+11 more)
+Nodes (4): CircuitBreaker, CircuitBreakerOptions, CircuitState, DEFAULT_CIRCUIT_BREAKER_OPTIONS
+
+### Community 60 - "Community 60"
+Cohesion: 0.20
+Nodes (16): RuntimeContext, getGasPriceWei(), runPassLoop(), sleep(), mockContext, mockExecute, mockProfitable, mockStateUpdate (+8 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.21
@@ -295,29 +307,53 @@ Nodes (9): decodeCurvePoolAdded(), decodePairCreated(), decodePoolDeployed(), de
 Cohesion: 0.33
 Nodes (5): code:typescript (<<<<), code:bash (git add .), Task 1: Fix WatcherService Drain, Task 2: Final Verification & Commit, Workspace Repair Implementation Plan
 
-### Community 72 - "Community 72"
-Cohesion: 0.25
-Nodes (3): HydrationService, PoolStateFetcher, StateCache
+### Community 75 - "Community 75"
+Cohesion: 0.18
+Nodes (14): asPoolState(), asTickData(), getSortedTicks(), nextInitializedTickOptimized(), poolCacheKey(), quoteV3(), simulateV3Swap(), sortedTicksCache (+6 more)
+
+### Community 76 - "Community 76"
+Cohesion: 0.19
+Nodes (13): BackrunCandidate, Backrunner, BackrunnerOptions, LargeSwapSignal, extractGasResult(), inferTokenIdx(), inferZeroForOne(), normalizeProtocol() (+5 more)
+
+### Community 77 - "Community 77"
+Cohesion: 0.21
+Nodes (10): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), loadConfigOrDie(), AppConfig, AppConfigSchema (+2 more)
+
+### Community 78 - "Community 78"
+Cohesion: 0.21
+Nodes (11): buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext, TOPIC0, topicArray() (+3 more)
+
+### Community 79 - "Community 79"
+Cohesion: 0.29
+Nodes (12): asStateRecord(), decodedBigInt(), decodedValue(), ensureV3Fee(), parsePoolMetadataValue(), resolveV2FeeDenominator(), resolveV2FeeNumerator(), resolveV3Fee() (+4 more)
+
+### Community 81 - "Community 81"
+Cohesion: 0.53
+Nodes (5): createBotState(), main(), BotState, startTui(), bootApplication()
+
+### Community 82 - "Community 82"
+Cohesion: 0.40
+Nodes (5): isTickRecord(), normalizeWatcherTicks(), tickEntriesFrom(), toTickBigInt(), updateTickState()
 
 ## Knowledge Gaps
 - **402 isolated node(s):** `code:typescript (import { type PublicClient, getContract } from "viem";)`, `code:typescript (// src/orchestrator/boot.ts)`, `code:typescript (// Add an optional progress callback to DiscoveryService)`, `code:bash (git add src/services/discovery/curve_discovery.ts src/orches)`, `BotOpportunityRow` (+397 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `createRootLogger()` connect `Community 50` to `Community 0`, `Community 57`, `Community 51`, `Community 49`?**
+- **Why does `createRootLogger()` connect `Community 50` to `Community 32`, `Community 57`, `Community 81`, `Community 49`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `RouteStateCache` connect `Community 76` to `Community 8`, `Community 57`, `Community 27`, `Community 53`?**
   _High betweenness centrality (0.081) - this node is a cross-community bridge._
-- **Why does `simulateV3Swap()` connect `Community 19` to `Community 7`?**
+- **Why does `simulateV3Swap()` connect `Community 75` to `Community 19`, `Community 76`?**
   _High betweenness centrality (0.072) - this node is a cross-community bridge._
-- **Why does `RouteStateCache` connect `Community 53` to `Community 8`, `Community 57`, `Community 27`, `Community 7`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
 - **What connects `code:typescript (import { type PublicClient, getContract } from "viem";)`, `code:typescript (// src/orchestrator/boot.ts)`, `code:typescript (// Add an optional progress callback to DiscoveryService)` to the rest of the system?**
   _402 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.059379217273954114 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
