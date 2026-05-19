@@ -232,6 +232,18 @@ const EXECUTOR_APPROVE_IF_NEEDED_ABI = [
   },
 ];
 
+const POOL_MANAGER_LOCK_ABI = [
+  {
+    name: "lock",
+    type: "function",
+    inputs: [
+      { name: "data", type: "bytes" },
+    ],
+    outputs: [{ name: "result", type: "bytes" }],
+    stateMutability: "payable",
+  },
+];
+
 const CALL_STRUCT_ARRAY_ABI = [
   {
     type: "tuple[]",
@@ -268,6 +280,7 @@ const BALANCER_PROTOCOLS = new Set(["BALANCER", "BALANCER_V2"]);
 
 const BALANCER_VAULT = "0xBA12222222228d8Ba445958a75a0704d566BF2C8";
 const WOOFI_ROUTER_V2 = "0x817Eb46D069c1d3b9C1f41EC7923E73F9c2d6BA3";
+const POOL_MANAGER_ADDRESS = "0x67366782805870060151383f4bbff9dab53e5cd6";
 
 const CALLBACK_PROTOCOL_UNISWAP_V3 = 1;
 const CALLBACK_PROTOCOL_SUSHISWAP_V3 = 2;
@@ -687,6 +700,61 @@ function normalizeProtocolKey(protocol: unknown): string {
     .replace(/\s+/g, "_");
 }
 
+export function encodeV4Hop(hop: CalldataHop, executor: string): ExecutorCall[] {
+  const poolManager = getAddress(POOL_MANAGER_ADDRESS);
+  const exec = getAddress(executor);
+  const tokenIn = asAddress(hop.tokenIn);
+  const tokenOut = asAddress(hop.tokenOut);
+  const amountIn = normalizePositiveUint(hop.amountIn, "encodeV4Hop amountIn");
+  const state = (hop.stateRef ?? {}) as Record<string, unknown>;
+  const fee = normalizeUint(state.fee ?? 0, "encodeV4Hop fee");
+  const tickSpacing = Number(state.tickSpacing ?? 60);
+  const hooks = getAddress(String(state.hooks ?? ZERO_ADDRESS));
+
+  const zeroForOne = Boolean(hop.zeroForOne);
+  const sqrtPriceLimitX96 = zeroForOne ? MIN_SQRT_RATIO + 1n : MAX_SQRT_RATIO - 1n;
+
+  const poolKey = {
+    currency0: getAddress(zeroForOne ? tokenIn : tokenOut),
+    currency1: getAddress(zeroForOne ? tokenOut : tokenIn),
+    fee: Number(fee),
+    tickSpacing,
+    hooks,
+  };
+
+  const lockData = encodeAbiParameters(
+    [
+      {
+        type: "tuple",
+        components: [
+          { name: "currency0", type: "address" },
+          { name: "currency1", type: "address" },
+          { name: "fee", type: "uint24" },
+          { name: "tickSpacing", type: "int24" },
+          { name: "hooks", type: "address" },
+        ],
+      },
+      { name: "zeroForOne", type: "bool" },
+      { name: "amountSpecified", type: "int128" },
+      { name: "sqrtPriceLimitX96", type: "uint160" },
+    ],
+    [poolKey, zeroForOne, BigInt(amountIn), sqrtPriceLimitX96],
+  );
+
+  return [
+    encodeDynamicApprovalCall(exec, tokenIn, poolManager, amountIn),
+    {
+      target: poolManager,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: POOL_MANAGER_LOCK_ABI,
+        functionName: "lock",
+        args: [lockData],
+      }),
+    },
+  ];
+}
+
 export function encodeRoute(route: CalldataRoute, executorAddress: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const { path, result } = route;
   const executor = asAddress(executorAddress);
@@ -735,6 +803,8 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
       calls.push(...encodeCurveHop(hop, executor, options));
     } else if (BALANCER_PROTOCOLS.has(proto)) {
       calls.push(...encodeBalancerHop(hop, executor, options));
+    } else if (proto === "UNISWAP_V4") {
+      calls.push(...encodeV4Hop(hop, executor));
     } else {
       throw new Error(`Unsupported protocol for execution: ${proto} at hop ${i}`);
     }
