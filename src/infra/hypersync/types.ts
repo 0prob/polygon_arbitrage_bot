@@ -6,8 +6,8 @@ export interface HyperSyncLogFilter {
 }
 
 export interface HyperSyncFieldSelection {
-  log: unknown[];
-  block: unknown[];
+  log: string[];
+  block: string[];
 }
 
 export interface HyperSyncQuery {

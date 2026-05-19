@@ -92,7 +92,7 @@ export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilt
 
   const lastConstrainedIndex = topics.reduce((last, group, i) => (group.length > 0 ? i : last), -1);
 
-  const trimmedTopics = lastConstrainedIndex >= 0 ? topics.slice(0, lastConstrainedIndex + 1).map((g) => [...g]) : [];
+  const trimmedTopics = lastConstrainedIndex >= 0 ? topics.slice(0, lastConstrainedIndex + 1) : [];
 
   const result: HyperSyncLogFilter = {};
   if (dedupedAddress.length > 0) result.address = dedupedAddress;
@@ -100,7 +100,7 @@ export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilt
   return result;
 }
 
-export function buildLogQuery(filters: HyperSyncLogFilter[], fromBlock: number, toBlock?: number): HyperSyncQuery {
+export function buildLogQuery(filters: HyperSyncLogFilter[], fromBlock: number, toBlock?: number, joinMode = 2): HyperSyncQuery {
   const normalizedLogs = filters.map(normalizeLogFilter);
 
   const fieldSelection: HyperSyncFieldSelection = {
@@ -113,7 +113,7 @@ export function buildLogQuery(filters: HyperSyncLogFilter[], fromBlock: number, 
     ...(toBlock != null ? { toBlock } : {}),
     logs: normalizedLogs,
     fieldSelection,
-    joinMode: 2,
+    joinMode,
     maxNumLogs: 5000,
   };
 }

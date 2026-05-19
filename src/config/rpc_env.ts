@@ -114,7 +114,6 @@ export function createGasEstimationClient() {
  */
 export function createExecutionClient(account: Parameters<typeof createWalletClient>[0]["account"]) {
   if (_executionWalletClient) {
-    if (account == null) return _executionWalletClient;
     return _executionWalletClient;
   }
   if (account == null) {

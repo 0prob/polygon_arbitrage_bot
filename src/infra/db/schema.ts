@@ -80,13 +80,15 @@ export function ensureSchema(db: CompatDatabase) {
 }
 
 function applyMigrationV1ToV2(db: CompatDatabase) {
-  db.exec(`
-    DROP TABLE IF EXISTS checkpoints;
-    CREATE TABLE checkpoints (
-      id TEXT PRIMARY KEY,
-      block_number INTEGER NOT NULL,
-      block_hash TEXT,
-      created_at INTEGER
-    );
-  `);
+  db.transaction(() => {
+    db.exec(`
+      DROP TABLE IF EXISTS checkpoints;
+      CREATE TABLE checkpoints (
+        id TEXT PRIMARY KEY,
+        block_number INTEGER NOT NULL,
+        block_hash TEXT,
+        created_at INTEGER
+      );
+    `);
+  })();
 }

@@ -77,13 +77,10 @@ export async function withRetry<T>(fn: () => Promise<T>, opts: RetryOptions = {}
   const retryable = opts.retryable ?? isRetryableError;
   const logger = opts.logger ?? null;
 
-  let lastError: unknown;
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (err) {
-      lastError = err;
       if (!retryable(err) || attempt === maxAttempts) {
         throw err;
       }
@@ -92,8 +89,7 @@ export async function withRetry<T>(fn: () => Promise<T>, opts: RetryOptions = {}
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-
-  throw lastError;
+  throw new Error("withRetry: unreachable");
 }
 
 export async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {

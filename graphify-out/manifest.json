@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/identity.ts": {
-    "mtime": 1779121844.4230802,
-    "ast_hash": "e675d5904004c99bdf21a40a5222912b",
+    "mtime": 1779166442.587172,
+    "ast_hash": "1d30e626027816a6e9a35eff3969eefe",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/curve.ts": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/index.ts": {
-    "mtime": 1779122012.6734595,
-    "ast_hash": "7e114baa7a8e3f4a5ee60d105994e455",
+    "mtime": 1779166477.906526,
+    "ast_hash": "d8e9df66e66899b16b484a91275818c8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/full_math.ts": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/optimizer.ts": {
-    "mtime": 1779155514.7947712,
-    "ast_hash": "642f62527606be24d5bbc71037112478",
+    "mtime": 1779166445.743113,
+    "ast_hash": "48077531763bb5731eeeae10a49852a1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/index.ts": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/profit.ts": {
-    "mtime": 1779155514.8187716,
-    "ast_hash": "d19a6a8e2f4c32e5838a3b65bbd8dda6",
+    "mtime": 1779166460.7788358,
+    "ast_hash": "9f75dc577cfefd0cf60fbab0cf154406",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/scorer.ts": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/route.ts": {
-    "mtime": 1779155515.0987742,
-    "ast_hash": "018fa755be83097d2c7aa9291a10b111",
+    "mtime": 1779166467.3427162,
+    "ast_hash": "9408033608de6c8bbf86aa5effa61e37",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/execution.ts": {
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/bigint.ts": {
-    "mtime": 1779121855.394977,
-    "ast_hash": "5f02433f9c613b6f2d09d6e5d25f122c",
+    "mtime": 1779166438.9272406,
+    "ast_hash": "ff015bcf6b1b9936aab5c75642edba37",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/bounded_priority.ts": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/concurrency.ts": {
-    "mtime": 1779121870.5908334,
-    "ast_hash": "fba26210714f7b245d3c728d02fd495b",
+    "mtime": 1779166454.8909438,
+    "ast_hash": "5a7d513c1b22b9cb75321e487fe95d41",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/pricing/chainlink.ts": {
@@ -185,13 +185,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/pricing/oracle.ts": {
-    "mtime": 1779155515.0507736,
-    "ast_hash": "b5e6dfe267bcd0a8324a1c14d86d087d",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/src/services/strategy/topology.ts": {
-    "mtime": 1779126897.3367524,
-    "ast_hash": "c1648a9ebb0d4138a64e9f6c3a27654f",
+    "mtime": 1779166451.399008,
+    "ast_hash": "4f173b3d908fb7321a058d2ed441bfa1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph.ts": {
@@ -225,13 +220,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/liquidity.ts": {
-    "mtime": 1779155515.75078,
-    "ast_hash": "8425e198b4397a13f118443ec516fbbd",
+    "mtime": 1779164557.5194817,
+    "ast_hash": "795fec755396c8c8ddd1d120096542ba",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.ts": {
-    "mtime": 1779155515.7827804,
-    "ast_hash": "22c3564bffc1bc3519cce2371a5a1b37",
+    "mtime": 1779164659.677076,
+    "ast_hash": "1b407e1ab1e48c75d6185449283a03cc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/reorg.ts": {
@@ -255,8 +250,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/service.ts": {
-    "mtime": 1779164142.662715,
-    "ast_hash": "3107a484e8e6e622a233355a5e2aa0fb",
+    "mtime": 1779164682.472589,
+    "ast_hash": "2029643911725c63bd3f6bb57a051c5d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/state_ops.ts": {
@@ -290,8 +285,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/nonce.ts": {
-    "mtime": 1779146858.923884,
-    "ast_hash": "838dfb72ce4b0921d72148bf1a1102de",
+    "mtime": 1779164487.357373,
+    "ast_hash": "bced93bdf12278f3d498d25efad29c9c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/calldata.ts": {
@@ -300,8 +295,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/attempt_log.ts": {
-    "mtime": 1779146431.8344762,
-    "ast_hash": "62f1cfe8c8fa8049631dd82850090b72",
+    "mtime": 1779164561.559379,
+    "ast_hash": "7250445b392df2099a036558c0a27582",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/builder.ts": {
@@ -330,8 +325,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/submitter.ts": {
-    "mtime": 1779155515.622779,
-    "ast_hash": "5d3ad3d61461f618ed09160dd3619948",
+    "mtime": 1779164503.1249292,
+    "ast_hash": "5cc386112af83d43aee564273f0d7f71",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/signals.ts": {
@@ -340,8 +335,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/service.ts": {
-    "mtime": 1779141905.5263088,
-    "ast_hash": "72c94bd625860ec1a8f6551c87dc6447",
+    "mtime": 1779164547.7157333,
+    "ast_hash": "eb7e798743e6f88a8e79c6d1bb371031",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/decoder.ts": {
@@ -360,8 +355,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/decoder.ts": {
-    "mtime": 1779146814.8875933,
-    "ast_hash": "be55f7f99bbee0827adf5576216f9179",
+    "mtime": 1779164654.9331796,
+    "ast_hash": "77a9942808b15ccd072f0cd88db45feb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/curve_factory.ts": {
@@ -375,18 +370,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779182290.0,
-    "ast_hash": "e39a3aa07fc30662a801540804d0b9f9",
+    "mtime": 1779165665.876764,
+    "ast_hash": "d5c5769422f807d4eb7b6d97faa5f6bc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779164142.662715,
-    "ast_hash": "045ca951834fe8f78773a26eefa66ef0",
+    "mtime": 1779165614.9171379,
+    "ast_hash": "f2f4d96812598255cbaaa68a2ea20f3a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
-    "mtime": 1779133248.480501,
-    "ast_hash": "d63573d9eb5cc9c066a8db5600dec677",
+    "mtime": 1779165676.1006906,
+    "ast_hash": "ed7eb2761a4d528322da0489f9fc2764",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/endpoint_pool.ts": {
@@ -485,8 +480,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779142450.1185162,
-    "ast_hash": "87ff9ef2f9a1e8311f5e418bf8144cfa",
+    "mtime": 1779165762.6360865,
+    "ast_hash": "39cc28f0c4bf5a73b79bc9237e158013",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/tui.ts": {
@@ -780,8 +775,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/curve_discovery.ts": {
-    "mtime": 1779162803.4848158,
-    "ast_hash": "71c6268cce0a81f7726012da59a673ed",
+    "mtime": 1779164650.4212787,
+    "ast_hash": "579f7b803409a4aa3ef407d65b0af4e0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/curve_discovery.test.ts": {

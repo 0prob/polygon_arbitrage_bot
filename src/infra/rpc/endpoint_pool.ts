@@ -12,6 +12,9 @@ const DEFAULT_METHOD = "eth_call";
 
 function ensureHttps(url: string): string {
   if (url.startsWith("http://")) {
+    if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("::1") || url.match(/^http:\/\/10\./) || url.match(/^http:\/\/172\.(1[6-9]|2\d|3[01])\./) || url.match(/^http:\/\/192\.168\./)) {
+      return url;
+    }
     return "https://" + url.slice(7);
   }
   return url;
@@ -92,10 +95,10 @@ export class RpcEndpoint {
 
   markError(method: string = DEFAULT_METHOD): void {
     const cooldownMs = this._backoffMs;
-    this.errorCooldownUntil = Date.now() + cooldownMs;
+    this.errorCooldownUntil = Date.now() + Math.max(cooldownMs, 5_000);
     this._backoffMs = Math.min(Math.max(cooldownMs * 2, INITIAL_BACKOFF_MS), MAX_BACKOFF_MS);
     this.consecutiveErrors++;
-    this._logger?.(`[rpc] error on ${this.url} for ${method}`);
+    this._logger?.(`[rpc] error on ${this.url} for ${method}, backoff=${cooldownMs}ms`);
   }
 
   markSuccess(): void {
@@ -114,6 +117,7 @@ export interface EndpointPoolOptions {
 
 export class RpcEndpointPool {
   endpoints: RpcEndpoint[];
+  private _logger: LoggerFn | null;
   private _probeInterval: ReturnType<typeof setInterval> | null;
   private _nextIndex: number;
 
@@ -121,6 +125,7 @@ export class RpcEndpointPool {
     if (!opts.urls || opts.urls.length === 0) {
       throw new Error("RpcEndpointPool: at least one RPC URL required");
     }
+    this._logger = opts.logger ?? null;
     this.endpoints = opts.urls.map((u) => new RpcEndpoint(u, opts.logger));
     this._probeInterval = null;
     this._nextIndex = 0;
@@ -128,7 +133,7 @@ export class RpcEndpointPool {
 
   getBestEndpoint(method: string = DEFAULT_METHOD): RpcEndpoint {
     const available = this.endpoints.filter((ep) => !ep.isMethodUnavailable(method));
-    const healthy = available.filter((ep) => !ep.isRateLimited() && !ep.isCoolingDown());
+    const healthy = available.filter((ep) => !ep.isRateLimited() && !ep.isCoolingDown() && ep.consecutiveErrors < MAX_CONSECUTIVE_ERRORS);
     if (healthy.length > 0) {
       healthy.sort((a, b) => {
         const scoreA = a.latencyMs + a.inFlight * 50;
@@ -229,8 +234,9 @@ export class RpcEndpointPool {
       ]);
       ep.latencyMs = Date.now() - start;
       ep.markSuccess();
-    } catch {
+    } catch (err) {
       ep.markError();
+      this._logger?.("[rpc] probe failed", ep.url, errorMessage(err));
     }
   }
 

@@ -32,11 +32,11 @@ export function stringifyWithBigInt(obj: unknown): string {
   });
 }
 
-export function parseJson<T>(value: unknown, fallback: T): unknown {
+export function parseJson<T>(value: unknown, fallback: T): T {
   if (value == null) return fallback;
-  if (typeof value !== "string") return value;
+  if (typeof value !== "string") return value as T;
   try {
-    return JSON.parse(value);
+    return JSON.parse(value) as T;
   } catch {
     return fallback;
   }
@@ -85,8 +85,8 @@ export function rehydrateV3Ticks(ticks: unknown): Map<number, { liquidityGross: 
     const lGross = liqRecord.liquidityGross;
     const lNet = liqRecord.liquidityNet;
     result.set(tickNum, {
-      liquidityGross: typeof lGross === "bigint" ? lGross : BigInt(lGross as number),
-      liquidityNet: typeof lNet === "bigint" ? lNet : BigInt(lNet as number),
+      liquidityGross: typeof lGross === "bigint" ? lGross : BigInt(lGross != null ? (lGross as string | number | bigint | boolean) : "0"),
+      liquidityNet: typeof lNet === "bigint" ? lNet : BigInt(lNet != null ? (lNet as string | number | bigint | boolean) : "0"),
     });
   }
   return result;
@@ -101,7 +101,7 @@ export function poolRowToObject(row: Record<string, unknown>) {
   return {
     pool_address: normalizeAddressForDb(row.address),
     protocol: String(row.protocol ?? ""),
-    tokens: (parseJson(row.tokens, []) as string[]).map(normalizeAddressForDb),
+    tokens: parseJson<string[]>(row.tokens, []).map(normalizeAddressForDb),
     block: row.created_block as number,
     tx: String(row.created_tx ?? ""),
     metadata: parseJson(row.metadata, {}),

@@ -86,7 +86,7 @@ export const ExecutionConfigSchema = z.object({
   flashLoanFeeBpsBalancer: bigintFromString,
   flashLoanFeeBpsAaveV3: bigintFromString,
   privateRelayUrls: stringArrayFromCsv,
-  dryRunBeforeSubmit: z.coerce.boolean(),
+  dryRunBeforeSubmit: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
   receiptTimeoutMs: numberFromString.int().positive(),
   maxConcurrentExecutions: numberFromString.int().positive(),
   executorAddress: z.string().min(1, "EXECUTOR_ADDRESS is required"),
@@ -127,7 +127,7 @@ export type MempoolConfig = z.infer<typeof MempoolConfigSchema>;
 
 export const ObservabilityConfigSchema = z.object({
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]),
-  tuiEnabled: z.coerce.boolean(),
+  tuiEnabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
 });
 export type ObservabilityConfig = z.infer<typeof ObservabilityConfigSchema>;
 
