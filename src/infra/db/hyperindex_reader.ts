@@ -70,3 +70,31 @@ export function buildStateCacheFromHyperIndex(hiDbPath: string, addresses: strin
   }
   return cache;
 }
+
+export type KatanaPoolStateRow = {
+  id: string;
+  address: string;
+  lastUpdatedBlock: number;
+  protocol: string;
+  tokens: string;
+  reserve0?: string;
+  reserve1?: string;
+  sqrtPriceX96?: string;
+  liquidity?: string;
+  tick?: number;
+};
+
+export function readKatanaPoolState(hiDb: CompatDatabase, address: string): KatanaPoolStateRow | null {
+  const addr = address.toLowerCase();
+  // Try V2 first
+  const v2 = hiDb.prepare("SELECT reserve0, reserve1 FROM v2_pool_state WHERE id = ?").get(addr) as
+    { reserve0: string; reserve1: string } | undefined;
+  if (v2) return { id: addr, address: addr, lastUpdatedBlock: 0, protocol: "sushiswap_v2",
+    tokens: "", reserve0: v2.reserve0, reserve1: v2.reserve1 };
+  // Try V3 next
+  const v3 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE id = ?").get(addr) as
+    { sqrtPriceX96: string; liquidity: string; tick: number } | undefined;
+  if (v3) return { id: addr, address: addr, lastUpdatedBlock: 0, protocol: "sushiswap_v3",
+    tokens: "", sqrtPriceX96: v3.sqrtPriceX96, liquidity: v3.liquidity, tick: v3.tick };
+  return null;
+}
