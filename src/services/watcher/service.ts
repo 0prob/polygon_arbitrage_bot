@@ -2,6 +2,7 @@ import { Decoder, client as hypersyncClient } from "../../infra/hypersync/client
 import type { HypersyncDecoderRuntime } from "../../infra/hypersync/types.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { createRootLogger } from "../../infra/observability/logger.ts";
+import type { ActivityLog } from "../../cli/activity.ts";
 import type { RouteStateCache, WatcherPoolMeta, WatcherEnrichmentQueue, WatcherPoolRefresh, WatcherV3Refresh } from "./types.ts";
 import { WatcherFilter } from "./filter.ts";
 import { pollLoop } from "./poll_loop.ts";
@@ -61,6 +62,7 @@ export class WatcherService {
       getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
     } = {},
     refreshFns: WatcherRefreshFns = {},
+    private _activity?: ActivityLog,
   ) {
     this._db = db;
     this._stateCache = stateCache;
@@ -81,7 +83,10 @@ export class WatcherService {
   start(pools?: string[]): void {
     if (this._running) return;
     this._running = true;
-    if (pools && pools.length > 0) this._filter.add(pools);
+    if (pools && pools.length > 0) {
+      this._filter.add(pools);
+      this._activity?.("WATCHER", `Monitoring ${pools.length} pool addresses`);
+    }
     this._loopPromise = this._run();
     logger.info({}, "Watcher service started");
   }

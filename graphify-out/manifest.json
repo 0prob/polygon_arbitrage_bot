@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/service.ts": {
-    "mtime": 1779163042.5136933,
-    "ast_hash": "b3a444e6d14a116ee42317c05bdabd11",
+    "mtime": 1779173950.7034943,
+    "ast_hash": "6e8c5edb46e425173256494e92270a61",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/discovery/decoder.ts": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779173486.3654313,
-    "ast_hash": "bfe9e25e4910642837db71f7fe24ba82",
+    "mtime": 1779174150.6011913,
+    "ast_hash": "2cb0e72d00fbdf57fd4792e21d24464e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -792,6 +792,16 @@
   "/home/x/arb/t/src/services/watcher/events.ts": {
     "mtime": 1779163779.3638093,
     "ast_hash": "5ce56014ce4bd3afee068fbd7db4a655",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/discovery/v3_discovery.ts": {
+    "mtime": 1779174048.91435,
+    "ast_hash": "4cae6a04eeae6d33799bcac532857573",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/discovery/v2_discovery.ts": {
+    "mtime": 1779173919.0238695,
+    "ast_hash": "6fb75ccfe39e36cba95f3c06ebdab6ee",
     "semantic_hash": ""
   }
 }

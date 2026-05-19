@@ -4,6 +4,7 @@ import { polygon } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
+import type { ActivityLog } from "../cli/activity.ts";
 import { createDatabase, type CompatDatabase } from "../infra/db/connection.ts";
 import { ensureSchema } from "../infra/db/schema.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -59,7 +60,7 @@ export interface RuntimeContext {
   isRunning: boolean;
 }
 
-export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
+export async function bootApplication(config: AppConfig, activity: ActivityLog, logBuffer?: string[]): Promise<RuntimeContext> {
   const logger = createRootLogger({
     level: config.observability.logLevel,
     logSink: logBuffer,
@@ -126,6 +127,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const discoveryDeps: DiscoveryServiceDeps = {
     logger,
+    activity,
     decodeLog,
     fetchTokenMeta,
     fetchCurvePools: fetchCurvePoolsImpl,
@@ -232,7 +234,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     }
   }
 
-  const watcherService = new WatcherService(db, stateCache, watcherRegistry, watcherRefreshFns);
+  const watcherService = new WatcherService(db, stateCache, watcherRegistry, watcherRefreshFns, activity);
 
   const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
     const addr = address.toLowerCase();
@@ -340,20 +342,30 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const mempoolService = new MempoolService(logger, mempoolOptions);
 
   // Trigger pool discovery for all protocols
-  await discoveryService.discoverAll().catch((err) => logger.error({ err }, "Full discovery failed"));
+  activity("DISCOVERY", "Starting full discovery across all protocols");
+  await discoveryService.discoverAll().catch((err) => {
+    logger.error({ err }, "Full discovery failed");
+    activity("DISCOVERY", `Failed: ${(err as Error).message}`);
+  });
 
   // Fetch token decimals for pricing
+  activity("DISCOVERY", "Fetching token decimals for pricing");
   const allPools = getPools();
   const allTokenAddresses = [...new Set(allPools.flatMap((p) => [p.token0, p.token1].filter(Boolean)))];
   const tokenDecimals = await fetchTokenDecimals(allTokenAddresses as Address[]);
+  activity("DISCOVERY", `Cached ${tokenDecimals.size} token decimals`);
   logger.info({ decimalsFetched: tokenDecimals.size }, "Token decimals cached");
 
+  activity("HYDRATION", "Warming up pool state cache");
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
   hydrationService.startSweep();
 
   const poolAddresses = getPools().map((p) => p.address);
+  activity("WATCHER", `Monitoring ${poolAddresses.length} pool addresses`);
   watcherService.start(poolAddresses.map((a) => a as string));
   logger.info({ poolCount: poolAddresses.length }, "Watcher started with pool addresses");
+
+  activity("BOOT", "Ready — entering pass loop");
 
   return {
     config,

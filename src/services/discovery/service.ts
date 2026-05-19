@@ -1,5 +1,6 @@
 import type { Address } from "../../core/types/common.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
+import type { ActivityLog } from "../../cli/activity.ts";
 import type { DecodedPoolEvent } from "./decoder.ts";
 import type { TokenMetaFetcher } from "./enrichment.ts";
 import type { CurveFactoryFetcher } from "./curve_factory.ts";
@@ -18,6 +19,7 @@ export interface V2FactoryConfig {
 
 export interface DiscoveryServiceDeps {
   logger: Logger;
+  activity: ActivityLog;
   decodeLog: (logs: unknown[]) => DecodedPoolEvent[];
   fetchTokenMeta: TokenMetaFetcher;
   fetchCurvePools: CurveFactoryFetcher;
@@ -42,6 +44,7 @@ export class DiscoveryService {
 
   async discoverProtocol(protocol: string): Promise<DecodedPoolEvent[]> {
     this.deps.logger.info({ protocol }, "Discovering protocol");
+    this.deps.activity("DISCOVERY", `Starting: ${protocol}`);
     let pools: Array<{ address: Address; protocol: string; tokens: Address[] }> = [];
 
     if (protocol === "curve") {
@@ -51,24 +54,30 @@ export class DiscoveryService {
       const vault = this.deps.balancerVaultAddress;
       const v3Pools = await this.deps.discoverV3Pools([vault]);
       pools = v3Pools.map((p) => ({ address: p.poolAddress, protocol: "balancer", tokens: [p.token0, p.token1] }));
-    } else if (protocol.startsWith("V2") || protocol.endsWith("V2")) {
+    } else if (protocol.toLowerCase().includes("v2")) {
+      this.deps.activity("DISCOVERY", `V2: discovering all V2 factories for ${protocol}...`);
       for (const factory of this.deps.v2Factories) {
         try {
+          this.deps.activity("DISCOVERY", `V2: ${factory.label}...`);
           const v2Pools = await this.deps.fetchV2Pools(factory.address, factory.label);
           pools.push(...v2Pools.map((p) => ({ address: p.poolAddress, protocol: factory.label.toLowerCase(), tokens: [p.token0, p.token1] })));
+          this.deps.activity("DISCOVERY", `V2: ${factory.label} → ${v2Pools.length} pools`);
         } catch (err) {
           this.deps.logger.error({ err, factory: factory.label }, "V2 discovery failed");
         }
       }
-    } else if (protocol.startsWith("V3") || protocol.endsWith("V3")) {
+    } else if (protocol.toLowerCase().includes("v3")) {
+      this.deps.activity("DISCOVERY", `V3: ${protocol} via HyperSync...`);
       const v3Pools = await this.deps.discoverV3Pools(this.deps.v3FactoryAddresses);
       pools = v3Pools.map((p) => ({ address: p.poolAddress, protocol: protocol.toLowerCase(), tokens: [p.token0, p.token1] }));
+      this.deps.activity("DISCOVERY", `V3: ${protocol} → ${v3Pools.length} pools`);
     }
 
     for (const pool of pools) {
       await this.deps.savePool(pool);
     }
 
+    this.deps.activity("DISCOVERY", `${protocol}: ${pools.length} pools saved`);
     this.deps.logger.info({ protocol, discovered: pools.length }, "Finished discovering protocol");
     return [];
   }

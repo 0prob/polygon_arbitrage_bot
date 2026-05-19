@@ -3,6 +3,7 @@ import { bootApplication } from "../orchestrator/boot.ts";
 import { runPassLoop } from "../orchestrator/pass_loop.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
 import { startTui, updateState, type BotState } from "./tui.ts";
+import { createActivityLog } from "./activity.ts";
 
 function createBotState(): BotState {
   return {
@@ -25,21 +26,22 @@ async function main() {
   const config = loadConfig(tuiEnabled ? { ...process.env, TUI: "true" } : process.env);
 
   const logBuffer: string[] = [];
-  const ctx = await bootApplication(config, config.observability.tuiEnabled ? logBuffer : undefined);
-
   const botState = createBotState();
   botState.logs = logBuffer;
 
-  let tuiCleanup: (() => void) | null = null;
-  if (config.observability.tuiEnabled) {
-    tuiCleanup = startTui(botState);
-  }
+  const onUpdate = tuiEnabled ? (update: Partial<BotState>) => { Object.assign(botState, update); updateState(botState); } : undefined;
+  const activity = createActivityLog(onUpdate, tuiEnabled);
+
+  const ctx = await bootApplication(config, activity, tuiEnabled ? logBuffer : undefined);
+
+  const tuiCleanup = tuiEnabled ? startTui(botState) : null;
 
   let shuttingDown = false;
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
     ctx.logger.warn({}, "Shutting down");
+    activity("SHUTDOWN", "Shutting down");
     tuiCleanup?.();
     await shutdownApplication(ctx);
     process.exit(0);
@@ -48,7 +50,7 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  await runPassLoop(ctx, tuiEnabled ? (update: Partial<BotState>) => { Object.assign(botState, update); updateState(botState); } : undefined);
+  await runPassLoop(ctx, onUpdate, activity);
 }
 
 main().catch((err) => {

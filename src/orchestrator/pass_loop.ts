@@ -6,6 +6,7 @@ import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
 import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "../services/execution/builder.ts";
 import type { BotState } from "../cli/tui.ts";
+import type { ActivityLog } from "../cli/activity.ts";
 import { withTimeout } from "../infra/rpc/retry.ts";
 
 async function getGasPriceWei(ctx: RuntimeContext): Promise<bigint> {
@@ -65,7 +66,7 @@ function buildCandidate(profitable: {
   };
 }
 
-export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: Partial<BotState>) => void): Promise<void> {
+export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: Partial<BotState>) => void, activity?: ActivityLog): Promise<void> {
   const intervalMs = ctx.config.routing.cycleRefreshIntervalMs;
   const executorAddress = ctx.config.execution.executorAddress;
 
@@ -92,6 +93,7 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       state.stateCacheSize = pools.length;
 
       if (pools.length === 0) {
+        activity?.("PASS", "No pools yet, triggering discovery (balancer, curve)");
         ctx.logger.info({}, "No pools found, triggering discovery");
         try {
           await withTimeout(
@@ -104,16 +106,11 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
         } catch (err) {
           ctx.logger.error({ err }, "Pool discovery failed or timed out");
         }
-        state.currentActivity = "Waiting for pools";
-        state.currentActivityUpdatedMs = Date.now();
-        onStateUpdate?.(state);
         await sleep(intervalMs);
         continue;
       }
 
-      state.currentActivity = "Building graph";
-      state.currentActivityUpdatedMs = Date.now();
-      onStateUpdate?.(state);
+      activity?.("PASS", "Building graph...");
 
       const stateCache = ctx.watcherService.getStateCache();
       const graph = buildGraph(pools, stateCache);
@@ -123,17 +120,13 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       onStateUpdate?.(state);
 
       if (cycles.length === 0) {
+        activity?.("PASS", "No cycles found");
         ctx.logger.debug({}, "No cycles found");
-        state.currentActivity = "No cycles found";
-        state.currentActivityUpdatedMs = Date.now();
-        onStateUpdate?.(state);
         await sleep(intervalMs);
         continue;
       }
 
-      state.currentActivity = "Evaluating pipeline";
-      state.currentActivityUpdatedMs = Date.now();
-      onStateUpdate?.(state);
+      activity?.("PASS", `Cycles: ${cycles.length} found, evaluating pipeline...`);
 
       const gasPriceWei = await getGasPriceWei(ctx);
       state.gasPrice = weiToGwei(gasPriceWei);
@@ -165,9 +158,11 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
         "Pipeline evaluation",
       );
 
-      state.currentActivity = "Executing opportunities";
-      state.currentActivityDetail = `Processing ${result.profitable.length} opportunities`;
-      onStateUpdate?.(state);
+      activity?.("PASS", `Pipeline: ${result.attempted} evaluated, ${result.profitableCount} profitable`);
+
+      if (result.profitable.length > 0) {
+        activity?.("PASS", `Executing ${result.profitable.length} profitable cycles...`);
+      }
 
       for (const [index, profitable] of result.profitable.entries()) {
         if (!ctx.isRunning) break;
@@ -181,6 +176,7 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
         onStateUpdate?.(state);
 
         const routeKey = routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+        activity?.("PASS", `  Exec ${index + 1}/${result.profitable.length}: ${routeKey.slice(0, 12)}`);
         let candidate: CandidateExecution;
         try {
           candidate = buildCandidate(profitable, executorAddress);
@@ -217,19 +213,17 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       ctx.logger.error({ err }, "Pass loop error");
       state.status = "error";
       state.consecutiveErrors = consecutiveErrors;
-      state.currentActivity = "Error";
-      state.currentActivityUpdatedMs = Date.now();
+      activity?.("PASS", `Error: ${(err as Error).message}`);
       onStateUpdate?.(state);
     }
 
     state.passCount = (state.passCount ?? 0) + 1;
     state.lastPassDurationMs = Date.now() - startTime;
     state.lastUpdateMs = Date.now();
-    state.currentActivity = "Idle";
-    state.currentActivityUpdatedMs = Date.now();
     onStateUpdate?.(state);
 
     const elapsed = Date.now() - startTime;
+    activity?.("PASS", `Done (${elapsed}ms)`);
     const waitMs = Math.max(0, intervalMs - elapsed);
     if (waitMs > 0) await sleep(waitMs);
   }

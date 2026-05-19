@@ -4,87 +4,6 @@
   "graph": {},
   "nodes": [
     {
-      "label": "pools.ts",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L1",
-      "id": "infra_db_pools_ts",
-      "community": 66,
-      "norm_label": "pools.ts"
-    },
-    {
-      "label": "upsertPoolMeta()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L4",
-      "id": "db_pools_upsertpoolmeta",
-      "community": 66,
-      "norm_label": "upsertpoolmeta()"
-    },
-    {
-      "label": "getPoolMeta()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L30",
-      "id": "db_pools_getpoolmeta",
-      "community": 66,
-      "norm_label": "getpoolmeta()"
-    },
-    {
-      "label": "getAllActivePools()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L36",
-      "id": "db_pools_getallactivepools",
-      "community": 66,
-      "norm_label": "getallactivepools()"
-    },
-    {
-      "label": "getPoolsByProtocol()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L44",
-      "id": "db_pools_getpoolsbyprotocol",
-      "community": 66,
-      "norm_label": "getpoolsbyprotocol()"
-    },
-    {
-      "label": "updatePoolStatus()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L52",
-      "id": "db_pools_updatepoolstatus",
-      "community": 66,
-      "norm_label": "updatepoolstatus()"
-    },
-    {
-      "label": "upsertPoolState()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L57",
-      "id": "db_pools_upsertpoolstate",
-      "community": 66,
-      "norm_label": "upsertpoolstate()"
-    },
-    {
-      "label": "getPoolState()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L70",
-      "id": "db_pools_getpoolstate",
-      "community": 66,
-      "norm_label": "getpoolstate()"
-    },
-    {
-      "label": "getAllPoolStates()",
-      "file_type": "code",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L84",
-      "id": "db_pools_getallpoolstates",
-      "community": 80,
-      "norm_label": "getallpoolstates()"
-    },
-    {
       "label": "boot.ts",
       "file_type": "code",
       "source_file": "orchestrator/boot.ts",
@@ -97,7 +16,7 @@
       "label": "RuntimeContext",
       "file_type": "code",
       "source_file": "orchestrator/boot.ts",
-      "source_location": "L30",
+      "source_location": "L47",
       "id": "orchestrator_boot_runtimecontext",
       "community": 60,
       "norm_label": "runtimecontext"
@@ -106,91 +25,352 @@
       "label": "bootApplication()",
       "file_type": "code",
       "source_file": "orchestrator/boot.ts",
-      "source_location": "L45",
+      "source_location": "L62",
       "id": "orchestrator_boot_bootapplication",
       "community": 80,
       "norm_label": "bootapplication()"
+    },
+    {
+      "label": "service.ts",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L1",
+      "id": "services_discovery_service_ts",
+      "community": 57,
+      "norm_label": "service.ts"
+    },
+    {
+      "label": "DiscoveryResult",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L9",
+      "id": "discovery_service_discoveryresult",
+      "community": 57,
+      "norm_label": "discoveryresult"
+    },
+    {
+      "label": "V2FactoryConfig",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L14",
+      "id": "discovery_service_v2factoryconfig",
+      "community": 57,
+      "norm_label": "v2factoryconfig"
+    },
+    {
+      "label": "DiscoveryServiceDeps",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L19",
+      "id": "discovery_service_discoveryservicedeps",
+      "community": 57,
+      "norm_label": "discoveryservicedeps"
+    },
+    {
+      "label": "DiscoveryService",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L32",
+      "id": "discovery_service_discoveryservice",
+      "community": 52,
+      "norm_label": "discoveryservice"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L33",
+      "id": "discovery_service_discoveryservice_constructor",
+      "community": 52,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L35",
+      "id": "discovery_service_discoveryservice_start",
+      "community": 52,
+      "norm_label": ".start()"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L39",
+      "id": "discovery_service_discoveryservice_stop",
+      "community": 52,
+      "norm_label": ".stop()"
+    },
+    {
+      "label": ".discoverProtocol()",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L43",
+      "id": "discovery_service_discoveryservice_discoverprotocol",
+      "community": 52,
+      "norm_label": ".discoverprotocol()"
+    },
+    {
+      "label": ".discoverAll()",
+      "file_type": "code",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L76",
+      "id": "discovery_service_discoveryservice_discoverall",
+      "community": 52,
+      "norm_label": ".discoverall()"
+    },
+    {
+      "label": "v2_discovery.ts",
+      "file_type": "code",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L1",
+      "id": "services_discovery_v2_discovery_ts",
+      "community": 80,
+      "norm_label": "v2_discovery.ts"
+    },
+    {
+      "label": "V2_FACTORY_ABI",
+      "file_type": "code",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L4",
+      "id": "discovery_v2_discovery_v2_factory_abi",
+      "community": 80,
+      "norm_label": "v2_factory_abi"
+    },
+    {
+      "label": "V2_POOL_ABI",
+      "file_type": "code",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L21",
+      "id": "discovery_v2_discovery_v2_pool_abi",
+      "community": 80,
+      "norm_label": "v2_pool_abi"
+    },
+    {
+      "label": "V2PoolInfo",
+      "file_type": "code",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L38",
+      "id": "discovery_v2_discovery_v2poolinfo",
+      "community": 80,
+      "norm_label": "v2poolinfo"
+    },
+    {
+      "label": "fetchV2Pools()",
+      "file_type": "code",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L44",
+      "id": "discovery_v2_discovery_fetchv2pools",
+      "community": 80,
+      "norm_label": "fetchv2pools()"
+    },
+    {
+      "label": "v3_discovery.ts",
+      "file_type": "code",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L1",
+      "id": "services_discovery_v3_discovery_ts",
+      "community": 9,
+      "norm_label": "v3_discovery.ts"
+    },
+    {
+      "label": "V3PoolInfo",
+      "file_type": "code",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L8",
+      "id": "discovery_v3_discovery_v3poolinfo",
+      "community": 9,
+      "norm_label": "v3poolinfo"
+    },
+    {
+      "label": "discoverV3Pools()",
+      "file_type": "code",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L16",
+      "id": "discovery_v3_discovery_discoverv3pools",
+      "community": 9,
+      "norm_label": "discoverv3pools()"
+    },
+    {
+      "label": "extractAddress()",
+      "file_type": "code",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L45",
+      "id": "discovery_v3_discovery_extractaddress",
+      "community": 9,
+      "norm_label": "extractaddress()"
+    },
+    {
+      "label": "decodePoolCreated()",
+      "file_type": "code",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L51",
+      "id": "discovery_v3_discovery_decodepoolcreated",
+      "community": 9,
+      "norm_label": "decodepoolcreated()"
+    },
+    {
+      "label": "pools.ts",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L1",
+      "community": 66,
+      "norm_label": "pools.ts",
+      "id": "infra_db_pools_ts"
+    },
+    {
+      "label": "upsertPoolMeta()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L4",
+      "community": 66,
+      "norm_label": "upsertpoolmeta()",
+      "id": "db_pools_upsertpoolmeta"
+    },
+    {
+      "label": "getPoolMeta()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L30",
+      "community": 66,
+      "norm_label": "getpoolmeta()",
+      "id": "db_pools_getpoolmeta"
+    },
+    {
+      "label": "getAllActivePools()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L36",
+      "community": 66,
+      "norm_label": "getallactivepools()",
+      "id": "db_pools_getallactivepools"
+    },
+    {
+      "label": "getPoolsByProtocol()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L44",
+      "community": 66,
+      "norm_label": "getpoolsbyprotocol()",
+      "id": "db_pools_getpoolsbyprotocol"
+    },
+    {
+      "label": "updatePoolStatus()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L52",
+      "community": 66,
+      "norm_label": "updatepoolstatus()",
+      "id": "db_pools_updatepoolstatus"
+    },
+    {
+      "label": "upsertPoolState()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L57",
+      "community": 66,
+      "norm_label": "upsertpoolstate()",
+      "id": "db_pools_upsertpoolstate"
+    },
+    {
+      "label": "getPoolState()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L70",
+      "community": 66,
+      "norm_label": "getpoolstate()",
+      "id": "db_pools_getpoolstate"
+    },
+    {
+      "label": "getAllPoolStates()",
+      "file_type": "code",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L84",
+      "community": 80,
+      "norm_label": "getallpoolstates()",
+      "id": "db_pools_getallpoolstates"
     },
     {
       "label": "reorg.ts",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L1",
-      "id": "services_watcher_reorg_ts",
       "community": 49,
-      "norm_label": "reorg.ts"
+      "norm_label": "reorg.ts",
+      "id": "services_watcher_reorg_ts"
     },
     {
       "label": "RollbackGuard",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L8",
-      "id": "watcher_reorg_rollbackguard",
       "community": 49,
-      "norm_label": "rollbackguard"
+      "norm_label": "rollbackguard",
+      "id": "watcher_reorg_rollbackguard"
     },
     {
       "label": "ReorgResult",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L10",
-      "id": "watcher_reorg_reorgresult",
       "community": 49,
-      "norm_label": "reorgresult"
+      "norm_label": "reorgresult",
+      "id": "watcher_reorg_reorgresult"
     },
     {
       "label": "createDbRollbackRegistry()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L16",
-      "id": "watcher_reorg_createdbrollbackregistry",
       "community": 80,
-      "norm_label": "createdbrollbackregistry()"
+      "norm_label": "createdbrollbackregistry()",
+      "id": "watcher_reorg_createdbrollbackregistry"
     },
     {
       "label": "pick()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L55",
-      "id": "watcher_reorg_pick",
       "community": 49,
-      "norm_label": "pick()"
+      "norm_label": "pick()",
+      "id": "watcher_reorg_pick"
     },
     {
       "label": "storedRollbackGuard()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L61",
-      "id": "watcher_reorg_storedrollbackguard",
       "community": 49,
-      "norm_label": "storedrollbackguard()"
+      "norm_label": "storedrollbackguard()",
+      "id": "watcher_reorg_storedrollbackguard"
     },
     {
       "label": "detectReorg()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L68",
-      "id": "watcher_reorg_detectreorg",
       "community": 49,
-      "norm_label": "detectreorg()"
+      "norm_label": "detectreorg()",
+      "id": "watcher_reorg_detectreorg"
     },
     {
       "label": "checkReorg()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L94",
-      "id": "watcher_reorg_checkreorg",
       "community": 49,
-      "norm_label": "checkreorg()"
+      "norm_label": "checkreorg()",
+      "id": "watcher_reorg_checkreorg"
     },
     {
       "label": "rollbackToBlock()",
       "file_type": "code",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L111",
-      "id": "watcher_reorg_rollbacktoblock",
       "community": 49,
-      "norm_label": "rollbacktoblock()"
+      "norm_label": "rollbacktoblock()",
+      "id": "watcher_reorg_rollbacktoblock"
     },
     {
       "label": "rpc_env.ts",
@@ -1331,7 +1511,7 @@
       "file_type": "code",
       "source_file": "core/assessment/optimizer.ts",
       "source_location": "L1",
-      "community": 79,
+      "community": 76,
       "norm_label": "optimizer.ts",
       "id": "core_assessment_optimizer_ts"
     },
@@ -1340,7 +1520,7 @@
       "file_type": "code",
       "source_file": "core/assessment/optimizer.ts",
       "source_location": "L3",
-      "community": 79,
+      "community": 76,
       "norm_label": "optimizeoptions",
       "id": "assessment_optimizer_optimizeoptions"
     },
@@ -1349,7 +1529,7 @@
       "file_type": "code",
       "source_file": "core/assessment/optimizer.ts",
       "source_location": "L18",
-      "community": 79,
+      "community": 76,
       "norm_label": "optimizeinputamount()",
       "id": "assessment_optimizer_optimizeinputamount"
     },
@@ -1430,7 +1610,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L1",
-      "community": 78,
+      "community": 68,
       "norm_label": "identity.ts",
       "id": "core_identity_ts"
     },
@@ -1439,7 +1619,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L3",
-      "community": 78,
+      "community": 68,
       "norm_label": "evmaddress",
       "id": "core_identity_evmaddress"
     },
@@ -1448,7 +1628,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L4",
-      "community": 78,
+      "community": 68,
       "norm_label": "protocolkey",
       "id": "core_identity_protocolkey"
     },
@@ -1457,7 +1637,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L10",
-      "community": 78,
+      "community": 68,
       "norm_label": "isfastevmaddress()",
       "id": "core_identity_isfastevmaddress"
     },
@@ -1466,7 +1646,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L26",
-      "community": 78,
+      "community": 68,
       "norm_label": "normalizeevmaddress()",
       "id": "core_identity_normalizeevmaddress"
     },
@@ -1475,7 +1655,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L34",
-      "community": 78,
+      "community": 68,
       "norm_label": "isevmaddress()",
       "id": "core_identity_isevmaddress"
     },
@@ -1484,7 +1664,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L38",
-      "community": 78,
+      "community": 68,
       "norm_label": "normalizeprotocolkey()",
       "id": "core_identity_normalizeprotocolkey"
     },
@@ -1493,7 +1673,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L44",
-      "community": 78,
+      "community": 68,
       "norm_label": "isrecord()",
       "id": "core_identity_isrecord"
     },
@@ -1502,7 +1682,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L50",
-      "community": 78,
+      "community": 68,
       "norm_label": "polygon_system_prefixes",
       "id": "core_identity_polygon_system_prefixes"
     },
@@ -1511,7 +1691,7 @@
       "file_type": "code",
       "source_file": "core/identity.ts",
       "source_location": "L67",
-      "community": 78,
+      "community": 68,
       "norm_label": "ispolygonsystemcontract()",
       "id": "core_identity_ispolygonsystemcontract"
     },
@@ -1610,7 +1790,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 76,
       "norm_label": "route.ts",
       "id": "core_types_route_ts"
     },
@@ -1619,7 +1799,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L4",
-      "community": 27,
+      "community": 76,
       "norm_label": "routeedge",
       "id": "types_route_routeedge"
     },
@@ -1628,7 +1808,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L17",
-      "community": 27,
+      "community": 76,
       "norm_label": "arbpath",
       "id": "types_route_arbpath"
     },
@@ -1637,7 +1817,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L25",
-      "community": 27,
+      "community": 76,
       "norm_label": "simulatedhopresult",
       "id": "types_route_simulatedhopresult"
     },
@@ -1646,7 +1826,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L30",
-      "community": 79,
+      "community": 76,
       "norm_label": "routesimulationresult",
       "id": "types_route_routesimulationresult"
     },
@@ -1655,7 +1835,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L43",
-      "community": 27,
+      "community": 76,
       "norm_label": "routeresultcore",
       "id": "types_route_routeresultcore"
     },
@@ -1664,7 +1844,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L45",
-      "community": 27,
+      "community": 76,
       "norm_label": "routeresulttrace",
       "id": "types_route_routeresulttrace"
     },
@@ -1673,7 +1853,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L50",
-      "community": 84,
+      "community": 76,
       "norm_label": "evaluatedroute",
       "id": "types_route_evaluatedroute"
     },
@@ -1691,7 +1871,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L57",
-      "community": 27,
+      "community": 76,
       "norm_label": "cycleenumerationoptions",
       "id": "types_route_cycleenumerationoptions"
     },
@@ -1700,7 +1880,7 @@
       "file_type": "code",
       "source_file": "core/types/route.ts",
       "source_location": "L66",
-      "community": 27,
+      "community": 76,
       "norm_label": "routeidentityedge",
       "id": "types_route_routeidentityedge"
     },
@@ -2267,7 +2447,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L1",
-      "community": 80,
+      "community": 55,
       "norm_label": "service.ts",
       "id": "services_mempool_service_ts"
     },
@@ -2276,7 +2456,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L5",
-      "community": 80,
+      "community": 55,
       "norm_label": "mempoolserviceoptions",
       "id": "mempool_service_mempoolserviceoptions"
     },
@@ -2285,7 +2465,7 @@
       "file_type": "code",
       "source_file": "services/mempool/service.ts",
       "source_location": "L10",
-      "community": 80,
+      "community": 55,
       "norm_label": "default_mempool_options",
       "id": "mempool_service_default_mempool_options"
     },
@@ -2726,7 +2906,7 @@
       "file_type": "code",
       "source_file": "infra/hypersync/client.ts",
       "source_location": "L156",
-      "community": 49,
+      "community": 32,
       "norm_label": "client",
       "id": "hypersync_client_client"
     },
@@ -2963,69 +3143,6 @@
       "community": 57,
       "norm_label": "service.ts",
       "id": "service_ts"
-    },
-    {
-      "label": "DiscoveryResult",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L7",
-      "community": 57,
-      "norm_label": "discoveryresult",
-      "id": "discovery_service_discoveryresult"
-    },
-    {
-      "label": "DiscoveryServiceDeps",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L12",
-      "community": 57,
-      "norm_label": "discoveryservicedeps",
-      "id": "discovery_service_discoveryservicedeps"
-    },
-    {
-      "label": "DiscoveryService",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L20",
-      "community": 52,
-      "norm_label": "discoveryservice",
-      "id": "discovery_service_discoveryservice"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L21",
-      "community": 52,
-      "norm_label": ".constructor()",
-      "id": "discovery_service_discoveryservice_constructor"
-    },
-    {
-      "label": ".start()",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L23",
-      "community": 52,
-      "norm_label": ".start()",
-      "id": "discovery_service_discoveryservice_start"
-    },
-    {
-      "label": ".stop()",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L27",
-      "community": 52,
-      "norm_label": ".stop()",
-      "id": "discovery_service_discoveryservice_stop"
-    },
-    {
-      "label": ".discoverProtocol()",
-      "file_type": "code",
-      "source_file": "service.ts",
-      "source_location": "L31",
-      "community": 52,
-      "norm_label": ".discoverprotocol()",
-      "id": "discovery_service_discoveryservice_discoverprotocol"
     },
     {
       "label": "curve_discovery.ts",
@@ -3383,7 +3500,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L5",
-      "community": 31,
+      "community": 80,
       "norm_label": "createdatabase()",
       "id": "db_connection_createdatabase"
     },
@@ -3869,7 +3986,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L1",
-      "community": 79,
+      "community": 76,
       "norm_label": "optimizer.test.ts",
       "id": "src_core_assessment_optimizer_test_ts"
     },
@@ -3878,7 +3995,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L5",
-      "community": 79,
+      "community": 76,
       "norm_label": "mkresult()",
       "id": "assessment_optimizer_test_mkresult"
     },
@@ -3887,7 +4004,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L23",
-      "community": 79,
+      "community": 76,
       "norm_label": "simulate()",
       "id": "assessment_optimizer_test_simulate"
     },
@@ -3896,7 +4013,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L28",
-      "community": 79,
+      "community": 76,
       "norm_label": "result",
       "id": "assessment_optimizer_test_result"
     },
@@ -3959,7 +4076,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/scorer.ts",
       "source_location": "L1",
-      "community": 84,
+      "community": 76,
       "norm_label": "scorer.ts",
       "id": "src_core_assessment_scorer_ts"
     },
@@ -3968,7 +4085,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/scorer.ts",
       "source_location": "L3",
-      "community": 84,
+      "community": 76,
       "norm_label": "scoringweights",
       "id": "assessment_scorer_scoringweights"
     },
@@ -3977,7 +4094,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/scorer.ts",
       "source_location": "L11",
-      "community": 84,
+      "community": 76,
       "norm_label": "default_weights",
       "id": "assessment_scorer_default_weights"
     },
@@ -3986,7 +4103,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/scorer.ts",
       "source_location": "L25",
-      "community": 84,
+      "community": 76,
       "norm_label": "scoreroute()",
       "id": "assessment_scorer_scoreroute"
     },
@@ -3995,7 +4112,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/scorer.ts",
       "source_location": "L44",
-      "community": 84,
+      "community": 76,
       "norm_label": "rankroutes()",
       "id": "assessment_scorer_rankroutes"
     },
@@ -4130,7 +4247,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L1",
-      "community": 19,
+      "community": 7,
       "norm_label": "uniswap_v3.test.ts",
       "id": "src_core_math_uniswap_v3_test_ts"
     },
@@ -4139,7 +4256,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L5",
-      "community": 19,
+      "community": 7,
       "norm_label": "makepoolstate()",
       "id": "math_uniswap_v3_test_makepoolstate"
     },
@@ -4148,7 +4265,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L22",
-      "community": 19,
+      "community": 7,
       "norm_label": "state",
       "id": "math_uniswap_v3_test_state"
     },
@@ -4157,7 +4274,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L31",
-      "community": 19,
+      "community": 7,
       "norm_label": "result",
       "id": "math_uniswap_v3_test_result"
     },
@@ -4166,7 +4283,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L43",
-      "community": 19,
+      "community": 7,
       "norm_label": "sim",
       "id": "math_uniswap_v3_test_sim"
     },
@@ -4175,7 +4292,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.test.ts",
       "source_location": "L44",
-      "community": 19,
+      "community": 7,
       "norm_label": "quote",
       "id": "math_uniswap_v3_test_quote"
     },
@@ -4184,7 +4301,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L1",
-      "community": 19,
+      "community": 7,
       "norm_label": "uniswap_v3.ts",
       "id": "src_core_math_uniswap_v3_ts"
     },
@@ -4193,7 +4310,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L19",
-      "community": 19,
+      "community": 7,
       "norm_label": "v3poolstatelike",
       "id": "math_uniswap_v3_v3poolstatelike"
     },
@@ -4202,7 +4319,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L20",
-      "community": 19,
+      "community": 7,
       "norm_label": "v3tickdata",
       "id": "math_uniswap_v3_v3tickdata"
     },
@@ -4211,7 +4328,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L22",
-      "community": 19,
+      "community": 7,
       "norm_label": "sortedtickscache",
       "id": "math_uniswap_v3_sortedtickscache"
     },
@@ -4220,7 +4337,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L31",
-      "community": 19,
+      "community": 7,
       "norm_label": "aspoolstate()",
       "id": "math_uniswap_v3_aspoolstate"
     },
@@ -4229,7 +4346,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L35",
-      "community": 19,
+      "community": 7,
       "norm_label": "astickdata()",
       "id": "math_uniswap_v3_astickdata"
     },
@@ -4238,7 +4355,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L39",
-      "community": 19,
+      "community": 7,
       "norm_label": "poolcachekey()",
       "id": "math_uniswap_v3_poolcachekey"
     },
@@ -4247,7 +4364,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L54",
-      "community": 19,
+      "community": 7,
       "norm_label": "nextinitializedtickoptimized()",
       "id": "math_uniswap_v3_nextinitializedtickoptimized"
     },
@@ -4256,7 +4373,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L88",
-      "community": 19,
+      "community": 7,
       "norm_label": "getsortedticks()",
       "id": "math_uniswap_v3_getsortedticks"
     },
@@ -4265,7 +4382,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L125",
-      "community": 19,
+      "community": 7,
       "norm_label": "simulatev3swap()",
       "id": "math_uniswap_v3_simulatev3swap"
     },
@@ -4274,7 +4391,7 @@
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L248",
-      "community": 19,
+      "community": 7,
       "norm_label": "quotev3()",
       "id": "math_uniswap_v3_quotev3"
     },
@@ -4940,7 +5057,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L5",
-      "community": 50,
+      "community": 57,
       "norm_label": "logger",
       "id": "observability_logger_logger"
     },
@@ -5912,7 +6029,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L29",
-      "community": 82,
+      "community": 54,
       "norm_label": "gasoracle",
       "id": "execution_gas_gasoracle"
     },
@@ -5921,7 +6038,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L35",
-      "community": 82,
+      "community": 54,
       "norm_label": ".constructor()",
       "id": "execution_gas_gasoracle_constructor"
     },
@@ -5930,7 +6047,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L40",
-      "community": 82,
+      "community": 54,
       "norm_label": ".getsnapshot()",
       "id": "execution_gas_gasoracle_getsnapshot"
     },
@@ -5939,7 +6056,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L44",
-      "community": 82,
+      "community": 54,
       "norm_label": ".estimatecongestion()",
       "id": "execution_gas_gasoracle_estimatecongestion"
     },
@@ -5948,7 +6065,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L58",
-      "community": 82,
+      "community": 54,
       "norm_label": ".start()",
       "id": "execution_gas_gasoracle_start"
     },
@@ -5957,7 +6074,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L63",
-      "community": 82,
+      "community": 54,
       "norm_label": ".stop()",
       "id": "execution_gas_gasoracle_stop"
     },
@@ -5966,7 +6083,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L67",
-      "community": 82,
+      "community": 54,
       "norm_label": ".refresh()",
       "id": "execution_gas_gasoracle_refresh"
     },
@@ -5975,7 +6092,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L89",
-      "community": 82,
+      "community": 54,
       "norm_label": "clamppriorityfee()",
       "id": "execution_gas_clamppriorityfee"
     },
@@ -7019,7 +7136,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L1",
-      "community": 7,
+      "community": 76,
       "norm_label": "simulator.test.ts",
       "id": "src_services_strategy_simulator_test_ts"
     },
@@ -7028,7 +7145,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L9",
-      "community": 7,
+      "community": 76,
       "norm_label": "edge",
       "id": "strategy_simulator_test_edge"
     },
@@ -7037,7 +7154,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L17",
-      "community": 7,
+      "community": 76,
       "norm_label": "result",
       "id": "strategy_simulator_test_result"
     },
@@ -7046,7 +7163,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L171",
-      "community": 7,
+      "community": 76,
       "norm_label": "cache",
       "id": "strategy_simulator_test_cache"
     },
@@ -7055,7 +7172,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L187",
-      "community": 7,
+      "community": 76,
       "norm_label": "weth",
       "id": "strategy_simulator_test_weth"
     },
@@ -7064,7 +7181,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L188",
-      "community": 7,
+      "community": 76,
       "norm_label": "usdc",
       "id": "strategy_simulator_test_usdc"
     },
@@ -7073,7 +7190,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L189",
-      "community": 7,
+      "community": 76,
       "norm_label": "poola",
       "id": "strategy_simulator_test_poola"
     },
@@ -7082,7 +7199,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L190",
-      "community": 7,
+      "community": 76,
       "norm_label": "poolb",
       "id": "strategy_simulator_test_poolb"
     },
@@ -7091,7 +7208,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L192",
-      "community": 7,
+      "community": 76,
       "norm_label": "edges",
       "id": "strategy_simulator_test_edges"
     },
@@ -7100,7 +7217,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L221",
-      "community": 7,
+      "community": 76,
       "norm_label": "a",
       "id": "strategy_simulator_test_a"
     },
@@ -7109,7 +7226,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L222",
-      "community": 7,
+      "community": 76,
       "norm_label": "b",
       "id": "strategy_simulator_test_b"
     },
@@ -7118,7 +7235,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L223",
-      "community": 7,
+      "community": 76,
       "norm_label": "p1",
       "id": "strategy_simulator_test_p1"
     },
@@ -7127,7 +7244,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.test.ts",
       "source_location": "L224",
-      "community": 7,
+      "community": 76,
       "norm_label": "p2",
       "id": "strategy_simulator_test_p2"
     },
@@ -8837,7 +8954,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.test.ts",
       "source_location": "L52",
-      "community": 49,
+      "community": 5,
       "norm_label": "signal",
       "id": "strategy_backrunner_test_signal"
     },
@@ -9063,273 +9180,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_connection_compatdatabase",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_codec_stringifywithbigint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_codec_parsejson",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_codec_rehydratestatedata",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_codec_poolrowtoobject",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_upsertpoolmeta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolmeta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getallactivepools",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolsbyprotocol",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L52",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_updatepoolstatus",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_upsertpoolstate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getpoolstate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "infra/db/pools.ts",
-      "source_location": "L84",
-      "weight": 1.0,
-      "source": "infra_db_pools_ts",
-      "target": "db_pools_getallpoolstates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "infra_db_pools_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "infra_db_pools_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "db_pools_upsertpoolmeta",
-      "target": "db_codec_stringifywithbigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/reorg.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "services_watcher_reorg_ts",
-      "target": "db_pools_getpoolmeta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "db_pools_getpoolmeta",
-      "target": "db_codec_poolrowtoobject"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "source": "db_pools_upsertpoolstate",
-      "target": "db_codec_stringifywithbigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/watcher/poll_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_watcher_poll_loop_ts",
-      "target": "db_pools_upsertpoolstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "db_pools_getpoolstate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "db_pools_getpoolstate",
-      "target": "db_codec_parsejson"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/db/pools.ts",
-      "source_location": "L80",
-      "weight": 1.0,
-      "source": "db_pools_getpoolstate",
-      "target": "db_codec_rehydratestatedata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "db_pools_getallpoolstates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L65",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "db_pools_getallpoolstates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "orchestrator/boot.ts",
       "source_location": "L5",
       "weight": 1.0,
@@ -9402,6 +9252,17 @@
       "confidence_score": 1.0,
       "source": "orchestrator_boot_ts",
       "target": "types_route_routestatecache"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_discovery_service_ts",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -9503,6 +9364,50 @@
       "target": "discovery_curve_discovery_fetchcurvepools"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_discovery_v2_discovery_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_v2_discovery_fetchv2pools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_discovery_v3_discovery_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_v3_discovery_discoverv3pools",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -9558,17 +9463,6 @@
       "target": "watcher_state_ops_mergestateintocache"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "orchestrator/boot.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_ts",
-      "target": "services_watcher_reorg_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -9589,6 +9483,17 @@
       "confidence_score": 1.0,
       "source": "orchestrator_boot_ts",
       "target": "hypersync_client_sethypersyncdefaults"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hypersync_client_client",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -9701,6 +9606,28 @@
       "target": "mempool_service_mempoolserviceoptions"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_pools_getpoolstate"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "orchestrator/boot.ts",
@@ -9719,6 +9646,28 @@
       "confidence_score": 1.0,
       "source": "orchestrator_boot_ts",
       "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "infra_db_pools_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_watcher_reorg_ts"
     },
     {
       "relation": "imports_from",
@@ -9880,6 +9829,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "orchestrator/boot.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "orchestrator/boot.ts",
       "source_location": "L109",
       "weight": 1.0,
       "source": "orchestrator_boot_bootapplication",
@@ -9944,6 +9904,550 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "observability_logger_logger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_decoder_decodedpoolevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_enrichment_tokenmetafetcher",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "services_discovery_v2_discovery_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_v2_discovery_v2poolinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "services_discovery_v3_discovery_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_v3_discovery_v3poolinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_service_discoveryresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_service_v2factoryconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_service_discoveryservicedeps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "services_discovery_service_ts",
+      "target": "discovery_service_discoveryservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "service.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "service_ts",
+      "target": "discovery_service_discoveryresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "service.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "service_ts",
+      "target": "discovery_service_discoveryservicedeps"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/discovery/service.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "discovery_service_discoveryservice",
+      "target": "discovery_service_discoveryservice_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/discovery/service.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "discovery_service_discoveryservice",
+      "target": "discovery_service_discoveryservice_start"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/discovery/service.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "discovery_service_discoveryservice",
+      "target": "discovery_service_discoveryservice_stop"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/discovery/service.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "discovery_service_discoveryservice",
+      "target": "discovery_service_discoveryservice_discoverprotocol"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "discovery_service_discoveryservice",
+      "target": "discovery_service_discoveryservice_discoverall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "service.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "service_ts",
+      "target": "discovery_service_discoveryservice"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/service.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "discovery_service_discoveryservice_discoverall",
+      "target": "discovery_service_discoveryservice_discoverprotocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "services_discovery_v2_discovery_ts",
+      "target": "discovery_v2_discovery_v2_factory_abi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "services_discovery_v2_discovery_ts",
+      "target": "discovery_v2_discovery_v2_pool_abi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "services_discovery_v2_discovery_ts",
+      "target": "discovery_v2_discovery_v2poolinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v2_discovery.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "services_discovery_v2_discovery_ts",
+      "target": "discovery_v2_discovery_fetchv2pools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_discovery_v3_discovery_ts",
+      "target": "hypersync_types_hypersyncquery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "services_discovery_v3_discovery_ts",
+      "target": "discovery_v3_discovery_v3poolinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "services_discovery_v3_discovery_ts",
+      "target": "discovery_v3_discovery_discoverv3pools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "services_discovery_v3_discovery_ts",
+      "target": "discovery_v3_discovery_extractaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "services_discovery_v3_discovery_ts",
+      "target": "discovery_v3_discovery_decodepoolcreated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "discovery_v3_discovery_discoverv3pools",
+      "target": "discovery_v3_discovery_decodepoolcreated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services/discovery/v3_discovery.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "discovery_v3_discovery_decodepoolcreated",
+      "target": "discovery_v3_discovery_extractaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_connection_compatdatabase"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_codec_stringifywithbigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_codec_parsejson"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_codec_rehydratestatedata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_codec_poolrowtoobject"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_upsertpoolmeta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolmeta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getallactivepools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolsbyprotocol"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_updatepoolstatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_upsertpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/pools.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "infra_db_pools_ts",
+      "target": "db_pools_getallpoolstates"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "infra_db_pools_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "db_pools_upsertpoolmeta",
+      "target": "db_codec_stringifywithbigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "db_pools_getpoolmeta"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "db_pools_getpoolmeta",
+      "target": "db_codec_poolrowtoobject"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "db_pools_upsertpoolstate",
+      "target": "db_codec_stringifywithbigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_pools_upsertpoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "db_pools_getpoolstate",
+      "target": "db_codec_parsejson"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/db/pools.ts",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "db_pools_getpoolstate",
+      "target": "db_codec_rehydratestatedata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -9969,9 +10473,9 @@
       "source_file": "services/watcher/reorg.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_watcher_reorg_ts",
-      "target": "watcher_types_watcherpoolmeta",
-      "confidence_score": 1.0
+      "target": "watcher_types_watcherpoolmeta"
     },
     {
       "relation": "contains",
@@ -15866,76 +16370,6 @@
       "confidence_score": 1.0,
       "source": "service_ts",
       "target": "discovery_enrichment_tokenmetafetcher"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "service.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "service_ts",
-      "target": "discovery_service_discoveryresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "service.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "service_ts",
-      "target": "discovery_service_discoveryservicedeps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "service.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "service_ts",
-      "target": "discovery_service_discoveryservice"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/discovery/service.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "discovery_service_discoveryservice",
-      "target": "discovery_service_discoveryservice_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/discovery/service.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "discovery_service_discoveryservice",
-      "target": "discovery_service_discoveryservice_start"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/discovery/service.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "discovery_service_discoveryservice",
-      "target": "discovery_service_discoveryservice_stop"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/discovery/service.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "discovery_service_discoveryservice",
-      "target": "discovery_service_discoveryservice_discoverprotocol"
     },
     {
       "relation": "contains",
@@ -24442,5 +24876,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "42343596c1033a83d76e392c81957be6bfe27724"
+  "built_at_commit": "f06fa7dd19f1e21b0eefefa13704fe9f253d2624"
 }
