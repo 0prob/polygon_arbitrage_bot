@@ -80,7 +80,8 @@ contract ArbExecutorAtomicTest {
             address(0x1002),
             address(0x1003),
             address(0x1004),
-            address(0x1005)
+            address(0x1005),
+            address(0x1006)
         );
     }
 

@@ -28,7 +28,8 @@ contract ArbExecutorAaveForkTest is Test {
             SUSHISWAP_V3_FACTORY,
             QUICKSWAP_V3_FACTORY,
             KYBER_ELASTIC_FACTORY,
-            AAVE_POOL
+            AAVE_POOL,
+            address(0x1006)
         );
     }
 

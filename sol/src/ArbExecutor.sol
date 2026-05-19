@@ -53,6 +53,21 @@ interface IAavePool {
     ) external;
 }
 
+struct PoolKey {
+    address currency0;
+    address currency1;
+    uint24 fee;
+    int24 tickSpacing;
+    address hooks;
+}
+
+interface IPoolManager {
+    function swap(PoolKey calldata key, bool zeroForOne, int128 amountSpecified, uint160 sqrtPriceLimitX96, bytes calldata hookData) external returns (int256 delta0, int256 delta1);
+    function settle(address currency) external payable;
+    function take(address currency, address to, uint256 amount) external;
+    function lock(bytes calldata data) external returns (bytes memory result);
+}
+
 interface IFlashLoanSimpleReceiver {
     function executeOperation(
         address asset,
@@ -89,6 +104,7 @@ contract ArbExecutor is IFlashLoanRecipient {
     uint8 private constant PROTOCOL_SUSHISWAP_V3 = 2;
     uint8 private constant PROTOCOL_QUICKSWAP_V3 = 3;
     uint8 private constant PROTOCOL_KYBER_ELASTIC = 4;
+    uint8 private constant PROTOCOL_UNISWAP_V4 = 5;
 
     uint8 private constant PHASE_IDLE = 0;
     uint8 private constant PHASE_FLASHLOAN = 1;
@@ -143,6 +159,7 @@ contract ArbExecutor is IFlashLoanRecipient {
     address public immutable quickswapV3Factory;
     address public immutable kyberElasticFactory;
     address public immutable aavePool;
+    address public immutable poolManager;
 
     uint8 private _phase;
     bytes32 private _activeRouteHash;
@@ -176,7 +193,8 @@ contract ArbExecutor is IFlashLoanRecipient {
         address sushiV3Factory_,
         address quickswapV3Factory_,
         address kyberElasticFactory_,
-        address aavePool_
+        address aavePool_,
+        address poolManager_
     ) {
         if (
             owner_ == address(0) ||
@@ -185,7 +203,8 @@ contract ArbExecutor is IFlashLoanRecipient {
             sushiV3Factory_ == address(0) ||
             quickswapV3Factory_ == address(0) ||
             kyberElasticFactory_ == address(0) ||
-            aavePool_ == address(0)
+            aavePool_ == address(0) ||
+            poolManager_ == address(0)
         ) revert ZeroAddress();
 
         owner = owner_;
@@ -195,6 +214,7 @@ contract ArbExecutor is IFlashLoanRecipient {
         quickswapV3Factory = quickswapV3Factory_;
         kyberElasticFactory = kyberElasticFactory_;
         aavePool = aavePool_;
+        poolManager = poolManager_;
         emit OwnershipTransferred(address(0), owner_);
     }
 
@@ -405,6 +425,25 @@ contract ArbExecutor is IFlashLoanRecipient {
 
     function swapCallback(int256 deltaQty0, int256 deltaQty1, bytes calldata data) external {
         _handlePoolSwapCallback(PROTOCOL_KYBER_ELASTIC, deltaQty0, deltaQty1, data);
+    }
+
+    function lockAcquired(bytes calldata data) external returns (bytes memory) {
+        if (msg.sender != poolManager) revert CallbackOnly();
+        if (_phase != PHASE_CALLBACK) revert InvalidFlashLoanContext();
+
+        (PoolKey memory key, bool zeroForOne, int128 amountSpecified, uint160 sqrtPriceLimitX96) =
+            abi.decode(data, (PoolKey, bool, int128, uint160));
+
+        (int256 delta0, int256 delta1) = IPoolManager(poolManager).swap(
+            key, zeroForOne, amountSpecified, sqrtPriceLimitX96, ""
+        );
+
+        if (delta0 > 0) IPoolManager(poolManager).settle(key.currency0);
+        if (delta1 > 0) IPoolManager(poolManager).settle(key.currency1);
+        if (delta0 < 0) IPoolManager(poolManager).take(key.currency0, address(this), uint256(-delta0));
+        if (delta1 < 0) IPoolManager(poolManager).take(key.currency1, address(this), uint256(-delta1));
+
+        return "";
     }
 
     function _handlePoolSwapCallback(
