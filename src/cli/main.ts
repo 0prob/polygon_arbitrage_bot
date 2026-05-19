@@ -4,6 +4,8 @@ import { runPassLoop } from "../orchestrator/pass_loop.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
 import { startTui, updateState, type BotState } from "./tui.ts";
 import { createActivityLog } from "./activity.ts";
+import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.ts";
+import { createRootLogger } from "../infra/observability/logger.ts";
 
 function createBotState(): BotState {
   return {
@@ -32,6 +34,21 @@ async function main() {
   const onUpdate = tuiEnabled ? (update: Partial<BotState>) => { Object.assign(botState, update); updateState(botState); } : undefined;
   const activity = createActivityLog(onUpdate, tuiEnabled);
 
+  // Start HyperIndex ingestion process first
+  const hyperIndex = createHyperIndexProcess({
+    dataDir: config.paths.dataDir,
+    polygonRpcUrl: config.rpc.polygonRpcUrls[0],
+    envioApiToken: config.envioApiToken,
+    logger: createRootLogger({ level: config.observability.logLevel }),
+  });
+
+  try {
+    await hyperIndex.start();
+  } catch (err) {
+    console.error("Failed to start HyperIndex, continuing without it:", err);
+  }
+  const startedHyperIndex = hyperIndex.isRunning();
+
   const ctx = await bootApplication(config, activity, tuiEnabled ? logBuffer : undefined);
 
   const tuiCleanup = tuiEnabled ? startTui(botState) : null;
@@ -44,6 +61,9 @@ async function main() {
     activity("SHUTDOWN", "Shutting down");
     tuiCleanup?.();
     await shutdownApplication(ctx);
+    if (startedHyperIndex) {
+      await hyperIndex.stop();
+    }
     process.exit(0);
   }
 
