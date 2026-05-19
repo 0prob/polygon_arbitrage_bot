@@ -97,3 +97,11 @@ chains:
         handler: src/handlers_mjs/handlers/curve_factory.js
         events:
           - event: PoolAdded
+      # Uniswap V4 PoolManager
+      - name: PoolManager
+        address: "0x67366782805870060151383f4bbff9dab53e5cd6"
+        abi_file_path: abis/uniswap_v4_pool_manager.json
+        handler: src/handlers_mjs/handlers/v4.js
+        events:
+          - event: Initialize
+          - event: Swap
