@@ -19,7 +19,15 @@ function makePoolState() {
 
 describe("simulateV3Swap", () => {
   it("returns zero output for empty liquidity", () => {
-    const state = { initialized: true, sqrtPriceX96: getSqrtRatioAtTick(0), tick: 0, liquidity: 0n, fee: 3000n, tickSpacing: 60, ticks: new Map() };
+    const state = {
+      initialized: true,
+      sqrtPriceX96: getSqrtRatioAtTick(0),
+      tick: 0,
+      liquidity: 0n,
+      fee: 3000n,
+      tickSpacing: 60,
+      ticks: new Map(),
+    };
     const result = simulateV3Swap(state, 1000n, true);
     expect(result.amountOut).toBe(0n);
   });

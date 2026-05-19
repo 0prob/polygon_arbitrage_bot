@@ -16,10 +16,7 @@ export function getCheckpoint(db: CompatDatabase, id: string) {
 }
 
 export function getLatestCheckpoint(db: CompatDatabase) {
-  const stmt = db.statement(
-    "getLatestCheckpoint",
-    `SELECT * FROM checkpoints ORDER BY created_at DESC LIMIT 1`,
-  );
+  const stmt = db.statement("getLatestCheckpoint", `SELECT * FROM checkpoints ORDER BY created_at DESC LIMIT 1`);
   return (stmt.get() as Record<string, unknown> | undefined) ?? null;
 }
 
@@ -28,10 +25,7 @@ export function rollbackToCheckpoint(db: CompatDatabase, checkpointId: string) {
   if (!checkpoint) return { poolsRemoved: 0, statesRemoved: 0 };
 
   const blockNumber = checkpoint.block_number as number;
-  const removeState = db.statement(
-    "rollbackRemoveState",
-    `DELETE FROM pool_state WHERE last_updated_block >= ?`,
-  );
+  const removeState = db.statement("rollbackRemoveState", `DELETE FROM pool_state WHERE last_updated_block >= ?`);
   const removePools = db.statement(
     "rollbackRemovePools",
     `UPDATE pools SET status = 'removed', removed_block = ? WHERE created_block >= ?`,
@@ -48,9 +42,6 @@ export function rollbackToCheckpoint(db: CompatDatabase, checkpointId: string) {
 }
 
 export function getBlockRangeForReorg(db: CompatDatabase, fromCheckpoint: string, toBlock: number) {
-  const stmt = db.statement(
-    "getBlockRangeForReorg",
-    `SELECT * FROM checkpoints WHERE id = ? AND block_number <= ?`,
-  );
+  const stmt = db.statement("getBlockRangeForReorg", `SELECT * FROM checkpoints WHERE id = ? AND block_number <= ?`);
   return stmt.get(fromCheckpoint, toBlock) as Record<string, unknown> | undefined;
 }

@@ -32,11 +32,11 @@ export function scoreRoute(result: RouteSimulationResult, weights: ScoringWeight
   const uniqueProtocols = new Set(result.protocols).size;
 
   return (
-    weights.profitWeight * Math.log10(Math.max(1, Math.abs(profit) + 1)) * Math.sign(profit)
-    + weights.efficiencyWeight * efficiency * 100
-    - weights.gasWeight * Math.log10(Math.max(1, gas))
-    - weights.hopPenalty * hops
-    + weights.diversityBonus * uniqueProtocols
+    weights.profitWeight * Math.log10(Math.max(1, Math.abs(profit) + 1)) * Math.sign(profit) +
+    weights.efficiencyWeight * efficiency * 100 -
+    weights.gasWeight * Math.log10(Math.max(1, gas)) -
+    weights.hopPenalty * hops +
+    weights.diversityBonus * uniqueProtocols
   );
 }
 

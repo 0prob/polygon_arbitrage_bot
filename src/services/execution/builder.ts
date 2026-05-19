@@ -86,18 +86,9 @@ function assertValidRoute(route: BuilderRouteInput): void {
   }
 }
 
-export function buildArbTx(
-  route: BuilderRouteInput,
-  config: BuilderConfig,
-  options: BuilderOptions = {},
-): BuiltTransaction {
+export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, options: BuilderOptions = {}): BuiltTransaction {
   const { executorAddress, fromAddress } = config;
-  const {
-    minProfit = 0n,
-    deadlineOffsetS = DEFAULT_DEADLINE_OFFSET_S,
-    slippageBps = 50,
-    maxCalls = DEFAULT_MAX_CALLS,
-  } = options;
+  const { minProfit = 0n, deadlineOffsetS = DEFAULT_DEADLINE_OFFSET_S, slippageBps = 50, maxCalls = DEFAULT_MAX_CALLS } = options;
 
   if (!executorAddress) throw new Error("buildArbTx: executorAddress required");
   if (!fromAddress) throw new Error("buildArbTx: fromAddress required");

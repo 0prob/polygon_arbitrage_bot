@@ -16,7 +16,12 @@ describe("takeTopNBy", () => {
     expect(takeTopNBy(items, 2, (a, b) => b.p - a.p)).toEqual([{ p: 9 }, { p: 5 }]);
   });
   it("works with generators", () => {
-    function* gen() { yield 5; yield 1; yield 9; yield 3; }
+    function* gen() {
+      yield 5;
+      yield 1;
+      yield 9;
+      yield 3;
+    }
     expect(takeTopNBy(gen(), 2, (a, b) => a - b)).toEqual([1, 3]);
   });
 });

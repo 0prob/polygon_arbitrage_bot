@@ -61,9 +61,7 @@ export function rehydrateStateData(protocol: string, data: unknown): unknown {
   return dataRecord;
 }
 
-export function rehydrateV3Ticks(
-  ticks: unknown,
-): Map<number, { liquidityGross: bigint; liquidityNet: bigint }> {
+export function rehydrateV3Ticks(ticks: unknown): Map<number, { liquidityGross: bigint; liquidityNet: bigint }> {
   const result = new Map<number, { liquidityGross: bigint; liquidityNet: bigint }>();
   if (ticks == null) return result;
   let entries: Array<[unknown, unknown]> = [];

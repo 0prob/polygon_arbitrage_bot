@@ -45,7 +45,11 @@ describe("chunk", () => {
     expect(chunk([], 3)).toEqual([]);
   });
   it("splits into equal chunks", () => {
-    expect(chunk([1, 2, 3, 4, 5, 6], 2)).toEqual([[1, 2], [3, 4], [5, 6]]);
+    expect(chunk([1, 2, 3, 4, 5, 6], 2)).toEqual([
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ]);
   });
   it("handles uneven last chunk", () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);

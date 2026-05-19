@@ -70,7 +70,10 @@ export class GasOracle {
       const clampedPriority = clampPriorityFee(priorityFee, this.config);
       const maxFee = baseFee * 2n + clampedPriority;
       this.current = {
-        baseFee, priorityFee: clampedPriority, maxFee, gasPrice: baseFee + clampedPriority,
+        baseFee,
+        priorityFee: clampedPriority,
+        maxFee,
+        gasPrice: baseFee + clampedPriority,
         timestamp: Date.now(),
       };
       this.history.push(this.current);
@@ -91,11 +94,7 @@ function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint 
   return priorityFee;
 }
 
-export function scalePriorityFeeByProfitMargin(
-  priorityFee: bigint,
-  profitMarginBps: bigint,
-  maxMultiplier: number,
-): bigint {
+export function scalePriorityFeeByProfitMargin(priorityFee: bigint, profitMarginBps: bigint, maxMultiplier: number): bigint {
   const multiplier = Math.max(1, Math.min(maxMultiplier, Number(profitMarginBps) / 100));
   return priorityFee * BigInt(multiplier);
 }

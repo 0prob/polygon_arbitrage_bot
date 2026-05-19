@@ -75,9 +75,7 @@ export async function fetchAllLogs<TLog = unknown>(
       const pageLogs = pageLogsFromResponse(res);
       if (pageLogs.length > 0) {
         if (allLogs.length + pageLogs.length > MAX_ACCUMULATED_LOGS) {
-          throw new Error(
-            `HyperSync exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs (${allLogs.length} + ${pageLogs.length})`,
-          );
+          throw new Error(`HyperSync exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs (${allLogs.length} + ${pageLogs.length})`);
         }
         allLogs.push(...pageLogs);
       }
@@ -112,9 +110,7 @@ export async function fetchAllLogs<TLog = unknown>(
       const pageLogs = pageLogsFromResponse(res);
       if (pageLogs.length > 0) {
         if (allLogs.length + pageLogs.length > MAX_ACCUMULATED_LOGS) {
-          throw new Error(
-            `HyperSync exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs`,
-          );
+          throw new Error(`HyperSync exceeded memory limit of ${MAX_ACCUMULATED_LOGS} logs`);
         }
         allLogs.push(...pageLogs);
       }

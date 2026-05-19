@@ -15,7 +15,14 @@ describe("simulateWoofiSwap", () => {
       feeDenominator: 100_000n,
       balances: [1_000_000_000n],
       baseTokenStates: {
-        [baseAddress]: { price: 1_000_000_000n, spread: 0n, coeff: 0n, reserve: 1_000_000_000_000_000_000n, dec: 1_000_000_000_000_000_000n, feeRate: 0n },
+        [baseAddress]: {
+          price: 1_000_000_000n,
+          spread: 0n,
+          coeff: 0n,
+          reserve: 1_000_000_000_000_000_000n,
+          dec: 1_000_000_000_000_000_000n,
+          feeRate: 0n,
+        },
       },
     };
     const result = simulateWoofiSwap(1_000_000n, state, 0, 1);

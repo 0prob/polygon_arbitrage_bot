@@ -8,7 +8,8 @@ describe("fetchAllLogs", () => {
       const mockClient: HypersyncClientRuntime = {
         get: vi.fn(),
         stream: vi.fn().mockResolvedValue({
-          recv: vi.fn()
+          recv: vi
+            .fn()
             .mockResolvedValueOnce({ nextBlock: 1001, data: { logs: [{ id: "log1" }] } })
             .mockResolvedValueOnce({ nextBlock: 1002, data: { logs: [{ id: "log2" }] } })
             .mockResolvedValue(null),
@@ -36,9 +37,10 @@ describe("fetchAllLogs", () => {
     it("should not get stuck in an infinite loop if nextBlock stalls", async () => {
       // This client does not have the `.stream` method, forcing the pagination path.
       const mockClient = {
-        get: vi.fn()
+        get: vi
+          .fn()
           .mockResolvedValueOnce({ nextBlock: 1100, data: { logs: [] } }) // Progresses once
-          .mockResolvedValue({ nextBlock: 1100, data: { logs: [] } }),    // Then stalls
+          .mockResolvedValue({ nextBlock: 1100, data: { logs: [] } }), // Then stalls
       } as any;
 
       const query: HyperSyncQuery = {
@@ -52,7 +54,7 @@ describe("fetchAllLogs", () => {
 
       // With the fix, this should resolve quickly. Without it, it will time out.
       const result = await fetchAllLogs(mockClient, query);
-      
+
       // It should have made progress on the first call, then detected the stall and exited.
       expect(result.nextBlock).toBe(1100);
       expect(result.pages).toBe(2); // Ran twice before detecting the stall

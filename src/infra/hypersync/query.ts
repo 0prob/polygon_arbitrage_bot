@@ -22,7 +22,9 @@ const DEFAULT_LOG_FIELDS = [
 const DEFAULT_BLOCK_FIELDS = ["Number", "Timestamp"];
 
 function normalizeTopic(topic: unknown): string {
-  const value = String(topic ?? "").trim().toLowerCase();
+  const value = String(topic ?? "")
+    .trim()
+    .toLowerCase();
   return /^0x[0-9a-f]{64}$/.test(value) ? value : "";
 }
 
@@ -81,24 +83,16 @@ export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilt
   if (!filter || typeof filter !== "object") {
     return {};
   }
-  const address = Array.isArray(filter?.address)
-    ? filter.address.map((addr) => normalizeEvmAddress(addr)).filter(isAddress)
-    : [];
+  const address = Array.isArray(filter?.address) ? filter.address.map((addr) => normalizeEvmAddress(addr)).filter(isAddress) : [];
   const dedupedAddress = [...new Set(address)];
 
   const topics = Array.isArray(filter?.topics)
-    ? filter.topics.map((group) =>
-        Array.isArray(group)
-          ? [...new Set(group.map(normalizeTopic).filter((t) => t.length > 0))]
-          : [],
-      )
+    ? filter.topics.map((group) => (Array.isArray(group) ? [...new Set(group.map(normalizeTopic).filter((t) => t.length > 0))] : []))
     : [];
 
   const lastConstrainedIndex = topics.reduce((last, group, i) => (group.length > 0 ? i : last), -1);
 
-  const trimmedTopics = lastConstrainedIndex >= 0
-    ? topics.slice(0, lastConstrainedIndex + 1).map((g) => [...g])
-    : [];
+  const trimmedTopics = lastConstrainedIndex >= 0 ? topics.slice(0, lastConstrainedIndex + 1).map((g) => [...g]) : [];
 
   const result: HyperSyncLogFilter = {};
   if (dedupedAddress.length > 0) result.address = dedupedAddress;
@@ -106,11 +100,7 @@ export function normalizeLogFilter(filter: HyperSyncLogFilter): HyperSyncLogFilt
   return result;
 }
 
-export function buildLogQuery(
-  filters: HyperSyncLogFilter[],
-  fromBlock: number,
-  toBlock?: number,
-): HyperSyncQuery {
+export function buildLogQuery(filters: HyperSyncLogFilter[], fromBlock: number, toBlock?: number): HyperSyncQuery {
   const normalizedLogs = filters.map(normalizeLogFilter);
 
   const fieldSelection: HyperSyncFieldSelection = {

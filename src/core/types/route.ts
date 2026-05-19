@@ -42,7 +42,10 @@ export interface RouteSimulationResult {
 
 export type RouteResultCore = Pick<RouteSimulationResult, "amountIn" | "amountOut" | "profit" | "totalGas">;
 
-export type RouteResultTrace = Pick<RouteSimulationResult, "profitable" | "hopCount" | "poolPath" | "tokenPath" | "hopAmounts" | "protocols">;
+export type RouteResultTrace = Pick<
+  RouteSimulationResult,
+  "profitable" | "hopCount" | "poolPath" | "tokenPath" | "hopAmounts" | "protocols"
+>;
 
 export interface EvaluatedRoute {
   path: ArbPath;

@@ -4,8 +4,16 @@ import type { RouteSimulationResult } from "../types/route.ts";
 
 function mkResult(amountIn: bigint, profit: bigint): RouteSimulationResult {
   return {
-    amountIn, amountOut: amountIn + profit, profit, profitable: profit > 0n,
-    hopAmounts: [], totalGas: 0, poolPath: [], tokenPath: [], protocols: [], hopCount: 0,
+    amountIn,
+    amountOut: amountIn + profit,
+    profit,
+    profitable: profit > 0n,
+    hopAmounts: [],
+    totalGas: 0,
+    poolPath: [],
+    tokenPath: [],
+    protocols: [],
+    hopCount: 0,
   };
 }
 
@@ -33,11 +41,13 @@ describe("optimizeInputAmount", () => {
     // Only accept amounts >= 100. Optimal should be at 100 even if profit function peaks at 50.
     const simulate = (amountIn: bigint) => {
       const diff = amountIn - 50n;
-      const profit = 1_000n - (diff * diff);
+      const profit = 1_000n - diff * diff;
       return mkResult(amountIn, profit);
     };
     const result = optimizeInputAmount(simulate, {
-      minAmount: 1n, maxAmount: 1_000n, iterations: 64,
+      minAmount: 1n,
+      maxAmount: 1_000n,
+      iterations: 64,
       accept: (r) => r.amountIn >= 100n,
     });
     expect(result.amountIn).toBeGreaterThanOrEqual(100n);
@@ -47,7 +57,9 @@ describe("optimizeInputAmount", () => {
     // Profit ignored; scorer is amountOut directly
     const simulate = (amountIn: bigint) => mkResult(amountIn, amountIn * 2n);
     const result = optimizeInputAmount(simulate, {
-      minAmount: 1n, maxAmount: 1_000n, iterations: 32,
+      minAmount: 1n,
+      maxAmount: 1_000n,
+      iterations: 32,
       scorer: (r) => r.amountOut,
     });
     // amountOut is monotonically increasing -> optimum is near max

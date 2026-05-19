@@ -1,14 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { normalizeEvmAddress, isEvmAddress, normalizeProtocolKey, isRecord, isPolygonSystemContract, ZERO_ADDRESS, isFastEvmAddress } from "./identity.ts";
+import {
+  normalizeEvmAddress,
+  isEvmAddress,
+  normalizeProtocolKey,
+  isRecord,
+  isPolygonSystemContract,
+  ZERO_ADDRESS,
+  isFastEvmAddress,
+} from "./identity.ts";
 
 describe("normalizeEvmAddress", () => {
   it("lowercases and validates valid addresses", () => {
-    expect(normalizeEvmAddress("0xABCdef1234567890abcDEF1234567890abcdEF12"))
-      .toBe("0xabcdef1234567890abcdef1234567890abcdef12");
+    expect(normalizeEvmAddress("0xABCdef1234567890abcDEF1234567890abcdEF12")).toBe("0xabcdef1234567890abcdef1234567890abcdef12");
   });
   it("trims whitespace", () => {
-    expect(normalizeEvmAddress("  0xABCdef1234567890abcDEF1234567890abcdEF12  "))
-      .toBe("0xabcdef1234567890abcdef1234567890abcdef12");
+    expect(normalizeEvmAddress("  0xABCdef1234567890abcDEF1234567890abcdEF12  ")).toBe("0xabcdef1234567890abcdef1234567890abcdef12");
   });
   it("returns null for non-strings", () => {
     expect(normalizeEvmAddress(123)).toBeNull();

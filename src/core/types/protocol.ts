@@ -23,17 +23,24 @@ export interface DecodedPool {
 }
 
 export const V2_FAMILY_KEYS = new Set([
-  "QUICKSWAP_V2", "SUSHISWAP_V2", "DFYN_V2", "APESWAP_V2",
-  "COMETHSWAP_V2", "MESHSWAP_V2", "JETSWAP_V2", "UNISWAP_V2",
+  "QUICKSWAP_V2",
+  "SUSHISWAP_V2",
+  "DFYN_V2",
+  "APESWAP_V2",
+  "COMETHSWAP_V2",
+  "MESHSWAP_V2",
+  "JETSWAP_V2",
+  "UNISWAP_V2",
 ]);
 
-export const V3_FAMILY_KEYS = new Set([
-  "UNISWAP_V3", "SUSHISWAP_V3", "QUICKSWAP_V3", "KYBERSWAP_ELASTIC",
-]);
+export const V3_FAMILY_KEYS = new Set(["UNISWAP_V3", "SUSHISWAP_V3", "QUICKSWAP_V3", "KYBERSWAP_ELASTIC"]);
 
 export const CURVE_FAMILY_KEYS = new Set([
-  "CURVE_MAIN_REGISTRY", "CURVE_STABLE_FACTORY", "CURVE_CRYPTO_FACTORY",
-  "CURVE_STABLESWAP_NG", "CURVE_TRICRYPTO_NG",
+  "CURVE_MAIN_REGISTRY",
+  "CURVE_STABLE_FACTORY",
+  "CURVE_CRYPTO_FACTORY",
+  "CURVE_STABLESWAP_NG",
+  "CURVE_TRICRYPTO_NG",
 ]);
 
 export const BALANCER_FAMILY_KEYS = new Set(["BALANCER_V2"]);
@@ -51,9 +58,21 @@ export function protocolFamily(key: string): ProtocolFamily | null {
   return null;
 }
 
-export function isV2Protocol(key: string): boolean { return V2_FAMILY_KEYS.has(key.toUpperCase()); }
-export function isV3Protocol(key: string): boolean { return V3_FAMILY_KEYS.has(key.toUpperCase()); }
-export function isCurveProtocol(key: string): boolean { return CURVE_FAMILY_KEYS.has(key.toUpperCase()); }
-export function isBalancerProtocol(key: string): boolean { return BALANCER_FAMILY_KEYS.has(key.toUpperCase()); }
-export function isDodoProtocol(key: string): boolean { return DODO_FAMILY_KEYS.has(key.toUpperCase()); }
-export function isWoofiProtocol(key: string): boolean { return WOOFI_FAMILY_KEYS.has(key.toUpperCase()); }
+export function isV2Protocol(key: string): boolean {
+  return V2_FAMILY_KEYS.has(key.toUpperCase());
+}
+export function isV3Protocol(key: string): boolean {
+  return V3_FAMILY_KEYS.has(key.toUpperCase());
+}
+export function isCurveProtocol(key: string): boolean {
+  return CURVE_FAMILY_KEYS.has(key.toUpperCase());
+}
+export function isBalancerProtocol(key: string): boolean {
+  return BALANCER_FAMILY_KEYS.has(key.toUpperCase());
+}
+export function isDodoProtocol(key: string): boolean {
+  return DODO_FAMILY_KEYS.has(key.toUpperCase());
+}
+export function isWoofiProtocol(key: string): boolean {
+  return WOOFI_FAMILY_KEYS.has(key.toUpperCase());
+}

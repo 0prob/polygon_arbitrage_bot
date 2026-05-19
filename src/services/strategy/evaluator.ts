@@ -8,11 +8,7 @@ export interface EvaluatedRoute {
 }
 
 /** Evaluate a list of cycles sequentially. Silent error handling. */
-export function evaluatePaths(
-  paths: FoundCycle[],
-  stateCache: RouteStateCache,
-  testAmount: bigint,
-): EvaluatedRoute[] {
+export function evaluatePaths(paths: FoundCycle[], stateCache: RouteStateCache, testAmount: bigint): EvaluatedRoute[] {
   const results: EvaluatedRoute[] = [];
   for (const path of paths) {
     try {

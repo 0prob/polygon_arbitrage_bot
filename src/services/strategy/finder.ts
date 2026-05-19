@@ -31,7 +31,9 @@ function find2HopCycles(graph: RoutingGraph): FoundCycle[] {
       for (const e2 of inEdges) {
         if (e2.tokenOut.toLowerCase() !== tokenIn) continue;
         cycles.push({
-          startToken: tokenIn as Address, edges: [e1, e2], hopCount: 2,
+          startToken: tokenIn as Address,
+          edges: [e1, e2],
+          hopCount: 2,
           logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps),
           cumulativeFeeBps: e1.feeBps + e2.feeBps,
         });
@@ -54,7 +56,9 @@ function find3HopCycles(graph: RoutingGraph): FoundCycle[] {
         for (const e3 of third) {
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
           cycles.push({
-            startToken: startToken as Address, edges: [e1, e2, e3], hopCount: 3,
+            startToken: startToken as Address,
+            edges: [e1, e2, e3],
+            hopCount: 3,
             logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps),
             cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps,
           });

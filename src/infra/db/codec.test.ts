@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  stringifyWithBigInt,
-  parseJson,
-  rehydrateStateData,
-  rehydrateV3Ticks,
-  normalizeAddressForDb,
-} from "./codec.ts";
+import { stringifyWithBigInt, parseJson, rehydrateStateData, rehydrateV3Ticks, normalizeAddressForDb } from "./codec.ts";
 
 describe("codec", () => {
   describe("stringifyWithBigInt", () => {
@@ -15,7 +9,10 @@ describe("codec", () => {
     });
 
     it("converts Map to object", () => {
-      const m = new Map([["a", 1], ["b", 2]]);
+      const m = new Map([
+        ["a", 1],
+        ["b", 2],
+      ]);
       const result = JSON.parse(stringifyWithBigInt({ map: m }));
       expect(result.map).toEqual({ a: 1, b: 2 });
     });

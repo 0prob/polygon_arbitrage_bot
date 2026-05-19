@@ -4,9 +4,7 @@ import type { HyperSyncLogFilter } from "./types.ts";
 
 describe("buildLogQuery", () => {
   it("builds query from basic filters with fromBlock", () => {
-    const filters: HyperSyncLogFilter[] = [
-      { address: ["0x1234567890abcdef1234567890abcdef12345678"] },
-    ];
+    const filters: HyperSyncLogFilter[] = [{ address: ["0x1234567890abcdef1234567890abcdef12345678"] }];
     const query = buildLogQuery(filters, 1000);
     expect(query.fromBlock).toBe(1000);
     expect(query.toBlock).toBeUndefined();
@@ -15,18 +13,14 @@ describe("buildLogQuery", () => {
   });
 
   it("builds query with toBlock", () => {
-    const filters: HyperSyncLogFilter[] = [
-      { address: ["0x1234567890abcdef1234567890abcdef12345678"] },
-    ];
+    const filters: HyperSyncLogFilter[] = [{ address: ["0x1234567890abcdef1234567890abcdef12345678"] }];
     const query = buildLogQuery(filters, 1000, 2000);
     expect(query.fromBlock).toBe(1000);
     expect(query.toBlock).toBe(2000);
   });
 
   it("includes default field selection", () => {
-    const filters: HyperSyncLogFilter[] = [
-      { address: ["0x1234567890abcdef1234567890abcdef12345678"] },
-    ];
+    const filters: HyperSyncLogFilter[] = [{ address: ["0x1234567890abcdef1234567890abcdef12345678"] }];
     const query = buildLogQuery(filters, 1000);
     expect(query.fieldSelection.log).toBeDefined();
     expect(query.fieldSelection.block).toBeDefined();
@@ -51,10 +45,7 @@ describe("buildLogQuery", () => {
 describe("normalizeLogFilter", () => {
   it("deduplicates addresses", () => {
     const filter: HyperSyncLogFilter = {
-      address: [
-        "0x1234567890abcdef1234567890abcdef12345678",
-        "0x1234567890abcdef1234567890abcdef12345678",
-      ],
+      address: ["0x1234567890abcdef1234567890abcdef12345678", "0x1234567890abcdef1234567890abcdef12345678"],
     };
     const result = normalizeLogFilter(filter);
     expect(result.address).toHaveLength(1);
@@ -64,11 +55,7 @@ describe("normalizeLogFilter", () => {
   it("trims unconstrained trailing topics", () => {
     const filter: HyperSyncLogFilter = {
       address: ["0x1234567890abcdef1234567890abcdef12345678"],
-      topics: [
-        ["0x0000000000000000000000000000000000000000000000000000000000000001"],
-        [],
-        [],
-      ],
+      topics: [["0x0000000000000000000000000000000000000000000000000000000000000001"], [], []],
     };
     const result = normalizeLogFilter(filter);
     expect(result.topics).toHaveLength(1);

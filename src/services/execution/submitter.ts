@@ -38,7 +38,7 @@ class PrivateRelaySubmitter {
         signal: controller.signal,
       });
       clearTimeout(timer);
-      const body = await res.json() as { result?: string; error?: { message?: string } };
+      const body = (await res.json()) as { result?: string; error?: { message?: string } };
       if (body.error) return { success: false, error: body.error.message };
       return { success: true, txHash: body.result, method: `private_relay:${new URL(this.rpcUrl).hostname}` };
     } catch (err) {
@@ -66,7 +66,7 @@ class AlchemyPrivateTxSubmitter {
         signal: controller.signal,
       });
       clearTimeout(timer);
-      const body = await res.json() as { result?: string; error?: { message?: string } };
+      const body = (await res.json()) as { result?: string; error?: { message?: string } };
       if (body.error) return { success: false, error: body.error.message };
       return { success: true, txHash: body.result, method: "alchemy_private_tx" };
     } catch (err) {
@@ -95,7 +95,7 @@ class PublicSubmitter {
           signal: controller.signal,
         });
         clearTimeout(timer);
-        const body = await res.json() as { result?: string; error?: { message?: string } };
+        const body = (await res.json()) as { result?: string; error?: { message?: string } };
         if (body.error) throw new Error(body.error.message);
         const hostname = new URL(url).hostname;
         return { success: true, txHash: body.result, method: `public:${hostname}` } as SubmissionResult;

@@ -78,13 +78,13 @@ describe("lazy singleton proxy", () => {
 
   it("does not create multiple clients when called concurrently", async () => {
     const mod = await import("./client.ts");
-    
+
     await Promise.all([
-        mod.client.getHeight(),
-        mod.client.getHeight(),
-        mod.client.getHeight(),
-        mod.client.getHeight(),
-        mod.client.getHeight(),
+      mod.client.getHeight(),
+      mod.client.getHeight(),
+      mod.client.getHeight(),
+      mod.client.getHeight(),
+      mod.client.getHeight(),
     ]);
 
     expect(mockClientInstanceCount).toBe(1);
@@ -92,43 +92,43 @@ describe("lazy singleton proxy", () => {
 });
 
 describe("normalizeClientConfig", () => {
-    let normalizeClientConfig: (config: HyperSyncClientConfig) => Record<string, unknown>;
+  let normalizeClientConfig: (config: HyperSyncClientConfig) => Record<string, unknown>;
 
-    beforeAll(async () => {
-        const mod = await import("./client.ts");
-        normalizeClientConfig = mod.normalizeClientConfig;
-    });
+  beforeAll(async () => {
+    const mod = await import("./client.ts");
+    normalizeClientConfig = mod.normalizeClientConfig;
+  });
 
-    it("should throw if url is missing", () => {
-        expect(() => normalizeClientConfig({} as any)).toThrow("url must be a non-empty string");
-    });
+  it("should throw if url is missing", () => {
+    expect(() => normalizeClientConfig({} as any)).toThrow("url must be a non-empty string");
+  });
 
-    it("should create a valid config object", () => {
-        const config = {
-            url: "https://example.com",
-            apiToken: "test-token",
-            httpReqTimeoutMillis: 1000,
-            maxNumRetries: 5,
-            retryBackoffMs: 100,
-            retryBaseMs: 200,
-            retryCeilingMs: 2000,
-            proactiveRateLimitSleep: true,
-        };
-        const normalized = normalizeClientConfig(config);
-        expect(normalized).toEqual(config);
-    });
+  it("should create a valid config object", () => {
+    const config = {
+      url: "https://example.com",
+      apiToken: "test-token",
+      httpReqTimeoutMillis: 1000,
+      maxNumRetries: 5,
+      retryBackoffMs: 100,
+      retryBaseMs: 200,
+      retryCeilingMs: 2000,
+      proactiveRateLimitSleep: true,
+    };
+    const normalized = normalizeClientConfig(config);
+    expect(normalized).toEqual(config);
+  });
 
-    it("should ignore invalid optional parameters", () => {
-        const config = {
-            url: "https://example.com",
-            httpReqTimeoutMillis: "invalid",
-            maxNumRetries: -5,
-            retryBackoffMs: 0,
-        };
-        const normalized = normalizeClientConfig(config as any);
-        expect(normalized).toEqual({
-            url: "https://example.com",
-            apiToken: "",
-        });
+  it("should ignore invalid optional parameters", () => {
+    const config = {
+      url: "https://example.com",
+      httpReqTimeoutMillis: "invalid",
+      maxNumRetries: -5,
+      retryBackoffMs: 0,
+    };
+    const normalized = normalizeClientConfig(config as any);
+    expect(normalized).toEqual({
+      url: "https://example.com",
+      apiToken: "",
     });
+  });
 });

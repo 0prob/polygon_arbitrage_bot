@@ -12,7 +12,7 @@ import type { Address } from "../core/types/common.ts";
 import { DiscoveryService, type DiscoveryServiceDeps } from "../services/discovery/service.ts";
 import type { DecodedPoolEvent } from "../services/discovery/decoder.ts";
 import type { TokenMetaFetcher } from "../services/discovery/enrichment.ts";
-import type { CurveFactoryFetcher } from "../services/discovery/curve_factory.ts";
+import { fetchCurvePools } from "../services/discovery/curve_discovery.ts";
 import { WatcherService } from "../services/watcher/service.ts";
 import { HydrationService, type PoolStateFetcher } from "../services/hydration/service.ts";
 import { ExecutionService } from "../services/execution/service.ts";
@@ -64,26 +64,22 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     return new Map();
   };
 
-  const fetchCurvePools: CurveFactoryFetcher = async (_factoryAddress) => {
-    return [];
+  const fetchCurvePoolsImpl = async (factoryAddress: Address) => {
+    return await fetchCurvePools(publicClient, factoryAddress);
   };
 
   const savePool = async (pool: { address: Address; protocol: string; tokens: Address[] }): Promise<void> => {
     const stmt = db.prepare(
       "INSERT OR REPLACE INTO pools (address, protocol, tokens, created_block, created_tx, metadata, status) VALUES (?, ?, ?, 0, '', '{}', 'active')",
     );
-    stmt.run(
-      pool.address.toLowerCase(),
-      pool.protocol,
-      JSON.stringify(pool.tokens.map((t: Address) => t.toLowerCase())),
-    );
+    stmt.run(pool.address.toLowerCase(), pool.protocol, JSON.stringify(pool.tokens.map((t: Address) => t.toLowerCase())));
   };
 
   const discoveryDeps: DiscoveryServiceDeps = {
     logger,
     decodeLog,
     fetchTokenMeta,
-    fetchCurvePools,
+    fetchCurvePools: fetchCurvePoolsImpl,
     savePool,
   };
   const discoveryService = new DiscoveryService(discoveryDeps);
@@ -97,9 +93,11 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const getPools = (): PoolMeta[] => {
     try {
-      const rows = db.prepare(
-        "SELECT address, protocol, tokens FROM pools WHERE status = 'active'",
-      ).all() as Array<{ address: string; protocol: string; tokens: string }>;
+      const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
+        address: string;
+        protocol: string;
+        tokens: string;
+      }>;
       return rows.map((r) => {
         let tokens: string[];
         try {
@@ -179,9 +177,11 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   };
   const mempoolService = new MempoolService(logger, mempoolOptions);
 
-  // Trigger pool discovery and hydration
-  discoveryService.discoverProtocol("balancer").catch(logger.error);
-  discoveryService.discoverProtocol("curve").catch(logger.error);
+  // Trigger pool discovery and await before hydration
+  await Promise.all([
+    discoveryService.discoverProtocol("balancer").catch(logger.error),
+    discoveryService.discoverProtocol("curve").catch(logger.error),
+  ]);
 
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
   hydrationService.startSweep();

@@ -17,27 +17,31 @@ describe("getV2AmountOut", () => {
     expect(getV2AmountOut(1000n, 0n, 1000n, 997n, 1000n)).toBe(0n);
   });
   it("property: monotonic in amountIn", () => {
-    fc.assert(fc.property(
-      bigUint40.filter((n) => n > 0n),
-      bigUint40.filter((n) => n > 0n),
-      bigUint20.filter((n) => n > 0n),
-      (reserveIn, reserveOut, baseAmountIn) => {
-        const out1 = getV2AmountOut(baseAmountIn, reserveIn, reserveOut, 997n, 1000n);
-        const out2 = getV2AmountOut(baseAmountIn * 2n, reserveIn, reserveOut, 997n, 1000n);
-        expect(out2).toBeGreaterThanOrEqual(out1);
-      },
-    ));
+    fc.assert(
+      fc.property(
+        bigUint40.filter((n) => n > 0n),
+        bigUint40.filter((n) => n > 0n),
+        bigUint20.filter((n) => n > 0n),
+        (reserveIn, reserveOut, baseAmountIn) => {
+          const out1 = getV2AmountOut(baseAmountIn, reserveIn, reserveOut, 997n, 1000n);
+          const out2 = getV2AmountOut(baseAmountIn * 2n, reserveIn, reserveOut, 997n, 1000n);
+          expect(out2).toBeGreaterThanOrEqual(out1);
+        },
+      ),
+    );
   });
   it("property: output < reserveOut (cannot drain pool)", () => {
-    fc.assert(fc.property(
-      bigUint40.filter((n) => n > 0n),
-      bigUint40.filter((n) => n > 0n),
-      bigUint40.filter((n) => n > 0n),
-      (amountIn, reserveIn, reserveOut) => {
-        const out = getV2AmountOut(amountIn, reserveIn, reserveOut, 997n, 1000n);
-        expect(out).toBeLessThan(reserveOut);
-      },
-    ));
+    fc.assert(
+      fc.property(
+        bigUint40.filter((n) => n > 0n),
+        bigUint40.filter((n) => n > 0n),
+        bigUint40.filter((n) => n > 0n),
+        (amountIn, reserveIn, reserveOut) => {
+          const out = getV2AmountOut(amountIn, reserveIn, reserveOut, 997n, 1000n);
+          expect(out).toBeLessThan(reserveOut);
+        },
+      ),
+    );
   });
 });
 

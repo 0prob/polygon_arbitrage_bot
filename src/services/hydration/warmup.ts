@@ -26,14 +26,10 @@ async function syncBatch(
   fetchPoolState: PoolStateFetcher,
   stateCache: Map<string, Record<string, unknown>>,
 ): Promise<void> {
-  const results = await mapWithConcurrency(
-    pools,
-    25,
-    async (pool: PoolMeta) => {
-      const state = await fetchPoolState(pool.address, pool.protocol, pool.token0, pool.token1);
-      return { addr: pool.address.toLowerCase(), state: state as Record<string, unknown> | null };
-    },
-  );
+  const results = await mapWithConcurrency(pools, 25, async (pool: PoolMeta) => {
+    const state = await fetchPoolState(pool.address, pool.protocol, pool.token0, pool.token1);
+    return { addr: pool.address.toLowerCase(), state: state as Record<string, unknown> | null };
+  });
   for (const { addr, state } of results) {
     if (state) stateCache.set(addr, state);
   }

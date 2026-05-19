@@ -2,12 +2,9 @@ import type { Address } from "../../core/types/common.ts";
 
 export type RpcCaller = (address: Address, abi: string[], fn: string, args: unknown[]) => Promise<unknown>;
 
-export async function pollV2Pool(
-  poolAddress: Address,
-  callContract: RpcCaller,
-): Promise<Record<string, unknown> | null> {
+export async function pollV2Pool(poolAddress: Address, callContract: RpcCaller): Promise<Record<string, unknown> | null> {
   try {
-    const result = await callContract(poolAddress, [], "getReserves", []) as { _reserve0: bigint; _reserve1: bigint };
+    const result = (await callContract(poolAddress, [], "getReserves", [])) as { _reserve0: bigint; _reserve1: bigint };
     return {
       reserve0: result._reserve0,
       reserve1: result._reserve1,
@@ -17,14 +14,11 @@ export async function pollV2Pool(
   }
 }
 
-export async function pollV3Pool(
-  poolAddress: Address,
-  callContract: RpcCaller,
-): Promise<Record<string, unknown> | null> {
+export async function pollV3Pool(poolAddress: Address, callContract: RpcCaller): Promise<Record<string, unknown> | null> {
   try {
-    const slot0 = await callContract(poolAddress, [], "slot0", []) as { sqrtPriceX96: bigint; tick: number };
-    const liquidity = await callContract(poolAddress, [], "liquidity", []) as bigint;
-    const fee = await callContract(poolAddress, [], "fee", []) as bigint;
+    const slot0 = (await callContract(poolAddress, [], "slot0", [])) as { sqrtPriceX96: bigint; tick: number };
+    const liquidity = (await callContract(poolAddress, [], "liquidity", [])) as bigint;
+    const fee = (await callContract(poolAddress, [], "fee", [])) as bigint;
     return {
       sqrtPriceX96: slot0.sqrtPriceX96,
       tick: slot0.tick,
@@ -44,11 +38,11 @@ export async function pollCurvePool(
   try {
     const balances: bigint[] = [];
     for (let i = 0; i < nCoins; i++) {
-      const bal = await callContract(poolAddress, [], "balances", [i]) as bigint;
+      const bal = (await callContract(poolAddress, [], "balances", [i])) as bigint;
       balances.push(bal);
     }
-    const A = await callContract(poolAddress, [], "A", []) as bigint;
-    const fee = await callContract(poolAddress, [], "fee", []) as bigint;
+    const A = (await callContract(poolAddress, [], "A", [])) as bigint;
+    const fee = (await callContract(poolAddress, [], "fee", [])) as bigint;
     return { balances, A, fee, nCoins };
   } catch {
     return null;
@@ -61,7 +55,7 @@ export async function pollBalancerPool(
   callContract: RpcCaller,
 ): Promise<Record<string, unknown> | null> {
   try {
-    const result = await callContract(vaultAddress, [], "getPoolTokens", [poolAddress]) as {
+    const result = (await callContract(vaultAddress, [], "getPoolTokens", [poolAddress])) as {
       tokens: string[];
       balances: bigint[];
       lastChangeBlock: bigint;

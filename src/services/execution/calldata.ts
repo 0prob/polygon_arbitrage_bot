@@ -2,136 +2,263 @@ import { encodeFunctionData, getAddress, keccak256, encodeAbiParameters } from "
 import { MIN_SQRT_RATIO, MAX_SQRT_RATIO } from "../../core/math/tick_math.ts";
 import { simulateV3Swap } from "../../core/math/uniswap_v3.ts";
 
-const ERC20_TRANSFER_ABI = [{
-  name: "transfer", type: "function", inputs: [
-    { name: "to", type: "address" }, { name: "amount", type: "uint256" },
-  ], outputs: [{ name: "", type: "bool" }], stateMutability: "nonpayable",
-}];
+const ERC20_TRANSFER_ABI = [
+  {
+    name: "transfer",
+    type: "function",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const V2_PAIR_SWAP_ABI = [{
-  name: "swap", type: "function", inputs: [
-    { name: "amount0Out", type: "uint256" }, { name: "amount1Out", type: "uint256" },
-    { name: "to", type: "address" }, { name: "data", type: "bytes" },
-  ], outputs: [], stateMutability: "nonpayable",
-}];
+const V2_PAIR_SWAP_ABI = [
+  {
+    name: "swap",
+    type: "function",
+    inputs: [
+      { name: "amount0Out", type: "uint256" },
+      { name: "amount1Out", type: "uint256" },
+      { name: "to", type: "address" },
+      { name: "data", type: "bytes" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+];
 
-const V3_POOL_SWAP_ABI = [{
-  name: "swap", type: "function", inputs: [
-    { name: "recipient", type: "address" }, { name: "zeroForOne", type: "bool" },
-    { name: "amountSpecified", type: "int256" }, { name: "sqrtPriceLimitX96", type: "uint160" },
-    { name: "data", type: "bytes" },
-  ], outputs: [{ name: "amount0", type: "int256" }, { name: "amount1", type: "int256" }],
-  stateMutability: "nonpayable",
-}];
+const V3_POOL_SWAP_ABI = [
+  {
+    name: "swap",
+    type: "function",
+    inputs: [
+      { name: "recipient", type: "address" },
+      { name: "zeroForOne", type: "bool" },
+      { name: "amountSpecified", type: "int256" },
+      { name: "sqrtPriceLimitX96", type: "uint160" },
+      { name: "data", type: "bytes" },
+    ],
+    outputs: [
+      { name: "amount0", type: "int256" },
+      { name: "amount1", type: "int256" },
+    ],
+    stateMutability: "nonpayable",
+  },
+];
 
-const KYBER_ELASTIC_POOL_SWAP_ABI = [{
-  name: "swap", type: "function", inputs: [
-    { name: "recipient", type: "address" }, { name: "swapQty", type: "int256" },
-    { name: "isToken0", type: "bool" }, { name: "limitSqrtP", type: "uint160" },
-    { name: "data", type: "bytes" },
-  ], outputs: [{ name: "qty0", type: "int256" }, { name: "qty1", type: "int256" }],
-  stateMutability: "nonpayable",
-}];
+const KYBER_ELASTIC_POOL_SWAP_ABI = [
+  {
+    name: "swap",
+    type: "function",
+    inputs: [
+      { name: "recipient", type: "address" },
+      { name: "swapQty", type: "int256" },
+      { name: "isToken0", type: "bool" },
+      { name: "limitSqrtP", type: "uint160" },
+      { name: "data", type: "bytes" },
+    ],
+    outputs: [
+      { name: "qty0", type: "int256" },
+      { name: "qty1", type: "int256" },
+    ],
+    stateMutability: "nonpayable",
+  },
+];
 
-const DODO_SELL_BASE_ABI = [{
-  name: "sellBase", type: "function", inputs: [{ name: "to", type: "address" }],
-  outputs: [{ name: "receiveQuoteAmount", type: "uint256" }], stateMutability: "nonpayable",
-}];
+const DODO_SELL_BASE_ABI = [
+  {
+    name: "sellBase",
+    type: "function",
+    inputs: [{ name: "to", type: "address" }],
+    outputs: [{ name: "receiveQuoteAmount", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const DODO_SELL_QUOTE_ABI = [{
-  name: "sellQuote", type: "function", inputs: [{ name: "to", type: "address" }],
-  outputs: [{ name: "receiveBaseAmount", type: "uint256" }], stateMutability: "nonpayable",
-}];
+const DODO_SELL_QUOTE_ABI = [
+  {
+    name: "sellQuote",
+    type: "function",
+    inputs: [{ name: "to", type: "address" }],
+    outputs: [{ name: "receiveBaseAmount", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const WOOFI_ROUTER_SWAP_ABI = [{
-  name: "swap", type: "function", inputs: [
-    { name: "fromToken", type: "address" }, { name: "toToken", type: "address" },
-    { name: "fromAmount", type: "uint256" }, { name: "minToAmount", type: "uint256" },
-    { name: "to", type: "address" }, { name: "rebateTo", type: "address" },
-  ], outputs: [{ name: "realToAmount", type: "uint256" }], stateMutability: "payable",
-}];
+const WOOFI_ROUTER_SWAP_ABI = [
+  {
+    name: "swap",
+    type: "function",
+    inputs: [
+      { name: "fromToken", type: "address" },
+      { name: "toToken", type: "address" },
+      { name: "fromAmount", type: "uint256" },
+      { name: "minToAmount", type: "uint256" },
+      { name: "to", type: "address" },
+      { name: "rebateTo", type: "address" },
+    ],
+    outputs: [{ name: "realToAmount", type: "uint256" }],
+    stateMutability: "payable",
+  },
+];
 
-const CURVE_EXCHANGE_INT128_ABI = [{
-  name: "exchange", type: "function", inputs: [
-    { name: "i", type: "int128" }, { name: "j", type: "int128" },
-    { name: "dx", type: "uint256" }, { name: "min_dy", type: "uint256" },
-  ], outputs: [{ name: "", type: "uint256" }], stateMutability: "nonpayable",
-}];
+const CURVE_EXCHANGE_INT128_ABI = [
+  {
+    name: "exchange",
+    type: "function",
+    inputs: [
+      { name: "i", type: "int128" },
+      { name: "j", type: "int128" },
+      { name: "dx", type: "uint256" },
+      { name: "min_dy", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const CURVE_EXCHANGE_UINT256_ABI = [{
-  name: "exchange", type: "function", inputs: [
-    { name: "i", type: "uint256" }, { name: "j", type: "uint256" },
-    { name: "dx", type: "uint256" }, { name: "min_dy", type: "uint256" },
-  ], outputs: [{ name: "", type: "uint256" }], stateMutability: "nonpayable",
-}];
+const CURVE_EXCHANGE_UINT256_ABI = [
+  {
+    name: "exchange",
+    type: "function",
+    inputs: [
+      { name: "i", type: "uint256" },
+      { name: "j", type: "uint256" },
+      { name: "dx", type: "uint256" },
+      { name: "min_dy", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const CURVE_EXCHANGE_INT128_RECEIVER_ABI = [{
-  name: "exchange", type: "function", inputs: [
-    { name: "i", type: "int128" }, { name: "j", type: "int128" },
-    { name: "dx", type: "uint256" }, { name: "min_dy", type: "uint256" },
-    { name: "receiver", type: "address" },
-  ], outputs: [{ name: "", type: "uint256" }], stateMutability: "nonpayable",
-}];
+const CURVE_EXCHANGE_INT128_RECEIVER_ABI = [
+  {
+    name: "exchange",
+    type: "function",
+    inputs: [
+      { name: "i", type: "int128" },
+      { name: "j", type: "int128" },
+      { name: "dx", type: "uint256" },
+      { name: "min_dy", type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+];
 
-const BALANCER_VAULT_SWAP_ABI = [{
-  name: "swap", type: "function", inputs: [
-    { name: "singleSwap", type: "tuple", components: [
-      { name: "poolId", type: "bytes32" }, { name: "kind", type: "uint8" },
-      { name: "assetIn", type: "address" }, { name: "assetOut", type: "address" },
-      { name: "amount", type: "uint256" }, { name: "userData", type: "bytes" },
-    ] },
-    { name: "funds", type: "tuple", components: [
-      { name: "sender", type: "address" }, { name: "fromInternalBalance", type: "bool" },
-      { name: "recipient", type: "address" }, { name: "toInternalBalance", type: "bool" },
-    ] },
-    { name: "limit", type: "uint256" }, { name: "deadline", type: "uint256" },
-  ], outputs: [{ name: "amountCalculated", type: "uint256" }], stateMutability: "payable",
-}];
+const BALANCER_VAULT_SWAP_ABI = [
+  {
+    name: "swap",
+    type: "function",
+    inputs: [
+      {
+        name: "singleSwap",
+        type: "tuple",
+        components: [
+          { name: "poolId", type: "bytes32" },
+          { name: "kind", type: "uint8" },
+          { name: "assetIn", type: "address" },
+          { name: "assetOut", type: "address" },
+          { name: "amount", type: "uint256" },
+          { name: "userData", type: "bytes" },
+        ],
+      },
+      {
+        name: "funds",
+        type: "tuple",
+        components: [
+          { name: "sender", type: "address" },
+          { name: "fromInternalBalance", type: "bool" },
+          { name: "recipient", type: "address" },
+          { name: "toInternalBalance", type: "bool" },
+        ],
+      },
+      { name: "limit", type: "uint256" },
+      { name: "deadline", type: "uint256" },
+    ],
+    outputs: [{ name: "amountCalculated", type: "uint256" }],
+    stateMutability: "payable",
+  },
+];
 
-const EXECUTOR_ABI = [{
-  name: "executeArb", type: "function", inputs: [
-    { name: "flashToken", type: "address" }, { name: "flashAmount", type: "uint256" },
-    { name: "params", type: "tuple", components: [
-      { name: "profitToken", type: "address" }, { name: "minProfit", type: "uint256" },
-      { name: "deadline", type: "uint256" }, { name: "routeHash", type: "bytes32" },
-      { name: "calls", type: "tuple[]", components: [
-        { name: "target", type: "address" }, { name: "value", type: "uint256" },
-        { name: "data", type: "bytes" },
-      ] },
-    ] },
-  ], outputs: [], stateMutability: "nonpayable",
-}];
+const EXECUTOR_ABI = [
+  {
+    name: "executeArb",
+    type: "function",
+    inputs: [
+      { name: "flashToken", type: "address" },
+      { name: "flashAmount", type: "uint256" },
+      {
+        name: "params",
+        type: "tuple",
+        components: [
+          { name: "profitToken", type: "address" },
+          { name: "minProfit", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+          { name: "routeHash", type: "bytes32" },
+          {
+            name: "calls",
+            type: "tuple[]",
+            components: [
+              { name: "target", type: "address" },
+              { name: "value", type: "uint256" },
+              { name: "data", type: "bytes" },
+            ],
+          },
+        ],
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+];
 
-const EXECUTOR_APPROVE_IF_NEEDED_ABI = [{
-  name: "approveIfNeeded", type: "function", inputs: [
-    { name: "token", type: "address" }, { name: "spender", type: "address" },
-    { name: "amount", type: "uint256" },
-  ], outputs: [], stateMutability: "nonpayable",
-}];
+const EXECUTOR_APPROVE_IF_NEEDED_ABI = [
+  {
+    name: "approveIfNeeded",
+    type: "function",
+    inputs: [
+      { name: "token", type: "address" },
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+];
 
-const CALL_STRUCT_ARRAY_ABI = [{
-  type: "tuple[]",
-  components: [
-    { name: "target", type: "address" },
-    { name: "value", type: "uint256" },
-    { name: "data", type: "bytes" },
-  ],
-}] as const;
+const CALL_STRUCT_ARRAY_ABI = [
+  {
+    type: "tuple[]",
+    components: [
+      { name: "target", type: "address" },
+      { name: "value", type: "uint256" },
+      { name: "data", type: "bytes" },
+    ],
+  },
+] as const;
 
 // Protocol sets
 
 const V2_PROTOCOLS = new Set([
-  "QUICKSWAP_V2", "SUSHISWAP_V2", "UNISWAP_V2", "DFYN_V2",
-  "COMETHSWAP_V2", "APESWAP_V2", "MESHSWAP_V2", "JETSWAP_V2",
+  "QUICKSWAP_V2",
+  "SUSHISWAP_V2",
+  "UNISWAP_V2",
+  "DFYN_V2",
+  "COMETHSWAP_V2",
+  "APESWAP_V2",
+  "MESHSWAP_V2",
+  "JETSWAP_V2",
 ]);
 
-const CURVE_STABLE_PROTOCOLS = new Set([
-  "CURVE_STABLE", "CURVE_STABLE_FACTORY", "CURVE_STABLESWAP_NG",
-]);
+const CURVE_STABLE_PROTOCOLS = new Set(["CURVE_STABLE", "CURVE_STABLE_FACTORY", "CURVE_STABLESWAP_NG"]);
 
-const CURVE_CRYPTO_PROTOCOLS = new Set([
-  "CURVE_CRYPTO", "CURVE_CRYPTO_FACTORY", "CURVE_TRICRYPTO_NG",
-]);
+const CURVE_CRYPTO_PROTOCOLS = new Set(["CURVE_CRYPTO", "CURVE_CRYPTO_FACTORY", "CURVE_TRICRYPTO_NG"]);
 
 const DODO_PROTOCOLS = new Set(["DODO_V2"]);
 
@@ -250,7 +377,7 @@ function slippageAdjustedAmountOut(amountOut: unknown, slippageBps: unknown, lab
 }
 
 function normalizeBytes32(value: unknown): `0x${string}` | null {
-  return typeof value === "string" && /^0x[0-9a-fA-F]{64}$/.test(value) ? value as `0x${string}` : null;
+  return typeof value === "string" && /^0x[0-9a-fA-F]{64}$/.test(value) ? (value as `0x${string}`) : null;
 }
 
 function normalizeExecutorCalls(calls: unknown): ExecutorCall[] {
@@ -270,11 +397,16 @@ function normalizeExecutorCalls(calls: unknown): ExecutorCall[] {
 
 function callbackProtocolId(protocol: unknown): number {
   switch (protocol) {
-    case "UNISWAP_V3": return CALLBACK_PROTOCOL_UNISWAP_V3;
-    case "SUSHISWAP_V3": return CALLBACK_PROTOCOL_SUSHISWAP_V3;
-    case "QUICKSWAP_V3": return CALLBACK_PROTOCOL_QUICKSWAP_V3;
-    case "KYBERSWAP_ELASTIC": return CALLBACK_PROTOCOL_KYBER_ELASTIC;
-    default: throw new Error(`encodeV3Hop: unsupported callback protocol ${protocol}`);
+    case "UNISWAP_V3":
+      return CALLBACK_PROTOCOL_UNISWAP_V3;
+    case "SUSHISWAP_V3":
+      return CALLBACK_PROTOCOL_SUSHISWAP_V3;
+    case "QUICKSWAP_V3":
+      return CALLBACK_PROTOCOL_QUICKSWAP_V3;
+    case "KYBERSWAP_ELASTIC":
+      return CALLBACK_PROTOCOL_KYBER_ELASTIC;
+    default:
+      throw new Error(`encodeV3Hop: unsupported callback protocol ${protocol}`);
   }
 }
 
@@ -284,9 +416,7 @@ function poolTokensFromHop(hop: CalldataHop): { token0: `0x${string}`; token1: `
     : { token0: asAddress(hop.tokenOut), token1: asAddress(hop.tokenIn) };
 }
 
-function deriveTightV3PriceLimit(
-  hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string,
-): bigint {
+function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string): bigint {
   const state = hop.stateRef ?? {};
   const sqrtBefore = normalizeUint(state.sqrtPriceX96, `${label} stateRef.sqrtPriceX96`);
   const liquidity = normalizeUint(state.liquidity, `${label} stateRef.liquidity`);
@@ -304,14 +434,10 @@ function deriveTightV3PriceLimit(
   if (!movedOk) throw new Error(`${label}: unable to derive price limit`);
   const SLIPPAGE_BPS = 10n;
   const DENOM = 10_000n;
-  return hop.zeroForOne
-    ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM
-    : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
+  return hop.zeroForOne ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
 }
 
-function encodeDynamicApprovalCall(
-  executor: string, token: string, spender: string, amount: bigint,
-): ExecutorCall {
+function encodeDynamicApprovalCall(executor: string, token: string, spender: string, amount: bigint): ExecutorCall {
   return {
     target: getAddress(executor),
     value: 0n,
@@ -348,13 +474,15 @@ export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteC
   const minAmountOut = slippageAdjustedAmountOut(hop.amountOut, slippageBps, "encodeV2Hop");
   const calls: ExecutorCall[] = [];
   calls.push({
-    target: tokenIn, value: 0n,
+    target: tokenIn,
+    value: 0n,
     data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pair, amountIn] }),
   });
   const amount0Out = hop.zeroForOne ? 0n : minAmountOut;
   const amount1Out = hop.zeroForOne ? minAmountOut : 0n;
   calls.push({
-    target: pair, value: 0n,
+    target: pair,
+    value: 0n,
     data: encodeFunctionData({ abi: V2_PAIR_SWAP_ABI, functionName: "swap", args: [amount0Out, amount1Out, asAddress(recipient), "0x"] }),
   });
   return calls;
@@ -368,19 +496,30 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string): ExecutorCall[]
   const fee = normalizeUint24(hop.fee ?? 0, "encodeV3Hop fee");
   const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, fee, "encodeV3Hop");
   const callbackData = encodeAbiParameters(
-    [{ type: "tuple", components: [
-      { name: "protocolId", type: "uint8" }, { name: "token0", type: "address" },
-      { name: "token1", type: "address" }, { name: "fee", type: "uint24" },
-    ] }],
+    [
+      {
+        type: "tuple",
+        components: [
+          { name: "protocolId", type: "uint8" },
+          { name: "token0", type: "address" },
+          { name: "token1", type: "address" },
+          { name: "fee", type: "uint24" },
+        ],
+      },
+    ],
     [{ protocolId: callbackProtocolId(hop.protocol), token0, token1, fee }],
   );
-  return [{
-    target: pool, value: 0n,
-    data: encodeFunctionData({
-      abi: V3_POOL_SWAP_ABI, functionName: "swap",
-      args: [asAddress(recipient), Boolean(hop.zeroForOne), amountSpecified, sqrtPriceLimitX96, callbackData],
-    }),
-  }];
+  return [
+    {
+      target: pool,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: V3_POOL_SWAP_ABI,
+        functionName: "swap",
+        args: [asAddress(recipient), Boolean(hop.zeroForOne), amountSpecified, sqrtPriceLimitX96, callbackData],
+      }),
+    },
+  ];
 }
 
 export function encodeKyberElasticHop(hop: CalldataHop, recipient: string): ExecutorCall[] {
@@ -392,19 +531,30 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string): Exec
   const simulated = simulateV3Swap(hop.stateRef ?? {}, amountSpecified, isToken0, swapFeePips);
   const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, simulated.amountOut, swapFeePips, "encodeKyberElasticHop");
   const callbackData = encodeAbiParameters(
-    [{ type: "tuple", components: [
-      { name: "protocolId", type: "uint8" }, { name: "token0", type: "address" },
-      { name: "token1", type: "address" }, { name: "fee", type: "uint24" },
-    ] }],
+    [
+      {
+        type: "tuple",
+        components: [
+          { name: "protocolId", type: "uint8" },
+          { name: "token0", type: "address" },
+          { name: "token1", type: "address" },
+          { name: "fee", type: "uint24" },
+        ],
+      },
+    ],
     [{ protocolId: callbackProtocolId("KYBERSWAP_ELASTIC"), token0, token1, fee: swapFeePips }],
   );
-  return [{
-    target: pool, value: 0n,
-    data: encodeFunctionData({
-      abi: KYBER_ELASTIC_POOL_SWAP_ABI, functionName: "swap",
-      args: [asAddress(recipient), amountSpecified, isToken0, sqrtPriceLimitX96, callbackData],
-    }),
-  }];
+  return [
+    {
+      target: pool,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: KYBER_ELASTIC_POOL_SWAP_ABI,
+        functionName: "swap",
+        args: [asAddress(recipient), amountSpecified, isToken0, sqrtPriceLimitX96, callbackData],
+      }),
+    },
+  ];
 }
 
 export function encodeDodoHop(hop: CalldataHop, recipient: string): ExecutorCall[] {
@@ -413,11 +563,13 @@ export function encodeDodoHop(hop: CalldataHop, recipient: string): ExecutorCall
   const amountIn = normalizePositiveUint(hop.amountIn, "encodeDodoHop amountIn");
   return [
     {
-      target: tokenIn, value: 0n,
+      target: tokenIn,
+      value: 0n,
       data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pool, amountIn] }),
     },
     {
-      target: pool, value: 0n,
+      target: pool,
+      value: 0n,
       data: encodeFunctionData({
         abi: hop.zeroForOne ? DODO_SELL_BASE_ABI : DODO_SELL_QUOTE_ABI,
         functionName: hop.zeroForOne ? "sellBase" : "sellQuote",
@@ -438,9 +590,11 @@ export function encodeWoofiHop(hop: CalldataHop, executor: string, options: Rout
   return [
     encodeDynamicApprovalCall(exec, tokenIn, router, amountIn),
     {
-      target: router, value: 0n,
+      target: router,
+      value: 0n,
       data: encodeFunctionData({
-        abi: WOOFI_ROUTER_SWAP_ABI, functionName: "swap",
+        abi: WOOFI_ROUTER_SWAP_ABI,
+        functionName: "swap",
         args: [tokenIn, tokenOut, amountIn, minToAmount, exec, ZERO_ADDRESS],
       }),
     },
@@ -462,25 +616,31 @@ export function encodeCurveHop(hop: CalldataHop, executor: string, options: Rout
   const proto = String(hop.protocol ?? "");
   if (proto === "CURVE_STABLESWAP_NG") {
     calls.push({
-      target: pool, value: 0n,
+      target: pool,
+      value: 0n,
       data: encodeFunctionData({
-        abi: CURVE_EXCHANGE_INT128_RECEIVER_ABI, functionName: "exchange",
+        abi: CURVE_EXCHANGE_INT128_RECEIVER_ABI,
+        functionName: "exchange",
         args: [tokenInIdx, tokenOutIdx, amountIn, minDy, executor],
       }),
     });
   } else if (hop.isCrypto) {
     calls.push({
-      target: pool, value: 0n,
+      target: pool,
+      value: 0n,
       data: encodeFunctionData({
-        abi: CURVE_EXCHANGE_UINT256_ABI, functionName: "exchange",
+        abi: CURVE_EXCHANGE_UINT256_ABI,
+        functionName: "exchange",
         args: [BigInt(tokenInIdx), BigInt(tokenOutIdx), amountIn, minDy],
       }),
     });
   } else {
     calls.push({
-      target: pool, value: 0n,
+      target: pool,
+      value: 0n,
       data: encodeFunctionData({
-        abi: CURVE_EXCHANGE_INT128_ABI, functionName: "exchange",
+        abi: CURVE_EXCHANGE_INT128_ABI,
+        functionName: "exchange",
         args: [tokenInIdx, tokenOutIdx, amountIn, minDy],
       }),
     });
@@ -502,13 +662,16 @@ export function encodeBalancerHop(hop: CalldataHop, executor: string, options: R
   return [
     encodeDynamicApprovalCall(exec, tokenIn, vault, amountIn),
     {
-      target: vault, value: 0n,
+      target: vault,
+      value: 0n,
       data: encodeFunctionData({
-        abi: BALANCER_VAULT_SWAP_ABI, functionName: "swap",
+        abi: BALANCER_VAULT_SWAP_ABI,
+        functionName: "swap",
         args: [
           { poolId, kind: 0, assetIn: tokenIn, assetOut: tokenOut, amount: amountIn, userData: "0x" },
           { sender: exec, fromInternalBalance: false, recipient: exec, toInternalBalance: false },
-          limit, deadline,
+          limit,
+          deadline,
         ],
       }),
     },
@@ -519,7 +682,9 @@ export function encodeBalancerHop(hop: CalldataHop, executor: string, options: R
 
 function normalizeProtocolKey(protocol: unknown): string {
   if (typeof protocol === "string") return protocol.toUpperCase().replace(/\s+/g, "_");
-  return String(protocol ?? "").toUpperCase().replace(/\s+/g, "_");
+  return String(protocol ?? "")
+    .toUpperCase()
+    .replace(/\s+/g, "_");
 }
 
 export function encodeRoute(route: CalldataRoute, executorAddress: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
@@ -534,17 +699,26 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
     const meta = (edge.metadata ?? {}) as Record<string, unknown>;
     const hop: CalldataHop = {
       protocol: proto,
-      poolAddress: edge.poolAddress, tokenIn: edge.tokenIn, tokenOut: edge.tokenOut,
-      zeroForOne: edge.zeroForOne, amountIn, amountOut,
+      poolAddress: edge.poolAddress,
+      tokenIn: edge.tokenIn,
+      tokenOut: edge.tokenOut,
+      zeroForOne: edge.zeroForOne,
+      amountIn,
+      amountOut,
       fee: edge.fee ?? meta.fee ?? 0,
       swapFeeBps: edge.swapFeeBps ?? meta.swapFeeBps,
-      router: meta.router, metadata: meta, stateRef: edge.stateRef,
+      router: meta.router,
+      metadata: meta,
+      stateRef: edge.stateRef,
       tokenInIdx: edge.tokenInIdx ?? meta.tokenInIdx ?? (edge.zeroForOne ? 0 : 1),
       tokenOutIdx: edge.tokenOutIdx ?? meta.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0),
       isCrypto: CURVE_CRYPTO_PROTOCOLS.has(proto),
       poolId: normalizeBytes32(
-        meta.poolId ?? meta.pool_id ?? edge.poolId ?? (edge.stateRef as Record<string, unknown> | undefined)?.balancerPoolId
-          ?? (edge.stateRef as Record<string, unknown> | undefined)?.poolId,
+        meta.poolId ??
+          meta.pool_id ??
+          edge.poolId ??
+          (edge.stateRef as Record<string, unknown> | undefined)?.balancerPoolId ??
+          (edge.stateRef as Record<string, unknown> | undefined)?.poolId,
       ),
     };
     if (V2_PROTOCOLS.has(proto)) {
@@ -572,9 +746,7 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
 
 export function computeRouteHash(calls: unknown): `0x${string}` {
   const normalized = normalizeExecutorCalls(calls);
-  const encoded = encodeAbiParameters(CALL_STRUCT_ARRAY_ABI, [
-    normalized.map((c) => ({ target: c.target, value: c.value, data: c.data })),
-  ]);
+  const encoded = encodeAbiParameters(CALL_STRUCT_ARRAY_ABI, [normalized.map((c) => ({ target: c.target, value: c.value, data: c.data }))]);
   return keccak256(encoded);
 }
 

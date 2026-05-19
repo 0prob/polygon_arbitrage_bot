@@ -25,11 +25,7 @@ export interface PipelineResult {
 }
 
 /** Run the full assessment pipeline: simulate, assess profitability, return only profitable. */
-export function evaluatePipeline(
-  cycles: FoundCycle[],
-  stateCache: RouteStateCache,
-  options: PipelineOptions,
-): PipelineResult {
+export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): PipelineResult {
   const profitable: PipelineResult["profitable"] = [];
   let attempted = 0;
 

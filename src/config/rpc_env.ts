@@ -100,7 +100,7 @@ export function createGasEstimationClient() {
       timeout: 5_000,
       fetchOptions: { headers: { Connection: "keep-alive" } },
     }),
-    batch: { 
+    batch: {
       multicall: { wait: 16 },
     },
   });
@@ -147,7 +147,7 @@ export function createExecutionReadClient() {
       retryCount: 0,
       fetchOptions: { headers: { Connection: "keep-alive" } },
     }),
-    batch: { 
+    batch: {
       multicall: { wait: 16 },
     },
   });

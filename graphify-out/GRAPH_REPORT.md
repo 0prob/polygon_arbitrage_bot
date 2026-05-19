@@ -1,16 +1,16 @@
 # Graph Report - t  (2026-05-18)
 
 ## Corpus Check
-- 154 files · ~51,476 words
+- 155 files · ~51,935 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 748 nodes · 983 edges · 73 communities (54 shown, 19 thin omitted)
+- 759 nodes · 994 edges · 73 communities (55 shown, 18 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5be3ab64`
+- Built from commit: `3f2118de`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -32,6 +32,7 @@
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
+- [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
 - [[_COMMUNITY_Community 20|Community 20]]
@@ -71,7 +72,6 @@
 - [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
-- [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
 - [[_COMMUNITY_Community 66|Community 66]]
 - [[_COMMUNITY_Community 67|Community 67]]
@@ -102,10 +102,10 @@
   src/orchestrator/boot.ts → src/infra/observability/logger.ts
 - `main()` --calls--> `loadConfig()`  [EXTRACTED]
   src/cli/main.ts → src/config/loader.ts
-- `runPassLoop()` --calls--> `enumerateCycles()`  [EXTRACTED]
-  src/orchestrator/pass_loop.ts → src/services/strategy/finder.ts
+- `main()` --calls--> `bootApplication()`  [EXTRACTED]
+  src/cli/main.ts → src/orchestrator/boot.ts
 
-## Communities (73 total, 19 thin omitted)
+## Communities (73 total, 18 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -121,11 +121,11 @@ Nodes (35): DEFAULTS, deepMerge(), ENV_TO_PATH, envToOverrides(), loadConfig(), 
 
 ### Community 3 - "Community 3"
 Cohesion: 0.06
-Nodes (37): log, r, buildLogQuery(), computeTopic0(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeTopic() (+29 more)
+Nodes (36): log, r, buildLogQuery(), computeTopic0(), DEFAULT_BLOCK_FIELDS, DEFAULT_LOG_FIELDS, normalizeEventSignature(), normalizeTopic() (+28 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (14): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+6 more)
+Cohesion: 0.14
+Nodes (13): baseState, cycle, edge1, edge2, enumerateFn, options, POOL_A, POOL_B (+5 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.13
@@ -170,6 +170,10 @@ Nodes (7): graph, hubTokens, pool, pool1, pool2, state, stateMap
 ### Community 16 - "Community 16"
 Cohesion: 0.29
 Nodes (6): fetchGas, first, oracle, scaled, second, snap
+
+### Community 17 - "Community 17"
+Cohesion: 0.18
+Nodes (10): code:typescript (// Inside runPassLoop, before the loop iterating over `resul), code:typescript (// Around executionService.execute call), code:typescript (// In src/orchestrator/boot.ts, near the end of bootApplicat), code:typescript (// In pass_loop.ts, inside the loop where pools.length === 0), code:bash (git add src/orchestrator/boot.ts src/orchestrator/pass_loop.), Task 1: Progress Instrumentation & Debug Logging, Task 2: Fix Bootup Pool Discovery & Hydration, Task 3: Trigger Discovery in Pass Loop (+2 more)
 
 ### Community 18 - "Community 18"
 Cohesion: 0.33
@@ -224,16 +228,16 @@ Cohesion: 0.50
 Nodes (3): customRetryable, fn, logger
 
 ### Community 32 - "Community 32"
-Cohesion: 0.10
-Nodes (23): BlockField, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), ensureClient(), ensureModule(), HypersyncError (+15 more)
+Cohesion: 0.07
+Nodes (30): BlockField, client, createConfigError(), createHypersyncClient(), createHyperSyncUnavailableError(), createUnavailableHypersyncClientImpl(), Decoder, ensureClient() (+22 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.06
-Nodes (63): client, Decoder, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext (+55 more)
+Nodes (60): signal, buildHandlerMap(), dispatchLog(), getHandler(), getHandlerMap(), LogHandler, LogHandlerContext, TOPIC0 (+52 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.43
-Nodes (5): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, LoggerOptions
+Cohesion: 0.24
+Nodes (9): childLogger(), createLogSinkStream(), createRootLogger(), LEVEL_LABELS, Logger, LoggerOptions, CircuitBreakerOptions, CircuitState (+1 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.20
@@ -244,8 +248,8 @@ Cohesion: 0.16
 Nodes (16): computeProfit(), ComputeProfitOptions, gasCostMaticWei(), invalidAssessment(), maticWeiToTokens(), roiMicroUnits(), tokensToMaticWei(), CandidateEntry (+8 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.16
-Nodes (6): clampPriorityFee(), DEFAULT_GAS_CONFIG, FeeSnapshot, GasOracle, GasOracleConfig, PolygonGasHints
+Cohesion: 0.14
+Nodes (8): clampPriorityFee(), DEFAULT_GAS_CONFIG, FeeSnapshot, GasOracle, GasOracleConfig, PolygonGasHints, CandidateExecution, ExecutionResult
 
 ### Community 55 - "Community 55"
 Cohesion: 0.15
@@ -256,20 +260,16 @@ Cohesion: 0.14
 Nodes (13): compilerOptions, allowImportingTsExtensions, esModuleInterop, module, moduleResolution, noEmit, noUnusedLocals, noUnusedParameters (+5 more)
 
 ### Community 57 - "Community 57"
-Cohesion: 0.36
-Nodes (6): DecodedPoolEvent, DiscoveryResult, DiscoveryServiceDeps, PoolStateFetcher, StateCache, Logger
+Cohesion: 0.27
+Nodes (4): DecodedPoolEvent, DiscoveryResult, DiscoveryService, DiscoveryServiceDeps
 
 ### Community 58 - "Community 58"
 Cohesion: 0.08
 Nodes (17): AttemptEntry, AttemptLogSink, logAttempt(), sinks, assertValidRoute(), buildArbTx(), BuilderConfig, BuilderOptions (+9 more)
 
-### Community 59 - "Community 59"
-Cohesion: 0.18
-Nodes (4): CircuitBreaker, CircuitBreakerOptions, CircuitState, DEFAULT_CIRCUIT_BREAKER_OPTIONS
-
 ### Community 60 - "Community 60"
-Cohesion: 0.10
-Nodes (23): createBotState(), main(), BotState, startTui(), CandidateExecution, ExecutionResult, ExecutionService, bootApplication() (+15 more)
+Cohesion: 0.16
+Nodes (20): createBotState(), main(), BotState, startTui(), bootApplication(), RuntimeContext, getGasPriceWei(), runPassLoop() (+12 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.38
@@ -291,20 +291,24 @@ Nodes (6): decodeCurvePoolAdded(), decodePairCreated(), decodePoolDeployed(), de
 Cohesion: 0.33
 Nodes (5): code:typescript (<<<<), code:bash (git add .), Task 1: Fix WatcherService Drain, Task 2: Final Verification & Commit, Workspace Repair Implementation Plan
 
+### Community 72 - "Community 72"
+Cohesion: 0.25
+Nodes (3): HydrationService, PoolStateFetcher, StateCache
+
 ## Knowledge Gaps
-- **330 isolated node(s):** `code:typescript (import { describe, it, expect, vi } from "vitest";)`, `Task 2: Implement Progress Instrumentation`, `mockGetHeight`, `mockGet`, `mockRecv` (+325 more)
+- **335 isolated node(s):** `code:typescript (// Inside runPassLoop, before the loop iterating over `resul)`, `code:typescript (// Around executionService.execute call)`, `code:typescript (// In src/orchestrator/boot.ts, near the end of bootApplicat)`, `code:typescript (// In pass_loop.ts, inside the loop where pools.length === 0)`, `code:bash (git add src/orchestrator/boot.ts src/orchestrator/pass_loop.)` (+330 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **18 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `createRootLogger()` connect `Community 50` to `Community 0`, `Community 57`, `Community 60`, `Community 49`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `createRootLogger()` connect `Community 50` to `Community 32`, `Community 0`, `Community 49`, `Community 57`, `Community 60`?**
+  _High betweenness centrality (0.062) - this node is a cross-community bridge._
 - **Why does `pino` connect `Community 0` to `Community 50`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **What connects `code:typescript (import { describe, it, expect, vi } from "vitest";)`, `Task 2: Implement Progress Instrumentation`, `mockGetHeight` to the rest of the system?**
-  _330 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **What connects `code:typescript (// Inside runPassLoop, before the loop iterating over `resul)`, `code:typescript (// Around executionService.execute call)`, `code:typescript (// In src/orchestrator/boot.ts, near the end of bootApplicat)` to the rest of the system?**
+  _335 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
@@ -312,4 +316,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.059379217273954114 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.05735430157261795 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05893719806763285 - nodes in this community are weakly interconnected._

@@ -37,9 +37,7 @@ describe("NonceManager", () => {
   });
 
   it("resync re-fetches from chain", async () => {
-    const fetchNonce = vi.fn()
-      .mockResolvedValueOnce(3)
-      .mockResolvedValueOnce(5);
+    const fetchNonce = vi.fn().mockResolvedValueOnce(3).mockResolvedValueOnce(5);
     const nm = new NonceManager("0xabc", fetchNonce);
     await nm.initialize();
     expect(nm.expectedNextNonce).toBe(3);

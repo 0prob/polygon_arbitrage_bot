@@ -45,21 +45,36 @@ export function resolveV2FeeDenominator(meta: unknown = {}, fallback = V2_DEFAUL
   const m = asStateRecord(meta);
   const raw = m.feeDenominator ?? m.fee_denominator;
   if (raw == null) return fallback;
-  try { const d = toBigIntStrict(raw); return d > 0n ? d : fallback; } catch { return fallback; }
+  try {
+    const d = toBigIntStrict(raw);
+    return d > 0n ? d : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function resolveV2FeeNumerator(meta: unknown = {}, fallback = V2_DEFAULT_FEE, denominator = resolveV2FeeDenominator(meta)): bigint {
   const m = asStateRecord(meta);
   const raw = m.feeNumerator ?? m.fee;
   if (raw == null) return fallback;
-  try { const f = toBigIntStrict(raw); return f > 0n && f < denominator ? f : fallback; } catch { return fallback; }
+  try {
+    const f = toBigIntStrict(raw);
+    return f > 0n && f < denominator ? f : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function resolveV3Fee(meta: unknown = {}, fallback = V3_DEFAULT_FEE): bigint {
   const m = asStateRecord(meta);
   const raw = m.fee;
   if (raw == null) return fallback;
-  try { const f = toBigIntStrict(raw); return f >= 0n ? f : fallback; } catch { return fallback; }
+  try {
+    const f = toBigIntStrict(raw);
+    return f >= 0n ? f : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function validateStateAddress(addr: string): string {
@@ -170,7 +185,13 @@ export function updateV2State(state: MutableWatcherState, decoded: DecodedWatche
   const metadata = parsePoolMetadataValue(pool?.metadata);
   const currentFee = typeof state.fee === "bigint" ? state.fee : null;
   const currentFeeDenominator = typeof state.feeDenominator === "bigint" ? state.feeDenominator : null;
-  if (currentFee == null || currentFeeDenominator == null || currentFeeDenominator <= 0n || currentFee <= 0n || currentFee >= currentFeeDenominator) {
+  if (
+    currentFee == null ||
+    currentFeeDenominator == null ||
+    currentFeeDenominator <= 0n ||
+    currentFee <= 0n ||
+    currentFee >= currentFeeDenominator
+  ) {
     const feeDenominator = resolveV2FeeDenominator(metadata);
     state.fee = resolveV2FeeNumerator(metadata, 997n, feeDenominator);
     state.feeDenominator = feeDenominator;
@@ -197,7 +218,12 @@ export function updateTickState(state: MutableWatcherState, tick: number, liquid
   state.tickVersion = Number.isFinite(Number(state.tickVersion)) ? Number(state.tickVersion) + 1 : 1;
 }
 
-export function updateV3LiquidityState(state: MutableWatcherState, decoded: DecodedWatcherLog, isMint: boolean, pool: WatcherPoolMeta | null = null) {
+export function updateV3LiquidityState(
+  state: MutableWatcherState,
+  decoded: DecodedWatcherLog,
+  isMint: boolean,
+  pool: WatcherPoolMeta | null = null,
+) {
   ensureV3Fee(state, pool);
   const tickLower = Number(decodedValue(decoded, "indexed", 1));
   const tickUpper = Number(decodedValue(decoded, "indexed", 2));
@@ -225,7 +251,10 @@ export type WatcherStateIntegrityError = Error & {
   topic0?: string | null;
 };
 
-function watcherStateIntegrityError(reason: string, context: { addr?: unknown; poolAddress?: unknown; rawLog?: HyperSyncLogLike | null } = {}): WatcherStateIntegrityError {
+function watcherStateIntegrityError(
+  reason: string,
+  context: { addr?: unknown; poolAddress?: unknown; rawLog?: HyperSyncLogLike | null } = {},
+): WatcherStateIntegrityError {
   const addr = String(context?.addr ?? context?.poolAddress ?? "unknown").toLowerCase();
   const err = new Error(`watcher state integrity failed for ${addr}: ${reason}`) as WatcherStateIntegrityError;
   err.name = "WatcherStateIntegrityError";
@@ -241,7 +270,8 @@ function validateWatcherStateOrThrow(state: MutableWatcherState, context: { addr
   const verdict = validatePoolState(state);
   if (!verdict.valid) throw watcherStateIntegrityError(verdict.reason ?? "invalid watcher state", context);
   if (typeof state.protocol === "string" && state.protocol.includes("V3")) {
-    if ((state.liquidity as bigint | undefined) == null || (state.liquidity as bigint) < 0n) throw watcherStateIntegrityError("V3: negative liquidity", context);
+    if ((state.liquidity as bigint | undefined) == null || (state.liquidity as bigint) < 0n)
+      throw watcherStateIntegrityError("V3: negative liquidity", context);
     if (state.ticks instanceof Map) {
       for (const [, data] of state.ticks.entries()) {
         if (data.liquidityGross < 0n) throw watcherStateIntegrityError("V3: negative liquidityGross", context);
@@ -278,8 +308,5 @@ export function commitWatcherStatesBatch(
 }
 
 export function buildLogQuery(fromBlock: number, addresses: string[]) {
-  return buildInfraLogQuery(
-    [{ address: addresses as import("../../core/types/common.ts").Address[] }],
-    fromBlock,
-  );
+  return buildInfraLogQuery([{ address: addresses as import("../../core/types/common.ts").Address[] }], fromBlock);
 }

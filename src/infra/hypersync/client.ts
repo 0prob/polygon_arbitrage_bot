@@ -108,9 +108,7 @@ export async function createHypersyncClient(config: HyperSyncClientConfig): Prom
   }
   const HypersyncClientCtor = _module.HypersyncClient as (new (cfg: Record<string, unknown>) => HypersyncClientRuntime) | undefined;
   if (!HypersyncClientCtor) {
-    return createUnavailableHypersyncClientImpl(
-      _moduleError ?? createHyperSyncUnavailableError("missing HypersyncClient export"),
-    );
+    return createUnavailableHypersyncClientImpl(_moduleError ?? createHyperSyncUnavailableError("missing HypersyncClient export"));
   }
   try {
     return new HypersyncClientCtor(normalizeClientConfig(config));
@@ -181,10 +179,12 @@ function tryCreateDecoder(): { fromSignatures: (sigs: string[]) => HypersyncDeco
   try {
     const req = createRequire(import.meta.url);
     const mod = req("@envio-dev/hypersync-client") as Record<string, unknown>;
-    const LogDecoderCtor = mod.Decoder as {
-      new (): HypersyncDecoderRuntime;
-      fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime;
-    } | undefined;
+    const LogDecoderCtor = mod.Decoder as
+      | {
+          new (): HypersyncDecoderRuntime;
+          fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime;
+        }
+      | undefined;
     if (LogDecoderCtor?.fromSignatures) {
       return {
         fromSignatures: (sigs: string[]) => LogDecoderCtor.fromSignatures(sigs),
@@ -206,6 +206,10 @@ export const Decoder: { fromSignatures: (signatures: string[]) => HypersyncDecod
     if (_decoderFactory) {
       return _decoderFactory.fromSignatures(signatures);
     }
-    return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
+    return {
+      decodeLogs: async () => {
+        throwUnsupportedHyperSync();
+      },
+    };
   },
 };

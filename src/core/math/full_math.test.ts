@@ -18,12 +18,16 @@ describe("mulDiv", () => {
     expect(() => mulDiv(1n, 1n, 0n)).toThrow();
   });
   it("property: result matches (a*b)/d for positive inputs", () => {
-    fc.assert(fc.property(
-      bigUint64, bigUint64, bigUint64.filter((n) => n > 0n),
-      (a, b, d) => {
-        expect(mulDiv(a, b, d)).toBe((a * b) / d);
-      },
-    ));
+    fc.assert(
+      fc.property(
+        bigUint64,
+        bigUint64,
+        bigUint64.filter((n) => n > 0n),
+        (a, b, d) => {
+          expect(mulDiv(a, b, d)).toBe((a * b) / d);
+        },
+      ),
+    );
   });
 });
 
@@ -38,14 +42,18 @@ describe("mulDivRoundingUp", () => {
     expect(() => mulDivRoundingUp(1n, 1n, 0n)).toThrow();
   });
   it("property: rounds up correctly", () => {
-    fc.assert(fc.property(
-      bigUint64, bigUint64, bigUint64.filter((n) => n > 0n),
-      (a, b, d) => {
-        const product = a * b;
-        const expected = product % d > 0n ? product / d + 1n : product / d;
-        expect(mulDivRoundingUp(a, b, d)).toBe(expected);
-      },
-    ));
+    fc.assert(
+      fc.property(
+        bigUint64,
+        bigUint64,
+        bigUint64.filter((n) => n > 0n),
+        (a, b, d) => {
+          const product = a * b;
+          const expected = product % d > 0n ? product / d + 1n : product / d;
+          expect(mulDivRoundingUp(a, b, d)).toBe(expected);
+        },
+      ),
+    );
   });
 });
 

@@ -23,7 +23,10 @@ export interface PriceOracle {
 
 /** Fixed-rate oracle for testing. */
 export class FixedPriceOracle implements PriceOracle {
-  constructor(private rates: Map<Address, bigint>, private now: () => number = Date.now) {}
+  constructor(
+    private rates: Map<Address, bigint>,
+    private now: () => number = Date.now,
+  ) {}
 
   getTokenToMaticRate(token: Address): bigint | null {
     return this.rates.get(token.toLowerCase() as Address) ?? null;

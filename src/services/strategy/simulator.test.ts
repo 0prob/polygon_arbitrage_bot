@@ -113,8 +113,30 @@ describe("simulateHop", () => {
         quoteReserve: 1000000000000000000000n,
         tokens: ["0xa", "0xb"],
         baseTokenStates: {
-          "0xb": { price: 10n ** 18n, coeff: 0n, spread: 0n, feeRate: 100n, feasible: true, woFeasible: true, baseDec: 10n ** 18n, quoteDec: 10n ** 6n, priceDec: 10n ** 18n, reserve: 1000000000000000000000n },
-          "0xa": { price: 10n ** 18n, coeff: 0n, spread: 0n, feeRate: 100n, feasible: true, woFeasible: true, baseDec: 10n ** 18n, quoteDec: 10n ** 6n, priceDec: 10n ** 18n, reserve: 1000000000000000000000n },
+          "0xb": {
+            price: 10n ** 18n,
+            coeff: 0n,
+            spread: 0n,
+            feeRate: 100n,
+            feasible: true,
+            woFeasible: true,
+            baseDec: 10n ** 18n,
+            quoteDec: 10n ** 6n,
+            priceDec: 10n ** 18n,
+            reserve: 1000000000000000000000n,
+          },
+          "0xa": {
+            price: 10n ** 18n,
+            coeff: 0n,
+            spread: 0n,
+            feeRate: 100n,
+            feasible: true,
+            woFeasible: true,
+            baseDec: 10n ** 18n,
+            quoteDec: 10n ** 6n,
+            priceDec: 10n ** 18n,
+            reserve: 1000000000000000000000n,
+          },
         },
       },
     };
@@ -169,13 +191,19 @@ describe("simulateRoute", () => {
 
     const edges: SwapEdge[] = [
       {
-        poolAddress: poolA, protocol: "UNISWAP_V2",
-        tokenIn: WETH, tokenOut: USDC, feeBps: 30n,
+        poolAddress: poolA,
+        protocol: "UNISWAP_V2",
+        tokenIn: WETH,
+        tokenOut: USDC,
+        feeBps: 30n,
         stateRef: { reserve0: 10000n, reserve1: 20000n, token0: WETH, token1: USDC },
       },
       {
-        poolAddress: poolB, protocol: "UNISWAP_V2",
-        tokenIn: USDC, tokenOut: WETH, feeBps: 30n,
+        poolAddress: poolB,
+        protocol: "UNISWAP_V2",
+        tokenIn: USDC,
+        tokenOut: WETH,
+        feeBps: 30n,
         stateRef: { reserve0: 20000n, reserve1: 10000n, token0: USDC, token1: WETH },
       },
     ];
@@ -196,13 +224,19 @@ describe("simulateRoute", () => {
     const p2 = "0xp2" as Address;
     const edges: SwapEdge[] = [
       {
-        poolAddress: p1, protocol: "UNISWAP_V2",
-        tokenIn: A, tokenOut: B, feeBps: 30n,
+        poolAddress: p1,
+        protocol: "UNISWAP_V2",
+        tokenIn: A,
+        tokenOut: B,
+        feeBps: 30n,
         stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: A, token1: B },
       },
       {
-        poolAddress: p2, protocol: "UNISWAP_V2",
-        tokenIn: B, tokenOut: A, feeBps: 30n,
+        poolAddress: p2,
+        protocol: "UNISWAP_V2",
+        tokenIn: B,
+        tokenOut: A,
+        feeBps: 30n,
         stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: B, token1: A },
       },
     ];
@@ -213,8 +247,11 @@ describe("simulateRoute", () => {
   it("throws when state is missing for a hop", () => {
     const edges: SwapEdge[] = [
       {
-        poolAddress: "0xpool" as Address, protocol: "UNISWAP_V2",
-        tokenIn: "0xa" as Address, tokenOut: "0xb" as Address, feeBps: 30n,
+        poolAddress: "0xpool" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: "0xa" as Address,
+        tokenOut: "0xb" as Address,
+        feeBps: 30n,
       },
     ];
     expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No state");

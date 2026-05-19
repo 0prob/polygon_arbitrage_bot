@@ -18,7 +18,12 @@ export interface LoggerOptions {
 }
 
 const LEVEL_LABELS: Record<number, string> = {
-  10: "TRACE", 20: "DEBUG", 30: "INFO", 40: "WARN", 50: "ERROR", 60: "FATAL",
+  10: "TRACE",
+  20: "DEBUG",
+  30: "INFO",
+  40: "WARN",
+  50: "ERROR",
+  60: "FATAL",
 };
 
 function createLogSinkStream(sink: string[], max: number): DestinationStream {

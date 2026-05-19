@@ -16,7 +16,13 @@ export const HUB_4_TOKENS: readonly Address[] = [WETH, USDC, USDT, DAI];
 
 /** Extended hub tokens for full graph enumeration */
 export const POLYGON_HUB_TOKENS: readonly Address[] = [
-  WMATIC, WETH, USDC, USDC_NATIVE, USDT, DAI, WBTC,
+  WMATIC,
+  WETH,
+  USDC,
+  USDC_NATIVE,
+  USDT,
+  DAI,
+  WBTC,
   // Add more from current src/routing/graph.ts:803-832 hub list
 ];
 

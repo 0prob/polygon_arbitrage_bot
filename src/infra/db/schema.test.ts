@@ -15,9 +15,7 @@ describe("schema", () => {
 
   it("creates all tables", () => {
     ensureSchema(db);
-    const tables = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-      .all() as { name: string }[];
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all() as { name: string }[];
     const tableNames = tables.map((t) => t.name).sort();
     expect(tableNames).toContain("pools");
     expect(tableNames).toContain("pool_state");
@@ -30,9 +28,7 @@ describe("schema", () => {
 
   it("creates indexes", () => {
     ensureSchema(db);
-    const indexes = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name")
-      .all() as { name: string }[];
+    const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name").all() as { name: string }[];
     const indexNames = indexes.map((i) => i.name);
     expect(indexNames).toContain("idx_pools_protocol");
     expect(indexNames).toContain("idx_pools_status");

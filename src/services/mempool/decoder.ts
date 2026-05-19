@@ -2,14 +2,14 @@ import type { Address } from "../../core/types/common.ts";
 
 // Known function selectors for swap methods
 const SELECTORS: Record<string, string> = {
-  "0x022c0d9f": "UNISWAP_V2",  // swap(uint256,uint256,address,bytes)
-  "0x128acb08": "UNISWAP_V3",  // swap(address,bool,int256,uint160,bytes)
-  "0x52bbbe29": "BALANCER_V2",  // swap((bytes32,uint8,address,address,uint256,bytes),...,uint256)
+  "0x022c0d9f": "UNISWAP_V2", // swap(uint256,uint256,address,bytes)
+  "0x128acb08": "UNISWAP_V3", // swap(address,bool,int256,uint160,bytes)
+  "0x52bbbe29": "BALANCER_V2", // swap((bytes32,uint8,address,address,uint256,bytes),...,uint256)
   "0x3df02124": "CURVE_STABLE", // exchange(int128,int128,uint256,uint256)
   "0x5b41b908": "CURVE_CRYPTO", // exchange(uint256,uint256,uint256,uint256)
-  "0x5c0c4997": "DODO_V2",      // sellBase(address,uint256,uint256,bytes)
-  "0x6b5a7b77": "DODO_V2",      // sellQuote(address,uint256,uint256,bytes)
-  "0x9ba7e8a9": "WOOFI",        // swap(address,uint256,uint256,address,address)
+  "0x5c0c4997": "DODO_V2", // sellBase(address,uint256,uint256,bytes)
+  "0x6b5a7b77": "DODO_V2", // sellQuote(address,uint256,uint256,bytes)
+  "0x9ba7e8a9": "WOOFI", // swap(address,uint256,uint256,address,address)
   "0x3b358e1b": "KYBERSWAP_ELASTIC", // swap(address,address,uint256,bytes)
 };
 
@@ -25,11 +25,7 @@ export interface DecodedSwap {
  * Decode a transaction's input data to identify a swap.
  * Returns null if the input doesn't match a known swap selector.
  */
-export function decodeSwapCalldata(
-  to: Address,
-  input: string,
-  knownPools: Set<string>,
-): DecodedSwap | null {
+export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<string>): DecodedSwap | null {
   if (!input || input.length < 10) return null;
   const selector = input.slice(0, 10).toLowerCase();
   const protocol = SELECTORS[selector];

@@ -11,7 +11,8 @@ describe("buildGraph", () => {
     const pool: PoolMeta = {
       address: "0xpool1" as Address,
       protocol: "UNISWAP_V2",
-      token0: WETH as Address, token1: USDC as Address,
+      token0: WETH as Address,
+      token1: USDC as Address,
       tokens: [WETH as Address, USDC as Address],
       fee: 30,
       status: "active",
@@ -25,13 +26,27 @@ describe("buildGraph", () => {
   it("uses state cache for refs", () => {
     const state = { reserve0: 100n, reserve1: 200n };
     const stateMap = new Map([["0xpool1", state]]);
-    const pool: PoolMeta = { address: "0xpool1" as Address, protocol: "V2", token0: WETH as Address, token1: USDC as Address, tokens: [WETH as Address, USDC as Address], fee: 30, status: "active" };
+    const pool: PoolMeta = {
+      address: "0xpool1" as Address,
+      protocol: "V2",
+      token0: WETH as Address,
+      token1: USDC as Address,
+      tokens: [WETH as Address, USDC as Address],
+      fee: 30,
+      status: "active",
+    };
     const graph = buildGraph([pool], stateMap);
     expect(graph.stateRefs.get("0xpool1")).toBe(state);
   });
 
   it("handles pools without tokens field", () => {
-    const pool: PoolMeta = { address: "0xa" as Address, protocol: "V2", token0: WETH as Address, token1: USDC as Address, status: "active" };
+    const pool: PoolMeta = {
+      address: "0xa" as Address,
+      protocol: "V2",
+      token0: WETH as Address,
+      token1: USDC as Address,
+      status: "active",
+    };
     const graph = buildGraph([pool], new Map());
     expect(graph.adjacency.size).toBe(0);
   });
@@ -40,8 +55,24 @@ describe("buildGraph", () => {
 describe("buildHubGraph", () => {
   it("includes only hub-adjacent pools", () => {
     const hubTokens = [WETH as Address, USDC as Address];
-    const pool1: PoolMeta = { address: "0xa" as Address, protocol: "V2", token0: WETH as Address, token1: USDC as Address, tokens: [WETH as Address, USDC as Address], fee: 30, status: "active" };
-    const pool2: PoolMeta = { address: "0xb" as Address, protocol: "V2", token0: "0xother1" as Address, token1: "0xother2" as Address, tokens: ["0xother1" as Address, "0xother2" as Address], fee: 30, status: "active" };
+    const pool1: PoolMeta = {
+      address: "0xa" as Address,
+      protocol: "V2",
+      token0: WETH as Address,
+      token1: USDC as Address,
+      tokens: [WETH as Address, USDC as Address],
+      fee: 30,
+      status: "active",
+    };
+    const pool2: PoolMeta = {
+      address: "0xb" as Address,
+      protocol: "V2",
+      token0: "0xother1" as Address,
+      token1: "0xother2" as Address,
+      tokens: ["0xother1" as Address, "0xother2" as Address],
+      fee: 30,
+      status: "active",
+    };
     const graph = buildHubGraph([pool1, pool2], new Map(), hubTokens);
     expect(graph.tokens.size).toBe(2);
   });

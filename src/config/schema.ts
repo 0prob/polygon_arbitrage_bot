@@ -3,17 +3,27 @@ import { z } from "zod";
 /** Coerce a string env var to bigint */
 const bigintFromString = z.union([
   z.bigint(),
-  z.string().regex(/^\d+$/).transform((s) => BigInt(s)),
+  z
+    .string()
+    .regex(/^\d+$/)
+    .transform((s) => BigInt(s)),
 ]);
 
 /** Coerce a string env var to number */
 const numberFromString = z.coerce.number().finite();
 
 /** Coerce a comma-separated string to array */
-const stringArrayFromCsv = z.union([
-  z.array(z.string()),
-  z.string().transform((s) => s.split(",").map((p) => p.trim()).filter((p) => p.length > 0)),
-]).default([]);
+const stringArrayFromCsv = z
+  .union([
+    z.array(z.string()),
+    z.string().transform((s) =>
+      s
+        .split(",")
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0),
+    ),
+  ])
+  .default([]);
 
 export const RpcConfigSchema = z.object({
   polygonRpcUrls: stringArrayFromCsv,

@@ -19,13 +19,7 @@ export function optimizeInputAmount(
   simulate: (amountIn: bigint) => RouteSimulationResult,
   opts: OptimizeOptions = {},
 ): RouteSimulationResult {
-  const {
-    minAmount = 1n,
-    maxAmount = 10n ** 24n,
-    iterations = 64,
-    scorer = (r) => r.profit,
-    accept = () => true,
-  } = opts;
+  const { minAmount = 1n, maxAmount = 10n ** 24n, iterations = 64, scorer = (r) => r.profit, accept = () => true } = opts;
 
   if (minAmount >= maxAmount) {
     return simulate(minAmount);
@@ -48,8 +42,14 @@ export function optimizeInputAmount(
     const s1 = accept(r1) ? scorer(r1) : -(2n ** 256n);
     const s2 = accept(r2) ? scorer(r2) : -(2n ** 256n);
 
-    if (s1 > bestScore && accept(r1)) { bestScore = s1; bestResult = r1; }
-    if (s2 > bestScore && accept(r2)) { bestScore = s2; bestResult = r2; }
+    if (s1 > bestScore && accept(r1)) {
+      bestScore = s1;
+      bestResult = r1;
+    }
+    if (s2 > bestScore && accept(r2)) {
+      bestScore = s2;
+      bestResult = r2;
+    }
 
     if (s1 < s2) lo = m1;
     else hi = m2;
@@ -59,7 +59,10 @@ export function optimizeInputAmount(
   const mid = (lo + hi) / 2n;
   const rMid = simulate(mid);
   const sMid = accept(rMid) ? scorer(rMid) : -(2n ** 256n);
-  if (sMid > bestScore && accept(rMid)) { bestScore = sMid; bestResult = rMid; }
+  if (sMid > bestScore && accept(rMid)) {
+    bestScore = sMid;
+    bestResult = rMid;
+  }
 
   return bestResult ?? simulate(minAmount);
 }

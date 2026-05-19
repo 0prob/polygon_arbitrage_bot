@@ -291,10 +291,7 @@ export function createDynamicPublicClient(pool: RpcEndpointPool): ReturnType<typ
         } catch (err: unknown) {
           const msg = errorMessage(err);
           const isCapErr =
-            msg.includes("unsupported") ||
-            msg.includes("not supported") ||
-            msg.includes("method not found") ||
-            msg.includes("-32601");
+            msg.includes("unsupported") || msg.includes("not supported") || msg.includes("method not found") || msg.includes("-32601");
           if (isCapErr) {
             pool.markMethodUnavailable(endpoint.url, method);
           } else if (isRateLimitError(err)) {

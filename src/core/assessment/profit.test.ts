@@ -40,9 +40,9 @@ describe("gasCostMaticWei", () => {
 describe("computeProfit - canonical MATIC wei comparison", () => {
   const baseOpts = {
     grossProfitInTokens: 10_000_000n, // 10 USDC (6 decimals)
-    amountInTokens: 1_000_000_000n,   // 1000 USDC
+    amountInTokens: 1_000_000_000n, // 1000 USDC
     gasUnits: 300_000,
-    gasPriceWei: 50_000_000_000n,     // 50 gwei
+    gasPriceWei: 50_000_000_000n, // 50 gwei
     tokenToMaticRate: 500_000_000_000n, // 0.5 MATIC/USDC
     hopCount: 3,
     minProfitMaticWei: 1_000_000_000_000_000n, // 0.001 MATIC
@@ -79,8 +79,8 @@ describe("computeProfit - canonical MATIC wei comparison", () => {
     const result = computeProfit({
       ...baseOpts,
       tokenToMaticRate: 1_000_000n, // 1 token = 1e-6 MATIC (very cheap token, 6 decimals)
-      grossProfitInTokens: 1_000_000_000n,   // 1000 tokens = 0.001 MATIC value
-      gasUnits: 300_000,                     // 0.015 MATIC gas cost
+      grossProfitInTokens: 1_000_000_000n, // 1000 tokens = 0.001 MATIC value
+      gasUnits: 300_000, // 0.015 MATIC gas cost
       minProfitMaticWei: 1_000_000_000_000_000n, // 0.001 MATIC minimum
     });
     // Gross in MATIC = 1000 * 1e-6 = 0.001 MATIC. After 5% revert + 0.5% slippage = ~0.000945 MATIC.

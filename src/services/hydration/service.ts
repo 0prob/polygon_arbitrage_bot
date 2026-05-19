@@ -3,7 +3,12 @@ import type { PoolMeta } from "../../core/types/pool.ts";
 import type { Address } from "../../core/types/common.ts";
 
 export type StateCache = Map<string, Record<string, unknown>>;
-export type PoolStateFetcher = (address: Address, protocol: string, token0: Address, token1: Address) => Promise<Record<string, unknown> | null>;
+export type PoolStateFetcher = (
+  address: Address,
+  protocol: string,
+  token0: Address,
+  token1: Address,
+) => Promise<Record<string, unknown> | null>;
 
 export class HydrationService {
   private running = false;

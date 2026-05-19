@@ -50,7 +50,8 @@ describe("GasOracle", () => {
   });
 
   it("keeps last snapshot on fetch failure", async () => {
-    const fetchGas = vi.fn()
+    const fetchGas = vi
+      .fn()
       .mockResolvedValueOnce({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n })
       .mockRejectedValueOnce(new Error("RPC error"));
     const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, pollIntervalMs: 100 }, fetchGas);

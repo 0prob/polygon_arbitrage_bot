@@ -34,8 +34,8 @@ describe("slippageDeduction", () => {
 
 describe("revertPenalty", () => {
   it("scales with hop count", () => {
-    expect(revertPenalty(10_000n, 2)).toBe(500n);  // 5% of 10000
-    expect(revertPenalty(10_000n, 3)).toBe(700n);  // 7% of 10000
+    expect(revertPenalty(10_000n, 2)).toBe(500n); // 5% of 10000
+    expect(revertPenalty(10_000n, 3)).toBe(700n); // 7% of 10000
   });
   it("returns 0 for zero profit", () => {
     expect(revertPenalty(0n, 3)).toBe(0n);

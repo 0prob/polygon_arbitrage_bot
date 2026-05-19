@@ -32,9 +32,12 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
       for (let j = 0; j < t.length; j++) {
         if (i === j) continue;
         const edge: SwapEdge = {
-          poolAddress: addr as Address, protocol: pool.protocol,
-          tokenIn: t[i].toLowerCase() as Address, tokenOut: t[j].toLowerCase() as Address,
-          feeBps: pool.fee != null ? BigInt(pool.fee) : 30n, stateRef: stateRefs.get(addr),
+          poolAddress: addr as Address,
+          protocol: pool.protocol,
+          tokenIn: t[i].toLowerCase() as Address,
+          tokenOut: t[j].toLowerCase() as Address,
+          feeBps: pool.fee != null ? BigInt(pool.fee) : 30n,
+          stateRef: stateRefs.get(addr),
         };
         const k = t[i].toLowerCase();
         if (!adjacency.has(k)) adjacency.set(k, []);
@@ -45,9 +48,10 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
   return { adjacency, poolMeta, stateRefs, tokens };
 }
 
-export function buildHubGraph(
-  pools: PoolMeta[], stateCache: Map<string, unknown>, hubTokens: readonly Address[],
-): RoutingGraph {
+export function buildHubGraph(pools: PoolMeta[], stateCache: Map<string, unknown>, hubTokens: readonly Address[]): RoutingGraph {
   const hubSet = new Set(hubTokens.map((t) => t.toLowerCase()));
-  return buildGraph(pools.filter((p) => (p.tokens ?? []).some((t) => hubSet.has(t.toLowerCase()))), stateCache);
+  return buildGraph(
+    pools.filter((p) => (p.tokens ?? []).some((t) => hubSet.has(t.toLowerCase()))),
+    stateCache,
+  );
 }

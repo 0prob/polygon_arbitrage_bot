@@ -25,8 +25,22 @@ describe("evaluatePipeline", () => {
     const A = "0xa" as Address;
     const B = "0xb" as Address;
     const edges: SwapEdge[] = [
-      { poolAddress: "0xp1" as Address, protocol: "UNISWAP_V2", tokenIn: A, tokenOut: B, feeBps: 30n, stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B } },
-      { poolAddress: "0xp2" as Address, protocol: "UNISWAP_V2", tokenIn: B, tokenOut: A, feeBps: 30n, stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A } },
+      {
+        poolAddress: "0xp1" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: A,
+        tokenOut: B,
+        feeBps: 30n,
+        stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B },
+      },
+      {
+        poolAddress: "0xp2" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: B,
+        tokenOut: A,
+        feeBps: 30n,
+        stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A },
+      },
     ];
     const cycles = [makeCycle(edges), makeCycle(edges)];
     const result = evaluatePipeline(cycles, new Map(), baseOpts);
@@ -39,8 +53,22 @@ describe("evaluatePipeline", () => {
     const A = "0xa" as Address;
     const B = "0xb" as Address;
     const edges: SwapEdge[] = [
-      { poolAddress: "0xp1" as Address, protocol: "UNISWAP_V2", tokenIn: A, tokenOut: B, feeBps: 30n, stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B } },
-      { poolAddress: "0xp2" as Address, protocol: "UNISWAP_V2", tokenIn: B, tokenOut: A, feeBps: 30n, stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A } },
+      {
+        poolAddress: "0xp1" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: A,
+        tokenOut: B,
+        feeBps: 30n,
+        stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B },
+      },
+      {
+        poolAddress: "0xp2" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: B,
+        tokenOut: A,
+        feeBps: 30n,
+        stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A },
+      },
     ];
     const cycles = [makeCycle(edges)];
     const result = evaluatePipeline(cycles, new Map(), highMinProfit);

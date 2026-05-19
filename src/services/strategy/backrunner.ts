@@ -85,9 +85,7 @@ export class Backrunner {
 
     // Step 4: Search for arb cycles involving the affected tokens
     const cycles = enumerateCyclesFn(signal.tokenIn, this.options.maxHops);
-    const relevantCycles = cycles.filter((c) =>
-      c.edges.some((e) => e.poolAddress.toLowerCase() === poolAddr)
-    );
+    const relevantCycles = cycles.filter((c) => c.edges.some((e) => e.poolAddress.toLowerCase() === poolAddr));
 
     // Step 5: Simulate each relevant cycle with the dislocated state
     for (const cycle of relevantCycles) {

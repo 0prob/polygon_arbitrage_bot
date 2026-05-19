@@ -28,9 +28,11 @@ describe("toBigInt", () => {
   });
 
   it("property: result matches direct BigInt for safe integers", () => {
-    fc.assert(fc.property(fc.integer(), (n) => {
-      expect(toBigInt(n)).toBe(BigInt(n));
-    }));
+    fc.assert(
+      fc.property(fc.integer(), (n) => {
+        expect(toBigInt(n)).toBe(BigInt(n));
+      }),
+    );
   });
 });
 
@@ -68,9 +70,11 @@ describe("bigintToApproxNumber", () => {
   });
 
   it("property: round-trips small integers", () => {
-    fc.assert(fc.property(fc.integer({ min: -1_000_000, max: 1_000_000 }), (n) => {
-      expect(bigintToApproxNumber(BigInt(n))).toBe(n);
-    }));
+    fc.assert(
+      fc.property(fc.integer({ min: -1_000_000, max: 1_000_000 }), (n) => {
+        expect(bigintToApproxNumber(BigInt(n))).toBe(n);
+      }),
+    );
   });
 });
 

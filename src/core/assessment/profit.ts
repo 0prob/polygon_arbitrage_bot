@@ -29,8 +29,7 @@ export function maticWeiToTokens(amountInMaticWei: bigint, tokenToMaticRate: big
 
 /** Compute gas cost in MATIC wei from gas units and gas price. */
 export function gasCostMaticWei(gasUnits: number, gasPriceWei: bigint): bigint {
-  if (!Number.isSafeInteger(gasUnits) || gasUnits < 0)
-    throw new Error("gasUnits must be a finite non-negative safe integer");
+  if (!Number.isSafeInteger(gasUnits) || gasUnits < 0) throw new Error("gasUnits must be a finite non-negative safe integer");
   if (gasPriceWei < 0n) throw new Error("gasPriceWei must be >= 0");
   return BigInt(gasUnits) * gasPriceWei;
 }

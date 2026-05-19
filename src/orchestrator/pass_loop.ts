@@ -24,10 +24,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function runPassLoop(
-  ctx: RuntimeContext,
-  onStateUpdate?: (update: Partial<BotState>) => void,
-): Promise<void> {
+export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: Partial<BotState>) => void): Promise<void> {
   const intervalMs = ctx.config.routing.cycleRefreshIntervalMs;
 
   await ctx.executionService.start();
@@ -53,10 +50,21 @@ export async function runPassLoop(
       const pools = ctx.getPools();
       state.stateCacheSize = pools.length;
 
+import { withTimeout } from "../infra/rpc/retry.ts";
+// ...
       if (pools.length === 0) {
         ctx.logger.info({}, "No pools found, triggering discovery");
-        await ctx.discoveryService.discoverProtocol("balancer");
-        await ctx.discoveryService.discoverProtocol("curve");
+        try {
+          await withTimeout(
+            Promise.all([
+              ctx.discoveryService.discoverProtocol("balancer"),
+              ctx.discoveryService.discoverProtocol("curve"),
+            ]),
+            30_000,
+          );
+        } catch (err) {
+          ctx.logger.error({ err }, "Pool discovery failed or timed out");
+        }
         state.currentActivity = "Waiting for pools";
         state.currentActivityUpdatedMs = Date.now();
         onStateUpdate?.(state);
@@ -109,11 +117,14 @@ export async function runPassLoop(
       state.lastOpportunityCount = result.profitable.length;
       onStateUpdate?.(state);
 
-      ctx.logger.info({
-        cyclesFound: cycles.length,
-        attempted: result.attempted,
-        profitable: result.profitableCount,
-      }, "Pipeline evaluation");
+      ctx.logger.info(
+        {
+          cyclesFound: cycles.length,
+          attempted: result.attempted,
+          profitable: result.profitableCount,
+        },
+        "Pipeline evaluation",
+      );
 
       state.currentActivity = "Executing opportunities";
       state.currentActivityDetail = `Processing ${result.profitable.length} opportunities`;
@@ -124,7 +135,7 @@ export async function runPassLoop(
           label: "Executing",
           completed: index + 1,
           total: result.profitable.length,
-          unit: "txs"
+          unit: "txs",
         };
         onStateUpdate?.(state);
 
@@ -137,13 +148,13 @@ export async function runPassLoop(
         };
 
         state.lastProfitableCount = (state.lastProfitableCount ?? 0) + 1;
-        state.opportunities = (state.opportunities ?? []).concat([{
-          Route: routeKey.slice(0, 30),
-          Profit: profitable.assessment ? `${Number(profitable.assessment.netProfitAfterGas) / 1e18} MATIC` : "0",
-          ROI: profitable.assessment
-            ? `${(profitable.assessment.roi / 100).toFixed(1)}%`
-            : "0%",
-        }]);
+        state.opportunities = (state.opportunities ?? []).concat([
+          {
+            Route: routeKey.slice(0, 30),
+            Profit: profitable.assessment ? `${Number(profitable.assessment.netProfitAfterGas) / 1e18} MATIC` : "0",
+            ROI: profitable.assessment ? `${(profitable.assessment.roi / 100).toFixed(1)}%` : "0%",
+          },
+        ]);
         onStateUpdate?.(state);
 
         ctx.logger.debug({ routeKey }, "Starting execution");

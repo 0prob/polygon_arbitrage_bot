@@ -53,13 +53,15 @@ describe("RouteCache", () => {
     const cache = new RouteCache(2);
     const A = "0xa" as Address;
     for (let i = 0; i < 5; i++) {
-      cache.update([{
-        path: makeCycle([
-          { poolAddress: `0xp${i}a` as Address, protocol: "V2", tokenIn: A, tokenOut: "0xb" as Address, feeBps: 30n },
-          { poolAddress: `0xp${i}b` as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: A, feeBps: 30n },
-        ]),
-        profit: BigInt(i * 10),
-      }]);
+      cache.update([
+        {
+          path: makeCycle([
+            { poolAddress: `0xp${i}a` as Address, protocol: "V2", tokenIn: A, tokenOut: "0xb" as Address, feeBps: 30n },
+            { poolAddress: `0xp${i}b` as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: A, feeBps: 30n },
+          ]),
+          profit: BigInt(i * 10),
+        },
+      ]);
     }
     expect(cache.size).toBeLessThanOrEqual(2);
     const all = cache.getAll();
@@ -68,13 +70,15 @@ describe("RouteCache", () => {
 
   it("clear empties the cache", () => {
     const cache = new RouteCache(10);
-    cache.update([{
-      path: makeCycle([
-        { poolAddress: "0xp1" as Address, protocol: "V2", tokenIn: "0xa" as Address, tokenOut: "0xb" as Address, feeBps: 30n },
-        { poolAddress: "0xp2" as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: "0xa" as Address, feeBps: 30n },
-      ]),
-      profit: 100n,
-    }]);
+    cache.update([
+      {
+        path: makeCycle([
+          { poolAddress: "0xp1" as Address, protocol: "V2", tokenIn: "0xa" as Address, tokenOut: "0xb" as Address, feeBps: 30n },
+          { poolAddress: "0xp2" as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: "0xa" as Address, feeBps: 30n },
+        ]),
+        profit: 100n,
+      },
+    ]);
     expect(cache.size).toBe(1);
     cache.clear();
     expect(cache.size).toBe(0);
@@ -83,13 +87,15 @@ describe("RouteCache", () => {
   it("prune does not shrink below maxSize when under capacity", () => {
     const cache = new RouteCache(100);
     const A = "0xa" as Address;
-    cache.update([{
-      path: makeCycle([
-        { poolAddress: "0xp1" as Address, protocol: "V2", tokenIn: A, tokenOut: "0xb" as Address, feeBps: 30n },
-        { poolAddress: "0xp2" as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: A, feeBps: 30n },
-      ]),
-      profit: 1n,
-    }]);
+    cache.update([
+      {
+        path: makeCycle([
+          { poolAddress: "0xp1" as Address, protocol: "V2", tokenIn: A, tokenOut: "0xb" as Address, feeBps: 30n },
+          { poolAddress: "0xp2" as Address, protocol: "V2", tokenIn: "0xb" as Address, tokenOut: A, feeBps: 30n },
+        ]),
+        profit: 1n,
+      },
+    ]);
     expect(cache.size).toBe(1);
   });
 });

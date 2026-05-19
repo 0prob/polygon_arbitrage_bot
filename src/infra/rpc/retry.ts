@@ -70,10 +70,7 @@ export function isNoDataError(err: unknown): boolean {
   return msg.includes('returned no data ("0x")') || msg.includes("no data");
 }
 
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  opts: RetryOptions = {},
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, opts: RetryOptions = {}): Promise<T> {
   const maxAttempts = opts.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
   const baseDelay = opts.baseDelay ?? DEFAULT_BASE_DELAY;
   const maxDelay = opts.maxDelay ?? DEFAULT_MAX_DELAY;

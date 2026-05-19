@@ -375,13 +375,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779152600.7168763,
-    "ast_hash": "73cc4f57ac817366b6e848c6f6113b32",
+    "mtime": 1779154939.9137042,
+    "ast_hash": "70d7102e0ee3000278711311a9fc0427",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779146715.242464,
-    "ast_hash": "0c0b38d21ae1afe3cc00eb2d5bd5aabc",
+    "mtime": 1779155004.6442478,
+    "ast_hash": "f1c58568bb84c443657f265a5e7c6c31",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.ts": {
-    "mtime": 1779142404.4701912,
-    "ast_hash": "ded51dddd0d64a166fcb959c3a09ed05",
+    "mtime": 1779154957.4464307,
+    "ast_hash": "95f38a75644530c7f6a1ae70d23692cf",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/rpc_env.ts": {
@@ -760,8 +760,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779152616.8082845,
-    "ast_hash": "5a1e2b597fe1d75856ed015f1ac98730",
+    "mtime": 1779155050.10182,
+    "ast_hash": "eda545aa4c48cbcd534d9092d7eca5cb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/stream.test.ts": {
@@ -772,6 +772,11 @@
   "/home/x/arb/t/docs/superpowers/plans/2026-05-18-add-progress-instrumentation.md": {
     "mtime": 1779152582.0935686,
     "ast_hash": "55a3b80afd0de0eb8d71f9d95b00a2cd",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-18-tui-and-boot-fix.md": {
+    "mtime": 1779154894.1236658,
+    "ast_hash": "526196b4a26c06076608058a68ac4b9d",
     "semantic_hash": ""
   }
 }

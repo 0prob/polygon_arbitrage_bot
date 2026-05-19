@@ -34,24 +34,23 @@ export function getPoolMeta(db: CompatDatabase, address: string) {
 }
 
 export function getAllActivePools(db: CompatDatabase) {
-  const rows = db
-    .statement("getAllActivePools", `SELECT * FROM pools WHERE status = 'active' ORDER BY address`)
-    .all() as Record<string, unknown>[];
+  const rows = db.statement("getAllActivePools", `SELECT * FROM pools WHERE status = 'active' ORDER BY address`).all() as Record<
+    string,
+    unknown
+  >[];
   return rows.map(poolRowToObject);
 }
 
 export function getPoolsByProtocol(db: CompatDatabase, protocol: string) {
-  const rows = db
-    .statement("getPoolsByProtocol", `SELECT * FROM pools WHERE protocol = ? ORDER BY address`)
-    .all(protocol) as Record<string, unknown>[];
+  const rows = db.statement("getPoolsByProtocol", `SELECT * FROM pools WHERE protocol = ? ORDER BY address`).all(protocol) as Record<
+    string,
+    unknown
+  >[];
   return rows.map(poolRowToObject);
 }
 
 export function updatePoolStatus(db: CompatDatabase, address: string, status: string, removedBlock?: number | null) {
-  const stmt = db.statement(
-    "updatePoolStatus",
-    `UPDATE pools SET status = ?, removed_block = ? WHERE address = ?`,
-  );
+  const stmt = db.statement("updatePoolStatus", `UPDATE pools SET status = ?, removed_block = ? WHERE address = ?`);
   return stmt.run(status, removedBlock ?? null, address);
 }
 

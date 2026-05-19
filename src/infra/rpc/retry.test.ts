@@ -1,12 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  withRetry,
-  withTimeout,
-  isRateLimitError,
-  isRetryableError,
-  isAuthError,
-  isNoDataError,
-} from "./retry.ts";
+import { withRetry, withTimeout, isRateLimitError, isRetryableError, isAuthError, isNoDataError } from "./retry.ts";
 
 describe("isRateLimitError", () => {
   it("returns true for status 429", () => {
@@ -106,11 +99,7 @@ describe("withRetry", () => {
   });
 
   it("retries on failure and succeeds eventually", async () => {
-    const fn = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("timeout"))
-      .mockRejectedValueOnce(new Error("timeout"))
-      .mockResolvedValueOnce("ok");
+    const fn = vi.fn().mockRejectedValueOnce(new Error("timeout")).mockRejectedValueOnce(new Error("timeout")).mockResolvedValueOnce("ok");
 
     const result = await withRetry(fn, { maxAttempts: 5, baseDelay: 5, maxDelay: 20 });
     expect(result).toBe("ok");
@@ -132,10 +121,7 @@ describe("withRetry", () => {
 
   it("uses custom retryable predicate", async () => {
     const customRetryable = vi.fn().mockReturnValue(true);
-    const fn = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("custom"))
-      .mockResolvedValueOnce("ok");
+    const fn = vi.fn().mockRejectedValueOnce(new Error("custom")).mockResolvedValueOnce("ok");
 
     const result = await withRetry(fn, {
       maxAttempts: 3,
@@ -150,10 +136,7 @@ describe("withRetry", () => {
 
   it("calls logger on failure", async () => {
     const logger = vi.fn();
-    const fn = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("timeout"))
-      .mockResolvedValueOnce("ok");
+    const fn = vi.fn().mockRejectedValueOnce(new Error("timeout")).mockResolvedValueOnce("ok");
 
     const result = await withRetry(fn, {
       maxAttempts: 3,
@@ -162,9 +145,7 @@ describe("withRetry", () => {
       logger,
     });
     expect(result).toBe("ok");
-    expect(logger).toHaveBeenCalledWith(
-      expect.stringContaining("[retry] attempt 1/3 failed, retrying in"),
-    );
+    expect(logger).toHaveBeenCalledWith(expect.stringContaining("[retry] attempt 1/3 failed, retrying in"));
   }, 10_000);
 });
 
@@ -179,10 +160,7 @@ describe("withTimeout", () => {
   }, 10_000);
 
   it("does not reject if promise resolves before timeout", async () => {
-    const result = await withTimeout(
-      new Promise<string>((resolve) => setTimeout(() => resolve("done"), 5)),
-      100,
-    );
+    const result = await withTimeout(new Promise<string>((resolve) => setTimeout(() => resolve("done"), 5)), 100);
     expect(result).toBe("done");
   }, 10_000);
 });

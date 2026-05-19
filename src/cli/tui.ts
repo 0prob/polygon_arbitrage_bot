@@ -143,7 +143,10 @@ function normLog(line: string) {
 }
 
 function logSeverity(logs: string[]) {
-  let err = 0, warn = 0, info = 0, dbg = 0;
+  let err = 0,
+    warn = 0,
+    info = 0,
+    dbg = 0;
   for (const l of logs) {
     if (l.includes("[ERROR]") || l.includes("[FATAL]")) err++;
     else if (l.includes("[WARN]")) warn++;

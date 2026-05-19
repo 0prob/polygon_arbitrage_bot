@@ -88,7 +88,10 @@ export async function pollLoop(
           if (reorgResult.reorgDetected) {
             const changedAddrs = new Set(stateCache.keys());
             stateCache.clear();
-            logger.warn({ reorgBlock: reorgResult.reorgBlock, statesRemoved: reorgResult.statesRemoved, cacheCleared: changedAddrs.size }, "Reorg detected; state cache cleared");
+            logger.warn(
+              { reorgBlock: reorgResult.reorgBlock, statesRemoved: reorgResult.statesRemoved, cacheCleared: changedAddrs.size },
+              "Reorg detected; state cache cleared",
+            );
             onReorg?.({ reorgBlock: reorgResult.reorgBlock, changedAddrs });
             lastBlock = reorgResult.checkpointBlock;
             continue;
@@ -130,7 +133,13 @@ export async function pollLoop(
           state = { ...state } as MutableWatcherState;
 
           const applied = dispatchLog(log, dec as unknown as DecodedWatcherLog, pool, state, {
-            addr, enqueueEnrichment: enrichmentQueue.enqueue, refreshBalancer, refreshCurve, refreshDodo, refreshWoofi, refreshV3,
+            addr,
+            enqueueEnrichment: enrichmentQueue.enqueue,
+            refreshBalancer,
+            refreshCurve,
+            refreshDodo,
+            refreshWoofi,
+            refreshV3,
           });
           if (applied) pendingUpdates.push({ addr, state, rawLog: log });
         }

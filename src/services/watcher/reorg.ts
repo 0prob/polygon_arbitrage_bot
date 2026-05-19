@@ -36,7 +36,12 @@ function detectReorg(registry: { getRollbackGuard?: () => unknown }, newGuard: u
   if (newFirstBlock === storedBlock && newFirstParent && storedHash) {
     if (newFirstParent !== storedHash) return storedBlock;
   }
-  if (Number.isFinite(storedFirstBlock) && newFirstBlock === storedFirstBlock && storedFirstParent && newFirstParent !== storedFirstParent) {
+  if (
+    Number.isFinite(storedFirstBlock) &&
+    newFirstBlock === storedFirstBlock &&
+    storedFirstParent &&
+    newFirstParent !== storedFirstParent
+  ) {
     return newFirstBlock;
   }
   return false;

@@ -53,11 +53,7 @@ function normalizeProtocol(raw: string): string {
 }
 
 /** Dispatch a single hop simulation to the correct math module. */
-export function simulateHop(
-  edge: SimulationEdge,
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-): SimulatedHopResult {
+export function simulateHop(edge: SimulationEdge, amountIn: bigint, stateCache: RouteStateCache): SimulatedHopResult {
   const state = stateCache.get(edge.poolAddress.toLowerCase()) ?? edge.stateRef;
   if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
 
@@ -79,19 +75,12 @@ export function simulateHop(
   }
 }
 
-function extractGasResult(r: {
-  amountOut: bigint;
-  gasEstimate: number;
-}): SimulatedHopResult {
+function extractGasResult(r: { amountOut: bigint; gasEstimate: number }): SimulatedHopResult {
   return { amountOut: r.amountOut, gasEstimate: r.gasEstimate };
 }
 
 /** Simulate a full multi-hop route. Direction is inferred from stateRef. */
-export function simulateRoute(
-  edges: SwapEdge[],
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-): RouteSimulationResult {
+export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: RouteStateCache): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
   const poolPath: string[] = [];

@@ -1,13 +1,6 @@
 import type { CompatDatabase } from "./connection.ts";
 
-export function recordExecution(
-  db: CompatDatabase,
-  routeKey: string,
-  profit: string,
-  gasCost: string,
-  success: number,
-  details: string,
-) {
+export function recordExecution(db: CompatDatabase, routeKey: string, profit: string, gasCost: string, success: number, details: string) {
   const now = Math.floor(Date.now() / 1000);
   const stmt = db.statement(
     "recordExecution",
@@ -18,10 +11,7 @@ export function recordExecution(
 }
 
 export function getRecentHistory(db: CompatDatabase, limit: number = 50) {
-  const stmt = db.statement(
-    "getRecentHistory",
-    `SELECT * FROM arb_history ORDER BY executed_at DESC LIMIT ?`,
-  );
+  const stmt = db.statement("getRecentHistory", `SELECT * FROM arb_history ORDER BY executed_at DESC LIMIT ?`);
   return stmt.all(limit) as Record<string, unknown>[];
 }
 

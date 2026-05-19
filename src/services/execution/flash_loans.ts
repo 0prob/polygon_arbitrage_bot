@@ -50,11 +50,7 @@ export function createLiquidityChecker(
   };
 }
 
-export async function selectFlashLoanSource(
-  token: string,
-  amount: bigint,
-  checkLiquidity: LiquidityChecker,
-): Promise<FlashLoanSource> {
+export async function selectFlashLoanSource(token: string, amount: bigint, checkLiquidity: LiquidityChecker): Promise<FlashLoanSource> {
   const balancerAvailable = await checkLiquidity(token, amount, FlashLoanSource.BALANCER);
   if (balancerAvailable) return FlashLoanSource.BALANCER;
 

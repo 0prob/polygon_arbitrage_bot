@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { runPassLoop } from "./pass_loop.ts";
 import type { RuntimeContext } from "./boot.ts";
 import { evaluatePipeline } from "../services/strategy/pipeline.ts";
@@ -22,7 +22,7 @@ describe("runPassLoop", () => {
   it("updates currentActivityProgress during execution", async () => {
     const mockStateUpdate = vi.fn();
     const mockExecute = vi.fn().mockResolvedValue({ success: true, txHash: "0x1" });
-    
+
     const mockContext = {
       config: {
         routing: { cycleRefreshIntervalMs: 0, maxHops: 2 },
@@ -38,11 +38,11 @@ describe("runPassLoop", () => {
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", tokens: [] }]),
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
     } as unknown as RuntimeContext;
-    
+
     // Stop the loop after execution
     mockExecute.mockImplementation(async () => {
-        mockContext.isRunning = false;
-        return { success: true, txHash: "0x1" };
+      mockContext.isRunning = false;
+      return { success: true, txHash: "0x1" };
     });
 
     // Mock graph/cycles
@@ -52,37 +52,43 @@ describe("runPassLoop", () => {
       stateRefs: new Map(),
       tokens: new Set(),
     });
-    vi.mocked(enumerateCycles).mockReturnValue([{ 
-      edges: [], 
-      hopCount: 1, 
-      startToken: "0x1" as any, 
-      logWeight: 0, 
-      cumulativeFeeBps: 0n 
-    }]);
+    vi.mocked(enumerateCycles).mockReturnValue([
+      {
+        edges: [],
+        hopCount: 1,
+        startToken: "0x1" as any,
+        logWeight: 0,
+        cumulativeFeeBps: 0n,
+      },
+    ]);
 
     // Mock profitable opportunities
     const mockProfitable = [
-      { 
-        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n }, 
-        result: {}, 
-        assessment: { netProfitAfterGas: 0n, roi: 0 } 
+      {
+        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n },
+        result: {},
+        assessment: { netProfitAfterGas: 0n, roi: 0 },
       },
-      { 
-        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n }, 
-        result: {}, 
-        assessment: { netProfitAfterGas: 0n, roi: 0 } 
-      }
+      {
+        cycle: { edges: [], startToken: "0x1" as any, hopCount: 1, logWeight: 0, cumulativeFeeBps: 0n },
+        result: {},
+        assessment: { netProfitAfterGas: 0n, roi: 0 },
+      },
     ];
     vi.mocked(evaluatePipeline).mockReturnValue({ profitable: mockProfitable as any, attempted: 2, profitableCount: 2 });
 
     await runPassLoop(mockContext, mockStateUpdate);
 
     // Verify progress updates
-    expect(mockStateUpdate).toHaveBeenCalledWith(expect.objectContaining({
-      currentActivityProgress: { label: "Executing", completed: 1, total: 2, unit: "txs" }
-    }));
-    expect(mockStateUpdate).toHaveBeenCalledWith(expect.objectContaining({
-      currentActivityProgress: { label: "Executing", completed: 2, total: 2, unit: "txs" }
-    }));
+    expect(mockStateUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentActivityProgress: { label: "Executing", completed: 1, total: 2, unit: "txs" },
+      }),
+    );
+    expect(mockStateUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentActivityProgress: { label: "Executing", completed: 2, total: 2, unit: "txs" },
+      }),
+    );
   });
 });
