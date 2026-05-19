@@ -4,7 +4,6 @@ import { polygon } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
-import type { ActivityLog } from "../cli/activity.ts";
 import { createDatabase, type CompatDatabase } from "../infra/db/connection.ts";
 import { ensureSchema } from "../infra/db/schema.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -14,23 +13,10 @@ import { ExecutionService } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
-import {
-  QUICKSWAP_V2_FACTORY,
-  SUSHISWAP_V2_FACTORY,
-  UNISWAP_V2_FACTORY,
-  DFYN_V2_FACTORY,
-  APESWAP_V2_FACTORY,
-  MESHSWAP_V2_FACTORY,
-  JETSWAP_V2_FACTORY,
-  COMETHSWAP_V2_FACTORY,
-  UNISWAP_V3_FACTORY,
-  SUSHISWAP_V3_FACTORY,
-  QUICKSWAP_V3_FACTORY,
-  KYBERSWAP_ELASTIC_FACTORY,
-  BALANCER_VAULT,
-} from "../config/addresses.ts";
 import { getAllPoolStates } from "../infra/db/pools.ts";
 import { getHiDbPath, readHyperIndexPools } from "../infra/db/hyperindex_reader.ts";
+import { CrossChainScanner } from "../services/crosschain/scanner.ts";
+import { SolverBot } from "../services/crosschain/solver.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -43,9 +29,11 @@ export interface RuntimeContext {
   getPools: () => PoolMeta[];
   publicClient: PublicClient;
   isRunning: boolean;
+  crossChainScanner?: CrossChainScanner;
+  solverBot?: SolverBot;
 }
 
-export async function bootApplication(config: AppConfig, activity: ActivityLog, logBuffer?: string[]): Promise<RuntimeContext> {
+export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
   const logger = createRootLogger({
     level: config.observability.logLevel,
     logSink: logBuffer,
@@ -160,11 +148,34 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
   };
   const mempoolService = new MempoolService(logger, mempoolOptions);
 
+  let crossChainScanner: CrossChainScanner | undefined;
+  let solverBot: SolverBot | undefined;
+
+  if (config.crossChainArb?.enabled) {
+    crossChainScanner = new CrossChainScanner({
+      katanaRpcUrl: config.crossChainArb.katanaRpcUrl,
+      escrowToken: config.crossChainArb.escrowToken as `0x${string}`,
+      escrowAmount: config.crossChainArb.escrowAmount,
+      minProfitBps: config.crossChainArb.minProfitBps,
+      maxSwapHops: config.crossChainArb.maxSwapHops,
+    });
+    solverBot = new SolverBot({
+      polygonSolverKey: config.crossChainArb.polygonSolverPrivateKey as `0x${string}`,
+      katanaSolverKey: config.crossChainArb.katanaSolverPrivateKey as `0x${string}`,
+      crossChainIntentOrigin: config.crossChainArb.originSettlerAddress as `0x${string}`,
+      katanaExecutor: config.crossChainArb.katanaExecutorAddress as `0x${string}`,
+      escrowToken: config.crossChainArb.escrowToken as `0x${string}`,
+      escrowAmount: config.crossChainArb.escrowAmount,
+      polygonRpcUrl: config.crossChainArb.polygonRpcUrl,
+      katanaRpcUrl: config.crossChainArb.katanaRpcUrl,
+    });
+  }
+
   // Data ingestion is handled by HyperIndex (child process)
-  activity("BOOT", "HyperIndex manages pool discovery and state ingestion");
+  // Pool discovery and state ingestion are managed by HyperIndex
   logger.info({}, "HyperIndex handles pool discovery, hydration, and state watching");
 
-  activity("BOOT", "Ready — entering pass loop");
+  logger.info("Ready — entering pass loop");
 
   return {
     config,
@@ -177,5 +188,7 @@ export async function bootApplication(config: AppConfig, activity: ActivityLog, 
     getPools,
     publicClient,
     isRunning: true,
+    crossChainScanner,
+    solverBot,
   };
 }
