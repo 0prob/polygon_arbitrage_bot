@@ -1,9 +1,14 @@
 import type { Address } from "../../core/types/common.ts";
-import type { ProtocolKey } from "../../core/identity.ts";
+import { normalizeProtocolKey } from "../../core/identity.ts";
 import type { HyperSyncLog } from "../../infra/hypersync/types.ts";
 
+const PROTOCOL_V2 = normalizeProtocolKey("UNISWAP_V2");
+const PROTOCOL_BALANCER = normalizeProtocolKey("BALANCER_V2");
+const PROTOCOL_V3 = normalizeProtocolKey("QUICKSWAP_V3");
+const PROTOCOL_CURVE = normalizeProtocolKey("CURVE_STABLE");
+
 export interface DecodedPoolEvent {
-  protocol: ProtocolKey;
+  protocol: string;
   poolAddress: Address;
   token0?: Address;
   token1?: Address;
@@ -32,7 +37,7 @@ export function decodePairCreated(log: HyperSyncLog): DecodedPoolEvent | null {
   const token1 = extractAddressFromTopic(log.topics[2]);
   if (!poolAddress || !token0 || !token1) return null;
   return {
-    protocol: "UNISWAP_V2" as ProtocolKey,
+    protocol: PROTOCOL_V2,
     poolAddress,
     token0,
     token1,
@@ -44,7 +49,7 @@ export function decodePoolRegistered(log: HyperSyncLog): DecodedPoolEvent | null
   const poolAddress = extractAddressFromTopic(log.topics[1]);
   if (!poolAddress) return null;
   return {
-    protocol: "BALANCER_V2" as ProtocolKey,
+    protocol: PROTOCOL_BALANCER,
     poolAddress,
   };
 }
@@ -53,14 +58,13 @@ export function decodePoolDeployed(log: HyperSyncLog): DecodedPoolEvent | null {
   if (!log.topics || log.topics.length < 3) return null;
   const poolAddress = extractAddressFromTopic(log.topics[1]);
   const token0 = extractAddressFromTopic(log.topics[2]);
-  const token1Raw = log.topics[3] ? extractAddressFromTopic(log.topics[3]) : undefined;
-  const token1: Address | undefined = token1Raw ?? undefined;
+  const token1 = log.topics[3] ? extractAddressFromTopic(log.topics[3]) : undefined;
   if (!poolAddress || !token0) return null;
   return {
-    protocol: "QUICKSWAP_V3" as ProtocolKey,
+    protocol: PROTOCOL_V3,
     poolAddress,
     token0,
-    token1,
+    token1: token1 ?? undefined,
   };
 }
 
@@ -69,7 +73,7 @@ export function decodeCurvePoolAdded(log: HyperSyncLog): DecodedPoolEvent | null
   const poolAddress = extractAddressFromTopic(log.topics[1]);
   if (!poolAddress) return null;
   return {
-    protocol: "CURVE_STABLE" as ProtocolKey,
+    protocol: PROTOCOL_CURVE,
     poolAddress,
   };
 }

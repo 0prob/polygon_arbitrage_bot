@@ -13,7 +13,9 @@ import { DiscoveryService, type DiscoveryServiceDeps } from "../services/discove
 import { decodePairCreated, decodePoolRegistered, decodePoolDeployed, decodeCurvePoolAdded, type DecodedPoolEvent } from "../services/discovery/decoder.ts";
 import type { TokenMetaFetcher } from "../services/discovery/enrichment.ts";
 import { fetchCurvePools } from "../services/discovery/curve_discovery.ts";
-import { WatcherService } from "../services/watcher/service.ts";
+import { WatcherService, type WatcherRefreshFns } from "../services/watcher/service.ts";
+import type { WatcherPoolMeta, HyperSyncLogLike } from "../services/watcher/types.ts";
+import { mergeStateIntoCache } from "../services/watcher/state_ops.ts";
 import { createDbRollbackRegistry } from "../services/watcher/reorg.ts";
 import { setHypersyncDefaults } from "../infra/hypersync/client.ts";
 import { computeTopic0 } from "../infra/hypersync/query.ts";
@@ -107,13 +109,51 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   setHypersyncDefaults(config.hypersync.url, config.envioApiToken);
   const watcherRegistry = createDbRollbackRegistry(db);
-  const watcherService = new WatcherService(db, stateCache, watcherRegistry);
+
+  const v3Slot0Abi = [
+    { type: "function", name: "slot0", inputs: [], outputs: [{ type: "uint160" }, { type: "int24" }], stateMutability: "view" },
+  ] as const;
+  const v3LiquidityAbi = [
+    { type: "function", name: "liquidity", inputs: [], outputs: [{ type: "uint128" }], stateMutability: "view" },
+  ] as const;
+
+  const watcherRefreshFns: WatcherRefreshFns = {
+    refreshBalancer: (addr: string, _pool: WatcherPoolMeta | null) => {
+      logger.debug({ addr }, "Balancer refresh not implemented");
+    },
+    refreshCurve: (addr: string, _pool: WatcherPoolMeta | null) => {
+      logger.debug({ addr }, "Curve refresh not implemented");
+    },
+    refreshDodo: (addr: string, _pool: WatcherPoolMeta | null) => {
+      logger.debug({ addr }, "Dodo refresh not implemented");
+    },
+    refreshWoofi: (addr: string, _pool: WatcherPoolMeta | null) => {
+      logger.debug({ addr }, "Woofi refresh not implemented");
+    },
+    refreshV3: async (addr: string, _pool: WatcherPoolMeta | null, _rawLog?: HyperSyncLogLike) => {
+      try {
+        const address = addr as Address;
+        const slot0Result = await publicClient.readContract({ address, abi: v3Slot0Abi, functionName: "slot0" });
+        const [sqrtPriceX96, tick] = slot0Result as [bigint, number];
+        const liquidity = (await publicClient.readContract({ address, abi: v3LiquidityAbi, functionName: "liquidity" })) as bigint;
+        mergeStateIntoCache(stateCache, addr, { sqrtPriceX96, tick, liquidity, initialized: true });
+      } catch (err) {
+        logger.warn({ err, addr }, "V3 pool refresh failed");
+      }
+    },
+  };
+
+  const watcherService = new WatcherService(db, stateCache, watcherRegistry, watcherRefreshFns);
 
   const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
-    // Placeholder implementation: In a real scenario, this would fetch actual pool state from the blockchain
-    // For now, return a dummy state to unblock hydration
-    logger.debug({ address, protocol, token0, token1 }, "Fetching pool state (placeholder)");
-    return { reserve0: 1000n, reserve1: 1000n, extra: {} };
+    const cached = stateCache.get(address.toLowerCase());
+    if (cached != null && typeof cached === "object") {
+      const hasReserves = "reserve0" in cached && "reserve1" in cached;
+      const hasV3 = "sqrtPriceX96" in cached && "liquidity" in cached;
+      if (hasReserves || hasV3) return cached;
+    }
+    logger.debug({ address, protocol, token0, token1 }, "No cached state for pool");
+    return { reserve0: 0n, reserve1: 0n };
   };
 
   const getPools = (): PoolMeta[] => {
@@ -165,11 +205,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const gasOracle = new GasOracle(gasOracleConfig, fetchGas);
 
   const nonceFetcher = async (address: string): Promise<number> => {
-    try {
-      return Number(await publicClient.getTransactionCount({ address: address as `0x${string}`, blockTag: "pending" }));
-    } catch {
-      return 0;
-    }
+    const count = await publicClient.getTransactionCount({ address: address as `0x${string}`, blockTag: "pending" });
+    return Number(count);
   };
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);

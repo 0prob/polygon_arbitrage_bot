@@ -64,7 +64,7 @@ export interface CycleEnumerationOptions {
 }
 
 export interface RouteIdentityEdge {
-  poolAddress: string;
-  tokenIn: string;
-  tokenOut: string;
+  poolAddress: Address;
+  tokenIn: Address;
+  tokenOut: Address;
 }

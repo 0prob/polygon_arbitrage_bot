@@ -23,6 +23,8 @@ export interface PriceOracle {
 
 /** Fixed-rate oracle for testing. */
 export class FixedPriceOracle implements PriceOracle {
+  private updatedAt = new Map<string, number>();
+
   constructor(
     private rates: Map<Address, bigint>,
     private now: () => number = Date.now,
@@ -38,10 +40,12 @@ export class FixedPriceOracle implements PriceOracle {
     return this.rates.has(token.toLowerCase() as Address);
   }
   lastUpdateMs(token: Address): number | null {
-    return this.hasRate(token) ? this.now() : null;
+    return this.updatedAt.get(token.toLowerCase() as Address) ?? null;
   }
   /** Test helper: update or insert a rate. */
   setRate(token: Address, rate: bigint): void {
-    this.rates.set(token.toLowerCase() as Address, rate);
+    const key = token.toLowerCase() as Address;
+    this.rates.set(key, rate);
+    this.updatedAt.set(key, this.now());
   }
 }

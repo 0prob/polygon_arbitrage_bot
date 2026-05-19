@@ -23,9 +23,13 @@ export interface SimulationEdge {
 
 function inferZeroForOne(edge: SwapEdge, state: Record<string, unknown>): boolean {
   const t0 = state.token0;
-  if (typeof t0 === "string" && edge.tokenIn.toLowerCase() === t0.toLowerCase()) return true;
-  if (typeof t0 === "string") return false;
-  return true;
+  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
+  if (Array.isArray(state.tokens)) {
+    const tokens = state.tokens as string[];
+    const tokenIn = edge.tokenIn.toLowerCase();
+    return tokens.some((t) => t.toLowerCase() === tokenIn);
+  }
+  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
 }
 
 function inferTokenIdx(edge: SwapEdge, needle: "tokenIn" | "tokenOut", state: Record<string, unknown>): number {

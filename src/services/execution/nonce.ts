@@ -14,8 +14,8 @@ export class NonceManager {
   async initialize(): Promise<void> {
     try {
       this.localNonce = await withRetry(() => this.fetchNonce(this.address), { maxAttempts: 3 });
-    } catch {
-      this.localNonce = 0;
+    } catch (err) {
+      throw new Error(`NonceManager: failed to fetch initial nonce for ${this.address}: ${err instanceof Error ? err.message : String(err)}`);
     }
     this.pendingCount = 0;
   }

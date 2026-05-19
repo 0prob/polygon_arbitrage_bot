@@ -42,11 +42,11 @@ export function optimizeInputAmount(
     const s1 = accept(r1) ? scorer(r1) : -(2n ** 256n);
     const s2 = accept(r2) ? scorer(r2) : -(2n ** 256n);
 
-    if (s1 > bestScore && accept(r1)) {
+    if (s1 > bestScore) {
       bestScore = s1;
       bestResult = r1;
     }
-    if (s2 > bestScore && accept(r2)) {
+    if (s2 > bestScore) {
       bestScore = s2;
       bestResult = r2;
     }

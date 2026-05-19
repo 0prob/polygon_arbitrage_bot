@@ -7,7 +7,8 @@ export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const EVM_ADDRESS_RE = /^0x[0-9a-f]{40}$/;
 
-export function isFastEvmAddress(value: string) {
+export function isFastEvmAddress(value: unknown): value is Address {
+  if (typeof value !== "string") return false;
   if (value.length !== 42) return false;
   if (value.charCodeAt(0) !== 48) return false;
   const prefix = value.charCodeAt(1);
@@ -63,7 +64,8 @@ const POLYGON_SYSTEM_PREFIXES = [
   "0x0f",
 ];
 
-export function isPolygonSystemContract(address: string): boolean {
+export function isPolygonSystemContract(address: unknown): boolean {
+  if (typeof address !== "string") return false;
   const lower = address.toLowerCase();
   return POLYGON_SYSTEM_PREFIXES.some((p) => lower.startsWith(p));
 }

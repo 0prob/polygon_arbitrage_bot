@@ -15,6 +15,7 @@ export const DEFAULT_MEMPOOL_OPTIONS: MempoolServiceOptions = {
 export class MempoolService {
   private handlers: SignalHandler[] = [];
   private knownPools = new Set<string>();
+  private lastEmitByPool = new Map<string, number>();
 
   constructor(
     private logger: Logger,
@@ -41,20 +42,26 @@ export class MempoolService {
     for (const h of this.handlers) h(signal);
   }
 
-  /** Process a pending transaction from the mempool. */
+  /** Process a pending transaction from the mempool with coalescing. */
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
     if (!tx.to || !tx.input) return;
 
     const decoded = decodeSwapCalldata(tx.to as any, tx.input, this.knownPools);
-    if (decoded && decoded.amountIn >= this.options.largeSwapThresholdWei) {
-      const signal: LargeSwapSignal = {
-        txHash: tx.hash,
-        poolAddress: decoded.poolAddress,
-        tokenIn: decoded.tokenIn,
-        tokenOut: decoded.tokenOut,
-        estimatedSwapSize: decoded.amountIn,
-      };
-      this.emit({ type: "large_swap", data: signal });
-    }
+    if (!decoded || decoded.amountIn < this.options.largeSwapThresholdWei) return;
+
+    const poolKey = decoded.poolAddress.toLowerCase();
+    const now = Date.now();
+    const lastEmit = this.lastEmitByPool.get(poolKey);
+    if (lastEmit != null && now - lastEmit < this.options.coalesceTtlMs) return;
+    this.lastEmitByPool.set(poolKey, now);
+
+    const signal: LargeSwapSignal = {
+      txHash: tx.hash,
+      poolAddress: decoded.poolAddress,
+      tokenIn: decoded.tokenIn,
+      tokenOut: decoded.tokenOut,
+      estimatedSwapSize: decoded.amountIn,
+    };
+    this.emit({ type: "large_swap", data: signal });
   }
 }

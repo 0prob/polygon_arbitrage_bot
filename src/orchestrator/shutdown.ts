@@ -1,17 +1,30 @@
 import type { RuntimeContext } from "./boot.ts";
 
+async function stopService<T>(label: string, service: { stop: () => T }, logger: RuntimeContext["logger"]): Promise<void> {
+  try {
+    const result = service.stop();
+    if (result instanceof Promise) await result;
+  } catch (err) {
+    logger.error({ err, service: label }, "Service stop failed");
+  }
+}
+
 export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
   ctx.isRunning = false;
 
   ctx.logger.info({}, "Shutting down services");
 
-  ctx.executionService.stop();
-  ctx.mempoolService.stop();
-  await ctx.watcherService.stop();
-  ctx.hydrationService.stop();
-  ctx.discoveryService.stop();
+  await stopService("execution", ctx.executionService, ctx.logger);
+  await stopService("mempool", ctx.mempoolService, ctx.logger);
+  await stopService("watcher", ctx.watcherService, ctx.logger);
+  await stopService("hydration", ctx.hydrationService, ctx.logger);
+  await stopService("discovery", ctx.discoveryService, ctx.logger);
 
-  ctx.db.close();
+  try {
+    ctx.db.close();
+  } catch (err) {
+    ctx.logger.error({ err }, "Database close failed");
+  }
 
   ctx.logger.info({}, "Shutdown complete");
 }

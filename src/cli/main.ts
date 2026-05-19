@@ -2,7 +2,7 @@ import { loadConfig } from "../config/loader.ts";
 import { bootApplication } from "../orchestrator/boot.ts";
 import { runPassLoop } from "../orchestrator/pass_loop.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
-import { startTui, type BotState } from "./tui.ts";
+import { startTui, updateState, type BotState } from "./tui.ts";
 
 function createBotState(): BotState {
   return {
@@ -35,7 +35,10 @@ async function main() {
     tuiCleanup = startTui(botState);
   }
 
+  let shuttingDown = false;
   async function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     ctx.logger.warn({}, "Shutting down");
     tuiCleanup?.();
     await shutdownApplication(ctx);
@@ -45,7 +48,7 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  await runPassLoop(ctx, tuiEnabled ? (update: Partial<BotState>) => Object.assign(botState, update) : undefined);
+  await runPassLoop(ctx, tuiEnabled ? (update: Partial<BotState>) => { Object.assign(botState, update); updateState(botState); } : undefined);
 }
 
 main().catch((err) => {

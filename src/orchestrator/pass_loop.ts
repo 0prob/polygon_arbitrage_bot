@@ -4,6 +4,7 @@ import { enumerateCycles, routeKeyFromEdges } from "../services/strategy/finder.
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
+import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "../services/execution/builder.ts";
 import type { BotState } from "../cli/tui.ts";
 import { withTimeout } from "../infra/rpc/retry.ts";
 
@@ -25,11 +26,50 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function buildCandidate(profitable: {
+  cycle: { edges: Array<{ poolAddress: string; tokenIn: string; tokenOut: string; protocol: string; feeBps: bigint }>; startToken: string };
+  result: { amountIn: bigint; amountOut: bigint; hopAmounts: bigint[]; tokenPath: string[]; poolPath: string[] };
+}, executorAddress: string): CandidateExecution {
+  const edges = profitable.cycle.edges.map((e) => ({
+    poolAddress: e.poolAddress,
+    tokenIn: e.tokenIn,
+    tokenOut: e.tokenOut,
+    protocol: e.protocol,
+    zeroForOne: false,
+    fee: Number(e.feeBps),
+    swapFeeBps: Number(e.feeBps),
+    metadata: {},
+    tokenInIdx: 0,
+    tokenOutIdx: 1,
+  }));
+
+  const route: BuilderRouteInput = {
+    path: { startToken: profitable.cycle.startToken, edges },
+    result: {
+      amountIn: profitable.result.amountIn,
+      amountOut: profitable.result.amountOut,
+      hopAmounts: profitable.result.hopAmounts.map(BigInt),
+      tokenPath: profitable.result.tokenPath.map(String),
+      poolPath: profitable.result.poolPath.map(String),
+    },
+  };
+
+  const config: BuilderConfig = { executorAddress, fromAddress: executorAddress };
+  const built = buildArbTx(route, config, { slippageBps: 50 });
+
+  return {
+    routeKey: built.routeHash,
+    calldata: built.data,
+    targetAddress: built.to,
+    value: built.value,
+  };
+}
+
 export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: Partial<BotState>) => void): Promise<void> {
   const intervalMs = ctx.config.routing.cycleRefreshIntervalMs;
+  const executorAddress = ctx.config.execution.executorAddress;
 
   await ctx.executionService.start();
-  ctx.watcherService.start();
   await ctx.hydrationService.start();
   await ctx.discoveryService.start();
   await ctx.mempoolService.start();
@@ -130,6 +170,8 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       onStateUpdate?.(state);
 
       for (const [index, profitable] of result.profitable.entries()) {
+        if (!ctx.isRunning) break;
+
         state.currentActivityProgress = {
           label: "Executing",
           completed: index + 1,
@@ -139,12 +181,13 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
         onStateUpdate?.(state);
 
         const routeKey = routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
-        const candidate: CandidateExecution = {
-          routeKey,
-          calldata: "",
-          targetAddress: profitable.cycle.edges[0].poolAddress,
-          value: 0n,
-        };
+        let candidate: CandidateExecution;
+        try {
+          candidate = buildCandidate(profitable, executorAddress);
+        } catch (err) {
+          ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
+          continue;
+        }
 
         state.lastProfitableCount = (state.lastProfitableCount ?? 0) + 1;
         state.opportunities = (state.opportunities ?? []).concat([

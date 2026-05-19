@@ -2,12 +2,20 @@ import { Decoder, client as hypersyncClient } from "../../infra/hypersync/client
 import type { HypersyncDecoderRuntime } from "../../infra/hypersync/types.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { createRootLogger } from "../../infra/observability/logger.ts";
-import type { RouteStateCache, WatcherPoolMeta, WatcherEnrichmentQueue } from "./types.ts";
+import type { RouteStateCache, WatcherPoolMeta, WatcherEnrichmentQueue, WatcherPoolRefresh, WatcherV3Refresh } from "./types.ts";
 import { WatcherFilter } from "./filter.ts";
 import { pollLoop } from "./poll_loop.ts";
 import { WATCHER_SIGNATURES } from "./events.ts";
 
 const logger = createRootLogger();
+
+export interface WatcherRefreshFns {
+  refreshBalancer?: WatcherPoolRefresh;
+  refreshCurve?: WatcherPoolRefresh;
+  refreshDodo?: WatcherPoolRefresh;
+  refreshWoofi?: WatcherPoolRefresh;
+  refreshV3?: WatcherV3Refresh;
+}
 
 export class WatcherService {
   private _filter: WatcherFilter;
@@ -21,6 +29,7 @@ export class WatcherService {
     setRollbackGuard?: (guard: Record<string, unknown>) => unknown;
     getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
   };
+  private _refreshFns: Required<WatcherRefreshFns>;
   private _enrichmentQueue: Map<string, () => unknown> = new Map();
   private _enrichmentDrain: WatcherEnrichmentQueue = {
     enqueue: (addr, task) => {
@@ -51,12 +60,22 @@ export class WatcherService {
       setRollbackGuard?: (guard: Record<string, unknown>) => unknown;
       getPoolMeta?: (addr: string) => WatcherPoolMeta | null | undefined;
     } = {},
+    refreshFns: WatcherRefreshFns = {},
   ) {
     this._db = db;
     this._stateCache = stateCache;
     this._filter = new WatcherFilter();
-    this._decoder = Decoder.fromSignatures(WATCHER_SIGNATURES);
+    this._decoder = Decoder.fromSignatures(WATCHER_SIGNATURES as unknown as string[]);
     this._registry = registry;
+    const noop = (_addr: string, _pool: WatcherPoolMeta | null) => {};
+    const noopV3: WatcherV3Refresh = (_addr: string, _pool: WatcherPoolMeta | null, _rawLog?) => {};
+    this._refreshFns = {
+      refreshBalancer: refreshFns.refreshBalancer ?? noop,
+      refreshCurve: refreshFns.refreshCurve ?? noop,
+      refreshDodo: refreshFns.refreshDodo ?? noop,
+      refreshWoofi: refreshFns.refreshWoofi ?? noop,
+      refreshV3: refreshFns.refreshV3 ?? noopV3,
+    };
   }
 
   start(pools?: string[]): void {
@@ -80,8 +99,6 @@ export class WatcherService {
     return this._stateCache;
   }
 
-  private noopRefresh = (_addr: string, _pool: WatcherPoolMeta | null) => {};
-
   private _run(): Promise<void> {
     return pollLoop(
       this._db,
@@ -91,11 +108,11 @@ export class WatcherService {
       this._decoder,
       this._registry,
       this._enrichmentDrain,
-      this.noopRefresh,
-      this.noopRefresh,
-      this.noopRefresh,
-      this.noopRefresh,
-      this.noopRefresh,
+      this._refreshFns.refreshBalancer,
+      this._refreshFns.refreshCurve,
+      this._refreshFns.refreshDodo,
+      this._refreshFns.refreshWoofi,
+      this._refreshFns.refreshV3,
       () => this._running,
       this.onBatch,
       this.onReorg,

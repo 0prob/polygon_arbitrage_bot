@@ -235,18 +235,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/reorg.ts": {
-    "mtime": 1779155515.8267808,
-    "ast_hash": "66bf6f3899f23b5c059b1b0ce805a51a",
+    "mtime": 1779164142.662715,
+    "ast_hash": "113b80536cbbc9710cf941164e16c23d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/poll_loop.ts": {
-    "mtime": 1779155515.8227808,
-    "ast_hash": "911e50337997ec62ce810b916df706e1",
+    "mtime": 1779164142.662715,
+    "ast_hash": "058f1a4e34cd137b59669634cce8594c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/log_handler.ts": {
-    "mtime": 1779155515.7987807,
-    "ast_hash": "76fe1be3743da0ce03f41c4de481e65a",
+    "mtime": 1779164142.662715,
+    "ast_hash": "817e674abebbcd8383fbedafad220336",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/filter.ts": {
@@ -255,8 +255,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/service.ts": {
-    "mtime": 1779155515.8387809,
-    "ast_hash": "15d8c6b7306ab32777f6a62070add358",
+    "mtime": 1779164142.662715,
+    "ast_hash": "3107a484e8e6e622a233355a5e2aa0fb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/watcher/state_ops.ts": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779162657.5201466,
-    "ast_hash": "ab001e99a8895fa8a505aee5d0c0d1d6",
+    "mtime": 1779164142.662715,
+    "ast_hash": "045ca951834fe8f78773a26eefa66ef0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/index.ts": {
-    "mtime": 1779155515.2187753,
-    "ast_hash": "594d5740e142d14ce0fd55eb2da387b2",
+    "mtime": 1779164142.662715,
+    "ast_hash": "27ee884839a9a0cbe6fd822454a4886b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/codec.ts": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/checkpoints.ts": {
-    "mtime": 1779155515.1707747,
-    "ast_hash": "11bc5b962ad84a4a3cc508e8bac50714",
+    "mtime": 1779164142.662715,
+    "ast_hash": "f92bfb6c1e926e1ec6553b6287e0a13d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/db/schema.ts": {
@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/index.ts": {
-    "mtime": 1779155515.2827759,
-    "ast_hash": "4bfd0fd3021071ff5e96517742235f43",
+    "mtime": 1779164142.662715,
+    "ast_hash": "b3d97aa40aaeec2c54ab1a9b4e9cff97",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/stream.ts": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/client.ts": {
-    "mtime": 1779155515.2787757,
-    "ast_hash": "beec6f84071085db9b15f1f532fda659",
+    "mtime": 1779164142.662715,
+    "ast_hash": "bfd7267bc8ab5f96c8e440a5e786aba7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/types.ts": {
@@ -792,6 +792,11 @@
   "/home/x/arb/t/docs/superpowers/plans/2026-05-19-curve-discovery.md": {
     "mtime": 1779155384.65328,
     "ast_hash": "a9e942faae0d7b2af8c2bcb3e391b62e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/watcher/events.ts": {
+    "mtime": 1779163779.3638093,
+    "ast_hash": "5ce56014ce4bd3afee068fbd7db4a655",
     "semantic_hash": ""
   }
 }

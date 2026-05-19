@@ -1,4 +1,4 @@
-import { mulDiv, divRoundingUp } from "../math/full_math.ts";
+import { divRoundingUp } from "../math/full_math.ts";
 import { bigintToApproxNumber } from "../utils/bigint.ts";
 import { revertPenalty, slippageDeduction, flashLoanFee } from "./risk.ts";
 import { FlashLoanSource } from "../types/execution.ts";
@@ -14,7 +14,7 @@ import type { ProfitAssessment } from "../types/execution.ts";
 export function tokensToMaticWei(amountInTokens: bigint, tokenToMaticRate: bigint): bigint {
   if (amountInTokens <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
-  return mulDiv(amountInTokens, tokenToMaticRate, 1n);
+  return amountInTokens * tokenToMaticRate;
 }
 
 /**

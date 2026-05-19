@@ -19,8 +19,19 @@ export interface Submitter {
   submit(tx: BuiltTransaction, signedRawTx: string): Promise<SubmissionResult>;
 }
 
+function hostnameFromUrl(raw: string): string {
+  try {
+    return new URL(raw).hostname;
+  } catch {
+    return "invalid-url";
+  }
+}
+
 class PrivateRelaySubmitter {
-  constructor(private rpcUrl: string) {}
+  private hostname: string;
+  constructor(private rpcUrl: string) {
+    this.hostname = hostnameFromUrl(rpcUrl);
+  }
 
   async submit(signedRawTx: string, timeoutMs: number): Promise<SubmissionResult> {
     try {
@@ -40,7 +51,7 @@ class PrivateRelaySubmitter {
       clearTimeout(timer);
       const body = (await res.json()) as { result?: string; error?: { message?: string } };
       if (body.error) return { success: false, error: body.error.message };
-      return { success: true, txHash: body.result, method: `private_relay:${new URL(this.rpcUrl).hostname}` };
+      return { success: true, txHash: body.result, method: `private_relay:${this.hostname}` };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
@@ -97,10 +108,10 @@ class PublicSubmitter {
         clearTimeout(timer);
         const body = (await res.json()) as { result?: string; error?: { message?: string } };
         if (body.error) throw new Error(body.error.message);
-        const hostname = new URL(url).hostname;
+        const hostname = hostnameFromUrl(url);
         return { success: true, txHash: body.result, method: `public:${hostname}` } as SubmissionResult;
       } catch (err) {
-        return { success: false, error: err instanceof Error ? err.message : String(err), method: `public:${new URL(url).hostname}` };
+        return { success: false, error: err instanceof Error ? err.message : String(err), method: `public:${hostnameFromUrl(url)}` };
       }
     });
     const results = await Promise.allSettled(submissions);

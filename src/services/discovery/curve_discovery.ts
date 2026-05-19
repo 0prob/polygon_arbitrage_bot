@@ -29,14 +29,30 @@ const FACTORY_ABI = [
 
 export async function fetchCurvePools(client: PublicClient, factoryAddress: Address): Promise<CurvePoolInfo[]> {
   const factory = getContract({ address: factoryAddress, abi: FACTORY_ABI, client });
-  const poolCount = Number(await factory.read.pool_count());
+  let poolCount: number;
+  try {
+    poolCount = Number(await factory.read.pool_count());
+  } catch {
+    throw new Error(`CurveDiscovery: failed to read pool_count from ${factoryAddress}`);
+  }
+
   const pools: CurvePoolInfo[] = [];
 
   for (let i = 0; i < poolCount; i++) {
-    const poolAddress = (await factory.read.pool_list([BigInt(i)])) as Address;
-    const coins = ((await factory.read.get_coins([poolAddress])) as Address[]).filter(
-      (c) => c !== "0x0000000000000000000000000000000000000000",
-    );
+    let poolAddress: Address;
+    try {
+      poolAddress = (await factory.read.pool_list([BigInt(i)])) as Address;
+    } catch {
+      continue;
+    }
+    let coins: Address[];
+    try {
+      coins = ([...(await factory.read.get_coins([poolAddress]))] as Address[]).filter(
+        (c) => c !== "0x0000000000000000000000000000000000000000",
+      );
+    } catch {
+      continue;
+    }
     pools.push({ poolAddress, lpToken: poolAddress, coins });
   }
   return pools;

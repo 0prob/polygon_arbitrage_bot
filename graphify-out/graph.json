@@ -4,76 +4,670 @@
   "graph": {},
   "nodes": [
     {
+      "label": "checkpoints.ts",
+      "file_type": "code",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L1",
+      "id": "infra_db_checkpoints_ts",
+      "community": 49,
+      "norm_label": "checkpoints.ts"
+    },
+    {
+      "label": "saveCheckpoint()",
+      "file_type": "code",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L3",
+      "id": "db_checkpoints_savecheckpoint",
+      "community": 49,
+      "norm_label": "savecheckpoint()"
+    },
+    {
+      "label": "getCheckpoint()",
+      "file_type": "code",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L13",
+      "id": "db_checkpoints_getcheckpoint",
+      "community": 49,
+      "norm_label": "getcheckpoint()"
+    },
+    {
+      "label": "getLatestCheckpoint()",
+      "file_type": "code",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L18",
+      "id": "db_checkpoints_getlatestcheckpoint",
+      "community": 49,
+      "norm_label": "getlatestcheckpoint()"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "infra/db/index.ts",
+      "source_location": "L1",
+      "id": "infra_db_index_ts",
+      "community": 72,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "client.ts",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L1",
+      "id": "infra_hypersync_client_ts",
+      "community": 32,
+      "norm_label": "client.ts"
+    },
+    {
+      "label": "HypersyncError",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L4",
+      "id": "hypersync_client_hypersyncerror",
+      "community": 32,
+      "norm_label": "hypersyncerror"
+    },
+    {
+      "label": "createHyperSyncUnavailableError()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L6",
+      "id": "hypersync_client_createhypersyncunavailableerror",
+      "community": 32,
+      "norm_label": "createhypersyncunavailableerror()"
+    },
+    {
+      "label": "createConfigError()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L13",
+      "id": "hypersync_client_createconfigerror",
+      "community": 32,
+      "norm_label": "createconfigerror()"
+    },
+    {
+      "label": "throwUnavailable()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L19",
+      "id": "hypersync_client_throwunavailable",
+      "community": 32,
+      "norm_label": "throwunavailable()"
+    },
+    {
+      "label": "normalizeOptionalInt()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L23",
+      "id": "hypersync_client_normalizeoptionalint",
+      "community": 32,
+      "norm_label": "normalizeoptionalint()"
+    },
+    {
+      "label": "normalizeClientConfig()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L30",
+      "id": "hypersync_client_normalizeclientconfig",
+      "community": 32,
+      "norm_label": "normalizeclientconfig()"
+    },
+    {
+      "label": "createUnavailableHypersyncClientImpl()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L63",
+      "id": "hypersync_client_createunavailablehypersyncclientimpl",
+      "community": 32,
+      "norm_label": "createunavailablehypersyncclientimpl()"
+    },
+    {
+      "label": "ensureModule()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L84",
+      "id": "hypersync_client_ensuremodule",
+      "community": 32,
+      "norm_label": "ensuremodule()"
+    },
+    {
+      "label": "shouldRetryLoad()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L97",
+      "id": "hypersync_client_shouldretryload",
+      "community": 32,
+      "norm_label": "shouldretryload()"
+    },
+    {
+      "label": "createHypersyncClient()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L104",
+      "id": "hypersync_client_createhypersyncclient",
+      "community": 32,
+      "norm_label": "createhypersyncclient()"
+    },
+    {
+      "label": "setHypersyncDefaults()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L123",
+      "id": "hypersync_client_sethypersyncdefaults",
+      "community": 57,
+      "norm_label": "sethypersyncdefaults()"
+    },
+    {
+      "label": "ensureClient()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L130",
+      "id": "hypersync_client_ensureclient",
+      "community": 32,
+      "norm_label": "ensureclient()"
+    },
+    {
+      "label": "proxyClient()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L143",
+      "id": "hypersync_client_proxyclient",
+      "community": 32,
+      "norm_label": "proxyclient()"
+    },
+    {
+      "label": "client",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L156",
+      "id": "hypersync_client_client",
+      "community": 49,
+      "norm_label": "client"
+    },
+    {
+      "label": "LogField",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L158",
+      "id": "hypersync_client_logfield",
+      "community": 32,
+      "norm_label": "logfield"
+    },
+    {
+      "label": "BlockField",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L171",
+      "id": "hypersync_client_blockfield",
+      "community": 32,
+      "norm_label": "blockfield"
+    },
+    {
+      "label": "JoinMode",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L176",
+      "id": "hypersync_client_joinmode",
+      "community": 32,
+      "norm_label": "joinmode"
+    },
+    {
+      "label": "throwUnsupportedHyperSync()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L182",
+      "id": "hypersync_client_throwunsupportedhypersync",
+      "community": 32,
+      "norm_label": "throwunsupportedhypersync()"
+    },
+    {
+      "label": "tryCreateDecoder()",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L186",
+      "id": "hypersync_client_trycreatedecoder",
+      "community": 32,
+      "norm_label": "trycreatedecoder()"
+    },
+    {
+      "label": "Decoder",
+      "file_type": "code",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L209",
+      "id": "hypersync_client_decoder",
+      "community": 49,
+      "norm_label": "decoder"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "infra/hypersync/index.ts",
+      "source_location": "L1",
+      "id": "infra_hypersync_index_ts",
+      "community": 77,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "boot.ts",
+      "file_type": "code",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L1",
+      "id": "orchestrator_boot_ts",
+      "community": 57,
+      "norm_label": "boot.ts"
+    },
+    {
+      "label": "RuntimeContext",
+      "file_type": "code",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L27",
+      "id": "orchestrator_boot_runtimecontext",
+      "community": 83,
+      "norm_label": "runtimecontext"
+    },
+    {
+      "label": "bootApplication()",
+      "file_type": "code",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L42",
+      "id": "orchestrator_boot_bootapplication",
+      "community": 57,
+      "norm_label": "bootapplication()"
+    },
+    {
+      "label": "events.ts",
+      "file_type": "code",
+      "source_file": "services/watcher/events.ts",
+      "source_location": "L1",
+      "id": "services_watcher_events_ts",
+      "community": 49,
+      "norm_label": "events.ts"
+    },
+    {
+      "label": "WATCHER_SIGNATURES",
+      "file_type": "code",
+      "source_file": "services/watcher/events.ts",
+      "source_location": "L21",
+      "id": "watcher_events_watcher_signatures",
+      "community": 49,
+      "norm_label": "watcher_signatures"
+    },
+    {
+      "label": "log_handler.ts",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L1",
+      "id": "services_watcher_log_handler_ts",
+      "community": 49,
+      "norm_label": "log_handler.ts"
+    },
+    {
+      "label": "WatcherEnqueueFn",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L11",
+      "id": "watcher_log_handler_watcherenqueuefn",
+      "community": 49,
+      "norm_label": "watcherenqueuefn"
+    },
+    {
+      "label": "TOPIC0",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L26",
+      "id": "watcher_log_handler_topic0",
+      "community": 49,
+      "norm_label": "topic0"
+    },
+    {
+      "label": "LogHandlerContext",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L39",
+      "id": "watcher_log_handler_loghandlercontext",
+      "community": 49,
+      "norm_label": "loghandlercontext"
+    },
+    {
+      "label": "LogHandler",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L53",
+      "id": "watcher_log_handler_loghandler",
+      "community": 49,
+      "norm_label": "loghandler"
+    },
+    {
+      "label": "hasInitializedV3BaseState()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L55",
+      "id": "watcher_log_handler_hasinitializedv3basestate",
+      "community": 49,
+      "norm_label": "hasinitializedv3basestate()"
+    },
+    {
+      "label": "topicArray()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L65",
+      "id": "watcher_log_handler_topicarray",
+      "community": 49,
+      "norm_label": "topicarray()"
+    },
+    {
+      "label": "buildHandlerMap()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L70",
+      "id": "watcher_log_handler_buildhandlermap",
+      "community": 49,
+      "norm_label": "buildhandlermap()"
+    },
+    {
+      "label": "getHandlerMap()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L155",
+      "id": "watcher_log_handler_gethandlermap",
+      "community": 49,
+      "norm_label": "gethandlermap()"
+    },
+    {
+      "label": "getHandler()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L160",
+      "id": "watcher_log_handler_gethandler",
+      "community": 49,
+      "norm_label": "gethandler()"
+    },
+    {
+      "label": "dispatchLog()",
+      "file_type": "code",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L164",
+      "id": "watcher_log_handler_dispatchlog",
+      "community": 49,
+      "norm_label": "dispatchlog()"
+    },
+    {
+      "label": "poll_loop.ts",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L1",
+      "id": "services_watcher_poll_loop_ts",
+      "community": 49,
+      "norm_label": "poll_loop.ts"
+    },
+    {
+      "label": "logger",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L19",
+      "id": "watcher_poll_loop_logger",
+      "community": 49,
+      "norm_label": "logger"
+    },
+    {
+      "label": "sortLogs()",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L23",
+      "id": "watcher_poll_loop_sortlogs",
+      "community": 49,
+      "norm_label": "sortlogs()"
+    },
+    {
+      "label": "dedupeLogs()",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L35",
+      "id": "watcher_poll_loop_dedupelogs",
+      "community": 49,
+      "norm_label": "dedupelogs()"
+    },
+    {
+      "label": "pollLoop()",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L49",
+      "id": "watcher_poll_loop_pollloop",
+      "community": 49,
+      "norm_label": "pollloop()"
+    },
+    {
+      "label": "sleep()",
+      "file_type": "code",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L184",
+      "id": "watcher_poll_loop_sleep",
+      "community": 49,
+      "norm_label": "sleep()"
+    },
+    {
+      "label": "reorg.ts",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L1",
+      "id": "services_watcher_reorg_ts",
+      "community": 49,
+      "norm_label": "reorg.ts"
+    },
+    {
+      "label": "RollbackGuard",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L5",
+      "id": "watcher_reorg_rollbackguard",
+      "community": 49,
+      "norm_label": "rollbackguard"
+    },
+    {
+      "label": "ReorgResult",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L7",
+      "id": "watcher_reorg_reorgresult",
+      "community": 49,
+      "norm_label": "reorgresult"
+    },
+    {
+      "label": "createDbRollbackRegistry()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L13",
+      "id": "watcher_reorg_createdbrollbackregistry",
+      "community": 57,
+      "norm_label": "createdbrollbackregistry()"
+    },
+    {
+      "label": "pick()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L38",
+      "id": "watcher_reorg_pick",
+      "community": 49,
+      "norm_label": "pick()"
+    },
+    {
+      "label": "storedRollbackGuard()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L44",
+      "id": "watcher_reorg_storedrollbackguard",
+      "community": 49,
+      "norm_label": "storedrollbackguard()"
+    },
+    {
+      "label": "detectReorg()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L51",
+      "id": "watcher_reorg_detectreorg",
+      "community": 49,
+      "norm_label": "detectreorg()"
+    },
+    {
+      "label": "checkReorg()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L77",
+      "id": "watcher_reorg_checkreorg",
+      "community": 49,
+      "norm_label": "checkreorg()"
+    },
+    {
+      "label": "rollbackToBlock()",
+      "file_type": "code",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L94",
+      "id": "watcher_reorg_rollbacktoblock",
+      "community": 49,
+      "norm_label": "rollbacktoblock()"
+    },
+    {
+      "label": "service.ts",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L1",
+      "id": "services_watcher_service_ts",
+      "community": 49,
+      "norm_label": "service.ts"
+    },
+    {
+      "label": "logger",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L10",
+      "id": "watcher_service_logger",
+      "community": 49,
+      "norm_label": "logger"
+    },
+    {
+      "label": "WatcherService",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L12",
+      "id": "watcher_service_watcherservice",
+      "community": 47,
+      "norm_label": "watcherservice"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L46",
+      "id": "watcher_service_watcherservice_constructor",
+      "community": 47,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L62",
+      "id": "watcher_service_watcherservice_start",
+      "community": 47,
+      "norm_label": ".start()"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L70",
+      "id": "watcher_service_watcherservice_stop",
+      "community": 47,
+      "norm_label": ".stop()"
+    },
+    {
+      "label": ".getStateCache()",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L79",
+      "id": "watcher_service_watcherservice_getstatecache",
+      "community": 47,
+      "norm_label": ".getstatecache()"
+    },
+    {
+      "label": "._run()",
+      "file_type": "code",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L85",
+      "id": "watcher_service_watcherservice_run",
+      "community": 47,
+      "norm_label": "._run()"
+    },
+    {
       "label": "service.ts",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L1",
-      "id": "service_ts",
       "community": 57,
-      "norm_label": "service.ts"
+      "norm_label": "service.ts",
+      "id": "service_ts"
     },
     {
       "label": "DiscoveryResult",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L7",
-      "id": "discovery_service_discoveryresult",
       "community": 57,
-      "norm_label": "discoveryresult"
+      "norm_label": "discoveryresult",
+      "id": "discovery_service_discoveryresult"
     },
     {
       "label": "DiscoveryServiceDeps",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L12",
-      "id": "discovery_service_discoveryservicedeps",
       "community": 57,
-      "norm_label": "discoveryservicedeps"
+      "norm_label": "discoveryservicedeps",
+      "id": "discovery_service_discoveryservicedeps"
     },
     {
       "label": "DiscoveryService",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L20",
-      "id": "discovery_service_discoveryservice",
-      "community": 57,
-      "norm_label": "discoveryservice"
+      "community": 67,
+      "norm_label": "discoveryservice",
+      "id": "discovery_service_discoveryservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L21",
-      "id": "discovery_service_discoveryservice_constructor",
-      "community": 57,
-      "norm_label": ".constructor()"
+      "community": 67,
+      "norm_label": ".constructor()",
+      "id": "discovery_service_discoveryservice_constructor"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L23",
-      "id": "discovery_service_discoveryservice_start",
-      "community": 57,
-      "norm_label": ".start()"
+      "community": 67,
+      "norm_label": ".start()",
+      "id": "discovery_service_discoveryservice_start"
     },
     {
       "label": ".stop()",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L27",
-      "id": "discovery_service_discoveryservice_stop",
-      "community": 57,
-      "norm_label": ".stop()"
+      "community": 67,
+      "norm_label": ".stop()",
+      "id": "discovery_service_discoveryservice_stop"
     },
     {
       "label": ".discoverProtocol()",
       "file_type": "code",
       "source_file": "service.ts",
       "source_location": "L31",
-      "id": "discovery_service_discoveryservice_discoverprotocol",
-      "community": 57,
-      "norm_label": ".discoverprotocol()"
+      "community": 67,
+      "norm_label": ".discoverprotocol()",
+      "id": "discovery_service_discoveryservice_discoverprotocol"
     },
     {
       "label": "curve_discovery.ts",
@@ -427,33 +1021,6 @@
       "id": "t_package_devdependencies_vitest"
     },
     {
-      "label": "boot.ts",
-      "file_type": "code",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L1",
-      "community": 57,
-      "norm_label": "boot.ts",
-      "id": "src_orchestrator_boot_ts"
-    },
-    {
-      "label": "RuntimeContext",
-      "file_type": "code",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L23",
-      "community": 83,
-      "norm_label": "runtimecontext",
-      "id": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "label": "bootApplication()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L38",
-      "community": 51,
-      "norm_label": "bootapplication()",
-      "id": "orchestrator_boot_bootapplication"
-    },
-    {
       "label": "connection.ts",
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
@@ -476,7 +1043,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L5",
-      "community": 31,
+      "community": 57,
       "norm_label": "createdatabase()",
       "id": "db_connection_createdatabase"
     },
@@ -2272,60 +2839,6 @@
       "id": "utils_concurrency_test_order"
     },
     {
-      "label": "checkpoints.ts",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L1",
-      "community": 49,
-      "norm_label": "checkpoints.ts",
-      "id": "src_infra_db_checkpoints_ts"
-    },
-    {
-      "label": "saveCheckpoint()",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L3",
-      "community": 49,
-      "norm_label": "savecheckpoint()",
-      "id": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "label": "getCheckpoint()",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L13",
-      "community": 49,
-      "norm_label": "getcheckpoint()",
-      "id": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "label": "getLatestCheckpoint()",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L18",
-      "community": 49,
-      "norm_label": "getlatestcheckpoint()",
-      "id": "db_checkpoints_getlatestcheckpoint"
-    },
-    {
-      "label": "rollbackToCheckpoint()",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L23",
-      "community": 49,
-      "norm_label": "rollbacktocheckpoint()",
-      "id": "db_checkpoints_rollbacktocheckpoint"
-    },
-    {
-      "label": "getBlockRangeForReorg()",
-      "file_type": "code",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L44",
-      "community": 49,
-      "norm_label": "getblockrangeforreorg()",
-      "id": "db_checkpoints_getblockrangeforreorg"
-    },
-    {
       "label": "codec.test.ts",
       "file_type": "code",
       "source_file": "src/infra/db/codec.test.ts",
@@ -2506,15 +3019,6 @@
       "id": "db_history_getexecutionstats"
     },
     {
-      "label": "index.ts",
-      "file_type": "code",
-      "source_file": "src/infra/db/index.ts",
-      "source_location": "L1",
-      "community": 67,
-      "norm_label": "index.ts",
-      "id": "src_infra_db_index_ts"
-    },
-    {
       "label": "pools.ts",
       "file_type": "code",
       "source_file": "src/infra/db/pools.ts",
@@ -2681,7 +3185,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L1",
-      "community": 80,
+      "community": 32,
       "norm_label": "client.test.ts",
       "id": "src_infra_hypersync_client_test_ts"
     },
@@ -2690,7 +3194,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L5",
-      "community": 80,
+      "community": 32,
       "norm_label": "mockgetheight",
       "id": "hypersync_client_test_mockgetheight"
     },
@@ -2699,7 +3203,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L6",
-      "community": 80,
+      "community": 32,
       "norm_label": "mockget",
       "id": "hypersync_client_test_mockget"
     },
@@ -2708,7 +3212,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L7",
-      "community": 80,
+      "community": 32,
       "norm_label": "mockrecv",
       "id": "hypersync_client_test_mockrecv"
     },
@@ -2717,7 +3221,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L8",
-      "community": 80,
+      "community": 32,
       "norm_label": "mockstream",
       "id": "hypersync_client_test_mockstream"
     },
@@ -2726,7 +3230,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L13",
-      "community": 80,
+      "community": 32,
       "norm_label": "mockhypersyncclient",
       "id": "hypersync_client_test_mockhypersyncclient"
     },
@@ -2735,7 +3239,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L15",
-      "community": 80,
+      "community": 32,
       "norm_label": ".constructor()",
       "id": "hypersync_client_test_mockhypersyncclient_constructor"
     },
@@ -2744,7 +3248,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L107",
-      "community": 80,
+      "community": 32,
       "norm_label": "config",
       "id": "hypersync_client_test_config"
     },
@@ -2753,198 +3257,9 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.test.ts",
       "source_location": "L117",
-      "community": 80,
+      "community": 32,
       "norm_label": "normalized",
       "id": "hypersync_client_test_normalized"
-    },
-    {
-      "label": "client.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L1",
-      "community": 32,
-      "norm_label": "client.ts",
-      "id": "src_infra_hypersync_client_ts"
-    },
-    {
-      "label": "HypersyncError",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L4",
-      "community": 32,
-      "norm_label": "hypersyncerror",
-      "id": "hypersync_client_hypersyncerror"
-    },
-    {
-      "label": "createHyperSyncUnavailableError()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L6",
-      "community": 32,
-      "norm_label": "createhypersyncunavailableerror()",
-      "id": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "label": "createConfigError()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L13",
-      "community": 32,
-      "norm_label": "createconfigerror()",
-      "id": "hypersync_client_createconfigerror"
-    },
-    {
-      "label": "throwUnavailable()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L19",
-      "community": 32,
-      "norm_label": "throwunavailable()",
-      "id": "hypersync_client_throwunavailable"
-    },
-    {
-      "label": "normalizeOptionalInt()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L23",
-      "community": 32,
-      "norm_label": "normalizeoptionalint()",
-      "id": "hypersync_client_normalizeoptionalint"
-    },
-    {
-      "label": "normalizeClientConfig()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L30",
-      "community": 32,
-      "norm_label": "normalizeclientconfig()",
-      "id": "hypersync_client_normalizeclientconfig"
-    },
-    {
-      "label": "createUnavailableHypersyncClientImpl()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L63",
-      "community": 32,
-      "norm_label": "createunavailablehypersyncclientimpl()",
-      "id": "hypersync_client_createunavailablehypersyncclientimpl"
-    },
-    {
-      "label": "ensureModule()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L84",
-      "community": 32,
-      "norm_label": "ensuremodule()",
-      "id": "hypersync_client_ensuremodule"
-    },
-    {
-      "label": "shouldRetryLoad()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L97",
-      "community": 32,
-      "norm_label": "shouldretryload()",
-      "id": "hypersync_client_shouldretryload"
-    },
-    {
-      "label": "createHypersyncClient()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L104",
-      "community": 32,
-      "norm_label": "createhypersyncclient()",
-      "id": "hypersync_client_createhypersyncclient"
-    },
-    {
-      "label": "ensureClient()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L122",
-      "community": 32,
-      "norm_label": "ensureclient()",
-      "id": "hypersync_client_ensureclient"
-    },
-    {
-      "label": "proxyClient()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L135",
-      "community": 32,
-      "norm_label": "proxyclient()",
-      "id": "hypersync_client_proxyclient"
-    },
-    {
-      "label": "client",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L148",
-      "community": 32,
-      "norm_label": "client",
-      "id": "hypersync_client_client"
-    },
-    {
-      "label": "LogField",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L150",
-      "community": 32,
-      "norm_label": "logfield",
-      "id": "hypersync_client_logfield"
-    },
-    {
-      "label": "BlockField",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L163",
-      "community": 32,
-      "norm_label": "blockfield",
-      "id": "hypersync_client_blockfield"
-    },
-    {
-      "label": "JoinMode",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L168",
-      "community": 32,
-      "norm_label": "joinmode",
-      "id": "hypersync_client_joinmode"
-    },
-    {
-      "label": "throwUnsupportedHyperSync()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L174",
-      "community": 32,
-      "norm_label": "throwunsupportedhypersync()",
-      "id": "hypersync_client_throwunsupportedhypersync"
-    },
-    {
-      "label": "tryCreateDecoder()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L178",
-      "community": 32,
-      "norm_label": "trycreatedecoder()",
-      "id": "hypersync_client_trycreatedecoder"
-    },
-    {
-      "label": "Decoder",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L201",
-      "community": 32,
-      "norm_label": "decoder",
-      "id": "hypersync_client_decoder"
-    },
-    {
-      "label": "index.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/index.ts",
-      "source_location": "L1",
-      "community": 47,
-      "norm_label": "index.ts",
-      "id": "src_infra_hypersync_index_ts"
     },
     {
       "label": "query.test.ts",
@@ -3140,7 +3455,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L1",
-      "community": 77,
+      "community": 3,
       "norm_label": "stream.test.ts",
       "id": "src_infra_hypersync_stream_test_ts"
     },
@@ -3149,7 +3464,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L8",
-      "community": 77,
+      "community": 3,
       "norm_label": "mockclient",
       "id": "hypersync_stream_test_mockclient"
     },
@@ -3158,7 +3473,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L19",
-      "community": 77,
+      "community": 3,
       "norm_label": "query",
       "id": "hypersync_stream_test_query"
     },
@@ -3167,7 +3482,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L1",
-      "community": 77,
+      "community": 3,
       "norm_label": "stream.ts",
       "id": "src_infra_hypersync_stream_ts"
     },
@@ -3176,7 +3491,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L6",
-      "community": 77,
+      "community": 3,
       "norm_label": "parseblock()",
       "id": "hypersync_stream_parseblock"
     },
@@ -3185,7 +3500,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L14",
-      "community": 77,
+      "community": 3,
       "norm_label": "parseoptionalblock()",
       "id": "hypersync_stream_parseoptionalblock"
     },
@@ -3194,7 +3509,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L19",
-      "community": 77,
+      "community": 3,
       "norm_label": "pagelogsfromresponse()",
       "id": "hypersync_stream_pagelogsfromresponse"
     },
@@ -3203,7 +3518,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L28",
-      "community": 77,
+      "community": 3,
       "norm_label": "fetchalllogsresult",
       "id": "hypersync_stream_fetchalllogsresult"
     },
@@ -3212,7 +3527,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L35",
-      "community": 77,
+      "community": 3,
       "norm_label": "fetchalllogs()",
       "id": "hypersync_stream_fetchalllogs"
     },
@@ -4859,7 +5174,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L13",
-      "community": 72,
+      "community": 62,
       "norm_label": "hydrationservice",
       "id": "hydration_service_hydrationservice"
     },
@@ -4868,7 +5183,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L17",
-      "community": 72,
+      "community": 62,
       "norm_label": ".constructor()",
       "id": "hydration_service_hydrationservice_constructor"
     },
@@ -4877,7 +5192,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L24",
-      "community": 72,
+      "community": 62,
       "norm_label": ".start()",
       "id": "hydration_service_hydrationservice_start"
     },
@@ -4886,7 +5201,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L29",
-      "community": 72,
+      "community": 62,
       "norm_label": ".stop()",
       "id": "hydration_service_hydrationservice_stop"
     },
@@ -4904,7 +5219,7 @@
       "file_type": "code",
       "source_file": "src/services/hydration/service.ts",
       "source_location": "L49",
-      "community": 72,
+      "community": 62,
       "norm_label": ".startsweep()",
       "id": "hydration_service_hydrationservice_startsweep"
     },
@@ -5980,245 +6295,11 @@
       "id": "strategy_simulator_simulateroute"
     },
     {
-      "label": "log_handler.ts",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L1",
-      "community": 49,
-      "norm_label": "log_handler.ts",
-      "id": "src_services_watcher_log_handler_ts"
-    },
-    {
-      "label": "WatcherEnqueueFn",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "community": 49,
-      "norm_label": "watcherenqueuefn",
-      "id": "watcher_log_handler_watcherenqueuefn"
-    },
-    {
-      "label": "TOPIC0",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L34",
-      "community": 49,
-      "norm_label": "topic0",
-      "id": "watcher_log_handler_topic0"
-    },
-    {
-      "label": "LogHandlerContext",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L47",
-      "community": 49,
-      "norm_label": "loghandlercontext",
-      "id": "watcher_log_handler_loghandlercontext"
-    },
-    {
-      "label": "LogHandler",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L61",
-      "community": 49,
-      "norm_label": "loghandler",
-      "id": "watcher_log_handler_loghandler"
-    },
-    {
-      "label": "hasInitializedV3BaseState()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L63",
-      "community": 49,
-      "norm_label": "hasinitializedv3basestate()",
-      "id": "watcher_log_handler_hasinitializedv3basestate"
-    },
-    {
-      "label": "topicArray()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L73",
-      "community": 49,
-      "norm_label": "topicarray()",
-      "id": "watcher_log_handler_topicarray"
-    },
-    {
-      "label": "buildHandlerMap()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L78",
-      "community": 49,
-      "norm_label": "buildhandlermap()",
-      "id": "watcher_log_handler_buildhandlermap"
-    },
-    {
-      "label": "getHandlerMap()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L163",
-      "community": 49,
-      "norm_label": "gethandlermap()",
-      "id": "watcher_log_handler_gethandlermap"
-    },
-    {
-      "label": "getHandler()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L168",
-      "community": 49,
-      "norm_label": "gethandler()",
-      "id": "watcher_log_handler_gethandler"
-    },
-    {
-      "label": "dispatchLog()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L172",
-      "community": 49,
-      "norm_label": "dispatchlog()",
-      "id": "watcher_log_handler_dispatchlog"
-    },
-    {
-      "label": "poll_loop.ts",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L1",
-      "community": 49,
-      "norm_label": "poll_loop.ts",
-      "id": "src_services_watcher_poll_loop_ts"
-    },
-    {
-      "label": "logger",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L19",
-      "community": 49,
-      "norm_label": "logger",
-      "id": "watcher_poll_loop_logger"
-    },
-    {
-      "label": "sortLogs()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L23",
-      "community": 49,
-      "norm_label": "sortlogs()",
-      "id": "watcher_poll_loop_sortlogs"
-    },
-    {
-      "label": "dedupeLogs()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L35",
-      "community": 49,
-      "norm_label": "dedupelogs()",
-      "id": "watcher_poll_loop_dedupelogs"
-    },
-    {
-      "label": "pollLoop()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L49",
-      "community": 49,
-      "norm_label": "pollloop()",
-      "id": "watcher_poll_loop_pollloop"
-    },
-    {
-      "label": "sleep()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L176",
-      "community": 49,
-      "norm_label": "sleep()",
-      "id": "watcher_poll_loop_sleep"
-    },
-    {
-      "label": "reorg.ts",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L1",
-      "community": 49,
-      "norm_label": "reorg.ts",
-      "id": "src_services_watcher_reorg_ts"
-    },
-    {
-      "label": "RollbackGuard",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L5",
-      "community": 49,
-      "norm_label": "rollbackguard",
-      "id": "watcher_reorg_rollbackguard"
-    },
-    {
-      "label": "ReorgResult",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L7",
-      "community": 49,
-      "norm_label": "reorgresult",
-      "id": "watcher_reorg_reorgresult"
-    },
-    {
-      "label": "pick()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L11",
-      "community": 49,
-      "norm_label": "pick()",
-      "id": "watcher_reorg_pick"
-    },
-    {
-      "label": "storedRollbackGuard()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L17",
-      "community": 49,
-      "norm_label": "storedrollbackguard()",
-      "id": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "label": "detectReorg()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L24",
-      "community": 49,
-      "norm_label": "detectreorg()",
-      "id": "watcher_reorg_detectreorg"
-    },
-    {
-      "label": "checkReorg()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L50",
-      "community": 49,
-      "norm_label": "checkreorg()",
-      "id": "watcher_reorg_checkreorg"
-    },
-    {
-      "label": "rollbackToBlock()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L67",
-      "community": 49,
-      "norm_label": "rollbacktoblock()",
-      "id": "watcher_reorg_rollbacktoblock"
-    },
-    {
-      "label": "saveWatcherCheckpoint()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L75",
-      "community": 49,
-      "norm_label": "savewatchercheckpoint()",
-      "id": "watcher_reorg_savewatchercheckpoint"
-    },
-    {
       "label": "service.test.ts",
       "file_type": "code",
       "source_file": "src/services/watcher/service.test.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 47,
       "norm_label": "service.test.ts",
       "id": "src_services_watcher_service_test_ts"
     },
@@ -6227,90 +6308,9 @@
       "file_type": "code",
       "source_file": "src/services/watcher/service.test.ts",
       "source_location": "L6",
-      "community": 49,
+      "community": 47,
       "norm_label": "service",
       "id": "watcher_service_test_service"
-    },
-    {
-      "label": "service.ts",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L1",
-      "community": 49,
-      "norm_label": "service.ts",
-      "id": "src_services_watcher_service_ts"
-    },
-    {
-      "label": "logger",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L9",
-      "community": 49,
-      "norm_label": "logger",
-      "id": "watcher_service_logger"
-    },
-    {
-      "label": "WATCHER_SIGNATURES",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L31",
-      "community": 49,
-      "norm_label": "watcher_signatures",
-      "id": "watcher_service_watcher_signatures"
-    },
-    {
-      "label": "WatcherService",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L44",
-      "community": 49,
-      "norm_label": "watcherservice",
-      "id": "watcher_service_watcherservice"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L78",
-      "community": 49,
-      "norm_label": ".constructor()",
-      "id": "watcher_service_watcherservice_constructor"
-    },
-    {
-      "label": ".start()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L94",
-      "community": 49,
-      "norm_label": ".start()",
-      "id": "watcher_service_watcherservice_start"
-    },
-    {
-      "label": ".stop()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L102",
-      "community": 49,
-      "norm_label": ".stop()",
-      "id": "watcher_service_watcherservice_stop"
-    },
-    {
-      "label": ".getStateCache()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L111",
-      "community": 49,
-      "norm_label": ".getstatecache()",
-      "id": "watcher_service_watcherservice_getstatecache"
-    },
-    {
-      "label": "._run()",
-      "file_type": "code",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L117",
-      "community": 49,
-      "norm_label": "._run()",
-      "id": "watcher_service_watcherservice_run"
     },
     {
       "label": "state_ops.ts",
@@ -7055,7 +7055,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 50,
       "norm_label": "service.ts",
       "id": "src_services_execution_service_ts"
     },
@@ -7064,7 +7064,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L5",
-      "community": 20,
+      "community": 50,
       "norm_label": "candidateexecution",
       "id": "execution_service_candidateexecution"
     },
@@ -7073,7 +7073,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L12",
-      "community": 20,
+      "community": 50,
       "norm_label": "executionresult",
       "id": "execution_service_executionresult"
     },
@@ -8063,7 +8063,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L1",
-      "community": 82,
+      "community": 3,
       "norm_label": "types.ts",
       "id": "src_infra_hypersync_types_ts"
     },
@@ -8090,7 +8090,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L13",
-      "community": 77,
+      "community": 3,
       "norm_label": "hypersyncquery",
       "id": "hypersync_types_hypersyncquery"
     },
@@ -8099,7 +8099,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L23",
-      "community": 80,
+      "community": 32,
       "norm_label": "hypersyncclientconfig",
       "id": "hypersync_types_hypersyncclientconfig"
     },
@@ -8117,7 +8117,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L44",
-      "community": 82,
+      "community": 3,
       "norm_label": "hypersyncblockheader",
       "id": "hypersync_types_hypersyncblockheader"
     },
@@ -8126,7 +8126,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L50",
-      "community": 82,
+      "community": 3,
       "norm_label": "streamprogress",
       "id": "hypersync_types_streamprogress"
     },
@@ -8135,7 +8135,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L58",
-      "community": 82,
+      "community": 3,
       "norm_label": "streamconfig",
       "id": "hypersync_types_streamconfig"
     },
@@ -8144,7 +8144,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L64",
-      "community": 82,
+      "community": 3,
       "norm_label": "hypersyncstream",
       "id": "hypersync_types_hypersyncstream"
     },
@@ -8153,7 +8153,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L68",
-      "community": 82,
+      "community": 3,
       "norm_label": "hypersyncgetresponse",
       "id": "hypersync_types_hypersyncgetresponse"
     },
@@ -8162,7 +8162,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L74",
-      "community": 82,
+      "community": 3,
       "norm_label": "decodedlogvalue",
       "id": "hypersync_types_decodedlogvalue"
     },
@@ -8171,7 +8171,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L78",
-      "community": 82,
+      "community": 3,
       "norm_label": "hypersyncdecodedlog",
       "id": "hypersync_types_hypersyncdecodedlog"
     },
@@ -8180,7 +8180,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L83",
-      "community": 82,
+      "community": 3,
       "norm_label": "hypersyncdecoderruntime",
       "id": "hypersync_types_hypersyncdecoderruntime"
     },
@@ -8189,7 +8189,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L87",
-      "community": 77,
+      "community": 3,
       "norm_label": "hypersyncclientruntime",
       "id": "hypersync_types_hypersyncclientruntime"
     },
@@ -8712,12 +8712,1958 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "infra_db_checkpoints_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "infra_db_checkpoints_ts",
+      "target": "db_checkpoints_savecheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "infra_db_checkpoints_ts",
+      "target": "db_checkpoints_getcheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/db/checkpoints.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "infra_db_checkpoints_ts",
+      "target": "db_checkpoints_getlatestcheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "infra_db_checkpoints_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "infra_db_checkpoints_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_checkpoints_savecheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "db_checkpoints_savecheckpoint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_checkpoints_getcheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "db_checkpoints_getcheckpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "db_checkpoints_getcheckpoint"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "watcher_reorg_rollbacktoblock",
+      "target": "db_checkpoints_getcheckpoint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_types_hypersyncclientconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_types_hypersyncclientruntime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_types_hypersyncdecoderruntime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_hypersyncerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_createhypersyncunavailableerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_createconfigerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_throwunavailable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_normalizeoptionalint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_normalizeclientconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_createunavailablehypersyncclientimpl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_ensuremodule",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_shouldretryload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_createhypersyncclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_sethypersyncdefaults",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_ensureclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_proxyclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_logfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_blockfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_joinmode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_throwunsupportedhypersync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_trycreatedecoder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "infra/hypersync/client.ts",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "infra_hypersync_client_ts",
+      "target": "hypersync_client_decoder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "infra_hypersync_client_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "infra_hypersync_client_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_throwunavailable",
+      "target": "hypersync_client_createhypersyncunavailableerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_createunavailablehypersyncclientimpl",
+      "target": "hypersync_client_createhypersyncunavailableerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_createhypersyncclient",
+      "target": "hypersync_client_createhypersyncunavailableerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_throwunsupportedhypersync",
+      "target": "hypersync_client_createhypersyncunavailableerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_normalizeclientconfig",
+      "target": "hypersync_client_createconfigerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_normalizeclientconfig",
+      "target": "hypersync_client_normalizeoptionalint"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L88",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_createhypersyncclient",
+      "target": "hypersync_client_normalizeclientconfig"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_createhypersyncclient",
+      "target": "hypersync_client_createunavailablehypersyncclientimpl"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_ensuremodule",
+      "target": "hypersync_client_shouldretryload"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_createhypersyncclient",
+      "target": "hypersync_client_ensuremodule"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/client.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_client_ensureclient",
+      "target": "hypersync_client_createhypersyncclient"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hypersync_client_sethypersyncdefaults",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L108",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "hypersync_client_sethypersyncdefaults"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "hypersync_client_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/state_ops.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_watcher_state_ops_ts",
+      "target": "hypersync_client_logfield"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/state_ops.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_watcher_state_ops_ts",
+      "target": "hypersync_client_joinmode"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "hypersync_client_decoder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "config_schema_appconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "observability_logger_createrootlogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "observability_logger_logger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_connection_createdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "db_schema_ensureschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "types_route_routestatecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_service_discoveryservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_service_discoveryservicedeps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_decoder_decodepaircreated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_decoder_decodepoolregistered",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_decoder_decodepooldeployed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_decoder_decodecurvepooladded",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_decoder_decodedpoolevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_enrichment_tokenmetafetcher",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "discovery_curve_discovery_fetchcurvepools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_watcher_service_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "watcher_service_watcherservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "services_watcher_reorg_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "watcher_reorg_createdbrollbackregistry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hypersync_query_computetopic0",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hypersync_types_hypersynclog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hydration_service_hydrationservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "hydration_service_poolstatefetcher",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "execution_service_executionservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "execution_gas_gasoracle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "execution_gas_gasoracleconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "execution_nonce_noncemanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "mempool_service_mempoolservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "mempool_service_mempoolserviceoptions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "orchestrator_boot_runtimecontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "orchestrator_boot_ts",
+      "target": "orchestrator_boot_bootapplication",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "pass_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "pass_loop_ts",
+      "target": "orchestrator_boot_runtimecontext"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_boot_runtimecontext"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "orchestrator/boot.ts",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "watcher_reorg_createdbrollbackregistry"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "db_connection_createdatabase"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/cli/main.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/events.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "services_watcher_events_ts",
+      "target": "watcher_events_watcher_signatures",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "services_watcher_events_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "services_watcher_events_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_events_watcher_signatures",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "hypersync_query_computetopic0",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_decodedwatcherlog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_mutablewatcherstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_watcherpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_watcherpoolrefresh",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_watcherv3refresh",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_types_hypersyncloglike",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_watcherenqueuefn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_state_ops_updatev2state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_state_ops_updatev3swapstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_state_ops_updatev3liquiditystate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_topic0",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_loghandlercontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_loghandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_hasinitializedv3basestate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_topicarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_buildhandlermap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_gethandlermap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L160",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_gethandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/log_handler.ts",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "services_watcher_log_handler_ts",
+      "target": "watcher_log_handler_dispatchlog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "services_watcher_log_handler_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/log_handler.ts",
+      "source_location": "L109",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_log_handler_dispatchlog",
+      "target": "watcher_log_handler_topicarray"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/log_handler.ts",
+      "source_location": "L86",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_log_handler_gethandlermap",
+      "target": "watcher_log_handler_buildhandlermap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/log_handler.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_log_handler_gethandler",
+      "target": "watcher_log_handler_gethandlermap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/log_handler.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_log_handler_dispatchlog",
+      "target": "watcher_log_handler_gethandler"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_log_handler_dispatchlog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_log_handler_dispatchlog"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "hypersync_types_hypersyncdecoderruntime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "hypersync_types_hypersyncgetresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "db_pools_upsertpoolstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "observability_logger_createrootlogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_decodedwatcherlog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_mutablewatcherstate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_watcherpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_watcherenrichmentqueue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_hypersyncloglike",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_types_routestatecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_state_ops_buildlogquery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_state_ops_commitwatcherstatesbatch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "services_watcher_reorg_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_reorg_checkreorg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_reorg_rollbackguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_poll_loop_logger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_poll_loop_sortlogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_poll_loop_dedupelogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_poll_loop_pollloop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/poll_loop.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "source": "services_watcher_poll_loop_ts",
+      "target": "watcher_poll_loop_sleep",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "services_watcher_poll_loop_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_poll_loop_dedupelogs",
+      "target": "watcher_poll_loop_sortlogs"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_poll_loop_dedupelogs"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L158",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_poll_loop_sleep"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_poll_loop_pollloop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_reorg_checkreorg"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "watcher_service_watcherservice_run",
+      "target": "watcher_poll_loop_pollloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L142",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "watcher_state_ops_commitwatcherstatesbatch"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/services/watcher/poll_loop.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "watcher_poll_loop_pollloop",
+      "target": "strategy_backrunner_test_signal"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbackguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_reorgresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_createdbrollbackregistry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_pick",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_storedrollbackguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_detectreorg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_checkreorg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/reorg.ts",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "services_watcher_reorg_ts",
+      "target": "watcher_reorg_rollbacktoblock",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_detectreorg",
+      "target": "watcher_reorg_pick"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_detectreorg",
+      "target": "watcher_reorg_storedrollbackguard"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_checkreorg",
+      "target": "watcher_reorg_detectreorg"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/reorg.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_reorg_checkreorg",
+      "target": "watcher_reorg_rollbacktoblock"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "hypersync_types_hypersyncdecoderruntime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "db_connection_compatdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "observability_logger_createrootlogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_types_routestatecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_types_watcherpoolmeta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_types_watcherenrichmentqueue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_service_logger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services/watcher/service.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "services_watcher_service_ts",
+      "target": "watcher_service_watcherservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice",
+      "target": "watcher_service_watcherservice_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice",
+      "target": "watcher_service_watcherservice_start"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice",
+      "target": "watcher_service_watcherservice_stop"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice",
+      "target": "watcher_service_watcherservice_getstatecache"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L90",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice",
+      "target": "watcher_service_watcherservice_run"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_watcher_service_test_ts",
+      "target": "watcher_service_watcherservice"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/watcher/service.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "watcher_service_watcherservice_start",
+      "target": "watcher_service_watcherservice_run"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "service.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "service_ts",
-      "target": "observability_logger_logger",
-      "confidence_score": 1.0
+      "target": "observability_logger_logger"
     },
     {
       "relation": "imports",
@@ -8726,9 +10672,9 @@
       "source_file": "service.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "service_ts",
-      "target": "discovery_decoder_decodedpoolevent",
-      "confidence_score": 1.0
+      "target": "discovery_decoder_decodedpoolevent"
     },
     {
       "relation": "imports",
@@ -8737,9 +10683,9 @@
       "source_file": "service.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "service_ts",
-      "target": "discovery_enrichment_tokenmetafetcher",
-      "confidence_score": 1.0
+      "target": "discovery_enrichment_tokenmetafetcher"
     },
     {
       "relation": "contains",
@@ -8747,9 +10693,9 @@
       "source_file": "service.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "service_ts",
-      "target": "discovery_service_discoveryresult",
-      "confidence_score": 1.0
+      "target": "discovery_service_discoveryresult"
     },
     {
       "relation": "contains",
@@ -8757,9 +10703,9 @@
       "source_file": "service.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "service_ts",
-      "target": "discovery_service_discoveryservicedeps",
-      "confidence_score": 1.0
+      "target": "discovery_service_discoveryservicedeps"
     },
     {
       "relation": "contains",
@@ -8767,20 +10713,9 @@
       "source_file": "service.ts",
       "source_location": "L20",
       "weight": 1.0,
-      "source": "service_ts",
-      "target": "discovery_service_discoveryservice",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L12",
-      "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "discovery_service_discoveryservicedeps"
+      "source": "service_ts",
+      "target": "discovery_service_discoveryservice"
     },
     {
       "relation": "method",
@@ -8823,17 +10758,6 @@
       "target": "discovery_service_discoveryservice_discoverprotocol"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "discovery_service_discoveryservice"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "curve_discovery.ts",
@@ -8851,17 +10775,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "curve_discovery_ts",
-      "target": "discovery_curve_discovery_fetchcurvepools"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
       "target": "discovery_curve_discovery_fetchcurvepools"
     },
     {
@@ -9235,444 +11148,6 @@
       "confidence_score": 1.0,
       "source": "t_package_devdependencies",
       "target": "t_package_devdependencies_vitest"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "config_schema_appconfig"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "db_connection_createdatabase"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "db_connection_compatdatabase"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "db_schema_ensureschema"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "types_route_routestatecache"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "discovery_decoder_decodedpoolevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "discovery_enrichment_tokenmetafetcher"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "watcher_service_watcherservice"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "hydration_service_hydrationservice"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "hydration_service_poolstatefetcher"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "execution_service_executionservice"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "execution_gas_gasoracle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "execution_gas_gasoracleconfig"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "execution_nonce_noncemanager"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "mempool_service_mempoolservice"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "mempool_service_mempoolserviceoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_infra_db_connection_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_config_schema_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_core_types_route_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_discovery_enrichment_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_watcher_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_hydration_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_execution_gas_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_discovery_decoder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_execution_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_execution_nonce_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_mempool_service_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "pass_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "pass_loop_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "db_connection_createdatabase"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/cli/main.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "cli_main_main",
-      "target": "orchestrator_boot_bootapplication"
     },
     {
       "relation": "contains",
@@ -12723,177 +14198,6 @@
       "target": "utils_concurrency_test_order"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_db_checkpoints_ts",
-      "target": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_db_checkpoints_ts",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_db_checkpoints_ts",
-      "target": "db_checkpoints_getlatestcheckpoint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_db_checkpoints_ts",
-      "target": "db_checkpoints_rollbacktocheckpoint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_db_checkpoints_ts",
-      "target": "db_checkpoints_getblockrangeforreorg"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_infra_db_checkpoints_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "src_infra_db_checkpoints_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L164",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "watcher_reorg_savewatchercheckpoint",
-      "target": "db_checkpoints_savecheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/db/checkpoints.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "db_checkpoints_rollbacktocheckpoint",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "source": "watcher_reorg_rollbacktoblock",
-      "target": "db_checkpoints_getcheckpoint"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -13354,28 +14658,6 @@
       "target": "db_pools_getpoolstate"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_infra_db_pools_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "db_pools_upsertpoolstate"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -13566,427 +14848,6 @@
       "confidence_score": 1.0,
       "source": "hypersync_client_test_mockhypersyncclient",
       "target": "hypersync_client_test_mockhypersyncclient_constructor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_types_hypersyncclientconfig"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_types_hypersyncclientruntime"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_types_hypersyncdecoderruntime"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_hypersyncerror"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_createconfigerror"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_throwunavailable"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_normalizeoptionalint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_normalizeclientconfig"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_createunavailablehypersyncclientimpl"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_ensuremodule"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_shouldretryload"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L76",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_createhypersyncclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L96",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_ensureclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_proxyclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L119",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_client"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_logfield"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L134",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_blockfield"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L139",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_joinmode"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_throwunsupportedhypersync"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L149",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_trycreatedecoder"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L170",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "hypersync_client_decoder"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "src_infra_hypersync_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/state_ops.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_state_ops_ts",
-      "target": "src_infra_hypersync_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_client_ts",
-      "target": "src_infra_hypersync_types_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_throwunavailable",
-      "target": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_createunavailablehypersyncclientimpl",
-      "target": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_createhypersyncclient",
-      "target": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L146",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_throwunsupportedhypersync",
-      "target": "hypersync_client_createhypersyncunavailableerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_normalizeclientconfig",
-      "target": "hypersync_client_createconfigerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_normalizeclientconfig",
-      "target": "hypersync_client_normalizeoptionalint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L88",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_createhypersyncclient",
-      "target": "hypersync_client_normalizeclientconfig"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_createhypersyncclient",
-      "target": "hypersync_client_createunavailablehypersyncclientimpl"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_ensuremodule",
-      "target": "hypersync_client_shouldretryload"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_createhypersyncclient",
-      "target": "hypersync_client_ensuremodule"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/client.ts",
-      "source_location": "L98",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_client_ensureclient",
-      "target": "hypersync_client_createhypersyncclient"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "hypersync_client_client"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/state_ops.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_state_ops_ts",
-      "target": "hypersync_client_logfield"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/state_ops.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_state_ops_ts",
-      "target": "hypersync_client_joinmode"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "hypersync_client_decoder"
     },
     {
       "relation": "imports_from",
@@ -14292,17 +15153,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "src_infra_hypersync_query_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/watcher/state_ops.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -14331,17 +15181,6 @@
       "confidence_score": 1.0,
       "source": "hypersync_query_computetopic0",
       "target": "hypersync_query_normalizeeventsignature"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "hypersync_query_computetopic0"
     },
     {
       "relation": "imports",
@@ -14631,28 +15470,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -14756,28 +15573,6 @@
       "confidence_score": 1.0,
       "source": "observability_logger_createrootlogger",
       "target": "observability_logger_createlogsinkstream"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "observability_logger_createrootlogger"
     },
     {
       "relation": "contains",
@@ -19636,775 +20431,6 @@
       "target": "strategy_simulator_simulatehop"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_decodedwatcherlog"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_mutablewatcherstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_watcherpoolmeta"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_watcherpoolrefresh"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_watcherv3refresh"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_types_hypersyncloglike"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_watcherenqueuefn"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "src_services_watcher_state_ops_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_state_ops_updatev2state"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_state_ops_updatev3swapstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_state_ops_updatev3liquiditystate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_topic0"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_loghandlercontext"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_loghandler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L53",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_hasinitializedv3basestate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_topicarray"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_buildhandlermap"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L85",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_gethandlermap"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L90",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_gethandler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L94",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "watcher_log_handler_dispatchlog"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_services_watcher_log_handler_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_log_handler_ts",
-      "target": "src_services_watcher_types_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L109",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_log_handler_dispatchlog",
-      "target": "watcher_log_handler_topicarray"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L86",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_log_handler_gethandlermap",
-      "target": "watcher_log_handler_buildhandlermap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L91",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_log_handler_gethandler",
-      "target": "watcher_log_handler_gethandlermap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/log_handler.ts",
-      "source_location": "L111",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_log_handler_dispatchlog",
-      "target": "watcher_log_handler_gethandler"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_log_handler_dispatchlog"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L132",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_log_handler_dispatchlog"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "hypersync_types_hypersyncdecoderruntime"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "hypersync_types_hypersyncgetresponse"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_decodedwatcherlog"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_mutablewatcherstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_watcherpoolmeta"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_watcherenrichmentqueue"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_hypersyncloglike"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_types_routestatecache"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_services_watcher_state_ops_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_state_ops_buildlogquery"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_state_ops_commitwatcherstatesbatch"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_services_watcher_reorg_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_reorg_rollbackguard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_poll_loop_logger"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_poll_loop_sortlogs"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_poll_loop_dedupelogs"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L49",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_poll_loop_pollloop"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L162",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "watcher_poll_loop_sleep"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "src_services_watcher_poll_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_services_watcher_types_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_poll_loop_ts",
-      "target": "src_infra_hypersync_types_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_poll_loop_dedupelogs",
-      "target": "watcher_poll_loop_sortlogs"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_poll_loop_dedupelogs"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L158",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_poll_loop_sleep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_poll_loop_pollloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L85",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L142",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "watcher_state_ops_commitwatcherstatesbatch"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L91",
-      "weight": 1.0,
-      "source": "watcher_service_watcherservice_run",
-      "target": "watcher_poll_loop_pollloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/services/watcher/poll_loop.ts",
-      "source_location": "L73",
-      "weight": 1.0,
-      "source": "watcher_poll_loop_pollloop",
-      "target": "strategy_backrunner_test_signal"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_rollbackguard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_reorgresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_pick"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_detectreorg"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_checkreorg"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_rollbacktoblock"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_reorg_ts",
-      "target": "watcher_reorg_savewatchercheckpoint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_detectreorg",
-      "target": "watcher_reorg_pick"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_detectreorg",
-      "target": "watcher_reorg_storedrollbackguard"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_checkreorg",
-      "target": "watcher_reorg_detectreorg"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/reorg.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_reorg_checkreorg",
-      "target": "watcher_reorg_rollbacktoblock"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_test_ts",
-      "target": "src_services_watcher_service_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_test_ts",
-      "target": "watcher_service_watcherservice"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/watcher/service.test.ts",
@@ -20413,163 +20439,6 @@
       "confidence_score": 1.0,
       "source": "src_services_watcher_service_test_ts",
       "target": "watcher_service_test_service"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "hypersync_types_hypersyncdecoderruntime"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_types_routestatecache"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_types_watcherpoolmeta"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_types_watcherenrichmentqueue"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_service_logger"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_service_watcher_signatures"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "watcher_service_watcherservice"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "src_services_watcher_types_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_watcher_service_ts",
-      "target": "src_infra_hypersync_types_ts"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice",
-      "target": "watcher_service_watcherservice_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice",
-      "target": "watcher_service_watcherservice_start"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice",
-      "target": "watcher_service_watcherservice_stop"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice",
-      "target": "watcher_service_watcherservice_getstatecache"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L90",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice",
-      "target": "watcher_service_watcherservice_run"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/watcher/service.ts",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "watcher_service_watcherservice_start",
-      "target": "watcher_service_watcherservice_run"
     },
     {
       "relation": "imports",
@@ -23557,5 +23426,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "35cabc36d50e565fabd519d309ed8434ea676f6f"
+  "built_at_commit": "8e47348dd73e854cfde2c6f899bcadee782bc28e"
 }

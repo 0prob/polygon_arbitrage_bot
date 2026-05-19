@@ -54,6 +54,9 @@ export function bigintToApproxNumber(value: bigint, decimals = 0): number {
     return negative ? -Number.MAX_VALUE : Number.MAX_VALUE;
   }
 
+  if (decimals > 308) {
+    return negative ? -Number.MAX_VALUE : Number.MAX_VALUE;
+  }
   if (digits.length <= 15 + decimals) {
     const scaled = Number(abs) / 10 ** decimals;
     return negative ? -scaled : scaled;

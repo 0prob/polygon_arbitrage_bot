@@ -6,7 +6,15 @@
 export { mulDiv, mulDivRoundingUp, divRoundingUp } from "./full_math.ts";
 
 // Tick ↔ sqrtPrice conversions
-export { MIN_TICK, MAX_TICK, MIN_SQRT_RATIO, MAX_SQRT_RATIO, getSqrtRatioAtTick, getTickAtSqrtRatio } from "./tick_math.ts";
+export {
+  MIN_TICK,
+  MAX_TICK,
+  MIN_SQRT_RATIO,
+  MAX_SQRT_RATIO,
+  getSqrtRatioAtTick,
+  getTickAtSqrtRatio,
+  getTickAtSqrtRatioInRange,
+} from "./tick_math.ts";
 
 // Sqrt price math
 export {
@@ -28,10 +36,16 @@ export { simulateV3Swap, quoteV3 } from "./uniswap_v3.ts";
 export { getV2AmountOut, getV2AmountIn, simulateV2Swap, quoteV2 } from "./uniswap_v2.ts";
 
 // Curve math
-export { getCurveAmountOut, getCurveAmountIn, simulateCurveSwap } from "./curve.ts";
+export { getCurveAmountOut, getCurveAmountIn, simulateCurveSwap, defaultRates } from "./curve.ts";
 
 // Balancer math
-export { getBalancerAmountOut, getBalancerAmountIn, simulateBalancerSwap } from "./balancer.ts";
+export {
+  getBalancerAmountOut,
+  getBalancerAmountIn,
+  simulateBalancerSwap,
+  calculateBalancerStableInvariant,
+  getBalancerStableAmountOut,
+} from "./balancer.ts";
 
 // WOOFi sPMM math
 export { getWoofiAmountOut, getWoofiFeeRate, getWoofiEdgeFeeBps, simulateWoofiSwap } from "./woofi.ts";
