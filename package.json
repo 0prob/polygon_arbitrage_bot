@@ -5,7 +5,7 @@
   "main": "src/cli/main.ts",
   "packageManager": "pnpm@11.0.8",
   "engines": {
-    "node": ">=25.0.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "start": "node --env-file-if-exists=.env --import=tsx src/cli/main.ts",

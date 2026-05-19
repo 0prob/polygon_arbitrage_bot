@@ -28,7 +28,23 @@ export class DiscoveryService {
     this.deps.logger.info({}, "DiscoveryService stopped");
   }
 
-  async discoverProtocol(_protocol: string): Promise<DecodedPoolEvent[]> {
-    return [];
+  async discoverProtocol(protocol: string): Promise<DecodedPoolEvent[]> {
+    this.deps.logger.info({ protocol }, "Discovering protocol");
+    let pools: Array<{ address: Address; protocol: string; tokens: Address[] }> = [];
+
+    if (protocol === "curve") {
+      const curvePools = await this.deps.fetchCurvePools("0x7cD852c0D7613aA869e632929560f310D4059AC1"); // Curve Registry on Polygon
+      pools = curvePools.map(p => ({ address: p.poolAddress, protocol: "curve", tokens: p.coins }));
+    } else if (protocol === "balancer") {
+      // Placeholder for balancer discovery
+      this.deps.logger.warn({ protocol }, "Balancer discovery not yet implemented");
+    }
+
+    for (const pool of pools) {
+      await this.deps.savePool(pool);
+    }
+
+    this.deps.logger.info({ protocol, discovered: pools.length }, "Finished discovering protocol");
+    return []; // Return empty for now, as DecodedPoolEvent is more complex
   }
 }

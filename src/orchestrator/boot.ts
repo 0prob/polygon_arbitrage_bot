@@ -87,8 +87,11 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const watcherRegistry = {};
   const watcherService = new WatcherService(db, stateCache, watcherRegistry);
 
-  const fetchPoolState: PoolStateFetcher = async (_address, _protocol, _token0, _token1) => {
-    return null;
+  const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
+    // Placeholder implementation: In a real scenario, this would fetch actual pool state from the blockchain
+    // For now, return a dummy state to unblock hydration
+    logger.debug({ address, protocol, token0, token1 }, "Fetching pool state (placeholder)");
+    return { reserve0: 1000n, reserve1: 1000n, extra: {} };
   };
 
   const getPools = (): PoolMeta[] => {

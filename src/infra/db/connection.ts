@@ -51,6 +51,7 @@ export class CompatDatabase {
   _namedStatementCache: Map<string, CompatStatement>;
   _namedStatementSql: Map<string, string>;
   _savepointId: number;
+  _transactionDepth: number;
   _closed: boolean;
 
   constructor(path: string) {
@@ -59,6 +60,7 @@ export class CompatDatabase {
     this._namedStatementCache = new Map();
     this._namedStatementSql = new Map();
     this._savepointId = 0;
+    this._transactionDepth = 0;
     this._closed = false;
   }
 
@@ -98,7 +100,7 @@ export class CompatDatabase {
 
   transaction(fn: (...args: unknown[]) => unknown) {
     return (...args: unknown[]) => {
-      const nested = this.db.isTransaction;
+      const nested = this._transactionDepth > 0;
       const savepoint = `sp_${++this._savepointId}`;
 
       if (nested) {
@@ -106,6 +108,7 @@ export class CompatDatabase {
       } else {
         this.db.exec("BEGIN IMMEDIATE");
       }
+      this._transactionDepth++;
 
       try {
         const result = fn(...args);
@@ -117,6 +120,7 @@ export class CompatDatabase {
         } else {
           this.db.exec("COMMIT");
         }
+        this._transactionDepth--;
         return result;
       } catch (error) {
         if (nested) {
@@ -125,6 +129,7 @@ export class CompatDatabase {
         } else {
           this.db.exec("ROLLBACK");
         }
+        this._transactionDepth--;
         throw error;
       }
     };
@@ -136,6 +141,7 @@ export class CompatDatabase {
     this._namedStatementSql.clear();
     this._namedStatementCache.clear();
     this._statementCache.clear();
+    this._transactionDepth = 0;
     this.db.close();
   }
 }
