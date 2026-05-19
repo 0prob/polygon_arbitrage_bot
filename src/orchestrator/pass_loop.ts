@@ -54,7 +54,9 @@ export async function runPassLoop(
       state.stateCacheSize = pools.length;
 
       if (pools.length === 0) {
-        ctx.logger.debug({}, "No pools available, waiting");
+        ctx.logger.info({}, "No pools found, triggering discovery");
+        await ctx.discoveryService.discoverProtocol("balancer");
+        await ctx.discoveryService.discoverProtocol("curve");
         state.currentActivity = "Waiting for pools";
         state.currentActivityUpdatedMs = Date.now();
         onStateUpdate?.(state);

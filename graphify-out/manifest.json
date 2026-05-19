@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779146714.5704541,
-    "ast_hash": "ded604b6c118125b687f701cee2a9843",
+    "mtime": 1779152600.7168763,
+    "ast_hash": "73cc4f57ac817366b6e848c6f6113b32",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -465,13 +465,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/stream.ts": {
-    "mtime": 1779146930.5281198,
-    "ast_hash": "edbd9cb88a1717f01e83076990309c56",
+    "mtime": 1779151065.342807,
+    "ast_hash": "17e145dc0e9ce2e60af30476142cb38a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/client.ts": {
-    "mtime": 1779146919.4041011,
-    "ast_hash": "e383fe670fb89b48dd9ae4e6cc1b0447",
+    "mtime": 1779151229.2833998,
+    "ast_hash": "ab67ce21009284aedc0b717cb6a18fe6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/types.ts": {
@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/client.test.ts": {
-    "mtime": 1779137922.5390964,
-    "ast_hash": "30de5aec6fdb08654ff5ef90504cb0db",
+    "mtime": 1779151207.8718467,
+    "ast_hash": "ecf0d2bcd981c9b465bac3b0bfaf67c1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/query.test.ts": {
@@ -757,6 +757,21 @@
   "/home/x/arb/t/docs/superpowers/plans/2026-05-18-workspace-repair.md": {
     "mtime": 1779147970.4741623,
     "ast_hash": "8fbbf3530b1b0a796207eed126862c5a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
+    "mtime": 1779152616.8082845,
+    "ast_hash": "5a1e2b597fe1d75856ed015f1ac98730",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/hypersync/stream.test.ts": {
+    "mtime": 1779151991.8272789,
+    "ast_hash": "916b217a8b6fa8037c34a10d347a89cd",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-18-add-progress-instrumentation.md": {
+    "mtime": 1779152582.0935686,
+    "ast_hash": "55a3b80afd0de0eb8d71f9d95b00a2cd",
     "semantic_hash": ""
   }
 }

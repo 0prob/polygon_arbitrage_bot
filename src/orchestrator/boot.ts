@@ -179,6 +179,13 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   };
   const mempoolService = new MempoolService(logger, mempoolOptions);
 
+  // Trigger pool discovery and hydration
+  discoveryService.discoverProtocol("balancer").catch(logger.error);
+  discoveryService.discoverProtocol("curve").catch(logger.error);
+
+  await hydrationService.warmup(config.discovery.hubTokens as Address[]);
+  hydrationService.startSweep();
+
   return {
     config,
     logger,

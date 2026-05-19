@@ -88,6 +88,7 @@ export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 export const DiscoveryConfigSchema = z.object({
   refreshIntervalMs: numberFromString.int().positive(),
   concurrency: numberFromString.int().positive(),
+  hubTokens: stringArrayFromCsv,
 });
 export type DiscoveryConfig = z.infer<typeof DiscoveryConfigSchema>;
 
