@@ -25,7 +25,7 @@ async function handlePairCreated({ event, context }: any) {
     tokens: [event.params.token0.toLowerCase(), event.params.token1.toLowerCase()],
     token0: event.params.token0.toLowerCase(),
     token1: event.params.token1.toLowerCase(),
-    createdBlock: event.block.number,
+    createdBlock: Number(event.block.number),
   });
 }
 

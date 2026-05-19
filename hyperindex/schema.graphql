@@ -5,6 +5,8 @@ type PoolMeta {
   tokens: [String!]!
   token0: String
   token1: String
+  fee: Int
+  tickSpacing: Int
   createdBlock: Int!
 }
 
@@ -25,29 +27,6 @@ type V3PoolState {
   tick: Int!
 }
 
-type CurvePoolState {
-  id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
-  balances: [BigInt!]!
-  A: BigInt!
-  fee: BigInt!
-}
-
-type TokenMeta {
-  id: ID!
-  address: String!
-  decimals: Int
-}
-
-type BalancerPoolState {
-  id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
-  poolId: String!
-  balances: [BigInt!]!
-}
-
 type V4PoolState {
   id: ID!
   address: String!
@@ -58,4 +37,53 @@ type V4PoolState {
   fee: BigInt!
   tickSpacing: Int!
   hooks: String!
+}
+
+type CurvePoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  balances: [BigInt!]!
+  A: BigInt!
+  fee: BigInt!
+}
+
+type BalancerPoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  poolId: String!
+  balances: [BigInt!]!
+  weights: [BigInt!]
+  amp: BigInt
+  swapFee: BigInt!
+}
+
+type DodoPoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  baseReserve: BigInt!
+  quoteReserve: BigInt!
+  targetBase: BigInt!
+  targetQuote: BigInt!
+  rStatus: Int!
+  k: BigInt!
+  fee: BigInt!
+}
+
+type WoofiPoolState {
+  id: ID!
+  address: String!
+  lastUpdatedBlock: Int!
+  price: BigInt!
+  coefficient: BigInt!
+  spread: BigInt!
+  fee: BigInt!
+}
+
+type TokenMeta {
+  id: ID!
+  address: String!
+  decimals: Int
 }

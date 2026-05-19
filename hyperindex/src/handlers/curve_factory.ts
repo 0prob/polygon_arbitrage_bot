@@ -2,14 +2,14 @@ import { indexer } from "envio";
 
 indexer.contractRegister(
   { contract: "CurveRegistry", event: "PoolAdded" },
-  async ({ event, context }) => {
-    (context.chain as any).CurvePool.add(event.params.pool);
+  async ({ event, context }: any) => {
+    context.chain.CurvePool.add(event.params.pool);
   },
 );
 
 indexer.onEvent(
   { contract: "CurveRegistry", event: "PoolAdded" },
-  async ({ event, context }) => {
+  async ({ event, context }: any) => {
     context.PoolMeta.set({
       id: event.params.pool.toLowerCase(),
       address: event.params.pool.toLowerCase(),
@@ -17,7 +17,7 @@ indexer.onEvent(
       tokens: [],
       token0: "",
       token1: "",
-      createdBlock: event.block.number,
+      createdBlock: Number(event.block.number),
     });
   },
 );

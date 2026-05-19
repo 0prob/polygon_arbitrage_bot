@@ -1,110 +1,209 @@
 name: arb_bot_ingestion
-handlers: src/handlers_mjs/handlers
+handlers: src/handlers
 chains:
   - id: 137
     start_block: 0
+    hypersync_config:
+      url: https://polygon.hypersync.xyz
     contracts:
       # V2 Factories (8)
       - name: QuickswapV2Factory
         address: "0x5757371414417b8c6caad45baef941abc7d3ab32"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: SushiswapV2Factory
         address: "0xc35dadb65012ec5796536bd9864ed8773abc74c4"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: UniswapV2Factory
         address: "0x9e5a52f57b3038f1b8eee45f28b3c1967e22799c"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: DfynV2Factory
         address: "0xe7fb3e833efe5f9c441105eb65ef8b261266423b"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: ApeswapV2Factory
         address: "0xcf083be4164828f00cae704ec15a36d711491284"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: MeshswapV2Factory
         address: "0x9f3044f7f9fc8bc9ed615d54845b4577b833282d"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: JetswapV2Factory
         address: "0x668ad0ed2622c62e24f0d5ab6b6ac1b9d2cd4ac7"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: ComethswapV2Factory
         address: "0x800b052609c355ca8103e06f022aa30647ead60a"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers/v2_factory.js
+        handler: src/handlers/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       # V2 Pools (wildcard)
       - name: UniswapV2Pool
         abi_file_path: abis/uniswap_v2_pool.json
-        handler: src/handlers_mjs/handlers/v2_pool.js
+        handler: src/handlers/v2_pool.ts
         events:
           - event: Sync
+            field_selection:
+              transaction_fields:
+                - "hash"
       # V3 Factories (4)
       - name: UniswapV3Factory
         address: "0x1f98431c8ad98523631ae4a59f267346ea31f984"
         abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers_mjs/handlers/v3_factory.js
+        handler: src/handlers/v3_factory.ts
         events:
           - event: PoolCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: SushiswapV3Factory
         address: "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2"
         abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers_mjs/handlers/v3_factory.js
+        handler: src/handlers/v3_factory.ts
         events:
           - event: PoolCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: QuickswapV3Factory
         address: "0x411b0facc3489691f28ad58c47006af5e3ab3a28"
         abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers_mjs/handlers/v3_factory.js
+        handler: src/handlers/v3_factory.ts
         events:
           - event: PoolCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: KyberswapElasticFactory
         address: "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a"
         abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers_mjs/handlers/v3_factory.js
+        handler: src/handlers/v3_factory.ts
         events:
           - event: PoolCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       # V3 Pools (wildcard)
       - name: UniswapV3Pool
         abi_file_path: abis/uniswap_v3_pool.json
-        handler: src/handlers_mjs/handlers/v3_pool.js
+        handler: src/handlers/v3_pool.ts
         events:
           - event: Swap
+            field_selection:
+              transaction_fields:
+                - "hash"
       # Curve Registry
       - name: CurveRegistry
         address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
         abi_file_path: abis/curve_factory.json
-        handler: src/handlers_mjs/handlers/curve_factory.js
+        handler: src/handlers/curve_factory.ts
         events:
           - event: PoolAdded
+            field_selection:
+              transaction_fields:
+                - "hash"
       # Uniswap V4 PoolManager
       - name: PoolManager
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
         abi_file_path: abis/uniswap_v4_pool_manager.json
-        handler: src/handlers_mjs/handlers/v4.js
+        handler: src/handlers/v4.ts
         events:
           - event: Initialize
+            field_selection:
+              transaction_fields:
+                - "hash"
           - event: Swap
+            field_selection:
+              transaction_fields:
+                - "hash"
+      # Balancer V2 Vault
+      - name: BalancerVault
+        address: "0xba12222222228d8ba445958a75a0704d566bf2c8"
+        abi_file_path: abis/balancer_vault.json
+        handler: src/handlers/balancer.ts
+        events:
+          - event: PoolRegistered
+            field_selection:
+              transaction_fields:
+                - "hash"
+          - event: TokensRegistered
+            field_selection:
+              transaction_fields:
+                - "hash"
+          - event: PoolBalanceChanged
+            field_selection:
+              transaction_fields:
+                - "hash"
+          - event: Swap
+            field_selection:
+              transaction_fields:
+                - "hash"
   - id: 747474
     start_block: 0
     hypersync_config:
@@ -113,22 +212,38 @@ chains:
       - name: SushiV2Factory
         address: "0x72d111b4d6f31b38919ae39779f570b747d6acd9"
         abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers_mjs/handlers_katana/v2_factory.js
+        handler: src/handlers/katana/v2_factory.ts
         events:
           - event: PairCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: KatanaV2Pool
         abi_file_path: abis/uniswap_v2_pool.json
-        handler: src/handlers_mjs/handlers_katana/v2_pool.js
+        handler: src/handlers/katana/v2_pool.ts
         events:
           - event: Sync
+            field_selection:
+              transaction_fields:
+                - "hash"
       - name: SushiV3Factory
         address: "0x203e8740894c8955cB8950759876d7E7E45E04c1"
         abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers_mjs/handlers_katana/v3_factory.js
+        handler: src/handlers/katana/v3_factory.ts
         events:
           - event: PoolCreated
+            field_selection:
+              transaction_fields:
+                - "hash"
+                - "from"
+                - "to"
       - name: KatanaV3Pool
         abi_file_path: abis/uniswap_v3_pool.json
-        handler: src/handlers_mjs/handlers_katana/v3_pool.js
+        handler: src/handlers/katana/v3_pool.ts
         events:
           - event: Swap
+            field_selection:
+              transaction_fields:
+                - "hash"
