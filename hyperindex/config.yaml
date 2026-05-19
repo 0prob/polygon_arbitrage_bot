@@ -105,3 +105,28 @@ chains:
         events:
           - event: Initialize
           - event: Swap
+  - id: 747474
+    start_block: 0
+    contracts:
+      - name: SushiV2Factory
+        address: "0x72d111b4d6f31b38919ae39779f570b747d6acd9"
+        abi_file_path: abis/uniswap_v2_factory.json
+        handler: src/handlers_mjs/handlers_katana/v2_factory.js
+        events:
+          - event: PairCreated
+      - name: KatanaV2Pool
+        abi_file_path: abis/uniswap_v2_pool.json
+        handler: src/handlers_mjs/handlers_katana/v2_pool.js
+        events:
+          - event: Sync
+      - name: SushiV3Factory
+        address: "0x203e8740894c8955cB8950759876d7E7E45E04c1"
+        abi_file_path: abis/uniswap_v3_factory.json
+        handler: src/handlers_mjs/handlers_katana/v3_factory.js
+        events:
+          - event: PoolCreated
+      - name: KatanaV3Pool
+        abi_file_path: abis/uniswap_v3_pool.json
+        handler: src/handlers_mjs/handlers_katana/v3_pool.js
+        events:
+          - event: Swap
