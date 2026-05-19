@@ -1,6 +1,9 @@
 import { asRecord } from "../../core/utils/errors.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
 import { getCheckpoint } from "../../infra/db/checkpoints.ts";
+import { getPoolMeta as dbGetPoolMeta } from "../../infra/db/pools.ts";
+import type { Address } from "../../core/types/common.ts";
+import type { WatcherPoolMeta } from "./types.ts";
 
 export type RollbackGuard = Record<string, unknown>;
 
@@ -13,6 +16,7 @@ const ROLLBACK_GUARD_ID = "HYPERSYNC_WATCHER";
 export function createDbRollbackRegistry(db: CompatDatabase): {
   getRollbackGuard: () => unknown;
   setRollbackGuard: (guard: RollbackGuard) => unknown;
+  getPoolMeta: (addr: string) => WatcherPoolMeta | null;
 } {
   return {
     getRollbackGuard: () => {
@@ -31,6 +35,19 @@ export function createDbRollbackRegistry(db: CompatDatabase): {
         `INSERT OR REPLACE INTO rollback_guard (checkpoint_id, guard_data) VALUES (?, ?)`,
       );
       stmt.run(ROLLBACK_GUARD_ID, JSON.stringify(guard));
+    },
+    getPoolMeta: (addr: string): WatcherPoolMeta | null => {
+      const row = dbGetPoolMeta(db, addr);
+      if (!row) return null;
+      const meta = row as Record<string, unknown>;
+      const tokens: string[] = Array.isArray(meta.tokens) ? meta.tokens : [];
+      return {
+        address: String(meta.pool_address ?? addr).toLowerCase() as Address,
+        protocol: String(meta.protocol ?? ""),
+        token0: (tokens[0] ?? "") as Address,
+        token1: (tokens[1] ?? "") as Address,
+        metadata: (meta.metadata as Record<string, unknown>) ?? {},
+      } as WatcherPoolMeta;
     },
   };
 }

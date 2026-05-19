@@ -80,3 +80,17 @@ export function getPoolState(db: CompatDatabase, address: string) {
     state_data: stateData ? rehydrateStateData(protocol, stateData) : null,
   };
 }
+
+export function getAllPoolStates(db: CompatDatabase) {
+  const rows = db
+    .statement(
+      "getAllPoolStates",
+      `SELECT p.protocol, s.address, s.last_updated_block, s.state_data FROM pool_state s JOIN pools p ON p.address = s.address`,
+    )
+    .all() as Array<{ protocol: string; address: string; last_updated_block: number; state_data: unknown }>;
+  return rows.map((row) => ({
+    address: row.address,
+    last_updated_block: row.last_updated_block,
+    state_data: rehydrateStateData(row.protocol, parseJson(row.state_data, {}) as Record<string, unknown>),
+  }));
+}

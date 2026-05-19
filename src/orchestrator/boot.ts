@@ -21,6 +21,7 @@ import { setHypersyncDefaults } from "../infra/hypersync/client.ts";
 import { computeTopic0 } from "../infra/hypersync/query.ts";
 import type { HyperSyncLog } from "../infra/hypersync/types.ts";
 import { HydrationService, type PoolStateFetcher } from "../services/hydration/service.ts";
+import { getAllPoolStates, getPoolState as getPoolStateFromDb } from "../infra/db/pools.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
@@ -61,6 +62,14 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   });
 
   const stateCache: RouteStateCache = new Map();
+  const previousStates = getAllPoolStates(db);
+  for (const ps of previousStates) {
+    if (ps.state_data && typeof ps.state_data === "object") {
+      const state = ps.state_data as Record<string, unknown>;
+      stateCache.set(ps.address.toLowerCase(), state);
+    }
+  }
+  logger.info({ loaded: previousStates.length }, "Loaded pool state from database");
 
   const DISCOVERY_SIGNATURES: Record<string, (log: HyperSyncLog) => DecodedPoolEvent | null> = {
     [computeTopic0("event PairCreated(address indexed token0, address indexed token1, address pair, uint256)")]: decodePairCreated,
@@ -146,11 +155,17 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const watcherService = new WatcherService(db, stateCache, watcherRegistry, watcherRefreshFns);
 
   const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
-    const cached = stateCache.get(address.toLowerCase());
+    const addr = address.toLowerCase();
+    const cached = stateCache.get(addr);
     if (cached != null && typeof cached === "object") {
       const hasReserves = "reserve0" in cached && "reserve1" in cached;
       const hasV3 = "sqrtPriceX96" in cached && "liquidity" in cached;
       if (hasReserves || hasV3) return cached;
+    }
+    const fromDb = getPoolStateFromDb(db, addr);
+    if (fromDb?.state_data) {
+      stateCache.set(addr, fromDb.state_data as Record<string, unknown>);
+      return fromDb.state_data as Record<string, unknown>;
     }
     logger.debug({ address, protocol, token0, token1 }, "No cached state for pool");
     return { reserve0: 0n, reserve1: 0n };
@@ -248,7 +263,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
   hydrationService.startSweep();
 
-  watcherService.start();
+  const poolAddresses = getPools().map((p) => p.address);
+  watcherService.start(poolAddresses.map((a) => a as string));
+  logger.info({ poolCount: poolAddresses.length }, "Watcher started with pool addresses");
 
   return {
     config,
