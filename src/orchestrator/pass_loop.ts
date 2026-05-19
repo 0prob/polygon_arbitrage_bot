@@ -5,6 +5,7 @@ import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pip
 import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
 import type { BotState } from "../cli/tui.ts";
+import { withTimeout } from "../infra/rpc/retry.ts";
 
 async function getGasPriceWei(ctx: RuntimeContext): Promise<bigint> {
   try {
@@ -50,8 +51,6 @@ export async function runPassLoop(ctx: RuntimeContext, onStateUpdate?: (update: 
       const pools = ctx.getPools();
       state.stateCacheSize = pools.length;
 
-import { withTimeout } from "../infra/rpc/retry.ts";
-// ...
       if (pools.length === 0) {
         ctx.logger.info({}, "No pools found, triggering discovery");
         try {
