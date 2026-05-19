@@ -29,32 +29,33 @@ Pool metadata (`PoolMeta`) already handles protocol-agnostic pool discovery — 
 
 ## 2. HyperIndex Config
 
-Add two contracts to `hyperindex/config.yaml` under chain 137:
+Add one contract entry to `hyperindex/config.yaml` under chain 137:
 
 - **`PoolManager`** (static address `0x67366782805870060151383f4bbff9dab53e5cd6`):
-  - `Initialize` event → handler `v4_factory.js`
-  - `Swap` event → handler `v4_pool.js`
+  - Handler: `src/handlers_mjs/handlers/v4.js`
+  - Events: `Initialize` and `Swap`
 
-No wildcard contracts needed — all V4 events come from the single PoolManager address, with the pool ID as an indexed event parameter.
+The single handler file registers both events via `indexer.onEvent()` at module load time. No wildcard needed — all V4 events come from the single PoolManager address, with the pool ID as an indexed event parameter.
 
 ABI file: `abis/uniswap_v4_pool_manager.json` (fetched from Polygonscan or the V4 repo).
 
-## 3. HyperIndex Handlers
+## 3. HyperIndex Handler
 
-### `src/handlers_ts/v4_factory.ts` (Initialize handler)
+### `src/handlers_ts/v4.ts` (single handler file)
 
-- Listens for `Initialize` events on `PoolManager`
+Handles both `Initialize` and `Swap` events from `PoolManager`.
+
+**Initialize handler:**
 - Event params: `id` (bytes32 pool ID), `currency0`, `currency1`, `fee`, `tickSpacing`, `hooks`, `sqrtPriceX96`, `tick`
 - Creates `PoolMeta` with `id = poolId.toLowerCase()`, `protocol = "uniswap_v4"`
 - Creates `V4PoolState` with initial `sqrtPriceX96`, `tick`, `liquidity`, `fee`, `tickSpacing`, `hooks`
-- Note: `currency0` and `currency1` must be normalized (lowercased) for token address consistency
+- Note: `currency0` and `currency1` must be lowercased for address consistency
 
-### `src/handlers_ts/v4_pool.ts` (Swap handler)
-
-- Listens for `Swap` events on `PoolManager`
-- Event params: `id`, `sender`, `amount0`, `amount1`, `sqrtPriceX96`, `liquidity`, `tick`, `fee`
+**Swap handler:**
+- Event params: `id`, `sender`, `amount0` (int128), `amount1` (int128), `sqrtPriceX96`, `liquidity`, `tick`, `fee`
 - Updates `V4PoolState` with post-swap state
 - Pool lookup via `event.params.id` (bytes32 pool ID, lowercased)
+- Note: `amount0`/`amount1` are `int128` and use V4 sign convention (negative = pool receives), but state fields (`sqrtPriceX96`, `liquidity`, `tick`) are absolute — no sign handling needed
 
 ## 4. Bot-side Simulation
 
@@ -71,17 +72,24 @@ V4 uses the same concentrated liquidity formula as V3 (`x * y = k` within tick r
 
 ### `src/services/execution/calldata.ts` — new `encodeV4Hop()`
 
-Each V4 hop is wrapped in a `PoolManager.lock()` call:
+Each V4 hop is wrapped in a `PoolManager.lock()` call. The lock/callback flow with explicit settlement:
 
 ```
 Call 0: ArbExecutor.approveIfNeeded(tokenIn, PoolManager, amountIn)
 Call 1: PoolManager.lock(abi.encode(PoolKey, zeroForOne, amountSpecified, sqrtPriceLimitX96))
   → PoolManager calls ArbExecutor.lockAcquired(data)
-  → ArbExecutor decodes PoolKey + swap params
+  → ArbExecutor decodes PoolKey + swap params from data
   → ArbExecutor calls PoolManager.swap(key, zeroForOne, amountSpecified, sqrtPriceLimitX96, "")
-  → PoolManager settles: takes tokenIn, sends tokenOut
+  → PoolManager records delta: +amountIn for tokenIn, -amountOut for tokenOut
+  → ArbExecutor calls PoolManager.settle(tokenIn) — PoolManager pulls tokenIn from ArbExecutor
+  → ArbExecutor calls PoolManager.take(tokenOut, address(this), amountOut) — PoolManager sends tokenOut
   → lockAcquired returns → lock released
 ```
+
+Inside `lockAcquired`, after `swap()` returns `(amount0, amount1)`:
+- The positive delta (what ArbExecutor owes PoolManager) is settled via `PoolManager.settle(currency)`
+- The negative delta (what PoolManager owes ArbExecutor) is withdrawn via `PoolManager.take(currency, address(this), uint256(-delta))`
+- Both `settle()` and `take()` are called within the same `lockAcquired()` execution, before returning
 
 `PoolKey` structure: `(address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks)`
 
@@ -112,9 +120,20 @@ Added to constructor parameters (validated for non-zero).
 function lockAcquired(bytes calldata data) external returns (bytes memory) {
     if (msg.sender != poolManager) revert CallbackOnly();
     if (_phase != PHASE_CALLBACK) revert CallbackOnly();
-    // Decode PoolKey + swap params from data
-    // Call PoolManager.swap(key, zeroForOne, amountSpecified, sqrtPriceLimitX96, "")
-    // Return result
+    // Decode PoolKey + swap params
+    (PoolKey memory key, bool zeroForOne, int128 amountSpecified, uint160 sqrtPriceLimitX96) =
+        abi.decode(data, (PoolKey, bool, int128, uint160));
+    // Execute swap — PoolManager records deltas
+    (int256 delta0, int256 delta1) = IPoolManager(poolManager).swap(
+        key, zeroForOne, amountSpecified, sqrtPriceLimitX96, ""
+    );
+    // Settle: pay what we owe
+    if (delta0 > 0) IPoolManager(poolManager).settle(key.currency0);
+    if (delta1 > 0) IPoolManager(poolManager).settle(key.currency1);
+    // Take: withdraw what the pool owes us
+    if (delta0 < 0) IPoolManager(poolManager).take(key.currency0, address(this), uint256(-delta0));
+    if (delta1 < 0) IPoolManager(poolManager).take(key.currency1, address(this), uint256(-delta1));
+    return "";
 }
 ```
 
@@ -147,12 +166,23 @@ The existing execution pipeline handles V4 transparently:
 
 The V4 PoolManager ABI (`abis/uniswap_v4_pool_manager.json`) includes at minimum these events and functions:
 
-- `event Initialize(...)` — all PoolKey fields + sqrtPriceX96 + tick
-- `event Swap(...)` — id, sender, amounts, sqrtPriceX96, liquidity, tick, fee
-- `function lock(bytes calldata) external returns (bytes memory)`
-- `function swap(PoolKey calldata, bool, int128, uint160, bytes calldata) external returns (int256, int256)`
-- `function settle(address) external payable`
-- `function take(address, address, uint256) external`
+```solidity
+struct PoolKey {
+    address currency0;
+    address currency1;
+    uint24 fee;
+    int24 tickSpacing;
+    address hooks;
+}
+
+event Initialize(bytes32 indexed id, address indexed currency0, address indexed currency1, uint24 fee, int24 tickSpacing, address hooks, uint160 sqrtPriceX96, int24 tick);
+event Swap(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick, uint24 fee);
+
+function lock(bytes calldata data) external returns (bytes memory result);
+function swap(PoolKey calldata key, bool zeroForOne, int128 amountSpecified, uint160 sqrtPriceLimitX96, bytes calldata hookData) external returns (int256 delta0, int256 delta1);
+function settle(address currency) external payable;
+function take(address currency, address to, uint256 amount) external;
+```
 
 ## 9. Implementation Order
 
