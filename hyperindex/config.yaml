@@ -107,6 +107,8 @@ chains:
           - event: Swap
   - id: 747474
     start_block: 0
+    hypersync_config:
+      url: https://katana.hypersync.xyz
     contracts:
       - name: SushiV2Factory
         address: "0x72d111b4d6f31b38919ae39779f570b747d6acd9"
