@@ -117,13 +117,21 @@ export async function createHypersyncClient(config: HyperSyncClientConfig): Prom
   }
 }
 
+let _defaultUrl = "https://polygon.hypersync.xyz";
+let _defaultApiToken = "";
+
+export function setHypersyncDefaults(url: string, apiToken: string): void {
+  _defaultUrl = url;
+  _defaultApiToken = apiToken;
+}
+
 let _clientPromise: Promise<HypersyncClientRuntime> | null = null;
 
 function ensureClient(): Promise<HypersyncClientRuntime> {
   if (!_clientPromise) {
     _clientPromise = createHypersyncClient({
-      url: "https://polygon.hypersync.xyz",
-      apiToken: "",
+      url: _defaultUrl,
+      apiToken: _defaultApiToken,
     }).catch((err) => {
       _clientPromise = null;
       throw err;

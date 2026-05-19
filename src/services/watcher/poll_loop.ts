@@ -72,12 +72,16 @@ export async function pollLoop(
 
   while (signal()) {
     try {
-      const fromBlock = lastBlock + 1;
+      const initialFromBlock = lastBlock + 1;
       const chunks = filter.getChunks();
+      let bestNextBlock = -1;
+      let reorgTriggered = false;
 
       for (const chunk of chunks) {
         if (!signal()) return;
-        const query = buildLogQueryOrig(fromBlock, chunk);
+        if (reorgTriggered) break;
+
+        const query = buildLogQueryOrig(initialFromBlock, chunk);
         const response = await client.get<HyperSyncGetResponse<HyperSyncLogLike>>(query);
         if (!signal()) return;
 
@@ -94,15 +98,17 @@ export async function pollLoop(
             );
             onReorg?.({ reorgBlock: reorgResult.reorgBlock, changedAddrs });
             lastBlock = reorgResult.checkpointBlock;
-            continue;
+            reorgTriggered = true;
+            break;
           }
           registry.setRollbackGuard?.(resp.rollbackGuard);
         }
 
         const logs = (resp.data?.logs ?? []) as unknown as HyperSyncLogLike[];
+
         if (logs.length === 0) {
-          const nextBlock = Number(response.nextBlock);
-          if (Number.isFinite(nextBlock) && nextBlock > lastBlock) lastBlock = nextBlock - 1;
+          const nxt = Number(response.nextBlock);
+          if (Number.isFinite(nxt) && nxt > bestNextBlock) bestNextBlock = nxt;
           continue;
         }
 
@@ -158,11 +164,13 @@ export async function pollLoop(
           enrichmentQueue.drain();
         }
 
-        const nextBlock = Number(response.nextBlock);
-        if (Number.isFinite(nextBlock) && nextBlock > lastBlock) {
-          lastBlock = nextBlock - 1;
-          saveCheckpoint(db, WATCHER_CHECKPOINT_KEY, lastBlock, "");
-        }
+        const nxt = Number(response.nextBlock);
+        if (Number.isFinite(nxt) && nxt > bestNextBlock) bestNextBlock = nxt;
+      }
+
+      if (!reorgTriggered && bestNextBlock > lastBlock) {
+        lastBlock = bestNextBlock - 1;
+        saveCheckpoint(db, WATCHER_CHECKPOINT_KEY, lastBlock, "");
       }
     } catch (err) {
       if (!signal()) return;

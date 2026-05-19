@@ -1,12 +1,39 @@
 import { asRecord } from "../../core/utils/errors.ts";
 import type { CompatDatabase } from "../../infra/db/connection.ts";
-import { getCheckpoint, saveCheckpoint } from "../../infra/db/checkpoints.ts";
+import { getCheckpoint } from "../../infra/db/checkpoints.ts";
 
 export type RollbackGuard = Record<string, unknown>;
 
 export type ReorgResult =
   | { reorgDetected: false }
   | { reorgDetected: true; reorgBlock: number; checkpointBlock: number; statesRemoved: number };
+
+const ROLLBACK_GUARD_ID = "HYPERSYNC_WATCHER";
+
+export function createDbRollbackRegistry(db: CompatDatabase): {
+  getRollbackGuard: () => unknown;
+  setRollbackGuard: (guard: RollbackGuard) => unknown;
+} {
+  return {
+    getRollbackGuard: () => {
+      const stmt = db.statement("getRollbackGuard", `SELECT guard_data FROM rollback_guard WHERE checkpoint_id = ?`);
+      const row = stmt.get(ROLLBACK_GUARD_ID) as { guard_data: string } | undefined;
+      if (!row) return null;
+      try {
+        return JSON.parse(row.guard_data);
+      } catch {
+        return null;
+      }
+    },
+    setRollbackGuard: (guard: RollbackGuard) => {
+      const stmt = db.statement(
+        "saveRollbackGuard",
+        `INSERT OR REPLACE INTO rollback_guard (checkpoint_id, guard_data) VALUES (?, ?)`,
+      );
+      stmt.run(ROLLBACK_GUARD_ID, JSON.stringify(guard));
+    },
+  };
+}
 
 function pick(obj: unknown, camelKey: string, snakeKey: string) {
   const r = asRecord(obj);
@@ -72,6 +99,4 @@ export function rollbackToBlock(db: CompatDatabase, checkpointKey: string, targe
   return Number(result.changes ?? 0);
 }
 
-export function saveWatcherCheckpoint(db: CompatDatabase, blockNumber: number, blockHash: string) {
-  saveCheckpoint(db, "HYPERSYNC_WATCHER", blockNumber, blockHash);
-}
+

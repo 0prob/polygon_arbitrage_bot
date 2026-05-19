@@ -10,10 +10,14 @@ import type { RouteStateCache } from "../core/types/route.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { Address } from "../core/types/common.ts";
 import { DiscoveryService, type DiscoveryServiceDeps } from "../services/discovery/service.ts";
-import type { DecodedPoolEvent } from "../services/discovery/decoder.ts";
+import { decodePairCreated, decodePoolRegistered, decodePoolDeployed, decodeCurvePoolAdded, type DecodedPoolEvent } from "../services/discovery/decoder.ts";
 import type { TokenMetaFetcher } from "../services/discovery/enrichment.ts";
 import { fetchCurvePools } from "../services/discovery/curve_discovery.ts";
 import { WatcherService } from "../services/watcher/service.ts";
+import { createDbRollbackRegistry } from "../services/watcher/reorg.ts";
+import { setHypersyncDefaults } from "../infra/hypersync/client.ts";
+import { computeTopic0 } from "../infra/hypersync/query.ts";
+import type { HyperSyncLog } from "../infra/hypersync/types.ts";
 import { HydrationService, type PoolStateFetcher } from "../services/hydration/service.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
@@ -56,8 +60,25 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const stateCache: RouteStateCache = new Map();
 
-  const decodeLog = (_logs: unknown[]): DecodedPoolEvent[] => {
-    return [];
+  const DISCOVERY_SIGNATURES: Record<string, (log: HyperSyncLog) => DecodedPoolEvent | null> = {
+    [computeTopic0("event PairCreated(address indexed token0, address indexed token1, address pair, uint256)")]: decodePairCreated,
+    [computeTopic0("event PoolRegistered(bytes32 indexed poolId, address indexed poolAddress, uint256 specialization)")]: decodePoolRegistered,
+    [computeTopic0("event PoolDeployed(address indexed token0, address indexed token1, uint256 pool)")]: decodePoolDeployed,
+    [computeTopic0("event PoolAdded(address indexed pool)")]: decodeCurvePoolAdded,
+  };
+
+  const decodeLog = (logs: unknown[]): DecodedPoolEvent[] => {
+    const results: DecodedPoolEvent[] = [];
+    for (const raw of logs) {
+      const log = raw as HyperSyncLog;
+      const topic0 = log.topics?.[0] ?? "";
+      const decoder = DISCOVERY_SIGNATURES[topic0.toLowerCase()];
+      if (decoder) {
+        const decoded = decoder(log);
+        if (decoded) results.push(decoded);
+      }
+    }
+    return results;
   };
 
   const fetchTokenMeta: TokenMetaFetcher = async (_tokenAddresses) => {
@@ -84,7 +105,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   };
   const discoveryService = new DiscoveryService(discoveryDeps);
 
-  const watcherRegistry = {};
+  setHypersyncDefaults(config.hypersync.url, config.envioApiToken);
+  const watcherRegistry = createDbRollbackRegistry(db);
   const watcherService = new WatcherService(db, stateCache, watcherRegistry);
 
   const fetchPoolState: PoolStateFetcher = async (address, protocol, token0, token1) => {
@@ -188,6 +210,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   await hydrationService.warmup(config.discovery.hubTokens as Address[]);
   hydrationService.startSweep();
+
+  watcherService.start();
 
   return {
     config,
