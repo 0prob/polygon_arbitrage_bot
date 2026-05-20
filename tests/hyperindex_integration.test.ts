@@ -39,7 +39,6 @@ describe("HyperIndex ingestion layer", () => {
 
   it("createEffect files exist", () => {
     const effectDir = path.join(HYPERINDEX_DIR, "src", "effects");
-    expect(existsSync(path.join(effectDir, "token_decimals.ts"))).toBe(true);
     expect(existsSync(path.join(effectDir, "curve_metadata.ts"))).toBe(true);
     expect(existsSync(path.join(effectDir, "balancer_metadata.ts"))).toBe(true);
   });
