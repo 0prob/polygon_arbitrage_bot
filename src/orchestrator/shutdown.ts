@@ -16,9 +16,9 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
 
   await stopService("execution", ctx.executionService, ctx.logger);
   await stopService("mempool", ctx.mempoolService, ctx.logger);
-  await stopService("watcher", ctx.watcherService, ctx.logger);
-  await stopService("hydration", ctx.hydrationService, ctx.logger);
-  await stopService("discovery", ctx.discoveryService, ctx.logger);
+  if (ctx.watcherService) await stopService("watcher", ctx.watcherService, ctx.logger);
+  if (ctx.hydrationService) await stopService("hydration", ctx.hydrationService, ctx.logger);
+  if (ctx.discoveryService) await stopService("discovery", ctx.discoveryService, ctx.logger);
 
   try {
     ctx.db.close();

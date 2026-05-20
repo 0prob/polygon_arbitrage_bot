@@ -1,6 +1,6 @@
 import type { RuntimeContext } from "./boot.ts";
 import { buildGraph } from "../services/strategy/graph.ts";
-import { enumerateCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
+import { type FoundCycle, enumerateCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
@@ -15,10 +15,6 @@ async function getGasPriceWei(ctx: RuntimeContext): Promise<bigint> {
   } catch {
     return 30n * 10n ** 9n;
   }
-}
-
-function weiToGwei(wei: bigint): string {
-  return (Number(wei) / 1e9).toFixed(1);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -74,6 +70,10 @@ export async function runPassLoop(ctx: RuntimeContext): Promise<void> {
   ctx.logger.info({ intervalMs }, "Pass loop started");
 
   let consecutiveErrors = 0;
+  let lastPoolCount = 0;
+  let cachedCycles: FoundCycle[] = [];
+  let lastGasPrice = 0n;
+  let lastGasFetchTs = 0;
 
   while (ctx.isRunning) {
     const startTime = Date.now();
@@ -89,7 +89,13 @@ export async function runPassLoop(ctx: RuntimeContext): Promise<void> {
 
       const stateCache = buildStateCacheFromHyperIndex(ctx.hiDbPath, pools.map(p => p.address));
       const graph = buildGraph(pools, stateCache);
-      const cycles = enumerateCycles(graph, ctx.config.routing.maxHops);
+
+      if (pools.length !== lastPoolCount || cachedCycles.length === 0) {
+        cachedCycles = enumerateCycles(graph, ctx.config.routing.maxHops);
+        lastPoolCount = pools.length;
+        ctx.logger.info({ cycles: cachedCycles.length }, "Cycles re-enumerated");
+      }
+      const cycles = cachedCycles;
 
       if (cycles.length === 0) {
         ctx.logger.debug({}, "No cycles found");
@@ -97,7 +103,11 @@ export async function runPassLoop(ctx: RuntimeContext): Promise<void> {
         continue;
       }
 
-      const gasPriceWei = await getGasPriceWei(ctx);
+      if (Date.now() - lastGasFetchTs > 1000) {
+        lastGasPrice = await getGasPriceWei(ctx);
+        lastGasFetchTs = Date.now();
+      }
+      const gasPriceWei = lastGasPrice;
 
       const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,

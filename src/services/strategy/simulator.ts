@@ -21,27 +21,6 @@ export interface SimulationEdge {
   stateRef?: PoolState | null;
 }
 
-function inferZeroForOne(edge: SwapEdge, state: Record<string, unknown>): boolean {
-  const t0 = state.token0;
-  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
-  if (Array.isArray(state.tokens)) {
-    const tokens = state.tokens as string[];
-    const tokenIn = edge.tokenIn.toLowerCase();
-    return tokens.some((t) => t.toLowerCase() === tokenIn);
-  }
-  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
-}
-
-function inferTokenIdx(edge: SwapEdge, needle: "tokenIn" | "tokenOut", state: Record<string, unknown>): number {
-  const tokens = state.tokens;
-  if (Array.isArray(tokens)) {
-    const addr = edge[needle].toLowerCase();
-    const idx = tokens.findIndex((t: unknown) => typeof t === "string" && t.toLowerCase() === addr);
-    if (idx >= 0) return idx;
-  }
-  return needle === "tokenIn" ? 0 : 1;
-}
-
 /** Normalize protocol string to a canonical name for dispatch. */
 function normalizeProtocol(raw: string): string {
   const u = raw.toUpperCase();
@@ -54,6 +33,27 @@ function normalizeProtocol(raw: string): string {
   if (u.includes("V3") || u === "KYBERSWAP_ELASTIC" || u === "UNISWAP_V4") return "V3";
   if (u.includes("V2")) return "V2";
   return u;
+}
+
+function inferZeroForOne(edge: { tokenIn: string; tokenOut: string }, state: Record<string, unknown>): boolean {
+  const t0 = state.token0;
+  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
+  if (Array.isArray(state.tokens)) {
+    const tokens = state.tokens as string[];
+    const tokenIn = edge.tokenIn.toLowerCase();
+    return tokens.some((t) => t.toLowerCase() === tokenIn);
+  }
+  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
+}
+
+function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: number): number {
+  const tokens = state.tokens;
+  if (Array.isArray(tokens)) {
+    const addr = token.toLowerCase();
+    const idx = tokens.findIndex((t: unknown) => typeof t === "string" && t.toLowerCase() === addr);
+    if (idx >= 0) return idx;
+  }
+  return fallback;
 }
 
 /** Dispatch a single hop simulation to the correct math module. */
@@ -101,9 +101,9 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
       tokenIn: edge.tokenIn,
       tokenOut: edge.tokenOut,
       protocol: edge.protocol,
-      zeroForOne: inferZeroForOne(edge, state),
-      tokenInIdx: inferTokenIdx(edge, "tokenIn", state),
-      tokenOutIdx: inferTokenIdx(edge, "tokenOut", state),
+      zeroForOne: edge.zeroForOne ?? inferZeroForOne(edge, state),
+      tokenInIdx: edge.tokenInIdx ?? inferTokenIdx(edge.tokenIn, state, 0),
+      tokenOutIdx: edge.tokenOutIdx ?? inferTokenIdx(edge.tokenOut, state, 1),
       stateRef: state as PoolState,
     };
 

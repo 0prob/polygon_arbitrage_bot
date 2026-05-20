@@ -35,8 +35,10 @@ indexer.onEvent(
   { contract: "PoolManager", event: "Swap" },
   async ({ event, context }: any) => {
     const poolId = event.params.id.toLowerCase();
+    const existing = await context.V4PoolState.get(poolId);
 
     context.V4PoolState.set({
+      ...existing,
       id: poolId,
       address: poolId,
       lastUpdatedBlock: Number(event.block.number),
@@ -44,8 +46,6 @@ indexer.onEvent(
       liquidity: event.params.liquidity,
       tick: Number(event.params.tick),
       fee: event.params.fee,
-      tickSpacing: 0,
-      hooks: "",
     });
   },
 );

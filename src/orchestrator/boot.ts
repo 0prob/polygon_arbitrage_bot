@@ -1,7 +1,5 @@
 import path from "path";
-import { createPublicClient, createWalletClient, http, type PublicClient } from "viem";
-import { polygon } from "viem/chains";
-import { privateKeyToAccount } from "viem/accounts";
+import { type PublicClient, type WalletClient } from "viem";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import { createDatabase, type CompatDatabase } from "../infra/db/connection.ts";
@@ -17,6 +15,7 @@ import { getAllPoolStates } from "../infra/db/pools.ts";
 import { getHiDbPath, readHyperIndexPools } from "../infra/db/hyperindex_reader.ts";
 import { CrossChainScanner } from "../services/crosschain/scanner.ts";
 import { SolverBot } from "../services/crosschain/solver.ts";
+import { createReadClient, createExecutionClient } from "../infra/rpc/client_factory.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -31,6 +30,9 @@ export interface RuntimeContext {
   isRunning: boolean;
   crossChainScanner?: CrossChainScanner;
   solverBot?: SolverBot;
+  watcherService?: any;
+  hydrationService?: any;
+  discoveryService?: any;
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
@@ -43,13 +45,12 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const db = createDatabase(dbPath);
   ensureSchema(db);
 
-  const publicClient = createPublicClient({
-    chain: polygon,
-    transport: http(config.rpc.polygonRpcUrls[0], {
-      timeout: config.rpc.requestTimeoutMs,
-      batch: { batchSize: config.rpc.batchSize },
-    }),
-    batch: { multicall: { wait: config.rpc.batchWaitMs, batchSize: config.rpc.batchSize } },
+  // Optimized read client with fallback and batching
+  const publicClient = createReadClient(config.rpc.polygonRpcUrls, {
+    chainId: 137,
+    timeoutMs: config.rpc.requestTimeoutMs,
+    batchSize: config.rpc.batchSize,
+    batchWaitMs: config.rpc.batchWaitMs,
   });
 
   const stateCache: RouteStateCache = new Map();
@@ -62,20 +63,17 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   }
   logger.info({ loaded: previousStates.length }, "Loaded pool state from database");
 
-  // Pool discovery is handled by HyperIndex ingestion layer
-
   const getPools = (): PoolMeta[] => {
     const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
       address: string; protocol: string; tokens: string;
     }>;
     const seen = new Set(rows.map(r => r.address));
 
-    // Also read pools discovered by HyperIndex
     try {
       const hiPools = readHyperIndexPools(config.paths.dataDir);
       for (const p of hiPools) {
         if (!seen.has(p.address)) {
-          rows.push(p);
+          rows.push({ address: p.address, protocol: p.protocol, tokens: p.tokens });
           seen.add(p.address);
         }
       }
@@ -120,15 +118,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);
 
-  const pk = config.execution.privateKey.startsWith("0x") ? config.execution.privateKey : `0x${config.execution.privateKey}`;
-  const account = privateKeyToAccount(pk as `0x${string}`);
-  const walletClient = createWalletClient({
-    account,
-    chain: polygon,
-    transport: http(config.rpc.executionRpcUrl, { timeout: config.rpc.requestTimeoutMs }),
-  });
-
+  // Optimized execution client
   const submitTx = async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
+    const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
     const hash = await walletClient.sendTransaction({
       to: tx.to as `0x${string}`,
       data: tx.data as `0x${string}`,
@@ -166,14 +158,10 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
       katanaExecutor: config.crossChainArb.katanaExecutorAddress as `0x${string}`,
       escrowToken: config.crossChainArb.escrowToken as `0x${string}`,
       escrowAmount: config.crossChainArb.escrowAmount,
-      polygonRpcUrl: config.crossChainArb.polygonRpcUrl,
+      polygonRpcUrl: config.rpc.polygonRpcUrls[0], // Use first available
       katanaRpcUrl: config.crossChainArb.katanaRpcUrl,
     });
   }
-
-  // Data ingestion is handled by HyperIndex (child process)
-  // Pool discovery and state ingestion are managed by HyperIndex
-  logger.info({}, "HyperIndex handles pool discovery, hydration, and state watching");
 
   logger.info("Ready — entering pass loop");
 

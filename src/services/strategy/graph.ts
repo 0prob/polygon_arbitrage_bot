@@ -8,6 +8,10 @@ export interface SwapEdge {
   tokenOut: Address;
   feeBps: bigint;
   stateRef?: unknown;
+  // Pre-calculated parameters (optional for test compatibility)
+  zeroForOne?: boolean;
+  tokenInIdx?: number;
+  tokenOutIdx?: number;
 }
 
 export interface RoutingGraph {
@@ -15,6 +19,27 @@ export interface RoutingGraph {
   poolMeta: Map<string, PoolMeta>;
   stateRefs: Map<string, unknown>;
   tokens: Set<string>;
+}
+
+function inferZeroForOne(edge: { tokenIn: string; tokenOut: string }, state: Record<string, unknown>): boolean {
+  const t0 = state.token0;
+  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
+  if (Array.isArray(state.tokens)) {
+    const tokens = state.tokens as string[];
+    const tokenIn = edge.tokenIn.toLowerCase();
+    return tokens.some((t) => t.toLowerCase() === tokenIn);
+  }
+  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
+}
+
+function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: number): number {
+  const tokens = state.tokens;
+  if (Array.isArray(tokens)) {
+    const addr = token.toLowerCase();
+    const idx = tokens.findIndex((t: unknown) => typeof t === "string" && t.toLowerCase() === addr);
+    if (idx >= 0) return idx;
+  }
+  return fallback;
 }
 
 export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>): RoutingGraph {
@@ -25,19 +50,24 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
   for (const pool of pools) {
     const addr = pool.address.toLowerCase();
     poolMeta.set(addr, pool);
-    stateRefs.set(addr, stateCache.get(addr));
+    const state = stateCache.get(addr) as Record<string, unknown> | undefined;
+    stateRefs.set(addr, state);
     const t = pool.tokens ?? [];
     for (let i = 0; i < t.length; i++) {
       tokens.add(t[i].toLowerCase());
       for (let j = 0; j < t.length; j++) {
         if (i === j) continue;
+        const edgeParams = { tokenIn: t[i], tokenOut: t[j] };
         const edge: SwapEdge = {
           poolAddress: addr as Address,
           protocol: pool.protocol,
           tokenIn: t[i].toLowerCase() as Address,
           tokenOut: t[j].toLowerCase() as Address,
           feeBps: pool.fee != null ? BigInt(pool.fee) : 30n,
-          stateRef: stateRefs.get(addr),
+          stateRef: state,
+          zeroForOne: state ? inferZeroForOne(edgeParams, state) : edgeParams.tokenIn.toLowerCase() < edgeParams.tokenOut.toLowerCase(),
+          tokenInIdx: state ? inferTokenIdx(edgeParams.tokenIn, state, 0) : 0,
+          tokenOutIdx: state ? inferTokenIdx(edgeParams.tokenOut, state, 1) : 1,
         };
         const k = t[i].toLowerCase();
         if (!adjacency.has(k)) adjacency.set(k, []);

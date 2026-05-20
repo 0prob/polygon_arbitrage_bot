@@ -83,7 +83,6 @@ let _moduleError: Error | null = null;
 
 async function ensureModule(): Promise<void> {
   if (_module !== null) return;
-  if (_moduleError !== null && !shouldRetryLoad()) return;
   try {
     const mod = await import("@envio-dev/hypersync-client");
     _module = mod as Record<string, unknown>;
@@ -91,14 +90,6 @@ async function ensureModule(): Promise<void> {
   } catch (err) {
     _moduleError = err instanceof Error ? err : new Error(String(err));
   }
-}
-
-let _lastModuleAttempt = 0;
-function shouldRetryLoad(): boolean {
-  const now = Date.now();
-  if (now - _lastModuleAttempt < 10_000) return false;
-  _lastModuleAttempt = now;
-  return true;
 }
 
 export async function createHypersyncClient(config: HyperSyncClientConfig): Promise<HypersyncClientRuntime> {
@@ -117,107 +108,48 @@ export async function createHypersyncClient(config: HyperSyncClientConfig): Prom
   }
 }
 
-let _defaultUrl = "https://polygon.hypersync.xyz";
-let _defaultApiToken = "";
-
-export function setHypersyncDefaults(url: string, apiToken: string): void {
-  _defaultUrl = url;
-  _defaultApiToken = apiToken;
-}
-
-let _clientPromise: Promise<HypersyncClientRuntime> | null = null;
-
-function ensureClient(): Promise<HypersyncClientRuntime> {
-  if (!_clientPromise) {
-    _clientPromise = createHypersyncClient({
-      url: _defaultUrl,
-      apiToken: _defaultApiToken,
-    }).catch((err) => {
-      _clientPromise = null;
-      throw err;
-    });
-  }
-  return _clientPromise;
-}
-
-function proxyClient(): HypersyncClientRuntime {
-  return new Proxy({} as HypersyncClientRuntime, {
-    get(_target, prop) {
-      const propStr = prop as string;
-      return (...args: unknown[]) =>
-        ensureClient().then((c) => {
-          const fn = (c as unknown as Record<string, unknown>)[propStr] as (...a: unknown[]) => unknown;
-          return fn(...args);
-        });
-    },
-  });
-}
-
-export const client: HypersyncClientRuntime = proxyClient();
-
-export const LogField = {
-  Address: "Address",
-  Data: "Data",
-  Topic0: "Topic0",
-  Topic1: "Topic1",
-  Topic2: "Topic2",
-  Topic3: "Topic3",
-  BlockNumber: "BlockNumber",
-  TransactionHash: "TransactionHash",
-  LogIndex: "LogIndex",
-  TransactionIndex: "TransactionIndex",
-};
-
-export const BlockField = {
-  Number: "Number",
-  Timestamp: "Timestamp",
-};
-
-export const JoinMode = {
-  Default: 0,
-  JoinAll: 1,
-  JoinNothing: 2,
-};
-
 function throwUnsupportedHyperSync(): never {
   throw createHyperSyncUnavailableError(new Error("HyperSync LogDecoder unavailable on this runtime"));
 }
 
-function tryCreateDecoder(): { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | null {
-  try {
-    const req = createRequire(import.meta.url);
-    const mod = req("@envio-dev/hypersync-client") as Record<string, unknown>;
-    const LogDecoderCtor = mod.Decoder as
-      | {
-          new (): HypersyncDecoderRuntime;
-          fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime;
-        }
-      | undefined;
-    if (LogDecoderCtor?.fromSignatures) {
-      return {
-        fromSignatures: (sigs: string[]) => LogDecoderCtor.fromSignatures(sigs),
-      };
-    }
-  } catch {
-    // native module not available
+export async function createHypersyncDecoder(signatures: string[]): Promise<HypersyncDecoderRuntime> {
+  await ensureModule();
+  if (!_module) {
+    return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
   }
-  return null;
+  const LogDecoderCtor = _module.Decoder as { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | undefined;
+  if (LogDecoderCtor?.fromSignatures) {
+    return LogDecoderCtor.fromSignatures(signatures);
+  }
+  return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
 }
 
-let _decoderFactory: { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | null = null;
-
-export const Decoder: { fromSignatures: (signatures: string[]) => HypersyncDecoderRuntime } = {
-  fromSignatures(signatures: string[]): HypersyncDecoderRuntime {
-    if (!_decoderFactory) {
-      _decoderFactory = tryCreateDecoder();
-    }
-    if (_decoderFactory) {
-      return _decoderFactory.fromSignatures(signatures);
-    }
-    return {
-      decodeLogs: async () => {
-        throwUnsupportedHyperSync();
-      },
+// Legacy exports for backward compatibility (Polygon default)
+let _singletonClient: HypersyncClientRuntime | null = null;
+export const client: HypersyncClientRuntime = new Proxy({} as HypersyncClientRuntime, {
+  get(_target, prop) {
+    const propStr = prop as string;
+    if (propStr === "then") return undefined; // Avoid proxying promises
+    return async (...args: unknown[]) => {
+      if (!_singletonClient) {
+        _singletonClient = await createHypersyncClient({ url: "https://polygon.hypersync.xyz" });
+      }
+      return (_singletonClient as any)[propStr](...args);
     };
   },
+});
+
+export const Decoder = {
+  fromSignatures(signatures: string[]): HypersyncDecoderRuntime {
+    return {
+      decodeLogs: async (logs: any[]) => {
+        const d = await createHypersyncDecoder(signatures);
+        return d.decodeLogs(logs);
+      }
+    };
+  }
 };
+
+export const LogField = { Address: "Address", Data: "Data", Topic0: "Topic0", Topic1: "Topic1", Topic2: "Topic2", Topic3: "Topic3", BlockNumber: "BlockNumber", TransactionHash: "TransactionHash", LogIndex: "LogIndex", TransactionIndex: "TransactionIndex" };
+export const BlockField = { Number: "Number", Timestamp: "Timestamp" };
+export const JoinMode = { Default: 0, JoinAll: 1, JoinNothing: 2 };
