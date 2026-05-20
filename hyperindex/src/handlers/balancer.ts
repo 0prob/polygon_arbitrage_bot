@@ -125,14 +125,24 @@ indexer.onEvent(
     const mapping = await context.BalancerPoolIdToAddress.get(poolId);
     if (!mapping) return;
 
-    const state = await context.BalancerPoolState.get(mapping.address);
-    if (!state) return;
+    const poolAddr = mapping.address;
+    const [state, meta] = await Promise.all([
+      context.BalancerPoolState.get(poolAddr),
+      context.PoolMeta.get(poolAddr)
+    ]);
 
-    const amounts = event.params.amounts; // int256[]
+    if (!state || !meta) return;
+
+    const eventTokens = event.params.tokens.map((t: string) => t.toLowerCase());
+    const amounts = event.params.amounts;
+    const metaTokens = meta.tokens as string[];
     const balances = [...state.balances];
 
-    for (let i = 0; i < balances.length; i++) {
-      balances[i] += BigInt(amounts[i] || 0);
+    for (let i = 0; i < eventTokens.length; i++) {
+      const idx = metaTokens.indexOf(eventTokens[i]);
+      if (idx >= 0) {
+        balances[idx] += BigInt(amounts[i] || 0n);
+      }
     }
 
     context.BalancerPoolState.set({
