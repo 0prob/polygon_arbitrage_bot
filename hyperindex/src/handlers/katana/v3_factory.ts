@@ -18,6 +18,7 @@ indexer.onEvent(
       token0: event.params.token0.toLowerCase(),
       token1: event.params.token1.toLowerCase(),
       createdBlock: Number(event.block.number),
+      createdTx: event.transaction.hash,
     });
   },
 );

@@ -60,7 +60,10 @@ export class DiscoveryService {
         try {
           this.deps.activity("DISCOVERY", `V2: ${factory.label}...`);
           const v2Pools = await this.deps.fetchV2Pools(factory.address, factory.label);
-          pools.push(...v2Pools.map((p) => ({ address: p.poolAddress, protocol: factory.label.toLowerCase(), tokens: [p.token0, p.token1] })));
+          for (const p of v2Pools) {
+            pools.push({ address: p.poolAddress, protocol: factory.label.toLowerCase(), tokens: [p.token0, p.token1] });
+          }
+
           this.deps.activity("DISCOVERY", `V2: ${factory.label} → ${v2Pools.length} pools`);
         } catch (err) {
           this.deps.logger.error({ err, factory: factory.label }, "V2 discovery failed");

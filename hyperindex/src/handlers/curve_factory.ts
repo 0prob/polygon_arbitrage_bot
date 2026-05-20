@@ -15,6 +15,12 @@ indexer.contractRegister(
   { contract: "CurveRegistry", event: "PoolAdded" },
   async ({ event, context }: any) => {
     const pool = event.params.pool.toLowerCase();
+    const existing = await context.PoolMeta.get(pool);
+    if (existing) {
+      context.chain.CurvePool.add(event.params.pool);
+      return;
+    }
+
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 8 });
     if (meta.coins.some(t => HUB_TOKENS.has(t))) {
       context.chain.CurvePool.add(event.params.pool);
@@ -26,6 +32,9 @@ indexer.onEvent(
   { contract: "CurveRegistry", event: "PoolAdded" },
   async ({ event, context }: any) => {
     const pool = event.params.pool.toLowerCase();
+    const existing = await context.PoolMeta.get(pool);
+    if (existing) return;
+
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 8 });
     if (!meta.coins.some(t => HUB_TOKENS.has(t))) return;
     

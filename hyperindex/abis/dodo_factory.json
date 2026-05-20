@@ -2,6 +2,7 @@
   {
     "name": "DVMDeployed",
     "type": "event",
+    "anonymous": false,
     "inputs": [
       { "indexed": false, "name": "baseToken", "type": "address" },
       { "indexed": false, "name": "quoteToken", "type": "address" },
@@ -12,6 +13,7 @@
   {
     "name": "DPPDeployed",
     "type": "event",
+    "anonymous": false,
     "inputs": [
       { "indexed": false, "name": "baseToken", "type": "address" },
       { "indexed": false, "name": "quoteToken", "type": "address" },
@@ -22,6 +24,7 @@
   {
     "name": "DSPDeployed",
     "type": "event",
+    "anonymous": false,
     "inputs": [
       { "indexed": false, "name": "baseToken", "type": "address" },
       { "indexed": false, "name": "quoteToken", "type": "address" },

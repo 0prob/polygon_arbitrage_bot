@@ -11,6 +11,7 @@ async function main() {
   const hyperIndex = createHyperIndexProcess({
     dataDir: config.paths.dataDir,
     polygonRpcUrl: config.rpc.polygonRpcUrls[0],
+    katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
     envioApiToken: config.envioApiToken,
     logger: createRootLogger({ level: config.observability.logLevel }),
   });

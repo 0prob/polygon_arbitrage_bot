@@ -8,6 +8,13 @@ type PoolMeta {
   fee: Int
   tickSpacing: Int
   createdBlock: Int!
+  createdTx: String
+  poolId: String # For Balancer
+}
+
+type BalancerPoolIdToAddress {
+  id: ID! # poolId
+  address: String!
 }
 
 type V2PoolState {

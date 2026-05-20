@@ -4,7 +4,13 @@ import { polygon } from "viem/chains";
 
 const client = createPublicClient({
   chain: polygon,
-  transport: http(process.env.POLYGON_RPC_URL!, { batch: true }),
+  transport: http(process.env.POLYGON_RPC_URL!, {
+    batch: { batchSize: 100 },
+    timeout: 10_000,
+  }),
+  batch: {
+    multicall: { wait: 16, batchSize: 100 },
+  },
 });
 
 const BALANCER_ABI = parseAbi([
@@ -18,15 +24,18 @@ const VAULT_ABI = parseAbi([
 export const fetchBalancerMetadata = createEffect(
   {
     name: "fetchBalancerMetadata",
-    input: { pool: S.string },
-    output: { poolId: S.string, balances: S.array(S.bigint), lastChangeBlock: S.bigint },
-    rateLimit: { calls: 10, per: "second" },
+    input: { pool: S.string, poolId: S.optional(S.string) },
+    output: { poolId: S.string, balances: S.array(S.bigint), tokens: S.array(S.string), lastChangeBlock: S.bigint },
+    rateLimit: { calls: 20, per: "second" },
     cache: true,
   },
   async ({ input }) => {
     try {
       const pool = input.pool as `0x${string}`;
-      const poolId = await client.readContract({ address: pool, abi: BALANCER_ABI, functionName: "getPoolId" });
+      // Use provided poolId or fetch it
+      const poolId = (input.poolId as `0x${string}`) || 
+        await client.readContract({ address: pool, abi: BALANCER_ABI, functionName: "getPoolId" });
+      
       const vault = "0xba12222222228d8ba445958a75a0704d566bf2c8" as const;
       const [tokens, balances, lastChangeBlock] = await client.readContract({
         address: vault,
@@ -36,11 +45,12 @@ export const fetchBalancerMetadata = createEffect(
       });
       return {
         poolId: poolId as string,
+        tokens: (tokens as string[]).map(t => t.toLowerCase()),
         balances: (balances as bigint[]).map((b) => BigInt(b)),
         lastChangeBlock: BigInt(lastChangeBlock as bigint),
       };
     } catch {
-      return { poolId: "", balances: [], lastChangeBlock: 0n };
+      return { poolId: "", tokens: [], balances: [], lastChangeBlock: 0n };
     }
   },
 );

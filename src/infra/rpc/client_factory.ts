@@ -1,8 +1,9 @@
-import { createPublicClient, createWalletClient, http } from "viem";
-import { polygon } from "viem/chains";
+import { createPublicClient, createWalletClient, http, fallback, type PublicClient, type WalletClient, type HttpTransport } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { getChain } from "./chains.ts";
 
 export interface ClientFactoryOptions {
+  chainId?: number;
   batchSize?: number;
   batchWaitMs?: number;
   timeoutMs?: number;
@@ -10,57 +11,58 @@ export interface ClientFactoryOptions {
 
 const DEFAULT_BATCH_SIZE = 100;
 const DEFAULT_BATCH_WAIT_MS = 16;
-const DEFAULT_TIMEOUT_MS = 8_000;
+const DEFAULT_TIMEOUT_MS = 10_000;
 
-function publicClientConfig(rpcUrl: string, opts?: ClientFactoryOptions) {
-  const batchSize = opts?.batchSize ?? DEFAULT_BATCH_SIZE;
-  const batchWaitMs = opts?.batchWaitMs ?? DEFAULT_BATCH_WAIT_MS;
-  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  return {
-    chain: polygon,
-    transport: http(rpcUrl, {
-      batch: { batchSize },
-      timeout: timeoutMs,
-      fetchOptions: { headers: { Connection: "keep-alive" } },
-    }),
-    batch: {
-      multicall: { wait: batchWaitMs, batchSize },
+function createOptimizedTransport(url: string, opts?: ClientFactoryOptions): HttpTransport {
+  return http(url, {
+    batch: { batchSize: opts?.batchSize ?? DEFAULT_BATCH_SIZE },
+    timeout: opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    fetchOptions: {
+      headers: {
+        Connection: "keep-alive",
+        "Keep-Alive": "timeout=60, max=1000",
+      },
     },
-  } as const;
-}
-
-export function createReadClients(urls: string[], opts?: ClientFactoryOptions) {
-  return urls.map((url) =>
-    createPublicClient({
-      ...publicClientConfig(url, opts),
-    }),
-  );
-}
-
-export function createExecutionClient(rpcUrl: string, privateKey?: string) {
-  const pk = privateKey ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) : undefined;
-  const account = pk ? privateKeyToAccount(pk as `0x${string}`) : undefined;
-  return createWalletClient({
-    ...(account ? { account } : {}),
-    chain: polygon,
-    transport: http(rpcUrl, {
-      timeout: DEFAULT_TIMEOUT_MS,
-      retryCount: 0,
-      fetchOptions: { headers: { Connection: "keep-alive" } },
-    }),
   });
 }
 
-export function createGasEstimationClient(rpcUrl: string, opts?: ClientFactoryOptions) {
+export function createReadClient(urls: string[], opts?: ClientFactoryOptions): PublicClient {
+  const chainId = opts?.chainId ?? 137;
+  const chain = getChain(chainId);
+  
+  const transports = urls.map(url => createOptimizedTransport(url, opts));
+  
   return createPublicClient({
-    chain: polygon,
-    transport: http(rpcUrl, {
-      batch: true,
-      timeout: opts?.timeoutMs ?? 5_000,
-      fetchOptions: { headers: { Connection: "keep-alive" } },
-    }),
+    chain,
+    transport: fallback(transports, { rank: true }),
     batch: {
-      multicall: { wait: opts?.batchWaitMs ?? DEFAULT_BATCH_WAIT_MS },
+      multicall: {
+        wait: opts?.batchWaitMs ?? DEFAULT_BATCH_WAIT_MS,
+        batchSize: opts?.batchSize ?? DEFAULT_BATCH_SIZE,
+      },
+    },
+  });
+}
+
+export function createExecutionClient(rpcUrl: string, privateKey?: string, chainId: number = 137): WalletClient {
+  const chain = getChain(chainId);
+  const pk = privateKey ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) : undefined;
+  const account = pk ? privateKeyToAccount(pk as `0x${string}`) : undefined;
+  
+  return createWalletClient({
+    ...(account ? { account } : {}),
+    chain,
+    transport: createOptimizedTransport(rpcUrl, { timeoutMs: 15_000 }), // Higher timeout for submission
+  });
+}
+
+export function createGasEstimationClient(rpcUrl: string, chainId: number = 137): PublicClient {
+  const chain = getChain(chainId);
+  return createPublicClient({
+    chain,
+    transport: createOptimizedTransport(rpcUrl, { timeoutMs: 5_000 }),
+    batch: {
+      multicall: { wait: 10 },
     },
   });
 }

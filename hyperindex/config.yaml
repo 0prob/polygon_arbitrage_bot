@@ -1,13 +1,19 @@
 name: arb_bot_ingestion
+description: "High-performance DEX indexing for arbitrage opportunities"
+rollback_on_reorg: false
+raw_events: false
+full_batch_size: 10000
+
 handlers: src/handlers
 chains:
   - id: 137
-    start_block: ${POLYGON_START_BLOCK:-58000000}
+    start_block: ${POLYGON_START_BLOCK:-5484533}
     hypersync_config:
       url: https://polygon.hypersync.xyz
     contracts:
       # Consolidated V2 Factories
       - name: V2Factory
+        start_block: 5484533 # Quickswap deployment
         address:
           - "0x5757371414417b8c6caad45baef941abc7d3ab32" # Quickswap
           - "0xc35dadb65012ec5796536bd9864ed8773abc74c4" # Sushi
@@ -26,6 +32,7 @@ chains:
       
       # Consolidated V3 Factories
       - name: V3Factory
+        start_block: 22757547 # Uniswap V3 deployment
         address:
           - "0x1f98431c8ad98523631ae4a59f267346ea31f984" # Uniswap
           - "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2" # Sushi
@@ -40,6 +47,7 @@ chains:
 
       # Wildcard Pools (Dynamically Registered)
       - name: UniswapV2Pool
+        start_block: 5484533
         abi_file_path: abis/uniswap_v2_pool.json
         handler: src/handlers/v2_pool.ts
         events:
@@ -48,6 +56,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: UniswapV3Pool
+        start_block: 22757547
         abi_file_path: abis/uniswap_v3_pool.json
         handler: src/handlers/v3_pool.ts
         events:
@@ -57,6 +66,7 @@ chains:
 
       # Specific Single-Address Contracts
       - name: CurveRegistry
+        start_block: 28641368
         address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
         abi_file_path: abis/curve_factory.json
         handler: src/handlers/curve_factory.ts
@@ -66,6 +76,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: CurvePool
+        start_block: 28641368
         abi_file_path: abis/curve_pool.json
         handler: src/handlers/curve_pool.ts
         events:
@@ -76,11 +87,14 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
           - event: RemoveLiquidity
+            field_selection:
+              transaction_fields: ["hash"]
           - event: RemoveLiquidityOne
             field_selection:
               transaction_fields: ["hash"]
 
       - name: PoolManager
+        start_block: 66980384 # Uniswap V4 deployment
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
         abi_file_path: abis/uniswap_v4_pool_manager.json
         handler: src/handlers/v4.ts
@@ -93,6 +107,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: BalancerVault
+        start_block: 16335686
         address: "0xba12222222228d8ba445958a75a0704d566bf2c8"
         abi_file_path: abis/balancer_vault.json
         handler: src/handlers/balancer.ts
@@ -112,6 +127,7 @@ chains:
 
       # DODO V2 Factories
       - name: DodoFactory
+        start_block: 13630000
         address:
           - "0x79887f65f83bdf15bcc8736b5e5bcdb48fb8fe13" # DVM
           - "0xdfaf9584f5d229a9dbe5978523317820a8897c5a" # DPP
@@ -130,6 +146,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: DodoPool
+        start_block: 13630000
         abi_file_path: abis/uniswap_v2_pool.json
         handler: src/handlers/dodo_pool.ts
         events:

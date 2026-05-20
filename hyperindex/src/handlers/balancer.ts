@@ -16,7 +16,7 @@ indexer.onEvent(
   async ({ event, context }: any) => {
     const pool = event.params.poolAddress.toLowerCase();
     const poolId = event.params.poolId.toLowerCase();
-    const meta = await context.effect(fetchBalancerMetadata, { pool });
+    const meta = await context.effect(fetchBalancerMetadata, { pool, poolId });
     
     if (!meta.tokens.some(t => HUB_TOKENS.has(t))) return;
 
@@ -84,7 +84,7 @@ indexer.onEvent(
 
     if (!state || !meta) {
       // Fallback to effect if state missing (initialization)
-      const metaEffect = await context.effect(fetchBalancerMetadata, { pool: poolAddr });
+      const metaEffect = await context.effect(fetchBalancerMetadata, { pool: poolAddr, poolId });
       context.BalancerPoolState.set({
         id: poolAddr,
         address: poolAddr,

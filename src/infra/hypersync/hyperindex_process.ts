@@ -5,6 +5,7 @@ import type { Logger } from "../observability/logger.ts";
 export interface HyperIndexProcessOptions {
   dataDir: string;
   polygonRpcUrl: string;
+  katanaRpcUrl?: string;
   envioApiToken?: string;
   logger: Logger;
 }
@@ -27,12 +28,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       ...process.env as Record<string, string>,
       POLYGON_RPC_URL: opts.polygonRpcUrl,
     };
+    if (opts.katanaRpcUrl) {
+      env.KATANA_RPC_URL = opts.katanaRpcUrl;
+    }
     if (opts.envioApiToken) {
       env.ENVIO_API_TOKEN = opts.envioApiToken;
     }
 
     opts.logger.info({ hyperindexDir: hiDir }, "Starting HyperIndex ingestion");
 
+    // Use envio dev with -r if needed, but normally just dev
     proc = spawn("bunx", ["envio", "dev"], {
       cwd: hiDir,
       env,
@@ -55,7 +60,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       proc = null;
     });
 
-    // Wait a moment for process to start
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
@@ -63,7 +67,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     if (!proc) return;
 
     opts.logger.info("Stopping HyperIndex ingestion");
-
     proc.kill("SIGTERM");
 
     await new Promise<void>((resolve) => {

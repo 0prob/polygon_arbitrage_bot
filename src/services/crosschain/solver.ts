@@ -1,9 +1,11 @@
-import { createPublicClient, createWalletClient, http, getAddress } from "viem";
+import { getAddress, type PublicClient, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { polygon, type Chain } from "viem/chains";
+import { polygon } from "viem/chains";
 import type { CrossChainRoute } from "./types.ts";
 import { buildOrderData, computeOrderId } from "./order.ts";
 import { encodeKatanaArbTx, type ExecuteArbInput } from "../execution/crosschain_calldata.ts";
+import { createReadClient, createExecutionClient } from "../../infra/rpc/client_factory.ts";
+import { katana as katanaChain } from "../../infra/rpc/chains.ts";
 
 const APPROVE_ABI = [
   { name: "approve", type: "function", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [{ type: "bool" }], stateMutability: "nonpayable" },
@@ -14,13 +16,6 @@ const EXEC_ARB_ORDER_ABI = [
     { type: "address" }, { type: "uint256" }, { type: "bytes" },
   ], outputs: [{ type: "bytes32" }], stateMutability: "nonpayable" },
 ] as const;
-
-const katanaChain: Chain = {
-  id: 747474,
-  name: "Katana",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: { default: { http: [process.env.KATANA_RPC_URL ?? "https://rpc.katana.network"] } },
-} as const;
 
 export interface SolverBotConfig {
   polygonSolverKey: `0x${string}`;
@@ -35,10 +30,10 @@ export interface SolverBotConfig {
 
 export class SolverBot {
   private config: SolverBotConfig;
-  private polygonClient: ReturnType<typeof createPublicClient>;
-  private katanaClient: ReturnType<typeof createPublicClient>;
-  private polygonWallet: ReturnType<typeof createWalletClient>;
-  private katanaWallet: ReturnType<typeof createWalletClient>;
+  private polygonClient: PublicClient;
+  private katanaClient: PublicClient;
+  private polygonWallet: WalletClient;
+  private katanaWallet: WalletClient;
   private polyAccount: ReturnType<typeof privateKeyToAccount>;
   private kataAccount: ReturnType<typeof privateKeyToAccount>;
 
@@ -47,10 +42,12 @@ export class SolverBot {
     this.polyAccount = privateKeyToAccount(config.polygonSolverKey);
     this.kataAccount = privateKeyToAccount(config.katanaSolverKey);
 
-    this.polygonClient = createPublicClient({ chain: polygon, transport: http(config.polygonRpcUrl) });
-    this.katanaClient = createPublicClient({ chain: katanaChain, transport: http(config.katanaRpcUrl) });
-    this.polygonWallet = createWalletClient({ account: this.polyAccount, chain: polygon, transport: http(config.polygonRpcUrl) });
-    this.katanaWallet = createWalletClient({ account: this.kataAccount, chain: katanaChain, transport: http(config.katanaRpcUrl) });
+    // Optimized client creation
+    this.polygonClient = createReadClient([config.polygonRpcUrl], { chainId: 137 });
+    this.katanaClient = createReadClient([config.katanaRpcUrl], { chainId: 747474 });
+    
+    this.polygonWallet = createExecutionClient(config.polygonRpcUrl, config.polygonSolverKey, 137);
+    this.katanaWallet = createExecutionClient(config.katanaRpcUrl, config.katanaSolverKey, 747474);
   }
 
   async executeCrossChainArb(route: CrossChainRoute): Promise<boolean> {
@@ -69,7 +66,7 @@ export class SolverBot {
       const orderId = computeOrderId(route.escrowToken, route.escrowAmount, this.polyAccount.address, BigInt(Math.floor(Date.now() / 1000)));
 
       // Approve escrow token
-      const approveHash = await this.polygonWallet.writeContract({
+      const approveHash = await (this.polygonWallet as any).writeContract({
         account: this.polyAccount,
         chain: polygon,
         address: getAddress(route.escrowToken),
@@ -80,7 +77,7 @@ export class SolverBot {
       await this.polygonClient.waitForTransactionReceipt({ hash: approveHash });
 
       // Call executeArbOrder
-      const execHash = await this.polygonWallet.writeContract({
+      const execHash = await (this.polygonWallet as any).writeContract({
         account: this.polyAccount,
         chain: polygon,
         address: getAddress(this.config.crossChainIntentOrigin),
@@ -105,11 +102,12 @@ export class SolverBot {
       const kataHash = await this.katanaWallet.sendTransaction({
         account: this.kataAccount,
         chain: katanaChain,
-        ...katanaTx,
+        to: katanaTx.to as `0x${string}`,
+        data: katanaTx.data as `0x${string}`,
+        value: katanaTx.value,
       });
       await this.katanaClient.waitForTransactionReceipt({ hash: kataHash });
 
-      // Step 3: Wait for AggLayer proof + claim (simplified — in production, monitor for proof then call claimOrder)
       console.log(`Cross-chain arb completed: orderId=${orderId}, kataHash=${kataHash}`);
       return true;
     } catch (err) {
