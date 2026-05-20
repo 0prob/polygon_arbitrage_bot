@@ -30,5 +30,15 @@
       { "indexed": false, "name": "fees", "type": "uint256[]" },
       { "indexed": false, "name": "token_supply", "type": "uint256" }
     ]
+  },
+  {
+    "name": "RemoveLiquidityOne",
+    "type": "event",
+    "inputs": [
+      { "indexed": true, "name": "provider", "type": "address" },
+      { "indexed": false, "name": "token_amount", "type": "uint256" },
+      { "indexed": false, "name": "coin_index", "type": "uint256" },
+      { "indexed": false, "name": "coin_amount", "type": "uint256" }
+    ]
   }
 ]

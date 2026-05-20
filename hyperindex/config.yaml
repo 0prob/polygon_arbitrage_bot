@@ -76,6 +76,7 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
           - event: RemoveLiquidity
+          - event: RemoveLiquidityOne
             field_selection:
               transaction_fields: ["hash"]
 

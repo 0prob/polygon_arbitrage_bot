@@ -65,3 +65,24 @@ indexer.onEvent(
     });
   },
 );
+
+indexer.onEvent(
+  { contract: "CurvePool", event: "RemoveLiquidityOne" },
+  async ({ event, context }: any) => {
+    const pool = event.srcAddress.toLowerCase();
+    const state = await context.CurvePoolState.get(pool);
+    if (!state) return;
+
+    const balances = [...state.balances];
+    const coinIndex = Number(event.params.coin_index);
+    if (coinIndex < balances.length) {
+      balances[coinIndex] -= event.params.coin_amount;
+    }
+
+    context.CurvePoolState.set({
+      ...state,
+      lastUpdatedBlock: Number(event.block.number),
+      balances,
+    });
+  },
+);
