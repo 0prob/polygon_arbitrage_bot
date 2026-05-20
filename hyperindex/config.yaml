@@ -65,6 +65,20 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
 
+      - name: CurvePool
+        abi_file_path: abis/curve_pool.json
+        handler: src/handlers/curve_pool.ts
+        events:
+          - event: TokenExchange
+            field_selection:
+              transaction_fields: ["hash"]
+          - event: AddLiquidity
+            field_selection:
+              transaction_fields: ["hash"]
+          - event: RemoveLiquidity
+            field_selection:
+              transaction_fields: ["hash"]
+
       - name: PoolManager
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
         abi_file_path: abis/uniswap_v4_pool_manager.json

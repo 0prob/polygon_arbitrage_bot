@@ -1,23 +1,34 @@
 [
   {
-    "anonymous": false,
+    "name": "TokenExchange",
+    "type": "event",
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "amount0In", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount1In", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount0Out", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amount1Out", "type": "uint256" }
-    ],
-    "name": "Swap",
-    "type": "event"
+      { "indexed": true, "name": "buyer", "type": "address" },
+      { "indexed": false, "name": "sold_id", "type": "int128" },
+      { "indexed": false, "name": "tokens_sold", "type": "uint256" },
+      { "indexed": false, "name": "bought_id", "type": "int128" },
+      { "indexed": false, "name": "tokens_bought", "type": "uint256" }
+    ]
   },
   {
-    "anonymous": false,
+    "name": "AddLiquidity",
+    "type": "event",
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "reserve0", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "reserve1", "type": "uint256" }
-    ],
-    "name": "Sync",
-    "type": "event"
+      { "indexed": true, "name": "provider", "type": "address" },
+      { "indexed": false, "name": "token_amounts", "type": "uint256[]" },
+      { "indexed": false, "name": "fees", "type": "uint256[]" },
+      { "indexed": false, "name": "invariant", "type": "uint256" },
+      { "indexed": false, "name": "token_supply", "type": "uint256" }
+    ]
+  },
+  {
+    "name": "RemoveLiquidity",
+    "type": "event",
+    "inputs": [
+      { "indexed": true, "name": "provider", "type": "address" },
+      { "indexed": false, "name": "token_amounts", "type": "uint256[]" },
+      { "indexed": false, "name": "fees", "type": "uint256[]" },
+      { "indexed": false, "name": "token_supply", "type": "uint256" }
+    ]
   }
 ]
