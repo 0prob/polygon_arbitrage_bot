@@ -2,7 +2,7 @@ name: arb_bot_ingestion
 handlers: src/handlers
 chains:
   - id: 137
-    start_block: ${POLYGON_START_BLOCK:-0}
+    start_block: ${POLYGON_START_BLOCK:-58000000}
     hypersync_config:
       url: https://polygon.hypersync.xyz
     contracts:
