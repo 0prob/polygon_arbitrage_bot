@@ -129,6 +129,14 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
 
+      - name: DodoPool
+        abi_file_path: abis/uniswap_v2_pool.json
+        handler: src/handlers/dodo_pool.ts
+        events:
+          - event: Sync
+            field_selection:
+              transaction_fields: ["hash"]
+
   - id: 747474
     start_block: ${KATANA_START_BLOCK:-0}
     hypersync_config:

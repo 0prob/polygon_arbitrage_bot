@@ -1,0 +1,32 @@
+[
+  {
+    "name": "DVMDeployed",
+    "type": "event",
+    "inputs": [
+      { "indexed": false, "name": "baseToken", "type": "address" },
+      { "indexed": false, "name": "quoteToken", "type": "address" },
+      { "indexed": false, "name": "creator", "type": "address" },
+      { "indexed": false, "name": "dvm", "type": "address" }
+    ]
+  },
+  {
+    "name": "DPPDeployed",
+    "type": "event",
+    "inputs": [
+      { "indexed": false, "name": "baseToken", "type": "address" },
+      { "indexed": false, "name": "quoteToken", "type": "address" },
+      { "indexed": false, "name": "creator", "type": "address" },
+      { "indexed": false, "name": "dpp", "type": "address" }
+    ]
+  },
+  {
+    "name": "DSPDeployed",
+    "type": "event",
+    "inputs": [
+      { "indexed": false, "name": "baseToken", "type": "address" },
+      { "indexed": false, "name": "quoteToken", "type": "address" },
+      { "indexed": false, "name": "creator", "type": "address" },
+      { "indexed": false, "name": "dsp", "type": "address" }
+    ]
+  }
+]
