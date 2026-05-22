@@ -319,7 +319,7 @@ const diagTxBuilder = diag("execution/tx-builder", () => {
 
 // ── 8. (reserved) ────────────────────────────────────────────────────────
 
-const diagValidatePoolState = diag("watcher/validate-pool-state", () => {
+const validatePoolState = diag("watcher/validate-pool-state", () => {
   // validatePoolState requires poolId (hex address), protocol, tokens
   const valid = validatePoolState({ poolId: "0x7a250d5630b4cf539739df2c5dacb4c659f2488d", protocol: "v2", tokens: ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"] });
   if (!valid.valid) throw new Error(`Valid state should pass: ${valid.reason}`);

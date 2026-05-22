@@ -155,7 +155,7 @@ export function buildStateCacheFromHyperIndex(hiDbPath: string, _addresses: stri
     }
 
     _lastFetchedBlock = currentHead;
-  } catch (err) {
+  } catch {
     // If table doesn't exist yet, we just return the existing cache (or empty)
   }
   return _cachedState;

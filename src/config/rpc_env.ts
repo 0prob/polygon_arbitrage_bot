@@ -1,6 +1,5 @@
 import { type PublicClient, type WalletClient, type Account } from "viem";
 import { createReadClient, createExecutionClient as createExec, createGasEstimationClient as createGas } from "../infra/rpc/client_factory.ts";
-import { polygon } from "../infra/rpc/chains.ts";
 
 function requireEnv(key: string): string {
   const val = process.env[key];
