@@ -1,0 +1,34 @@
+export type ArbEvent =
+  | { type: "pass_loop_started"; intervalMs: number }
+  | { type: "graph_built"; poolCount: number; cycleCount: number }
+  | { type: "opportunity_found"; routeKey: string; profitWei: bigint }
+  | { type: "execution_submitted"; routeKey: string; txHash?: string }
+  | { type: "execution_result"; routeKey: string; success: boolean; txHash?: string; error?: string }
+  | { type: "gas_snapshot"; gasPrice: bigint }
+  | { type: "pool_discovery"; count: number }
+  | { type: "error"; component: string; message: string }
+  | { type: "shutdown" }
+  | { type: "heartbeat"; elapsedMs: number };
+
+type EventHandler = (event: ArbEvent) => void;
+
+export class EventBus {
+  private handlers = new Set<EventHandler>();
+
+  on(handler: EventHandler): () => void {
+    this.handlers.add(handler);
+    return () => {
+      this.handlers.delete(handler);
+    };
+  }
+
+  emit(event: ArbEvent): void {
+    for (const handler of this.handlers) {
+      try {
+        handler(event);
+      } catch {
+        // swallow handler errors so one bad handler doesn't kill the bus
+      }
+    }
+  }
+}
