@@ -1,5 +1,5 @@
 import path from "path";
-import { type PublicClient, type WalletClient } from "viem";
+import { type PublicClient } from "viem";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import { createDatabase, type CompatDatabase } from "../infra/db/connection.ts";
@@ -133,6 +133,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   // Optimized execution client
   const submitTx = async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
     const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
+    if (!walletClient.account) {
+      throw new Error("Execution client is not configured with an account.");
+    }
     const hash = await walletClient.sendTransaction({
       account: walletClient.account,
       to: tx.to as `0x${string}`,
