@@ -9,7 +9,7 @@ const MAX_CACHED_STATE_ENTRIES = 10_000;
 
 // Internal cache to avoid redundant work in the same process
 let _hiDb: CompatDatabase | null = null;
-let _cachedState: Map<string, Record<string, unknown>> = new Map();
+const _cachedState: Map<string, Record<string, unknown>> = new Map();
 let _lastFetchedBlock: number = -1;
 let _cacheAccessOrder: string[] = [];
 
