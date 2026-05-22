@@ -1,6 +1,6 @@
 import { EventBus, type ArbEvent } from "./events.ts";
-import { createInitialState, applyEvent, type TuiState } from "./state.ts";
-import { computeLayout, type TuiLayout } from "./layout.ts";
+import { createInitialState, applyEvent } from "./state.ts";
+import { computeLayout } from "./layout.ts";
 import { Renderer } from "./renderer.ts";
 
 export interface TuiInstance {

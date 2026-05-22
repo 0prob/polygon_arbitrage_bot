@@ -76,12 +76,7 @@ export function encodeKatanaArbTx(input: ExecuteArbInput) {
 export function computeOrderId(escrowToken: string, escrowAmount: bigint, solver: string): `0x${string}` {
   return keccak256(
     encodeAbiParameters(
-      [
-        { type: "address" },
-        { type: "uint256" },
-        { type: "address" },
-        { type: "uint256" },
-      ],
+      [{ type: "address" }, { type: "uint256" }, { type: "address" }, { type: "uint256" }],
       [getAddress(escrowToken), escrowAmount, getAddress(solver), BigInt(Math.floor(Date.now() / 1000))],
     ),
   );

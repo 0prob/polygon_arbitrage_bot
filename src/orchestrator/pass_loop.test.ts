@@ -30,7 +30,9 @@ describe("runPassLoop", () => {
         envioApiToken: "",
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
-      gasOracle: { getSnapshot: vi.fn().mockReturnValue({ gasPrice: 30n * 10n ** 9n, baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }) },
+      gasOracle: {
+        getSnapshot: vi.fn().mockReturnValue({ gasPrice: 30n * 10n ** 9n, baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }),
+      },
       isRunning: true,
       db: {},
       stateCache: new Map() as any,
@@ -57,13 +59,15 @@ describe("runPassLoop", () => {
       }),
       enumerateCycles: vi.fn().mockReturnValue([
         {
-          edges: [{
-            poolAddress: VALID_ADDR_B,
-            tokenIn: VALID_ADDR_A,
-            tokenOut: VALID_ADDR_C,
-            protocol: "quickswap_v2",
-            feeBps: 30n,
-          }],
+          edges: [
+            {
+              poolAddress: VALID_ADDR_B,
+              tokenIn: VALID_ADDR_A,
+              tokenOut: VALID_ADDR_C,
+              protocol: "quickswap_v2",
+              feeBps: 30n,
+            },
+          ],
           hopCount: 1,
           startToken: VALID_ADDR_A,
           logWeight: 0,
@@ -74,13 +78,15 @@ describe("runPassLoop", () => {
         profitable: [
           {
             cycle: {
-              edges: [{
-                poolAddress: VALID_ADDR_B,
-                tokenIn: VALID_ADDR_A,
-                tokenOut: VALID_ADDR_C,
-                protocol: "quickswap_v2",
-                feeBps: 30n,
-              }],
+              edges: [
+                {
+                  poolAddress: VALID_ADDR_B,
+                  tokenIn: VALID_ADDR_A,
+                  tokenOut: VALID_ADDR_C,
+                  protocol: "quickswap_v2",
+                  feeBps: 30n,
+                },
+              ],
               startToken: VALID_ADDR_A,
               hopCount: 1,
               logWeight: 0,
@@ -97,13 +103,15 @@ describe("runPassLoop", () => {
           },
           {
             cycle: {
-              edges: [{
-                poolAddress: VALID_ADDR_B,
-                tokenIn: VALID_ADDR_A,
-                tokenOut: VALID_ADDR_C,
-                protocol: "quickswap_v2",
-                feeBps: 30n,
-              }],
+              edges: [
+                {
+                  poolAddress: VALID_ADDR_B,
+                  tokenIn: VALID_ADDR_A,
+                  tokenOut: VALID_ADDR_C,
+                  protocol: "quickswap_v2",
+                  feeBps: 30n,
+                },
+              ],
               startToken: VALID_ADDR_A,
               hopCount: 1,
               logWeight: 0,

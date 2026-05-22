@@ -1,5 +1,9 @@
 import { type PublicClient, type WalletClient, type Account } from "viem";
-import { createReadClient, createExecutionClient as createExec, createGasEstimationClient as createGas } from "../infra/rpc/client_factory.ts";
+import {
+  createReadClient,
+  createExecutionClient as createExec,
+  createGasEstimationClient as createGas,
+} from "../infra/rpc/client_factory.ts";
 
 function requireEnv(key: string): string {
   const val = process.env[key];
@@ -44,7 +48,7 @@ export function createGasEstimationClient(): PublicClient {
 export function createExecutionClient(account?: Account): WalletClient {
   if (_executionWalletClient) return _executionWalletClient;
   if (!account) throw new Error("createExecutionClient: account is required for initialization");
-  
+
   _executionWalletClient = createExec(EXECUTION_RPC_URL, (account as any).address, 137);
   // Re-inject account if needed by the caller, though factory should handle it if pk passed
   return _executionWalletClient;

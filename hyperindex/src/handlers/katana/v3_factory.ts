@@ -1,14 +1,14 @@
 import { indexer } from "envio";
 
 indexer.contractRegister(
-  { contract: "SushiV3Factory", event: "PoolCreated", chainId: 747474 },
+  { contract: "SushiV3Factory", event: "PoolCreated" },
   async ({ event, context }: any) => {
     context.chain.KatanaV3Pool.add(event.params.pool);
   },
 );
 
 indexer.onEvent(
-  { contract: "SushiV3Factory", event: "PoolCreated", chainId: 747474 },
+  { contract: "SushiV3Factory", event: "PoolCreated" },
   async ({ event, context }: any) => {
     context.PoolMeta.set({
       id: event.params.pool.toLowerCase(),

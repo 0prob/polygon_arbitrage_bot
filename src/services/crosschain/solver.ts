@@ -8,13 +8,23 @@ import { createReadClient, createExecutionClient } from "../../infra/rpc/client_
 import { katana as katanaChain } from "../../infra/rpc/chains.ts";
 
 const APPROVE_ABI = [
-  { name: "approve", type: "function", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [{ type: "bool" }], stateMutability: "nonpayable" },
+  {
+    name: "approve",
+    type: "function",
+    inputs: [{ type: "address" }, { type: "uint256" }],
+    outputs: [{ type: "bool" }],
+    stateMutability: "nonpayable",
+  },
 ] as const;
 
 const EXEC_ARB_ORDER_ABI = [
-  { name: "executeArbOrder", type: "function", inputs: [
-    { type: "address" }, { type: "uint256" }, { type: "bytes" },
-  ], outputs: [{ type: "bytes32" }], stateMutability: "nonpayable" },
+  {
+    name: "executeArbOrder",
+    type: "function",
+    inputs: [{ type: "address" }, { type: "uint256" }, { type: "bytes" }],
+    outputs: [{ type: "bytes32" }],
+    stateMutability: "nonpayable",
+  },
 ] as const;
 
 export interface SolverBotConfig {
@@ -45,7 +55,7 @@ export class SolverBot {
     // Optimized client creation
     this.polygonClient = createReadClient([config.polygonRpcUrl], { chainId: 137 });
     this.katanaClient = createReadClient([config.katanaRpcUrl], { chainId: 747474 });
-    
+
     this.polygonWallet = createExecutionClient(config.polygonRpcUrl, config.polygonSolverKey, 137);
     this.katanaWallet = createExecutionClient(config.katanaRpcUrl, config.katanaSolverKey, 747474);
   }
@@ -63,28 +73,33 @@ export class SolverBot {
         expectedMinOutput: route.minProfitOut,
       });
 
-      const orderId = computeOrderId(route.escrowToken, route.escrowAmount, this.polyAccount.address, BigInt(Math.floor(Date.now() / 1000)));
+      const orderId = computeOrderId(
+        route.escrowToken,
+        route.escrowAmount,
+        this.polyAccount.address,
+        BigInt(Math.floor(Date.now() / 1000)),
+      );
 
       // Approve escrow token
-      const approveHash = await (this.polygonWallet as any).writeContract({
+      const approveHash = await this.polygonWallet.writeContract({
         account: this.polyAccount,
         chain: polygon,
         address: getAddress(route.escrowToken),
         abi: APPROVE_ABI,
         functionName: "approve",
         args: [getAddress(this.config.crossChainIntentOrigin), this.config.escrowAmount],
-      });
+      } as any);
       await this.polygonClient.waitForTransactionReceipt({ hash: approveHash });
 
       // Call executeArbOrder
-      const execHash = await (this.polygonWallet as any).writeContract({
+      const execHash = await this.polygonWallet.writeContract({
         account: this.polyAccount,
         chain: polygon,
         address: getAddress(this.config.crossChainIntentOrigin),
         abi: EXEC_ARB_ORDER_ABI,
         functionName: "executeArbOrder",
         args: [getAddress(route.escrowToken), this.config.escrowAmount, orderData],
-      });
+      } as any);
       await this.polygonClient.waitForTransactionReceipt({ hash: execHash });
 
       // Step 2: Execute arb on Katana

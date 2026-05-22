@@ -1,5 +1,5 @@
 import { indexer } from "envio";
-import { fetchCurveMetadata } from "../effects/curve_metadata.ts";
+import { fetchCurveMetadata } from "../effects/curve_metadata";
 
 const HUB_TOKENS = new Set([
   "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC

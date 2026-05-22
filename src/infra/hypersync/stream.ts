@@ -65,15 +65,17 @@ export async function fetchAllLogs<TLog = unknown>(
   let pages = 0;
   const { concurrency = 10, batchSize = 1000 } = config;
 
-  if (typeof (client as any).stream === "function") {
-    const stream = await (client as any).stream(currentQuery, { concurrency, batchSize });
+  const clientRecord = client as unknown as Record<string, unknown>;
+  if (typeof clientRecord.stream === "function") {
+    const stream = await (clientRecord.stream as (q: unknown, opts: unknown) => Promise<unknown>)(currentQuery, { concurrency, batchSize });
+    const typedStream = stream as { recv: () => Promise<HyperSyncGetResponse<TLog> | null> };
 
     while (true) {
       if (pages >= MAX_PAGES) {
         throw new Error(`HyperSync pagination exceeded maxPages ${MAX_PAGES}`);
       }
 
-      const res: HyperSyncGetResponse<TLog> | null = await stream.recv();
+      const res: HyperSyncGetResponse<TLog> | null = await typedStream.recv();
       if (res === null) break;
 
       pages++;

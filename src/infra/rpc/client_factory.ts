@@ -29,9 +29,9 @@ function createOptimizedTransport(url: string, opts?: ClientFactoryOptions): Htt
 export function createReadClient(urls: string[], opts?: ClientFactoryOptions): PublicClient {
   const chainId = opts?.chainId ?? 137;
   const chain = getChain(chainId);
-  
-  const transports = urls.map(url => createOptimizedTransport(url, opts));
-  
+
+  const transports = urls.map((url) => createOptimizedTransport(url, opts));
+
   return createPublicClient({
     chain,
     transport: fallback(transports, { rank: true }),
@@ -48,7 +48,7 @@ export function createExecutionClient(rpcUrl: string, privateKey?: string, chain
   const chain = getChain(chainId);
   const pk = privateKey ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) : undefined;
   const account = pk ? privateKeyToAccount(pk as `0x${string}`) : undefined;
-  
+
   return createWalletClient({
     ...(account ? { account } : {}),
     chain,

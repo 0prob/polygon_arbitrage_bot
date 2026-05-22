@@ -28,7 +28,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     if (proc) return;
 
     const env: Record<string, string> = {
-      ...process.env as Record<string, string>,
+      PATH: process.env.PATH ?? "",
+      HOME: process.env.HOME ?? "",
       POLYGON_RPC_URL: opts.polygonRpcUrl,
     };
     if (opts.katanaRpcUrl) {

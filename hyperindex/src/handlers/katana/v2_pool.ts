@@ -1,7 +1,7 @@
 import { indexer } from "envio";
 
 indexer.onEvent(
-  { contract: "KatanaV2Pool", event: "Sync", chainId: 747474 },
+  { contract: "KatanaV2Pool", event: "Sync" },
   async ({ event, context }: any) => {
     context.V2PoolState.set({
       id: event.srcAddress.toLowerCase(),

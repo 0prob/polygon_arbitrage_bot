@@ -62,7 +62,7 @@ describe("GasOracle", () => {
     vi.advanceTimersByTime(200);
     // Use real timers to flush microtasks from the rejected promise
     vi.useRealTimers();
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     vi.useFakeTimers();
     const second = oracle.getSnapshot();
     expect(second!.baseFee).toBe(first!.baseFee);

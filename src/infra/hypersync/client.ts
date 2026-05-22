@@ -114,13 +114,21 @@ function throwUnsupportedHyperSync(): never {
 export async function createHypersyncDecoder(signatures: string[]): Promise<HypersyncDecoderRuntime> {
   await ensureModule();
   if (!_module) {
-    return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
+    return {
+      decodeLogs: async () => {
+        throwUnsupportedHyperSync();
+      },
+    };
   }
   const LogDecoderCtor = _module.Decoder as { fromSignatures: (sigs: string[]) => HypersyncDecoderRuntime } | undefined;
   if (LogDecoderCtor?.fromSignatures) {
     return LogDecoderCtor.fromSignatures(signatures);
   }
-  return { decodeLogs: async () => { throwUnsupportedHyperSync(); } };
+  return {
+    decodeLogs: async () => {
+      throwUnsupportedHyperSync();
+    },
+  };
 }
 
 // Legacy exports for backward compatibility (Polygon default)
@@ -141,7 +149,7 @@ function _getLazyClientMethod(prop: string): (...args: unknown[]) => Promise<unk
       if (!_singletonClient) {
         _singletonClient = await createHypersyncClient(_defaultConfig);
       }
-      return (_singletonClient as any)[prop](...args);
+      return (_singletonClient as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>)[prop](...args);
     };
     _lazyClientMethods.set(prop, fn);
   }
@@ -172,14 +180,25 @@ export const Decoder = {
         decodeLogs: async (logs: any[]) => {
           const decoder = await promise!;
           return decoder.decodeLogs(logs);
-        }
+        },
       };
       _decoderCache.set(key, d);
     }
     return d;
-  }
+  },
 };
 
-export const LogField = { Address: "Address", Data: "Data", Topic0: "Topic0", Topic1: "Topic1", Topic2: "Topic2", Topic3: "Topic3", BlockNumber: "BlockNumber", TransactionHash: "TransactionHash", LogIndex: "LogIndex", TransactionIndex: "TransactionIndex" };
+export const LogField = {
+  Address: "Address",
+  Data: "Data",
+  Topic0: "Topic0",
+  Topic1: "Topic1",
+  Topic2: "Topic2",
+  Topic3: "Topic3",
+  BlockNumber: "BlockNumber",
+  TransactionHash: "TransactionHash",
+  LogIndex: "LogIndex",
+  TransactionIndex: "TransactionIndex",
+};
 export const BlockField = { Number: "Number", Timestamp: "Timestamp" };
 export const JoinMode = { Default: 0, JoinAll: 1, JoinNothing: 2 };

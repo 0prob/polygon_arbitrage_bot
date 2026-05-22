@@ -9,7 +9,7 @@ export interface CrossChainScannerConfig {
   maxSwapHops: number;
 }
 
-const GOLDEN_ASSETS = new Set([
+const HIGH_VALUE_ASSETS = new Set([
   "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH on Polygon
   "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC on Polygon
   "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC on Polygon
@@ -21,13 +21,7 @@ const USDC_ADDR = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
 const Q192 = 1n << 192n;
 const SCALE = 10n ** 18n;
 
-const V3_PROTOCOLS = new Set([
-  "UNISWAP_V3",
-  "SUSHISWAP_V3",
-  "QUICKSWAP_V3",
-  "KYBERSWAP_ELASTIC",
-  "V3",
-]);
+const V3_PROTOCOLS = new Set(["UNISWAP_V3", "SUSHISWAP_V3", "QUICKSWAP_V3", "KYBERSWAP_ELASTIC", "V3"]);
 
 function isV3Protocol(protocol: string): boolean {
   const u = protocol.toUpperCase();
@@ -35,11 +29,7 @@ function isV3Protocol(protocol: string): boolean {
   return u.includes("V3") && !u.includes("V2");
 }
 
-function computeV2Price(
-  reserve0: bigint,
-  reserve1: bigint,
-  goldenIsToken0: boolean,
-): bigint | null {
+function computeV2Price(reserve0: bigint, reserve1: bigint, goldenIsToken0: boolean): bigint | null {
   if (goldenIsToken0) {
     if (reserve0 <= 0n) return null;
     return (reserve1 * SCALE) / reserve0;
@@ -49,10 +39,7 @@ function computeV2Price(
   }
 }
 
-function computeV3Price(
-  sqrtPriceX96: bigint,
-  goldenIsToken0: boolean,
-): bigint | null {
+function computeV3Price(sqrtPriceX96: bigint, goldenIsToken0: boolean): bigint | null {
   if (sqrtPriceX96 <= 0n) return null;
   const priceX192 = sqrtPriceX96 * sqrtPriceX96;
   if (goldenIsToken0) {
@@ -62,10 +49,7 @@ function computeV3Price(
   }
 }
 
-function getPoolPriceInUSDC(
-  token: string,
-  pool: PolygonPoolState | KatanaPoolState,
-): { price: bigint; liquidity: bigint } | null {
+function getPoolPriceInUSDC(token: string, pool: PolygonPoolState | KatanaPoolState): { price: bigint; liquidity: bigint } | null {
   const t0 = (pool as PolygonPoolState).token0?.toLowerCase();
   const t1 = (pool as PolygonPoolState).token1?.toLowerCase();
   if (!t0 || !t1) return null;
@@ -107,7 +91,7 @@ export class CrossChainScanner {
   ): Promise<CrossChainRoute[]> {
     const routes: CrossChainRoute[] = [];
 
-    for (const asset of GOLDEN_ASSETS) {
+    for (const asset of HIGH_VALUE_ASSETS) {
       const polyPrice = this.getPolygonPrice(asset, polygonPools, polygonState);
       const kataPrice = this.getKatanaPrice(asset as `0x${string}`, katanaPools);
       if (polyPrice === null || kataPrice === null) continue;
@@ -121,11 +105,7 @@ export class CrossChainScanner {
     return routes;
   }
 
-  private getPolygonPrice(
-    token: string,
-    pools: PolygonPoolState[],
-    state: RouteStateCache,
-  ): bigint | null {
+  private getPolygonPrice(token: string, pools: PolygonPoolState[], state: RouteStateCache): bigint | null {
     let bestPrice: bigint | null = null;
     let bestLiquidity = 0n;
 
@@ -185,15 +165,14 @@ export class CrossChainScanner {
       return liq > bestLiq ? p : best;
     }, null);
 
+    const bestToken1 = bestPool ? bestPool.token1?.toLowerCase() : undefined;
     const swapPath: CrossChainRoute["swapPath"] = bestPool
       ? [
           {
             pool: bestPool.address,
             tokenIn: token,
             tokenOut:
-              (bestPool as any).token1?.toLowerCase() === token.toLowerCase()
-                ? ((bestPool as any).token0 as `0x${string}`)
-                : ((bestPool as any).token1 as `0x${string}`) ?? token,
+              bestToken1 === token.toLowerCase() ? (bestPool.token0 as `0x${string}`) : ((bestPool.token1 as `0x${string}`) ?? token),
             protocol: bestPool.protocol.includes("V3") ? 3 : 2,
           },
         ]

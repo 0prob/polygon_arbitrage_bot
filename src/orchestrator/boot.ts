@@ -31,9 +31,6 @@ export interface RuntimeContext {
   gasOracle: GasOracle;
   crossChainScanner?: CrossChainScanner;
   solverBot?: SolverBot;
-  watcherService?: any;
-  hydrationService?: any;
-  discoveryService?: any;
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
@@ -73,9 +70,11 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     }
 
     const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
-      address: string; protocol: string; tokens: string;
+      address: string;
+      protocol: string;
+      tokens: string;
     }>;
-    const seen = new Set(rows.map(r => r.address));
+    const seen = new Set(rows.map((r) => r.address));
 
     try {
       const hiPools = readHyperIndexPools(config.paths.dataDir);
@@ -85,11 +84,17 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
           seen.add(p.address);
         }
       }
-    } catch { /* HyperIndex DB may not exist yet */ }
+    } catch {
+      /* HyperIndex DB may not exist yet */
+    }
 
     const pools = rows.map((r) => {
       let tokens: string[];
-      try { tokens = JSON.parse(r.tokens); } catch { tokens = []; }
+      try {
+        tokens = JSON.parse(r.tokens);
+      } catch {
+        tokens = [];
+      }
       return {
         address: r.address as Address,
         protocol: r.protocol,
@@ -130,14 +135,15 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);
 
-  // Optimized execution client
+  // Create execution wallet client once and cache it
+  const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
+  if (!walletClient.account) {
+    throw new Error("Execution client is not configured with an account.");
+  }
+
   const submitTx = async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
-    const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
-    if (!walletClient.account) {
-      throw new Error("Execution client is not configured with an account.");
-    }
     const hash = await walletClient.sendTransaction({
-      account: walletClient.account,
+      account: walletClient.account!,
       chain: walletClient.chain,
       to: tx.to as `0x${string}`,
       data: tx.data as `0x${string}`,

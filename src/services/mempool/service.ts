@@ -48,7 +48,7 @@ export class MempoolService {
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
     if (!tx.to || !tx.input) return;
 
-    const decoded = decodeSwapCalldata(tx.to as any, tx.input, this.knownPools);
+    const decoded = decodeSwapCalldata(tx.to as `0x${string}`, tx.input, this.knownPools);
     if (!decoded || decoded.amountIn < this.options.largeSwapThresholdWei) return;
 
     const poolKey = decoded.poolAddress.toLowerCase();

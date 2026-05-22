@@ -57,11 +57,13 @@ export class Backrunner {
     if (!state) return null;
 
     const stateRecord = state as Record<string, unknown>;
-    const zeroForOne = signal.zeroForOne ?? (() => {
-      const t0 = stateRecord.token0 as string | undefined;
-      if (t0 && signal.tokenIn) return signal.tokenIn.toLowerCase() === t0.toLowerCase();
-      return true;
-    })();
+    const zeroForOne =
+      signal.zeroForOne ??
+      (() => {
+        const t0 = stateRecord.token0 as string | undefined;
+        if (t0 && signal.tokenIn) return signal.tokenIn.toLowerCase() === t0.toLowerCase();
+        return true;
+      })();
 
     const simulatedSwap = simulateHop(
       {
@@ -77,12 +79,17 @@ export class Backrunner {
     );
     if (!simulatedSwap) return null;
 
-    const candidateTokens = [signal.tokenIn, signal.tokenOut, stateRecord.token0 as string | undefined, stateRecord.token1 as string | undefined].filter(Boolean) as string[];
-    const uniqueStarts = [...new Set(candidateTokens.map(t => t.toLowerCase()))];
+    const candidateTokens = [
+      signal.tokenIn,
+      signal.tokenOut,
+      stateRecord.token0 as string | undefined,
+      stateRecord.token1 as string | undefined,
+    ].filter(Boolean) as string[];
+    const uniqueStarts = [...new Set(candidateTokens.map((t) => t.toLowerCase()))];
     const allRelevantEdges: FoundCycle[] = [];
     for (const tok of uniqueStarts) {
       for (const c of enumerateCyclesFn(tok, this.options.maxHops)) {
-        if (!allRelevantEdges.some(x => x.startToken === c.startToken && x.edges.length === c.edges.length)) {
+        if (!allRelevantEdges.some((x) => x.startToken === c.startToken && x.edges.length === c.edges.length)) {
           allRelevantEdges.push(c);
         }
       }

@@ -236,9 +236,7 @@ const POOL_MANAGER_LOCK_ABI = [
   {
     name: "lock",
     type: "function",
-    inputs: [
-      { name: "data", type: "bytes" },
-    ],
+    inputs: [{ name: "data", type: "bytes" }],
     outputs: [{ name: "result", type: "bytes" }],
     stateMutability: "payable",
   },

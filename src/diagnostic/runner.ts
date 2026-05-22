@@ -68,7 +68,14 @@ const diagConfigEdgeCases = diag("config/edge-cases", () => {
 
 import { createInMemoryDatabase } from "../infra/db/connection.ts";
 import { ensureSchema } from "../infra/db/schema.ts";
-import { upsertPoolMeta, getPoolMeta, getAllPoolStates, upsertPoolState, getPoolsByProtocol, getAllActivePools } from "../infra/db/pools.ts";
+import {
+  upsertPoolMeta,
+  getPoolMeta,
+  getAllPoolStates,
+  upsertPoolState,
+  getPoolsByProtocol,
+  getAllActivePools,
+} from "../infra/db/pools.ts";
 
 const diagDbSchema = diag("db/schema-creation", () => {
   const db = createInMemoryDatabase();
@@ -272,12 +279,14 @@ const diagPipeline = diag("strategy/pipeline-evaluation", () => {
     { address: ADDR_C, protocol: "quickswap_v2", token0: ADDR_C, token1: ZERO_ADDR, tokens: [ADDR_C, ZERO_ADDR] },
   ];
   const stateCache: RouteStateCache = new Map();
-  pools.forEach((p) => stateCache.set(p.address.toLowerCase() as any, {
-    reserve0: 1_000_000n * 10n ** 18n,
-    reserve1: 2_000_000n * 10n ** 18n,
-    fee: 997n,
-    feeDenominator: 1000n,
-  }));
+  pools.forEach((p) =>
+    stateCache.set(p.address.toLowerCase() as any, {
+      reserve0: 1_000_000n * 10n ** 18n,
+      reserve1: 2_000_000n * 10n ** 18n,
+      fee: 997n,
+      feeDenominator: 1000n,
+    }),
+  );
   const graph = buildGraph(pools, stateCache);
   const cycles = enumerateCycles(graph, 3);
   if (cycles.length === 0) throw new Error("No cycles found for pipeline");
@@ -301,7 +310,18 @@ const diagTxBuilder = diag("execution/tx-builder", () => {
     path: {
       startToken: ZERO_ADDR,
       edges: [
-        { poolAddress: ADDR_A, tokenIn: ZERO_ADDR, tokenOut: ADDR_B, protocol: "quickswap_v2", zeroForOne: false, fee: 30, swapFeeBps: 30, tokenInIdx: 0, tokenOutIdx: 1, metadata: {} },
+        {
+          poolAddress: ADDR_A,
+          tokenIn: ZERO_ADDR,
+          tokenOut: ADDR_B,
+          protocol: "quickswap_v2",
+          zeroForOne: false,
+          fee: 30,
+          swapFeeBps: 30,
+          tokenInIdx: 0,
+          tokenOutIdx: 1,
+          metadata: {},
+        },
       ],
     },
     result: {
@@ -341,18 +361,14 @@ const diagRpcClassifiers = diag("rpc/error-classifiers", () => {
 import { encodeExecuteArb, buildFlashParams, computeRouteHash } from "../services/execution/calldata.ts";
 
 const diagCalldata = diag("execution/calldata-encoding", () => {
-  const hash = computeRouteHash([
-    { target: ADDR_A, value: 0n, data: "0xabcdef" as `0x${string}` },
-  ]);
+  const hash = computeRouteHash([{ target: ADDR_A, value: 0n, data: "0xabcdef" as `0x${string}` }]);
   if (!hash || !hash.startsWith("0x")) throw new Error("Invalid route hash");
 
   const params = buildFlashParams({
     profitToken: ZERO_ADDR,
     minProfit: 1n,
     deadline: BigInt(Math.floor(Date.now() / 1000) + 300),
-    calls: [
-      { target: ADDR_A, value: 0n, data: "0xabcdef" as `0x${string}` },
-    ],
+    calls: [{ target: ADDR_A, value: 0n, data: "0xabcdef" as `0x${string}` }],
   });
   if (!params.routeHash) throw new Error("buildFlashParams missing routeHash");
   if (!params.calls.length) throw new Error("buildFlashParams should have calls");
@@ -429,8 +445,36 @@ import { revertRiskBps, slippageDeduction, flashLoanFee } from "../core/assessme
 
 const diagScorer = diag("assessment/scorer", () => {
   const routes = [
-    { path: { edges: [], startToken: "0x1" as Address, hopCount: 2, logWeight: 0, cumulativeFeeBps: 0n }, result: { amountIn: 1000n, amountOut: 1050n, profit: 50n, totalGas: 300000 }, assessment: { netProfitAfterGas: 10n, roi: 100, grossProfit: 50n, gasCostWei: 40n, gasCostInTokens: 40n, flashLoanFee: 0n, slippageDeduction: 0n, revertPenalty: 0n, shouldExecute: true } },
-    { path: { edges: [], startToken: "0x1" as Address, hopCount: 3, logWeight: 0, cumulativeFeeBps: 0n }, result: { amountIn: 1000n, amountOut: 1030n, profit: 30n, totalGas: 500000 }, assessment: { netProfitAfterGas: 5n, roi: 50, grossProfit: 30n, gasCostWei: 35n, gasCostInTokens: 35n, flashLoanFee: 0n, slippageDeduction: 0n, revertPenalty: 0n, shouldExecute: true } },
+    {
+      path: { edges: [], startToken: "0x1" as Address, hopCount: 2, logWeight: 0, cumulativeFeeBps: 0n },
+      result: { amountIn: 1000n, amountOut: 1050n, profit: 50n, totalGas: 300000 },
+      assessment: {
+        netProfitAfterGas: 10n,
+        roi: 100,
+        grossProfit: 50n,
+        gasCostWei: 40n,
+        gasCostInTokens: 40n,
+        flashLoanFee: 0n,
+        slippageDeduction: 0n,
+        revertPenalty: 0n,
+        shouldExecute: true,
+      },
+    },
+    {
+      path: { edges: [], startToken: "0x1" as Address, hopCount: 3, logWeight: 0, cumulativeFeeBps: 0n },
+      result: { amountIn: 1000n, amountOut: 1030n, profit: 30n, totalGas: 500000 },
+      assessment: {
+        netProfitAfterGas: 5n,
+        roi: 50,
+        grossProfit: 30n,
+        gasCostWei: 35n,
+        gasCostInTokens: 35n,
+        flashLoanFee: 0n,
+        slippageDeduction: 0n,
+        revertPenalty: 0n,
+        shouldExecute: true,
+      },
+    },
   ] as any;
   const ranked = rankRoutes(routes);
   if (ranked.length !== 2) throw new Error("Should have 2 ranked routes");
@@ -495,7 +539,9 @@ const diagRouteCache = diag("strategy/route-cache", () => {
       path: {
         startToken: ZERO_ADDR,
         edges: [{ poolAddress: ADDR_A, tokenIn: ZERO_ADDR, tokenOut: ADDR_B, protocol: "v2", feeBps: 30n, stateRef: {} }],
-        hopCount: 1, logWeight: 0, cumulativeFeeBps: 30n,
+        hopCount: 1,
+        logWeight: 0,
+        cumulativeFeeBps: 30n,
       },
       profit: 100n,
     },
@@ -557,8 +603,25 @@ const diagEndToEnd = diag("e2e/discover-graph-execute", async () => {
   if (result.profitable.length > 0) {
     const p = result.profitable[0];
     const routeInput = {
-      path: { startToken: p.cycle.startToken, edges: p.cycle.edges.map((e: any) => ({ ...e, zeroForOne: false, fee: Number(e.feeBps), swapFeeBps: Number(e.feeBps), tokenInIdx: 0, tokenOutIdx: 1, metadata: {} })) },
-      result: { amountIn: p.result.amountIn, amountOut: p.result.amountOut, hopAmounts: p.result.hopAmounts, tokenPath: p.result.tokenPath, poolPath: p.result.poolPath },
+      path: {
+        startToken: p.cycle.startToken,
+        edges: p.cycle.edges.map((e: any) => ({
+          ...e,
+          zeroForOne: false,
+          fee: Number(e.feeBps),
+          swapFeeBps: Number(e.feeBps),
+          tokenInIdx: 0,
+          tokenOutIdx: 1,
+          metadata: {},
+        })),
+      },
+      result: {
+        amountIn: p.result.amountIn,
+        amountOut: p.result.amountOut,
+        hopAmounts: p.result.hopAmounts,
+        tokenPath: p.result.tokenPath,
+        poolPath: p.result.poolPath,
+      },
     };
     const built = buildArbTx(routeInput, { executorAddress: EXECUTOR, fromAddress: EXECUTOR });
     if (!built.to || !built.data) throw new Error("E2E: tx build missing to/data");

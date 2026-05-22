@@ -41,10 +41,26 @@ describe("enumerateCycles", () => {
     const A = "0xa" as Address,
       B = "0xb" as Address,
       C = "0xc" as Address;
-    const p1: PoolMeta = { address: "0xp1" as Address, protocol: "V2", token0: WETH, token1: A, tokens: [WETH, A], fee: 30, status: "active" };
+    const p1: PoolMeta = {
+      address: "0xp1" as Address,
+      protocol: "V2",
+      token0: WETH,
+      token1: A,
+      tokens: [WETH, A],
+      fee: 30,
+      status: "active",
+    };
     const p2: PoolMeta = { address: "0xp2" as Address, protocol: "V2", token0: A, token1: B, tokens: [A, B], fee: 30, status: "active" };
     const p3: PoolMeta = { address: "0xp3" as Address, protocol: "V2", token0: B, token1: C, tokens: [B, C], fee: 30, status: "active" };
-    const p4: PoolMeta = { address: "0xp4" as Address, protocol: "V2", token0: C, token1: WETH, tokens: [C, WETH], fee: 30, status: "active" };
+    const p4: PoolMeta = {
+      address: "0xp4" as Address,
+      protocol: "V2",
+      token0: C,
+      token1: WETH,
+      tokens: [C, WETH],
+      fee: 30,
+      status: "active",
+    };
     const graph = buildGraph([p1, p2, p3, p4], new Map());
     const cycles = enumerateCycles(graph, 4);
     expect(cycles.some((c) => c.hopCount === 4)).toBe(true);

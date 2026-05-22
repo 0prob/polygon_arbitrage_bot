@@ -5,7 +5,8 @@ import { DEFAULTS } from "./defaults.ts";
 /** Map env var name -> nested config path. Used to translate flat env vars to nested config. */
 const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   POLYGON_RPC_URLS: ["rpc", "polygonRpcUrls"],
-  POLYGON_RPC: ["rpc", "polygonRpcUrls"], // alias - single value will be wrapped in array
+  POLYGON_RPC_URL: ["rpc", "polygonRpcUrls"], // alias
+  POLYGON_RPC: ["rpc", "polygonRpcUrls"], // alias
   EXECUTION_RPC: ["rpc", "executionRpcUrl"],
   GAS_ESTIMATION_RPC: ["rpc", "gasEstimationRpcUrl"],
   HYPERRPC_URL: ["rpc", "hyperRpcUrl"],

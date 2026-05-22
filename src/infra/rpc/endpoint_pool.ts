@@ -12,7 +12,14 @@ const DEFAULT_METHOD = "eth_call";
 
 function ensureHttps(url: string): string {
   if (url.startsWith("http://")) {
-    if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("::1") || url.match(/^http:\/\/10\./) || url.match(/^http:\/\/172\.(1[6-9]|2\d|3[01])\./) || url.match(/^http:\/\/192\.168\./)) {
+    if (
+      url.includes("localhost") ||
+      url.includes("127.0.0.1") ||
+      url.includes("::1") ||
+      url.match(/^http:\/\/10\./) ||
+      url.match(/^http:\/\/172\.(1[6-9]|2\d|3[01])\./) ||
+      url.match(/^http:\/\/192\.168\./)
+    ) {
       return url;
     }
     return "https://" + url.slice(7);
@@ -295,8 +302,8 @@ export function createDynamicPublicClient(pool: RpcEndpointPool): ReturnType<typ
       const fn = async (...args: unknown[]) => {
         const endpoint = pool.checkoutBestEndpoint(method);
         try {
-          const client = endpoint.client;
-          const result = await (client as any)[prop](...args);
+          const client = endpoint.client as unknown as Record<string, (...args: unknown[]) => unknown>;
+          const result = await client[prop as string](...args);
           pool.markSuccess(endpoint.url);
           return result;
         } catch (err: unknown) {

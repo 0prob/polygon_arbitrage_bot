@@ -19,5 +19,3 @@ export function getLatestCheckpoint(db: CompatDatabase) {
   const stmt = db.statement("getLatestCheckpoint", `SELECT * FROM checkpoints ORDER BY created_at DESC LIMIT 1`);
   return (stmt.get() as Record<string, unknown> | undefined) ?? null;
 }
-
-

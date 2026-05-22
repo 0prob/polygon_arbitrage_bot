@@ -15,7 +15,9 @@ export class NonceManager {
     try {
       this.localNonce = await withRetry(() => this.fetchNonce(this.address), { maxAttempts: 3 });
     } catch (err) {
-      throw new Error(`NonceManager: failed to fetch initial nonce for ${this.address}: ${err instanceof Error ? err.message : String(err)}`);
+      throw new Error(
+        `NonceManager: failed to fetch initial nonce for ${this.address}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
     this.pendingCount = 0;
   }

@@ -12,13 +12,7 @@ export interface OrderParams {
 
 export function buildOrderData(params: OrderParams): `0x${string}` {
   return encodeAbiParameters(
-    [
-      { type: "address" },
-      { type: "uint32" },
-      { type: "bytes" },
-      { type: "address" },
-      { type: "uint256" },
-    ],
+    [{ type: "address" }, { type: "uint32" }, { type: "bytes" }, { type: "address" }, { type: "uint256" }],
     [
       params.exclusiveFiller,
       params.excludabilityDeadline,
@@ -32,12 +26,7 @@ export function buildOrderData(params: OrderParams): `0x${string}` {
 export function computeOrderId(escrowToken: `0x${string}`, escrowAmount: bigint, sender: `0x${string}`, salt: bigint): `0x${string}` {
   return keccak256(
     encodeAbiParameters(
-      [
-        { type: "address" },
-        { type: "uint256" },
-        { type: "address" },
-        { type: "uint256" },
-      ],
+      [{ type: "address" }, { type: "uint256" }, { type: "address" }, { type: "uint256" }],
       [getAddress(escrowToken), escrowAmount, getAddress(sender), salt],
     ),
   );

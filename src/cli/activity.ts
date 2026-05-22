@@ -1,9 +1,6 @@
 export type ActivityLog = (component: string, message: string) => void;
 
-export function createActivityLog(
-  onUpdate?: (update: Record<string, unknown>) => void,
-  quiet?: boolean,
-): ActivityLog {
+export function createActivityLog(onUpdate?: (update: Record<string, unknown>) => void, quiet?: boolean): ActivityLog {
   return (component, message) => {
     if (!quiet) {
       const time = new Date().toLocaleTimeString("en-US", { hour12: false });

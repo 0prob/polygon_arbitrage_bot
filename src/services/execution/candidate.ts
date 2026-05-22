@@ -11,7 +11,7 @@ export interface CandidateBuilderOptions {
 export function buildExecutionCandidate(
   profitable: ProfitableResult,
   config: BuilderConfig,
-  options: CandidateBuilderOptions
+  options: CandidateBuilderOptions,
 ): CandidateExecution {
   const edges = profitable.cycle.edges.map((e) => {
     const fee = Number(e.feeBps ?? 0);
