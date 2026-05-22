@@ -1,31 +1,33 @@
 import { getAddress } from "viem";
 import { encodeRoute, encodeExecuteArb, computeRouteHash, type ExecutorCall } from "./calldata.ts";
 
+export interface BuilderEdgeInput {
+  poolAddress: string;
+  tokenIn: string;
+  tokenOut: string;
+  protocol: string;
+  zeroForOne?: boolean;
+  fee?: number;
+  swapFeeBps?: number;
+  metadata?: Record<string, unknown>;
+  tokenInIdx?: number;
+  tokenOutIdx?: number;
+  poolId?: string;
+  stateRef?: Record<string, unknown>;
+}
+
 export interface BuilderRouteInput {
   path: {
-    startToken?: unknown;
-    edges: Array<{
-      poolAddress?: unknown;
-      tokenIn?: unknown;
-      tokenOut?: unknown;
-      protocol?: unknown;
-      zeroForOne?: unknown;
-      fee?: unknown;
-      swapFeeBps?: unknown;
-      metadata?: Record<string, unknown>;
-      tokenInIdx?: unknown;
-      tokenOutIdx?: unknown;
-      poolId?: unknown;
-      stateRef?: Record<string, unknown>;
-    }>;
+    startToken: string;
+    edges: BuilderEdgeInput[];
   };
   result: {
-    amountIn?: unknown;
-    amountOut?: unknown;
-    profit?: unknown;
-    hopAmounts?: unknown[];
-    tokenPath?: unknown[];
-    poolPath?: unknown[];
+    amountIn: bigint;
+    amountOut: bigint;
+    profit?: bigint;
+    hopAmounts: bigint[];
+    tokenPath: string[];
+    poolPath: string[];
   };
 }
 
