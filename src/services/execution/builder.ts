@@ -75,15 +75,15 @@ function assertValidRoute(route: BuilderRouteInput): void {
   }
   const amountIn = route.result.amountIn;
   const amountOut = route.result.amountOut;
-  if (typeof amountIn !== "bigint" || amountIn <= 0n) throw new Error("buildArbTx: result.amountIn must be > 0");
-  if (typeof amountOut !== "bigint" || amountOut <= 0n) throw new Error("buildArbTx: result.amountOut must be > 0");
-  if (!Array.isArray(route.result.hopAmounts) || route.result.hopAmounts.length !== route.path.edges.length + 1) {
+  if (amountIn <= 0n) throw new Error("buildArbTx: result.amountIn must be > 0");
+  if (amountOut <= 0n) throw new Error("buildArbTx: result.amountOut must be > 0");
+  if (route.result.hopAmounts.length !== route.path.edges.length + 1) {
     throw new Error("buildArbTx: hopAmounts length mismatch");
   }
-  if (!Array.isArray(route.result.tokenPath) || route.result.tokenPath.length !== route.path.edges.length + 1) {
+  if (route.result.tokenPath.length !== route.path.edges.length + 1) {
     throw new Error("buildArbTx: tokenPath length mismatch");
   }
-  if (!Array.isArray(route.result.poolPath) || route.result.poolPath.length !== route.path.edges.length) {
+  if (route.result.poolPath.length !== route.path.edges.length) {
     throw new Error("buildArbTx: poolPath length mismatch");
   }
 }
@@ -103,10 +103,10 @@ export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, opti
 
   const deadline = BigInt(Math.floor(Date.now() / 1000) + deadlineOffsetS);
   const flashToken = normalizeEvmAddress(route.path.startToken)!;
-  const flashAmount = route.result.amountIn as bigint;
+  const flashAmount = route.result.amountIn;
   const profitToken = flashToken;
 
-  const calls = encodeRoute(route as never, executorAddress, { slippageBps, deadline });
+  const calls = encodeRoute(route, executorAddress, { slippageBps, deadline });
   if (calls.length > maxCalls) {
     throw new Error(`buildArbTx: route expands to ${calls.length} calls (max ${maxCalls})`);
   }
@@ -131,9 +131,9 @@ export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, opti
       routeHash,
       hopCount: route.path.edges.length,
       protocols: route.path.edges.map((e) => e.protocol),
-      pools: (route.result.poolPath as string[]) ?? [],
-      tokens: (route.result.tokenPath as string[]) ?? [],
-      hopAmounts: (route.result.hopAmounts as bigint[])?.map(String) ?? [],
+      pools: route.result.poolPath,
+      tokens: route.result.tokenPath,
+      hopAmounts: route.result.hopAmounts.map(String),
       expectedProfit: String(route.result.profit ?? ""),
     },
   };
