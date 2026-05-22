@@ -1,5 +1,5 @@
 import { indexer } from "envio";
-import { fetchBalancerMetadata } from "../effects/balancer_metadata.ts";
+import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 
 const HUB_TOKENS = new Set([
   "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
@@ -20,7 +20,7 @@ indexer.onEvent(
 
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId });
     
-    if (!meta.tokens.some(t => HUB_TOKENS.has(t))) return;
+    if (!meta.tokens.some((t: string) => HUB_TOKENS.has(t))) return;
 
     context.PoolMeta.set({
       id: pool,
@@ -42,7 +42,7 @@ indexer.onEvent(
       lastUpdatedBlock: Number(event.block.number),
       poolId: poolId,
       balances: meta.balances,
-      swapFee: 0n,
+      swapFee: meta.swapFee,
     });
   },
 );
@@ -51,7 +51,7 @@ indexer.onEvent(
   { contract: "BalancerVault", event: "TokensRegistered" },
   async ({ event, context }: any) => {
     const tokens = event.params.tokens.map((t: string) => t.toLowerCase());
-    if (!tokens.some(t => HUB_TOKENS.has(t))) return;
+    if (!tokens.some((t: string) => HUB_TOKENS.has(t))) return;
 
     const poolId = event.params.poolId.toLowerCase();
     const mapping = await context.BalancerPoolIdToAddress.get(poolId);
@@ -93,7 +93,7 @@ indexer.onEvent(
         lastUpdatedBlock: Number(event.block.number),
         poolId: poolId,
         balances: metaEffect.balances,
-        swapFee: 0n,
+        swapFee: metaEffect.swapFee,
       });
       return;
     }
