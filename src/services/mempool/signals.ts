@@ -6,6 +6,7 @@ export interface LargeSwapSignal {
   tokenIn: Address;
   tokenOut: Address;
   estimatedSwapSize: bigint;
+  zeroForOne?: boolean;
 }
 
 export interface PoolStateInvalidatedSignal {

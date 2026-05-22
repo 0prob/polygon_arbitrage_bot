@@ -4,15 +4,18 @@
  * Run: npx tsx src/diagnostic/runner.ts
  */
 
+const MAX_DIAG_RESULTS = 10_000;
 const DIAG_RESULTS: Array<{ name: string; status: string; durationMs: number; detail?: string; error?: string }> = [];
 function diag(name: string, fn: () => void | Promise<void>) {
   return async () => {
     const start = Date.now();
     try {
       await fn();
+      if (DIAG_RESULTS.length >= MAX_DIAG_RESULTS) DIAG_RESULTS.shift();
       DIAG_RESULTS.push({ name, status: "PASS", durationMs: Date.now() - start });
     } catch (err) {
       const msg = err instanceof Error ? `${err.name}: ${err.message}\n${err.stack?.slice(0, 300)}` : String(err);
+      if (DIAG_RESULTS.length >= MAX_DIAG_RESULTS) DIAG_RESULTS.shift();
       DIAG_RESULTS.push({ name, status: "FAIL", durationMs: Date.now() - start, error: msg });
     }
   };
@@ -314,25 +317,7 @@ const diagTxBuilder = diag("execution/tx-builder", () => {
   if (!built.routeHash) throw new Error("Missing routeHash");
 });
 
-// ── 8. STATE OPS ─────────────────────────────────────────────────────────
-
-import { mergeStateIntoCache, validatePoolState } from "../services/watcher/state_ops.ts";
-
-const diagStateOps = diag("watcher/state-merge", () => {
-  const cache: RouteStateCache = new Map();
-  mergeStateIntoCache(cache as any, "0xpool1", { reserve0: 100n, reserve1: 200n });
-  const s = cache.get("0xpool1") as Record<string, unknown>;
-  if (!s || s.reserve0 !== 100n) throw new Error("State not merged correctly");
-
-  // Merge again — mergeStateIntoCache replaces current keys with nextState keys.
-  // Keys in current that are NOT in nextState get deleted.
-  // This is by design: the watcher fully replaces state per event.
-  mergeStateIntoCache(cache, "0xpool1", { reserve0: 150n, extra: "val" });
-  const s2 = cache.get("0xpool1") as Record<string, unknown>;
-  if (s2.reserve0 !== 150n) throw new Error(`State merge should update reserve0, got ${s2.reserve0}`);
-  if (s2.reserve1 !== undefined) throw new Error("State merge deletes keys not in nextState (by design)");
-  if (s2.extra !== "val") throw new Error("State merge should add new field");
-});
+// ── 8. (reserved) ────────────────────────────────────────────────────────
 
 const diagValidatePoolState = diag("watcher/validate-pool-state", () => {
   // validatePoolState requires poolId (hex address), protocol, tokens
@@ -357,62 +342,7 @@ const diagRpcClassifiers = diag("rpc/error-classifiers", () => {
   if (isRetryableError(new Error("401 Unauthorized"))) throw new Error("Should NOT retry auth errors");
 });
 
-// ── 10. DECODER ──────────────────────────────────────────────────────────
-
-import { decodePairCreated, decodePoolRegistered, decodePoolDeployed, decodeCurvePoolAdded } from "../services/discovery/decoder.ts";
-
-const diagDecoderBasic = diag("discovery/decoder-v2", () => {
-  const log = {
-    topics: [
-      "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9",
-      "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "0x000000000000000000000000bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    ],
-    data: "0x000000000000000000000000cccccccccccccccccccccccccccccccccccccccc",
-  };
-  const result = decodePairCreated(log as any);
-  if (!result) throw new Error("V2 PairCreated decode returned null");
-  if (result.poolAddress.toLowerCase() !== "0xcccccccccccccccccccccccccccccccccccccccc") {
-    throw new Error(`Wrong pool address: ${result.poolAddress}`);
-  }
-});
-
-const diagDecoderV3 = diag("discovery/decoder-v3", () => {
-  const log = {
-    topics: [
-      "0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b6d9b2f0b1e1b87",
-      "0x000000000000000000000000dddddddddddddddddddddddddddddddddddddddd",
-      "0x000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    ],
-    data: "0x" + "00".repeat(32),
-  };
-  const result = decodePoolDeployed(log as any);
-  if (!result) throw new Error("V3 PoolDeployed decode returned null");
-});
-
-const diagDecoderBalancer = diag("discovery/decoder-balancer", () => {
-  const log = {
-    topics: [
-      "0x3c13bc30b8e878c53fd2a36b679411c47e2d9b2c2c1e3e3f6e3b1d0f0e3b1d0f",
-      "0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    ],
-    data: "0x" + "00".repeat(64),
-  };
-  const result = decodePoolRegistered(log as any);
-  if (!result) throw new Error("Balancer PoolRegistered decode returned null");
-});
-
-const diagDecoderCurve = diag("discovery/decoder-curve", () => {
-  const log = {
-    topics: [
-      "0x0000000000000000000000000000000000000000000000000000000000000001",
-      "0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff",
-    ],
-    data: "0x",
-  };
-  const result = decodeCurvePoolAdded(log as any);
-  if (!result) throw new Error("Curve PoolAdded decode returned null");
-});
+// ── 10. (reserved) ────────────────────────────────────────────────────────
 
 // ── 11. CALLLDATA ENCODING ────────────────────────────────────────────────
 
@@ -585,16 +515,7 @@ const diagRouteCache = diag("strategy/route-cache", () => {
   if (found.length !== 1) throw new Error("Should find cache entry by pool");
 });
 
-// ── 17. FEE RESOLVERS ────────────────────────────────────────────────────
-
-import { resolveV2FeeDenominator, resolveV3Fee } from "../services/watcher/state_ops.ts";
-
-const diagFeeResolvers = diag("watcher/fee-resolvers", () => {
-  const d = resolveV2FeeDenominator(undefined);
-  if (d !== 1000n) throw new Error(`V2 fee denominator default expected 1000, got ${d}`);
-  const fee = resolveV3Fee(undefined);
-  if (fee !== 3000n) throw new Error(`V3 fee default expected 3000, got ${fee}`);
-});
+// ── 17. (reserved) ────────────────────────────────────────────────────────
 
 // ── 18. ISOMORPHIC STRING/BIGINT HANDLING ────────────────────────────────
 
@@ -670,13 +591,13 @@ const ALL_TESTS = [
   diagCyclesBasic,
   diagPipeline,
   diagTxBuilder,
-  diagStateOps,
-  diagValidatePoolState,
+  // diagStateOps (removed - watcher/state_ops deleted),
+  // diagValidatePoolState (removed - watcher/state_ops deleted),
   diagRpcClassifiers,
-  diagDecoderBasic,
-  diagDecoderV3,
-  diagDecoderBalancer,
-  diagDecoderCurve,
+  // diagDecoderBasic (removed - discovery/decoder deleted),
+  // diagDecoderV3 (removed - discovery/decoder deleted),
+  // diagDecoderBalancer (removed - discovery/decoder deleted),
+  // diagDecoderCurve (removed - discovery/decoder deleted),
   diagCalldata,
   diagSimulateV2,
   diagSimulateBalancer,
@@ -688,7 +609,7 @@ const ALL_TESTS = [
   diagRiskHelpers,
   diagProtocolHelpers,
   diagRouteCache,
-  diagFeeResolvers,
+  // diagFeeResolvers (removed - watcher/state_ops deleted),
   diagCodec,
   diagEndToEnd,
 ];

@@ -45,7 +45,7 @@ import { toBigInt } from "../utils/bigint.ts";
 import { divRoundingUp } from "./full_math.ts";
 
 // Maximum number of iterations for power approximation
-const MAX_POW_ITERATIONS = 255;
+const MAX_POW_ITERATIONS = 50;
 
 type BalancerPoolState = Record<string, unknown>;
 
@@ -445,12 +445,12 @@ export function getBalancerStableAmountOut(amountIn: bigint, poolState: unknown,
   const invariant = calculateBalancerStableInvariant(amp, scaledBalances, ampPrecision);
   if (invariant <= 0n) return 0n;
 
-  const balancesAfterIn = [...scaledBalances];
-  balancesAfterIn[inIdx] += scaledAmountIn;
-  const finalBalanceOut = getTokenBalanceGivenStableInvariant(amp, balancesAfterIn, invariant, outIdx, ampPrecision);
-  if (finalBalanceOut <= 0n || finalBalanceOut >= scaledBalances[outIdx]) return 0n;
+  const originalOutBalance = scaledBalances[outIdx];
+  scaledBalances[inIdx] += scaledAmountIn;
+  const finalBalanceOut = getTokenBalanceGivenStableInvariant(amp, scaledBalances, invariant, outIdx, ampPrecision);
+  if (finalBalanceOut <= 0n || finalBalanceOut >= originalOutBalance) return 0n;
 
-  const scaledAmountOut = scaledBalances[outIdx] - finalBalanceOut - 1n;
+  const scaledAmountOut = originalOutBalance - finalBalanceOut - 1n;
   if (scaledAmountOut <= 0n) return 0n;
   const amountOut = (scaledAmountOut * ONE) / scalingFactors[outIdx];
 

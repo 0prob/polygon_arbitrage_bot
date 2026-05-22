@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { crossChainArbSchema } from "./crosschain_schema.ts";
 
 /** Coerce a string env var to bigint */

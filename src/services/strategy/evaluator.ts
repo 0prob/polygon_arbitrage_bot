@@ -30,9 +30,10 @@ export async function evaluatePathsParallel(
 ): Promise<EvaluatedRoute[]> {
   const results: EvaluatedRoute[] = [];
   for (let i = 0; i < paths.length; i += concurrency) {
-    const chunk = paths.slice(i, i + concurrency);
+    const end = Math.min(i + concurrency, paths.length);
     const chunkResults = await Promise.all(
-      chunk.map((p) => {
+      Array.from({ length: end - i }, (_, idx) => {
+        const p = paths[i + idx];
         try {
           return Promise.resolve({ path: p, result: simulateRoute(p.edges, testAmount, stateCache) } as EvaluatedRoute);
         } catch {

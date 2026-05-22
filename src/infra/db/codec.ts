@@ -66,7 +66,9 @@ export function rehydrateV3Ticks(ticks: unknown): Map<number, { liquidityGross: 
   if (ticks == null) return result;
   let entries: Array<[unknown, unknown]> = [];
   if (ticks instanceof Map) {
-    entries = [...ticks.entries()];
+    for (const entry of ticks) {
+      entries.push(entry);
+    }
   } else if (Array.isArray(ticks)) {
     entries = ticks
       .map((entry) => {

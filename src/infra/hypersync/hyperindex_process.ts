@@ -18,6 +18,9 @@ export interface HyperIndexProcess {
 
 export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIndexProcess {
   let proc: ChildProcess | null = null;
+  let _stdoutHandler: ((data: Buffer) => void) | null = null;
+  let _stderrHandler: ((data: Buffer) => void) | null = null;
+  let _exitHandler: ((code: number | null, signal: string | null) => void) | null = null;
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
@@ -37,7 +40,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     opts.logger.info({ hyperindexDir: hiDir }, "Starting HyperIndex ingestion");
 
-    // Use envio dev with -r if needed, but normally just dev
     proc = spawn("bunx", ["envio", "dev"], {
       cwd: hiDir,
       env,
@@ -45,20 +47,23 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       shell: false,
     });
 
-    proc.stdout?.on("data", (data: Buffer) => {
+    _stdoutHandler = (data: Buffer) => {
       const line = data.toString().trim();
       if (line) opts.logger.debug({ source: "hyperindex", line }, "");
-    });
+    };
+    proc.stdout?.on("data", _stdoutHandler);
 
-    proc.stderr?.on("data", (data: Buffer) => {
+    _stderrHandler = (data: Buffer) => {
       const line = data.toString().trim();
       if (line) opts.logger.debug({ source: "hyperindex", line }, "");
-    });
+    };
+    proc.stderr?.on("data", _stderrHandler);
 
-    proc.on("exit", (code, signal) => {
+    _exitHandler = (code, signal) => {
       opts.logger.warn({ code, signal }, "HyperIndex process exited");
       proc = null;
-    });
+    };
+    proc.on("exit", _exitHandler);
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
@@ -76,10 +81,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       }, 5000);
 
       if (proc) {
-        proc.on("exit", () => {
+        const exitOnStop = () => {
           clearTimeout(timeout);
+          if (proc && _exitHandler) {
+            proc.off("exit", _exitHandler);
+            proc.off("exit", exitOnStop);
+            proc.stdout?.off("data", _stdoutHandler!);
+            proc.stderr?.off("data", _stderrHandler!);
+          }
           resolve();
-        });
+        };
+        proc.on("exit", exitOnStop);
       } else {
         clearTimeout(timeout);
         resolve();

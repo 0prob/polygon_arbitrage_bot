@@ -66,10 +66,12 @@ export class CompatDatabase {
 
   prepare(sql: string): CompatStatement {
     if (this._closed) throw new Error("CompatDatabase: database is closed");
-    if (!this._statementCache.has(sql)) {
-      this._statementCache.set(sql, new CompatStatement(this.db.prepare(sql)));
+    let stmt = this._statementCache.get(sql);
+    if (stmt == null) {
+      stmt = new CompatStatement(this.db.prepare(sql));
+      this._statementCache.set(sql, stmt);
     }
-    return this._statementCache.get(sql)!;
+    return stmt;
   }
 
   statement(key: string, sql: string): CompatStatement {
@@ -78,11 +80,13 @@ export class CompatDatabase {
     if (cachedSql != null && cachedSql !== sql) {
       throw new Error(`CompatDatabase.statement key collision for "${key}": existing SQL does not match new SQL`);
     }
-    if (!this._namedStatementCache.has(key)) {
-      this._namedStatementCache.set(key, this.prepare(sql));
+    let stmt = this._namedStatementCache.get(key);
+    if (stmt == null) {
+      stmt = this.prepare(sql);
+      this._namedStatementCache.set(key, stmt);
       this._namedStatementSql.set(key, sql);
     }
-    return this._namedStatementCache.get(key)!;
+    return stmt;
   }
 
   exec(sql: string) {

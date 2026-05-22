@@ -11,7 +11,12 @@ export type AttemptLogSink = (entry: AttemptEntry) => void;
 
 const sinks: AttemptLogSink[] = [];
 
+const MAX_SINKS = 100;
+
 export function setAttemptLogSink(sink: AttemptLogSink): void {
+  if (sinks.length >= MAX_SINKS) {
+    sinks.shift();
+  }
   sinks.push(sink);
 }
 

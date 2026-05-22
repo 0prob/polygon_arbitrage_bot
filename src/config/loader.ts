@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import * as zod from "zod";
 import { AppConfigSchema, type AppConfig } from "./schema.ts";
 import { DEFAULTS } from "./defaults.ts";
 
@@ -99,7 +99,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   try {
     return AppConfigSchema.parse(merged);
   } catch (err) {
-    if (err instanceof ZodError) {
+    if (err instanceof zod.ZodError) {
       const issues = err.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
       throw new Error(`Configuration validation failed:\n${issues}`);
     }

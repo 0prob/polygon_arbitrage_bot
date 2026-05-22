@@ -1,6 +1,6 @@
 import type { HypersyncClientRuntime, HyperSyncQuery, HyperSyncGetResponse, StreamConfig } from "./types.ts";
 
-const MAX_ACCUMULATED_LOGS = 5_000_000;
+const MAX_ACCUMULATED_LOGS = 200_000;
 const MAX_PAGES = 10_000;
 
 function parseBlock(value: unknown, name: string): number {
@@ -23,6 +23,16 @@ function pageLogsFromResponse<TLog>(res: HyperSyncGetResponse<TLog>): TLog[] {
     throw new Error("HyperSync response data.logs must be an array");
   }
   return logs;
+}
+
+function fireProgress<TLog>(config: StreamConfig, pages: number, allLogs: TLog[], nextBlock: number, archiveHeight: number | null) {
+  config.onProgress?.({
+    pages,
+    logs: allLogs.length,
+    fromBlock: nextBlock,
+    nextBlock,
+    archiveHeight,
+  });
 }
 
 export type FetchAllLogsResult<TLog> = {
@@ -85,13 +95,7 @@ export async function fetchAllLogs<TLog = unknown>(
       const responseNextBlock = parseBlock(res.nextBlock, "response nextBlock");
       lastNextBlock = responseNextBlock;
 
-      config.onProgress?.({
-        pages,
-        logs: allLogs.length,
-        fromBlock: responseNextBlock,
-        nextBlock: lastNextBlock,
-        archiveHeight,
-      });
+      fireProgress(config, pages, allLogs, responseNextBlock, archiveHeight);
 
       const targetEnd = initialToBlock ?? archiveHeight;
       if (targetEnd != null && lastNextBlock >= targetEnd) break;
@@ -122,13 +126,7 @@ export async function fetchAllLogs<TLog = unknown>(
       const responseNextBlock = parseBlock(res.nextBlock, "response nextBlock");
       lastNextBlock = responseNextBlock;
 
-      config.onProgress?.({
-        pages,
-        logs: allLogs.length,
-        fromBlock: responseNextBlock,
-        nextBlock: lastNextBlock,
-        archiveHeight,
-      });
+      fireProgress(config, pages, allLogs, responseNextBlock, archiveHeight);
 
       const targetEnd = initialToBlock ?? archiveHeight;
       if (targetEnd != null && lastNextBlock != null) {
@@ -138,7 +136,7 @@ export async function fetchAllLogs<TLog = unknown>(
 
       if (lastNextBlock == null) break;
 
-      currentQuery = { ...currentQuery, fromBlock: responseNextBlock };
+      currentQuery.fromBlock = responseNextBlock;
     }
   }
 

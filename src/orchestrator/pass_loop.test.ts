@@ -1,22 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { runPassLoop } from "./pass_loop.ts";
+import { runPassLoop, type PassLoopDeps } from "./pass_loop.ts";
 import type { RuntimeContext } from "./boot.ts";
-import { evaluatePipeline } from "../services/strategy/pipeline.ts";
-import { buildGraph } from "../services/strategy/graph.ts";
-import { enumerateCycles } from "../services/strategy/finder.ts";
-
-vi.mock("../services/strategy/pipeline.ts", () => ({
-  evaluatePipeline: vi.fn(),
-}));
-
-vi.mock("../services/strategy/graph.ts", () => ({
-  buildGraph: vi.fn(),
-}));
-
-vi.mock("../services/strategy/finder.ts", () => ({
-  enumerateCycles: vi.fn(),
-  routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
-}));
 
 const MOCK_BUILD_ARB_TX_RETURN = {
   to: "0x0000000000000000000000000000000000000001" as `0x${string}`,
@@ -26,14 +10,6 @@ const MOCK_BUILD_ARB_TX_RETURN = {
   calls: [] as Array<unknown>,
   meta: {} as Record<string, unknown>,
 };
-
-vi.mock("../services/execution/builder.ts", () => ({
-  buildArbTx: vi.fn(() => MOCK_BUILD_ARB_TX_RETURN),
-}));
-
-vi.mock("../infra/db/hyperindex_reader.ts", () => ({
-  buildStateCacheFromHyperIndex: vi.fn().mockReturnValue(new Map()),
-}));
 
 const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
 const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
@@ -55,6 +31,7 @@ describe("runPassLoop", () => {
         envioApiToken: "",
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
+      gasOracle: { getSnapshot: vi.fn().mockReturnValue({ gasPrice: 30n * 10n ** 9n, baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }) },
       isRunning: true,
       db: {},
       stateCache: new Map() as any,
@@ -72,31 +49,15 @@ describe("runPassLoop", () => {
       return { success: true, txHash: "0x1" };
     });
 
-    vi.mocked(buildGraph).mockReturnValue({
-      adjacency: new Map(),
-      poolMeta: new Map(),
-      stateRefs: new Map(),
-      tokens: new Set(),
-    } as any);
-    vi.mocked(enumerateCycles).mockReturnValue([
-      {
-        edges: [{
-          poolAddress: VALID_ADDR_B,
-          tokenIn: VALID_ADDR_A,
-          tokenOut: VALID_ADDR_C,
-          protocol: "quickswap_v2",
-          feeBps: 30n,
-        }],
-        hopCount: 1,
-        startToken: VALID_ADDR_A,
-        logWeight: 0,
-        cumulativeFeeBps: 30n,
-      },
-    ]);
-
-    const mockProfitable = [
-      {
-        cycle: {
+    const deps: PassLoopDeps = {
+      buildGraph: vi.fn().mockReturnValue({
+        adjacency: new Map(),
+        poolMeta: new Map(),
+        stateRefs: new Map(),
+        tokens: new Set(),
+      }),
+      enumerateCycles: vi.fn().mockReturnValue([
+        {
           edges: [{
             poolAddress: VALID_ADDR_B,
             tokenIn: VALID_ADDR_A,
@@ -104,47 +65,70 @@ describe("runPassLoop", () => {
             protocol: "quickswap_v2",
             feeBps: 30n,
           }],
-          startToken: VALID_ADDR_A,
           hopCount: 1,
+          startToken: VALID_ADDR_A,
           logWeight: 0,
           cumulativeFeeBps: 30n,
         },
-        result: {
-          amountIn: 1000000n,
-          amountOut: 1000000n,
-          hopAmounts: [1000000n, 2000000n],
-          tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
-          poolPath: [VALID_ADDR_B],
-        },
-        assessment: { netProfitAfterGas: 0n, roi: 0 },
-      },
-      {
-        cycle: {
-          edges: [{
-            poolAddress: VALID_ADDR_B,
-            tokenIn: VALID_ADDR_A,
-            tokenOut: VALID_ADDR_C,
-            protocol: "quickswap_v2",
-            feeBps: 30n,
-          }],
-          startToken: VALID_ADDR_A,
-          hopCount: 1,
-          logWeight: 0,
-          cumulativeFeeBps: 30n,
-        },
-        result: {
-          amountIn: 1000000n,
-          amountOut: 1000000n,
-          hopAmounts: [1000000n, 2000000n],
-          tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
-          poolPath: [VALID_ADDR_B],
-        },
-        assessment: { netProfitAfterGas: 0n, roi: 0 },
-      },
-    ];
-    vi.mocked(evaluatePipeline).mockReturnValue({ profitable: mockProfitable as any, attempted: 2, profitableCount: 2 });
+      ]),
+      evaluatePipeline: vi.fn().mockReturnValue({
+        profitable: [
+          {
+            cycle: {
+              edges: [{
+                poolAddress: VALID_ADDR_B,
+                tokenIn: VALID_ADDR_A,
+                tokenOut: VALID_ADDR_C,
+                protocol: "quickswap_v2",
+                feeBps: 30n,
+              }],
+              startToken: VALID_ADDR_A,
+              hopCount: 1,
+              logWeight: 0,
+              cumulativeFeeBps: 30n,
+            },
+            result: {
+              amountIn: 1000000n,
+              amountOut: 1000000n,
+              hopAmounts: [1000000n, 2000000n],
+              tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+              poolPath: [VALID_ADDR_B],
+            },
+            assessment: { netProfitAfterGas: 0n, roi: 0 },
+          },
+          {
+            cycle: {
+              edges: [{
+                poolAddress: VALID_ADDR_B,
+                tokenIn: VALID_ADDR_A,
+                tokenOut: VALID_ADDR_C,
+                protocol: "quickswap_v2",
+                feeBps: 30n,
+              }],
+              startToken: VALID_ADDR_A,
+              hopCount: 1,
+              logWeight: 0,
+              cumulativeFeeBps: 30n,
+            },
+            result: {
+              amountIn: 1000000n,
+              amountOut: 1000000n,
+              hopAmounts: [1000000n, 2000000n],
+              tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+              poolPath: [VALID_ADDR_B],
+            },
+            assessment: { netProfitAfterGas: 0n, roi: 0 },
+          },
+        ],
+        attempted: 2,
+        profitableCount: 2,
+      }),
+      buildArbTx: vi.fn().mockReturnValue(MOCK_BUILD_ARB_TX_RETURN),
+      buildStateCacheFromHyperIndex: vi.fn().mockReturnValue(new Map()),
+      routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
+    };
 
-    await runPassLoop(mockContext);
+    await runPassLoop(mockContext, deps);
 
     expect(mockExecute).toHaveBeenCalledTimes(2);
   });

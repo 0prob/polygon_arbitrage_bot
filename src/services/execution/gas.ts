@@ -30,6 +30,7 @@ export class GasOracle {
   private current: FeeSnapshot | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private history: FeeSnapshot[] = [];
+  private _basesSum = 0n;
   private static readonly HISTORY_SIZE = 10;
 
   constructor(
@@ -46,8 +47,7 @@ export class GasOracle {
     if (!current || this.history.length < 2) {
       return { congestion: 0, recommendedPriorityFee: 0n, isSpiking: false };
     }
-    const sum = this.history.reduce((a, b) => a + b.baseFee, 0n);
-    const avg = sum / BigInt(this.history.length);
+    const avg = this._basesSum / BigInt(this.history.length);
     const ratio = avg === 0n ? 1 : Number(current.baseFee) / Number(avg);
     const congestion = Math.min(1, Math.max(0, ratio - 1));
     const isSpiking = ratio > 1.5;
@@ -77,8 +77,10 @@ export class GasOracle {
         timestamp: Date.now(),
       };
       this.history.push(this.current);
+      this._basesSum += this.current.baseFee;
       if (this.history.length > GasOracle.HISTORY_SIZE) {
-        this.history.shift();
+        const removed = this.history.shift()!;
+        this._basesSum -= removed.baseFee;
       }
     } catch {
       // Keep last known values on fetch failure

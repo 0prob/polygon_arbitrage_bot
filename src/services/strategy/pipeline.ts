@@ -5,6 +5,8 @@ import { computeProfit } from "../../core/assessment/profit.ts";
 import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 
+const TEST_AMOUNT = 10n ** 18n;
+
 export interface PipelineOptions {
   minProfitMaticWei: bigint;
   gasPriceWei: bigint;
@@ -32,7 +34,7 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
   for (const cycle of cycles) {
     attempted++;
     try {
-      const result = simulateRoute(cycle.edges, 10n ** 18n, stateCache);
+      const result = simulateRoute(cycle.edges, TEST_AMOUNT, stateCache);
       const assessment = computeProfit({
         grossProfitInTokens: result.profit,
         amountInTokens: result.amountIn,

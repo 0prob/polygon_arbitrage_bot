@@ -5,10 +5,13 @@ export function getHiDbPath(dataDir: string): string {
   return path.join(dataDir, "../hyperindex/hyperindex.db");
 }
 
+const MAX_CACHED_STATE_ENTRIES = 10_000;
+
 // Internal cache to avoid redundant work in the same process
 let _hiDb: CompatDatabase | null = null;
 let _cachedState: Map<string, Record<string, unknown>> = new Map();
 let _lastFetchedBlock: number = -1;
+let _cacheAccessOrder: string[] = [];
 
 export function readHyperIndexPools(dataDir: string): Array<{ address: string; protocol: string; tokens: string; created_block: number; created_tx: string }> {
   try {
@@ -51,10 +54,22 @@ export function buildStateCacheFromHyperIndex(hiDbPath: string, _addresses: stri
     }
     const fetchSince = _lastFetchedBlock;
 
-    // Helper to merge rows into cache
+    // Helper to merge rows into cache with FIFO eviction at MAX_CACHED_STATE_ENTRIES
     const merge = (rows: any[], mapper: (r: any) => Record<string, unknown>) => {
       for (const r of rows) {
-        _cachedState.set(r.id.toLowerCase(), mapper(r));
+        const addr = r.id.toLowerCase();
+        const newData = mapper(r);
+        const existing = _cachedState.get(addr);
+        if (existing) {
+          Object.assign(existing, newData);
+        } else {
+          if (_cachedState.size >= MAX_CACHED_STATE_ENTRIES) {
+            const oldest = _cacheAccessOrder.shift()!;
+            _cachedState.delete(oldest);
+          }
+          _cachedState.set(addr, newData);
+          _cacheAccessOrder.push(addr);
+        }
       }
     };
 
@@ -119,10 +134,17 @@ export function buildStateCacheFromHyperIndex(hiDbPath: string, _addresses: stri
 }
 
 export function readHyperIndexState(hiDb: CompatDatabase, address: string): Record<string, unknown> | null {
-  // Direct lookup fallback if cache miss or specific forced refresh
   const addr = address.toLowerCase();
   const cached = _cachedState.get(addr);
-  if (cached) return cached;
+  if (cached) {
+    // Update access order when entry is touched
+    const idx = _cacheAccessOrder.indexOf(addr);
+    if (idx > -1) {
+      _cacheAccessOrder.splice(idx, 1);
+      _cacheAccessOrder.push(addr);
+    }
+    return cached;
+  }
 
   // Fallback to individual queries (same as before but using the open hiDb)
   const v2 = hiDb.prepare("SELECT reserve0, reserve1 FROM v2_pool_state WHERE id = ?").get(addr) as any;

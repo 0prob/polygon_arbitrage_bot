@@ -1,3 +1,5 @@
+const INTEGER_RE = /^-?\d+$/;
+
 function extractReserves(state: Record<string, unknown>): [bigint | undefined, bigint | undefined] {
   const r0 = state.reserve0;
   const r1 = state.reserve1;
@@ -12,7 +14,7 @@ function extractReserves(state: Record<string, unknown>): [bigint | undefined, b
 function toBigintOrUndefined(value: unknown): bigint | undefined {
   if (typeof value === "bigint") return value;
   if (typeof value === "number" && Number.isFinite(value)) return BigInt(value);
-  if (typeof value === "string" && /^-?\d+$/.test(value)) return BigInt(value);
+  if (typeof value === "string" && INTEGER_RE.test(value)) return BigInt(value);
   return undefined;
 }
 

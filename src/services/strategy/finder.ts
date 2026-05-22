@@ -26,13 +26,18 @@ function feeLogWeight(feeBps: bigint): number {
   return -Math.log(factor);
 }
 
-function find2HopCycles(graph: RoutingGraph): FoundCycle[] {
+const MAX_CYCLES_PER_PASS = 100_000;
+
+function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [tokenIn, outEdges] of graph.adjacency) {
+    if (cycles.length >= maxCycles) break;
     for (const e1 of outEdges) {
+      if (cycles.length >= maxCycles) break;
       const inEdges = graph.adjacency.get(e1.tokenOut.toLowerCase());
       if (!inEdges) continue;
       for (const e2 of inEdges) {
+        if (cycles.length >= maxCycles) break;
         if (e2.tokenOut.toLowerCase() !== tokenIn) continue;
         cycles.push({
           startToken: tokenIn as Address,
@@ -47,17 +52,21 @@ function find2HopCycles(graph: RoutingGraph): FoundCycle[] {
   return cycles;
 }
 
-function find3HopCycles(graph: RoutingGraph): FoundCycle[] {
+function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [startToken, firstEdges] of graph.adjacency) {
+    if (cycles.length >= maxCycles) break;
     for (const e1 of firstEdges) {
+      if (cycles.length >= maxCycles) break;
       const second = graph.adjacency.get(e1.tokenOut.toLowerCase());
       if (!second) continue;
       for (const e2 of second) {
+        if (cycles.length >= maxCycles) break;
         if (e2.tokenOut.toLowerCase() === startToken) continue;
         const third = graph.adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
         for (const e3 of third) {
+          if (cycles.length >= maxCycles) break;
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
           cycles.push({
             startToken: startToken as Address,
@@ -73,24 +82,28 @@ function find3HopCycles(graph: RoutingGraph): FoundCycle[] {
   return cycles;
 }
 
-function find4HopCycles(graph: RoutingGraph): FoundCycle[] {
+function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [startToken, firstEdges] of graph.adjacency) {
-    // Only start 4-hop searches from high-liquidity hub tokens to keep search space manageable
+    if (cycles.length >= maxCycles) break;
     if (!HUB_SET.has(startToken)) continue;
 
     for (const e1 of firstEdges) {
+      if (cycles.length >= maxCycles) break;
       const second = graph.adjacency.get(e1.tokenOut.toLowerCase());
       if (!second) continue;
       for (const e2 of second) {
+        if (cycles.length >= maxCycles) break;
         if (e2.tokenOut.toLowerCase() === startToken) continue;
         const third = graph.adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
         for (const e3 of third) {
+          if (cycles.length >= maxCycles) break;
           if (e3.tokenOut.toLowerCase() === startToken) continue;
           const fourth = graph.adjacency.get(e3.tokenOut.toLowerCase());
           if (!fourth) continue;
           for (const e4 of fourth) {
+            if (cycles.length >= maxCycles) break;
             if (e4.tokenOut.toLowerCase() !== startToken) continue;
             cycles.push({
               startToken: startToken as Address,
@@ -107,20 +120,23 @@ function find4HopCycles(graph: RoutingGraph): FoundCycle[] {
   return cycles;
 }
 
-export function enumerateCycles(graph: RoutingGraph, maxHops = 4): FoundCycle[] {
+export function enumerateCycles(graph: RoutingGraph, maxHops = 4, maxCycles = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   if (maxHops >= 2) {
-    for (const c of find2HopCycles(graph)) {
+    for (const c of find2HopCycles(graph, maxCycles)) {
+      if (cycles.length >= maxCycles) break;
       cycles.push(c);
     }
   }
-  if (maxHops >= 3) {
-    for (const c of find3HopCycles(graph)) {
+  if (maxHops >= 3 && cycles.length < maxCycles) {
+    for (const c of find3HopCycles(graph, maxCycles)) {
+      if (cycles.length >= maxCycles) break;
       cycles.push(c);
     }
   }
-  if (maxHops >= 4) {
-    for (const c of find4HopCycles(graph)) {
+  if (maxHops >= 4 && cycles.length < maxCycles) {
+    for (const c of find4HopCycles(graph, maxCycles)) {
+      if (cycles.length >= maxCycles) break;
       cycles.push(c);
     }
   }

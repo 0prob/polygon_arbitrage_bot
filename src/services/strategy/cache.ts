@@ -45,8 +45,9 @@ export class RouteCache {
         this.entries.set(key, { key, profit: r.profit, pools, path: r.path, timestamp: now, accessCount: 0 });
       }
     }
+    const cutoff = now - this.ttlMs;
     for (const [key, entry] of this.entries) {
-      if (now - entry.timestamp > this.ttlMs) {
+      if (entry.timestamp < cutoff) {
         this.entries.delete(key);
       }
     }
@@ -95,8 +96,8 @@ export class RouteCache {
       return 0;
     });
     this.entries.clear();
-    for (const entry of sorted.slice(0, this.maxSize)) {
-      this.entries.set(entry.key, entry);
+    for (let i = 0; i < this.maxSize && i < sorted.length; i++) {
+      this.entries.set(sorted[i].key, sorted[i]);
     }
   }
 

@@ -42,7 +42,7 @@ function normalizeEventSignature(sig: string): string {
 }
 
 export function computeTopic0(eventSignature: string): string {
-  const normalizedSig = normalizeEventSignature(String(eventSignature ?? "").trim());
+  const normalizedSig = normalizeEventSignature(String(eventSignature ?? ""));
   const cached = topic0Cache.get(normalizedSig);
   if (cached != null) return cached;
 
@@ -50,7 +50,6 @@ export function computeTopic0(eventSignature: string): string {
   try {
     abiItem = parseAbiItem(normalizedSig) as AbiEvent;
   } catch {
-    topic0Cache.set(normalizedSig, "");
     return "";
   }
 
@@ -58,16 +57,15 @@ export function computeTopic0(eventSignature: string): string {
   try {
     encoded = encodeEventTopics({ abi: [abiItem], eventName: abiItem.name })[0];
   } catch {
-    topic0Cache.set(normalizedSig, "");
     return "";
   }
 
   const topic0 = normalizeTopic(encoded);
-  if (topic0Cache.size >= TOPIC0_CACHE_MAX) {
+  topic0Cache.set(normalizedSig, topic0);
+  if (topic0Cache.size > TOPIC0_CACHE_MAX) {
     const firstKey = topic0Cache.keys().next().value;
     if (firstKey != null) topic0Cache.delete(firstKey);
   }
-  topic0Cache.set(normalizedSig, topic0);
   return topic0;
 }
 

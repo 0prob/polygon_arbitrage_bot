@@ -1,6 +1,8 @@
 import type { Address } from "../../core/types/common.ts";
 import type { PoolMeta } from "../../core/types/pool.ts";
 
+const DEFAULT_FEE_BPS = 30n;
+
 export interface SwapEdge {
   poolAddress: Address;
   protocol: string;
@@ -23,13 +25,13 @@ export interface RoutingGraph {
 
 function inferZeroForOne(edge: { tokenIn: string; tokenOut: string }, state: Record<string, unknown>): boolean {
   const t0 = state.token0;
-  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
+  if (typeof t0 === "string") return edge.tokenIn === t0.toLowerCase();
   if (Array.isArray(state.tokens)) {
     const tokens = state.tokens as string[];
-    const tokenIn = edge.tokenIn.toLowerCase();
+    const tokenIn = edge.tokenIn;
     return tokens.some((t) => t.toLowerCase() === tokenIn);
   }
-  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
+  return edge.tokenIn < edge.tokenOut;
 }
 
 function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: number): number {
@@ -54,24 +56,24 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
     stateRefs.set(addr, state);
     const t = pool.tokens ?? [];
     for (let i = 0; i < t.length; i++) {
-      tokens.add(t[i].toLowerCase());
+      const tILower = t[i].toLowerCase();
+      tokens.add(tILower);
       for (let j = 0; j < t.length; j++) {
         if (i === j) continue;
-        const edgeParams = { tokenIn: t[i], tokenOut: t[j] };
+        const tJLower = t[j].toLowerCase();
         const edge: SwapEdge = {
           poolAddress: addr as Address,
           protocol: pool.protocol,
-          tokenIn: t[i].toLowerCase() as Address,
-          tokenOut: t[j].toLowerCase() as Address,
-          feeBps: pool.fee != null ? BigInt(pool.fee) : 30n,
+          tokenIn: tILower as Address,
+          tokenOut: tJLower as Address,
+          feeBps: pool.fee != null ? BigInt(pool.fee) : DEFAULT_FEE_BPS,
           stateRef: state,
-          zeroForOne: state ? inferZeroForOne(edgeParams, state) : edgeParams.tokenIn.toLowerCase() < edgeParams.tokenOut.toLowerCase(),
-          tokenInIdx: state ? inferTokenIdx(edgeParams.tokenIn, state, 0) : 0,
-          tokenOutIdx: state ? inferTokenIdx(edgeParams.tokenOut, state, 1) : 1,
+          zeroForOne: state ? inferZeroForOne({ tokenIn: tILower, tokenOut: tJLower }, state) : tILower < tJLower,
+          tokenInIdx: state ? inferTokenIdx(tILower, state, 0) : 0,
+          tokenOutIdx: state ? inferTokenIdx(tJLower, state, 1) : 1,
         };
-        const k = t[i].toLowerCase();
-        if (!adjacency.has(k)) adjacency.set(k, []);
-        adjacency.get(k)!.push(edge);
+        if (!adjacency.has(tILower)) adjacency.set(tILower, []);
+        adjacency.get(tILower)!.push(edge);
       }
     }
   }

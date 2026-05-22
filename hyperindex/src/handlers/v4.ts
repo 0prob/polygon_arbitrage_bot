@@ -36,6 +36,7 @@ indexer.onEvent(
   async ({ event, context }: any) => {
     const poolId = event.params.id.toLowerCase();
     const existing = await context.V4PoolState.get(poolId);
+    if (!existing) return;
 
     context.V4PoolState.set({
       ...existing,

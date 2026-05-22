@@ -2,7 +2,7 @@ name: arb_bot_ingestion
 description: "High-performance DEX indexing for arbitrage opportunities"
 rollback_on_reorg: false
 raw_events: false
-full_batch_size: 10000
+full_batch_size: 5000
 
 handlers: src/handlers
 chains:
@@ -121,7 +121,7 @@ chains:
           - event: Swap
             field_selection:
               transaction_fields: ["hash"]
-          - event: PoolBalanceChanged(bytes32 indexed poolId, address indexed liquidityProvider, address[] tokens, int256[] amounts, uint256[] paidProtocolSwapFeeAmounts)
+          - event: PoolBalanceChanged
             field_selection:
               transaction_fields: ["hash"]
 
@@ -138,10 +138,10 @@ chains:
           - event: DVMDeployed
             field_selection:
               transaction_fields: ["hash"]
-          - event: DPPDeployed (address baseToken, address quoteToken, address creator, address dpp)
+          - event: DPPDeployed
             field_selection:
               transaction_fields: ["hash"]
-          - event: DSPDeployed (address baseToken, address quoteToken, address creator, address dsp)
+          - event: DSPDeployed
             field_selection:
               transaction_fields: ["hash"]
 

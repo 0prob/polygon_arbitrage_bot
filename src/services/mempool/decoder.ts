@@ -19,6 +19,7 @@ export interface DecodedSwap {
   tokenIn: Address;
   tokenOut: Address;
   amountIn: bigint;
+  zeroForOne?: boolean;
 }
 
 /**
@@ -36,13 +37,11 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
     const amount0Out = BigInt("0x" + input.slice(10, 74));
     const amount1Out = BigInt("0x" + input.slice(74, 138));
     if (amount0Out > 0n) {
-      // amount0Out > 0 means token0 is being sent out, so tokenIn is token0, tokenOut is token1
-      // Extract "to" address from calldata (3rd param after 2 uint256 values)
-      const toAddr = ("0x" + input.slice(202, 242)) as Address;
-      return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: toAddr, amountIn: amount0Out };
+      // token0 sent out → user provides token1 → swap direction is token1→token0 → zeroForOne=false
+      return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: amount0Out, zeroForOne: false };
     }
-    const toAddr = ("0x" + input.slice(202, 242)) as Address;
-    return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: toAddr, amountIn: amount1Out };
+    // amount1Out > 0 → token1 sent out → user provides token0 → direction is token0→token1 → zeroForOne=true
+    return { protocol, poolAddress: to, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: amount1Out, zeroForOne: true };
   }
 
   return null;

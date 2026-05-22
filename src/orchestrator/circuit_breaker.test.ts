@@ -2,12 +2,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CircuitBreaker, CircuitState, DEFAULT_CIRCUIT_BREAKER_OPTIONS } from "./circuit_breaker.ts";
 
 describe("CircuitBreaker", () => {
+  let now = 0;
+  const origDateNow = Date.now;
+  function advanceTime(ms: number) {
+    now += ms;
+    vi.advanceTimersByTime(ms);
+  }
+
   beforeEach(() => {
+    now = 0;
     vi.useFakeTimers();
+    Date.now = vi.fn(() => now);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    Date.now = origDateNow;
   });
 
   describe("initial state", () => {
@@ -75,11 +85,10 @@ describe("CircuitBreaker", () => {
 
   describe("sliding window", () => {
     it("prunes old failures outside the window", () => {
-      vi.setSystemTime(0);
       const cb = new CircuitBreaker({ maxConsecutiveFailures: 3, windowMs: 60_000, cooldownMs: 300_000 });
       cb.recordFailure(); // t=0
       cb.recordFailure(); // t=0
-      vi.advanceTimersByTime(61_000);
+      advanceTime(61_000);
       // old failures at t=0 should be pruned
       cb.recordFailure(); // t=61000
       // only 1 failure in window, should be CLOSED
@@ -94,7 +103,7 @@ describe("CircuitBreaker", () => {
       cb.recordFailure();
       expect(cb.getState()).toBe(CircuitState.OPEN);
       expect(cb.allowExecution()).toBe(false);
-      vi.advanceTimersByTime(10_000);
+      advanceTime(10_000);
       expect(cb.allowExecution()).toBe(true);
       expect(cb.getState()).toBe(CircuitState.HALF_OPEN);
     });

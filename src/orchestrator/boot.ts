@@ -11,7 +11,7 @@ import { ExecutionService } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
-import { getAllPoolStates } from "../infra/db/pools.ts";
+import { getRecentPoolStates } from "../infra/db/pools.ts";
 import { getHiDbPath, readHyperIndexPools } from "../infra/db/hyperindex_reader.ts";
 import { CrossChainScanner } from "../services/crosschain/scanner.ts";
 import { SolverBot } from "../services/crosschain/solver.ts";
@@ -28,6 +28,7 @@ export interface RuntimeContext {
   getPools: () => PoolMeta[];
   publicClient: PublicClient;
   isRunning: boolean;
+  gasOracle: GasOracle;
   crossChainScanner?: CrossChainScanner;
   solverBot?: SolverBot;
   watcherService?: any;
@@ -54,7 +55,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   });
 
   const stateCache: RouteStateCache = new Map();
-  const previousStates = getAllPoolStates(db);
+  const previousStates = getRecentPoolStates(db, 5000);
   for (const ps of previousStates) {
     if (ps.state_data && typeof ps.state_data === "object") {
       const state = ps.state_data as Record<string, unknown>;
@@ -63,7 +64,14 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   }
   logger.info({ loaded: previousStates.length }, "Loaded pool state from database");
 
+  let cachedPools: PoolMeta[] | null = null;
+  let lastPoolFetch = 0;
+
   const getPools = (): PoolMeta[] => {
+    if (cachedPools && Date.now() - lastPoolFetch < 60_000) {
+      return cachedPools;
+    }
+
     const rows = db.prepare("SELECT address, protocol, tokens FROM pools WHERE status = 'active'").all() as Array<{
       address: string; protocol: string; tokens: string;
     }>;
@@ -79,7 +87,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
       }
     } catch { /* HyperIndex DB may not exist yet */ }
 
-    return rows.map((r) => {
+    const pools = rows.map((r) => {
       let tokens: string[];
       try { tokens = JSON.parse(r.tokens); } catch { tokens = []; }
       return {
@@ -90,6 +98,10 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
         tokens: tokens as Address[],
       };
     });
+
+    cachedPools = pools;
+    lastPoolFetch = Date.now();
+    return pools;
   };
 
   const gasOracleConfig: GasOracleConfig = {
@@ -176,6 +188,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     getPools,
     publicClient,
     isRunning: true,
+    gasOracle,
     crossChainScanner,
     solverBot,
   };

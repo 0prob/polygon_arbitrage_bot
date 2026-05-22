@@ -11,8 +11,8 @@ indexer.onEvent(
     const soldId = Number(event.params.sold_id);
     const boughtId = Number(event.params.bought_id);
 
-    if (soldId < balances.length) balances[soldId] += event.params.tokens_sold;
-    if (boughtId < balances.length) balances[boughtId] -= event.params.tokens_bought;
+    if (soldId < balances.length) balances[soldId] = BigInt(balances[soldId]) + BigInt(event.params.tokens_sold);
+    if (boughtId < balances.length) balances[boughtId] = BigInt(balances[boughtId]) - BigInt(event.params.tokens_bought);
 
     context.CurvePoolState.set({
       ...state,
@@ -33,7 +33,7 @@ indexer.onEvent(
     const added = event.params.token_amounts;
 
     for (let i = 0; i < balances.length && i < added.length; i++) {
-      balances[i] += added[i];
+      balances[i] = BigInt(balances[i]) + BigInt(added[i]);
     }
 
     context.CurvePoolState.set({
@@ -55,7 +55,7 @@ indexer.onEvent(
     const removed = event.params.token_amounts;
 
     for (let i = 0; i < balances.length && i < removed.length; i++) {
-      balances[i] -= removed[i];
+      balances[i] = BigInt(balances[i]) - BigInt(removed[i]);
     }
 
     context.CurvePoolState.set({
@@ -76,7 +76,7 @@ indexer.onEvent(
     const balances = [...state.balances];
     const coinIndex = Number(event.params.coin_index);
     if (coinIndex < balances.length) {
-      balances[coinIndex] -= event.params.coin_amount;
+      balances[coinIndex] = BigInt(balances[coinIndex]) - BigInt(event.params.coin_amount);
     }
 
     context.CurvePoolState.set({

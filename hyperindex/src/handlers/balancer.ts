@@ -16,6 +16,8 @@ indexer.onEvent(
   async ({ event, context }: any) => {
     const pool = event.params.poolAddress.toLowerCase();
     const poolId = event.params.poolId.toLowerCase();
+    if (context.isPreload) return;
+
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId });
     
     if (!meta.tokens.some(t => HUB_TOKENS.has(t))) return;
@@ -107,8 +109,8 @@ indexer.onEvent(
     const idxIn = tokens.indexOf(tIn);
     const idxOut = tokens.indexOf(tOut);
 
-    if (idxIn >= 0) balances[idxIn] += aIn;
-    if (idxOut >= 0) balances[idxOut] -= aOut;
+    if (idxIn >= 0 && balances[idxIn] != null) balances[idxIn] = BigInt(balances[idxIn]) + BigInt(aIn);
+    if (idxOut >= 0 && balances[idxOut] != null) balances[idxOut] = BigInt(balances[idxOut]) - BigInt(aOut);
 
     context.BalancerPoolState.set({
       ...state,
@@ -140,8 +142,9 @@ indexer.onEvent(
 
     for (let i = 0; i < eventTokens.length; i++) {
       const idx = metaTokens.indexOf(eventTokens[i]);
-      if (idx >= 0) {
-        balances[idx] += BigInt(amounts[i] || 0n);
+      const delta = amounts[i];
+      if (idx >= 0 && delta != null) {
+        balances[idx] = (balances[idx] != null ? BigInt(balances[idx]) : 0n) + BigInt(delta);
       }
     }
 

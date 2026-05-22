@@ -1,5 +1,7 @@
 import type { RouteSimulationResult } from "../types/route.ts";
 
+const NEG_INF_SCORE = -(2n ** 256n);
+
 export interface OptimizeOptions {
   minAmount?: bigint;
   maxAmount?: bigint;
@@ -28,7 +30,7 @@ export function optimizeInputAmount(
   let lo = minAmount;
   let hi = maxAmount;
   let bestResult: RouteSimulationResult | null = null;
-  let bestScore = -(2n ** 256n);
+  let bestScore = NEG_INF_SCORE;
 
   for (let i = 0; i < iterations; i++) {
     if (hi - lo < 3n) break;
@@ -39,8 +41,8 @@ export function optimizeInputAmount(
 
     const r1 = simulate(m1);
     const r2 = simulate(m2);
-    const s1 = accept(r1) ? scorer(r1) : -(2n ** 256n);
-    const s2 = accept(r2) ? scorer(r2) : -(2n ** 256n);
+    const s1 = accept(r1) ? scorer(r1) : NEG_INF_SCORE;
+    const s2 = accept(r2) ? scorer(r2) : NEG_INF_SCORE;
 
     if (s1 > bestScore) {
       bestScore = s1;
@@ -58,7 +60,7 @@ export function optimizeInputAmount(
   // Final check at midpoint
   const mid = (lo + hi) / 2n;
   const rMid = simulate(mid);
-  const sMid = accept(rMid) ? scorer(rMid) : -(2n ** 256n);
+  const sMid = accept(rMid) ? scorer(rMid) : NEG_INF_SCORE;
   if (sMid > bestScore && accept(rMid)) {
     bestScore = sMid;
     bestResult = rMid;

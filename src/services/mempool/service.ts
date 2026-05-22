@@ -42,6 +42,8 @@ export class MempoolService {
     for (const h of this.handlers) h(signal);
   }
 
+  private readonly MAX_EMIT_CACHE = 5000;
+
   /** Process a pending transaction from the mempool with coalescing. */
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
     if (!tx.to || !tx.input) return;
@@ -55,12 +57,20 @@ export class MempoolService {
     if (lastEmit != null && now - lastEmit < this.options.coalesceTtlMs) return;
     this.lastEmitByPool.set(poolKey, now);
 
+    if (this.lastEmitByPool.size > this.MAX_EMIT_CACHE) {
+      const oldest = this.lastEmitByPool.entries().next();
+      if (oldest.value) {
+        this.lastEmitByPool.delete(oldest.value[0]);
+      }
+    }
+
     const signal: LargeSwapSignal = {
       txHash: tx.hash,
       poolAddress: decoded.poolAddress,
       tokenIn: decoded.tokenIn,
       tokenOut: decoded.tokenOut,
       estimatedSwapSize: decoded.amountIn,
+      zeroForOne: decoded.zeroForOne,
     };
     this.emit({ type: "large_swap", data: signal });
   }

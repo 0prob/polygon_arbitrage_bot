@@ -59,9 +59,11 @@ describe("GasOracle", () => {
     const first = oracle.getSnapshot();
     expect(first).not.toBeNull();
     // Trigger a refresh cycle
-    vi.advanceTimersByTime(100);
-    // Wait for the rejected promise to settle
-    await vi.advanceTimersByTimeAsync(0);
+    vi.advanceTimersByTime(200);
+    // Use real timers to flush microtasks from the rejected promise
+    vi.useRealTimers();
+    await new Promise(r => setTimeout(r, 10));
+    vi.useFakeTimers();
     const second = oracle.getSnapshot();
     expect(second!.baseFee).toBe(first!.baseFee);
     expect(second!.priorityFee).toBe(first!.priorityFee);

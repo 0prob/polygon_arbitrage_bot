@@ -281,13 +281,18 @@ function normalizeRpcMethod(prop: string | symbol): string {
 }
 
 export function createDynamicPublicClient(pool: RpcEndpointPool): ReturnType<typeof createPublicClient> {
+  const methodCache = new Map<string | symbol, (...args: unknown[]) => unknown>();
   return new Proxy({} as ReturnType<typeof createPublicClient>, {
     get(_, prop: string | symbol) {
-      const method = normalizeRpcMethod(prop);
       if (prop === "transport" || prop === "chain" || prop === "key" || prop === "name") return undefined;
       if (prop === "account") return undefined;
       if (prop === "extend") return () => createDynamicPublicClient(pool);
-      return async (...args: unknown[]) => {
+
+      const cached = methodCache.get(prop);
+      if (cached) return cached;
+
+      const method = normalizeRpcMethod(prop);
+      const fn = async (...args: unknown[]) => {
         const endpoint = pool.checkoutBestEndpoint(method);
         try {
           const client = endpoint.client;
@@ -312,6 +317,8 @@ export function createDynamicPublicClient(pool: RpcEndpointPool): ReturnType<typ
           pool.releaseEndpoint(endpoint.url);
         }
       };
+      methodCache.set(prop, fn);
+      return fn;
     },
   }) as unknown as ReturnType<typeof createPublicClient>;
 }

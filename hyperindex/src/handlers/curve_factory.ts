@@ -11,6 +11,10 @@ const HUB_TOKENS = new Set([
   "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
 ]);
 
+function hubFilter(addr: string): boolean {
+  return HUB_TOKENS.has(addr);
+}
+
 indexer.contractRegister(
   { contract: "CurveRegistry", event: "PoolAdded" },
   async ({ event, context }: any) => {
@@ -20,9 +24,10 @@ indexer.contractRegister(
       context.chain.CurvePool.add(event.params.pool);
       return;
     }
+    if (context.isPreload) return;
 
-    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 8 });
-    if (meta.coins.some(t => HUB_TOKENS.has(t))) {
+    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
+    if (meta.coins.some(hubFilter)) {
       context.chain.CurvePool.add(event.params.pool);
     }
   },
@@ -34,9 +39,10 @@ indexer.onEvent(
     const pool = event.params.pool.toLowerCase();
     const existing = await context.PoolMeta.get(pool);
     if (existing) return;
+    if (context.isPreload) return;
 
-    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 8 });
-    if (!meta.coins.some(t => HUB_TOKENS.has(t))) return;
+    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
+    if (!meta.coins.some(hubFilter)) return;
     
     context.PoolMeta.set({
       id: pool,

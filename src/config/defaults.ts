@@ -46,7 +46,7 @@ export const DEFAULTS = {
     maxHops: 4,
     maxTotalPaths: 20_000,
     maxPathsToOptimize: 15,
-    cycleRefreshIntervalMs: 120_000,
+    cycleRefreshIntervalMs: 1_000,
     liquidityFloorUsd: 5_000,
     workerCount: Math.max(1, os.cpus().length - 1),
     evalWorkerThreshold: 20,

@@ -1,4 +1,3 @@
-import { createRequire } from "module";
 import type { HyperSyncClientConfig, HypersyncClientRuntime, HypersyncDecoderRuntime } from "./types.ts";
 
 type HypersyncError = Error & { cause?: unknown };
@@ -126,27 +125,58 @@ export async function createHypersyncDecoder(signatures: string[]): Promise<Hype
 
 // Legacy exports for backward compatibility (Polygon default)
 let _singletonClient: HypersyncClientRuntime | null = null;
+let _defaultConfig: HyperSyncClientConfig = { url: "https://polygon.hypersync.xyz", apiToken: "ENVIO_PLACEHOLDER" };
+
+export function setHypersyncDefaults(config: HyperSyncClientConfig) {
+  _defaultConfig = { ..._defaultConfig, ...config };
+  _singletonClient = null;
+}
+
+const _lazyClientMethods = new Map<string, (...args: unknown[]) => Promise<unknown>>();
+
+function _getLazyClientMethod(prop: string): (...args: unknown[]) => Promise<unknown> {
+  let fn = _lazyClientMethods.get(prop);
+  if (!fn) {
+    fn = async (...args: unknown[]) => {
+      if (!_singletonClient) {
+        _singletonClient = await createHypersyncClient(_defaultConfig);
+      }
+      return (_singletonClient as any)[prop](...args);
+    };
+    _lazyClientMethods.set(prop, fn);
+  }
+  return fn;
+}
+
 export const client: HypersyncClientRuntime = new Proxy({} as HypersyncClientRuntime, {
   get(_target, prop) {
-    const propStr = prop as string;
-    if (propStr === "then") return undefined; // Avoid proxying promises
-    return async (...args: unknown[]) => {
-      if (!_singletonClient) {
-        _singletonClient = await createHypersyncClient({ url: "https://polygon.hypersync.xyz" });
-      }
-      return (_singletonClient as any)[propStr](...args);
-    };
+    if (prop === "then") return undefined;
+    return _getLazyClientMethod(prop as string);
   },
 });
 
+const _decoderCache = new Map<string, HypersyncDecoderRuntime>();
+const _decoderPromiseCache = new Map<string, Promise<HypersyncDecoderRuntime>>();
+
 export const Decoder = {
   fromSignatures(signatures: string[]): HypersyncDecoderRuntime {
-    return {
-      decodeLogs: async (logs: any[]) => {
-        const d = await createHypersyncDecoder(signatures);
-        return d.decodeLogs(logs);
+    const key = signatures.join("\x00");
+    let d = _decoderCache.get(key);
+    if (!d) {
+      let promise = _decoderPromiseCache.get(key);
+      if (!promise) {
+        promise = createHypersyncDecoder(signatures);
+        _decoderPromiseCache.set(key, promise);
       }
-    };
+      d = {
+        decodeLogs: async (logs: any[]) => {
+          const decoder = await promise!;
+          return decoder.decodeLogs(logs);
+        }
+      };
+      _decoderCache.set(key, d);
+    }
+    return d;
   }
 };
 

@@ -19,6 +19,7 @@ import { toBigIntOrNull } from "../utils/bigint.ts";
 type V3PoolStateLike = Record<string, unknown>;
 type V3TickData = Record<string, unknown>;
 
+const SORTED_TICKS_CACHE_MAX = 500;
 const sortedTicksCache = new Map<
   string,
   {
@@ -27,6 +28,8 @@ const sortedTicksCache = new Map<
     sortedTicks: number[];
   }
 >();
+const sortedTicksAccessOrder: string[] = [];
+const sortedTicksAccessPos = new Map<string, number>();
 
 function asPoolState(value: unknown): V3PoolStateLike {
   return value != null && typeof value === "object" ? (value as V3PoolStateLike) : {};
@@ -102,11 +105,27 @@ function getSortedTicks(state: V3PoolStateLike) {
     .filter((tick): tick is number => Number.isInteger(tick))
     .sort((a, b) => a - b);
   if (key) {
+    if (sortedTicksCache.has(key)) {
+      const pos = sortedTicksAccessPos.get(key)!;
+      sortedTicksAccessOrder.splice(pos, 1);
+      for (let i = pos; i < sortedTicksAccessOrder.length; i++) {
+        sortedTicksAccessPos.set(sortedTicksAccessOrder[i], i);
+      }
+      sortedTicksAccessPos.delete(key);
+    } else if (sortedTicksCache.size >= SORTED_TICKS_CACHE_MAX) {
+      const oldest = sortedTicksAccessOrder.shift();
+      if (oldest) {
+        sortedTicksCache.delete(oldest);
+        sortedTicksAccessPos.delete(oldest);
+      }
+    }
     sortedTicksCache.set(key, {
       tickVersion,
       ticksRef: ticks,
       sortedTicks,
     });
+    sortedTicksAccessOrder.push(key);
+    sortedTicksAccessPos.set(key, sortedTicksAccessOrder.length - 1);
   }
   return sortedTicks;
 }

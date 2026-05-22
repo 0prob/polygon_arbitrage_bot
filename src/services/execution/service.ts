@@ -18,6 +18,8 @@ export interface ExecutionResult {
 
 export class ExecutionService {
   private quarantine = new Set<string>();
+  private readonly MAX_QUARANTINE = 10_000;
+  private _quarantineQueue: string[] = [];
 
   constructor(
     private logger: Logger,
@@ -60,9 +62,18 @@ export class ExecutionService {
       return { success: true, txHash };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.quarantine.add(candidate.routeKey);
+      this._addQuarantine(candidate.routeKey);
       return { success: false, error: msg };
     }
+  }
+
+  private _addQuarantine(routeKey: string): void {
+    if (this.quarantine.size >= this.MAX_QUARANTINE) {
+      const oldest = this._quarantineQueue.shift();
+      if (oldest) this.quarantine.delete(oldest);
+    }
+    this.quarantine.add(routeKey);
+    this._quarantineQueue.push(routeKey);
   }
 
   isQuarantined(routeKey: string): boolean {

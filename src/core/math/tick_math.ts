@@ -15,6 +15,7 @@ export const MIN_SQRT_RATIO = 4295128739n;
 export const MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342n;
 
 const MAX_UINT256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935n;
+const SHIFT_32 = 1n << 32n;
 
 // ─── getSqrtRatioAtTick ───────────────────────────────────────
 
@@ -60,7 +61,7 @@ export function getSqrtRatioAtTick(tick: number): bigint {
 
   // Shift from Q128.128 to Q128.96, rounding up
   const shifted = ratio >> 32n;
-  const sqrtPriceX96 = ratio % (1n << 32n) === 0n ? shifted : shifted + 1n;
+  const sqrtPriceX96 = ratio % SHIFT_32 === 0n ? shifted : shifted + 1n;
 
   return sqrtPriceX96;
 }

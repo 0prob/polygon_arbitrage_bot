@@ -28,6 +28,8 @@ export interface KatanaPoolState {
 export interface PolygonPoolState {
   address: `0x${string}`;
   protocol: string;
+  token0: string;
+  token1: string;
   reserve0?: bigint;
   reserve1?: bigint;
   sqrtPriceX96?: bigint;

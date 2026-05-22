@@ -6,6 +6,8 @@ import { computeProfit } from "../../core/assessment/profit.ts";
 import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 
+const TEST_AMOUNT = 10n ** 18n;
+
 export interface LargeSwapSignal {
   txHash: string;
   poolAddress: string;
@@ -13,6 +15,7 @@ export interface LargeSwapSignal {
   tokenOut: string;
   estimatedSwapSize: bigint;
   protocol?: string;
+  zeroForOne?: boolean;
 }
 
 export interface BackrunCandidate {
@@ -49,19 +52,24 @@ export class Backrunner {
     stateCache: RouteStateCache,
     enumerateCyclesFn: (startToken: string, maxHops: number) => FoundCycle[],
   ): BackrunCandidate | null {
-    // Step 1: Get current pool state
     const poolAddr = signal.poolAddress.toLowerCase();
     const state = stateCache.get(poolAddr);
     if (!state) return null;
 
-    // Step 2: Estimate post-swap state
+    const stateRecord = state as Record<string, unknown>;
+    const zeroForOne = signal.zeroForOne ?? (() => {
+      const t0 = stateRecord.token0 as string | undefined;
+      if (t0 && signal.tokenIn) return signal.tokenIn.toLowerCase() === t0.toLowerCase();
+      return true;
+    })();
+
     const simulatedSwap = simulateHop(
       {
         poolAddress: signal.poolAddress,
         tokenIn: signal.tokenIn,
         tokenOut: signal.tokenOut,
         protocol: signal.protocol ?? "UNISWAP_V2",
-        zeroForOne: true,
+        zeroForOne,
         stateRef: state,
       },
       signal.estimatedSwapSize,
@@ -69,28 +77,46 @@ export class Backrunner {
     );
     if (!simulatedSwap) return null;
 
-    // Step 3: Build a temporary state cache with the post-swap reserves
-    // For V2 pools, the post-swap state has (reserve0 + amountIn, reserve1 - amountOut)
-    // when zeroForOne=true (tokenIn === token0)
-    const tempCache = new Map(stateCache);
-    const reserve0 = (state as Record<string, unknown>).reserve0 as bigint | undefined;
-    const reserve1 = (state as Record<string, unknown>).reserve1 as bigint | undefined;
+    const candidateTokens = [signal.tokenIn, signal.tokenOut, stateRecord.token0 as string | undefined, stateRecord.token1 as string | undefined].filter(Boolean) as string[];
+    const uniqueStarts = [...new Set(candidateTokens.map(t => t.toLowerCase()))];
+    const allRelevantEdges: FoundCycle[] = [];
+    for (const tok of uniqueStarts) {
+      for (const c of enumerateCyclesFn(tok, this.options.maxHops)) {
+        if (!allRelevantEdges.some(x => x.startToken === c.startToken && x.edges.length === c.edges.length)) {
+          allRelevantEdges.push(c);
+        }
+      }
+    }
+
+    const neededAddrs = new Set<string>();
+    for (const c of allRelevantEdges) {
+      for (const e of c.edges) {
+        neededAddrs.add(e.poolAddress.toLowerCase());
+        neededAddrs.add(e.tokenIn.toLowerCase());
+        neededAddrs.add(e.tokenOut.toLowerCase());
+      }
+    }
+    neededAddrs.add(poolAddr);
+    const tempCache: RouteStateCache = new Map();
+    for (const addr of neededAddrs) {
+      const s = stateCache.get(addr);
+      if (s) tempCache.set(addr, s);
+    }
+    const reserve0 = stateRecord.reserve0 as bigint | undefined;
+    const reserve1 = stateRecord.reserve1 as bigint | undefined;
     if (reserve0 !== undefined && reserve1 !== undefined) {
       tempCache.set(poolAddr, {
         ...state,
-        reserve0: reserve0 + signal.estimatedSwapSize,
-        reserve1: reserve1 - simulatedSwap.amountOut,
+        reserve0: zeroForOne ? reserve0 + signal.estimatedSwapSize : reserve0 - simulatedSwap.amountOut,
+        reserve1: zeroForOne ? reserve1 - simulatedSwap.amountOut : reserve1 + signal.estimatedSwapSize,
       });
     }
 
-    // Step 4: Search for arb cycles involving the affected tokens
-    const cycles = enumerateCyclesFn(signal.tokenIn, this.options.maxHops);
-    const relevantCycles = cycles.filter((c) => c.edges.some((e) => e.poolAddress.toLowerCase() === poolAddr));
+    const relevantCycles = allRelevantEdges.filter((c) => c.edges.some((e) => e.poolAddress.toLowerCase() === poolAddr));
 
-    // Step 5: Simulate each relevant cycle with the dislocated state
     for (const cycle of relevantCycles) {
       try {
-        const result = simulateRoute(cycle.edges, 10n ** 18n, tempCache);
+        const result = simulateRoute(cycle.edges, TEST_AMOUNT, tempCache);
         const assessment = computeProfit({
           grossProfitInTokens: result.profit,
           amountInTokens: result.amountIn,

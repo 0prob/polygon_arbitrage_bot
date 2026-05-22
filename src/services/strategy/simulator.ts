@@ -58,7 +58,8 @@ function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: 
 
 /** Dispatch a single hop simulation to the correct math module. */
 export function simulateHop(edge: SimulationEdge, amountIn: bigint, stateCache: RouteStateCache): SimulatedHopResult {
-  const state = stateCache.get(edge.poolAddress.toLowerCase()) ?? edge.stateRef;
+  const poolAddr = edge.poolAddress.toLowerCase();
+  const state = stateCache.get(poolAddr) ?? edge.stateRef;
   if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
 
   switch (normalizeProtocol(edge.protocol)) {
@@ -93,17 +94,19 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
-    const state = (stateCache.get(edge.poolAddress.toLowerCase()) ?? edge.stateRef) as Record<string, unknown> | undefined;
+    const poolAddr = edge.poolAddress.toLowerCase();
+    const state = stateCache.get(poolAddr) ?? edge.stateRef;
     if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
+    const stateRecord = state as Record<string, unknown>;
 
     const simEdge: SimulationEdge = {
-      poolAddress: edge.poolAddress,
+      poolAddress: poolAddr,
       tokenIn: edge.tokenIn,
       tokenOut: edge.tokenOut,
       protocol: edge.protocol,
-      zeroForOne: edge.zeroForOne ?? inferZeroForOne(edge, state),
-      tokenInIdx: edge.tokenInIdx ?? inferTokenIdx(edge.tokenIn, state, 0),
-      tokenOutIdx: edge.tokenOutIdx ?? inferTokenIdx(edge.tokenOut, state, 1),
+      zeroForOne: edge.zeroForOne ?? inferZeroForOne(edge, stateRecord),
+      tokenInIdx: edge.tokenInIdx ?? inferTokenIdx(edge.tokenIn, stateRecord, 0),
+      tokenOutIdx: edge.tokenOutIdx ?? inferTokenIdx(edge.tokenOut, stateRecord, 1),
       stateRef: state as PoolState,
     };
 
@@ -118,6 +121,8 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
   const amountOut = hopAmounts[hopAmounts.length - 1];
   const profit = amountOut - amountIn;
 
+  tokenPath.push(edges[edges.length - 1]?.tokenOut ?? "");
+
   return {
     amountIn,
     amountOut,
@@ -126,7 +131,7 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
     hopAmounts,
     totalGas,
     poolPath,
-    tokenPath: [...tokenPath, edges[edges.length - 1]?.tokenOut ?? ""],
+    tokenPath,
     protocols,
     hopCount: edges.length,
   };
