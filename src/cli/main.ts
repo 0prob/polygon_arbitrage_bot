@@ -4,8 +4,10 @@ import { runPassLoop } from "../orchestrator/pass_loop.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
 import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.ts";
 import { createRootLogger } from "../infra/observability/logger.ts";
+import { createTui } from "../tui/main.ts";
 
 async function main() {
+  const useTui = process.argv.includes("--tui");
   const config = loadConfig(process.env);
 
   const hyperIndex = createHyperIndexProcess({
@@ -25,11 +27,18 @@ async function main() {
 
   const ctx = await bootApplication(config);
 
+  const tui = useTui ? createTui() : null;
+  if (tui) {
+    tui.start();
+  }
+
   let shuttingDown = false;
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
     ctx.logger.warn({}, "Shutting down");
+    tui?.bus.emit({ type: "shutdown" });
+    tui?.stop();
     await shutdownApplication(ctx);
     if (startedHyperIndex) {
       await hyperIndex.stop();
@@ -40,7 +49,7 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  await runPassLoop(ctx);
+  await runPassLoop(ctx, undefined, tui?.bus);
 }
 
 main().catch((err) => {
