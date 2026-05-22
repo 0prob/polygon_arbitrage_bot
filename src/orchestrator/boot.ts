@@ -134,6 +134,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
   const submitTx = async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
     const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
     const hash = await walletClient.sendTransaction({
+      account: walletClient.account,
       to: tx.to as `0x${string}`,
       data: tx.data as `0x${string}`,
       value: tx.value,
