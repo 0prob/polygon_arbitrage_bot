@@ -4,72 +4,30 @@ import { type FoundCycle, enumerateCycles, routeKeyFromEdges } from "../services
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
-import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "../services/execution/builder.ts";
 import { buildStateCacheFromHyperIndex } from "../infra/db/hyperindex_reader.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
+import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
   enumerateCycles: typeof enumerateCycles;
   evaluatePipeline: typeof evaluatePipeline;
-  buildArbTx: typeof buildArbTx;
   buildStateCacheFromHyperIndex: typeof buildStateCacheFromHyperIndex;
   routeKeyFromEdges: typeof routeKeyFromEdges;
+  buildExecutionCandidate: typeof buildExecutionCandidate;
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function buildCandidate(profitable: {
-  cycle: { edges: Array<{ poolAddress: string; tokenIn: string; tokenOut: string; protocol: string; feeBps: bigint; zeroForOne?: boolean }>; startToken: string };
-  result: { amountIn: bigint; amountOut: bigint; hopAmounts: bigint[]; tokenPath: string[]; poolPath: string[] };
-}, executorAddress: string, slippageBps: number, deps: PassLoopDeps): CandidateExecution {
-  const edges = profitable.cycle.edges.map((e) => {
-    const fee = Number(e.feeBps);
-    return {
-      poolAddress: e.poolAddress,
-      tokenIn: e.tokenIn,
-      tokenOut: e.tokenOut,
-      protocol: e.protocol,
-      zeroForOne: e.zeroForOne ?? e.tokenIn < e.tokenOut,
-      fee,
-      swapFeeBps: fee,
-      metadata: {},
-      tokenInIdx: 0,
-      tokenOutIdx: 1,
-    };
-  });
-
-  const route: BuilderRouteInput = {
-    path: { startToken: profitable.cycle.startToken, edges },
-    result: {
-      amountIn: profitable.result.amountIn,
-      amountOut: profitable.result.amountOut,
-      hopAmounts: profitable.result.hopAmounts,
-      tokenPath: profitable.result.tokenPath,
-      poolPath: profitable.result.poolPath,
-    },
-  };
-
-  const config: BuilderConfig = { executorAddress, fromAddress: executorAddress };
-  const built = deps.buildArbTx(route, config, { slippageBps });
-
-  return {
-    routeKey: built.routeHash,
-    calldata: built.data,
-    targetAddress: built.to,
-    value: built.value,
-  };
-}
-
 const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
   enumerateCycles,
   evaluatePipeline,
-  buildArbTx,
   buildStateCacheFromHyperIndex,
   routeKeyFromEdges,
+  buildExecutionCandidate,
 };
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS): Promise<void> {
@@ -146,7 +104,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
           let candidate: CandidateExecution;
           try {
-            candidate = buildCandidate(profitable, executorAddress, Number(options.slippageBps ?? 50n), deps);
+						candidate = deps.buildExecutionCandidate(profitable, { executorAddress, fromAddress: executorAddress }, { slippageBps: Number(options.slippageBps ?? 50n) });
           } catch (err) {
             ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
             continue;

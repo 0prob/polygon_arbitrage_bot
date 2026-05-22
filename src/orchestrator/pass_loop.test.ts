@@ -1,14 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { runPassLoop, type PassLoopDeps } from "./pass_loop.ts";
 import type { RuntimeContext } from "./boot.ts";
+import type { CandidateExecution } from "../services/execution/service.ts";
 
-const MOCK_BUILD_ARB_TX_RETURN = {
-  to: "0x0000000000000000000000000000000000000001" as `0x${string}`,
-  data: "0xdeadbeef" as `0x${string}`,
+const MOCK_CANDIDATE_EXECUTION: CandidateExecution = {
+  routeKey: "0x1234567890123456789012345678901234567890",
+  calldata: "0xdeadbeef",
+  targetAddress: "0x0000000000000000000000000000000000000001",
   value: 0n,
-  routeHash: "0x1234567890123456789012345678901234567890" as `0x${string}`,
-  calls: [] as Array<unknown>,
-  meta: {} as Record<string, unknown>,
 };
 
 const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
@@ -123,9 +122,9 @@ describe("runPassLoop", () => {
         attempted: 2,
         profitableCount: 2,
       }),
-      buildArbTx: vi.fn().mockReturnValue(MOCK_BUILD_ARB_TX_RETURN),
       buildStateCacheFromHyperIndex: vi.fn().mockReturnValue(new Map()),
       routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
+      buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
     };
 
     await runPassLoop(mockContext, deps);
