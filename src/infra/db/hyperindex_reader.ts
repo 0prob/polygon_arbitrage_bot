@@ -11,7 +11,7 @@ const MAX_CACHED_STATE_ENTRIES = 10_000;
 let _hiDb: CompatDatabase | null = null;
 const _cachedState: Map<string, Record<string, unknown>> = new Map();
 let _lastFetchedBlock: number = -1;
-let _cacheAccessOrder: string[] = [];
+const _cacheAccessOrder: string[] = [];
 
 export function readHyperIndexPools(dataDir: string): Array<{ address: string; protocol: string; tokens: string; created_block: number; created_tx: string }> {
   try {
