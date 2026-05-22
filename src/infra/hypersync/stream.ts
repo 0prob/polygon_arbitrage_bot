@@ -59,7 +59,7 @@ export async function fetchAllLogs<TLog = unknown>(
   }
 
   const allLogs: TLog[] = [];
-  let currentQuery = { ...query };
+  const currentQuery = { ...query };
   let archiveHeight: number | null = null;
   let lastNextBlock: number | null = null;
   let pages = 0;
