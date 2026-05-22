@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { createDatabase, type CompatDatabase } from "./connection.ts";
 
@@ -13,11 +14,24 @@ const _cachedState: Map<string, Record<string, unknown>> = new Map();
 let _lastFetchedBlock: number = -1;
 const _cacheAccessOrder: string[] = [];
 
+function tableExists(hiDb: CompatDatabase, tableName: string): boolean {
+  try {
+    const row = hiDb.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(tableName);
+    return !!row;
+  } catch {
+    return false;
+  }
+}
+
 export function readHyperIndexPools(dataDir: string): Array<{ address: string; protocol: string; tokens: string; created_block: number; created_tx: string }> {
   try {
     const hiDbPath = getHiDbPath(dataDir);
+    if (!fs.existsSync(hiDbPath)) return [];
     if (!_hiDb) _hiDb = createDatabase(hiDbPath);
     const hiDb = _hiDb;
+
+    if (!tableExists(hiDb, "pool_meta")) return [];
+
     // Only fetch pools that we don't already know?
     // Usually pool metadata is small enough to fetch once at boot.
     const rows = hiDb.prepare("SELECT id, protocol, tokens, created_block, created_tx FROM pool_meta").all() as Array<{
@@ -41,13 +55,17 @@ export function readHyperIndexPools(dataDir: string): Array<{ address: string; p
  */
 export function buildStateCacheFromHyperIndex(hiDbPath: string, _addresses: string[]): Map<string, Record<string, unknown>> {
   try {
+    if (!fs.existsSync(hiDbPath)) return _cachedState;
     if (!_hiDb) _hiDb = createDatabase(hiDbPath);
     const hiDb = _hiDb;
 
     // Optimization: query for the current "head" block of the indexer
     // We assume the checkpoint table exists
-    const checkpointRow = hiDb.prepare("SELECT block_number FROM checkpoint ORDER BY block_number DESC LIMIT 1").get() as { block_number: number } | undefined;
-    const currentHead = checkpointRow ? checkpointRow.block_number : 999999999;
+    let currentHead = 999999999;
+    if (tableExists(hiDb, "checkpoint")) {
+      const checkpointRow = hiDb.prepare("SELECT block_number FROM checkpoint ORDER BY block_number DESC LIMIT 1").get() as { block_number: number } | undefined;
+      if (checkpointRow) currentHead = checkpointRow.block_number;
+    }
 
     if (currentHead <= _lastFetchedBlock && _cachedState.size > 0) {
       return _cachedState;
@@ -74,57 +92,67 @@ export function buildStateCacheFromHyperIndex(hiDbPath: string, _addresses: stri
     };
 
     // V2
-    merge(
-      hiDb.prepare("SELECT id, reserve0, reserve1 FROM v2_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
-      r => ({ reserve0: BigInt(r.reserve0), reserve1: BigInt(r.reserve1) })
-    );
+    if (tableExists(hiDb, "v2_pool_state")) {
+      merge(
+        hiDb.prepare("SELECT id, reserve0, reserve1 FROM v2_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
+        r => ({ reserve0: BigInt(r.reserve0), reserve1: BigInt(r.reserve1) })
+      );
+    }
 
     // V3
-    merge(
-      hiDb.prepare("SELECT id, sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
-      r => ({ sqrtPriceX96: BigInt(r.sqrtPriceX96), liquidity: BigInt(r.liquidity), tick: r.tick })
-    );
+    if (tableExists(hiDb, "v3_pool_state")) {
+      merge(
+        hiDb.prepare("SELECT id, sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
+        r => ({ sqrtPriceX96: BigInt(r.sqrtPriceX96), liquidity: BigInt(r.liquidity), tick: r.tick })
+      );
+    }
 
     // V4
-    merge(
-      hiDb.prepare("SELECT id, sqrtPriceX96, liquidity, tick, fee, tickSpacing, hooks FROM v4_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
-      r => ({
-        sqrtPriceX96: BigInt(r.sqrtPriceX96),
-        liquidity: BigInt(r.liquidity),
-        tick: r.tick,
-        fee: BigInt(r.fee),
-        tickSpacing: r.tickSpacing,
-        hooks: r.hooks
-      })
-    );
+    if (tableExists(hiDb, "v4_pool_state")) {
+      merge(
+        hiDb.prepare("SELECT id, sqrtPriceX96, liquidity, tick, fee, tickSpacing, hooks FROM v4_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
+        r => ({
+          sqrtPriceX96: BigInt(r.sqrtPriceX96),
+          liquidity: BigInt(r.liquidity),
+          tick: r.tick,
+          fee: BigInt(r.fee),
+          tickSpacing: r.tickSpacing,
+          hooks: r.hooks
+        })
+      );
+    }
 
     // Curve
-    merge(
-      hiDb.prepare("SELECT id, balances, A, fee FROM curve_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
-      r => {
-        let balances: bigint[];
-        try { balances = JSON.parse(r.balances).map((b: string) => BigInt(b)); } catch { balances = []; }
-        return { balances, A: BigInt(r.A), fee: BigInt(r.fee) };
-      }
-    );
+    if (tableExists(hiDb, "curve_pool_state")) {
+      merge(
+        hiDb.prepare("SELECT id, balances, A, fee FROM curve_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
+        r => {
+          let balances: bigint[];
+          try { balances = JSON.parse(r.balances).map((b: string) => BigInt(b)); } catch { balances = []; }
+          return { balances, A: BigInt(r.A), fee: BigInt(r.fee) };
+        }
+      );
+    }
 
     // Balancer
-    merge(
-      hiDb.prepare("SELECT id, poolId, balances, weights, amp, swapFee FROM balancer_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
-      r => {
-        let balances: bigint[];
-        let weights: bigint[];
-        try { balances = JSON.parse(r.balances).map((b: string) => BigInt(b)); } catch { balances = []; }
-        try { weights = JSON.parse(r.weights).map((w: string) => BigInt(w)); } catch { weights = []; }
-        return {
-          poolId: r.poolId,
-          balances,
-          weights,
-          amp: r.amp ? BigInt(r.amp) : undefined,
-          swapFee: BigInt(r.swapFee)
-        };
-      }
-    );
+    if (tableExists(hiDb, "balancer_pool_state")) {
+      merge(
+        hiDb.prepare("SELECT id, poolId, balances, weights, amp, swapFee FROM balancer_pool_state WHERE lastUpdatedBlock > ?").all(fetchSince),
+        r => {
+          let balances: bigint[];
+          let weights: bigint[];
+          try { balances = JSON.parse(r.balances).map((b: string) => BigInt(b)); } catch { balances = []; }
+          try { weights = JSON.parse(r.weights).map((w: string) => BigInt(w)); } catch { weights = []; }
+          return {
+            poolId: r.poolId,
+            balances,
+            weights,
+            amp: r.amp ? BigInt(r.amp) : undefined,
+            swapFee: BigInt(r.swapFee)
+          };
+        }
+      );
+    }
 
     _lastFetchedBlock = currentHead;
   } catch (err) {
@@ -147,11 +175,15 @@ export function readHyperIndexState(hiDb: CompatDatabase, address: string): Reco
   }
 
   // Fallback to individual queries (same as before but using the open hiDb)
-  const v2 = hiDb.prepare("SELECT reserve0, reserve1 FROM v2_pool_state WHERE id = ?").get(addr) as any;
-  if (v2) return { reserve0: BigInt(v2.reserve0), reserve1: BigInt(v2.reserve1) };
+  if (tableExists(hiDb, "v2_pool_state")) {
+    const v2 = hiDb.prepare("SELECT reserve0, reserve1 FROM v2_pool_state WHERE id = ?").get(addr) as any;
+    if (v2) return { reserve0: BigInt(v2.reserve0), reserve1: BigInt(v2.reserve1) };
+  }
 
-  const v3 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE id = ?").get(addr) as any;
-  if (v3) return { sqrtPriceX96: BigInt(v3.sqrtPriceX96), liquidity: BigInt(v3.liquidity), tick: v3.tick };
+  if (tableExists(hiDb, "v3_pool_state")) {
+    const v3 = hiDb.prepare("SELECT sqrtPriceX96, liquidity, tick FROM v3_pool_state WHERE id = ?").get(addr) as any;
+    if (v3) return { sqrtPriceX96: BigInt(v3.sqrtPriceX96), liquidity: BigInt(v3.liquidity), tick: v3.tick };
+  }
 
   return null;
 }
