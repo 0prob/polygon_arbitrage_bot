@@ -53,3 +53,5 @@ hyperindex/.hyperindex/
 hyperindex/generated/
 yarn-debug.log
 yarn-error.log
+pnpm-lock.yaml
+
