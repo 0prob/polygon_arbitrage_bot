@@ -138,6 +138,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
     }
     const hash = await walletClient.sendTransaction({
       account: walletClient.account,
+      chain: walletClient.chain,
       to: tx.to as `0x${string}`,
       data: tx.data as `0x${string}`,
       value: tx.value,
