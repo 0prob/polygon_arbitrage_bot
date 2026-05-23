@@ -36,7 +36,13 @@ describe("runPassLoop", () => {
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
       gasOracle: {
-        getSnapshot: vi.fn().mockReturnValue({ gasPrice: 30n * 10n ** 9n, baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }),
+        getSnapshot: vi.fn().mockReturnValue({ 
+          gasPrice: 30n * 10n ** 9n, 
+          baseFee: 30n * 10n ** 9n, 
+          priorityFee: 1n * 10n ** 9n,
+          maxFee: 40n * 10n ** 9n,
+          timestamp: Date.now()
+        }),
       },
       isRunning: true,
       stateCache: stateWithPool,
