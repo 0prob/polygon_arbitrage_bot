@@ -32,6 +32,8 @@ describe("Hypersync GraphQL Integration", () => {
       ok: true,
       json: async () => ({
         data: {
+          V2PoolState: [{ id: "0x123" }],
+          V3PoolState: [{ id: "0x456" }],
           PoolMeta: mockPoolMeta
         }
       })

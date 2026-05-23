@@ -146,15 +146,18 @@ export async function discoverPoolsFromHasura(
   adminSecret: string,
 ): Promise<HasuraPoolMeta[]> {
   try {
-    // Only discover pools that have state entries (meaning they've had trades recently)
     const activeQuery = `{
       V2PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
       V3PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
     }`;
     const activeRes = await graphQLQuery(graphqlUrl, adminSecret, activeQuery) as any;
+    
+    // Check if V2PoolState or V3PoolState exist in the response
+    const v2 = activeRes.V2PoolState || [];
+    const v3 = activeRes.V3PoolState || [];
     const activeIds = [
-      ...(activeRes.V2PoolState || []).map((p: any) => p.id.toLowerCase()),
-      ...(activeRes.V3PoolState || []).map((p: any) => p.id.toLowerCase())
+      ...v2.map((p: any) => p.id.toLowerCase()),
+      ...v3.map((p: any) => p.id.toLowerCase())
     ];
 
     if (activeIds.length === 0) return [];
