@@ -126,7 +126,7 @@ export function enumerateCycles(
   maxCycles = MAX_CYCLES_PER_PASS,
   hubTokens: readonly Address[] = [],
 ): FoundCycle[] {
-  let allCycles: FoundCycle[] = [];
+  const allCycles: FoundCycle[] = [];
 
   // Allocate budget roughly: 40% to 2-hop, 40% to 3-hop, 20% to 4-hop
   // But always try to fill the total maxCycles

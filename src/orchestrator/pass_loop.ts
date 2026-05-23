@@ -217,7 +217,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let cached2HopCycles: FoundCycle[] = [];
   let cached3And4HopCycles: FoundCycle[] = [];
   let hasuraPoolsCache: PoolMeta[] | null = null;
-  let _lastStateRefresh = 0;
+  const _lastStateRefresh = 0;
   let lastRefreshTime = 0;
   let lastDiscoveryTime = 0;
 

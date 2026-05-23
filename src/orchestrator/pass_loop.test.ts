@@ -47,7 +47,7 @@ describe("runPassLoop", () => {
       },
       isRunning: true,
       stateCache: stateWithPool,
-      mempoolService: { start: vi.fn() },
+      mempoolService: { start: vi.fn(), onSignal: vi.fn() },
       executionService: { start: vi.fn(), execute: mockExecute },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
@@ -181,7 +181,7 @@ describe("runPassLoop", () => {
       },
       isRunning: true,
       stateCache: new Map(),
-      mempoolService: { start: vi.fn() },
+      mempoolService: { start: vi.fn(), onSignal: vi.fn() },
       executionService: { start: vi.fn(), execute: vi.fn() },
       getPools: vi.fn().mockReturnValue([]),
     } as unknown as RuntimeContext;
