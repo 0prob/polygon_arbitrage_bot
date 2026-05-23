@@ -143,7 +143,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         
         const longCycles: FoundCycle[] = [];
         if (maxHops >= 3) longCycles.push(...deps.find3HopCycles(cachedGraph));
-        if (maxHops >= 4) longCycles.push(...deps.find4HopCycles(cachedGraph));
+        if (maxHops >= 4) {
+          const hubTokens = (ctx.config.discovery.hubTokens || []) as `0x${string}`[];
+          longCycles.push(...deps.find4HopCycles(cachedGraph, undefined, hubTokens));
+        }
         cached3And4HopCycles = longCycles;
 
         lastRefreshTime = now;

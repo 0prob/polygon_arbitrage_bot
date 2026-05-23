@@ -28,6 +28,7 @@ describe("runPassLoop", () => {
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
+        discovery: { hubTokens: [] },
         paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
         observability: { logLevel: "silent" },
         envioApiToken: "",
@@ -150,5 +151,58 @@ describe("runPassLoop", () => {
     await runPassLoop(mockContext, deps);
 
     expect(mockExecute).toHaveBeenCalledTimes(2);
+  });
+
+  it("passes hubTokens to find4HopCycles when maxHops >= 4", async () => {
+    const hubTokens = [VALID_ADDR_A, VALID_ADDR_B] as `0x${string}`[];
+    const mockContext = {
+      config: {
+        routing: { cycleRefreshIntervalMs: 0, maxHops: 4 },
+        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
+        gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
+        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
+        mempool: { coalesceTtlMs: 100 },
+        discovery: { hubTokens },
+        paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
+        observability: { logLevel: "silent" },
+        envioApiToken: "",
+        hasuraUrl: "http://localhost:8080/v1/graphql",
+        hasuraSecret: "testing",
+      },
+      logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
+      gasOracle: {
+        getSnapshot: vi.fn().mockReturnValue({ 
+          gasPrice: 30n * 10n ** 9n, 
+          baseFee: 30n * 10n ** 9n, 
+          priorityFee: 1n * 10n ** 9n,
+          maxFee: 40n * 10n ** 9n,
+          timestamp: Date.now()
+        }),
+      },
+      isRunning: true,
+      stateCache: new Map(),
+      mempoolService: { start: vi.fn() },
+      executionService: { start: vi.fn(), execute: vi.fn() },
+      getPools: vi.fn().mockReturnValue([]),
+    } as unknown as RuntimeContext;
+
+    const deps: PassLoopDeps = {
+      buildGraph: vi.fn().mockImplementation(() => {
+        mockContext.isRunning = false;
+        return {};
+      }),
+      find2HopCycles: vi.fn().mockReturnValue([]),
+      find3HopCycles: vi.fn().mockReturnValue([]),
+      find4HopCycles: vi.fn().mockReturnValue([]),
+      evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
+      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
+      discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
+      routeKeyFromEdges: vi.fn(),
+      buildExecutionCandidate: vi.fn(),
+    };
+
+    await runPassLoop(mockContext, deps);
+
+    expect(deps.find4HopCycles).toHaveBeenCalledWith(expect.anything(), undefined, hubTokens);
   });
 });
