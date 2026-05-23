@@ -74,9 +74,9 @@ describe("enumerateCycles", () => {
       const tB = `tokenB_${i}` as Address;
       const tC = `tokenC_${i}` as Address;
 
-      const e1: SwapEdge = { poolAddress: "pool1" as Address, protocol: "v2", tokenIn: tA, tokenOut: tB, feeBps: 30n };
-      const e2: SwapEdge = { poolAddress: "pool2" as Address, protocol: "v2", tokenIn: tB, tokenOut: tC, feeBps: 30n };
-      const e3: SwapEdge = { poolAddress: "pool3" as Address, protocol: "v2", tokenIn: tC, tokenOut: tA, feeBps: 30n };
+      const e1: SwapEdge = { poolAddress: "pool1" as Address, protocol: "v2", tokenIn: tA, tokenOut: tB, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
+      const e2: SwapEdge = { poolAddress: "pool2" as Address, protocol: "v2", tokenIn: tB, tokenOut: tC, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
+      const e3: SwapEdge = { poolAddress: "pool3" as Address, protocol: "v2", tokenIn: tC, tokenOut: tA, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
 
       adjacency.set(tA.toLowerCase(), [e1]);
       adjacency.set(tB.toLowerCase(), [e2]);
@@ -104,6 +104,9 @@ describe("routeKeyFromEdges", () => {
       tokenIn: "0x1" as Address,
       tokenOut: "0x2" as Address,
       feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
     };
     const e2: SwapEdge = {
       poolAddress: "0xdef" as Address,
@@ -111,6 +114,9 @@ describe("routeKeyFromEdges", () => {
       tokenIn: "0x2" as Address,
       tokenOut: "0x1" as Address,
       feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
     };
     const key = routeKeyFromEdges([e1, e2], "0x1" as Address);
     expect(key).toBeTruthy();

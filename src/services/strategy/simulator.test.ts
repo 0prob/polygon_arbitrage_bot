@@ -196,6 +196,9 @@ describe("simulateRoute", () => {
         tokenIn: WETH,
         tokenOut: USDC,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 10000n, reserve1: 20000n, token0: WETH, token1: USDC },
       },
       {
@@ -204,6 +207,9 @@ describe("simulateRoute", () => {
         tokenIn: USDC,
         tokenOut: WETH,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 20000n, reserve1: 10000n, token0: USDC, token1: WETH },
       },
     ];
@@ -229,6 +235,9 @@ describe("simulateRoute", () => {
         tokenIn: A,
         tokenOut: B,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: A, token1: B },
       },
       {
@@ -237,6 +246,9 @@ describe("simulateRoute", () => {
         tokenIn: B,
         tokenOut: A,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: B, token1: A },
       },
     ];
@@ -252,6 +264,9 @@ describe("simulateRoute", () => {
         tokenIn: "0xa" as Address,
         tokenOut: "0xb" as Address,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
       },
     ];
     expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No state");
@@ -266,6 +281,9 @@ describe("getEffectivePriceImpact", () => {
       tokenIn: "0xa" as Address,
       tokenOut: "0xb" as Address,
       feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
       stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: "0xa", token1: "0xb" },
     };
     
@@ -282,6 +300,9 @@ describe("getEffectivePriceImpact", () => {
       tokenIn: "0xa" as Address,
       tokenOut: "0xb" as Address,
       feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
       stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: "0xa", token1: "0xb" },
     };
     const impact = getEffectivePriceImpact(edge, 0n, new Map());

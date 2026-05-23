@@ -31,6 +31,9 @@ describe("evaluatePipeline", () => {
         tokenIn: A,
         tokenOut: B,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B },
       },
       {
@@ -39,6 +42,9 @@ describe("evaluatePipeline", () => {
         tokenIn: B,
         tokenOut: A,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A },
       },
     ];
@@ -59,6 +65,9 @@ describe("evaluatePipeline", () => {
         tokenIn: A,
         tokenOut: B,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 10000n, reserve1: 20000n, token0: A, token1: B },
       },
       {
@@ -67,6 +76,9 @@ describe("evaluatePipeline", () => {
         tokenIn: B,
         tokenOut: A,
         feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
         stateRef: { reserve0: 20000n, reserve1: 10000n, token0: B, token1: A },
       },
     ];
@@ -84,7 +96,16 @@ describe("evaluatePipeline", () => {
 
   it("skips cycles that throw during simulation", () => {
     const badEdge: SwapEdge[] = [
-      { poolAddress: "0xbad" as Address, protocol: "UNISWAP_V2", tokenIn: "0xa" as Address, tokenOut: "0xb" as Address, feeBps: 30n },
+      {
+        poolAddress: "0xbad" as Address,
+        protocol: "UNISWAP_V2",
+        tokenIn: "0xa" as Address,
+        tokenOut: "0xb" as Address,
+        feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
+      },
     ];
     const result = evaluatePipeline([makeCycle(badEdge)], new Map(), baseOpts);
     expect(result.attempted).toBe(1);
