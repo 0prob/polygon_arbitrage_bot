@@ -60,7 +60,7 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      enumerateCycles: vi.fn().mockReturnValue([
+      find2HopCycles: vi.fn().mockReturnValue([
         {
           edges: [
             {
@@ -77,6 +77,8 @@ describe("runPassLoop", () => {
           cumulativeFeeBps: 30n,
         },
       ]),
+      find3HopCycles: vi.fn().mockReturnValue([]),
+      find4HopCycles: vi.fn().mockReturnValue([]),
       evaluatePipeline: vi.fn().mockReturnValue({
         profitable: [
           {

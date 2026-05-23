@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, fallback, type PublicClient, type WalletClient, type HttpTransport } from "viem";
+import { createPublicClient, createWalletClient, http, webSocket, fallback, type PublicClient, type WalletClient, type HttpTransport, type WebSocketTransport } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { getChain } from "./chains.ts";
 
@@ -7,6 +7,7 @@ export interface ClientFactoryOptions {
   batchSize?: number;
   batchWaitMs?: number;
   timeoutMs?: number;
+  webSocketUrl?: string;
 }
 
 const DEFAULT_BATCH_SIZE = 100;
@@ -26,15 +27,24 @@ function createOptimizedTransport(url: string, opts?: ClientFactoryOptions): Htt
   });
 }
 
+function createWebSocketTransport(url: string): WebSocketTransport {
+  return webSocket(url, {
+    keepAlive: { interval: 10_000 },
+  });
+}
+
 export function createReadClient(urls: string[], opts?: ClientFactoryOptions): PublicClient {
   const chainId = opts?.chainId ?? 137;
   const chain = getChain(chainId);
 
   const transports = urls.map((url) => createOptimizedTransport(url, opts));
+  const transport = opts?.webSocketUrl
+    ? fallback([createWebSocketTransport(opts.webSocketUrl), ...transports], { rank: true })
+    : fallback(transports, { rank: true });
 
   return createPublicClient({
     chain,
-    transport: fallback(transports, { rank: true }),
+    transport,
     batch: {
       multicall: {
         wait: opts?.batchWaitMs ?? DEFAULT_BATCH_WAIT_MS,

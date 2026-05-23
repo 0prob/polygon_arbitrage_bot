@@ -46,7 +46,10 @@ export class ExecutionService {
 
     try {
       const fee = this.gasOracle.getSnapshot();
-      if (!fee) return { success: false, error: "no gas data" };
+      if (!fee) {
+        this._addQuarantine(candidate.routeKey);
+        return { success: false, error: "no gas data" };
+      }
 
       const nonce = this.nonceManager.getNextNonce();
       const txHash = await this.submitTx({

@@ -28,7 +28,7 @@ function feeLogWeight(feeBps: bigint): number {
 
 const MAX_CYCLES_PER_PASS = 100_000;
 
-function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [tokenIn, outEdges] of graph.adjacency) {
     if (cycles.length >= maxCycles) break;
@@ -52,7 +52,7 @@ function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_
   return cycles;
 }
 
-function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [startToken, firstEdges] of graph.adjacency) {
     if (cycles.length >= maxCycles) break;
@@ -82,7 +82,7 @@ function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_
   return cycles;
 }
 
-function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   for (const [startToken, firstEdges] of graph.adjacency) {
     if (cycles.length >= maxCycles) break;
