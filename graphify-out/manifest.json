@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779522328.2416484,
-    "ast_hash": "c15cfd3e19c2dc65d265a6b8f3e4a97b",
+    "mtime": 1779531463.055905,
+    "ast_hash": "1039a7ce534f7b492a5fab630263c2e3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/common.test.ts": {
-    "mtime": 1779137922.5350964,
-    "ast_hash": "b2aa881a24a9d3a4f97d2b74d7bc45bc",
+    "mtime": 1779534375.662999,
+    "ast_hash": "48748e6f6fd163ab1b4d3bda596d5fef",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/execution.ts": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/common.ts": {
-    "mtime": 1779121502.26237,
-    "ast_hash": "63f0fb25021db3f176a5bac9d6675bbd",
+    "mtime": 1779534341.9473069,
+    "ast_hash": "5a5131cb81f29cd245423ddcf55e7675",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/pool.ts": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
-    "mtime": 1779458266.3870707,
-    "ast_hash": "77eea4e45a64ecc57343fc47ca5ef8d7",
+    "mtime": 1779534534.8374822,
+    "ast_hash": "1bbf9d94c9234321d59ff52ae33f902e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "5909ef9e53740522fa8ff16e8bdc9a56",
+    "mtime": 1779534549.4453387,
+    "ast_hash": "1375fce8b8d82a0bdd6448038b6c99bc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph.test.ts": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
-    "mtime": 1779461549.660294,
-    "ast_hash": "b2da569c989e39ab04d99406fc7fb316",
+    "mtime": 1779534527.6975522,
+    "ast_hash": "f603b5c7b5361a94d0c78721b4ad3beb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/crosschain/order.ts": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.ts": {
-    "mtime": 1779428886.264516,
-    "ast_hash": "20871a1fee9cb9d61a584c8aafc39ca9",
+    "mtime": 1779534344.1592867,
+    "ast_hash": "185acda59da6b9dbae888332d7f64ef8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "74f4215629d81c7a6c6e564573019d96",
+    "mtime": 1779534501.9378033,
+    "ast_hash": "ff24cdb0aa1e1424914cd0cccc9b395f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "069e5723c7791a6b434fae6a6dd0e748",
+    "mtime": 1779528431.8302379,
+    "ast_hash": "12670a0ff79642b7d4e7cbb3ebe1d0fe",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -525,13 +525,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779526617.95986,
-    "ast_hash": "4e37c9d999b5ffbb7191928fbf040bd8",
+    "mtime": 1779528437.0701857,
+    "ast_hash": "0031db08d166c580bd69725c2e2ffd1a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
-    "mtime": 1779460297.9378097,
-    "ast_hash": "7fd533f0a548321eee9c5a61bd346ac8",
+    "mtime": 1779533116.9096286,
+    "ast_hash": "e202bb92c8e106ea1baffcf92ea8f02d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/addresses.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/defaults.ts": {
-    "mtime": 1779507654.7381973,
-    "ast_hash": "1fbc084e4332067a14e62ea5003686da",
+    "mtime": 1779532934.644031,
+    "ast_hash": "8225d77b87519410e1516dcf3270e9f6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.ts": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/crosschain_schema.ts": {
-    "mtime": 1779266314.7990084,
-    "ast_hash": "93e10cf14605014713baa4d35d97a7f6",
+    "mtime": 1779533031.0067508,
+    "ast_hash": "864cfbf3bb0d0a91dfb5ce0c6d7fbda0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/AGENTS.md": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.test.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "d6a1fde6fd068d0e7051fc9d58068bf1",
+    "mtime": 1779534356.4391751,
+    "ast_hash": "b0675c6f5dd8468da4db43c11cd84cf8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/subscriber.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.test.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "532615fcba73bd4bccbc9d23f6e3d4e3",
+    "mtime": 1779533119.3215973,
+    "ast_hash": "bf2b6e93f892a4cc6edc296751417802",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-execution-service-refactor.md": {
@@ -822,6 +822,26 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-22-tui-dashboard-design.md": {
     "mtime": 1779526612.2399027,
     "ast_hash": "0b783d55c469b2cacc237b822d56ecad",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-env-config-update.md": {
+    "mtime": 1779532893.784582,
+    "ast_hash": "994f855ba864c338af9e52d94b63467c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-env-config-update-design.md": {
+    "mtime": 1779532850.7531676,
+    "ast_hash": "cd2b800cd782a553ab2ce8dd8cd03beb",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/config/loader.test.ts": {
+    "mtime": 1779533021.2428794,
+    "ast_hash": "559164509a40138a5ea9a8828fe448c4",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-codebase-health-fix.md": {
+    "mtime": 1779533880.1321163,
+    "ast_hash": "cda1c0c4b7885074cb4eb7778249d768",
     "semantic_hash": ""
   }
 }
