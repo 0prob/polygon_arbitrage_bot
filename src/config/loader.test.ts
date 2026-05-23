@@ -11,7 +11,9 @@ test("loadConfig maps all environment variables correctly", () => {
     MAX_TOTAL_PATHS: "12345",
     CROSS_CHAIN_ARB_ENABLED: "true",
     KATANA_RPC_URL: "https://katana.test",
-    ESCROW_AMOUNT: "5000000000000000000" // 5 ETH
+    ESCROW_AMOUNT: "5000000000000000000", // 5 ETH
+    MIN_PROFIT_BPS: "50",
+    MAX_SWAP_HOPS: "4"
   };
 
   const config = loadConfig(env);
@@ -21,4 +23,6 @@ test("loadConfig maps all environment variables correctly", () => {
   expect(config.crossChainArb?.enabled).toBe(true);
   expect(config.crossChainArb?.katanaRpcUrl).toBe("https://katana.test");
   expect(config.crossChainArb?.escrowAmount).toBe(5000000000000000000n);
+  expect(config.crossChainArb?.minProfitBps).toBe(50);
+  expect(config.crossChainArb?.maxSwapHops).toBe(4);
 });
