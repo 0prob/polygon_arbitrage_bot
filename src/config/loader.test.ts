@@ -13,11 +13,11 @@ test("loadConfig maps all environment variables correctly", () => {
     KATANA_RPC_URL: "https://katana.test",
     ESCROW_AMOUNT: "5000000000000000000", // 5 ETH
     MIN_PROFIT_BPS: "50",
-    MAX_SWAP_HOPS: "4"
+    MAX_SWAP_HOPS: "4",
   };
 
   const config = loadConfig(env);
-  
+
   expect(config.envioApiToken).toBe("test-token");
   expect(config.routing.maxTotalPaths).toBe(12345);
   expect(config.crossChainArb?.enabled).toBe(true);
@@ -25,4 +25,16 @@ test("loadConfig maps all environment variables correctly", () => {
   expect(config.crossChainArb?.escrowAmount).toBe(5000000000000000000n);
   expect(config.crossChainArb?.minProfitBps).toBe(50);
   expect(config.crossChainArb?.maxSwapHops).toBe(4);
+});
+
+test("should have default hub tokens", () => {
+  const config = loadConfig({ ...process.env });
+  expect(config.discovery.hubTokens).toEqual([
+    "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+    "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+  ]);
 });

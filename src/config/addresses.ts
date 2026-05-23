@@ -11,9 +11,6 @@ export const USDT: Address = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
 export const DAI: Address = "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063";
 export const WBTC: Address = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
 
-/** Hub tokens for cycle enumeration (Phase 1: hub graph) */
-export const HUB_4_TOKENS: readonly Address[] = [WETH, USDC, USDT, DAI];
-
 /** Extended hub tokens for full graph enumeration */
 export const POLYGON_HUB_TOKENS: readonly Address[] = [
   WMATIC,
