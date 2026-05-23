@@ -1,6 +1,5 @@
 import type { Address } from "../../core/types/common.ts";
 import type { RoutingGraph, SwapEdge } from "./graph.ts";
-import { HUB_4_TOKENS } from "../../config/addresses.ts";
 
 export type { SwapEdge };
 
@@ -11,8 +10,6 @@ export interface FoundCycle {
   logWeight: number;
   cumulativeFeeBps: bigint;
 }
-
-const HUB_SET = new Set(HUB_4_TOKENS.map((t) => t.toLowerCase()));
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
   const parts = edges.map((e) => e.poolAddress.toLowerCase()).sort();
@@ -82,11 +79,13 @@ export function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCL
   return cycles;
 }
 
-export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS, hubTokens: readonly Address[] = []): FoundCycle[] {
   const cycles: FoundCycle[] = [];
+  const hubSet = new Set(hubTokens.map((t) => t.toLowerCase()));
+
   for (const [startToken, firstEdges] of graph.adjacency) {
     if (cycles.length >= maxCycles) break;
-    if (!HUB_SET.has(startToken)) continue;
+    if (!hubSet.has(startToken)) continue;
 
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
@@ -120,7 +119,12 @@ export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCL
   return cycles;
 }
 
-export function enumerateCycles(graph: RoutingGraph, maxHops = 4, maxCycles = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function enumerateCycles(
+  graph: RoutingGraph,
+  maxHops = 4,
+  maxCycles = MAX_CYCLES_PER_PASS,
+  hubTokens: readonly Address[] = [],
+): FoundCycle[] {
   let allCycles: FoundCycle[] = [];
 
   // Allocate budget roughly: 40% to 2-hop, 40% to 3-hop, 20% to 4-hop
@@ -133,7 +137,7 @@ export function enumerateCycles(graph: RoutingGraph, maxHops = 4, maxCycles = MA
 
   if (maxHops >= 2) allCycles.push(...find2HopCycles(graph, limits[2]));
   if (maxHops >= 3) allCycles.push(...find3HopCycles(graph, limits[3]));
-  if (maxHops >= 4) allCycles.push(...find4HopCycles(graph, limits[4]));
+  if (maxHops >= 4) allCycles.push(...find4HopCycles(graph, limits[4], hubTokens));
 
   // Sort by logWeight (ascending, as it represents -log(1-fee), so smaller is better)
   return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);

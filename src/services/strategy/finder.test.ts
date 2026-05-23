@@ -62,7 +62,7 @@ describe("enumerateCycles", () => {
       status: "active",
     };
     const graph = buildGraph([p1, p2, p3, p4], new Map());
-    const cycles = enumerateCycles(graph, 4);
+    const cycles = enumerateCycles(graph, 4, 1000, [WETH]);
     expect(cycles.some((c) => c.hopCount === 4)).toBe(true);
   });
 
