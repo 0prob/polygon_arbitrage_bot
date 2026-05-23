@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const crossChainArbSchema = z.object({
-  enabled: z.boolean().default(false),
+  enabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()).default(false),
   katanaRpcUrl: z.string().default("https://rpc.katana.network"),
   polygonRpcUrl: z.string().default("https://polygon-rpc.com"),
   escrowToken: z.string().default("0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"), // WETH on Polygon
@@ -12,8 +12,8 @@ export const crossChainArbSchema = z.object({
   katanaExecutorAddress: z.string().optional().default(""),
   polygonSolverPrivateKey: z.string().optional().default(""),
   katanaSolverPrivateKey: z.string().optional().default(""),
-  katanaExecutorEnabled: z.boolean().default(true),
-  crossChainArbEnabled: z.boolean().default(true),
+  katanaExecutorEnabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()).default(true),
+  crossChainArbEnabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()).default(true),
 });
 
 export type CrossChainArbConfig = z.infer<typeof crossChainArbSchema>;
