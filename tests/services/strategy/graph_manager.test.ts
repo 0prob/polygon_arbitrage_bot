@@ -40,4 +40,60 @@ describe('GraphManager', () => {
         }
     }
   });
+
+  it('should add a new pool correctly', () => {
+    const manager = new GraphManager([], new Map());
+    
+    const poolAddr = '0x456' as `0x${string}`;
+    const pool: PoolMeta = {
+      address: poolAddr,
+      protocol: 'uniswap_v2',
+      token0: '0xc',
+      token1: '0xd',
+      tokens: ['0xc', '0xd'],
+      fee: 3000
+    };
+    const state: PoolState = {
+      reserve0: 1000n,
+      reserve1: 1000n
+    } as any;
+    
+    manager.addPool(pool, state);
+    
+    expect(manager.graph.poolMeta.get(poolAddr.toLowerCase())).toEqual(pool);
+    expect(manager.graph.stateRefs.get(poolAddr.toLowerCase())).toEqual(state);
+    
+    const tokenCEdges = manager.graph.adjacency.get('0xc');
+    expect(tokenCEdges).toBeDefined();
+    expect(tokenCEdges?.length).toBe(1);
+    expect(tokenCEdges![0]).toMatchObject({
+      poolAddress: poolAddr,
+      protocol: 'uniswap_v2',
+      tokenIn: '0xc',
+      tokenOut: '0xd',
+      feeBps: 3000n,
+      stateRef: state,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1
+    });
+
+    const tokenDEdges = manager.graph.adjacency.get('0xd');
+    expect(tokenDEdges).toBeDefined();
+    expect(tokenDEdges?.length).toBe(1);
+    expect(tokenDEdges![0]).toMatchObject({
+      poolAddress: poolAddr,
+      protocol: 'uniswap_v2',
+      tokenIn: '0xd',
+      tokenOut: '0xc',
+      feeBps: 3000n,
+      stateRef: state,
+      zeroForOne: false,
+      tokenInIdx: 1,
+      tokenOutIdx: 0
+    });
+    
+    expect(manager.graph.tokens.has('0xc')).toBe(true);
+    expect(manager.graph.tokens.has('0xd')).toBe(true);
+  });
 });

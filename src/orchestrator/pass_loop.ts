@@ -219,35 +219,46 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let hasuraPoolsCache: PoolMeta[] | null = null;
   let _lastStateRefresh = 0;
   let lastRefreshTime = 0;
-  
+  let lastDiscoveryTime = 0;
+
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
+  const DISCOVERY_INTERVAL = 60000;
 
   while (ctx.isRunning) {
-    const now = Date.now();
-    const startTime = now;
+  const now = Date.now();
+  const startTime = now;
+
+  try {
+  let pools = hasuraPoolsCache ?? ctx.getPools();
+
+  if (pools.length === 0 || now - lastDiscoveryTime > DISCOVERY_INTERVAL) {
+    const graphqlUrl = ctx.config.hasuraUrl;
+    const secret = ctx.config.hasuraSecret;
+    if (pools.length === 0) {
+      ctx.logger.info({}, "No pools — discovering from Hasura");
+    } else {
+      ctx.logger.info({}, "Polling Hasura for new pools");
+    }
 
     try {
-      let pools = hasuraPoolsCache ?? ctx.getPools();
-
-      if (pools.length === 0) {
-        const graphqlUrl = ctx.config.hasuraUrl;
-        const secret = ctx.config.hasuraSecret;
-        ctx.logger.info({}, "No pools — discovering from Hasura");
-        const hasuraPools = await deps.discoverPoolsFromHasura(graphqlUrl, secret);
-        if (hasuraPools.length > 0) {
-          hasuraPoolsCache = hasuraPools.map(p => ({
-            address: p.address as `0x${string}`,
-            protocol: p.protocol,
-            token0: (p.tokens[0] ?? "") as `0x${string}`,
-            token1: (p.tokens[1] ?? "") as `0x${string}`,
-            tokens: p.tokens as `0x${string}`[],
-          }));
-          pools = hasuraPoolsCache;
-          ctx.logger.info({ discovered: pools.length }, "Discovered pools from Hasura");
-        }
+      const hasuraPools = await deps.discoverPoolsFromHasura(graphqlUrl, secret);
+      if (hasuraPools.length > 0) {
+        hasuraPoolsCache = hasuraPools.map(p => ({
+          address: p.address as `0x${string}`,
+          protocol: p.protocol,
+          token0: (p.tokens[0] ?? "") as `0x${string}`,
+          token1: (p.tokens[1] ?? "") as `0x${string}`,
+          tokens: p.tokens as `0x${string}`[],
+        }));
+        pools = hasuraPoolsCache;
+        lastDiscoveryTime = now;
+        ctx.logger.info({ discovered: pools.length }, "Updated pools from Hasura");
       }
-
+    } catch (e) {
+      ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+    }
+  }
       const stateCache = ctx.stateCache;
 
       // --- SYNTHETIC ARB INJECTION ---
