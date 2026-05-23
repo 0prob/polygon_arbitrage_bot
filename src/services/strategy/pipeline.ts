@@ -1,11 +1,12 @@
 import type { FoundCycle } from "./finder.ts";
 import type { RouteSimulationResult, RouteStateCache } from "../../core/types/route.ts";
-import { simulateRoute } from "./simulator.ts";
+import { simulateRoute, getEffectivePriceImpact } from "./simulator.ts";
 import { computeProfit } from "../../core/assessment/profit.ts";
 import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 
 const TEST_AMOUNT = 10n ** 18n;
+const MAX_IMPACT_THRESHOLD = 0.05; // 5%
 
 export interface PipelineOptions {
   minProfitMaticWei: bigint;
@@ -34,6 +35,14 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
   for (const cycle of cycles) {
     attempted++;
     try {
+      // Predictive pruning based on impact
+      for (const edge of cycle.edges) {
+        const impact = getEffectivePriceImpact(edge, TEST_AMOUNT, stateCache);
+        if (impact > MAX_IMPACT_THRESHOLD) {
+          throw new Error("Impact too high");
+        }
+      }
+
       const result = simulateRoute(cycle.edges, TEST_AMOUNT, stateCache);
       const assessment = computeProfit({
         grossProfitInTokens: result.profit,

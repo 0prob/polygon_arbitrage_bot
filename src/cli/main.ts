@@ -1,6 +1,6 @@
 import { loadConfig } from "../config/loader.ts";
 import { bootApplication } from "../orchestrator/boot.ts";
-import { runPassLoop } from "../orchestrator/pass_loop.ts";
+import { PassRunner } from "../orchestrator/runner.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
 import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.ts";
 import { createRootLogger } from "../infra/observability/logger.ts";
@@ -53,7 +53,8 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  await runPassLoop(ctx, undefined, tui?.bus);
+  const runner = new PassRunner(ctx, undefined, tui?.bus);
+  await runner.run();
 }
 
 main().catch((err) => {

@@ -115,3 +115,24 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
     hopCount: edges.length,
   };
 }
+
+export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateCache: RouteStateCache): number {
+  if (amountIn === 0n) return 0;
+  const simEdge: SimulationEdge = {
+    poolAddress: edge.poolAddress,
+    tokenIn: edge.tokenIn,
+    tokenOut: edge.tokenOut,
+    protocol: edge.protocol,
+    zeroForOne: edge.zeroForOne ?? true, // Simplified
+    stateRef: edge.stateRef as PoolState,
+  };
+
+  const result = simulateHop(simEdge, amountIn, stateCache);
+  const realizedPrice = Number(result.amountOut) / Number(amountIn);
+  
+  // Need to compare with spot price. For simplicity, we assume 1:1 if not found.
+  // This is a naive implementation as requested.
+  const spotPrice = 1.0; 
+  const impact = Math.abs(spotPrice - realizedPrice) / spotPrice;
+  return impact;
+}

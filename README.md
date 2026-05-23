@@ -9,7 +9,6 @@ High-frequency arbitrage bot for Polygon (chain 137) with cross-chain support fo
 - **Real-time state**: HyperIndex/Envio event indexer → Hasura → GraphQL pool state
 - **Cross-chain arb**: Intent-based arbitrage between Polygon and Katana via AggLayer
 - **TUI dashboard**: Terminal UI with live metrics, logs, and keybindings
-- **Mempool sniping**: Detects large pending swaps and front-runs them
 - **Predictive cache**: Pre-computes profitable paths for faster pass-loop iterations
 
 ## Architecture

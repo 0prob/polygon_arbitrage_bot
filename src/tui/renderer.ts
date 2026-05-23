@@ -114,6 +114,7 @@ export class Renderer {
       `  Successful:     ${color(String(m.successful), GREEN)}`,
       `  Failed:         ${color(String(m.failed), m.failed > 0 ? RED : WHITE)}`,
       `  Total Profit:   ${color(formatWei(m.totalProfitWei), CYAN)}`,
+      `  Profit/s:       ${color(formatWei(BigInt(Math.floor(m.profitPerSecond))), CYAN)}`,
     ];
     return this.panelBox(lines, layout.metricsPanel);
   }
