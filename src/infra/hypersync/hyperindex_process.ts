@@ -7,6 +7,7 @@ interface HyperIndexStatusEvent {
   status: string;
   syncedBlock: number;
   remoteBlock: number;
+  chain?: string;
 }
 
 type EventBusLike = { emit(event: HyperIndexStatusEvent): void };
@@ -55,6 +56,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     const bus = opts.eventBus;
     if (!bus) return;
 
+    // Extract chain name from [chain] prefix
+    const chainMatch = line.match(/^\[([^\]]+)\]/);
+    const chain = chainMatch && !chainMatch[1].includes(":") ? chainMatch[1].toLowerCase() : undefined;
+
     const trimmed = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
 
     const blockMatch = trimmed.match(/(\d{5,})\s*->\s*(\d{5,})/);
@@ -66,6 +71,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         status: "syncing",
         syncedBlock: _lastParsedBlock,
         remoteBlock: _lastRemoteBlock,
+        chain,
       });
       return;
     }
@@ -79,6 +85,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         status: "syncing",
         syncedBlock: _lastParsedBlock,
         remoteBlock: _lastRemoteBlock,
+        chain,
       });
       return;
     }
@@ -92,6 +99,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
           status: "synced",
           syncedBlock: _lastParsedBlock,
           remoteBlock: _lastParsedBlock,
+          chain,
         });
       }
     }
@@ -102,6 +110,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         status: "error",
         syncedBlock: _lastParsedBlock,
         remoteBlock: _lastRemoteBlock,
+        chain,
       });
     }
   }
