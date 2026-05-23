@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779535503.3750982,
-    "ast_hash": "d23c68465166fdf34efbe89903fda7af",
+    "mtime": 1779538602.4613693,
+    "ast_hash": "21e4685ff7ee752d977fadb230d2831f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "af9b93cabb2590f413e27a611521cd6a",
+    "mtime": 1779539119.7796814,
+    "ast_hash": "006ff799efe6feb497652b3fccba3697",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779538501.2784696,
-    "ast_hash": "e9239ccb61e6d274159fc60a4203b610",
+    "mtime": 1779539282.5498786,
+    "ast_hash": "4dbf7fc62864b0b802ebcf9e507083e4",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779526612.2479029,
-    "ast_hash": "6fb9c0f7cd2a9902db4350d113369d36",
+    "mtime": 1779540214.1355143,
+    "ast_hash": "a9ddb2c370f3e2483e485c5a372278cf",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1779526612.2479029,
-    "ast_hash": "0e0055da2516b508107dd87711dae47e",
+    "mtime": 1779539151.1993337,
+    "ast_hash": "217c103acaa7ec66b53e2968ebfe319c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-arb-bot-tui.md": {
@@ -625,8 +625,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "5cb1aedc15c6bfc786d4e8eb3435ce34",
+    "mtime": 1779539172.9230933,
+    "ast_hash": "d64c655e1efbcce11270ee086db46508",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
@@ -640,13 +640,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/renderer.test.ts": {
-    "mtime": 1779471960.449324,
-    "ast_hash": "381604cbb2f278f66fb072b939359136",
+    "mtime": 1779539441.092119,
+    "ast_hash": "003afbd67d68ab0631a72ff773b873a2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "6e1990daacec8db5c967ab13c4f530f3",
+    "mtime": 1779539420.4283485,
+    "ast_hash": "5afa1f1092acb8acad435ea010effe08",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
@@ -705,8 +705,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/metrics.test.ts": {
-    "mtime": 1779526617.96386,
-    "ast_hash": "bde342a6e10e9dce9a0418cdf4ab5691",
+    "mtime": 1779539504.1994178,
+    "ast_hash": "f9c8e32bedd27feb612d4b37c294637e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/services/strategy/graph_manager.test.ts": {
@@ -857,6 +857,16 @@
   "/home/x/arb/t/tests/infra/hypersync_integration.test.ts": {
     "mtime": 1779538544.0780048,
     "ast_hash": "20f825819938815df8f2f643a173e607",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-tui-routing-enhancements.md": {
+    "mtime": 1779539085.6160593,
+    "ast_hash": "de5ea444450f3d521fd9bc34d1e3c9a1",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-advanced-routing-tui-stats-design.md": {
+    "mtime": 1779539980.9901123,
+    "ast_hash": "296dab36ee0eb7966f926f652bd18956",
     "semantic_hash": ""
   }
 }
