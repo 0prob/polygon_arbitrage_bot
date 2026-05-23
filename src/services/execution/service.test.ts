@@ -11,9 +11,9 @@ describe('ExecutionService', () => {
   const mockSubmitTx = vi.fn();
 
   it('quarantines route on gas data failure', async () => {
-    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, mockSubmitTx);
+    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, [mockSubmitTx]);
     
-    vi.mocked(mockGasOracle.getSnapshot).mockReturnValue(null);
+    vi.spyOn(mockGasOracle, 'getSnapshot').mockReturnValue(null);
 
     const candidate = {
       routeKey: 'test-route-gas',
@@ -30,11 +30,11 @@ describe('ExecutionService', () => {
   });
 
   it('quarantines route on execution failure', async () => {
-    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, mockSubmitTx);
+    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, [mockSubmitTx]);
     
-    vi.mocked(mockGasOracle.getSnapshot).mockReturnValue({ maxFee: 100n });
-    vi.mocked(mockNonceManager.getNextNonce).mockReturnValue(1);
-    vi.mocked(mockSubmitTx).mockRejectedValue(new Error('tx failed'));
+    vi.spyOn(mockGasOracle, 'getSnapshot').mockReturnValue({ maxFee: 100n });
+    vi.spyOn(mockNonceManager, "getNextNonce").mockReturnValue(1);
+    mockSubmitTx.mockRejectedValue(new Error('tx failed'));
 
     const candidate = {
       routeKey: 'test-route-execution',

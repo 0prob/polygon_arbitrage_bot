@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { simulateHop, simulateRoute } from "./simulator.ts";
+import { simulateHop, simulateRoute, getEffectivePriceImpact } from "./simulator.ts";
 import type { SimulationEdge } from "./simulator.ts";
 import type { SwapEdge } from "./graph.ts";
 import type { Address } from "../../core/types/common.ts";
@@ -255,5 +255,36 @@ describe("simulateRoute", () => {
       },
     ];
     expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No state");
+  });
+});
+
+describe("getEffectivePriceImpact", () => {
+  it("calculates correct impact for a V2 pool", () => {
+    const edge: SwapEdge = {
+      poolAddress: "0xpool" as Address,
+      protocol: "UNISWAP_V2",
+      tokenIn: "0xa" as Address,
+      tokenOut: "0xb" as Address,
+      feeBps: 30n,
+      stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: "0xa", token1: "0xb" },
+    };
+    
+    // amountIn = 10000n, pool reserves = 1,000,000. Impact should be roughly 1%
+    const impact = getEffectivePriceImpact(edge, 10000n, new Map());
+    expect(impact).toBeGreaterThan(0);
+    expect(impact).toBeLessThan(0.02);
+  });
+
+  it("returns 0 impact for 0 amount", () => {
+    const edge: SwapEdge = {
+      poolAddress: "0xpool" as Address,
+      protocol: "UNISWAP_V2",
+      tokenIn: "0xa" as Address,
+      tokenOut: "0xb" as Address,
+      feeBps: 30n,
+      stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: "0xa", token1: "0xb" },
+    };
+    const impact = getEffectivePriceImpact(edge, 0n, new Map());
+    expect(impact).toBe(0);
   });
 });

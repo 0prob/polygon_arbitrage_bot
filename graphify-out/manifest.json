@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.ts": {
-    "mtime": 1779425024.746314,
-    "ast_hash": "bd0e735feae3282305123ed8e14e453e",
+    "mtime": 1779524350.968972,
+    "ast_hash": "af9b93cabb2590f413e27a611521cd6a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779425055.178031,
-    "ast_hash": "431ba78ec8c3b3678b83e8e6148ebc9e",
+    "mtime": 1779524654.145814,
+    "ast_hash": "8f980af3e30c8fc65d1f5024976b30d7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.test.ts": {
@@ -475,13 +475,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779507752.0187,
-    "ast_hash": "6756585001e46bfc6bd3515d1854d729",
+    "mtime": 1779524380.3806853,
+    "ast_hash": "74f4215629d81c7a6c6e564573019d96",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "f369fe97266802a62412ec9b7d9c694d",
+    "mtime": 1779524421.9682715,
+    "ast_hash": "67af2ed170f6561d2de06ab8995bce78",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/client_factory.ts": {
-    "mtime": 1779461549.296296,
-    "ast_hash": "4ca123e56686f1c4c5775905cdffc385",
+    "mtime": 1779524607.9663198,
+    "ast_hash": "15943b0325249d7573a5996641347d38",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/retry.ts": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "254d4a61dc5eed0e2d37a3b7511124e7",
+    "mtime": 1779522428.658163,
+    "ast_hash": "190138b7a50bdfc9002743391d6cc04b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/README.md": {
-    "mtime": 1779513486.1803126,
-    "ast_hash": "0d6106616814dd5b6151cd68f6f78ad8",
+    "mtime": 1779522557.0302339,
+    "ast_hash": "c8354b35a226260c5fcf99e9073f6d6a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
@@ -625,8 +625,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "a987098cd546f955258d31d866174ef8",
+    "mtime": 1779524413.644355,
+    "ast_hash": "edd7ca1ed0f17839abd34a5cf7b65004",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "8b7816ac9f29d5190c1ad8d283fce67a",
+    "mtime": 1779524416.4083273,
+    "ast_hash": "6b73338297568052ba2d95e39d5d05d5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/system.ts": {
-    "mtime": 1779518646.2877707,
-    "ast_hash": "974e151f71e4f60cbe114d1933f01367",
+    "mtime": 1779524732.0609443,
+    "ast_hash": "11a27f2588b2bd7aa441e9e37d25a50e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-dependency-audit-and-cleanup.md": {
@@ -692,6 +692,86 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-22-orchestration-refactor-design.md": {
     "mtime": 1779518475.8769107,
     "ast_hash": "dd78db1a90e5e4e1cfe54c8532766023",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/harness.ts": {
+    "mtime": 1779522471.4687932,
+    "ast_hash": "57849fdb836356238e1b161f5ff58cdf",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/harness.test.ts": {
+    "mtime": 1779522478.4205766,
+    "ast_hash": "480a2ef08bc49209ef60e0da891f636e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/tui/metrics.test.ts": {
+    "mtime": 1779524406.3004286,
+    "ast_hash": "bde342a6e10e9dce9a0418cdf4ab5691",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/services/strategy/graph_manager.test.ts": {
+    "mtime": 1779525021.925576,
+    "ast_hash": "7ed2fa921184199d87297ebb14b46a51",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/tests/services/mempool/subscriber.test.ts": {
+    "mtime": 1779524701.201291,
+    "ast_hash": "e7f27f4e6ade8074e61fe0d6eabbcd0b",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/strategy/graph_manager.ts": {
+    "mtime": 1779524978.8220875,
+    "ast_hash": "9dd9923da4574cdee29e769efed7aef9",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/execution/service.test.ts": {
+    "mtime": 1779524661.5777318,
+    "ast_hash": "70c4a9dfc2ef5312c187cb5ad3e04022",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/mempool/subscriber.ts": {
+    "mtime": 1779524671.0216272,
+    "ast_hash": "4494b3789186449775648618b253b721",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/orchestrator/runner.ts": {
+    "mtime": 1779522411.1107435,
+    "ast_hash": "eea33790337339de07d3d280a2a2f6ce",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-22-high-performance-upgrade-plan.md": {
+    "mtime": 1779523890.4885418,
+    "ast_hash": "32c420fd83f90ca573b311d1fe3b9d3d",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-realtime-ingestion-plan.md": {
+    "mtime": 1779524556.93887,
+    "ast_hash": "d50fcecbac99d69e70d7244f55880f92",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-incremental-graph-implementation-plan.md": {
+    "mtime": 1779524906.9349334,
+    "ast_hash": "6029a0714dd7581bfe22fad20c7291f5",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-22-high-performance-upgrade-design.md": {
+    "mtime": 1779523505.6425579,
+    "ast_hash": "f822da245439f0225c5b0b19de7e170c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-realtime-ingestion-design.md": {
+    "mtime": 1779524518.359279,
+    "ast_hash": "03b33becadace588c05596add3523afd",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-incremental-graph-design.md": {
+    "mtime": 1779524807.5360856,
+    "ast_hash": "a0801a03fd36c3717626f677e180e039",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-parallel-execution-design.md": {
+    "mtime": 1779525060.6571136,
+    "ast_hash": "96225d1dcdbfc7ddbd465ebbee0a90b6",
     "semantic_hash": ""
   }
 }

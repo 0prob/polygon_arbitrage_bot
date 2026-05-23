@@ -78,26 +78,33 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[]): 
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);
 
-  const walletClient = createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137);
-  if (!walletClient.account) {
-    throw new Error("Execution client is not configured with an account.");
-  }
+  const walletClients = config.execution.privateRelayUrls.length > 0
+    ? config.execution.privateRelayUrls.map(url => createExecutionClient(url, config.execution.privateKey, 137))
+    : [createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137)];
 
-  const submitTx = async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
-    const hash = await walletClient.sendTransaction({
-      account: walletClient.account!,
-      chain: walletClient.chain,
-      to: tx.to as `0x${string}`,
-      data: tx.data as `0x${string}`,
-      value: tx.value,
-      nonce: tx.nonce,
-      maxFeePerGas: tx.maxFee,
-      maxPriorityFeePerGas: tx.maxFee / 2n,
-    });
-    return hash;
-  };
+  walletClients.forEach(wc => {
+    if (!wc.account) {
+      throw new Error("Execution client is not configured with an account.");
+    }
+  });
 
-  const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitTx);
+  const submitters = walletClients.map(walletClient => {
+    return async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
+      const hash = await walletClient.sendTransaction({
+        account: walletClient.account!,
+        chain: walletClient.chain,
+        to: tx.to as `0x${string}`,
+        data: tx.data as `0x${string}`,
+        value: tx.value,
+        nonce: tx.nonce,
+        maxFeePerGas: tx.maxFee,
+        maxPriorityFeePerGas: tx.maxFee / 2n,
+      });
+      return hash;
+    };
+  });
+
+  const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitters);
 
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
