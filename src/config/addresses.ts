@@ -11,18 +11,6 @@ export const USDT: Address = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
 export const DAI: Address = "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063";
 export const WBTC: Address = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6";
 
-/** Extended hub tokens for full graph enumeration */
-export const POLYGON_HUB_TOKENS: readonly Address[] = [
-  WMATIC,
-  WETH,
-  USDC,
-  USDC_NATIVE,
-  USDT,
-  DAI,
-  WBTC,
-  // Add more from current src/routing/graph.ts:803-832 hub list
-];
-
 // Factory addresses
 export const QUICKSWAP_V2_FACTORY: Address = "0x5757371414417b8c6caad45baef941abc7d3ab32";
 export const SUSHISWAP_V2_FACTORY: Address = "0xc35dadb65012ec5796536bd9864ed8773abc74c4";

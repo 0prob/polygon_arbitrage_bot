@@ -63,7 +63,6 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
 
   DISCOVERY_REFRESH_INTERVAL_MS: ["discovery", "refreshIntervalMs"],
   DISCOVERY_CONCURRENCY: ["discovery", "concurrency"],
-  HUB_TOKENS: ["discovery", "hubTokens"],
 
   WATCHER_IDLE_SLEEP_MS: ["watcher", "idleSleepMs"],
   WATCHER_ENRICHMENT_BACKFILL_LOOKBACK: ["watcher", "enrichmentBackfillLookbackBlocks"],

@@ -69,7 +69,6 @@ export class BotTestHarness {
       discovery: {
         refreshIntervalMs: 1000,
         concurrency: 1,
-        hubTokens: ['0x123...'],
       },
       watcher: {
         idleSleepMs: 0,

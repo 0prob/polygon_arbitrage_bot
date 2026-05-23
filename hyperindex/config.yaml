@@ -9,7 +9,7 @@ chains:
   - id: 137
     start_block: ${POLYGON_START_BLOCK:-5484533}
     hypersync_config:
-      url: https://polygon.hypersync.xyz
+      url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
     contracts:
       # Consolidated V2 Factories
       - name: V2Factory
@@ -157,7 +157,7 @@ chains:
   - id: 747474
     start_block: ${KATANA_START_BLOCK:-0}
     hypersync_config:
-      url: https://katana.hypersync.xyz
+      url: ${KATANA_HYPERSYNC_URL:-https://katana.hypersync.xyz}
     contracts:
       - name: SushiV2Factory
         address: "0x72d111b4d6f31b38919ae39779f570b747d6acd9"

@@ -1,5 +1,5 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, find2HopCycles, find3HopCycles, find4HopCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
+import { type FoundCycle, findCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
 import { type RoutingGraph, buildGraph } from "../services/strategy/graph.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
@@ -11,6 +11,7 @@ import { WMATIC } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
 import { parseAbi } from "viem";
+import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
 const V3_ABI = parseAbi(["function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)", "function liquidity() external view returns (uint128)"]);
@@ -35,13 +36,10 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
 
   if (missingAddresses.size === 0) return;
 
-  // Fetch up to 5000 pools per pass to saturate the cache quickly
-  const allMissing = Array.from(missingAddresses);
-  const toFetch = allMissing
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 5000);
+  // Fetch all missing pools
+  const toFetch = Array.from(missingAddresses);
 
-  ctx.logger.info({ count: toFetch.length, totalMissing: missingAddresses.size }, "Massive RPC pre-fetch in progress");
+  ctx.logger.info({ count: toFetch.length }, "RPC pre-fetch in progress");
 
   // Split into batches of 500 for multicall
   const BATCH_SIZE = 500;
@@ -80,7 +78,7 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
           const res = results[resultIdx++];
           if (res?.status === "success" && res.result) {
             if (resultIdx <= 5) {
-              console.log(`[multicall-diag] V2 Result for ${addr}:`, JSON.stringify(res.result, (k, v) => typeof v === "bigint" ? v.toString() : v));
+              console.log(`[multicall-diag] V2 Result for ${addr}:`, JSON.stringify(res.result, (_, v) => typeof v === "bigint" ? v.toString() : v));
             }
             const r = res.result as any;
             const r0 = r[0] !== undefined ? r[0] : r.reserve0;
@@ -130,9 +128,7 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
 
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
-  find2HopCycles: typeof find2HopCycles;
-  find3HopCycles: typeof find3HopCycles;
-  find4HopCycles: typeof find4HopCycles;
+  findCycles: typeof findCycles;
   evaluatePipeline: typeof evaluatePipeline;
   buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
   discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
@@ -194,9 +190,7 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
 
 export const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
-  find2HopCycles,
-  find3HopCycles,
-  find4HopCycles,
+  findCycles,
   evaluatePipeline,
   buildStateCacheFromGraphQL,
   discoverPoolsFromHasura,
@@ -214,16 +208,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   ctx.logger.info({}, "Pass loop started with multi-frequency cycles");
 
   let cachedGraph: RoutingGraph | null = null;
-  let cached2HopCycles: FoundCycle[] = [];
-  let cached3And4HopCycles: FoundCycle[] = [];
+  let cachedCycles: FoundCycle[] = [];
   let hasuraPoolsCache: PoolMeta[] | null = null;
-  const _lastStateRefresh = 0;
   let lastRefreshTime = 0;
   let lastDiscoveryTime = 0;
+  let lastPoolsCount = 0;
+  let cachedRates: Map<string, bigint> | null = null;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
   const DISCOVERY_INTERVAL = 60000;
+  const MAX_HOPS = 4;
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
@@ -233,11 +228,27 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     }
   });
 
+  let cycleWindowStart = Date.now();
+
   while (ctx.isRunning) {
   const now = Date.now();
   const startTime = now;
 
+  const cycleWindow = 60000;
+  const elapsedCycleWindow = now - cycleWindowStart;
+  ctx.metrics.currentCyclesPerMinute = elapsedCycleWindow > 0
+    ? Math.round((ctx.metrics.cycles * 60000) / elapsedCycleWindow)
+    : 0;
+  if (ctx.metrics.currentCyclesPerMinute > ctx.metrics.peakCyclesPerMinute) {
+    ctx.metrics.peakCyclesPerMinute = ctx.metrics.currentCyclesPerMinute;
+  }
+  if (elapsedCycleWindow > cycleWindow) {
+    cycleWindowStart = now;
+  }
+
   try {
+  ctx.metrics.cycles++;
+  
   let pools = hasuraPoolsCache ?? ctx.getPools();
 
   if (pools.length === 0 || now - lastDiscoveryTime > DISCOVERY_INTERVAL) {
@@ -265,51 +276,29 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
     } catch (e) {
       ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+      ctx.metrics.totalErrors++;
+      ctx.metrics.lastErrorTime = Date.now();
+      ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
     }
   }
       const stateCache = ctx.stateCache;
 
-      // --- SYNTHETIC ARB INJECTION ---
-      // TokenA (WMATIC) -> TokenB (Fake) -> TokenA
-      const fakeToken = "0xffffffffffffffffffffffffffffffffffffffff" as `0x${string}`;
-      const pool1 = "0x1111111111111111111111111111111111111111" as `0x${string}`;
-      const pool2 = "0x2222222222222222222222222222222222222222" as `0x${string}`;
+      if (lastPoolsCount !== pools.length) {
+        cachedGraph = deps.buildGraph(pools, stateCache);
+        lastPoolsCount = pools.length;
+      }
       
-      const setSyntheticState = () => {
-        stateCache.set(pool1, { reserve0: 1000n * 10n**18n, reserve1: 1000n * 10n**18n, initialized: true, isSynthetic: true });
-        stateCache.set(pool2, { reserve0: 1000n * 10n**18n, reserve1: 1100n * 10n**18n, initialized: true, isSynthetic: true });
-      };
-      setSyntheticState();
+      const shouldReEnumerate = (now - lastRefreshTime) >= LF_INTERVAL;
 
-      const syntheticPools: PoolMeta[] = [
-        { address: pool1, protocol: "uniswap_v2", token0: WMATIC, token1: fakeToken, tokens: [WMATIC, fakeToken] },
-        { address: pool2, protocol: "uniswap_v2", token0: WMATIC, token1: fakeToken, tokens: [WMATIC, fakeToken] },
-      ];
-      // -------------------------------
-
-      // Force refresh state for ALL active pools via RPC multicall on every pass
-      if (pools.length > 0) {
+      // Force refresh state for ALL active pools via RPC multicall on low-frequency passes
+      if (shouldReEnumerate && pools.length > 0) {
         // Create dummy cycles so fetchMissingPoolState picks up all addresses
         const dummyCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
         await fetchMissingPoolState(ctx, pools, dummyCycles);
-        // Ensure synthetic state is still there
-        setSyntheticState();
       }
-
-
-      const shouldLowFreq = (now - lastRefreshTime) >= LF_INTERVAL;
       
-      if (shouldLowFreq || !cachedGraph) {
-        cachedGraph = deps.buildGraph([...pools, ...syntheticPools], stateCache);
-        
-        const maxHops = 4; // Force 4 for discovery
-        cached2HopCycles = deps.find2HopCycles(cachedGraph);
-        
-        const longCycles: FoundCycle[] = [];
-        longCycles.push(...deps.find3HopCycles(cachedGraph));
-        const hubTokens = (ctx.config.discovery.hubTokens || []) as `0x${string}`[];
-        longCycles.push(...deps.find4HopCycles(cachedGraph, undefined, hubTokens));
-        cached3And4HopCycles = longCycles;
+      if (shouldReEnumerate || !cachedGraph) {
+        cachedCycles = deps.findCycles(cachedGraph!, MAX_HOPS);
 
         lastRefreshTime = now;
         const poolsPerProtocol: Record<string, number> = {};
@@ -319,22 +308,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         ctx.logger.info(
           { 
             pools: pools.length, 
-            cycles2: cached2HopCycles.length, 
-            cycles34: cached3And4HopCycles.length,
-            maxHops
+            cycles: cachedCycles.length,
           }, 
           "Graph and cycles re-enumerated"
         );
         bus?.emit({ 
           type: "graph_built", 
           poolCount: pools.length, 
-          cycleCount: cached2HopCycles.length + cached3And4HopCycles.length,
+          cycleCount: cachedCycles.length,
           poolsPerProtocol,
-          maxHops
+          maxHops: MAX_HOPS,
         });
       }
 
-      const currentCycles = shouldLowFreq ? [...cached2HopCycles, ...cached3And4HopCycles] : cached2HopCycles;
+      const currentCycles = cachedCycles;
 
       if (currentCycles.length === 0) {
         await sleep(HF_INTERVAL);
@@ -351,7 +338,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      const tokenToMaticRates = computeMaticRates(pools, stateCache);
+      if (shouldReEnumerate || !cachedRates) {
+        cachedRates = computeMaticRates(pools, stateCache);
+      }
+      const tokenToMaticRates = cachedRates!;
+      
       ctx.logger.debug({ ratesCount: tokenToMaticRates.size }, "Updated token conversion rates");
 
       const options: PipelineOptions = {
@@ -365,6 +356,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const result = deps.evaluatePipeline(currentCycles, stateCache, options);
 
+      ctx.metrics.opportunitiesFound += result.profitableCount;
+
       if (result.attempted > 0) {
         ctx.logger.info(
           {
@@ -376,7 +369,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             maxGrossMatic: result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n**15n).toString() + "mMATIC" : "N/A",
             rates: tokenToMaticRates.size,
             cache: stateCache.size,
-            isLowFreq: shouldLowFreq,
+            isLowFreq: shouldReEnumerate,
           },
           "Cycle assessment complete",
         );
@@ -396,18 +389,27 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             );
           } catch (err) {
             ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
+            ctx.metrics.totalErrors++;
+            ctx.metrics.lastErrorTime = Date.now();
+            ctx.metrics.lastErrorMessage = "Failed to build tx for cycle";
             continue;
           }
 
           ctx.logger.info({ routeKey, profit: profitable.assessment.netProfitAfterGas }, "Executing opportunity");
           bus?.emit({ type: "execution_submitted", routeKey });
+          ctx.metrics.executionsAttempted++;
           const execResult = await ctx.executionService.execute(candidate);
 
           if (execResult.success) {
+            ctx.metrics.executionsSuccessful++;
             ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
             bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash });
           } else {
+            ctx.metrics.executionsFailed++;
             ctx.logger.warn({ error: execResult.error, routeKey }, "Execution failed");
+            ctx.metrics.totalErrors++;
+            ctx.metrics.lastErrorTime = Date.now();
+            ctx.metrics.lastErrorMessage = "Execution failed: " + (execResult.error ?? "");
             bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error });
           }
         }
@@ -430,16 +432,26 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           }
         } catch (err) {
           ctx.logger.error({ err }, "Cross-chain arb loop error");
+          ctx.metrics.totalErrors++;
+          ctx.metrics.lastErrorTime = Date.now();
+          ctx.metrics.lastErrorMessage = "Cross-chain arb loop error";
         }
       }
+
+      const elapsed = Date.now() - startTime;
+      ctx.metrics.lastCycleDurationMs = elapsed;
+      bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
+      const payload = buildStatusPayload(ctx.metrics, gasSnapshot.gasPrice, pools.length);
+      await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
+      const waitMs = Math.max(0, HF_INTERVAL - elapsed);
+      if (waitMs > 0) await sleep(waitMs);
     } catch (err) {
       ctx.logger.error({ err }, "Pass loop error");
+      ctx.metrics.totalErrors++;
+      ctx.metrics.lastErrorTime = Date.now();
+      ctx.metrics.lastErrorMessage = "Pass loop error";
+      await sleep(HF_INTERVAL);
     }
-
-    const elapsed = Date.now() - startTime;
-    bus?.emit({ type: "heartbeat", elapsedMs: elapsed });
-    const waitMs = Math.max(0, HF_INTERVAL - elapsed);
-    if (waitMs > 0) await sleep(waitMs);
   }
 
   ctx.logger.info({}, "Pass loop exited");

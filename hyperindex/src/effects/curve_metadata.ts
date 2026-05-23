@@ -31,33 +31,29 @@ export const fetchCurveMetadata = createEffect(
   async ({ input }) => {
     try {
       const pool = input.pool as `0x${string}`;
-      const [A, fee] = await Promise.all([
+      const [A, fee, ...all] = await Promise.all([
         client.readContract({ address: pool, abi: CURVE_ABI, functionName: "A" }).catch(() => 0n),
         client.readContract({ address: pool, abi: CURVE_ABI, functionName: "fee" }).catch(() => 0n),
+        ...Array.from({ length: input.nCoins * 2 }, (_, i) => {
+          const fn = i < input.nCoins ? "balances" : "coins";
+          const arg = i < input.nCoins ? BigInt(i) : BigInt(i - input.nCoins);
+          return client.readContract({ address: pool, abi: CURVE_ABI, functionName: fn, args: [arg] });
+        }),
       ]);
+
       const balances: bigint[] = [];
       const coins: string[] = [];
-      
-      const balanceCalls = Array.from({ length: input.nCoins }, (_, i) => 
-        client.readContract({ address: pool, abi: CURVE_ABI, functionName: "balances", args: [BigInt(i)] })
-      );
-      const coinCalls = Array.from({ length: input.nCoins }, (_, i) => 
-        client.readContract({ address: pool, abi: CURVE_ABI, functionName: "coins", args: [BigInt(i)] })
-      );
-      
-      const results = await Promise.allSettled([...balanceCalls, ...coinCalls]);
-      
       for (let i = 0; i < input.nCoins; i++) {
-        const balRes = results[i];
-        const coinRes = results[i + input.nCoins];
-        if (balRes.status === "fulfilled" && coinRes.status === "fulfilled") {
-          balances.push(balRes.value as bigint);
-          coins.push((coinRes.value as string).toLowerCase());
+        const b = all[i];
+        const c = all[i + input.nCoins];
+        if (b != null && c != null) {
+          balances.push(BigInt(b));
+          coins.push((c as string).toLowerCase());
         } else {
           break;
         }
       }
-      
+
       return { A: A as bigint, fee: fee as bigint, balances, coins };
     } catch {
       return { A: 100n, fee: 0n, balances: [], coins: [] };

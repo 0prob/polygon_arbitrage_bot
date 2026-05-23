@@ -25,98 +25,122 @@ function feeLogWeight(feeBps: bigint): number {
 
 const MAX_CYCLES_PER_PASS = 250_000;
 
-
-export function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function findCycles(
+  graph: RoutingGraph,
+  maxHops: number,
+  maxCycles: number = MAX_CYCLES_PER_PASS,
+): FoundCycle[] {
   const cycles: FoundCycle[] = [];
-  for (const [tokenIn, outEdges] of graph.adjacency) {
+  const hopLimit = maxHops > 4 ? 4 : maxHops;
+  const { adjacency } = graph;
+
+  for (const [startToken, firstEdges] of adjacency) {
     if (cycles.length >= maxCycles) break;
-    for (const e1 of outEdges) {
-      if (cycles.length >= maxCycles) break;
-      const inEdges = graph.adjacency.get(e1.tokenOut.toLowerCase());
-      if (!inEdges) continue;
-      for (const e2 of inEdges) {
-        if (cycles.length >= maxCycles) break;
-        if (e2.tokenOut.toLowerCase() !== tokenIn) continue;
+    const out1 = firstEdges;
+    const o1len = out1.length;
+    if (o1len === 0) continue;
+
+    // ── 2-hop: A → B → A ─────────────────────────────────────────
+    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
+      const e1 = out1[i];
+      const second = adjacency.get(e1.tokenOut.toLowerCase());
+      if (!second) continue;
+      const out2 = second;
+      const o2len = out2.length;
+      const w2 = feeLogWeight(e1.feeBps);
+      const cf2 = e1.feeBps;
+      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
+        const e2 = out2[j];
+        if (e2.tokenOut.toLowerCase() !== startToken) continue;
         cycles.push({
-          startToken: tokenIn as Address,
+          startToken: startToken as Address,
           edges: [e1, e2],
           hopCount: 2,
-          logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps),
-          cumulativeFeeBps: e1.feeBps + e2.feeBps,
+          logWeight: w2 + feeLogWeight(e2.feeBps),
+          cumulativeFeeBps: cf2 + e2.feeBps,
         });
       }
     }
-  }
-  return cycles;
-}
 
-export function find3HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
-  const cycles: FoundCycle[] = [];
-  for (const [startToken, firstEdges] of graph.adjacency) {
-    if (cycles.length >= maxCycles) break;
-    for (const e1 of firstEdges) {
-      if (cycles.length >= maxCycles) break;
-      const second = graph.adjacency.get(e1.tokenOut.toLowerCase());
+    if (hopLimit < 3 || cycles.length >= maxCycles) continue;
+
+    // ── 3-hop: A → B → C → A ─────────────────────────────────────
+    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
+      const e1 = out1[i];
+      const second = adjacency.get(e1.tokenOut.toLowerCase());
       if (!second) continue;
-      for (const e2 of second) {
-        if (cycles.length >= maxCycles) break;
+      const out2 = second;
+      const o2len = out2.length;
+      const w3a = feeLogWeight(e1.feeBps);
+      const cf3a = e1.feeBps;
+      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
+        const e2 = out2[j];
         if (e2.tokenOut.toLowerCase() === startToken) continue;
-        const third = graph.adjacency.get(e2.tokenOut.toLowerCase());
+        const third = adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
-        for (const e3 of third) {
-          if (cycles.length >= maxCycles) break;
+        const out3 = third;
+        const o3len = out3.length;
+        const w3b = w3a + feeLogWeight(e2.feeBps);
+        const cf3b = cf3a + e2.feeBps;
+        for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
+          const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
           cycles.push({
             startToken: startToken as Address,
             edges: [e1, e2, e3],
             hopCount: 3,
-            logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps),
-            cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps,
+            logWeight: w3b + feeLogWeight(e3.feeBps),
+            cumulativeFeeBps: cf3b + e3.feeBps,
           });
         }
       }
     }
-  }
-  return cycles;
-}
 
-export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS, hubTokens: readonly Address[] = []): FoundCycle[] {
-  const cycles: FoundCycle[] = [];
-  const hubSet = new Set(hubTokens.map((t) => t.toLowerCase()));
+    if (hopLimit < 4 || cycles.length >= maxCycles) continue;
 
-  for (const [startToken, firstEdges] of graph.adjacency) {
-    if (cycles.length >= maxCycles) break;
-    if (!hubSet.has(startToken)) continue;
-
-    for (const e1 of firstEdges) {
-      if (cycles.length >= maxCycles) break;
-      const second = graph.adjacency.get(e1.tokenOut.toLowerCase());
+    // ── 4-hop: A → B → C → D → A ─────────────────────────────────
+    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
+      const e1 = out1[i];
+      const second = adjacency.get(e1.tokenOut.toLowerCase());
       if (!second) continue;
-      for (const e2 of second) {
-        if (cycles.length >= maxCycles) break;
+      const out2 = second;
+      const o2len = out2.length;
+      const w4a = feeLogWeight(e1.feeBps);
+      const cf4a = e1.feeBps;
+      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
+        const e2 = out2[j];
         if (e2.tokenOut.toLowerCase() === startToken) continue;
-        const third = graph.adjacency.get(e2.tokenOut.toLowerCase());
+        const third = adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
-        for (const e3 of third) {
-          if (cycles.length >= maxCycles) break;
+        const out3 = third;
+        const o3len = out3.length;
+        const w4b = w4a + feeLogWeight(e2.feeBps);
+        const cf4b = cf4a + e2.feeBps;
+        for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
+          const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() === startToken) continue;
-          const fourth = graph.adjacency.get(e3.tokenOut.toLowerCase());
+          const fourth = adjacency.get(e3.tokenOut.toLowerCase());
           if (!fourth) continue;
-          for (const e4 of fourth) {
-            if (cycles.length >= maxCycles) break;
+          const out4 = fourth;
+          const o4len = out4.length;
+          const w4c = w4b + feeLogWeight(e3.feeBps);
+          const cf4c = cf4b + e3.feeBps;
+          for (let l = 0; l < o4len && cycles.length < maxCycles; l++) {
+            const e4 = out4[l];
             if (e4.tokenOut.toLowerCase() !== startToken) continue;
             cycles.push({
               startToken: startToken as Address,
               edges: [e1, e2, e3, e4],
               hopCount: 4,
-              logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps) + feeLogWeight(e4.feeBps),
-              cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps + e4.feeBps,
+              logWeight: w4c + feeLogWeight(e4.feeBps),
+              cumulativeFeeBps: cf4c + e4.feeBps,
             });
           }
         }
       }
     }
   }
+
   return cycles;
 }
 
@@ -124,22 +148,7 @@ export function enumerateCycles(
   graph: RoutingGraph,
   maxHops = 4,
   maxCycles = MAX_CYCLES_PER_PASS,
-  hubTokens: readonly Address[] = [],
 ): FoundCycle[] {
-  const allCycles: FoundCycle[] = [];
-
-  // Allocate budget roughly: 40% to 2-hop, 40% to 3-hop, 20% to 4-hop
-  // But always try to fill the total maxCycles
-  const limits = {
-    2: Math.floor(maxCycles * 0.4),
-    3: Math.floor(maxCycles * 0.4),
-    4: Math.floor(maxCycles * 0.2),
-  };
-
-  if (maxHops >= 2) allCycles.push(...find2HopCycles(graph, limits[2]));
-  if (maxHops >= 3) allCycles.push(...find3HopCycles(graph, limits[3]));
-  if (maxHops >= 4) allCycles.push(...find4HopCycles(graph, limits[4], hubTokens));
-
-  // Sort by logWeight (ascending, as it represents -log(1-fee), so smaller is better)
+  const allCycles = findCycles(graph, maxHops, maxCycles);
   return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);
 }

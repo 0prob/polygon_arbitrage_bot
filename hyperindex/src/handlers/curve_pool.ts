@@ -2,7 +2,7 @@ import { indexer } from "envio";
 
 indexer.onEvent(
   { contract: "CurvePool", event: "TokenExchange" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     const pool = event.srcAddress.toLowerCase();
     const state = await context.CurvePoolState.get(pool);
     if (!state) return;
@@ -24,7 +24,7 @@ indexer.onEvent(
 
 indexer.onEvent(
   { contract: "CurvePool", event: "AddLiquidity" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     const pool = event.srcAddress.toLowerCase();
     const state = await context.CurvePoolState.get(pool);
     if (!state) return;
@@ -46,7 +46,7 @@ indexer.onEvent(
 
 indexer.onEvent(
   { contract: "CurvePool", event: "RemoveLiquidity" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     const pool = event.srcAddress.toLowerCase();
     const state = await context.CurvePoolState.get(pool);
     if (!state) return;
@@ -68,7 +68,7 @@ indexer.onEvent(
 
 indexer.onEvent(
   { contract: "CurvePool", event: "RemoveLiquidityOne" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     const pool = event.srcAddress.toLowerCase();
     const state = await context.CurvePoolState.get(pool);
     if (!state) return;

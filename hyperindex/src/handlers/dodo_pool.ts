@@ -2,18 +2,16 @@ import { indexer } from "envio";
 
 indexer.onEvent(
   { contract: "DodoPool", event: "Sync" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
+    const addr = event.srcAddress.toLowerCase();
+    const existing = await context.DodoPoolState.get(addr);
+    if (!existing) return;
+
     context.DodoPoolState.set({
-      id: event.srcAddress.toLowerCase(),
-      address: event.srcAddress.toLowerCase(),
+      ...existing,
       lastUpdatedBlock: Number(event.block.number),
       baseReserve: event.params.reserve0,
       quoteReserve: event.params.reserve1,
-      targetBase: event.params.reserve0,
-      targetQuote: event.params.reserve1,
-      rStatus: 0,
-      k: 0n,
-      fee: 0n,
     });
   },
 );

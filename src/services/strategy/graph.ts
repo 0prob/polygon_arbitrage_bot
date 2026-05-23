@@ -59,10 +59,4 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
   return { adjacency, poolMeta, stateRefs, tokens };
 }
 
-export function buildHubGraph(pools: PoolMeta[], stateCache: Map<string, unknown>, hubTokens: readonly Address[]): RoutingGraph {
-  const hubSet = new Set(hubTokens.map((t) => t.toLowerCase()));
-  return buildGraph(
-    pools.filter((p) => (p.tokens ?? []).some((t) => hubSet.has(t.toLowerCase()))),
-    stateCache,
-  );
-}
+

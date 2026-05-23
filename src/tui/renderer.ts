@@ -113,6 +113,8 @@ export class Renderer {
       `  Executed:       ${color(String(m.executed), WHITE)}`,
       `  Successful:     ${color(String(m.successful), GREEN)}`,
       `  Failed:         ${color(String(m.failed), m.failed > 0 ? RED : WHITE)}`,
+      `  Cycles:         ${color(String(m.totalCycles), WHITE)}`,
+      `  Errors:         ${color(String(m.totalErrors), m.totalErrors > 0 ? RED : WHITE)}`,
       `  Total Profit:   ${color(formatWei(m.totalProfitWei), CYAN)}`,
       `  Profit/s:       ${color(formatWei(BigInt(Math.floor(m.profitPerSecond))), CYAN)}`,
     ];

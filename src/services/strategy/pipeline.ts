@@ -61,23 +61,11 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
 
-  let loggedCount = 0;
-
   for (const cycle of cycles) {
     attempted++;
     try {
       const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
       
-      if (loggedCount < 10) {
-        console.log(`[pipeline-diag] Cycle ${attempted}: start=${cycle.startToken}, hops=${cycle.hopCount}, rate=${rate}`);
-        for (const edge of cycle.edges) {
-          const state = stateCache.get(edge.poolAddress.toLowerCase());
-          console.log(`  Edge: pool=${edge.poolAddress}, stateKeys=${state ? Object.keys(state).join(",") : "MISSING"}`);
-          if (state) console.log(`  StateData: ${JSON.stringify(state, (k, v) => typeof v === "bigint" ? v.toString() : v)}`);
-        }
-        loggedCount++;
-      }
-
       if (rate === 0n) {
         noRate++;
         continue;
@@ -99,7 +87,6 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       let bestResult: RouteSimulationResult | undefined;
       let bestAssessment: ProfitAssessment | undefined;
       let isPruned = false;
-      let worstProfitBps = 0n;
 
       simulated++; // count cycle as simulated if we enter sweeping
       
@@ -130,7 +117,6 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
           const bps = testAmt > 0n ? (result.profit * 10000n) / testAmt : -10000n;
           if (bps < -200n) {
             // Unprofitable even without price impact -> prune early
-            worstProfitBps = bps;
             break;
           }
         }

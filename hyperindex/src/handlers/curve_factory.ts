@@ -1,58 +1,50 @@
 import { indexer } from "envio";
 import { fetchCurveMetadata } from "../effects/curve_metadata";
-
-const HUB_TOKENS = new Set([
-  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
-  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
-  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC
-  "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC_NATIVE
-  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
-  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
-  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
-]);
-
-function hubFilter(addr: string): boolean {
-  return HUB_TOKENS.has(addr);
-}
+import { fetchTokenMeta } from "../effects/token_metadata";
 
 indexer.contractRegister(
   { contract: "CurveRegistry", event: "PoolAdded" },
-  async ({ event, context }: any) => {
-    const pool = event.params.pool.toLowerCase();
-    const existing = await context.PoolMeta.get(pool);
-    if (existing) {
-      context.chain.CurvePool.add(event.params.pool);
-      return;
-    }
-    if (context.isPreload) return;
-
-    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
-    if (meta.coins.some(hubFilter)) {
-      context.chain.CurvePool.add(event.params.pool);
-    }
+  async ({ event, context }) => {
+    context.chain.CurvePool.add(event.params.pool);
   },
 );
 
 indexer.onEvent(
   { contract: "CurveRegistry", event: "PoolAdded" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     const pool = event.params.pool.toLowerCase();
     const existing = await context.PoolMeta.get(pool);
     if (existing) return;
-    if (context.isPreload) return;
+
+    if (context.isPreload) {
+      context.PoolMeta.set({
+        id: pool,
+        address: pool,
+        protocol: "curve",
+        tokens: [],
+        fee: 1,
+        tickSpacing: undefined,
+        createdBlock: Number(event.block.number),
+        createdTx: event.transaction.hash,
+        poolId: undefined,
+      });
+      return;
+    }
 
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
-    if (!meta.coins.some(hubFilter)) return;
-    
+
+    const feeBps = meta.fee > 0n ? Number(meta.fee / 10n ** 16n) : 1;
+
     context.PoolMeta.set({
       id: pool,
       address: pool,
       protocol: "curve",
       tokens: meta.coins,
-      token0: meta.coins[0] || "",
-      token1: meta.coins[1] || "",
+      fee: feeBps,
+      tickSpacing: undefined,
       createdBlock: Number(event.block.number),
       createdTx: event.transaction.hash,
+      poolId: undefined,
     });
 
     context.CurvePoolState.set({
@@ -63,5 +55,10 @@ indexer.onEvent(
       A: meta.A,
       fee: meta.fee,
     });
+
+    for (const coin of meta.coins) {
+      const coinMeta = await context.effect(fetchTokenMeta, { address: coin });
+      context.TokenMeta.set({ id: coin, address: coin, decimals: coinMeta.decimals });
+    }
   },
 );

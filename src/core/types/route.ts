@@ -57,8 +57,6 @@ export type RouteStateCache = Map<string, PoolState>;
 export interface CycleEnumerationOptions {
   maxHops: number;
   maxPaths: number;
-  max4HopPaths?: number;
-  hubTokens: Address[];
   allTokens?: Address[];
   liquidityFloorWei?: bigint;
 }

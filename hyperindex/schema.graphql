@@ -3,8 +3,6 @@ type PoolMeta {
   address: String!
   protocol: String!
   tokens: [String!]!
-  token0: String
-  token1: String
   fee: Int
   tickSpacing: Int
   createdBlock: Int!

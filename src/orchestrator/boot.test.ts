@@ -68,7 +68,6 @@ describe('bootApplication', () => {
       discovery: {
         refreshIntervalMs: 1000,
         concurrency: 1,
-        hubTokens: [],
       },
       watcher: {
         idleSleepMs: 0,

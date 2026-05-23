@@ -11,6 +11,8 @@ import { CrossChainScanner } from "../services/crosschain/scanner.ts";
 import { SolverBot } from "../services/crosschain/solver.ts";
 import { createReadClient, createExecutionClient } from "../infra/rpc/client_factory.ts";
 
+import { type Metrics } from "../core/types/metrics.ts";
+
 export interface RuntimeContext {
   config: AppConfig;
   logger: Logger;
@@ -23,6 +25,7 @@ export interface RuntimeContext {
   gasOracle: GasOracle;
   crossChainScanner?: CrossChainScanner;
   solverBot?: SolverBot;
+  metrics: Metrics;
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
@@ -30,6 +33,21 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     level: config.observability.logLevel,
     logSink: logBuffer,
   });
+
+  const metrics: Metrics = {
+    cycles: 0,
+    lastCycleDurationMs: 0,
+    totalErrors: 0,
+    lastErrorTime: null,
+    lastErrorMessage: null,
+    opportunitiesFound: 0,
+    executionsAttempted: 0,
+    executionsSuccessful: 0,
+    executionsFailed: 0,
+    startTime: Date.now(),
+    peakCyclesPerMinute: 0,
+    currentCyclesPerMinute: 0,
+  };
 
   const publicClient = createReadClient(config.rpc.polygonRpcUrls, {
     chainId: 137,
@@ -149,5 +167,6 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     gasOracle,
     crossChainScanner,
     solverBot,
+    metrics,
   };
 }

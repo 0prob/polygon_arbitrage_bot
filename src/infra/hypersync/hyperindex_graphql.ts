@@ -118,13 +118,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, `{ WoofiPoolState${whereClause} { id price coefficient spread fee } }`).then(result => {
-        const rows = ((result as Record<string, unknown>).WoofiPoolState) as { id: string; price: string; coefficient: string; spread: string; fee: string }[] | undefined;
-        if (rows) merge(rows, r => {
-          const row = r as any;
-          return { price: BigInt(row.price), coefficient: BigInt(row.coefficient), spread: BigInt(row.spread), fee: BigInt(row.fee) };
-        });
-      }),
+
     ]);
 
     _lastFetchTime = Date.now();

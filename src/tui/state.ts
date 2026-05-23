@@ -7,6 +7,8 @@ export interface MetricsState {
   failed: number;
   totalProfitWei: bigint;
   profitPerSecond: number;
+  totalCycles: number;
+  totalErrors: number;
 }
 
 export interface SystemState {
@@ -48,6 +50,8 @@ export function createInitialState(): TuiState {
       failed: 0,
       totalProfitWei: 0n,
       profitPerSecond: 0,
+      totalCycles: 0,
+      totalErrors: 0,
     },
     system: {
       gasPriceWei: 0n,
@@ -126,6 +130,8 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "heartbeat":
       state.system.lastCycleTimeMs = event.elapsedMs;
+      state.metrics.totalCycles = event.cycles;
+      state.metrics.totalErrors = event.totalErrors;
       if (state._startTime > 0) {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;

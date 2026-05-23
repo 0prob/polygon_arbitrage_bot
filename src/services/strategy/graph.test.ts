@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildGraph, buildHubGraph } from "./graph.ts";
+import { buildGraph } from "./graph.ts";
 import type { PoolMeta } from "../../core/types/pool.ts";
 import type { Address } from "../../core/types/common.ts";
 
@@ -52,28 +52,4 @@ describe("buildGraph", () => {
   });
 });
 
-describe("buildHubGraph", () => {
-  it("includes only hub-adjacent pools", () => {
-    const hubTokens = [WETH as Address, USDC as Address];
-    const pool1: PoolMeta = {
-      address: "0xa" as Address,
-      protocol: "V2",
-      token0: WETH as Address,
-      token1: USDC as Address,
-      tokens: [WETH as Address, USDC as Address],
-      fee: 30,
-      status: "active",
-    };
-    const pool2: PoolMeta = {
-      address: "0xb" as Address,
-      protocol: "V2",
-      token0: "0xother1" as Address,
-      token1: "0xother2" as Address,
-      tokens: ["0xother1" as Address, "0xother2" as Address],
-      fee: 30,
-      status: "active",
-    };
-    const graph = buildHubGraph([pool1, pool2], new Map(), hubTokens);
-    expect(graph.tokens.size).toBe(2);
-  });
-});
+

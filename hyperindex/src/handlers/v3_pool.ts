@@ -2,7 +2,7 @@ import { indexer } from "envio";
 
 indexer.onEvent(
   { contract: "UniswapV3Pool", event: "Swap" },
-  async ({ event, context }: any) => {
+  async ({ event, context }) => {
     context.V3PoolState.set({
       id: event.srcAddress.toLowerCase(),
       address: event.srcAddress.toLowerCase(),

@@ -8,7 +8,7 @@ export type ArbEvent =
   | { type: "pool_discovery"; count: number }
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
-  | { type: "heartbeat"; elapsedMs: number }
+  | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number }
   | { type: "hyperindex_status"; status: string; syncedBlock: number; remoteBlock: number; chain?: string };
 
 type EventHandler = (event: ArbEvent) => void;
