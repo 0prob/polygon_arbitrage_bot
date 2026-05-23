@@ -48,6 +48,11 @@ export class MempoolService {
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
     if (!tx.to || !tx.input) return;
 
+    if (tx.input.startsWith("0xc9c65396") || tx.input.startsWith("0xa1671295")) {
+      this.emit({ type: "new_pool_pending", data: { txHash: tx.hash, factoryAddress: tx.to as any } });
+      // We don't return here, might also be a swap if someone is being weird, though unlikely
+    }
+
     const decoded = decodeSwapCalldata(tx.to as `0x${string}`, tx.input, this.knownPools);
     if (!decoded || decoded.amountIn < this.options.largeSwapThresholdWei) return;
 

@@ -20,9 +20,15 @@ export interface NewBlockSignal {
   timestamp: number;
 }
 
+export interface NewPoolPendingSignal {
+  txHash: string;
+  factoryAddress: Address;
+}
+
 export type MempoolSignal =
   | { type: "large_swap"; data: LargeSwapSignal }
   | { type: "pool_invalidated"; data: PoolStateInvalidatedSignal }
-  | { type: "new_block"; data: NewBlockSignal };
+  | { type: "new_block"; data: NewBlockSignal }
+  | { type: "new_pool_pending"; data: NewPoolPendingSignal };
 
 export type SignalHandler = (signal: MempoolSignal) => void;

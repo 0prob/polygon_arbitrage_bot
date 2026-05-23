@@ -225,6 +225,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const LF_INTERVAL = 1000;
   const DISCOVERY_INTERVAL = 60000;
 
+  ctx.mempoolService.onSignal((signal) => {
+    if (signal.type === "new_pool_pending") {
+      ctx.logger.info({ txHash: signal.data.txHash }, "New pool deployment detected in mempool! Scheduling rapid discovery.");
+      // Force discovery on next iteration
+      lastDiscoveryTime = 0;
+    }
+  });
+
   while (ctx.isRunning) {
   const now = Date.now();
   const startTime = now;
