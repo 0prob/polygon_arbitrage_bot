@@ -23,7 +23,8 @@ function feeLogWeight(feeBps: bigint): number {
   return -Math.log(factor);
 }
 
-const MAX_CYCLES_PER_PASS = 100_000;
+const MAX_CYCLES_PER_PASS = 250_000;
+
 
 export function find2HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];

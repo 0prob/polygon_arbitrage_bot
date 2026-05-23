@@ -41,7 +41,8 @@ export function buildExecutionCandidate(
     },
   };
 
-  const built = buildArbTx(route, config, { slippageBps: options.slippageBps });
+  const minProfit = (profitable.assessment.netProfitAfterGasMaticWei * 70n) / 100n;
+  const built = buildArbTx(route, config, { slippageBps: options.slippageBps, minProfit });
 
   return {
     routeKey: built.routeHash,

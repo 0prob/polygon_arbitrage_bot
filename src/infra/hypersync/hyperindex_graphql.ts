@@ -1,4 +1,5 @@
-const MAX_CACHED_STATE_ENTRIES = 50_000;
+const MAX_CACHED_STATE_ENTRIES = 100_000;
+const QUERY_LIMIT = 10000;
 
 const _cachedState: Map<string, Record<string, unknown>> = new Map();
 const _cacheAccessOrder: string[] = [];
@@ -47,16 +48,20 @@ function merge(rows: { id: string }[], mapper: (r: Record<string, unknown>) => R
 export async function buildStateCacheFromGraphQL(
   graphqlUrl: string,
   adminSecret: string,
-  _poolAddresses?: string[],
+  poolAddresses?: string[],
 ): Promise<Map<string, Record<string, unknown>>> {
   const now = Date.now();
-  if (_cachedState.size > 0 && now - _lastFetchTime < 2000) {
+  if (_cachedState.size > 0 && now - _lastFetchTime < 2000 && !poolAddresses) {
     return _cachedState;
   }
 
+  const whereClause = poolAddresses && poolAddresses.length > 0 
+    ? `(where: {id: {_in: ${JSON.stringify(poolAddresses)}}})`
+    : `(limit: ${QUERY_LIMIT}, order_by: {lastUpdatedBlock: desc})`;
+
   try {
     await Promise.all([
-      graphQLQuery(graphqlUrl, adminSecret, "{ V3PoolState { id sqrtPriceX96 liquidity tick } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState${whereClause} { id sqrtPriceX96 liquidity tick } }`).then(result => {
         const rows = ((result as Record<string, unknown>).V3PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -64,7 +69,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ BalancerPoolState { id poolId balances weights amp swapFee } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ BalancerPoolState${whereClause} { id poolId balances weights amp swapFee } }`).then(result => {
         const rows = ((result as Record<string, unknown>).BalancerPoolState) as { id: string; poolId: string; balances: unknown; weights: unknown; amp: string | null; swapFee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -78,7 +83,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ V4PoolState { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ V4PoolState${whereClause} { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }`).then(result => {
         const rows = ((result as Record<string, unknown>).V4PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number; fee: string; tickSpacing: number; hooks: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -89,7 +94,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ CurvePoolState { id balances A fee } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ CurvePoolState${whereClause} { id balances A fee } }`).then(result => {
         const rows = ((result as Record<string, unknown>).CurvePoolState) as { id: string; balances: unknown; A: string; fee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -97,7 +102,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ V2PoolState { id reserve0 reserve1 } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState${whereClause} { id reserve0 reserve1 } }`).then(result => {
         const rows = ((result as Record<string, unknown>).V2PoolState) as { id: string; reserve0: string; reserve1: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -105,7 +110,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ DodoPoolState { id baseReserve quoteReserve rStatus k fee } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ DodoPoolState${whereClause} { id baseReserve quoteReserve rStatus k fee } }`).then(result => {
         const rows = ((result as Record<string, unknown>).DodoPoolState) as { id: string; baseReserve: string; quoteReserve: string; rStatus: number; k: string; fee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -113,7 +118,7 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, "{ WoofiPoolState { id price coefficient spread fee } }").then(result => {
+      graphQLQuery(graphqlUrl, adminSecret, `{ WoofiPoolState${whereClause} { id price coefficient spread fee } }`).then(result => {
         const rows = ((result as Record<string, unknown>).WoofiPoolState) as { id: string; price: string; coefficient: string; spread: string; fee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
@@ -141,13 +146,26 @@ export async function discoverPoolsFromHasura(
   adminSecret: string,
 ): Promise<HasuraPoolMeta[]> {
   try {
+    // Only discover pools that have state entries (meaning they've had trades recently)
+    const activeQuery = `{
+      V2PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+      V3PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+    }`;
+    const activeRes = await graphQLQuery(graphqlUrl, adminSecret, activeQuery) as any;
+    const activeIds = [
+      ...(activeRes.V2PoolState || []).map((p: any) => p.id.toLowerCase()),
+      ...(activeRes.V3PoolState || []).map((p: any) => p.id.toLowerCase())
+    ];
+
+    if (activeIds.length === 0) return [];
+
     const result = await graphQLQuery(
       graphqlUrl,
       adminSecret,
-      "{ PoolMeta { id protocol address tokens } }",
+      `{ PoolMeta(where: {id: {_in: ${JSON.stringify(activeIds)}}}) { id protocol tokens } }`,
     );
 
-    const metaArr = (result as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; address: string; tokens: unknown }[];
+    const metaArr = (result as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; tokens: unknown }[];
     if (!metaArr) return [];
 
     return metaArr.map(pm => {

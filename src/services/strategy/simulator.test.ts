@@ -274,7 +274,7 @@ describe("simulateRoute", () => {
 });
 
 describe("getEffectivePriceImpact", () => {
-  it("calculates correct impact for a V2 pool", () => {
+  it("calculates correct impact for a V2 pool (1:1)", () => {
     const edge: SwapEdge = {
       poolAddress: "0xpool" as Address,
       protocol: "UNISWAP_V2",
@@ -291,6 +291,50 @@ describe("getEffectivePriceImpact", () => {
     const impact = getEffectivePriceImpact(edge, 10000n, new Map());
     expect(impact).toBeGreaterThan(0);
     expect(impact).toBeLessThan(0.02);
+  });
+
+  it("calculates correct impact for a V2 pool (1:2)", () => {
+    const edge: SwapEdge = {
+      poolAddress: "0xpool" as Address,
+      protocol: "UNISWAP_V2",
+      tokenIn: "0xa" as Address,
+      tokenOut: "0xb" as Address,
+      feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+      stateRef: { reserve0: 100000000n, reserve1: 200000000n, token0: "0xa", token1: "0xb" },
+    };
+    
+    // Spot price is 2.0. small amountIn should have impact near 0.3% (fee)
+    const impact = getEffectivePriceImpact(edge, 1000n, new Map());
+    expect(impact).toBeGreaterThan(0.002);
+    expect(impact).toBeLessThan(0.005);
+  });
+
+  it("calculates correct impact for a V3 pool (non-1:1)", () => {
+    const edge: SwapEdge = {
+      poolAddress: "0xpool" as Address,
+      protocol: "UNISWAP_V3",
+      tokenIn: "0xa" as Address,
+      tokenOut: "0xb" as Address,
+      feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+      stateRef: {
+        sqrtPriceX96: 112045541949572279837463876454n, // sqrt(2)
+        tick: 6931,
+        liquidity: 1000000000000000n,
+        fee: 3000n,
+        initialized: true,
+      },
+    };
+    
+    // Spot price is 2.0. small amountIn should have impact near 0.3% (fee)
+    const impact = getEffectivePriceImpact(edge, 10000n, new Map());
+    expect(impact).toBeGreaterThan(0.002);
+    expect(impact).toBeLessThan(0.005);
   });
 
   it("returns 0 impact for 0 amount", () => {

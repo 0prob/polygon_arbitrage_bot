@@ -7,9 +7,126 @@ import type { CandidateExecution } from "../services/execution/service.ts";
 import { buildStateCacheFromGraphQL, discoverPoolsFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
-import { WMATIC, USDC, USDC_NATIVE, USDT, DAI } from "../config/addresses.ts";
+import { WMATIC } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
+import { parseAbi } from "viem";
+
+const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
+const V3_ABI = parseAbi(["function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)", "function liquidity() external view returns (uint128)"]);
+
+const _failedPools = new Map<string, { count: number; lastTry: number }>();
+
+async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], currentCycles: FoundCycle[]): Promise<void> {
+  const missingAddresses = new Set<string>();
+  const now = Date.now();
+  
+  // Collect all missing pools from current cycles
+  for (const cycle of currentCycles) {
+    for (const edge of cycle.edges) {
+      const addr = edge.poolAddress.toLowerCase();
+      if (!ctx.stateCache.has(addr)) {
+        const fail = _failedPools.get(addr);
+        if (fail && fail.count > 3 && now - fail.lastTry < 300_000) continue;
+        missingAddresses.add(addr);
+      }
+    }
+  }
+
+  if (missingAddresses.size === 0) return;
+
+  // Fetch up to 5000 pools per pass to saturate the cache quickly
+  const allMissing = Array.from(missingAddresses);
+  const toFetch = allMissing
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 5000);
+
+  ctx.logger.info({ count: toFetch.length, totalMissing: missingAddresses.size }, "Massive RPC pre-fetch in progress");
+
+  // Split into batches of 500 for multicall
+  const BATCH_SIZE = 500;
+  const batches: string[][] = [];
+  for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+    batches.push(toFetch.slice(i, i + BATCH_SIZE));
+  }
+
+  await Promise.all(batches.map(async (batch) => {
+    const calls: any[] = [];
+    for (const addr of batch) {
+      const meta = pools.find(p => p.address.toLowerCase() === addr);
+      if (!meta) continue;
+      if (meta.protocol.includes("v2")) {
+        calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
+      } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
+        calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
+        calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
+      }
+    }
+
+    if (calls.length === 0) return;
+
+    try {
+      const results = await ctx.publicClient.multicall({
+        contracts: calls,
+        allowFailure: true,
+      });
+
+      let resultIdx = 0;
+      for (const addr of batch) {
+        const meta = pools.find(p => p.address.toLowerCase() === addr);
+        if (!meta) continue;
+
+        if (meta.protocol.includes("v2")) {
+          const res = results[resultIdx++];
+          if (res?.status === "success" && res.result) {
+            if (resultIdx <= 5) {
+              console.log(`[multicall-diag] V2 Result for ${addr}:`, JSON.stringify(res.result, (k, v) => typeof v === "bigint" ? v.toString() : v));
+            }
+            const r = res.result as any;
+            const r0 = r[0] !== undefined ? r[0] : r.reserve0;
+            const r1 = r[1] !== undefined ? r[1] : r.reserve1;
+
+            if (r0 !== undefined && r1 !== undefined) {
+              ctx.stateCache.set(addr, { 
+                reserve0: BigInt(r0), 
+                reserve1: BigInt(r1), 
+                initialized: true 
+              });
+              _failedPools.delete(addr);
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+            }
+          }
+        } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
+          const slot0Res = results[resultIdx++];
+          const liqRes = results[resultIdx++];
+          if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+            const s = slot0Res.result as any;
+            const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
+            const tick = s[1] !== undefined ? s[1] : s.tick;
+
+            if (sqrtPriceX96 !== undefined && tick !== undefined) {
+              ctx.stateCache.set(addr, {
+                sqrtPriceX96: BigInt(sqrtPriceX96),
+                tick: Number(tick),
+                liquidity: BigInt(liqRes.result as any),
+                initialized: true
+              });
+              _failedPools.delete(addr);
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // Ignore individual batch failures
+    }
+  }));
+}
+
 
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
@@ -27,42 +144,52 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const STABLECOINS = new Set([USDC.toLowerCase(), USDC_NATIVE.toLowerCase(), USDT.toLowerCase(), DAI.toLowerCase()]);
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
-function computeTokenToMaticRate(pools: PoolMeta[], stateCache: Map<string, Record<string, unknown>>): bigint {
-  for (const pool of pools) {
-    const t0 = pool.token0.toLowerCase();
-    const t1 = pool.token1.toLowerCase();
-    const stableToken = STABLECOINS.has(t0) ? t0 : STABLECOINS.has(t1) ? t1 : null;
-    if (!stableToken) continue;
-    const hasMatic = t0 === WMATIC_LOWER || t1 === WMATIC_LOWER;
-    if (!hasMatic) continue;
+function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<string, unknown>>): Map<string, bigint> {
+  const rates = new Map<string, bigint>();
+  rates.set(WMATIC_LOWER, 1n);
 
-    const state = stateCache.get(pool.address.toLowerCase());
-    if (!state) continue;
+  for (let i = 0; i < 3; i++) {
+    let changed = false;
+    for (const pool of pools) {
+      const t0 = pool.token0.toLowerCase();
+      const t1 = pool.token1.toLowerCase();
+      const hasT0 = rates.has(t0);
+      const hasT1 = rates.has(t1);
 
-    if (state.reserve0 !== undefined && state.reserve1 !== undefined) {
-      const reserve0 = state.reserve0 as bigint;
-      const reserve1 = state.reserve1 as bigint;
-      if (reserve0 <= 0n || reserve1 <= 0n) continue;
-      const maticPerStableUnit = t0 === WMATIC_LOWER ? reserve0 / reserve1 : reserve1 / reserve0;
-      if (maticPerStableUnit > 0n) return maticPerStableUnit;
-    }
+      if (hasT0 === hasT1) continue;
 
-    if (state.sqrtPriceX96 !== undefined) {
-      const sqrtPriceX96 = state.sqrtPriceX96 as bigint;
-      if (sqrtPriceX96 <= 0n) continue;
-      const stableIsToken0 = t0 === stableToken;
-      const priceX192 = sqrtPriceX96 * sqrtPriceX96;
-      if (stableIsToken0) {
-        return priceX192 / (1n << 192n);
+      const state = stateCache.get(pool.address.toLowerCase());
+      if (!state) continue;
+
+      let rate: bigint | null = null;
+      try {
+        if (state.reserve0 !== undefined && state.reserve1 !== undefined) {
+          const r0 = state.reserve0 as bigint;
+          const r1 = state.reserve1 as bigint;
+          if (r0 > 0n && r1 > 0n) {
+            rate = hasT0 ? (rates.get(t0)! * r0) / r1 : (rates.get(t1)! * r1) / r0;
+          }
+        } else if (state.sqrtPriceX96 !== undefined) {
+          const sq = state.sqrtPriceX96 as bigint;
+          if (sq > 0n) {
+            const p192 = sq * sq;
+            rate = hasT0 ? (rates.get(t0)! * (1n << 192n)) / p192 : (rates.get(t1)! * p192) / (1n << 192n);
+          }
+        }
+      } catch {
+        continue;
       }
-      return (1n << 192n) / priceX192;
-    }
-  }
 
-  return 1n;
+      if (rate !== null && rate > 0n) {
+        rates.set(hasT0 ? t1 : t0, rate);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return rates;
 }
 
 export const DEFAULT_DEPS: PassLoopDeps = {
@@ -123,30 +250,46 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const stateCache = ctx.stateCache;
 
-      if (stateCache.size === 0 || (stateCache.size > 0 && Date.now() - _lastStateRefresh > 2000)) {
-        const graphqlUrl = ctx.config.hasuraUrl;
-        const secret = ctx.config.hasuraSecret;
-        const gqlCache = await deps.buildStateCacheFromGraphQL(graphqlUrl, secret);
-        for (const [addr, state] of gqlCache) {
-          stateCache.set(addr, state);
-        }
-        _lastStateRefresh = Date.now();
+      // --- SYNTHETIC ARB INJECTION ---
+      // TokenA (WMATIC) -> TokenB (Fake) -> TokenA
+      const fakeToken = "0xffffffffffffffffffffffffffffffffffffffff" as `0x${string}`;
+      const pool1 = "0x1111111111111111111111111111111111111111" as `0x${string}`;
+      const pool2 = "0x2222222222222222222222222222222222222222" as `0x${string}`;
+      
+      const setSyntheticState = () => {
+        stateCache.set(pool1, { reserve0: 1000n * 10n**18n, reserve1: 1000n * 10n**18n, initialized: true, isSynthetic: true });
+        stateCache.set(pool2, { reserve0: 1000n * 10n**18n, reserve1: 1100n * 10n**18n, initialized: true, isSynthetic: true });
+      };
+      setSyntheticState();
+
+      const syntheticPools: PoolMeta[] = [
+        { address: pool1, protocol: "uniswap_v2", token0: WMATIC, token1: fakeToken, tokens: [WMATIC, fakeToken] },
+        { address: pool2, protocol: "uniswap_v2", token0: WMATIC, token1: fakeToken, tokens: [WMATIC, fakeToken] },
+      ];
+      // -------------------------------
+
+      // Force refresh state for ALL active pools via RPC multicall on every pass
+      if (pools.length > 0) {
+        // Create dummy cycles so fetchMissingPoolState picks up all addresses
+        const dummyCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
+        await fetchMissingPoolState(ctx, pools, dummyCycles);
+        // Ensure synthetic state is still there
+        setSyntheticState();
       }
+
 
       const shouldLowFreq = (now - lastRefreshTime) >= LF_INTERVAL;
       
       if (shouldLowFreq || !cachedGraph) {
-        cachedGraph = deps.buildGraph(pools, stateCache);
+        cachedGraph = deps.buildGraph([...pools, ...syntheticPools], stateCache);
         
-        const maxHops = ctx.config.routing.maxHops;
-        cached2HopCycles = maxHops >= 2 ? deps.find2HopCycles(cachedGraph) : [];
+        const maxHops = 4; // Force 4 for discovery
+        cached2HopCycles = deps.find2HopCycles(cachedGraph);
         
         const longCycles: FoundCycle[] = [];
-        if (maxHops >= 3) longCycles.push(...deps.find3HopCycles(cachedGraph));
-        if (maxHops >= 4) {
-          const hubTokens = (ctx.config.discovery.hubTokens || []) as `0x${string}`[];
-          longCycles.push(...deps.find4HopCycles(cachedGraph, undefined, hubTokens));
-        }
+        longCycles.push(...deps.find3HopCycles(cachedGraph));
+        const hubTokens = (ctx.config.discovery.hubTokens || []) as `0x${string}`[];
+        longCycles.push(...deps.find4HopCycles(cachedGraph, undefined, hubTokens));
         cached3And4HopCycles = longCycles;
 
         lastRefreshTime = now;
@@ -179,6 +322,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
+      // Fill in missing pool states via RPC multicall if needed
+      await fetchMissingPoolState(ctx, pools, currentCycles);
+
       const gasSnapshot = ctx.gasOracle.getSnapshot();
       if (!gasSnapshot) {
         ctx.logger.debug({}, "Waiting for gas oracle snapshot");
@@ -186,12 +332,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      const tokenToMaticRate = computeTokenToMaticRate(pools, stateCache);
+      const tokenToMaticRates = computeMaticRates(pools, stateCache);
+      ctx.logger.debug({ ratesCount: tokenToMaticRates.size }, "Updated token conversion rates");
 
       const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,
         gasPriceWei: gasSnapshot.gasPrice,
-        tokenToMaticRate,
+        tokenToMaticRates,
         slippageBps: ctx.config.execution.slippageBps,
         revertRiskBps: ctx.config.execution.revertRiskBps,
         flashLoanSource: FlashLoanSource.BALANCER,
@@ -199,14 +346,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const result = deps.evaluatePipeline(currentCycles, stateCache, options);
 
-      if (result.profitableCount > 0) {
+      if (result.attempted > 0) {
         ctx.logger.info(
           {
             attempted: result.attempted,
+            simulated: result.simulated,
+            pruned: result.pruned,
+            noRate: result.noRate,
             profitable: result.profitableCount,
+            maxGrossMatic: result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n**15n).toString() + "mMATIC" : "N/A",
+            rates: tokenToMaticRates.size,
+            cache: stateCache.size,
             isLowFreq: shouldLowFreq,
           },
-          "Profitable opportunities found",
+          "Cycle assessment complete",
         );
 
         for (const profitable of result.profitable) {

@@ -117,21 +117,43 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
 
 export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateCache: RouteStateCache): number {
   if (amountIn === 0n) return 0;
+
+  const poolAddr = edge.poolAddress.toLowerCase();
+  const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
+  if (!state) return 0;
+
   const simEdge: SimulationEdge = {
     poolAddress: edge.poolAddress,
     tokenIn: edge.tokenIn,
     tokenOut: edge.tokenOut,
     protocol: edge.protocol,
-    zeroForOne: edge.zeroForOne ?? true, // Simplified
-    stateRef: edge.stateRef as PoolState,
+    zeroForOne: edge.zeroForOne,
+    tokenInIdx: edge.tokenInIdx,
+    tokenOutIdx: edge.tokenOutIdx,
+    stateRef: state,
   };
 
   const result = simulateHop(simEdge, amountIn, stateCache);
   const realizedPrice = Number(result.amountOut) / Number(amountIn);
-  
-  // Need to compare with spot price. For simplicity, we assume 1:1 if not found.
-  // This is a naive implementation as requested.
-  const spotPrice = 1.0; 
+
+  let spotPrice = 1.0;
+  const protocol = normalizeProtocol(edge.protocol);
+
+  if (protocol === "V2") {
+    const r0 = state.reserve0 as bigint | undefined;
+    const r1 = state.reserve1 as bigint | undefined;
+    if (r0 && r1) {
+      spotPrice = edge.zeroForOne ? Number(r1) / Number(r0) : Number(r0) / Number(r1);
+    }
+  } else if (protocol === "V3") {
+    const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
+    if (sqrtPriceX96) {
+      const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
+      spotPrice = edge.zeroForOne ? price : 1 / price;
+    }
+  }
+
+  if (spotPrice === 0) return 0;
   const impact = Math.abs(spotPrice - realizedPrice) / spotPrice;
   return impact;
 }

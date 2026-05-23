@@ -133,6 +133,7 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
     revertPenalty: revert,
     netProfit: netProfitInTokens,
     netProfitAfterGas: netProfitAfterGasInTokens,
+    netProfitAfterGasMaticWei: netProfitAfterGasMaticWei,
     roi,
   };
 
@@ -158,6 +159,7 @@ function invalidAssessment(grossProfit: bigint, reason: string): ProfitAssessmen
     revertPenalty: 0n,
     netProfit: 0n,
     netProfitAfterGas: 0n,
+    netProfitAfterGasMaticWei: 0n,
     roi: 0,
     rejectReason: reason,
   };

@@ -16,6 +16,7 @@ export interface ProfitAssessment {
   revertPenalty: bigint;
   netProfit: bigint;
   netProfitAfterGas: bigint;
+  netProfitAfterGasMaticWei: bigint;
   roi: number;
   rejectReason?: string;
 }

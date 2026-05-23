@@ -23,7 +23,7 @@ describe("CandidateBuilder", () => {
         tokenPath: ["0x1111111111111111111111111111111111111111", "0x3333333333333333333333333333333333333333"],
         poolPath: ["0x2222222222222222222222222222222222222222"],
       },
-      assessment: { netProfitAfterGas: 5n },
+      assessment: { netProfitAfterGas: 5n, netProfitAfterGasMaticWei: 5000000000000000n },
     };
     const config: any = {
       executorAddress: "0x4444444444444444444444444444444444444444",
@@ -60,7 +60,7 @@ describe("CandidateBuilder", () => {
         tokenPath: ["0x1111111111111111111111111111111111111111", "0x3333333333333333333333333333333333333333"],
         poolPath: ["0x2222222222222222222222222222222222222222"],
       },
-      assessment: { netProfitAfterGas: 5n },
+      assessment: { netProfitAfterGas: 5n, netProfitAfterGasMaticWei: 5000000000000000n },
     };
     const config: any = {
       executorAddress: "0x4444444444444444444444444444444444444444",

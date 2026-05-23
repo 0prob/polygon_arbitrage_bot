@@ -18,7 +18,7 @@ describe("evaluatePipeline", () => {
   const baseOpts = {
     minProfitMaticWei: 0n,
     gasPriceWei: 50_000_000_000n,
-    tokenToMaticRate: 10n ** 12n,
+    tokenToMaticRates: new Map([["0xa", 10n ** 12n]]),
   };
 
   it("returns profitable routes when simulation yields profit", () => {
