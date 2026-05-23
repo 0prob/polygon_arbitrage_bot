@@ -335,12 +335,12 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "b48fc9986fb74c0353d3c2e084d7bde6",
+    "mtime": 1779526612.2479029,
+    "ast_hash": "71c3631ab008401734dd6cdd3add187a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.ts": {
-    "mtime": 1779524350.968972,
+    "mtime": 1779526617.96386,
     "ast_hash": "af9b93cabb2590f413e27a611521cd6a",
     "semantic_hash": ""
   },
@@ -350,12 +350,12 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779526213.8861377,
+    "mtime": 1779526617.96386,
     "ast_hash": "4a66087602eb5f8e13a59bf27c804129",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
-    "mtime": 1779526144.866322,
+    "mtime": 1779526617.96386,
     "ast_hash": "5909ef9e53740522fa8ff16e8bdc9a56",
     "semantic_hash": ""
   },
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.ts": {
-    "mtime": 1779526131.8983476,
-    "ast_hash": "0a8e96f1731055bf88f1bb85ea039ac1",
+    "mtime": 1779526617.96386,
+    "ast_hash": "8c7632af56078e1e0662484e141da274",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
@@ -415,7 +415,7 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779526289.4418528,
+    "mtime": 1779526617.96386,
     "ast_hash": "310dab5e58b620a522d4283fe0db4a37",
     "semantic_hash": ""
   },
@@ -475,17 +475,17 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779524380.3806853,
+    "mtime": 1779526617.96386,
     "ast_hash": "74f4215629d81c7a6c6e564573019d96",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779524421.9682715,
+    "mtime": 1779526744.6268594,
     "ast_hash": "67af2ed170f6561d2de06ab8995bce78",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779525225.627121,
+    "mtime": 1779526617.96386,
     "ast_hash": "069e5723c7791a6b434fae6a6dd0e748",
     "semantic_hash": ""
   },
@@ -505,7 +505,7 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/client_factory.ts": {
-    "mtime": 1779524607.9663198,
+    "mtime": 1779526617.95986,
     "ast_hash": "15943b0325249d7573a5996641347d38",
     "semantic_hash": ""
   },
@@ -520,13 +520,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "5f22ea14d26e91cb9fe494b6d5cd3150",
+    "mtime": 1779526612.2479029,
+    "ast_hash": "6fb9c0f7cd2a9902db4350d113369d36",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779522428.658163,
-    "ast_hash": "190138b7a50bdfc9002743391d6cc04b",
+    "mtime": 1779526617.95986,
+    "ast_hash": "4e37c9d999b5ffbb7191928fbf040bd8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -570,7 +570,7 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/README.md": {
-    "mtime": 1779526008.2904289,
+    "mtime": 1779526617.9558601,
     "ast_hash": "aba03e2a4100f488e1532540774926ce",
     "semantic_hash": ""
   },
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "5e373df81fdb270ec68a442026c95f57",
+    "mtime": 1779526612.2479029,
+    "ast_hash": "0e0055da2516b508107dd87711dae47e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-arb-bot-tui.md": {
@@ -625,8 +625,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779524413.644355,
-    "ast_hash": "edd7ca1ed0f17839abd34a5cf7b65004",
+    "mtime": 1779526617.96386,
+    "ast_hash": "5cb1aedc15c6bfc786d4e8eb3435ce34",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
@@ -635,8 +635,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "fcfde77aa367c42238e81b67b8fcf71e",
+    "mtime": 1779526612.2479029,
+    "ast_hash": "8b8b2bf3d269f3f0949d4a43df54e531",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/renderer.test.ts": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779524416.4083273,
-    "ast_hash": "6b73338297568052ba2d95e39d5d05d5",
+    "mtime": 1779526617.96386,
+    "ast_hash": "6e1990daacec8db5c967ab13c4f530f3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
@@ -655,8 +655,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/main.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "8cdea72ae34d1e756afca63d6a73156b",
+    "mtime": 1779526612.2479029,
+    "ast_hash": "f5bb13d2521fd08b7843ac7023a24782",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
@@ -665,143 +665,163 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/lifecycle.ts": {
-    "mtime": 1779518644.0317852,
+    "mtime": 1779526617.96386,
     "ast_hash": "21a24361ef7c0252ba430ce4a3ebdab6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/system.ts": {
-    "mtime": 1779524732.0609443,
+    "mtime": 1779526617.96386,
     "ast_hash": "11a27f2588b2bd7aa441e9e37d25a50e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-dependency-audit-and-cleanup.md": {
-    "mtime": 1779518607.1120243,
+    "mtime": 1779526617.9558601,
     "ast_hash": "9d1f3057eb37f24358f4df50e42936e8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-orchestration-and-workspace-refactor.md": {
-    "mtime": 1779518560.6683311,
+    "mtime": 1779526617.9558601,
     "ast_hash": "84eceb0dd64be9dfeec2b8b22bffeb91",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-orchestrator-refactor.md": {
-    "mtime": 1779518637.0958297,
+    "mtime": 1779526617.9558601,
     "ast_hash": "25ab38e5bf18595d5bd52e89e07b68a7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-22-orchestration-refactor-design.md": {
-    "mtime": 1779518475.8769107,
+    "mtime": 1779526617.9558601,
     "ast_hash": "dd78db1a90e5e4e1cfe54c8532766023",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/harness.ts": {
-    "mtime": 1779522471.4687932,
+    "mtime": 1779526617.96386,
     "ast_hash": "57849fdb836356238e1b161f5ff58cdf",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/harness.test.ts": {
-    "mtime": 1779522478.4205766,
+    "mtime": 1779526617.96386,
     "ast_hash": "480a2ef08bc49209ef60e0da891f636e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/metrics.test.ts": {
-    "mtime": 1779524406.3004286,
+    "mtime": 1779526617.96386,
     "ast_hash": "bde342a6e10e9dce9a0418cdf4ab5691",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/services/strategy/graph_manager.test.ts": {
-    "mtime": 1779525021.925576,
-    "ast_hash": "7ed2fa921184199d87297ebb14b46a51",
+    "mtime": 1779526617.96386,
+    "ast_hash": "a9f56ce0188d6de7cda4d60244dea113",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/services/mempool/subscriber.test.ts": {
-    "mtime": 1779524701.201291,
+    "mtime": 1779526617.96386,
     "ast_hash": "e7f27f4e6ade8074e61fe0d6eabbcd0b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph_manager.ts": {
-    "mtime": 1779524978.8220875,
+    "mtime": 1779526617.96386,
     "ast_hash": "9dd9923da4574cdee29e769efed7aef9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.test.ts": {
-    "mtime": 1779526269.5259356,
+    "mtime": 1779526617.96386,
     "ast_hash": "d6a1fde6fd068d0e7051fc9d58068bf1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/subscriber.ts": {
-    "mtime": 1779524671.0216272,
+    "mtime": 1779526617.96386,
     "ast_hash": "4494b3789186449775648618b253b721",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/runner.ts": {
-    "mtime": 1779522411.1107435,
+    "mtime": 1779526617.96386,
     "ast_hash": "eea33790337339de07d3d280a2a2f6ce",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-high-performance-upgrade-plan.md": {
-    "mtime": 1779523890.4885418,
+    "mtime": 1779526617.9558601,
     "ast_hash": "32c420fd83f90ca573b311d1fe3b9d3d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-realtime-ingestion-plan.md": {
-    "mtime": 1779524556.93887,
+    "mtime": 1779526617.9558601,
     "ast_hash": "d50fcecbac99d69e70d7244f55880f92",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-incremental-graph-implementation-plan.md": {
-    "mtime": 1779524906.9349334,
+    "mtime": 1779526617.9558601,
     "ast_hash": "6029a0714dd7581bfe22fad20c7291f5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-22-high-performance-upgrade-design.md": {
-    "mtime": 1779523505.6425579,
+    "mtime": 1779526617.9558601,
     "ast_hash": "f822da245439f0225c5b0b19de7e170c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-realtime-ingestion-design.md": {
-    "mtime": 1779524518.359279,
+    "mtime": 1779526617.9558601,
     "ast_hash": "03b33becadace588c05596add3523afd",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-incremental-graph-design.md": {
-    "mtime": 1779524807.5360856,
+    "mtime": 1779526617.9558601,
     "ast_hash": "a0801a03fd36c3717626f677e180e039",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-parallel-execution-design.md": {
-    "mtime": 1779525060.6571136,
+    "mtime": 1779526617.9558601,
     "ast_hash": "96225d1dcdbfc7ddbd465ebbee0a90b6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/price_impact.ts": {
-    "mtime": 1779526201.3861768,
+    "mtime": 1779526617.95986,
     "ast_hash": "f29a96c675c6446185dd72c4b695ff85",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.test.ts": {
-    "mtime": 1779525231.7510464,
+    "mtime": 1779526617.96386,
     "ast_hash": "532615fcba73bd4bccbc9d23f6e3d4e3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-execution-service-refactor.md": {
-    "mtime": 1779525177.395707,
+    "mtime": 1779526617.9558601,
     "ast_hash": "099c5894c36c5f50793157a30f0a5007",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-predictive-market-impact-implementation-plan.md": {
-    "mtime": 1779526096.0304027,
+    "mtime": 1779526617.9558601,
     "ast_hash": "078a96233ed27808e3d5875fe905e5ee",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-parallel-execution-plan.md": {
-    "mtime": 1779525130.360276,
+    "mtime": 1779526617.9558601,
     "ast_hash": "95372cc78044ad46f63a7833d3f5a7e6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-predictive-market-impact-design.md": {
-    "mtime": 1779526056.5664344,
+    "mtime": 1779526617.9558601,
     "ast_hash": "dc0a5a6e4c7831465a411e0076319d35",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-22-arbitrage-optimization-plan.md": {
+    "mtime": 1779526612.2399027,
+    "ast_hash": "c7670dbab7ce8ffaf36d7c443e62cdc5",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-22-tui-dashboard-implementation-plan.md": {
+    "mtime": 1779526612.2399027,
+    "ast_hash": "2369e1109591f544a469196616cd0da9",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-22-arbitrage-optimization-design.md": {
+    "mtime": 1779526612.2399027,
+    "ast_hash": "8b746b2af9bf6af438315a4985d2a5a5",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-22-tui-dashboard-design.md": {
+    "mtime": 1779526612.2399027,
+    "ast_hash": "0b783d55c469b2cacc237b822d56ecad",
     "semantic_hash": ""
   }
 }
