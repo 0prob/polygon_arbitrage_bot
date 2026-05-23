@@ -137,23 +137,35 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       
       if (shouldLowFreq || !cachedGraph) {
         cachedGraph = deps.buildGraph(pools, stateCache);
-        cached2HopCycles = deps.find2HopCycles(cachedGraph);
-        cached3And4HopCycles = [
-          ...deps.find3HopCycles(cachedGraph),
-          ...deps.find4HopCycles(cachedGraph)
-        ];
+        
+        const maxHops = ctx.config.routing.maxHops;
+        cached2HopCycles = maxHops >= 2 ? deps.find2HopCycles(cachedGraph) : [];
+        
+        const longCycles: FoundCycle[] = [];
+        if (maxHops >= 3) longCycles.push(...deps.find3HopCycles(cachedGraph));
+        if (maxHops >= 4) longCycles.push(...deps.find4HopCycles(cachedGraph));
+        cached3And4HopCycles = longCycles;
+
         lastRefreshTime = now;
         const poolsPerProtocol: Record<string, number> = {};
         for (const p of pools) {
           poolsPerProtocol[p.protocol] = (poolsPerProtocol[p.protocol] || 0) + 1;
         }
-        ctx.logger.info({ pools: pools.length, cycles2: cached2HopCycles.length, cycles34: cached3And4HopCycles.length }, "Graph and cycles re-enumerated");
+        ctx.logger.info(
+          { 
+            pools: pools.length, 
+            cycles2: cached2HopCycles.length, 
+            cycles34: cached3And4HopCycles.length,
+            maxHops
+          }, 
+          "Graph and cycles re-enumerated"
+        );
         bus?.emit({ 
           type: "graph_built", 
           poolCount: pools.length, 
           cycleCount: cached2HopCycles.length + cached3And4HopCycles.length,
           poolsPerProtocol,
-          maxHops: 4
+          maxHops
         });
       }
 
