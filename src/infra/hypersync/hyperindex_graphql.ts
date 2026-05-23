@@ -65,7 +65,7 @@ export async function buildStateCacheFromGraphQL(
       }),
 
       graphQLQuery(graphqlUrl, adminSecret, "{ BalancerPoolState { id poolId balances weights amp swapFee } }").then(result => {
-        const rows = ((result as Record<string, unknown>).BalancerPoolState) as { id: string; poolId: string; balances: string; weights: string; amp: string | null; swapFee: string }[] | undefined;
+        const rows = ((result as Record<string, unknown>).BalancerPoolState) as { id: string; poolId: string; balances: unknown; weights: unknown; amp: string | null; swapFee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
           return {
@@ -90,7 +90,7 @@ export async function buildStateCacheFromGraphQL(
       }),
 
       graphQLQuery(graphqlUrl, adminSecret, "{ CurvePoolState { id balances A fee } }").then(result => {
-        const rows = ((result as Record<string, unknown>).CurvePoolState) as { id: string; balances: string; A: string; fee: string }[] | undefined;
+        const rows = ((result as Record<string, unknown>).CurvePoolState) as { id: string; balances: unknown; A: string; fee: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
           return { balances: parseBigIntArray(row.balances), A: BigInt(row.A), fee: BigInt(row.fee) };
@@ -171,10 +171,16 @@ export async function discoverPoolsFromHasura(
   }
 }
 
-function parseBigIntArray(str: string): bigint[] {
-  try {
-    return JSON.parse(str).map((b: string) => BigInt(b));
-  } catch {
-    return [];
+function parseBigIntArray(input: unknown): bigint[] {
+  if (Array.isArray(input)) {
+    return input.map((b: any) => BigInt(b));
   }
+  if (typeof input === "string") {
+    try {
+      return JSON.parse(input).map((b: string) => BigInt(b));
+    } catch {
+      return [];
+    }
+  }
+  return [];
 }
