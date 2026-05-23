@@ -17,6 +17,9 @@ export interface SystemState {
   hiStatus: string;
   hiSyncedBlock: number;
   hiRemoteBlock: number;
+  hiChain?: string;
+  poolsPerProtocol: Record<string, number>;
+  maxHops: number;
 }
 
 export interface LogEntry {
@@ -54,6 +57,8 @@ export function createInitialState(): TuiState {
       hiStatus: "starting",
       hiSyncedBlock: 0,
       hiRemoteBlock: 0,
+      poolsPerProtocol: {},
+      maxHops: 0,
     },
     log: [],
     isRunning: false,
@@ -79,6 +84,8 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
     case "graph_built":
       state.system.poolCount = event.poolCount;
       state.system.cycleCount = event.cycleCount;
+      state.system.poolsPerProtocol = event.poolsPerProtocol;
+      state.system.maxHops = event.maxHops;
       appendLog(state, "Graph", `${event.poolCount} pools, ${event.cycleCount} cycles`);
       break;
     case "opportunity_found":
@@ -128,6 +135,9 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.system.hiStatus = event.status;
       state.system.hiSyncedBlock = event.syncedBlock;
       state.system.hiRemoteBlock = event.remoteBlock;
+      if (event.chain) {
+        state.system.hiChain = event.chain;
+      }
       break;
   }
 }

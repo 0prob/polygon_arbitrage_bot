@@ -143,8 +143,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           ...deps.find4HopCycles(cachedGraph)
         ];
         lastRefreshTime = now;
+        const poolsPerProtocol: Record<string, number> = {};
+        for (const p of pools) {
+          poolsPerProtocol[p.protocol] = (poolsPerProtocol[p.protocol] || 0) + 1;
+        }
         ctx.logger.info({ pools: pools.length, cycles2: cached2HopCycles.length, cycles34: cached3And4HopCycles.length }, "Graph and cycles re-enumerated");
-        bus?.emit({ type: "graph_built", poolCount: pools.length, cycleCount: cached2HopCycles.length + cached3And4HopCycles.length });
+        bus?.emit({ 
+          type: "graph_built", 
+          poolCount: pools.length, 
+          cycleCount: cached2HopCycles.length + cached3And4HopCycles.length,
+          poolsPerProtocol,
+          maxHops: 4
+        });
       }
 
       const currentCycles = shouldLowFreq ? [...cached2HopCycles, ...cached3And4HopCycles] : cached2HopCycles;
