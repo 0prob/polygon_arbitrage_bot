@@ -17,14 +17,17 @@
 .env.*.local
 .env.local
 .eslintcache
+.gemini/
 .idea/
+.opencode/
 .parcel-cache/
 .rpt2_cache/
+.superpowers/
 .ts-node-cache/
 .venv/
 .vscode/
-.vscode/*
 /data/
+/docs/
 /target*
 __pycache__/
 broadcast/
@@ -35,12 +38,7 @@ cypress/screenshots/
 cypress/videos/
 dist/
 esm/
-graphify-out/cache/
-graphify-out/workspace-audit-runs/
-graphify-out/*.json
-graphify-out/*.html
-graphify-out/*.md
-graphify-out/.*
+graphify-out/
 lib/
 logs/
 node_modules/
@@ -48,10 +46,13 @@ npm-debug.log
 out/
 playwright-report/
 Thumbs.db
-# HyperIndex ingestion layer — local DB + generated artifacts
 hyperindex/.hyperindex/
 hyperindex/generated/
 yarn-debug.log
 yarn-error.log
 pnpm-lock.yaml
+sol/lib/
+AGENTS.md
+GEMINI.md
+bun.lock
 
