@@ -124,16 +124,25 @@ export class Renderer {
     const gwei = s.gasPriceWei > 0n ? formatGwei(s.gasPriceWei) : "—";
     const hiColor = s.hiStatus === "synced" ? GREEN : s.hiStatus === "syncing" ? YELLOW : s.hiStatus === "error" ? RED : WHITE;
     const hiLabel = s.hiSyncedBlock > 0
-      ? `${s.hiStatus}  ${color(formatBlock(s.hiSyncedBlock), hiColor)}`
+      ? `${s.hiStatus} ${color(formatBlock(s.hiSyncedBlock), hiColor)}`
       : dim(s.hiStatus);
-    const hiRemote = s.hiRemoteBlock > 0 ? `  head ${formatBlock(s.hiRemoteBlock)}` : "";
+    const hiRemote = s.hiRemoteBlock > 0 ? ` / ${formatBlock(s.hiRemoteBlock)}` : "";
+    const syncPct = s.hiRemoteBlock > 0
+      ? ` (${Math.min(100, (s.hiSyncedBlock / s.hiRemoteBlock) * 100).toFixed(1)}%)`
+      : "";
+    const chainLabel = s.hiChain ? ` (${s.hiChain})` : "";
+
+    const protocolStr = Object.entries(s.poolsPerProtocol)
+      .map(([name, count]) => `${name}:${count}`)
+      .join(" ");
+
     const lines = [
       bold("⚡ System"),
       `  Gas Price:    ${color(gwei, YELLOW)}`,
-      `  Pools:        ${color(String(s.poolCount), CYAN)}`,
-      `  Cycles:       ${color(String(s.cycleCount), WHITE)}`,
+      `  Pools:        ${color(String(s.poolCount), CYAN)} ${dim(protocolStr)}`,
+      `  Routes:       ${color(String(s.cycleCount), WHITE)} ${dim(`(${s.maxHops} hops)`)}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
-      `  Indexer:      ${hiLabel}${hiRemote}`,
+      `  Indexer${chainLabel}: ${hiLabel}${hiRemote}${syncPct}`,
       `  Uptime:       ${dim(formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0))}`,
     ];
     return this.panelBox(lines, layout.systemPanel);

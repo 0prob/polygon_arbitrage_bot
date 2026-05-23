@@ -66,4 +66,35 @@ describe("Renderer", () => {
     const output = stdout.getBuffer();
     expect(output).toContain("hello world");
   });
+
+  it("renders detailed system stats", () => {
+    const stdout = createMockStdout();
+    const r = new Renderer(stdout);
+    const layout = computeLayout(120, 24); // Use wider layout
+    const state = createInitialState();
+    
+    applyEvent(state, { 
+      type: "graph_built", 
+      poolCount: 100, 
+      cycleCount: 50, 
+      poolsPerProtocol: { "V3": 60, "V2": 40 },
+      maxHops: 3
+    });
+
+    applyEvent(state, {
+      type: "hyperindex_status",
+      status: "syncing",
+      syncedBlock: 1000,
+      remoteBlock: 2000,
+      chain: "ethereum"
+    });
+
+    r.render(layout, state);
+    const output = stdout.getBuffer();
+    expect(output).toContain("V3:60");
+    expect(output).toContain("V2:40");
+    expect(output).toContain("(3 hops)");
+    expect(output).toContain("(ethereum)");
+    expect(output).toContain("50.0%");
+  });
 });
