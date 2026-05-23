@@ -128,9 +128,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         const secret = ctx.config.hasuraSecret;
         const gqlCache = await deps.buildStateCacheFromGraphQL(graphqlUrl, secret);
         for (const [addr, state] of gqlCache) {
-          if (!stateCache.has(addr)) {
-            stateCache.set(addr, state);
-          }
+          stateCache.set(addr, state);
         }
         _lastStateRefresh = Date.now();
       }
