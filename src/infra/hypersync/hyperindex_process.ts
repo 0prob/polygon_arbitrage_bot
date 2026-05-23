@@ -139,6 +139,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       env,
       stdio: ["ignore", "pipe", "pipe"],
       shell: false,
+      detached: true, // Start in a new process group
     });
 
     _stdoutHandler = (data: Buffer) => {
@@ -168,14 +169,32 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
   async function stop(): Promise<void> {
     const p = proc;
-    if (!p) return;
+    if (!p) {
+      // Still try to stop envio just in case containers are orphans
+      try {
+        execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
+      } catch {
+        // ignore errors if nothing to stop
+      }
+      return;
+    }
 
     opts.logger.info("Stopping HyperIndex ingestion");
-    p.kill("SIGTERM");
+    
+    try {
+      // Kill the entire process group
+      if (p.pid) process.kill(-p.pid, "SIGTERM");
+    } catch (err) {
+      opts.logger.error({ err }, "Failed to send SIGTERM to process group");
+    }
 
     await new Promise<void>((resolve) => {
       const timeout = setTimeout(() => {
-        p.kill("SIGKILL");
+        try {
+          if (p.pid) process.kill(-p.pid, "SIGKILL");
+        } catch {
+          // ignore
+        }
         cleanup();
         resolve();
       }, 5000);
@@ -186,6 +205,14 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         p!.off("exit", cleanup);
         p!.stdout?.off("data", _stdoutHandler!);
         p!.stderr?.off("data", _stderrHandler!);
+        
+        // Final explicit envio stop to clean up Docker containers
+        try {
+          opts.logger.info("Running explicit envio stop to clean up containers");
+          execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
+        } catch (err) {
+          opts.logger.warn({ err }, "envio stop failed during cleanup");
+        }
       }
 
       p.on("exit", cleanup);
