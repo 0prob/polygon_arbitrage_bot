@@ -99,6 +99,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   TUI: ["observability", "tuiEnabled"],
 
   ENVIO_API_TOKEN: ["envioApiToken" as keyof AppConfig, ""],
+  HASURA_URL: ["hasuraUrl" as keyof AppConfig, ""],
+  HASURA_SECRET: ["hasuraSecret" as keyof AppConfig, ""],
 };
 
 /** Deep merge defaults with overrides. Override wins where present. */

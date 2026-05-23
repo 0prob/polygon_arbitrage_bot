@@ -96,6 +96,8 @@ describe('bootApplication', () => {
         perfJsonFile: '/tmp/perf.json',
       },
       envioApiToken: 'token',
+      hasuraUrl: 'http://localhost:8080/v1/graphql',
+      hasuraSecret: 'testing',
     } as AppConfig;
 
     const context = await bootApplication(config);
