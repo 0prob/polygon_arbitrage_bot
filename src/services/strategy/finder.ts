@@ -121,24 +121,20 @@ export function find4HopCycles(graph: RoutingGraph, maxCycles: number = MAX_CYCL
 }
 
 export function enumerateCycles(graph: RoutingGraph, maxHops = 4, maxCycles = MAX_CYCLES_PER_PASS): FoundCycle[] {
-  const cycles: FoundCycle[] = [];
-  if (maxHops >= 2) {
-    for (const c of find2HopCycles(graph, maxCycles)) {
-      if (cycles.length >= maxCycles) break;
-      cycles.push(c);
-    }
-  }
-  if (maxHops >= 3 && cycles.length < maxCycles) {
-    for (const c of find3HopCycles(graph, maxCycles)) {
-      if (cycles.length >= maxCycles) break;
-      cycles.push(c);
-    }
-  }
-  if (maxHops >= 4 && cycles.length < maxCycles) {
-    for (const c of find4HopCycles(graph, maxCycles)) {
-      if (cycles.length >= maxCycles) break;
-      cycles.push(c);
-    }
-  }
-  return cycles;
+  let allCycles: FoundCycle[] = [];
+
+  // Allocate budget roughly: 40% to 2-hop, 40% to 3-hop, 20% to 4-hop
+  // But always try to fill the total maxCycles
+  const limits = {
+    2: Math.floor(maxCycles * 0.4),
+    3: Math.floor(maxCycles * 0.4),
+    4: Math.floor(maxCycles * 0.2),
+  };
+
+  if (maxHops >= 2) allCycles.push(...find2HopCycles(graph, limits[2]));
+  if (maxHops >= 3) allCycles.push(...find3HopCycles(graph, limits[3]));
+  if (maxHops >= 4) allCycles.push(...find4HopCycles(graph, limits[4]));
+
+  // Sort by logWeight (ascending, as it represents -log(1-fee), so smaller is better)
+  return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);
 }
