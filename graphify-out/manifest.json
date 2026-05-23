@@ -350,13 +350,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779458266.3870707,
-    "ast_hash": "a75c39765351da55c6c69ac722c94fb0",
+    "mtime": 1779526213.8861377,
+    "ast_hash": "4a66087602eb5f8e13a59bf27c804129",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
-    "mtime": 1779458266.3870707,
-    "ast_hash": "c0b07fd0fa10666311a644a9c5a5c89c",
+    "mtime": 1779526144.866322,
+    "ast_hash": "5909ef9e53740522fa8ff16e8bdc9a56",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph.test.ts": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.ts": {
-    "mtime": 1779518161.0233629,
-    "ast_hash": "a5f4b5d1cb3d545203d7db7bb4c45772",
+    "mtime": 1779526131.8983476,
+    "ast_hash": "0a8e96f1731055bf88f1bb85ea039ac1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779524654.145814,
-    "ast_hash": "8f980af3e30c8fc65d1f5024976b30d7",
+    "mtime": 1779526289.4418528,
+    "ast_hash": "310dab5e58b620a522d4283fe0db4a37",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.test.ts": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779509267.1336172,
-    "ast_hash": "30840c8a46d0d5c6e899e3009cc5c56c",
+    "mtime": 1779525225.627121,
+    "ast_hash": "069e5723c7791a6b434fae6a6dd0e748",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/README.md": {
-    "mtime": 1779522557.0302339,
-    "ast_hash": "c8354b35a226260c5fcf99e9073f6d6a",
+    "mtime": 1779526008.2904289,
+    "ast_hash": "aba03e2a4100f488e1532540774926ce",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.test.ts": {
-    "mtime": 1779524661.5777318,
-    "ast_hash": "70c4a9dfc2ef5312c187cb5ad3e04022",
+    "mtime": 1779526269.5259356,
+    "ast_hash": "d6a1fde6fd068d0e7051fc9d58068bf1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/mempool/subscriber.ts": {
@@ -772,6 +772,36 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-parallel-execution-design.md": {
     "mtime": 1779525060.6571136,
     "ast_hash": "96225d1dcdbfc7ddbd465ebbee0a90b6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/core/utils/price_impact.ts": {
+    "mtime": 1779526201.3861768,
+    "ast_hash": "f29a96c675c6446185dd72c4b695ff85",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/orchestrator/boot.test.ts": {
+    "mtime": 1779525231.7510464,
+    "ast_hash": "532615fcba73bd4bccbc9d23f6e3d4e3",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-execution-service-refactor.md": {
+    "mtime": 1779525177.395707,
+    "ast_hash": "099c5894c36c5f50793157a30f0a5007",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-predictive-market-impact-implementation-plan.md": {
+    "mtime": 1779526096.0304027,
+    "ast_hash": "078a96233ed27808e3d5875fe905e5ee",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-23-parallel-execution-plan.md": {
+    "mtime": 1779525130.360276,
+    "ast_hash": "95372cc78044ad46f63a7833d3f5a7e6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-23-predictive-market-impact-design.md": {
+    "mtime": 1779526056.5664344,
+    "ast_hash": "dc0a5a6e4c7831465a411e0076319d35",
     "semantic_hash": ""
   }
 }

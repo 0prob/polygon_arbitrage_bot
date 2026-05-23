@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { GraphManager } from '../../src/services/strategy/graph_manager';
-import type { PoolMeta } from '../../src/core/types/pool';
-import type { PoolState } from '../../src/core/types/pool';
+import { GraphManager } from '../../../src/services/strategy/graph_manager.ts';
+import type { PoolMeta } from '../../../src/core/types/pool';
+import type { PoolState } from '../../../src/core/types/pool';
 
 describe('GraphManager', () => {
   it('should update pool state correctly', () => {
