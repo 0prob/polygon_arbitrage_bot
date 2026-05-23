@@ -47,14 +47,14 @@ export const DEFAULTS = {
     maxTotalPaths: 50_000,
     maxPathsToOptimize: 40,
     cycleRefreshIntervalMs: 1_000,
-    liquidityFloorUsd: 5_000,
+    liquidityFloorUsd: 50,
     workerCount: Math.max(1, os.cpus().length - 1),
     evalWorkerThreshold: 20,
     enumerationMaxPaths: 5_000,
     enumerationMax4HopPaths: 2_000,
   },
   execution: {
-    minProfitWei: 1_000_000_000_000_000n, // 0.001 MATIC
+    minProfitWei: 100_000_000_000_000_000n, // 0.1 MATIC (~$0.10)
     slippageBps: 50n, // 0.5%
     revertRiskBps: 500n, // 5% base
     flashLoanFeeBpsBalancer: 0n,
