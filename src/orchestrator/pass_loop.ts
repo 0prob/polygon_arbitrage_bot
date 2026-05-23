@@ -4,7 +4,7 @@ import { type FoundCycle, enumerateCycles, routeKeyFromEdges } from "../services
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
-import { buildStateCacheFromHyperIndex } from "../infra/db/hyperindex_reader.ts";
+import { buildStateCacheFromGraphQL, discoverPoolsFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { WMATIC, USDC, USDC_NATIVE, USDT, DAI } from "../config/addresses.ts";
@@ -15,7 +15,8 @@ export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
   enumerateCycles: typeof enumerateCycles;
   evaluatePipeline: typeof evaluatePipeline;
-  buildStateCacheFromHyperIndex: typeof buildStateCacheFromHyperIndex;
+  buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
+  discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
   routeKeyFromEdges: typeof routeKeyFromEdges;
   buildExecutionCandidate: typeof buildExecutionCandidate;
 }
@@ -69,7 +70,8 @@ const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
   enumerateCycles,
   evaluatePipeline,
-  buildStateCacheFromHyperIndex,
+  buildStateCacheFromGraphQL,
+  discoverPoolsFromHasura,
   routeKeyFromEdges,
   buildExecutionCandidate,
 };
@@ -87,23 +89,47 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastPoolCount = 0;
   let cachedCycles: FoundCycle[] = [];
   let cachedGraph: RoutingGraph | null = null;
+  let idleIterations = 0;
+  let hasuraPoolsCache: PoolMeta[] | null = null;
+  let _lastStateRefresh = 0;
 
   while (ctx.isRunning) {
     const startTime = Date.now();
 
     try {
-      const pools = ctx.getPools();
+      let pools = hasuraPoolsCache ?? ctx.getPools();
 
       if (pools.length === 0) {
-        ctx.logger.info({}, "No pools found, waiting for HyperIndex discovery");
-        await sleep(Math.min(intervalMs, 5000));
-        continue;
+        const graphqlUrl = ctx.config.hasuraUrl;
+        const secret = ctx.config.hasuraSecret;
+        ctx.logger.info({}, "No pools — discovering from Hasura");
+        const hasuraPools = await discoverPoolsFromHasura(graphqlUrl, secret);
+        if (hasuraPools.length > 0) {
+          hasuraPoolsCache = hasuraPools.map(p => ({
+            address: p.address as `0x${string}`,
+            protocol: p.protocol,
+            token0: (p.tokens[0] ?? "") as `0x${string}`,
+            token1: (p.tokens[1] ?? "") as `0x${string}`,
+            tokens: p.tokens as `0x${string}`[],
+          }));
+          pools = hasuraPoolsCache;
+          ctx.logger.info({ discovered: pools.length }, "Discovered pools from Hasura");
+        }
       }
 
-      const stateCache = deps.buildStateCacheFromHyperIndex(
-        ctx.hiDbPath,
-        pools.map((p) => p.address),
-      );
+      const stateCache = ctx.stateCache;
+
+      if (stateCache.size === 0 || (stateCache.size > 0 && Date.now() - _lastStateRefresh > 2000)) {
+        const graphqlUrl = ctx.config.hasuraUrl;
+        const secret = ctx.config.hasuraSecret;
+        const gqlCache = await buildStateCacheFromGraphQL(graphqlUrl, secret);
+        for (const [addr, state] of gqlCache) {
+          if (!stateCache.has(addr)) {
+            stateCache.set(addr, state);
+          }
+        }
+        _lastStateRefresh = Date.now();
+      }
 
       // Rebuild graph only if pools change.
       // State changes are now handled by in-place updates to state objects referenced in graph edges.
@@ -116,6 +142,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       if (cachedCycles.length === 0) {
+        await sleep(intervalMs);
+        continue;
+      }
+
+      if (stateCache.size === 0) {
+        ctx.logger.warn({}, "No pool state data available — waiting for indexer to populate state");
+        bus?.emit({ type: "error", component: "Pipeline", message: "No pool state data" });
         await sleep(intervalMs);
         continue;
       }
@@ -208,6 +241,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     const elapsed = Date.now() - startTime;
     const waitMs = Math.max(0, intervalMs - elapsed);
     if (waitMs > 0) await sleep(waitMs);
+
+    idleIterations++;
+    if (idleIterations % 60 === 0) {
+      ctx.logger.debug({ cycles: cachedCycles.length, elapsed }, "Pass loop heartbeat");
+    }
   }
 
   ctx.logger.info({}, "Pass loop exited");

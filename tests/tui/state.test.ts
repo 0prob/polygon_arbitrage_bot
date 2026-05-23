@@ -57,10 +57,10 @@ describe("applyEvent", () => {
   it("caps log at 1000 entries", () => {
     const s = createInitialState();
     for (let i = 0; i < 1001; i++) {
-      applyEvent(s, { type: "heartbeat", elapsedMs: i });
+      applyEvent(s, { type: "error", component: "test", message: String(i) });
     }
     expect(s.log.length).toBe(1000);
-    expect(s.log[0].component).toBe("heartbeat");
-    expect(s.log[999].component).toBe("heartbeat");
+    expect(s.log[0].component).toBe("test");
+    expect(s.log[999].component).toBe("test");
   });
 });

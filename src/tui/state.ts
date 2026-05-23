@@ -107,7 +107,6 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "heartbeat":
       state.system.lastCycleTimeMs = event.elapsedMs;
-      appendLog(state, "heartbeat", `${event.elapsedMs}ms`);
       break;
   }
 }

@@ -1,0 +1,208 @@
+const MAX_CACHED_STATE_ENTRIES = 50_000;
+
+const _cachedState: Map<string, Record<string, unknown>> = new Map();
+const _cacheAccessOrder: string[] = [];
+let _lastFetchTime = 0;
+
+export function resetGraphQLReaderCache(): void {
+  _cachedState.clear();
+  _cacheAccessOrder.length = 0;
+  _lastFetchTime = 0;
+}
+
+async function graphQLQuery(url: string, secret: string, query: string): Promise<unknown> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-hasura-admin-secret": secret,
+    },
+    body: JSON.stringify({ query }),
+  });
+  if (!res.ok) throw new Error(`GraphQL error: ${res.status}`);
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0]?.message ?? "GraphQL error");
+  return json.data;
+}
+
+function merge(rows: { id: string }[], mapper: (r: Record<string, unknown>) => Record<string, unknown>): void {
+  for (const r of rows) {
+    const addr = r.id.toLowerCase();
+    const newData = mapper(r as unknown as Record<string, unknown>);
+    (newData as Record<string, unknown>).initialized = true;
+    const existing = _cachedState.get(addr);
+    if (existing) {
+      Object.assign(existing, newData);
+    } else {
+      if (_cachedState.size >= MAX_CACHED_STATE_ENTRIES) {
+        const oldest = _cacheAccessOrder.shift()!;
+        _cachedState.delete(oldest);
+      }
+      _cachedState.set(addr, newData as Record<string, unknown>);
+      _cacheAccessOrder.push(addr);
+    }
+  }
+}
+
+export async function buildStateCacheFromGraphQL(
+  graphqlUrl: string,
+  adminSecret: string,
+  _poolAddresses?: string[],
+): Promise<Map<string, Record<string, unknown>>> {
+  const now = Date.now();
+  if (_cachedState.size > 0 && now - _lastFetchTime < 2000) {
+    return _cachedState;
+  }
+
+  try {
+    await Promise.all([
+      graphQLQuery(graphqlUrl, adminSecret, "{ V3PoolState { id sqrtPriceX96 liquidity tick } }").then(result => {
+        const rows = ((result as Record<string, unknown>).V3PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return { sqrtPriceX96: BigInt(row.sqrtPriceX96), liquidity: BigInt(row.liquidity), tick: row.tick };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ BalancerPoolState { id poolId balances weights amp swapFee } }").then(result => {
+        const rows = ((result as Record<string, unknown>).BalancerPoolState) as { id: string; poolId: string; balances: string; weights: string; amp: string | null; swapFee: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return {
+            poolId: row.poolId,
+            balances: parseBigIntArray(row.balances),
+            weights: parseBigIntArray(row.weights),
+            amp: row.amp ? BigInt(row.amp) : undefined,
+            swapFee: BigInt(row.swapFee),
+          };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ V4PoolState { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }").then(result => {
+        const rows = ((result as Record<string, unknown>).V4PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number; fee: string; tickSpacing: number; hooks: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return {
+            sqrtPriceX96: BigInt(row.sqrtPriceX96), liquidity: BigInt(row.liquidity), tick: row.tick,
+            fee: BigInt(row.fee), tickSpacing: row.tickSpacing, hooks: row.hooks,
+          };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ CurvePoolState { id balances A fee } }").then(result => {
+        const rows = ((result as Record<string, unknown>).CurvePoolState) as { id: string; balances: string; A: string; fee: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return { balances: parseBigIntArray(row.balances), A: BigInt(row.A), fee: BigInt(row.fee) };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ V2PoolState { id reserve0 reserve1 } }").then(result => {
+        const rows = ((result as Record<string, unknown>).V2PoolState) as { id: string; reserve0: string; reserve1: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return { reserve0: BigInt(row.reserve0), reserve1: BigInt(row.reserve1) };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ DodoPoolState { id baseReserve quoteReserve rStatus k fee } }").then(result => {
+        const rows = ((result as Record<string, unknown>).DodoPoolState) as { id: string; baseReserve: string; quoteReserve: string; rStatus: number; k: string; fee: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return { baseReserve: BigInt(row.baseReserve), quoteReserve: BigInt(row.quoteReserve), rStatus: row.rStatus, k: BigInt(row.k), fee: BigInt(row.fee) };
+        });
+      }),
+
+      graphQLQuery(graphqlUrl, adminSecret, "{ WoofiPoolState { id price coefficient spread fee } }").then(result => {
+        const rows = ((result as Record<string, unknown>).WoofiPoolState) as { id: string; price: string; coefficient: string; spread: string; fee: string }[] | undefined;
+        if (rows) merge(rows, r => {
+          const row = r as any;
+          return { price: BigInt(row.price), coefficient: BigInt(row.coefficient), spread: BigInt(row.spread), fee: BigInt(row.fee) };
+        });
+      }),
+    ]);
+
+    _lastFetchTime = Date.now();
+  } catch (err) {
+    console.warn("[hyperindex_graphql] buildStateCacheFromGraphQL failed:", err);
+  }
+
+  return _cachedState;
+}
+
+export interface HasuraPoolMeta {
+  address: string;
+  protocol: string;
+  tokens: string[];
+}
+
+export async function discoverPoolsFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+): Promise<HasuraPoolMeta[]> {
+  try {
+    const [v3Result, balResult] = await Promise.all([
+      graphQLQuery(graphqlUrl, adminSecret, "{ V3PoolState { id } }"),
+      graphQLQuery(graphqlUrl, adminSecret, "{ BalancerPoolState { id } }"),
+    ]);
+
+    const v3Rows = (v3Result as Record<string, unknown>).V3PoolState as { id: string }[] | undefined;
+    const balRows = (balResult as Record<string, unknown>).BalancerPoolState as { id: string }[] | undefined;
+
+    const addrs = new Set<string>();
+    if (v3Rows) for (const r of v3Rows) addrs.add(r.id.toLowerCase());
+    if (balRows) for (const r of balRows) addrs.add(r.id.toLowerCase());
+
+    if (addrs.size === 0) return [];
+
+    const addrArr = [...addrs];
+    const chunkSize = 2000;
+    const chunks: string[][] = [];
+    for (let i = 0; i < addrArr.length; i += chunkSize) {
+      chunks.push(addrArr.slice(i, i + chunkSize));
+    }
+    const poolMetaResults = await Promise.all(
+      chunks.map(chunk =>
+        graphQLQuery(
+          graphqlUrl,
+          adminSecret,
+          `{ PoolMeta(where: {id: {_in: [${chunk.map(a => `"${a}"`).join(",")}]}}) { id protocol address tokens } }`,
+        ),
+      ),
+    );
+
+    const result: HasuraPoolMeta[] = [];
+    const seen = new Set<string>();
+    for (const data of poolMetaResults) {
+      const metaArr = (data as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; address: string; tokens: unknown }[];
+      if (!metaArr) continue;
+      for (const pm of metaArr) {
+        const addr = pm.id.toLowerCase();
+        if (seen.has(addr)) continue;
+        seen.add(addr);
+        let tokens: string[];
+        if (typeof pm.tokens === "string") {
+          try { tokens = JSON.parse(pm.tokens) as string[]; } catch { tokens = []; }
+        } else if (Array.isArray(pm.tokens)) {
+          tokens = pm.tokens.map((t: unknown) => String(t));
+        } else {
+          tokens = [];
+        }
+        result.push({ address: addr, protocol: pm.protocol, tokens: tokens.map(t => t.toLowerCase()) });
+      }
+    }
+
+    return result;
+  } catch (err) {
+    console.warn("[hyperindex_graphql] discoverPoolsFromHasura failed:", err);
+    return [];
+  }
+}
+
+function parseBigIntArray(str: string): bigint[] {
+  try {
+    return JSON.parse(str).map((b: string) => BigInt(b));
+  } catch {
+    return [];
+  }
+}

@@ -44,6 +44,26 @@ export function createTui(): TuiInstance {
     applyEvent(state, event);
   });
 
+  function stopImpl(): void {
+    if (!started) return;
+    started = false;
+
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    process.stdout.off("resize", handleResize);
+
+    if (stdinHandler) {
+      process.stdin.off("data", stdinHandler);
+      process.stdin.setRawMode(false);
+      stdinHandler = null;
+    }
+
+    renderer.exit();
+  }
+
   return {
     bus,
 
@@ -65,24 +85,6 @@ export function createTui(): TuiInstance {
       timer = setInterval(renderFrame, 33);
     },
 
-    stop() {
-      if (!started) return;
-      started = false;
-
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
-
-      process.stdout.off("resize", handleResize);
-
-      if (stdinHandler) {
-        process.stdin.off("data", stdinHandler);
-        process.stdin.setRawMode(false);
-        stdinHandler = null;
-      }
-
-      renderer.exit();
-    },
+    stop: stopImpl,
   };
 }

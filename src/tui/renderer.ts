@@ -87,7 +87,6 @@ export class Renderer {
 
     let buf = "";
     for (const panel of panels) {
-      buf += cursor(panel.y, 0);
       buf += panel.content;
     }
     this.stdout.write(buf);
@@ -102,7 +101,7 @@ export class Renderer {
 
     return {
       y: layout.statusBar.y,
-      content: clearLine() + line,
+      content: cursor(layout.statusBar.y, layout.statusBar.x) + clearLine() + line,
     };
   }
 
@@ -154,7 +153,7 @@ export class Renderer {
     const hints = dim("Ctrl+Q quit  |  P pause  |  R reset stats");
     return {
       y: layout.keymapBar.y,
-      content: clearLine() + hints,
+      content: cursor(layout.keymapBar.y, layout.keymapBar.x) + clearLine() + hints,
     };
   }
 

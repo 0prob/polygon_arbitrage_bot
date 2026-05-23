@@ -91,7 +91,6 @@ export const DEFAULTS = {
   },
   paths: {
     dataDir: "data",
-    dbFile: "registry.db",
     perfJsonFile: "perf.json",
   },
 } as const;

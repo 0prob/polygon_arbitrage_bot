@@ -14,6 +14,9 @@ const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
 const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
 const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
 
+const stateWithPool = new Map<string, Record<string, unknown>>();
+stateWithPool.set("0xpool", { initialized: true });
+
 describe("runPassLoop", () => {
   it("executes profitable cycles", async () => {
     const mockExecute = vi.fn().mockResolvedValue({ success: true, txHash: "0x1" });
@@ -25,18 +28,18 @@ describe("runPassLoop", () => {
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
-        paths: { dataDir: "/tmp", dbFile: "test.db" },
+        paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
         observability: { logLevel: "silent" },
         envioApiToken: "",
+        hasuraUrl: "http://localhost:8080/v1/graphql",
+        hasuraSecret: "testing",
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
       gasOracle: {
         getSnapshot: vi.fn().mockReturnValue({ gasPrice: 30n * 10n ** 9n, baseFee: 30n * 10n ** 9n, priorityFee: 1n * 10n ** 9n }),
       },
       isRunning: true,
-      db: {},
-      stateCache: new Map() as any,
-      hiDbPath: "/tmp/test.db",
+      stateCache: stateWithPool,
       mempoolService: { start: vi.fn() },
       executionService: { start: vi.fn(), execute: mockExecute },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
@@ -130,7 +133,8 @@ describe("runPassLoop", () => {
         attempted: 2,
         profitableCount: 2,
       }),
-      buildStateCacheFromHyperIndex: vi.fn().mockReturnValue(new Map()),
+      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
+      discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
     };

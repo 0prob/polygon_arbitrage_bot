@@ -17,11 +17,5 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
   await stopService("execution", ctx.executionService, ctx.logger);
   await stopService("mempool", ctx.mempoolService, ctx.logger);
 
-  try {
-    ctx.db.close();
-  } catch (err) {
-    ctx.logger.error({ err }, "Database close failed");
-  }
-
   ctx.logger.info({}, "Shutdown complete");
 }

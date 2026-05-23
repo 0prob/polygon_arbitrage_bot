@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779465627.0190458,
-    "ast_hash": "4ae7091af4d894a19fb1beafdc2d5d61",
+    "mtime": 1779474265.5349746,
+    "ast_hash": "e462e3ff1ab6533ae99f9e19545d3bad",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -967,6 +967,11 @@
   "/home/x/arb/t/tests/hyperindex_reader.test.ts": {
     "mtime": 1779472723.2637644,
     "ast_hash": "c7a67bf38b605fb1ee56cfe38797389c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/live_pipeline_verify.ts": {
+    "mtime": 1779473061.6319902,
+    "ast_hash": "2910d694c7dece8e29bc7fda673c9a1a",
     "semantic_hash": ""
   }
 }

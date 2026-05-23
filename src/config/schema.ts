@@ -134,7 +134,6 @@ export type ObservabilityConfig = z.infer<typeof ObservabilityConfigSchema>;
 
 export const PathsConfigSchema = z.object({
   dataDir: z.string().min(1),
-  dbFile: z.string().min(1),
   perfJsonFile: z.string().min(1),
 });
 export type PathsConfig = z.infer<typeof PathsConfigSchema>;
@@ -152,6 +151,8 @@ export const AppConfigSchema = z.object({
   observability: ObservabilityConfigSchema,
   paths: PathsConfigSchema,
   envioApiToken: z.string().min(1, "ENVIO_API_TOKEN is required"),
+  hasuraUrl: z.string().url().default("http://localhost:8080/v1/graphql"),
+  hasuraSecret: z.string().default("testing"),
   crossChainArb: crossChainArbSchema.optional(),
 });
 export type AppConfig = z.infer<typeof AppConfigSchema>;

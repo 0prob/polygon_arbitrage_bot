@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "child_process";
+import { spawn, execSync, type ChildProcess } from "child_process";
 import path from "path";
 import type { Logger } from "../observability/logger.ts";
 
@@ -24,8 +24,25 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
+  function freePort(port: number): void {
+    try {
+      const pid = execSync(`lsof -ti :${port}`, { encoding: "utf8", timeout: 2000 }).trim();
+      if (pid) {
+        try {
+          process.kill(Number(pid), "SIGKILL");
+        } catch {
+          // process already gone
+        }
+      }
+    } catch {
+      // port is free
+    }
+  }
+
   async function start(): Promise<void> {
     if (proc) return;
+
+    freePort(9898);
 
     const env: Record<string, string> = {
       PATH: process.env.PATH ?? "",
@@ -70,33 +87,28 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   }
 
   async function stop(): Promise<void> {
-    if (!proc) return;
+    const p = proc;
+    if (!p) return;
 
     opts.logger.info("Stopping HyperIndex ingestion");
-    proc.kill("SIGTERM");
+    p.kill("SIGTERM");
 
     await new Promise<void>((resolve) => {
       const timeout = setTimeout(() => {
-        proc?.kill("SIGKILL");
+        p.kill("SIGKILL");
+        cleanup();
         resolve();
       }, 5000);
 
-      if (proc) {
-        const exitOnStop = () => {
-          clearTimeout(timeout);
-          if (proc && _exitHandler) {
-            proc.off("exit", _exitHandler);
-            proc.off("exit", exitOnStop);
-            proc.stdout?.off("data", _stdoutHandler!);
-            proc.stderr?.off("data", _stderrHandler!);
-          }
-          resolve();
-        };
-        proc.on("exit", exitOnStop);
-      } else {
+      function cleanup(): void {
         clearTimeout(timeout);
-        resolve();
+        p!.off("exit", _exitHandler!);
+        p!.off("exit", cleanup);
+        p!.stdout?.off("data", _stdoutHandler!);
+        p!.stderr?.off("data", _stderrHandler!);
       }
+
+      p.on("exit", cleanup);
     });
 
     proc = null;
