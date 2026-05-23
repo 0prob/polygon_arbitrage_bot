@@ -7,6 +7,7 @@ import { simulateBalancerSwap } from "../../core/math/balancer.ts";
 import { simulateDodoSwap } from "../../core/math/dodo.ts";
 import { simulateWoofiSwap } from "../../core/math/woofi.ts";
 import type { SwapEdge } from "./graph.ts";
+import { TokenRegistry } from "./token_registry.ts";
 
 export interface SimulationEdge {
   poolAddress: string;
@@ -36,27 +37,50 @@ function normalizeProtocol(raw: string): string {
 }
 
 /** Dispatch a single hop simulation to the correct math module. */
-export function simulateHop(edge: SimulationEdge, amountIn: bigint, stateCache: RouteStateCache): SimulatedHopResult {
+export function simulateHop(
+  edge: SimulationEdge,
+  amountIn: bigint,
+  stateCache: RouteStateCache,
+  tokenRegistry?: TokenRegistry
+): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
   const state = stateCache.get(poolAddr) ?? edge.stateRef;
   if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
 
+  // Apply sell tax: What the pool actually receives
+  const effectiveAmountIn = tokenRegistry ? tokenRegistry.applySellTax(edge.tokenIn, amountIn) : amountIn;
+
+  let result: SimulatedHopResult;
+
   switch (normalizeProtocol(edge.protocol)) {
     case "V2":
-      return simulateV2Swap(state, amountIn, edge.zeroForOne);
+      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne);
+      break;
     case "V3":
-      return extractGasResult(simulateV3Swap(state, amountIn, edge.zeroForOne));
+      result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne));
+      break;
     case "CURVE":
-      return simulateCurveSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateCurveSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      break;
     case "BALANCER":
-      return simulateBalancerSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateBalancerSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      break;
     case "DODO":
-      return simulateDodoSwap(state, amountIn, edge.zeroForOne);
+      result = simulateDodoSwap(state, effectiveAmountIn, edge.zeroForOne);
+      break;
     case "WOOFI":
-      return simulateWoofiSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateWoofiSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      break;
     default:
       throw new Error(`Unknown protocol: ${edge.protocol}`);
   }
+
+  // Apply buy tax: What the user actually receives
+  if (tokenRegistry) {
+    result.amountOut = tokenRegistry.applyBuyTax(edge.tokenOut, result.amountOut);
+  }
+
+  return result;
 }
 
 function extractGasResult(r: { amountOut: bigint; gasEstimate: number }): SimulatedHopResult {
@@ -64,7 +88,12 @@ function extractGasResult(r: { amountOut: bigint; gasEstimate: number }): Simula
 }
 
 /** Simulate a full multi-hop route. Direction is inferred from stateRef. */
-export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: RouteStateCache): RouteSimulationResult {
+export function simulateRoute(
+  edges: SwapEdge[],
+  amountIn: bigint,
+  stateCache: RouteStateCache,
+  tokenRegistry?: TokenRegistry
+): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
   const poolPath: string[] = [];
@@ -88,7 +117,7 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
       stateRef: state as PoolState,
     };
 
-    const hop = simulateHop(simEdge, hopAmounts[i], stateCache);
+    const hop = simulateHop(simEdge, hopAmounts[i], stateCache, tokenRegistry);
     hopAmounts.push(hop.amountOut);
     totalGas += hop.gasEstimate;
     poolPath.push(edge.poolAddress);
@@ -115,7 +144,7 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
   };
 }
 
-export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateCache: RouteStateCache): number {
+export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateCache: RouteStateCache, tokenRegistry?: TokenRegistry): number {
   if (amountIn === 0n) return 0;
 
   const poolAddr = edge.poolAddress.toLowerCase();
@@ -133,7 +162,7 @@ export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateC
     stateRef: state,
   };
 
-  const result = simulateHop(simEdge, amountIn, stateCache);
+  const result = simulateHop(simEdge, amountIn, stateCache, tokenRegistry);
   const realizedPrice = Number(result.amountOut) / Number(amountIn);
 
   let spotPrice = 1.0;

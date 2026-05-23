@@ -3,6 +3,7 @@ import { simulateHop, simulateRoute, getEffectivePriceImpact } from "./simulator
 import type { SimulationEdge } from "./simulator.ts";
 import type { SwapEdge } from "./graph.ts";
 import type { Address } from "../../core/types/common.ts";
+import { TokenRegistry } from "./token_registry.ts";
 
 describe("simulateHop", () => {
   it("dispatches V2 swap correctly", () => {
@@ -179,6 +180,51 @@ describe("simulateHop", () => {
     };
     const result = simulateHop(edge, 1000n, cache);
     expect(result.amountOut).toBeGreaterThan(0n);
+  });
+
+  it("applies sell tax correctly", () => {
+    const registry = new TokenRegistry({
+      "0xa": { buyTaxMultiplier: 1.0, sellTaxMultiplier: 0.9 }
+    });
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V2",
+      zeroForOne: true,
+      stateRef: { reserve0: 100000n, reserve1: 100000n },
+    };
+    // Without tax, 1000 in -> 100000 - (100000 * 100000 / (100000 + 1000)) = 100000 - 99009 = 991 (approx)
+    // With 10% sell tax, effective in = 900
+    // 900 in -> 100000 - (100000 * 100000 / (100000 + 900)) = 100000 - 99108 = 892 (approx)
+    
+    // Test without registry
+    const resNoTax = simulateHop(edge, 1000n, new Map());
+    // Test with registry
+    const resWithTax = simulateHop(edge, 1000n, new Map(), registry);
+
+    expect(resWithTax.amountOut).toBeLessThan(resNoTax.amountOut);
+  });
+
+  it("applies buy tax correctly", () => {
+    const registry = new TokenRegistry({
+      "0xb": { buyTaxMultiplier: 0.9, sellTaxMultiplier: 1.0 }
+    });
+    const edge: SimulationEdge = {
+      poolAddress: "0xpool",
+      tokenIn: "0xa",
+      tokenOut: "0xb",
+      protocol: "UNISWAP_V2",
+      zeroForOne: true,
+      stateRef: { reserve0: 100000n, reserve1: 100000n },
+    };
+    
+    // Test without registry
+    const resNoTax = simulateHop(edge, 1000n, new Map());
+    // Test with registry
+    const resWithTax = simulateHop(edge, 1000n, new Map(), registry);
+
+    expect(resWithTax.amountOut).toBeLessThan(resNoTax.amountOut);
   });
 });
 
