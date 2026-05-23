@@ -10,10 +10,10 @@ export interface SwapEdge {
   tokenOut: Address;
   feeBps: bigint;
   stateRef?: unknown;
-  // Pre-calculated parameters (optional for test compatibility)
-  zeroForOne?: boolean;
-  tokenInIdx?: number;
-  tokenOutIdx?: number;
+  // Pre-calculated parameters
+  zeroForOne: boolean;
+  tokenInIdx: number;
+  tokenOutIdx: number;
 }
 
 export interface RoutingGraph {
@@ -21,27 +21,6 @@ export interface RoutingGraph {
   poolMeta: Map<string, PoolMeta>;
   stateRefs: Map<string, unknown>;
   tokens: Set<string>;
-}
-
-function inferZeroForOne(edge: { tokenIn: string; tokenOut: string }, state: Record<string, unknown>): boolean {
-  const t0 = state.token0;
-  if (typeof t0 === "string") return edge.tokenIn === t0.toLowerCase();
-  if (Array.isArray(state.tokens)) {
-    const tokens = state.tokens as string[];
-    const tokenIn = edge.tokenIn;
-    return tokens.some((t) => t.toLowerCase() === tokenIn);
-  }
-  return edge.tokenIn < edge.tokenOut;
-}
-
-function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: number): number {
-  const tokens = state.tokens;
-  if (Array.isArray(tokens)) {
-    const addr = token.toLowerCase();
-    const idx = tokens.findIndex((t: unknown) => typeof t === "string" && t.toLowerCase() === addr);
-    if (idx >= 0) return idx;
-  }
-  return fallback;
 }
 
 export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>): RoutingGraph {
@@ -68,9 +47,9 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
           tokenOut: tJLower as Address,
           feeBps: pool.fee != null ? BigInt(pool.fee) : DEFAULT_FEE_BPS,
           stateRef: state,
-          zeroForOne: state ? inferZeroForOne({ tokenIn: tILower, tokenOut: tJLower }, state) : tILower < tJLower,
-          tokenInIdx: state ? inferTokenIdx(tILower, state, 0) : 0,
-          tokenOutIdx: state ? inferTokenIdx(tJLower, state, 1) : 1,
+          zeroForOne: i < j,
+          tokenInIdx: i,
+          tokenOutIdx: j,
         };
         if (!adjacency.has(tILower)) adjacency.set(tILower, []);
         adjacency.get(tILower)!.push(edge);

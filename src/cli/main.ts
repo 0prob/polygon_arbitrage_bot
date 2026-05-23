@@ -4,11 +4,14 @@ import { runPassLoop } from "../orchestrator/pass_loop.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
 import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.ts";
 import { createRootLogger } from "../infra/observability/logger.ts";
+import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
   const config = loadConfig(process.env);
+
+  const bus = new EventBus();
 
   const hyperIndex = createHyperIndexProcess({
     dataDir: config.paths.dataDir,
@@ -16,6 +19,7 @@ async function main() {
     katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
     envioApiToken: config.envioApiToken,
     logger: createRootLogger({ level: config.observability.logLevel }),
+    eventBus: useTui ? bus : undefined,
   });
 
   try {
@@ -27,7 +31,7 @@ async function main() {
 
   const ctx = await bootApplication(config);
 
-  const tui = useTui ? createTui() : null;
+  const tui = useTui ? createTui(bus) : null;
   if (tui) {
     tui.start();
   }

@@ -10,6 +10,7 @@ import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { WMATIC, USDC, USDC_NATIVE, USDT, DAI } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
+import { calculateLiquidityUsd } from "../core/assessment/liquidity.ts";
 
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
@@ -131,6 +132,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         _lastStateRefresh = Date.now();
       }
 
+      const tokenToMaticRate = computeTokenToMaticRate(pools, stateCache);
+
+      // Filter pools by liquidity floor
+      const liquidityFloor = ctx.config.routing.liquidityFloorUsd;
+      if (liquidityFloor && liquidityFloor > 0n) {
+        pools = pools.filter(p => {
+          const state = stateCache.get(p.address.toLowerCase());
+          if (!state) return false;
+          return calculateLiquidityUsd(p, state, tokenToMaticRate) >= liquidityFloor;
+        });
+      }
+
       // Rebuild graph only if pools change.
       // State changes are now handled by in-place updates to state objects referenced in graph edges.
       if (pools.length !== lastPoolCount || !cachedGraph) {
@@ -159,8 +172,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await sleep(100);
         continue;
       }
-
-      const tokenToMaticRate = computeTokenToMaticRate(pools, stateCache);
 
       const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,

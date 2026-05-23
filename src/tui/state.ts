@@ -13,6 +13,9 @@ export interface SystemState {
   poolCount: number;
   cycleCount: number;
   lastCycleTimeMs: number;
+  hiStatus: string;
+  hiSyncedBlock: number;
+  hiRemoteBlock: number;
 }
 
 export interface LogEntry {
@@ -46,6 +49,9 @@ export function createInitialState(): TuiState {
       poolCount: 0,
       cycleCount: 0,
       lastCycleTimeMs: 0,
+      hiStatus: "starting",
+      hiSyncedBlock: 0,
+      hiRemoteBlock: 0,
     },
     log: [],
     isRunning: false,
@@ -107,6 +113,11 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "heartbeat":
       state.system.lastCycleTimeMs = event.elapsedMs;
+      break;
+    case "hyperindex_status":
+      state.system.hiStatus = event.status;
+      state.system.hiSyncedBlock = event.syncedBlock;
+      state.system.hiRemoteBlock = event.remoteBlock;
       break;
   }
 }

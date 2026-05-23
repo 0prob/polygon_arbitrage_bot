@@ -35,27 +35,6 @@ function normalizeProtocol(raw: string): string {
   return u;
 }
 
-function inferZeroForOne(edge: { tokenIn: string; tokenOut: string }, state: Record<string, unknown>): boolean {
-  const t0 = state.token0;
-  if (typeof t0 === "string") return edge.tokenIn.toLowerCase() === t0.toLowerCase();
-  if (Array.isArray(state.tokens)) {
-    const tokens = state.tokens as string[];
-    const tokenIn = edge.tokenIn.toLowerCase();
-    return tokens.some((t) => t.toLowerCase() === tokenIn);
-  }
-  return edge.tokenIn.toLowerCase() < edge.tokenOut.toLowerCase();
-}
-
-function inferTokenIdx(token: string, state: Record<string, unknown>, fallback: number): number {
-  const tokens = state.tokens;
-  if (Array.isArray(tokens)) {
-    const addr = token.toLowerCase();
-    const idx = tokens.findIndex((t: unknown) => typeof t === "string" && t.toLowerCase() === addr);
-    if (idx >= 0) return idx;
-  }
-  return fallback;
-}
-
 /** Dispatch a single hop simulation to the correct math module. */
 export function simulateHop(edge: SimulationEdge, amountIn: bigint, stateCache: RouteStateCache): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
@@ -104,9 +83,9 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
       tokenIn: edge.tokenIn,
       tokenOut: edge.tokenOut,
       protocol: edge.protocol,
-      zeroForOne: edge.zeroForOne ?? inferZeroForOne(edge, stateRecord),
-      tokenInIdx: edge.tokenInIdx ?? inferTokenIdx(edge.tokenIn, stateRecord, 0),
-      tokenOutIdx: edge.tokenOutIdx ?? inferTokenIdx(edge.tokenOut, stateRecord, 1),
+      zeroForOne: edge.zeroForOne,
+      tokenInIdx: edge.tokenInIdx,
+      tokenOutIdx: edge.tokenOutIdx,
       stateRef: state as PoolState,
     };
 

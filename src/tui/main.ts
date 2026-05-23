@@ -9,8 +9,8 @@ export interface TuiInstance {
   stop(): void;
 }
 
-export function createTui(): TuiInstance {
-  const bus = new EventBus();
+export function createTui(bus?: EventBus): TuiInstance {
+  if (!bus) bus = new EventBus();
   const state = createInitialState();
   const renderer = new Renderer(process.stdout);
   let layout = computeLayout(process.stdout.columns, process.stdout.rows);
@@ -25,24 +25,6 @@ export function createTui(): TuiInstance {
   function renderFrame(): void {
     renderer.render(layout, state);
   }
-
-  function handleKey(data: Buffer): void {
-    const key = data.toString();
-    if (key === "q" || key === "\u0011") {
-      stop();
-      process.exit(0);
-    }
-    if (key === "p" || key === "P") {
-      state.isPaused = !state.isPaused;
-    }
-    if (key === "r" || key === "R") {
-      Object.assign(state, createInitialState());
-    }
-  }
-
-  bus.on((event: ArbEvent) => {
-    applyEvent(state, event);
-  });
 
   function stopImpl(): void {
     if (!started) return;
@@ -63,6 +45,24 @@ export function createTui(): TuiInstance {
 
     renderer.exit();
   }
+
+  function handleKey(data: Buffer): void {
+    const key = data.toString();
+    if (key === "q" || key === "\u0011") {
+      stopImpl();
+      process.exit(0);
+    }
+    if (key === "p" || key === "P") {
+      state.isPaused = !state.isPaused;
+    }
+    if (key === "r" || key === "R") {
+      Object.assign(state, createInitialState());
+    }
+  }
+
+  bus.on((event: ArbEvent) => {
+    applyEvent(state, event);
+  });
 
   return {
     bus,

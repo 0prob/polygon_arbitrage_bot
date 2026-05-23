@@ -15,7 +15,7 @@ export interface TuiLayout {
 
 const STATUS_HEIGHT = 1;
 const KEYMAP_HEIGHT = 1;
-const TOP_PANEL_HEIGHT = 6;
+const TOP_PANEL_HEIGHT = 7;
 
 export function computeLayout(cols: number | undefined, rows: number | undefined): TuiLayout {
   const safeCols = cols ?? 80;

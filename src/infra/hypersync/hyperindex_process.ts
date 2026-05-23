@@ -2,12 +2,22 @@ import { spawn, execSync, type ChildProcess } from "child_process";
 import path from "path";
 import type { Logger } from "../observability/logger.ts";
 
+interface HyperIndexStatusEvent {
+  type: "hyperindex_status";
+  status: string;
+  syncedBlock: number;
+  remoteBlock: number;
+}
+
+type EventBusLike = { emit(event: HyperIndexStatusEvent): void };
+
 export interface HyperIndexProcessOptions {
   dataDir: string;
   polygonRpcUrl: string;
   katanaRpcUrl?: string;
   envioApiToken?: string;
   logger: Logger;
+  eventBus?: EventBusLike;
 }
 
 export interface HyperIndexProcess {
@@ -21,6 +31,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _stdoutHandler: ((data: Buffer) => void) | null = null;
   let _stderrHandler: ((data: Buffer) => void) | null = null;
   let _exitHandler: ((code: number | null, signal: string | null) => void) | null = null;
+  let _lastParsedBlock = 0;
+  let _lastRemoteBlock = 0;
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
@@ -36,6 +48,61 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       }
     } catch {
       // port is free
+    }
+  }
+
+  function parseEnvioLine(line: string): void {
+    const bus = opts.eventBus;
+    if (!bus) return;
+
+    const trimmed = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
+
+    const blockMatch = trimmed.match(/(\d{5,})\s*->\s*(\d{5,})/);
+    if (blockMatch) {
+      _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(blockMatch[2], 10));
+      _lastRemoteBlock = Math.max(_lastRemoteBlock, parseInt(blockMatch[2], 10));
+      bus.emit({
+        type: "hyperindex_status",
+        status: "syncing",
+        syncedBlock: _lastParsedBlock,
+        remoteBlock: _lastRemoteBlock,
+      });
+      return;
+    }
+
+    const progressMatch = trimmed.match(/(\d{5,})\s*\/\s*(\d{5,})/);
+    if (progressMatch) {
+      _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(progressMatch[1], 10));
+      _lastRemoteBlock = Math.max(_lastRemoteBlock, parseInt(progressMatch[2], 10));
+      bus.emit({
+        type: "hyperindex_status",
+        status: "syncing",
+        syncedBlock: _lastParsedBlock,
+        remoteBlock: _lastRemoteBlock,
+      });
+      return;
+    }
+
+    if (trimmed.includes("indexed") || trimmed.includes("synced") || trimmed.includes("caught")) {
+      const nums = trimmed.match(/\d{5,}/g);
+      if (nums) {
+        _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(nums[nums.length - 1], 10));
+        bus.emit({
+          type: "hyperindex_status",
+          status: "synced",
+          syncedBlock: _lastParsedBlock,
+          remoteBlock: _lastParsedBlock,
+        });
+      }
+    }
+
+    if (trimmed.includes("error") || trimmed.includes("fail")) {
+      bus.emit({
+        type: "hyperindex_status",
+        status: "error",
+        syncedBlock: _lastParsedBlock,
+        remoteBlock: _lastRemoteBlock,
+      });
     }
   }
 
@@ -67,13 +134,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     _stdoutHandler = (data: Buffer) => {
       const line = data.toString().trim();
-      if (line) opts.logger.debug({ source: "hyperindex", line }, "");
+      if (!line) return;
+      opts.logger.debug({ source: "hyperindex", line }, "");
+      parseEnvioLine(line);
     };
     proc.stdout?.on("data", _stdoutHandler);
 
     _stderrHandler = (data: Buffer) => {
       const line = data.toString().trim();
-      if (line) opts.logger.debug({ source: "hyperindex", line }, "");
+      if (!line) return;
+      opts.logger.debug({ source: "hyperindex", line }, "");
+      parseEnvioLine(line);
     };
     proc.stderr?.on("data", _stderrHandler);
 
