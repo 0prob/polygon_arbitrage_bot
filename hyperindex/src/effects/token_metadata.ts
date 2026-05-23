@@ -1,6 +1,7 @@
 import { createEffect, S } from "envio";
 import { createPublicClient, http, parseAbi } from "viem";
 import { polygon } from "viem/chains";
+import { STATIC_TOKEN_DECIMALS } from "./token_registry";
 
 const client = createPublicClient({
   chain: polygon,
@@ -22,10 +23,13 @@ export const fetchTokenMeta = createEffect(
     name: "fetchTokenMeta",
     input: { address: S.string },
     output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 20, per: "second" },
+    rateLimit: { calls: 100, per: "second" },
     cache: true,
   },
   async ({ input }) => {
+    const cached = STATIC_TOKEN_DECIMALS[input.address.toLowerCase()];
+    if (cached !== undefined) return { address: input.address, decimals: cached };
+
     try {
       const decimals = await client.readContract({
         address: input.address as `0x${string}`,

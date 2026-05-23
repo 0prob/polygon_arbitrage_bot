@@ -32,14 +32,12 @@ indexer.onEvent(
       hooks: event.params.hooks.toLowerCase(),
     });
 
-    if (!context.isPreload) {
-      const [c0meta, c1meta] = await Promise.all([
-        context.effect(fetchTokenMeta, { address: currency0 }),
-        context.effect(fetchTokenMeta, { address: currency1 }),
-      ]);
-      context.TokenMeta.set({ id: currency0, address: currency0, decimals: c0meta.decimals });
-      context.TokenMeta.set({ id: currency1, address: currency1, decimals: c1meta.decimals });
-    }
+    const [c0meta, c1meta] = await Promise.all([
+      context.effect(fetchTokenMeta, { address: currency0 }),
+      context.effect(fetchTokenMeta, { address: currency1 }),
+    ]);
+    context.TokenMeta.set({ id: currency0, address: currency0, decimals: c0meta.decimals });
+    context.TokenMeta.set({ id: currency1, address: currency1, decimals: c1meta.decimals });
   },
 );
 

@@ -16,21 +16,6 @@ indexer.onEvent(
     const existing = await context.PoolMeta.get(pool);
     if (existing) return;
 
-    if (context.isPreload) {
-      context.PoolMeta.set({
-        id: pool,
-        address: pool,
-        protocol: "curve",
-        tokens: [],
-        fee: 1,
-        tickSpacing: undefined,
-        createdBlock: Number(event.block.number),
-        createdTx: event.transaction.hash,
-        poolId: undefined,
-      });
-      return;
-    }
-
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
 
     const feeBps = meta.fee > 0n ? Number(meta.fee / 10n ** 16n) : 1;

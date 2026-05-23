@@ -7,7 +7,6 @@ indexer.onEvent(
   async ({ event, context }) => {
     const pool = event.params.poolAddress.toLowerCase();
     const poolId = event.params.poolId.toLowerCase();
-    if (context.isPreload) return;
 
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId });
 
@@ -67,11 +66,9 @@ indexer.onEvent(
       poolId: poolId,
     });
 
-    if (!context.isPreload) {
-      for (const token of tokens) {
-        const tMeta = await context.effect(fetchTokenMeta, { address: token });
-        context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
-      }
+    for (const token of tokens) {
+      const tMeta = await context.effect(fetchTokenMeta, { address: token });
+      context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
     }
   },
 );

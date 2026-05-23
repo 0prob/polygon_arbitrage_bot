@@ -25,7 +25,7 @@ export const fetchCurveMetadata = createEffect(
     name: "fetchCurveMetadata",
     input: { pool: S.string, nCoins: S.number },
     output: { A: S.bigint, fee: S.bigint, balances: S.array(S.bigint), coins: S.array(S.string) },
-    rateLimit: { calls: 20, per: "second" },
+    rateLimit: { calls: 100, per: "second" },
     cache: true,
   },
   async ({ input }) => {

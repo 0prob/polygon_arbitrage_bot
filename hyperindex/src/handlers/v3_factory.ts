@@ -35,13 +35,11 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    if (!context.isPreload) {
-      const [t0meta, t1meta] = await Promise.all([
-        context.effect(fetchTokenMeta, { address: t0 }),
-        context.effect(fetchTokenMeta, { address: t1 }),
-      ]);
-      context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
-      context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
-    }
+    const [t0meta, t1meta] = await Promise.all([
+      context.effect(fetchTokenMeta, { address: t0 }),
+      context.effect(fetchTokenMeta, { address: t1 }),
+    ]);
+    context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
+    context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
   },
 );

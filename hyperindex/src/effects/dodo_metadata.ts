@@ -39,7 +39,7 @@ export const fetchDodoMetadata = createEffect(
       rStatus: S.number,
       fee: S.bigint,
     },
-    rateLimit: { calls: 20, per: "second" },
+    rateLimit: { calls: 100, per: "second" },
     cache: true,
   },
   async ({ input }) => {

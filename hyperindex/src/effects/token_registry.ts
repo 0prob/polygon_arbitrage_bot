@@ -1,0 +1,20 @@
+export const STATIC_TOKEN_DECIMALS: Record<string, number> = {
+  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270": 18, // WMATIC
+  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH
+  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18, // DAI
+  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,  // USDT
+  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6,  // USDC
+  "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,  // USDC.e
+  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8,  // WBTC
+  "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK
+  "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18, // AAVE
+  "0x172370d5cd63279efa6d502dab29171933a610af": 18, // CRV
+  "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18, // BAL
+  "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK
+  "0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a": 18, // SUSHI
+  "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST
+  "0x5fe2b58c013d7601147dcdd68c143a77499f5531": 18, // GRT
+  "0x0000000000000000000000000000000000001010": 18, // MATIC
+  "0xfa68fb4628dff1028cfec22b4162fccd0d45efb6": 18, // LQTY
+  "0x2f800db0fdb5223b3c3f354886d907a671414a7f": 18, // TOKEN (Toucan Protocol Base Carbon Tonne)
+};

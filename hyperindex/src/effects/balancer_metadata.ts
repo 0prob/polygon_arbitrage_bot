@@ -27,7 +27,7 @@ export const fetchBalancerMetadata = createEffect(
     name: "fetchBalancerMetadata",
     input: { pool: S.string, poolId: S.optional(S.string) },
     output: { poolId: S.string, balances: S.array(S.bigint), tokens: S.array(S.string), lastChangeBlock: S.bigint, swapFee: S.bigint },
-    rateLimit: { calls: 20, per: "second" },
+    rateLimit: { calls: 100, per: "second" },
     cache: true,
   },
   async ({ input }) => {

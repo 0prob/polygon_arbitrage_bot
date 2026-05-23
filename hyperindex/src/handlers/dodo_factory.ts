@@ -19,28 +19,26 @@ async function handleDodoDeployed({ event, context }: any) {
     poolId: undefined,
   });
 
-  if (!context.isPreload) {
-    const meta = await context.effect(fetchDodoMetadata, { pool });
-    context.DodoPoolState.set({
-      id: pool,
-      address: pool,
-      lastUpdatedBlock: Number(event.block.number),
-      baseReserve: meta.baseReserve,
-      quoteReserve: meta.quoteReserve,
-      targetBase: meta.baseTarget,
-      targetQuote: meta.quoteTarget,
-      rStatus: meta.rStatus,
-      k: meta.k,
-      fee: meta.fee,
-    });
+  const meta = await context.effect(fetchDodoMetadata, { pool });
+  context.DodoPoolState.set({
+    id: pool,
+    address: pool,
+    lastUpdatedBlock: Number(event.block.number),
+    baseReserve: meta.baseReserve,
+    quoteReserve: meta.quoteReserve,
+    targetBase: meta.baseTarget,
+    targetQuote: meta.quoteTarget,
+    rStatus: meta.rStatus,
+    k: meta.k,
+    fee: meta.fee,
+  });
 
-    const [baseMeta, quoteMeta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: base }),
-      context.effect(fetchTokenMeta, { address: quote }),
-    ]);
-    context.TokenMeta.set({ id: base, address: base, decimals: baseMeta.decimals });
-    context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
-  }
+  const [baseMeta, quoteMeta] = await Promise.all([
+    context.effect(fetchTokenMeta, { address: base }),
+    context.effect(fetchTokenMeta, { address: quote }),
+  ]);
+  context.TokenMeta.set({ id: base, address: base, decimals: baseMeta.decimals });
+  context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
 }
 
 indexer.onEvent({ contract: "DodoFactory", event: "DVMDeployed" }, handleDodoDeployed);
