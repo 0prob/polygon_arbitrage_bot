@@ -76,7 +76,6 @@ export function simulateRoute(edges: SwapEdge[], amountIn: bigint, stateCache: R
     const poolAddr = edge.poolAddress.toLowerCase();
     const state = stateCache.get(poolAddr) ?? edge.stateRef;
     if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
-    const stateRecord = state as Record<string, unknown>;
 
     const simEdge: SimulationEdge = {
       poolAddress: poolAddr,

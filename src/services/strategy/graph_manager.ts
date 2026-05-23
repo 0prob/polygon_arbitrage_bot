@@ -1,6 +1,6 @@
 import type { Address } from "../../core/types/common.ts";
 import type { PoolState } from "../../core/types/pool.ts";
-import { type RoutingGraph, type SwapEdge, buildGraph } from "./graph.ts";
+import { type RoutingGraph, buildGraph } from "./graph.ts";
 import type { PoolMeta } from "../../core/types/pool.ts";
 
 export class GraphManager {

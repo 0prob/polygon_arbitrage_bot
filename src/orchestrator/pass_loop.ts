@@ -1,5 +1,5 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, enumerateCycles, find2HopCycles, find3HopCycles, find4HopCycles } from "../services/strategy/finder.ts";
+import { type FoundCycle, find2HopCycles, find3HopCycles, find4HopCycles } from "../services/strategy/finder.ts";
 import { type RoutingGraph, buildGraph } from "../services/strategy/graph.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";

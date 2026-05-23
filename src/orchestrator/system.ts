@@ -1,9 +1,6 @@
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
-import { ExecutionService } from "../services/execution/service.ts";
-import { GasOracle } from "../services/execution/gas.ts";
-import { MempoolService } from "../services/mempool/service.ts";
 import { Lifecycle } from "./lifecycle.ts";
 import { PoolStateSubscriber } from "../services/mempool/subscriber.ts";
 import { PublicClient } from "viem";
