@@ -20,12 +20,12 @@ export function buildExecutionCandidate(
       tokenIn: e.tokenIn,
       tokenOut: e.tokenOut,
       protocol: e.protocol,
-      zeroForOne: (e as any).zeroForOne ?? e.tokenIn < e.tokenOut,
+      zeroForOne: e.zeroForOne,
       fee,
       swapFeeBps: fee,
       metadata: {},
-      tokenInIdx: 0,
-      tokenOutIdx: 1,
+      tokenInIdx: e.tokenInIdx,
+      tokenOutIdx: e.tokenOutIdx,
     };
   });
 
