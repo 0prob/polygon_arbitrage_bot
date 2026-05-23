@@ -7,12 +7,12 @@ describe("common types", () => {
   });
   it("FeeSnapshot has required fields", () => {
     const snap: FeeSnapshot = {
-      baseFeeWei: 30_000_000_000n,
-      priorityFeeWei: 30_000_000_000n,
-      maxFeeWei: 90_000_000_000n,
-      gasPriceWei: 60_000_000_000n,
-      timestampMs: Date.now(),
+      baseFee: 30_000_000_000n,
+      priorityFee: 30_000_000_000n,
+      maxFee: 90_000_000_000n,
+      gasPrice: 60_000_000_000n,
+      timestamp: Date.now(),
     };
-    expect(snap.baseFeeWei).toBe(30_000_000_000n);
+    expect(snap.baseFee).toBe(30_000_000_000n);
   });
 });

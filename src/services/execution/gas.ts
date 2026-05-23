@@ -1,10 +1,4 @@
-export interface FeeSnapshot {
-  baseFee: bigint;
-  priorityFee: bigint;
-  maxFee: bigint;
-  gasPrice: bigint;
-  timestamp: number;
-}
+import { FeeSnapshot } from '../../core/types/common.ts';
 
 export interface GasOracleConfig {
   pollIntervalMs: number;

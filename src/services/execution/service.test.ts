@@ -32,7 +32,13 @@ describe('ExecutionService', () => {
   it('quarantines route on execution failure', async () => {
     const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, [mockSubmitTx]);
     
-    vi.spyOn(mockGasOracle, 'getSnapshot').mockReturnValue({ maxFee: 100n });
+    vi.spyOn(mockGasOracle, 'getSnapshot').mockReturnValue({ 
+      baseFee: 100n, 
+      priorityFee: 10n, 
+      maxFee: 110n, 
+      gasPrice: 110n, 
+      timestamp: Date.now() 
+    });
     vi.spyOn(mockNonceManager, "getNextNonce").mockReturnValue(1);
     mockSubmitTx.mockRejectedValue(new Error('tx failed'));
 

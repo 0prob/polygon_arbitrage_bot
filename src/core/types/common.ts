@@ -8,11 +8,11 @@ export type LoggerFn = (msg: string, ...args: unknown[]) => void;
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | "silent";
 /** Gas fee snapshot at a point in time */
 export interface FeeSnapshot {
-  baseFeeWei: bigint;
-  priorityFeeWei: bigint;
-  maxFeeWei: bigint;
-  gasPriceWei: bigint;
-  timestampMs: number;
+  baseFee: bigint;
+  priorityFee: bigint;
+  maxFee: bigint;
+  gasPrice: bigint;
+  timestamp: number;
 }
 /** Token metadata */
 export interface TokenMetadata {
