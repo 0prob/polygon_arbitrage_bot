@@ -52,18 +52,6 @@ export interface PipelineResult {
   maxGrossProfitMatic?: bigint;
 }
 
-export function getMicroAmount(tokenAddress: string): bigint {
-  const addr = tokenAddress.toLowerCase();
-  // Target roughly $10 USD for micro-simulation
-  if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
-    return 10n * 10n ** 6n;
-  }
-  if (addr === WBTC.toLowerCase()) {
-    return 15_000n; // ~ $10
-  }
-  return 10n ** 18n / 10n; // 0.1 unit of 18-decimal token
-}
-
 /** Run the full assessment pipeline: simulate, assess profitability, return only profitable. */
 export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): PipelineResult {
   const profitable: PipelineResult["profitable"] = [];
@@ -95,60 +83,95 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
         continue;
       }
 
-      // 1. Micro-simulation to find high-margin discrepancies
-      const microAmount = getMicroAmount(cycle.startToken);
-      const microResult = simulateRoute(cycle.edges, microAmount, stateCache);
-      
-      const microProfitBps = microAmount > 0n ? (microResult.profit * 10000n) / microAmount : -10000n;
-      
-      if (loggedCount <= 10) {
-        console.log(`  Micro: in=${microAmount}, out=${microResult.amountOut}, profit=${microResult.profit}, bps=${microProfitBps}`);
+      // 1. Generate geometric progression of input amounts
+      const baseAmount = getTestAmount(cycle.startToken);
+      let amt = baseAmount / 5000n;
+      if (amt === 0n) amt = 1n; // fallback for tiny decimals
+      const amounts: bigint[] = [];
+      while (amt <= baseAmount) {
+        amounts.push(amt);
+        amt = amt * 5n;
       }
-      
-      // If loss is > 2% (200 bps), it's definitely a junk cycle
-      if (microProfitBps < -200n) {
-        continue;
+      if (amounts[amounts.length - 1] < baseAmount) {
+        amounts.push(baseAmount);
       }
 
-      // 2. Real simulation for cycles that are close to breakeven or better
-      const testAmount = getTestAmount(cycle.startToken);
-      
-      // Predictive pruning based on impact for real amount
+      let bestResult: RouteSimulationResult | undefined;
+      let bestAssessment: ProfitAssessment | undefined;
       let isPruned = false;
-      for (const edge of cycle.edges) {
-        const impact = getEffectivePriceImpact(edge, testAmount, stateCache);
-        if (impact > MAX_IMPACT_THRESHOLD) {
-          isPruned = true;
-          break;
+      let worstProfitBps = 0n;
+
+      simulated++; // count cycle as simulated if we enter sweeping
+      
+      for (let i = 0; i < amounts.length; i++) {
+        const testAmt = amounts[i];
+        
+        // Predictive pruning based on impact for current amount
+        let cycleImpactTooHigh = false;
+        for (const edge of cycle.edges) {
+          const impact = getEffectivePriceImpact(edge, testAmt, stateCache);
+          if (impact > MAX_IMPACT_THRESHOLD) {
+            cycleImpactTooHigh = true;
+            break;
+          }
+        }
+
+        if (cycleImpactTooHigh) {
+          if (i === 0) {
+            isPruned = true; // Prune entirely if even the smallest bucket has too high impact
+          }
+          break; // Stop sweeping, impact only increases with larger amounts
+        }
+
+        const result = simulateRoute(cycle.edges, testAmt, stateCache);
+        
+        // Early exit based on micro-profitability on the smallest bucket
+        if (i === 0) {
+          const bps = testAmt > 0n ? (result.profit * 10000n) / testAmt : -10000n;
+          if (bps < -200n) {
+            // Unprofitable even without price impact -> prune early
+            worstProfitBps = bps;
+            break;
+          }
+        }
+
+        const assessment = computeProfit({
+          grossProfitInTokens: result.profit,
+          amountInTokens: result.amountIn,
+          gasUnits: result.totalGas,
+          gasPriceWei: options.gasPriceWei,
+          tokenToMaticRate: rate,
+          hopCount: cycle.hopCount,
+          minProfitMaticWei: options.minProfitMaticWei,
+          slippageBps: options.slippageBps,
+          revertRiskBps: options.revertRiskBps,
+          flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
+        });
+
+        const grossMatic = result.profit * rate;
+        if (maxGrossMatic === undefined || grossMatic > maxGrossMatic) {
+          maxGrossMatic = grossMatic;
+        }
+
+        // We want the highest netProfitAfterGasMaticWei (or netProfitAfterGasInTokens)
+        if (!bestAssessment || assessment.netProfitAfterGasMaticWei > bestAssessment.netProfitAfterGasMaticWei) {
+          bestResult = result;
+          bestAssessment = assessment;
         }
       }
+
       if (isPruned) {
         pruned++;
         continue;
       }
-
-      simulated++;
-      const result = simulateRoute(cycle.edges, testAmount, stateCache);
-      const assessment = computeProfit({
-        grossProfitInTokens: result.profit,
-        amountInTokens: result.amountIn,
-        gasUnits: result.totalGas,
-        gasPriceWei: options.gasPriceWei,
-        tokenToMaticRate: rate,
-        hopCount: cycle.hopCount,
-        minProfitMaticWei: options.minProfitMaticWei,
-        slippageBps: options.slippageBps,
-        revertRiskBps: options.revertRiskBps,
-        flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
-      });
-
-      const grossMatic = result.profit * rate;
-      if (maxGrossMatic === undefined || grossMatic > maxGrossMatic) {
-        maxGrossMatic = grossMatic;
+      
+      // If we broke early due to negative profit, bestResult might be undefined
+      if (!bestResult || !bestAssessment) {
+        continue;
       }
 
-      if (assessment.shouldExecute) {
-        profitable.push({ cycle, result, assessment });
+      if (bestAssessment.shouldExecute) {
+        profitable.push({ cycle, result: bestResult, assessment: bestAssessment });
       }
     } catch (err) {
       if (attempted % 10000 === 0) {
