@@ -25,8 +25,8 @@ export interface RuntimeContext {
   solverBot?: SolverBot;
 }
 
-export async function bootApplication(config: AppConfig, logBuffer?: string[]): Promise<RuntimeContext> {
-  const logger = createRootLogger({
+export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
+  const logger = passedLogger ?? createRootLogger({
     level: config.observability.logLevel,
     logSink: logBuffer,
   });

@@ -6,6 +6,8 @@ import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.t
 import { createRootLogger } from "../infra/observability/logger.ts";
 import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
+import { mkdir } from "fs/promises";
+import { join } from "path";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -13,12 +15,24 @@ async function main() {
 
   const bus = new EventBus();
 
+  let logger;
+  if (useTui) {
+    await mkdir(config.paths.dataDir, { recursive: true });
+    logger = createRootLogger({
+      level: config.observability.logLevel,
+      fileMode: true,
+      filePath: join(config.paths.dataDir, "runner.log"),
+    });
+  } else {
+    logger = createRootLogger({ level: config.observability.logLevel });
+  }
+
   const hyperIndex = createHyperIndexProcess({
     dataDir: config.paths.dataDir,
     polygonRpcUrl: config.rpc.polygonRpcUrls[0],
     katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
     envioApiToken: config.envioApiToken,
-    logger: createRootLogger({ level: config.observability.logLevel }),
+    logger,
     eventBus: useTui ? bus : undefined,
   });
 
@@ -29,7 +43,7 @@ async function main() {
   }
   const startedHyperIndex = hyperIndex.isRunning();
 
-  const ctx = await bootApplication(config);
+  const ctx = await bootApplication(config, undefined, logger);
 
   const tui = useTui ? createTui(bus) : null;
   if (tui) {
