@@ -141,58 +141,30 @@ export async function discoverPoolsFromHasura(
   adminSecret: string,
 ): Promise<HasuraPoolMeta[]> {
   try {
-    const [v3Result, balResult] = await Promise.all([
-      graphQLQuery(graphqlUrl, adminSecret, "{ V3PoolState { id } }"),
-      graphQLQuery(graphqlUrl, adminSecret, "{ BalancerPoolState { id } }"),
-    ]);
-
-    const v3Rows = (v3Result as Record<string, unknown>).V3PoolState as { id: string }[] | undefined;
-    const balRows = (balResult as Record<string, unknown>).BalancerPoolState as { id: string }[] | undefined;
-
-    const addrs = new Set<string>();
-    if (v3Rows) for (const r of v3Rows) addrs.add(r.id.toLowerCase());
-    if (balRows) for (const r of balRows) addrs.add(r.id.toLowerCase());
-
-    if (addrs.size === 0) return [];
-
-    const addrArr = [...addrs];
-    const chunkSize = 2000;
-    const chunks: string[][] = [];
-    for (let i = 0; i < addrArr.length; i += chunkSize) {
-      chunks.push(addrArr.slice(i, i + chunkSize));
-    }
-    const poolMetaResults = await Promise.all(
-      chunks.map(chunk =>
-        graphQLQuery(
-          graphqlUrl,
-          adminSecret,
-          `{ PoolMeta(where: {id: {_in: [${chunk.map(a => `"${a}"`).join(",")}]}}) { id protocol address tokens } }`,
-        ),
-      ),
+    const result = await graphQLQuery(
+      graphqlUrl,
+      adminSecret,
+      "{ PoolMeta { id protocol address tokens } }",
     );
 
-    const result: HasuraPoolMeta[] = [];
-    const seen = new Set<string>();
-    for (const data of poolMetaResults) {
-      const metaArr = (data as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; address: string; tokens: unknown }[];
-      if (!metaArr) continue;
-      for (const pm of metaArr) {
-        const addr = pm.id.toLowerCase();
-        if (seen.has(addr)) continue;
-        seen.add(addr);
-        let tokens: string[];
-        if (typeof pm.tokens === "string") {
-          try { tokens = JSON.parse(pm.tokens) as string[]; } catch { tokens = []; }
-        } else if (Array.isArray(pm.tokens)) {
-          tokens = pm.tokens.map((t: unknown) => String(t));
-        } else {
-          tokens = [];
-        }
-        result.push({ address: addr, protocol: pm.protocol, tokens: tokens.map(t => t.toLowerCase()) });
-      }
-    }
+    const metaArr = (result as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; address: string; tokens: unknown }[];
+    if (!metaArr) return [];
 
-    return result;
+    return metaArr.map(pm => {
+      let tokens: string[];
+      if (typeof pm.tokens === "string") {
+        try { tokens = JSON.parse(pm.tokens) as string[]; } catch { tokens = []; }
+      } else if (Array.isArray(pm.tokens)) {
+        tokens = pm.tokens.map((t: unknown) => String(t));
+      } else {
+        tokens = [];
+      }
+      return { 
+        address: pm.id.toLowerCase(), 
+        protocol: pm.protocol, 
+        tokens: tokens.map(t => t.toLowerCase()) 
+      };
+    });
   } catch (err) {
     console.warn("[hyperindex_graphql] discoverPoolsFromHasura failed:", err);
     return [];
