@@ -71,6 +71,7 @@ export const ExecutionConfigSchema = z.object({
   revertRiskBps: bigintFromString,
   flashLoanFeeBpsBalancer: bigintFromString,
   flashLoanFeeBpsAaveV3: bigintFromString,
+  flashLoanSource: z.enum(["BALANCER", "AAVE_V3"]).default("BALANCER"),
   privateRelayUrls: stringArrayFromCsv,
   submissionStrategy: SubmissionStrategySchema,
   dryRunBeforeSubmit: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),

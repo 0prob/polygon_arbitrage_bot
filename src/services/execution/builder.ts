@@ -1,5 +1,5 @@
 import { getAddress } from "viem";
-import { encodeRoute, encodeExecuteArb, computeRouteHash, type ExecutorCall } from "./calldata/index.ts";
+import { encodeRoute, encodeExecuteArb, encodeExecuteArbWithAave, computeRouteHash, type ExecutorCall } from "./calldata/index.ts";
 
 export interface BuilderEdgeInput {
   poolAddress: string;
@@ -41,6 +41,7 @@ export interface BuilderOptions {
   deadlineOffsetS?: number;
   slippageBps?: number;
   maxCalls?: number;
+  flashLoanSource?: "BALANCER" | "AAVE_V3";
 }
 
 export interface BuiltTransaction {
@@ -90,7 +91,7 @@ function assertValidRoute(route: BuilderRouteInput): void {
 
 export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, options: BuilderOptions = {}): BuiltTransaction {
   const { executorAddress, fromAddress } = config;
-  const { minProfit = 0n, deadlineOffsetS = DEFAULT_DEADLINE_OFFSET_S, slippageBps = 50, maxCalls = DEFAULT_MAX_CALLS } = options;
+  const { minProfit = 0n, deadlineOffsetS = DEFAULT_DEADLINE_OFFSET_S, slippageBps = 50, maxCalls = DEFAULT_MAX_CALLS, flashLoanSource = "BALANCER" } = options;
 
   if (!executorAddress) throw new Error("buildArbTx: executorAddress required");
   if (!fromAddress) throw new Error("buildArbTx: fromAddress required");
@@ -111,7 +112,9 @@ export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, opti
     throw new Error(`buildArbTx: route expands to ${calls.length} calls (max ${maxCalls})`);
   }
 
-  const encodedTx = encodeExecuteArb({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls });
+  const encodedTx = flashLoanSource === "AAVE_V3"
+    ? encodeExecuteArbWithAave({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls })
+    : encodeExecuteArb({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls });
   const routeHash = computeRouteHash(calls);
 
   return {

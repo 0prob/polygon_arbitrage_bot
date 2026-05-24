@@ -228,6 +228,38 @@ export const EXECUTOR_APPROVE_IF_NEEDED_ABI = [
   },
 ];
 
+export const EXECUTOR_AAVE_ABI = [
+  {
+    name: "executeArbWithAave",
+    type: "function",
+    inputs: [
+      { name: "flashToken", type: "address" },
+      { name: "flashAmount", type: "uint256" },
+      {
+        name: "params",
+        type: "tuple",
+        components: [
+          { name: "profitToken", type: "address" },
+          { name: "minProfit", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+          { name: "routeHash", type: "bytes32" },
+          {
+            name: "calls",
+            type: "tuple[]",
+            components: [
+              { name: "target", type: "address" },
+              { name: "value", type: "uint256" },
+              { name: "data", type: "bytes" },
+            ],
+          },
+        ],
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+];
+
 export const POOL_MANAGER_LOCK_ABI = [
   {
     name: "lock",

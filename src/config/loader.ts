@@ -38,6 +38,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   REVERT_RISK_BPS: ["execution", "revertRiskBps"],
   FLASH_LOAN_FEE_BPS: ["execution", "flashLoanFeeBpsBalancer"],
   FLASH_LOAN_FEE_BPS_AAVE: ["execution", "flashLoanFeeBpsAaveV3"],
+  FLASH_LOAN_SOURCE: ["execution", "flashLoanSource"],
   PRIVATE_RELAY_URLS: ["execution", "privateRelayUrls"],
   SUBMISSION_STRATEGY: ["execution", "submissionStrategy"],
   DRY_RUN_BEFORE_SUBMIT: ["execution", "dryRunBeforeSubmit"],

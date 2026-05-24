@@ -28,7 +28,7 @@ export class GasOracle {
   private static readonly HISTORY_SIZE = 10;
 
   constructor(
-    private config: GasOracleConfig = DEFAULT_GAS_CONFIG,
+    public config: GasOracleConfig = DEFAULT_GAS_CONFIG,
     private fetchGas: () => Promise<{ baseFee: bigint; priorityFee: bigint }>,
   ) {}
 

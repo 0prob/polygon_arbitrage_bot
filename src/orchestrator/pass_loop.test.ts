@@ -58,7 +58,7 @@ describe("runPassLoop", () => {
 
     const mockContext = {
       config: {
-        routing: { cycleRefreshIntervalMs: 0, maxHops: 2 },
+        routing: { cycleRefreshIntervalMs: 0, maxHops: 2, enumerationMaxPaths: 5000, enumerationMax4HopPaths: 2000, maxTotalPaths: 10000, maxPathsToOptimize: 2500, liquidityFloorUsd: 50, workerCount: 8, evalWorkerThreshold: 2 },
         execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
@@ -201,7 +201,7 @@ describe("runPassLoop", () => {
   it("calls findCycles with maxHops=4 on re-enumeration", async () => {
     const mockContext = {
       config: {
-        routing: { cycleRefreshIntervalMs: 0, maxHops: 4 },
+        routing: { cycleRefreshIntervalMs: 0, maxHops: 4, enumerationMaxPaths: 5000, enumerationMax4HopPaths: 2000, maxTotalPaths: 10000, maxPathsToOptimize: 2500, liquidityFloorUsd: 50, workerCount: 8, evalWorkerThreshold: 2 },
         execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
@@ -263,6 +263,6 @@ describe("runPassLoop", () => {
 
     await runPassLoop(mockContext, deps);
 
-    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 4, 250000, expect.any(Function));
+    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 4, 5000, expect.any(Function));
   });
 });

@@ -218,7 +218,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
   const DISCOVERY_INTERVAL = 60000;
-  const MAX_HOPS = 4;
+  const MAX_HOPS = ctx.config.routing.maxHops;
   const TIER_CHECK_INTERVAL = 5000;
   let lastTierCheck = 0;
 
@@ -227,6 +227,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       ctx.logger.info({ txHash: signal.data.txHash }, "New pool deployment detected in mempool! Scheduling rapid discovery.");
       // Force discovery on next iteration
       lastDiscoveryTime = 0;
+    }
+    if (signal.type === "large_swap") {
+      ctx.logger.info(
+        { pool: signal.data.poolAddress, size: signal.data.estimatedSwapSize.toString(), txHash: signal.data.txHash },
+        "Large swap detected in mempool — triggering fast re-simulation",
+      );
+      // Force re-enumeration on next cycle to catch backrunning opportunities
+      lastRefreshTime = 0;
     }
   });
 
@@ -312,7 +320,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedCycles = deps.enumerateCycles(
           cachedGraph!,
           MAX_HOPS,
-          250_000,
+          ctx.config.routing.enumerationMaxPaths,
           (key) => ctx.executionService.tracker.getWinRate(key),
         );
 
@@ -367,7 +375,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         tokenToMaticRates,
         slippageBps: ctx.config.execution.slippageBps,
         revertRiskBps: ctx.config.execution.revertRiskBps,
-        flashLoanSource: FlashLoanSource.BALANCER,
+        flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
       };
 
       const result = deps.evaluatePipeline(currentCycles, stateCache, options);
@@ -407,7 +415,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               const candidate = deps.buildExecutionCandidate(
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
-                { slippageBps: Number(options.slippageBps ?? 50n) },
+                { slippageBps: Number(options.slippageBps ?? 50n), flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER" },
               );
               candidates.push({ candidate, profitable, routeKey });
             } catch (err) {

@@ -42,7 +42,7 @@ export function findCycles(
   maxCycles: number = MAX_CYCLES_PER_PASS,
 ): FoundCycle[] {
   const cycles: FoundCycle[] = [];
-  const hopLimit = maxHops > 4 ? 4 : maxHops;
+  const hopLimit = Math.min(maxHops, 8);
   const { adjacency } = graph;
 
   for (const [startToken, firstEdges] of adjacency) {

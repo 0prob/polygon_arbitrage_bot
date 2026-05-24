@@ -105,7 +105,22 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     return Number(count);
   };
 
-  const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher);
+  const stuckTxHandler = async (nonce: number, maxFee: bigint): Promise<void> => {
+    if (walletClients.length === 0) return;
+    const wc = walletClients[0];
+    await wc.sendTransaction({
+      account: wc.account!,
+      chain: wc.chain,
+      to: wc.account!.address,
+      value: 0n,
+      data: "0x",
+      nonce,
+      maxFeePerGas: maxFee,
+      maxPriorityFeePerGas: maxFee / 2n,
+    }).catch(() => {});
+  };
+
+  const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
 
   const walletClients = config.execution.privateRelayUrls.length > 0
     ? config.execution.privateRelayUrls.map(url => createExecutionClient(url, config.execution.privateKey, 137))
@@ -168,6 +183,37 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     largeSwapThresholdWei: 10n ** 18n,
   };
   const mempoolService = new MempoolService(logger, mempoolOptions);
+
+  // Wire mempool pending tx watcher if WebSocket URL is configured
+  let mempoolWsClient: PublicClient | undefined;
+  if (config.mempool.websocketUrl) {
+    try {
+      const { createPublicClient, webSocket } = await import("viem");
+      mempoolWsClient = createPublicClient({
+        transport: webSocket(config.mempool.websocketUrl),
+      });
+      mempoolWsClient.watchPendingTransactions({
+        onTransactions: async (hashes) => {
+          for (const hash of hashes.slice(0, 10)) {
+            try {
+              const tx = await mempoolWsClient!.getTransaction({ hash });
+              if (tx && tx.to) {
+                mempoolService.processPendingTx({
+                  hash: tx.hash,
+                  to: tx.to,
+                  input: tx.input,
+                  value: tx.value?.toString() ?? "0",
+                });
+              }
+            } catch { /* tx may have been mined before we fetch it */ }
+          }
+        },
+      });
+      logger.info({ url: config.mempool.websocketUrl }, "Mempool pending tx watcher started");
+    } catch (err) {
+      logger.warn({ err }, "Failed to start mempool WebSocket watcher");
+    }
+  }
 
   let crossChainScanner: CrossChainScanner | undefined;
   let solverBot: SolverBot | undefined;

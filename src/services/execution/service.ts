@@ -1,16 +1,43 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { GasOracle } from "./gas.ts";
+import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { NonceManager } from "./nonce.ts";
 import { ExecutionTracker } from "./tracker.ts";
-import { createPublicClient, http, type PublicClient } from "viem";
+import { createPublicClient, http, getAddress, type PublicClient, decodeEventLog } from "viem";
 import { getChain } from "../../infra/rpc/chains.ts";
 import { SubmissionStrategy } from "../../config/schema.ts";
+
+const ERC20_TRANSFER_EVENT = {
+  anonymous: false,
+  inputs: [
+    { type: "address", name: "from", indexed: true },
+    { type: "address", name: "to", indexed: true },
+    { type: "uint256", name: "value", indexed: false },
+  ],
+  name: "Transfer",
+  type: "event",
+} as const;
+
+function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, executor: `0x${string}`): bigint {
+  let netProfit = 0n;
+  for (const log of logs) {
+    try {
+      const parsed = decodeEventLog({ abi: [ERC20_TRANSFER_EVENT], data: log.data as `0x${string}`, topics: log.topics as [`0x${string}`, ...`0x${string}`[]] });
+      if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
+        netProfit += parsed.args.value ?? 0n;
+      }
+    } catch { /* skip unmatched logs */ }
+  }
+  return netProfit;
+}
 
 export interface CandidateExecution {
   routeKey: string;
   calldata: string;
   targetAddress: string;
   value: bigint;
+  profitToken?: string;
+  expectedProfit?: bigint;
 }
 
 export interface ExecutionResult {
@@ -109,16 +136,25 @@ export class ExecutionService {
     this.logger.info({}, "ExecutionService stopped");
   }
 
-  private async submitTx(tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<{ txHash: string; endpoint: string }> {
+  private async submitTx(tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }, expectedProfit?: bigint): Promise<{ txHash: string; endpoint: string }> {
+    const snapshot = this.gasOracle.getSnapshot();
+    let adjustedFee = tx.maxFee;
+    if (expectedProfit && expectedProfit > 0n && snapshot) {
+      const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, this.gasOracle.config?.maxBidMultiplier ?? 3);
+      adjustedFee = snapshot.baseFee * 2n + scaled;
+    }
+
+    const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee });
+
     if (this.submissionStrategy === "private" && this.privateSubmitter) {
-      const txHash = await this.privateSubmitter(tx);
+      const txHash = await submit(this.privateSubmitter);
       return { txHash, endpoint: "private" };
     }
 
     if (this.submissionStrategy === "hybrid" && this.privateSubmitter) {
       try {
         const txHash = await Promise.race([
-          this.privateSubmitter(tx).then(h => ({ txHash: h, endpoint: "private" as const })),
+          submit(this.privateSubmitter).then(h => ({ txHash: h, endpoint: "private" as const })),
           new Promise<null>((_, reject) => setTimeout(() => reject(new Error("private timeout")), 2_000)),
         ]);
         if (txHash) return txHash;
@@ -128,7 +164,7 @@ export class ExecutionService {
     }
 
     const txHash = await Promise.any(
-      this.submitters.map(submit => submit(tx))
+      this.submitters.map(fn => submit(fn))
     );
     return { txHash, endpoint: "public" };
   }
@@ -146,27 +182,35 @@ export class ExecutionService {
       }
 
       const nonce = this.nonceManager.getNextNonce();
+      this.nonceManager.markInFlight(nonce);
       const { txHash, endpoint } = await this.submitTx({
         to: candidate.targetAddress,
         data: candidate.calldata,
         value: candidate.value,
         nonce,
         maxFee: fee.maxFee,
-      });
+      }, candidate.expectedProfit);
 
-      this.nonceManager.confirmNonce(nonce).catch(() => {});
+      this.nonceManager.confirmNonce(nonce);
       this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Transaction submitted");
 
       const receipt = await this._waitForReceipt(txHash);
       const success = !!receipt?.status;
       const gasUsed = receipt?.gasUsed ?? 0n;
 
+      let profit = 0n;
+      if (success && receipt && candidate.profitToken) {
+        const execAddr = getAddress(candidate.targetAddress);
+        const logs = (receipt as any).logs ?? [];
+        profit = parseTransferLogs(logs, execAddr);
+      }
+
       this.tracker.record({
         routeKey: candidate.routeKey,
         txHash,
         success,
         gasUsed,
-        profit: 0n,
+        profit,
         timestamp: Date.now(),
         pools: poolsFromRouteKey(candidate.routeKey),
         error: success ? undefined : "reverted",
@@ -214,6 +258,7 @@ export class ExecutionService {
       }
 
       const nonce = this.nonceManager.getNextNonce();
+      this.nonceManager.markInFlight(nonce);
       const promise = (async () => {
         try {
           const { txHash, endpoint } = await this.submitTx({
@@ -222,20 +267,32 @@ export class ExecutionService {
             value: candidate.value,
             nonce,
             maxFee: fee.maxFee,
-          });
-          this.nonceManager.confirmNonce(nonce).catch(() => {});
+          }, candidate.expectedProfit);
+          this.nonceManager.confirmNonce(nonce);
           this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
 
           const receipt = await this._waitForReceipt(txHash);
+          if (!receipt) {
+            this.nonceManager.markStale(nonce);
+            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
+          }
+
           const success = !!receipt?.status;
           const gasUsed = receipt?.gasUsed ?? 0n;
+
+          let profit = 0n;
+          if (success && receipt && candidate.profitToken) {
+            const execAddr = getAddress(candidate.targetAddress);
+            const logs = (receipt as any).logs ?? [];
+            profit = parseTransferLogs(logs, execAddr);
+          }
 
           this.tracker.record({
             routeKey: candidate.routeKey,
             txHash,
             success,
             gasUsed,
-            profit: 0n,
+            profit,
             timestamp: Date.now(),
             pools: poolsFromRouteKey(candidate.routeKey),
             error: success ? undefined : "reverted",
@@ -264,14 +321,14 @@ export class ExecutionService {
     return results;
   }
 
-  private async _waitForReceipt(txHash: string): Promise<{ status: boolean; gasUsed: bigint } | null> {
+  private async _waitForReceipt(txHash: string): Promise<{ status: boolean; gasUsed: bigint; logs: Array<{ topics: string[]; data: string }> } | null> {
     if (!this.receiptClient) return null;
     const deadline = Date.now() + this.receiptTimeoutMs;
     while (Date.now() < deadline) {
       try {
         const receipt = await this.receiptClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
         if (receipt) {
-          return { status: receipt.status === "success", gasUsed: receipt.gasUsed };
+          return { status: receipt.status === "success", gasUsed: receipt.gasUsed, logs: (receipt as any).logs ?? [] };
         }
       } catch {
         // Receipt not yet available

@@ -7,7 +7,7 @@ import type { NonceManager } from './nonce.ts';
 describe('ExecutionService', () => {
   const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() } as unknown as Logger;
   const mockGasOracle = { start: vi.fn(), stop: vi.fn(), getSnapshot: vi.fn() } as unknown as GasOracle;
-  const mockNonceManager = { initialize: vi.fn(), getNextNonce: vi.fn(), confirmNonce: vi.fn() } as unknown as NonceManager;
+  const mockNonceManager = { initialize: vi.fn(), getNextNonce: vi.fn(), confirmNonce: vi.fn(), markInFlight: vi.fn(), markStale: vi.fn() } as unknown as NonceManager;
   const mockSubmitTx = vi.fn();
 
   it('quarantines route on gas data failure', async () => {

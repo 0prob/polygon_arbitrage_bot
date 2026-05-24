@@ -5,7 +5,7 @@ import {
   encodeV2Hop, encodeV3Hop, encodeKyberElasticHop, encodeDodoHop, encodeWoofiHop,
   encodeCurveHop, encodeBalancerHop, encodeV4Hop,
 } from "./hops.ts";
-import { EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI } from "./abis.ts";
+import { EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI, EXECUTOR_AAVE_ABI } from "./abis.ts";
 import type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput } from "./types.ts";
 
 export type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput };
@@ -108,6 +108,16 @@ export function encodeExecuteArb(input: ExecuteArbInput) {
   const data = encodeFunctionData({
     abi: EXECUTOR_ABI,
     functionName: "executeArb",
+    args: [getAddress(input.flashToken), input.flashAmount, flashParams],
+  });
+  return { to: getAddress(input.executorAddress), data, value: 0n };
+}
+
+export function encodeExecuteArbWithAave(input: ExecuteArbInput) {
+  const flashParams = buildFlashParams(input);
+  const data = encodeFunctionData({
+    abi: EXECUTOR_AAVE_ABI,
+    functionName: "executeArbWithAave",
     args: [getAddress(input.flashToken), input.flashAmount, flashParams],
   });
   return { to: getAddress(input.executorAddress), data, value: 0n };

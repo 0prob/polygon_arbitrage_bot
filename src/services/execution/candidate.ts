@@ -6,6 +6,7 @@ export type ProfitableResult = PipelineResult["profitable"][number];
 
 export interface CandidateBuilderOptions {
   slippageBps: number;
+  flashLoanSource?: "BALANCER" | "AAVE_V3";
 }
 
 export function buildExecutionCandidate(
@@ -42,12 +43,14 @@ export function buildExecutionCandidate(
   };
 
   const minProfit = (profitable.assessment.netProfitAfterGasMaticWei * 70n) / 100n;
-  const built = buildArbTx(route, config, { slippageBps: options.slippageBps, minProfit });
+  const built = buildArbTx(route, config, { slippageBps: options.slippageBps, minProfit, flashLoanSource: options.flashLoanSource });
 
   return {
     routeKey: built.routeHash,
     calldata: built.data,
     targetAddress: built.to,
     value: built.value,
+    profitToken: profitable.cycle.startToken,
+    expectedProfit: profitable.assessment.netProfitAfterGas,
   };
 }

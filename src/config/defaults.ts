@@ -43,6 +43,7 @@ export const DEFAULTS = {
     revertRiskBps: 500n, // 5% base
     flashLoanFeeBpsBalancer: 0n,
     flashLoanFeeBpsAaveV3: 5n,
+    flashLoanSource: "BALANCER" as const,
     privateRelayUrls: [] as string[],
     submissionStrategy: "hybrid" as const,
     dryRunBeforeSubmit: true,
