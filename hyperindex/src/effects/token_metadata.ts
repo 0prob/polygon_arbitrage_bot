@@ -24,7 +24,7 @@ export const fetchTokenMeta = createEffect(
     input: { address: S.string },
     output: { address: S.string, decimals: S.number },
     rateLimit: { calls: 100, per: "second" },
-    cache: true,
+    cache: false,
   },
   async ({ input }) => {
     const cached = STATIC_TOKEN_DECIMALS[input.address.toLowerCase()];
@@ -36,7 +36,7 @@ export const fetchTokenMeta = createEffect(
         abi: ERC20_ABI,
         functionName: "decimals",
       });
-      return { address: input.address, decimals: Number(decimals) };
+      return { address: input.address, decimals: safeDecimals(Number(decimals)) };
     } catch {
       return { address: input.address, decimals: 18 };
     }
