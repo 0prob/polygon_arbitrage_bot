@@ -30,6 +30,8 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
     executed: ctx.metrics.executionsAttempted,
     succeeded: ctx.metrics.executionsSuccessful,
     failed: ctx.metrics.executionsFailed,
+    reverts: ctx.metrics.executionReverts,
+    trackedRoutes: ctx.metrics.trackedRoutes,
     gasPriceGwei: 0,
     pools: 0,
     cyclesPerMin: 0,

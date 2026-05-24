@@ -11,25 +11,9 @@ export const DEFAULTS = {
     ],
     executionRpcUrl: "" as string, // required, no default
     gasEstimationRpcUrl: "" as string, // required, no default
-    hyperRpcUrl: "https://polygon.rpc.hypersync.xyz",
     requestTimeoutMs: 8_000,
     batchWaitMs: 16,
     batchSize: 100,
-  },
-  hypersync: {
-    url: "https://polygon.hypersync.xyz",
-    httpReqTimeoutMs: 60_000,
-    maxRetries: 5,
-    retryBaseMs: 200,
-    retryCeilingMs: 5_000,
-    retryBackoffMs: 1_000,
-    batchSize: 5_000,
-    maxBlocksPerRequest: 1_000_000,
-    maxAddressFilter: 25_000,
-    maxFiltersPerRequest: 50,
-    streamConcurrency: 20,
-    streamBatchSize: 1_000,
-    proactiveRateLimitSleepMs: 0,
   },
   gas: {
     pollIntervalMs: 2_000,
@@ -60,6 +44,7 @@ export const DEFAULTS = {
     flashLoanFeeBpsBalancer: 0n,
     flashLoanFeeBpsAaveV3: 5n,
     privateRelayUrls: [] as string[],
+    submissionStrategy: "hybrid" as const,
     dryRunBeforeSubmit: true,
     receiptTimeoutMs: 30_000,
     maxConcurrentExecutions: 1,

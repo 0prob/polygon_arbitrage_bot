@@ -161,7 +161,7 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       }
     } catch (err) {
       if (attempted % 10000 === 0) {
-        console.warn(`[pipeline] Error in cycle ${attempted}:`, err instanceof Error ? err.message : err);
+        process.stderr.write(`[pipeline] Error in cycle ${attempted}: ${err instanceof Error ? err.message : err}\n`);
       }
       continue;
     }

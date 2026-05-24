@@ -3,13 +3,17 @@ import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
-import { ExecutionService } from "../services/execution/service.ts";
+import { ExecutionService, type SubmitTxFn } from "../services/execution/service.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
 import { CrossChainScanner } from "../services/crosschain/scanner.ts";
 import { SolverBot } from "../services/crosschain/solver.ts";
 import { createReadClient, createExecutionClient } from "../infra/rpc/client_factory.ts";
+import { ServiceRegistry } from "../infra/di/service_registry.ts";
+import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
+import { TierManager } from "../infra/resilience/tier_manager.ts";
+import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 
 import { type Metrics } from "../core/types/metrics.ts";
 
@@ -26,6 +30,11 @@ export interface RuntimeContext {
   crossChainScanner?: CrossChainScanner;
   solverBot?: SolverBot;
   metrics: Metrics;
+  services: ServiceRegistry;
+  rpcCircuit: CircuitBreaker;
+  hasuraCircuit: CircuitBreaker;
+  tierManager: TierManager;
+  hyperIndexMonitor?: HyperIndexMonitor;
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
@@ -44,6 +53,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     executionsAttempted: 0,
     executionsSuccessful: 0,
     executionsFailed: 0,
+    executionReverts: 0,
+    trackedRoutes: 0,
     startTime: Date.now(),
     peakCyclesPerMinute: 0,
     currentCyclesPerMinute: 0,
@@ -122,7 +133,35 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     };
   });
 
-  const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitters);
+  let privateSubmitter: SubmitTxFn | undefined;
+  if (config.execution.submissionStrategy !== "public" && config.execution.privateRelayUrls.length > 0) {
+    const privateClients = config.execution.privateRelayUrls.map(url =>
+      createExecutionClient(url, config.execution.privateKey, 137)
+    );
+    privateClients.forEach(wc => {
+      if (!wc.account) throw new Error("Private relay client is not configured with an account.");
+    });
+    privateSubmitter = async (tx) => {
+      const hash = await privateClients[0].sendTransaction({
+        account: privateClients[0].account!,
+        chain: privateClients[0].chain,
+        to: tx.to as `0x${string}`,
+        data: tx.data as `0x${string}`,
+        value: tx.value,
+        nonce: tx.nonce,
+        maxFeePerGas: tx.maxFee,
+        maxPriorityFeePerGas: tx.maxFee / 2n,
+      });
+      return hash;
+    };
+  }
+
+  const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitters, {
+    submissionStrategy: config.execution.submissionStrategy,
+    privateSubmitter,
+    chainId: config.execution.chainId,
+    receiptTimeoutMs: config.execution.receiptTimeoutMs,
+  });
 
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
@@ -153,6 +192,41 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     });
   }
 
+  const services = new ServiceRegistry();
+  services.register("logger", logger);
+  services.register("execution", executionService, {
+    prepare: async () => {},
+    start: async () => { await executionService.start(); },
+    stop: async () => { executionService.stop(); },
+  });
+  services.register("mempool", mempoolService, {
+    prepare: async () => {},
+    start: async () => { await mempoolService.start(); },
+    stop: async () => { mempoolService.stop(); },
+  });
+  services.register("gasOracle", gasOracle, {
+    prepare: async () => {},
+    start: async () => { await gasOracle.start(); },
+    stop: async () => { gasOracle.stop(); },
+  });
+
+  const rpcCircuit = new CircuitBreaker("polygon-rpc", {
+    failureThreshold: 3,
+    cooldownMs: 30_000,
+  });
+  const hasuraCircuit = new CircuitBreaker("hasura", {
+    failureThreshold: 5,
+    cooldownMs: 60_000,
+  });
+  const tierManager = new TierManager(rpcCircuit, hasuraCircuit, {
+    isHealthy: () => true,
+    isRunning: () => true,
+  } as any);
+
+  services.register("rpcCircuit", rpcCircuit);
+  services.register("hasuraCircuit", hasuraCircuit);
+  services.register("tierManager", tierManager);
+
   logger.info("Ready — entering pass loop");
 
   return {
@@ -168,5 +242,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     crossChainScanner,
     solverBot,
     metrics,
+    services,
+    rpcCircuit,
+    hasuraCircuit,
+    tierManager,
   };
 }

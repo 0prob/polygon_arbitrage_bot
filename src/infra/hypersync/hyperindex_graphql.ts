@@ -123,7 +123,7 @@ export async function buildStateCacheFromGraphQL(
 
     _lastFetchTime = Date.now();
   } catch (err) {
-    console.warn("[hyperindex_graphql] buildStateCacheFromGraphQL failed:", err);
+    process.stderr.write(`[hyperindex_graphql] buildStateCacheFromGraphQL failed: ${err instanceof Error ? err.message : err}\n`);
   }
 
   return _cachedState;
@@ -181,7 +181,7 @@ export async function discoverPoolsFromHasura(
       };
     });
   } catch (err) {
-    console.warn("[hyperindex_graphql] discoverPoolsFromHasura failed:", err);
+    process.stderr.write(`[hyperindex_graphql] discoverPoolsFromHasura failed: ${err instanceof Error ? err.message : err}\n`);
     return [];
   }
 }

@@ -1,3 +1,60 @@
+// ─── Typed error classes ─────────────────────────────────────────
+
+export class ArbBotError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly recoverable: boolean = true,
+  ) {
+    super(message);
+    this.name = "ArbBotError";
+  }
+}
+
+export class RpcError extends ArbBotError {
+  constructor(message: string, public readonly url?: string) {
+    super(message, "RPC_ERROR", true);
+    this.name = "RpcError";
+  }
+}
+
+export class CircuitOpenError extends ArbBotError {
+  constructor(breakerName: string, public readonly msRemaining: number) {
+    super(`Circuit '${breakerName}' is open (${msRemaining}ms remaining)`, "CIRCUIT_OPEN", true);
+    this.name = "CircuitOpenError";
+  }
+}
+
+export class SimulationError extends ArbBotError {
+  constructor(message: string, public readonly poolAddress?: string) {
+    super(message, "SIMULATION_ERROR", true);
+    this.name = "SimulationError";
+  }
+}
+
+export class CalldataError extends ArbBotError {
+  constructor(message: string, public readonly protocol?: string) {
+    super(message, "CALLDATA_ERROR", false);
+    this.name = "CalldataError";
+  }
+}
+
+export class ConfigError extends ArbBotError {
+  constructor(message: string) {
+    super(message, "CONFIG_ERROR", false);
+    this.name = "ConfigError";
+  }
+}
+
+export class ExecutionError extends ArbBotError {
+  constructor(message: string, public readonly txHash?: string) {
+    super(message, "EXECUTION_ERROR", false);
+    this.name = "ExecutionError";
+  }
+}
+
+// ─── Utilities ──────────────────────────────────────────────────
+
 function objectLabel(value: object) {
   const tag = Object.prototype.toString.call(value).slice(8, -1);
   if (tag && tag !== "Object") return tag;
@@ -57,6 +114,7 @@ function objectErrorMessage(err: object) {
 }
 
 export function errorMessage(err: unknown, options: { includeStack?: boolean } = {}) {
+  if (err instanceof ArbBotError) return `[${err.code}] ${err.message}`;
   if (err instanceof Error) {
     return options.includeStack ? err.stack || err.message : err.message;
   }
@@ -68,6 +126,11 @@ export function errorMessage(err: unknown, options: { includeStack?: boolean } =
     if (summarized) return summarized;
   }
   return String(err);
+}
+
+export function isRecoverable(err: unknown): boolean {
+  if (err instanceof ArbBotError) return err.recoverable;
+  return true;
 }
 
 export function asRecord(value: unknown): Record<string, unknown> {

@@ -30,29 +30,11 @@ export const RpcConfigSchema = z.object({
   polygonRpcUrls: stringArrayFromCsv,
   executionRpcUrl: z.string().min(1, "EXECUTION_RPC is required"),
   gasEstimationRpcUrl: z.string().min(1, "GAS_ESTIMATION_RPC is required"),
-  hyperRpcUrl: z.string().url(),
   requestTimeoutMs: numberFromString.int().positive(),
   batchWaitMs: numberFromString.int().nonnegative(),
   batchSize: numberFromString.int().positive(),
 });
 export type RpcConfig = z.infer<typeof RpcConfigSchema>;
-
-export const HypersyncConfigSchema = z.object({
-  url: z.string().url(),
-  httpReqTimeoutMs: numberFromString.int().positive(),
-  maxRetries: numberFromString.int().nonnegative(),
-  retryBaseMs: numberFromString.int().nonnegative(),
-  retryCeilingMs: numberFromString.int().nonnegative(),
-  retryBackoffMs: numberFromString.int().nonnegative(),
-  batchSize: numberFromString.int().positive(),
-  maxBlocksPerRequest: numberFromString.int().positive(),
-  maxAddressFilter: numberFromString.int().positive(),
-  maxFiltersPerRequest: numberFromString.int().positive(),
-  streamConcurrency: numberFromString.int().positive(),
-  streamBatchSize: numberFromString.int().positive(),
-  proactiveRateLimitSleepMs: numberFromString.int().nonnegative(),
-});
-export type HypersyncConfig = z.infer<typeof HypersyncConfigSchema>;
 
 export const GasConfigSchema = z.object({
   pollIntervalMs: numberFromString.int().positive(),
@@ -80,6 +62,9 @@ export const RoutingConfigSchema = z.object({
 });
 export type RoutingConfig = z.infer<typeof RoutingConfigSchema>;
 
+export const SubmissionStrategySchema = z.enum(["public", "private", "hybrid"]);
+export type SubmissionStrategy = z.infer<typeof SubmissionStrategySchema>;
+
 export const ExecutionConfigSchema = z.object({
   minProfitWei: bigintFromString,
   slippageBps: bigintFromString,
@@ -87,8 +72,10 @@ export const ExecutionConfigSchema = z.object({
   flashLoanFeeBpsBalancer: bigintFromString,
   flashLoanFeeBpsAaveV3: bigintFromString,
   privateRelayUrls: stringArrayFromCsv,
+  submissionStrategy: SubmissionStrategySchema,
   dryRunBeforeSubmit: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
   receiptTimeoutMs: numberFromString.int().positive(),
+  receiptPollMs: numberFromString.int().positive().default(500),
   maxConcurrentExecutions: numberFromString.int().positive(),
   executorAddress: z.string().min(1, "EXECUTOR_ADDRESS is required"),
   privateKey: z.string().regex(/^0x[0-9a-fA-F]{64}$/, "PRIVATE_KEY must be 0x + 64 hex chars"),
@@ -139,7 +126,6 @@ export type PathsConfig = z.infer<typeof PathsConfigSchema>;
 
 export const AppConfigSchema = z.object({
   rpc: RpcConfigSchema,
-  hypersync: HypersyncConfigSchema,
   gas: GasConfigSchema,
   routing: RoutingConfigSchema,
   execution: ExecutionConfigSchema,

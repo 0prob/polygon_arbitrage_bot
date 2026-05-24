@@ -3,8 +3,6 @@ description: "High-performance DEX indexing for arbitrage opportunities"
 rollback_on_reorg: false
 raw_events: false
 full_batch_size: 5000
-
-handlers: src/handlers
 chains:
   - id: 137
     start_block: ${POLYGON_START_BLOCK:-5484533}

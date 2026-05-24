@@ -2,11 +2,14 @@ import { indexer } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 
-async function handleDodoDeployed({ event, context }: any) {
-  const base = event.params.baseToken.toLowerCase();
-  const quote = event.params.quoteToken.toLowerCase();
-  const pool = (event.params.dvm || event.params.dpp || event.params.dsp).toLowerCase();
-
+async function handleDodoPool(
+  context: any,
+  pool: string,
+  base: string,
+  quote: string,
+  blockNumber: number,
+  txHash: string | undefined,
+) {
   context.PoolMeta.set({
     id: pool,
     address: pool,
@@ -14,8 +17,8 @@ async function handleDodoDeployed({ event, context }: any) {
     tokens: [base, quote],
     fee: 10,
     tickSpacing: undefined,
-    createdBlock: Number(event.block.number),
-    createdTx: event.transaction.hash,
+    createdBlock: blockNumber,
+    createdTx: txHash,
     poolId: undefined,
   });
 
@@ -23,7 +26,7 @@ async function handleDodoDeployed({ event, context }: any) {
   context.DodoPoolState.set({
     id: pool,
     address: pool,
-    lastUpdatedBlock: Number(event.block.number),
+    lastUpdatedBlock: blockNumber,
     baseReserve: meta.baseReserve,
     quoteReserve: meta.quoteReserve,
     targetBase: meta.baseTarget,
@@ -41,6 +44,44 @@ async function handleDodoDeployed({ event, context }: any) {
   context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
 }
 
-indexer.onEvent({ contract: "DodoFactory", event: "DVMDeployed" }, handleDodoDeployed);
-indexer.onEvent({ contract: "DodoFactory", event: "DPPDeployed" }, handleDodoDeployed);
-indexer.onEvent({ contract: "DodoFactory", event: "DSPDeployed" }, handleDodoDeployed);
+indexer.onEvent(
+  { contract: "DodoFactory", event: "DVMDeployed" },
+  async ({ event, context }) => {
+    await handleDodoPool(
+      context,
+      event.params.dvm.toLowerCase(),
+      event.params.baseToken.toLowerCase(),
+      event.params.quoteToken.toLowerCase(),
+      Number(event.block.number),
+      event.transaction.hash,
+    );
+  },
+);
+
+indexer.onEvent(
+  { contract: "DodoFactory", event: "DPPDeployed" },
+  async ({ event, context }) => {
+    await handleDodoPool(
+      context,
+      event.params.dpp.toLowerCase(),
+      event.params.baseToken.toLowerCase(),
+      event.params.quoteToken.toLowerCase(),
+      Number(event.block.number),
+      event.transaction.hash,
+    );
+  },
+);
+
+indexer.onEvent(
+  { contract: "DodoFactory", event: "DSPDeployed" },
+  async ({ event, context }) => {
+    await handleDodoPool(
+      context,
+      event.params.dsp.toLowerCase(),
+      event.params.baseToken.toLowerCase(),
+      event.params.quoteToken.toLowerCase(),
+      Number(event.block.number),
+      event.transaction.hash,
+    );
+  },
+);

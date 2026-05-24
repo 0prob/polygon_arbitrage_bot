@@ -46,8 +46,10 @@ export class SolverBot {
   private katanaWallet: WalletClient;
   private polyAccount: ReturnType<typeof privateKeyToAccount>;
   private kataAccount: ReturnType<typeof privateKeyToAccount>;
+  private logger: { info: Function; error: Function; warn: Function; debug: Function };
 
-  constructor(config: SolverBotConfig) {
+  constructor(config: SolverBotConfig, logger?: { info: Function; error: Function; warn: Function; debug: Function }) {
+    this.logger = logger ?? { info: console.log, error: console.error, warn: console.warn, debug: () => {} };
     this.config = config;
     this.polyAccount = privateKeyToAccount(config.polygonSolverKey);
     this.kataAccount = privateKeyToAccount(config.katanaSolverKey);
@@ -123,10 +125,10 @@ export class SolverBot {
       });
       await this.katanaClient.waitForTransactionReceipt({ hash: kataHash });
 
-      console.log(`Cross-chain arb completed: orderId=${orderId}, kataHash=${kataHash}`);
+      this.logger.info(`Cross-chain arb completed: orderId=${orderId}, kataHash=${kataHash}`);
       return true;
     } catch (err) {
-      console.error("Cross-chain arb failed:", err);
+      this.logger.error("Cross-chain arb failed:", err);
       return false;
     }
   }

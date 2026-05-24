@@ -23,6 +23,17 @@ function feeLogWeight(feeBps: bigint): number {
   return -Math.log(factor);
 }
 
+export function scoreCycleWithFeedback(
+  logWeight: number,
+  routeKey: string,
+  getWinRate: (key: string) => number,
+): number {
+  const winRate = getWinRate(routeKey);
+  if (winRate <= 0) return logWeight;
+  const feedbackBonus = Math.log(1 + 10 * winRate);
+  return logWeight - feedbackBonus;
+}
+
 const MAX_CYCLES_PER_PASS = 250_000;
 
 export function findCycles(
@@ -148,7 +159,19 @@ export function enumerateCycles(
   graph: RoutingGraph,
   maxHops = 4,
   maxCycles = MAX_CYCLES_PER_PASS,
+  getWinRate?: (key: string) => number,
 ): FoundCycle[] {
   const allCycles = findCycles(graph, maxHops, maxCycles);
+  if (getWinRate) {
+    return allCycles
+      .sort((a, b) => {
+        const keyA = routeKeyFromEdges(a.edges, a.startToken);
+        const keyB = routeKeyFromEdges(b.edges, b.startToken);
+        const scoreA = scoreCycleWithFeedback(a.logWeight, keyA, getWinRate);
+        const scoreB = scoreCycleWithFeedback(b.logWeight, keyB, getWinRate);
+        return scoreA - scoreB;
+      })
+      .slice(0, maxCycles);
+  }
   return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);
 }

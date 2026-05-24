@@ -4,7 +4,8 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/core/**", "src/infra/**"],
+      include: ["src/**"],
+      exclude: ["src/**/*.test.ts", "src/**/*.d.ts"],
     },
   },
 });

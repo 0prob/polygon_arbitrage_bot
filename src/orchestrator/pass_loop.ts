@@ -1,10 +1,10 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, findCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
+import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges } from "../services/strategy/finder.ts";
 import { type RoutingGraph, buildGraph } from "../services/strategy/graph.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
-import type { CandidateExecution } from "../services/execution/service.ts";
-import { buildStateCacheFromGraphQL, discoverPoolsFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
+import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
+import { discoverPoolsFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { WMATIC } from "../config/addresses.ts";
@@ -77,8 +77,8 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
         if (meta.protocol.includes("v2")) {
           const res = results[resultIdx++];
           if (res?.status === "success" && res.result) {
-            if (resultIdx <= 5) {
-              console.log(`[multicall-diag] V2 Result for ${addr}:`, JSON.stringify(res.result, (_, v) => typeof v === "bigint" ? v.toString() : v));
+            if (resultIdx <= 5 && process.env.DEBUG_MULTICALL) {
+              process.stderr.write(`[multicall-diag] V2 Result for ${addr}: ${JSON.stringify(res.result, (_, v) => typeof v === "bigint" ? v.toString() : v)}\n`);
             }
             const r = res.result as any;
             const r0 = r[0] !== undefined ? r[0] : r.reserve0;
@@ -129,8 +129,8 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
   findCycles: typeof findCycles;
+  enumerateCycles: typeof enumerateCycles;
   evaluatePipeline: typeof evaluatePipeline;
-  buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
   discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
   routeKeyFromEdges: (edges: any[], startToken: `0x${string}`) => string;
   buildExecutionCandidate: typeof buildExecutionCandidate;
@@ -191,8 +191,8 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
 export const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
   findCycles,
+  enumerateCycles,
   evaluatePipeline,
-  buildStateCacheFromGraphQL,
   discoverPoolsFromHasura,
   routeKeyFromEdges,
   buildExecutionCandidate,
@@ -219,6 +219,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const LF_INTERVAL = 1000;
   const DISCOVERY_INTERVAL = 60000;
   const MAX_HOPS = 4;
+  const TIER_CHECK_INTERVAL = 5000;
+  let lastTierCheck = 0;
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
@@ -248,10 +250,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   try {
   ctx.metrics.cycles++;
+
+  if (now - lastTierCheck > TIER_CHECK_INTERVAL) {
+    const tier = ctx.tierManager.assess();
+    lastTierCheck = now;
+    ctx.logger.debug({ tier }, ctx.tierManager.label());
+  }
   
   let pools = hasuraPoolsCache ?? ctx.getPools();
 
-  if (pools.length === 0 || now - lastDiscoveryTime > DISCOVERY_INTERVAL) {
+  if (pools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())) {
     const graphqlUrl = ctx.config.hasuraUrl;
     const secret = ctx.config.hasuraSecret;
     if (pools.length === 0) {
@@ -261,7 +269,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     }
 
     try {
-      const hasuraPools = await deps.discoverPoolsFromHasura(graphqlUrl, secret);
+      const hasuraPools = await ctx.rpcCircuit.execute(
+        () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
+        async () => { ctx.logger.warn({}, "Hasura circuit open, returning empty pool list"); return []; },
+      );
       if (hasuraPools.length > 0) {
         hasuraPoolsCache = hasuraPools.map(p => ({
           address: p.address as `0x${string}`,
@@ -298,7 +309,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
       
       if (shouldReEnumerate || !cachedGraph) {
-        cachedCycles = deps.findCycles(cachedGraph!, MAX_HOPS);
+        cachedCycles = deps.enumerateCycles(
+          cachedGraph!,
+          MAX_HOPS,
+          250_000,
+          (key) => ctx.executionService.tracker.getWinRate(key),
+        );
 
         lastRefreshTime = now;
         const poolsPerProtocol: Record<string, number> = {};
@@ -359,6 +375,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       ctx.metrics.opportunitiesFound += result.profitableCount;
 
       if (result.attempted > 0) {
+        const tier = ctx.tierManager.getCurrent();
         ctx.logger.info(
           {
             attempted: result.attempted,
@@ -370,47 +387,79 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             rates: tokenToMaticRates.size,
             cache: stateCache.size,
             isLowFreq: shouldReEnumerate,
+            tier,
           },
           "Cycle assessment complete",
         );
 
-        for (const profitable of result.profitable) {
-          if (!ctx.isRunning) break;
+        if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
+          ctx.logger.info({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
+        } else if (result.profitable.length > 0) {
+          const candidates: { candidate: CandidateExecution; profitable: typeof result.profitable[number]; routeKey: string }[] = [];
 
-          const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
-          bus?.emit({ type: "opportunity_found", routeKey, profitWei: profitable.assessment.netProfitAfterGas });
+          for (const profitable of result.profitable) {
+            if (!ctx.isRunning) break;
 
-          let candidate: CandidateExecution;
-          try {
-            candidate = deps.buildExecutionCandidate(
-              profitable,
-              { executorAddress, fromAddress: executorAddress },
-              { slippageBps: Number(options.slippageBps ?? 50n) },
-            );
-          } catch (err) {
-            ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
-            ctx.metrics.totalErrors++;
-            ctx.metrics.lastErrorTime = Date.now();
-            ctx.metrics.lastErrorMessage = "Failed to build tx for cycle";
-            continue;
+            const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+            bus?.emit({ type: "opportunity_found", routeKey, profitWei: profitable.assessment.netProfitAfterGas });
+
+            try {
+              const candidate = deps.buildExecutionCandidate(
+                profitable,
+                { executorAddress, fromAddress: executorAddress },
+                { slippageBps: Number(options.slippageBps ?? 50n) },
+              );
+              candidates.push({ candidate, profitable, routeKey });
+            } catch (err) {
+              ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
+              ctx.metrics.totalErrors++;
+              ctx.metrics.lastErrorTime = Date.now();
+              ctx.metrics.lastErrorMessage = "Failed to build tx for cycle";
+            }
           }
 
-          ctx.logger.info({ routeKey, profit: profitable.assessment.netProfitAfterGas }, "Executing opportunity");
-          bus?.emit({ type: "execution_submitted", routeKey });
-          ctx.metrics.executionsAttempted++;
-          const execResult = await ctx.executionService.execute(candidate);
+          if (candidates.length > 0) {
+            const candidateExecs = candidates.map(c => c.candidate);
+            const groups = groupCompatibleCandidates(candidateExecs);
 
-          if (execResult.success) {
-            ctx.metrics.executionsSuccessful++;
-            ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
-            bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash });
-          } else {
-            ctx.metrics.executionsFailed++;
-            ctx.logger.warn({ error: execResult.error, routeKey }, "Execution failed");
-            ctx.metrics.totalErrors++;
-            ctx.metrics.lastErrorTime = Date.now();
-            ctx.metrics.lastErrorMessage = "Execution failed: " + (execResult.error ?? "");
-            bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error });
+            ctx.logger.info(
+              { total: candidates.length, groups: groups.length },
+              "Executing opportunities in batches",
+            );
+
+            for (const group of groups) {
+              if (!ctx.isRunning) break;
+              ctx.metrics.executionsAttempted += group.length;
+
+              const groupRouteKeys = group.map(c => c.routeKey);
+              ctx.logger.info({ groupSize: group.length, routeKeys: groupRouteKeys }, "Executing batch");
+
+              const results = group.length === 1
+                ? [await ctx.executionService.execute(group[0])]
+                : await ctx.executionService.batchExecute(group);
+
+              for (let i = 0; i < results.length; i++) {
+                const execResult = results[i];
+                const routeKey = groupRouteKeys[i];
+
+                if (execResult.success) {
+                  ctx.metrics.executionsSuccessful++;
+                  ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
+                  bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash });
+                } else if (execResult.error === "reverted") {
+                  ctx.metrics.executionReverts++;
+                  ctx.logger.warn({ routeKey }, "Transaction reverted on chain");
+                  bus?.emit({ type: "execution_result", routeKey, success: false, error: "reverted" });
+                } else {
+                  ctx.metrics.executionsFailed++;
+                  ctx.logger.warn({ error: execResult.error, routeKey }, "Execution failed");
+                  ctx.metrics.totalErrors++;
+                  ctx.metrics.lastErrorTime = Date.now();
+                  ctx.metrics.lastErrorMessage = "Execution failed: " + (execResult.error ?? "");
+                  bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error });
+                }
+              }
+            }
           }
         }
       }
@@ -440,6 +489,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const elapsed = Date.now() - startTime;
       ctx.metrics.lastCycleDurationMs = elapsed;
+      const trackerSummary = ctx.executionService.tracker.summary;
+      ctx.metrics.executionReverts = trackerSummary.totalReverts;
+      ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
       bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
       const payload = buildStatusPayload(ctx.metrics, gasSnapshot.gasPrice, pools.length);
       await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});

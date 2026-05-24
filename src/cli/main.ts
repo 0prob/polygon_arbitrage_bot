@@ -2,13 +2,14 @@ import { loadConfig } from "../config/loader.ts";
 import { bootApplication } from "../orchestrator/boot.ts";
 import { PassRunner } from "../orchestrator/runner.ts";
 import { shutdownApplication } from "../orchestrator/shutdown.ts";
-import { createHyperIndexProcess } from "../infra/hypersync/hyperindex_process.ts";
 import { createRootLogger } from "../infra/observability/logger.ts";
 import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { execSync } from "child_process";
+import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
+import { HealthServer } from "../infra/observability/health_server.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -38,23 +39,43 @@ async function main() {
     }
   }
 
-  const hyperIndex = createHyperIndexProcess({
-    dataDir: config.paths.dataDir,
-    polygonRpcUrl: config.rpc.polygonRpcUrls[0],
-    katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
-    envioApiToken: config.envioApiToken,
+  const hyperIndexMonitor = new HyperIndexMonitor({
+    processOptions: {
+      dataDir: config.paths.dataDir,
+      polygonRpcUrl: config.rpc.polygonRpcUrls[0],
+      katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
+      envioApiToken: config.envioApiToken,
+      logger,
+      eventBus: useTui ? bus : undefined,
+    },
     logger,
-    eventBus: useTui ? bus : undefined,
+    checkIntervalMs: 10_000,
   });
 
   try {
-    await hyperIndex.start();
+    await hyperIndexMonitor.prepare();
   } catch (err) {
-    console.error("Failed to start HyperIndex, continuing without it:", err);
+    logger.warn({ err }, "Failed to start HyperIndex, continuing without it");
   }
-  const startedHyperIndex = hyperIndex.isRunning();
 
   const ctx = await bootApplication(config, undefined, logger);
+  ctx.hyperIndexMonitor = hyperIndexMonitor;
+
+  await hyperIndexMonitor.start();
+
+  const healthServer = new HealthServer(9090, {
+    metrics: ctx.metrics,
+    rpcCircuit: ctx.rpcCircuit,
+    hasuraCircuit: ctx.hasuraCircuit,
+    hyperIndexMonitor: hyperIndexMonitor,
+    getTier: () => ctx.tierManager.assess(),
+  });
+
+  try {
+    await healthServer.start();
+  } catch (err) {
+    logger.warn({ err, port: 9090 }, "Failed to start health server");
+  }
 
   const tui = useTui ? createTui(bus) : null;
   if (tui) {
@@ -68,10 +89,9 @@ async function main() {
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();
+    await healthServer.stop();
+    await hyperIndexMonitor.stop();
     await shutdownApplication(ctx);
-    if (startedHyperIndex) {
-      await hyperIndex.stop();
-    }
     process.exit(0);
   }
 

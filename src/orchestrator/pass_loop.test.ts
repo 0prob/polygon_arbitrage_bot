@@ -10,6 +10,41 @@ const MOCK_CANDIDATE_EXECUTION: CandidateExecution = {
   value: 0n,
 };
 
+function mockTracker() {
+  return {
+    getWinRate: vi.fn().mockReturnValue(0),
+    record: vi.fn(),
+    getRouteStats: vi.fn(),
+    getAllRouteStats: vi.fn().mockReturnValue(new Map()),
+    getRecentRecords: vi.fn().mockReturnValue([]),
+    summary: { totalAttempts: 0, totalSuccesses: 0, totalReverts: 0, totalProfit: 0n, trackedRoutes: 0 },
+  };
+}
+
+function mockTierManager() {
+  return {
+    assess: vi.fn().mockReturnValue("green"),
+    getCurrent: vi.fn().mockReturnValue("green"),
+    shouldDiscover: vi.fn().mockReturnValue(true),
+    shouldExecute: vi.fn().mockReturnValue(true),
+    shouldEnumerate: vi.fn().mockReturnValue(true),
+    shouldSimulate: vi.fn().mockReturnValue(true),
+    shouldPollState: vi.fn().mockReturnValue(true),
+    isFull: vi.fn().mockReturnValue(true),
+    label: vi.fn().mockReturnValue("[GREEN] healthy"),
+  };
+}
+
+function mockCircuitBreaker() {
+  return {
+    execute: vi.fn().mockImplementation(async (fn: Function) => fn()),
+    isHealthy: vi.fn().mockReturnValue(true),
+    getState: vi.fn().mockReturnValue("closed"),
+    getFailureCount: vi.fn().mockReturnValue(0),
+    reset: vi.fn(),
+  };
+}
+
 const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
 const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
 const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
@@ -40,6 +75,7 @@ describe("runPassLoop", () => {
         lastErrorTime: null, lastErrorMessage: null,
         opportunitiesFound: 0, executionsAttempted: 0,
         executionsSuccessful: 0, executionsFailed: 0,
+        executionReverts: 0, trackedRoutes: 0,
         startTime: Date.now(), peakCyclesPerMinute: 0, currentCyclesPerMinute: 0,
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
@@ -55,9 +91,13 @@ describe("runPassLoop", () => {
       isRunning: true,
       stateCache: stateWithPool,
       mempoolService: { start: vi.fn(), onSignal: vi.fn() },
-      executionService: { start: vi.fn(), execute: mockExecute },
+      executionService: { start: vi.fn(), execute: mockExecute, tracker: mockTracker() },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
+      services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
+      rpcCircuit: mockCircuitBreaker(),
+      hasuraCircuit: mockCircuitBreaker(),
+      tierManager: mockTierManager(),
     } as unknown as RuntimeContext;
 
     let execCalls = 0;
@@ -74,7 +114,8 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      findCycles: vi.fn().mockReturnValue([
+      findCycles: vi.fn().mockReturnValue([]),
+      enumerateCycles: vi.fn().mockReturnValue([
         {
           edges: [
             {
@@ -147,7 +188,6 @@ describe("runPassLoop", () => {
         attempted: 2,
         profitableCount: 2,
       }),
-      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
@@ -178,6 +218,7 @@ describe("runPassLoop", () => {
         lastErrorTime: null, lastErrorMessage: null,
         opportunitiesFound: 0, executionsAttempted: 0,
         executionsSuccessful: 0, executionsFailed: 0,
+        executionReverts: 0, trackedRoutes: 0,
         startTime: Date.now(), peakCyclesPerMinute: 0, currentCyclesPerMinute: 0,
       },
       logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
@@ -193,11 +234,15 @@ describe("runPassLoop", () => {
       isRunning: true,
       stateCache: new Map(),
       mempoolService: { start: vi.fn(), onSignal: vi.fn() },
-      executionService: { start: vi.fn(), execute: vi.fn() },
+      executionService: { start: vi.fn(), execute: vi.fn(), tracker: mockTracker() },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
+      services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
+      rpcCircuit: mockCircuitBreaker(),
+      hasuraCircuit: mockCircuitBreaker(),
+      tierManager: mockTierManager(),
     } as unknown as RuntimeContext;
 
-    const findCyclesSpy = vi.fn().mockImplementation(() => {
+    const enumerateCyclesSpy = vi.fn().mockImplementation(() => {
       mockContext.isRunning = false;
       return [];
     });
@@ -208,9 +253,9 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      findCycles: findCyclesSpy,
+      findCycles: vi.fn().mockReturnValue([]),
+      enumerateCycles: enumerateCyclesSpy,
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
-      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
@@ -218,6 +263,6 @@ describe("runPassLoop", () => {
 
     await runPassLoop(mockContext, deps);
 
-    expect(findCyclesSpy).toHaveBeenCalledWith(expect.anything(), 4);
+    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 4, 250000, expect.any(Function));
   });
 });

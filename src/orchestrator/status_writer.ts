@@ -14,6 +14,8 @@ export interface StatusPayload {
   executed: number;
   succeeded: number;
   failed: number;
+  reverts: number;
+  trackedRoutes: number;
   gasPriceGwei: number;
   pools: number;
   cyclesPerMin: number;
@@ -44,6 +46,8 @@ export function buildStatusPayload(
     executed: metrics.executionsAttempted,
     succeeded: metrics.executionsSuccessful,
     failed: metrics.executionsFailed,
+    reverts: metrics.executionReverts,
+    trackedRoutes: metrics.trackedRoutes,
     gasPriceGwei: formatGwei(gasPrice),
     pools: poolCount,
     cyclesPerMin: metrics.currentCyclesPerMinute,

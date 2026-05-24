@@ -15,7 +15,7 @@ indexer.onEvent(
       address: pool,
       protocol: "balancer_v2",
       tokens: meta.tokens,
-      fee: Number(meta.swapFee),
+      fee: meta.swapFee > 0n ? Number(meta.swapFee / 10n ** 14n) : undefined,
       tickSpacing: undefined,
       createdBlock: Number(event.block.number),
       createdTx: event.transaction.hash,
