@@ -141,25 +141,33 @@ export async function discoverPoolsFromHasura(
 ): Promise<HasuraPoolMeta[]> {
   try {
     const activeQuery = `{
-      V2PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
-      V3PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+      V2PoolState(limit: 5000, order_by: {lastUpdatedBlock: desc}) { id }
+      V3PoolState(limit: 5000, order_by: {lastUpdatedBlock: desc}) { id }
+      V4PoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+      BalancerPoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+      CurvePoolState(limit: 1000, order_by: {lastUpdatedBlock: desc}) { id }
+      DodoPoolState(limit: 500, order_by: {lastUpdatedBlock: desc}) { id }
+      WoofiPoolState(limit: 500, order_by: {lastUpdatedBlock: desc}) { id }
     }`;
     const activeRes = await graphQLQuery(graphqlUrl, adminSecret, activeQuery) as any;
     
-    // Check if V2PoolState or V3PoolState exist in the response
-    const v2 = activeRes.V2PoolState || [];
-    const v3 = activeRes.V3PoolState || [];
-    const activeIds = [
-      ...v2.map((p: any) => p.id.toLowerCase()),
-      ...v3.map((p: any) => p.id.toLowerCase())
-    ];
+    const activeIds = new Set<string>();
+    const protocols = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState", "WoofiPoolState"];
+    
+    for (const proto of protocols) {
+      const rows = activeRes[proto] || [];
+      for (const row of rows) {
+        if (row.id) activeIds.add(row.id.toLowerCase());
+      }
+    }
 
-    if (activeIds.length === 0) return [];
+    if (activeIds.size === 0) return [];
+    const idList = Array.from(activeIds);
 
     const result = await graphQLQuery(
       graphqlUrl,
       adminSecret,
-      `{ PoolMeta(where: {id: {_in: ${JSON.stringify(activeIds)}}}) { id protocol tokens } }`,
+      `{ PoolMeta(where: {id: {_in: ${JSON.stringify(idList)}}}) { id protocol tokens } }`,
     );
 
     const metaArr = (result as Record<string, unknown>).PoolMeta as unknown as { id: string; protocol: string; tokens: unknown }[];

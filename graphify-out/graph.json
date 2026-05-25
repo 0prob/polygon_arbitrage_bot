@@ -103,69 +103,6 @@
       "norm_label": "runpassloop()"
     },
     {
-      "label": "pipeline.ts",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "id": "src_services_strategy_pipeline_ts",
-      "community": 28,
-      "norm_label": "pipeline.ts"
-    },
-    {
-      "label": "PipelineOptions",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L11",
-      "id": "strategy_pipeline_pipelineoptions",
-      "community": 9,
-      "norm_label": "pipelineoptions"
-    },
-    {
-      "label": "getTestAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L23",
-      "id": "strategy_pipeline_gettestamount",
-      "community": 28,
-      "norm_label": "gettestamount()"
-    },
-    {
-      "label": "PipelineResult",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "id": "strategy_pipeline_pipelineresult",
-      "community": 28,
-      "norm_label": "pipelineresult"
-    },
-    {
-      "label": "getEffectivePriceImpactForCycle()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L54",
-      "id": "strategy_pipeline_geteffectivepriceimpactforcycle",
-      "community": 28,
-      "norm_label": "geteffectivepriceimpactforcycle()"
-    },
-    {
-      "label": "evaluateAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L62",
-      "id": "strategy_pipeline_evaluateamount",
-      "community": 28,
-      "norm_label": "evaluateamount()"
-    },
-    {
-      "label": "evaluatePipeline()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L100",
-      "id": "strategy_pipeline_evaluatepipeline",
-      "community": 28,
-      "norm_label": "evaluatepipeline()"
-    },
-    {
       "label": "events.ts",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
@@ -218,303 +155,6 @@
       "id": "tui_events_eventbus_emit",
       "community": 40,
       "norm_label": ".emit()"
-    },
-    {
-      "label": "layout.ts",
-      "file_type": "code",
-      "source_file": "src/tui/layout.ts",
-      "source_location": "L1",
-      "id": "src_tui_layout_ts",
-      "community": 40,
-      "norm_label": "layout.ts"
-    },
-    {
-      "label": "PanelRect",
-      "file_type": "code",
-      "source_file": "src/tui/layout.ts",
-      "source_location": "L1",
-      "id": "tui_layout_panelrect",
-      "community": 40,
-      "norm_label": "panelrect"
-    },
-    {
-      "label": "TuiLayout",
-      "file_type": "code",
-      "source_file": "src/tui/layout.ts",
-      "source_location": "L8",
-      "id": "tui_layout_tuilayout",
-      "community": 40,
-      "norm_label": "tuilayout"
-    },
-    {
-      "label": "computeLayout()",
-      "file_type": "code",
-      "source_file": "src/tui/layout.ts",
-      "source_location": "L22",
-      "id": "tui_layout_computelayout",
-      "community": 40,
-      "norm_label": "computelayout()"
-    },
-    {
-      "label": "renderer.ts",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L1",
-      "id": "src_tui_renderer_ts",
-      "community": 40,
-      "norm_label": "renderer.ts"
-    },
-    {
-      "label": "cursor()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L6",
-      "id": "tui_renderer_cursor",
-      "community": 40,
-      "norm_label": "cursor()"
-    },
-    {
-      "label": "hideCursor()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L10",
-      "id": "tui_renderer_hidecursor",
-      "community": 40,
-      "norm_label": "hidecursor()"
-    },
-    {
-      "label": "showCursor()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L14",
-      "id": "tui_renderer_showcursor",
-      "community": 40,
-      "norm_label": "showcursor()"
-    },
-    {
-      "label": "enterAltScreen()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L18",
-      "id": "tui_renderer_enteraltscreen",
-      "community": 40,
-      "norm_label": "enteraltscreen()"
-    },
-    {
-      "label": "exitAltScreen()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L22",
-      "id": "tui_renderer_exitaltscreen",
-      "community": 40,
-      "norm_label": "exitaltscreen()"
-    },
-    {
-      "label": "bold()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L26",
-      "id": "tui_renderer_bold",
-      "community": 40,
-      "norm_label": "bold()"
-    },
-    {
-      "label": "dim()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L30",
-      "id": "tui_renderer_dim",
-      "community": 40,
-      "norm_label": "dim()"
-    },
-    {
-      "label": "color()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L34",
-      "id": "tui_renderer_color",
-      "community": 40,
-      "norm_label": "color()"
-    },
-    {
-      "label": "visibleLength()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L38",
-      "id": "tui_renderer_visiblelength",
-      "community": 40,
-      "norm_label": "visiblelength()"
-    },
-    {
-      "label": "padRight()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L42",
-      "id": "tui_renderer_padright",
-      "community": 40,
-      "norm_label": "padright()"
-    },
-    {
-      "label": "RenderedPanel",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L54",
-      "id": "tui_renderer_renderedpanel",
-      "community": 40,
-      "norm_label": "renderedpanel"
-    },
-    {
-      "label": "Renderer",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L59",
-      "id": "tui_renderer_renderer",
-      "community": 40,
-      "norm_label": "renderer"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L63",
-      "id": "tui_renderer_renderer_constructor",
-      "community": 40,
-      "norm_label": ".constructor()"
-    },
-    {
-      "label": ".enter()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L67",
-      "id": "tui_renderer_renderer_enter",
-      "community": 40,
-      "norm_label": ".enter()"
-    },
-    {
-      "label": ".exit()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L76",
-      "id": "tui_renderer_renderer_exit",
-      "community": 40,
-      "norm_label": ".exit()"
-    },
-    {
-      "label": ".render()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L85",
-      "id": "tui_renderer_renderer_render",
-      "community": 40,
-      "norm_label": ".render()"
-    },
-    {
-      "label": ".renderHeader()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L102",
-      "id": "tui_renderer_renderer_renderheader",
-      "community": 40,
-      "norm_label": ".renderheader()"
-    },
-    {
-      "label": ".renderPipeline()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L123",
-      "id": "tui_renderer_renderer_renderpipeline",
-      "community": 40,
-      "norm_label": ".renderpipeline()"
-    },
-    {
-      "label": ".renderMainTable()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L147",
-      "id": "tui_renderer_renderer_rendermaintable",
-      "community": 40,
-      "norm_label": ".rendermaintable()"
-    },
-    {
-      "label": ".renderSidebar()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L170",
-      "id": "tui_renderer_renderer_rendersidebar",
-      "community": 40,
-      "norm_label": ".rendersidebar()"
-    },
-    {
-      "label": ".renderFooterLog()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L208",
-      "id": "tui_renderer_renderer_renderfooterlog",
-      "community": 40,
-      "norm_label": ".renderfooterlog()"
-    },
-    {
-      "label": ".renderKeymap()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L228",
-      "id": "tui_renderer_renderer_renderkeymap",
-      "community": 40,
-      "norm_label": ".renderkeymap()"
-    },
-    {
-      "label": ".panelBox()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L236",
-      "id": "tui_renderer_renderer_panelbox",
-      "community": 40,
-      "norm_label": ".panelbox()"
-    },
-    {
-      "label": "formatWei()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L248",
-      "id": "tui_renderer_formatwei",
-      "community": 40,
-      "norm_label": "formatwei()"
-    },
-    {
-      "label": "formatGwei()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L253",
-      "id": "tui_renderer_formatgwei",
-      "community": 40,
-      "norm_label": "formatgwei()"
-    },
-    {
-      "label": "formatBlock()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L258",
-      "id": "tui_renderer_formatblock",
-      "community": 40,
-      "norm_label": "formatblock()"
-    },
-    {
-      "label": "formatUptime()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L264",
-      "id": "tui_renderer_formatuptime",
-      "community": 40,
-      "norm_label": "formatuptime()"
-    },
-    {
-      "label": "formatDuration()",
-      "file_type": "code",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L272",
-      "id": "tui_renderer_formatduration",
-      "community": 40,
-      "norm_label": "formatduration()"
     },
     {
       "label": "state.ts",
@@ -601,28 +241,10 @@
       "label": "applyEvent()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
-      "source_location": "L128",
+      "source_location": "L122",
       "id": "tui_state_applyevent",
       "community": 40,
       "norm_label": "applyevent()"
-    },
-    {
-      "label": "layout.test.ts",
-      "file_type": "code",
-      "source_file": "tests/tui/layout.test.ts",
-      "source_location": "L1",
-      "id": "tests_tui_layout_test_ts",
-      "community": 40,
-      "norm_label": "layout.test.ts"
-    },
-    {
-      "label": "layout",
-      "file_type": "code",
-      "source_file": "tests/tui/layout.test.ts",
-      "source_location": "L6",
-      "id": "tui_layout_test_layout",
-      "community": 40,
-      "norm_label": "layout"
     },
     {
       "label": "renderer.test.ts",
@@ -688,22 +310,400 @@
       "norm_label": "output"
     },
     {
+      "label": "pipeline.ts",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "community": 28,
+      "norm_label": "pipeline.ts",
+      "id": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "label": "PipelineOptions",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L11",
+      "community": 9,
+      "norm_label": "pipelineoptions",
+      "id": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "label": "getTestAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L23",
+      "community": 28,
+      "norm_label": "gettestamount()",
+      "id": "strategy_pipeline_gettestamount"
+    },
+    {
+      "label": "PipelineResult",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "community": 28,
+      "norm_label": "pipelineresult",
+      "id": "strategy_pipeline_pipelineresult"
+    },
+    {
+      "label": "getEffectivePriceImpactForCycle()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L54",
+      "community": 28,
+      "norm_label": "geteffectivepriceimpactforcycle()",
+      "id": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "label": "evaluateAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L62",
+      "community": 28,
+      "norm_label": "evaluateamount()",
+      "id": "strategy_pipeline_evaluateamount"
+    },
+    {
+      "label": "evaluatePipeline()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L100",
+      "community": 28,
+      "norm_label": "evaluatepipeline()",
+      "id": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "label": "layout.ts",
+      "file_type": "code",
+      "source_file": "src/tui/layout.ts",
+      "source_location": "L1",
+      "community": 40,
+      "norm_label": "layout.ts",
+      "id": "src_tui_layout_ts"
+    },
+    {
+      "label": "PanelRect",
+      "file_type": "code",
+      "source_file": "src/tui/layout.ts",
+      "source_location": "L1",
+      "community": 40,
+      "norm_label": "panelrect",
+      "id": "tui_layout_panelrect"
+    },
+    {
+      "label": "TuiLayout",
+      "file_type": "code",
+      "source_file": "src/tui/layout.ts",
+      "source_location": "L8",
+      "community": 40,
+      "norm_label": "tuilayout",
+      "id": "tui_layout_tuilayout"
+    },
+    {
+      "label": "computeLayout()",
+      "file_type": "code",
+      "source_file": "src/tui/layout.ts",
+      "source_location": "L22",
+      "community": 40,
+      "norm_label": "computelayout()",
+      "id": "tui_layout_computelayout"
+    },
+    {
+      "label": "renderer.ts",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L1",
+      "community": 40,
+      "norm_label": "renderer.ts",
+      "id": "src_tui_renderer_ts"
+    },
+    {
+      "label": "cursor()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L6",
+      "community": 40,
+      "norm_label": "cursor()",
+      "id": "tui_renderer_cursor"
+    },
+    {
+      "label": "hideCursor()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L10",
+      "community": 40,
+      "norm_label": "hidecursor()",
+      "id": "tui_renderer_hidecursor"
+    },
+    {
+      "label": "showCursor()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L14",
+      "community": 40,
+      "norm_label": "showcursor()",
+      "id": "tui_renderer_showcursor"
+    },
+    {
+      "label": "enterAltScreen()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L18",
+      "community": 40,
+      "norm_label": "enteraltscreen()",
+      "id": "tui_renderer_enteraltscreen"
+    },
+    {
+      "label": "exitAltScreen()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L22",
+      "community": 40,
+      "norm_label": "exitaltscreen()",
+      "id": "tui_renderer_exitaltscreen"
+    },
+    {
+      "label": "bold()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L26",
+      "community": 40,
+      "norm_label": "bold()",
+      "id": "tui_renderer_bold"
+    },
+    {
+      "label": "dim()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L30",
+      "community": 40,
+      "norm_label": "dim()",
+      "id": "tui_renderer_dim"
+    },
+    {
+      "label": "color()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L34",
+      "community": 40,
+      "norm_label": "color()",
+      "id": "tui_renderer_color"
+    },
+    {
+      "label": "visibleLength()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L38",
+      "community": 40,
+      "norm_label": "visiblelength()",
+      "id": "tui_renderer_visiblelength"
+    },
+    {
+      "label": "padRight()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L42",
+      "community": 40,
+      "norm_label": "padright()",
+      "id": "tui_renderer_padright"
+    },
+    {
+      "label": "RenderedPanel",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L54",
+      "community": 40,
+      "norm_label": "renderedpanel",
+      "id": "tui_renderer_renderedpanel"
+    },
+    {
+      "label": "Renderer",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L59",
+      "community": 40,
+      "norm_label": "renderer",
+      "id": "tui_renderer_renderer"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L63",
+      "community": 40,
+      "norm_label": ".constructor()",
+      "id": "tui_renderer_renderer_constructor"
+    },
+    {
+      "label": ".enter()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L67",
+      "community": 40,
+      "norm_label": ".enter()",
+      "id": "tui_renderer_renderer_enter"
+    },
+    {
+      "label": ".exit()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L76",
+      "community": 40,
+      "norm_label": ".exit()",
+      "id": "tui_renderer_renderer_exit"
+    },
+    {
+      "label": ".render()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L85",
+      "community": 40,
+      "norm_label": ".render()",
+      "id": "tui_renderer_renderer_render"
+    },
+    {
+      "label": ".renderHeader()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L102",
+      "community": 40,
+      "norm_label": ".renderheader()",
+      "id": "tui_renderer_renderer_renderheader"
+    },
+    {
+      "label": ".renderPipeline()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L123",
+      "community": 40,
+      "norm_label": ".renderpipeline()",
+      "id": "tui_renderer_renderer_renderpipeline"
+    },
+    {
+      "label": ".renderMainTable()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L147",
+      "community": 40,
+      "norm_label": ".rendermaintable()",
+      "id": "tui_renderer_renderer_rendermaintable"
+    },
+    {
+      "label": ".renderSidebar()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L170",
+      "community": 40,
+      "norm_label": ".rendersidebar()",
+      "id": "tui_renderer_renderer_rendersidebar"
+    },
+    {
+      "label": ".renderFooterLog()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L208",
+      "community": 40,
+      "norm_label": ".renderfooterlog()",
+      "id": "tui_renderer_renderer_renderfooterlog"
+    },
+    {
+      "label": ".renderKeymap()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L228",
+      "community": 40,
+      "norm_label": ".renderkeymap()",
+      "id": "tui_renderer_renderer_renderkeymap"
+    },
+    {
+      "label": ".panelBox()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L236",
+      "community": 40,
+      "norm_label": ".panelbox()",
+      "id": "tui_renderer_renderer_panelbox"
+    },
+    {
+      "label": "formatWei()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L248",
+      "community": 40,
+      "norm_label": "formatwei()",
+      "id": "tui_renderer_formatwei"
+    },
+    {
+      "label": "formatGwei()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L253",
+      "community": 40,
+      "norm_label": "formatgwei()",
+      "id": "tui_renderer_formatgwei"
+    },
+    {
+      "label": "formatBlock()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L258",
+      "community": 40,
+      "norm_label": "formatblock()",
+      "id": "tui_renderer_formatblock"
+    },
+    {
+      "label": "formatUptime()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L264",
+      "community": 40,
+      "norm_label": "formatuptime()",
+      "id": "tui_renderer_formatuptime"
+    },
+    {
+      "label": "formatDuration()",
+      "file_type": "code",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L272",
+      "community": 40,
+      "norm_label": "formatduration()",
+      "id": "tui_renderer_formatduration"
+    },
+    {
+      "label": "layout.test.ts",
+      "file_type": "code",
+      "source_file": "tests/tui/layout.test.ts",
+      "source_location": "L1",
+      "community": 40,
+      "norm_label": "layout.test.ts",
+      "id": "tests_tui_layout_test_ts"
+    },
+    {
+      "label": "layout",
+      "file_type": "code",
+      "source_file": "tests/tui/layout.test.ts",
+      "source_location": "L6",
+      "community": 40,
+      "norm_label": "layout",
+      "id": "tui_layout_test_layout"
+    },
+    {
       "label": "state.test.ts",
       "file_type": "code",
       "source_file": "tests/tui/state.test.ts",
       "source_location": "L1",
-      "id": "tests_tui_state_test_ts",
       "community": 40,
-      "norm_label": "state.test.ts"
+      "norm_label": "state.test.ts",
+      "id": "tests_tui_state_test_ts"
     },
     {
       "label": "s",
       "file_type": "code",
       "source_file": "tests/tui/state.test.ts",
       "source_location": "L6",
-      "id": "tui_state_test_s",
       "community": 40,
-      "norm_label": "s"
+      "norm_label": "s",
+      "id": "tui_state_test_s"
     },
     {
       "label": "opencode.json",
@@ -6712,7 +6712,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L23",
-      "community": 95,
+      "community": 64,
       "norm_label": "parsetransferlogs()",
       "id": "execution_service_parsetransferlogs"
     },
@@ -6784,7 +6784,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L101",
-      "community": 95,
+      "community": 64,
       "norm_label": "executionservice",
       "id": "execution_service_executionservice"
     },
@@ -6793,7 +6793,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L111",
-      "community": 95,
+      "community": 64,
       "norm_label": ".constructor()",
       "id": "execution_service_executionservice_constructor"
     },
@@ -6811,7 +6811,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L137",
-      "community": 95,
+      "community": 64,
       "norm_label": ".start()",
       "id": "execution_service_executionservice_start"
     },
@@ -6820,7 +6820,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L143",
-      "community": 95,
+      "community": 64,
       "norm_label": ".stop()",
       "id": "execution_service_executionservice_stop"
     },
@@ -6838,7 +6838,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L199",
-      "community": 95,
+      "community": 64,
       "norm_label": ".execute()",
       "id": "execution_service_executionservice_execute"
     },
@@ -6847,7 +6847,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L269",
-      "community": 95,
+      "community": 64,
       "norm_label": ".batchexecute()",
       "id": "execution_service_executionservice_batchexecute"
     },
@@ -6856,7 +6856,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L352",
-      "community": 95,
+      "community": 64,
       "norm_label": "._waitforreceipt()",
       "id": "execution_service_executionservice_waitforreceipt"
     },
@@ -6865,7 +6865,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L369",
-      "community": 95,
+      "community": 64,
       "norm_label": ".isquarantined()",
       "id": "execution_service_executionservice_isquarantined"
     },
@@ -19216,17 +19216,6 @@
       "target": "strategy_graph_buildgraph"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19479,6 +19468,17 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_ts",
       "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_pipeline_ts"
     },
     {
       "relation": "imports_from",
@@ -19976,6 +19976,745 @@
       "target": "orchestrator_pass_loop_runpassloop"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/events.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_events_ts",
+      "target": "tui_events_arbevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/events.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_events_ts",
+      "target": "tui_events_eventhandler"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/events.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_events_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/events.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_events_test_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/index.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_index_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_events_arbevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/events.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_events_test_ts",
+      "target": "tui_events_arbevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "tui_events_arbevent"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/index.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_index_ts",
+      "target": "tui_events_arbevent"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/events.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_events_eventbus",
+      "target": "tui_events_eventbus_on"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/events.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_events_eventbus",
+      "target": "tui_events_eventbus_emit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/events.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_events_test_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_main_tuiinstance",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner_constructor",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/index.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_index_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tui/events.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "tui_events_eventbus_emit",
+      "target": "tui_events_test_handler"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tui/events.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "tui_events_eventbus_emit",
+      "target": "rpc_websocket_subscriber_test_handler"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_metricsstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_opportunityentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_systemstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_logentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_appendlog"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_updateopportunity"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_state_ts",
+      "target": "tui_state_applyevent"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "src_tui_state_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_renderer_ts",
+      "target": "src_tui_state_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/state.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_state_test_ts",
+      "target": "src_tui_state_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/metrics.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_metrics_test_ts",
+      "target": "src_tui_state_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "src_tui_state_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_renderer_ts",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_render",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L102",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_renderheader",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_renderpipeline",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L147",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_rendermaintable",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L170",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_rendersidebar",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L208",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_renderfooterlog",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/renderer.ts",
+      "source_location": "L186",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_renderer_renderer_renderkeymap",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "tui_state_tuistate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/state.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_state_test_ts",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/metrics.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_metrics_test_ts",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tui/main.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "tui_main_createtui",
+      "target": "tui_state_createinitialstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_state_applyevent",
+      "target": "tui_state_appendlog"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/state.ts",
+      "source_location": "L155",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tui_state_applyevent",
+      "target": "tui_state_updateopportunity"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_state_applyevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/state.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_state_test_ts",
+      "target": "tui_state_applyevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/metrics.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_metrics_test_ts",
+      "target": "tui_state_applyevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tui/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_tui_main_ts",
+      "target": "tui_state_applyevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_renderer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_layout_computelayout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_createmockstdout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_stdout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_r"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_layout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_state"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "tui_renderer_test_output"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "src_tui_layout_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/tui/renderer.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_tui_renderer_test_ts",
+      "target": "src_tui_renderer_ts"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20412,276 +21151,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/tui/events.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_events_ts",
-      "target": "tui_events_arbevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/events.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_events_ts",
-      "target": "tui_events_eventhandler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/events.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_events_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/events.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_events_test_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/index.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_index_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_events_arbevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/events.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_events_test_ts",
-      "target": "tui_events_arbevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "tui_events_arbevent"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/index.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_index_ts",
-      "target": "tui_events_arbevent"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/events.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_events_eventbus",
-      "target": "tui_events_eventbus_on"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/events.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_events_eventbus",
-      "target": "tui_events_eventbus_emit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/events.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_events_test_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_main_tuiinstance",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner_constructor",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/index.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_index_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/tui/events.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "tui_events_eventbus_emit",
-      "target": "tui_events_test_handler"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/tui/events.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "source": "tui_events_eventbus_emit",
-      "target": "rpc_websocket_subscriber_test_handler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/tui/layout.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -20729,17 +21198,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "tests_tui_layout_test_ts",
-      "target": "src_tui_layout_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
       "target": "src_tui_layout_ts"
     },
     {
@@ -20804,9 +21262,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_layout_tuilayout",
-      "confidence_score": 1.0
+      "target": "tui_layout_tuilayout"
     },
     {
       "relation": "references",
@@ -20815,9 +21273,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_layout_tuilayout",
-      "confidence_score": 1.0
+      "target": "tui_layout_tuilayout"
     },
     {
       "relation": "references",
@@ -20826,9 +21284,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L147",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_layout_tuilayout",
-      "confidence_score": 1.0
+      "target": "tui_layout_tuilayout"
     },
     {
       "relation": "references",
@@ -20837,9 +21295,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_layout_tuilayout",
-      "confidence_score": 1.0
+      "target": "tui_layout_tuilayout"
     },
     {
       "relation": "references",
@@ -20848,9 +21306,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L208",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_layout_tuilayout",
-      "confidence_score": 1.0
+      "target": "tui_layout_tuilayout"
     },
     {
       "relation": "references",
@@ -20889,17 +21347,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_layout_computelayout"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/tui/main.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -20917,28 +21364,6 @@
       "weight": 1.0,
       "source": "tui_main_createtui",
       "target": "tui_layout_computelayout"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_renderer_ts",
-      "target": "src_tui_state_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_renderer_ts",
-      "target": "tui_state_tuistate"
     },
     {
       "relation": "contains",
@@ -21026,9 +21451,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_tui_renderer_ts",
-      "target": "tui_renderer_visiblelength",
-      "confidence_score": 1.0
+      "target": "tui_renderer_visiblelength"
     },
     {
       "relation": "contains",
@@ -21036,9 +21461,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_tui_renderer_ts",
-      "target": "tui_renderer_padright",
-      "confidence_score": 1.0
+      "target": "tui_renderer_padright"
     },
     {
       "relation": "contains",
@@ -21114,17 +21539,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "src_tui_renderer_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/tui/main.ts",
       "source_location": "L4",
       "weight": 1.0,
@@ -21139,9 +21553,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L119",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_cursor",
-      "confidence_score": 1.0
+      "target": "tui_renderer_cursor"
     },
     {
       "relation": "calls",
@@ -21227,9 +21641,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_bold",
-      "confidence_score": 1.0
+      "target": "tui_renderer_bold"
     },
     {
       "relation": "calls",
@@ -21238,9 +21652,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L136",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_renderer_bold",
-      "confidence_score": 1.0
+      "target": "tui_renderer_bold"
     },
     {
       "relation": "calls",
@@ -21249,9 +21663,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_renderer_bold",
-      "confidence_score": 1.0
+      "target": "tui_renderer_bold"
     },
     {
       "relation": "calls",
@@ -21260,9 +21674,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L194",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_bold",
-      "confidence_score": 1.0
+      "target": "tui_renderer_bold"
     },
     {
       "relation": "calls",
@@ -21271,9 +21685,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L213",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_renderer_bold",
-      "confidence_score": 1.0
+      "target": "tui_renderer_bold"
     },
     {
       "relation": "calls",
@@ -21282,9 +21696,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L142",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_renderer_dim",
-      "confidence_score": 1.0
+      "target": "tui_renderer_dim"
     },
     {
       "relation": "calls",
@@ -21293,9 +21707,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L150",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_renderer_dim",
-      "confidence_score": 1.0
+      "target": "tui_renderer_dim"
     },
     {
       "relation": "calls",
@@ -21304,9 +21718,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L187",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_dim",
-      "confidence_score": 1.0
+      "target": "tui_renderer_dim"
     },
     {
       "relation": "calls",
@@ -21315,9 +21729,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L220",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_renderer_dim",
-      "confidence_score": 1.0
+      "target": "tui_renderer_dim"
     },
     {
       "relation": "calls",
@@ -21337,9 +21751,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_color",
-      "confidence_score": 1.0
+      "target": "tui_renderer_color"
     },
     {
       "relation": "calls",
@@ -21348,9 +21762,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L137",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_renderer_color",
-      "confidence_score": 1.0
+      "target": "tui_renderer_color"
     },
     {
       "relation": "calls",
@@ -21359,9 +21773,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_renderer_color",
-      "confidence_score": 1.0
+      "target": "tui_renderer_color"
     },
     {
       "relation": "calls",
@@ -21370,9 +21784,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L178",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_color",
-      "confidence_score": 1.0
+      "target": "tui_renderer_color"
     },
     {
       "relation": "calls",
@@ -21381,9 +21795,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L216",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_renderer_color",
-      "confidence_score": 1.0
+      "target": "tui_renderer_color"
     },
     {
       "relation": "calls",
@@ -21392,9 +21806,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_padright",
-      "target": "tui_renderer_visiblelength",
-      "confidence_score": 1.0
+      "target": "tui_renderer_visiblelength"
     },
     {
       "relation": "calls",
@@ -21403,9 +21817,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_visiblelength",
-      "confidence_score": 1.0
+      "target": "tui_renderer_visiblelength"
     },
     {
       "relation": "calls",
@@ -21414,9 +21828,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L119",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_padright",
-      "confidence_score": 1.0
+      "target": "tui_renderer_padright"
     },
     {
       "relation": "calls",
@@ -21425,9 +21839,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L232",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderkeymap",
-      "target": "tui_renderer_padright",
-      "confidence_score": 1.0
+      "target": "tui_renderer_padright"
     },
     {
       "relation": "calls",
@@ -21436,9 +21850,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L242",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_panelbox",
-      "target": "tui_renderer_padright",
-      "confidence_score": 1.0
+      "target": "tui_renderer_padright"
     },
     {
       "relation": "method",
@@ -21486,9 +21900,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer",
-      "target": "tui_renderer_renderer_renderheader",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderheader"
     },
     {
       "relation": "method",
@@ -21496,9 +21910,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer",
-      "target": "tui_renderer_renderer_renderpipeline",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderpipeline"
     },
     {
       "relation": "method",
@@ -21506,9 +21920,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L147",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer",
-      "target": "tui_renderer_renderer_rendermaintable",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_rendermaintable"
     },
     {
       "relation": "method",
@@ -21516,9 +21930,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer",
-      "target": "tui_renderer_renderer_rendersidebar",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_rendersidebar"
     },
     {
       "relation": "method",
@@ -21526,9 +21940,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L208",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer",
-      "target": "tui_renderer_renderer_renderfooterlog",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderfooterlog"
     },
     {
       "relation": "method",
@@ -21554,17 +21968,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_renderer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/tui/main.ts",
       "source_location": "L4",
       "weight": 1.0,
@@ -21579,9 +21982,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L88",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_render",
-      "target": "tui_renderer_renderer_renderheader",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderheader"
     },
     {
       "relation": "calls",
@@ -21590,9 +21993,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_render",
-      "target": "tui_renderer_renderer_renderpipeline",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderpipeline"
     },
     {
       "relation": "calls",
@@ -21601,9 +22004,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_render",
-      "target": "tui_renderer_renderer_rendermaintable",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_rendermaintable"
     },
     {
       "relation": "calls",
@@ -21612,9 +22015,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_render",
-      "target": "tui_renderer_renderer_rendersidebar",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_rendersidebar"
     },
     {
       "relation": "calls",
@@ -21623,9 +22026,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_render",
-      "target": "tui_renderer_renderer_renderfooterlog",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_renderfooterlog"
     },
     {
       "relation": "calls",
@@ -21639,26 +22042,15 @@
       "target": "tui_renderer_renderer_renderkeymap"
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_renderer_renderer_render",
-      "target": "tui_state_tuistate"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/tui/renderer.ts",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_formatuptime",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatuptime"
     },
     {
       "relation": "calls",
@@ -21667,20 +22059,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_renderer_formatwei",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L102",
-      "weight": 1.0,
-      "source": "tui_renderer_renderer_renderheader",
-      "target": "tui_state_tuistate",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatwei"
     },
     {
       "relation": "calls",
@@ -21689,20 +22070,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_renderer_renderer_panelbox",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L123",
-      "weight": 1.0,
-      "source": "tui_renderer_renderer_renderpipeline",
-      "target": "tui_state_tuistate",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_panelbox"
     },
     {
       "relation": "calls",
@@ -21711,9 +22081,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L157",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_renderer_formatwei",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatwei"
     },
     {
       "relation": "calls",
@@ -21722,20 +22092,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_renderer_renderer_panelbox",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L147",
-      "weight": 1.0,
-      "source": "tui_renderer_renderer_rendermaintable",
-      "target": "tui_state_tuistate",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_panelbox"
     },
     {
       "relation": "calls",
@@ -21744,9 +22103,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L172",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_formatgwei",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatgwei"
     },
     {
       "relation": "calls",
@@ -21755,9 +22114,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L178",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_formatblock",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatblock"
     },
     {
       "relation": "calls",
@@ -21766,9 +22125,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L191",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_formatduration",
-      "confidence_score": 1.0
+      "target": "tui_renderer_formatduration"
     },
     {
       "relation": "calls",
@@ -21777,20 +22136,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L205",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_renderer_renderer_panelbox",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L170",
-      "weight": 1.0,
-      "source": "tui_renderer_renderer_rendersidebar",
-      "target": "tui_state_tuistate",
-      "confidence_score": 1.0
+      "target": "tui_renderer_renderer_panelbox"
     },
     {
       "relation": "calls",
@@ -21799,297 +22147,9 @@
       "source_file": "src/tui/renderer.ts",
       "source_location": "L225",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_renderer_renderer_panelbox",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L208",
-      "weight": 1.0,
-      "source": "tui_renderer_renderer_renderfooterlog",
-      "target": "tui_state_tuistate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/renderer.ts",
-      "source_location": "L186",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_renderer_renderer_renderkeymap",
-      "target": "tui_state_tuistate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_metricsstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_opportunityentry",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_systemstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_logentry"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_tuistate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_appendlog"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L98",
-      "weight": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_updateopportunity",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L64",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_state_ts",
-      "target": "tui_state_applyevent"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "src_tui_state_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/state.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_state_test_ts",
-      "target": "src_tui_state_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/metrics.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_metrics_test_ts",
-      "target": "src_tui_state_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "src_tui_state_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "tui_state_tuistate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/state.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_state_test_ts",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/metrics.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_metrics_test_ts",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tui/main.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "source": "tui_main_createtui",
-      "target": "tui_state_createinitialstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tui_state_applyevent",
-      "target": "tui_state_appendlog"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/state.ts",
-      "source_location": "L155",
-      "weight": 1.0,
-      "source": "tui_state_applyevent",
-      "target": "tui_state_updateopportunity",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_state_applyevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/state.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_state_test_ts",
-      "target": "tui_state_applyevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/metrics.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_metrics_test_ts",
-      "target": "tui_state_applyevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tui/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_tui_main_ts",
-      "target": "tui_state_applyevent"
+      "target": "tui_renderer_renderer_panelbox"
     },
     {
       "relation": "contains",
@@ -22100,66 +22160,6 @@
       "confidence_score": 1.0,
       "source": "tests_tui_layout_test_ts",
       "target": "tui_layout_test_layout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_createmockstdout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L59",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_stdout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_r"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_layout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_state"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/tui/renderer.test.ts",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_tui_renderer_test_ts",
-      "target": "tui_renderer_test_output"
     },
     {
       "relation": "contains",
@@ -56632,5 +56632,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "4188eabbfc272c723f8ee47b14731abcd172072e"
+  "built_at_commit": "64f88e0f1e2dee561e87da4f1561965972c518ab"
 }
