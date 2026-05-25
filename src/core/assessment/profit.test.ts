@@ -7,7 +7,7 @@ describe("tokensToMaticWei", () => {
     // 1 USDC = 1e6 smallest units. Rate = 0.5e18 wei per USDC / 1e6 smallest units = 5e11 wei per unit.
     // 1e6 units * 5e11 wei/unit = 5e17 wei = 0.5 MATIC. Correct.
     const ONE_USDC = 1_000_000n;
-    const rate = 500_000_000_000n; // 5e11
+    const rate = 500_000_000_000_000_000_000_000_000_000n; // 5e29
     expect(tokensToMaticWei(ONE_USDC, rate)).toBe(500_000_000_000_000_000n); // 0.5e18
   });
   it("returns 0 for zero amount", () => {
@@ -21,10 +21,10 @@ describe("tokensToMaticWei", () => {
 describe("maticWeiToTokens", () => {
   it("rounds up conservatively", () => {
     // 1 wei at rate 10 wei/unit = 0.1 units -> rounds up to 1
-    expect(maticWeiToTokens(1n, 10n)).toBe(1n);
+    expect(maticWeiToTokens(1n, 10_000_000_000_000_000_000n)).toBe(1n);
   });
   it("exact division returns exact value", () => {
-    expect(maticWeiToTokens(100n, 10n)).toBe(10n);
+    expect(maticWeiToTokens(100n, 10_000_000_000_000_000_000n)).toBe(10n);
   });
 });
 
@@ -43,7 +43,7 @@ describe("computeProfit - canonical MATIC wei comparison", () => {
     amountInTokens: 1_000_000_000n, // 1000 USDC
     gasUnits: 300_000,
     gasPriceWei: 50_000_000_000n, // 50 gwei
-    tokenToMaticRate: 500_000_000_000n, // 0.5 MATIC/USDC
+    tokenToMaticRate: 500_000_000_000_000_000_000_000_000_000n, // 5e29
     hopCount: 3,
     minProfitMaticWei: 1_000_000_000_000_000n, // 0.001 MATIC
     slippageBps: 50n,
@@ -78,7 +78,7 @@ describe("computeProfit - canonical MATIC wei comparison", () => {
     // Fix (new behavior): compares everything in MATIC wei.
     const result = computeProfit({
       ...baseOpts,
-      tokenToMaticRate: 1_000_000n, // 1 token = 1e-6 MATIC (very cheap token, 6 decimals)
+      tokenToMaticRate: 1_000_000_000_000_000_000_000_000n, // 1e24 (very cheap token, 6 decimals)
       grossProfitInTokens: 1_000_000_000n, // 1000 tokens = 0.001 MATIC value
       gasUnits: 300_000, // 0.015 MATIC gas cost
       minProfitMaticWei: 1_000_000_000_000_000n, // 0.001 MATIC minimum
@@ -93,7 +93,7 @@ describe("computeProfit - canonical MATIC wei comparison", () => {
     // Token worth 100 MATIC/token. Gross profit 1 token unit (smallest) = many MATIC.
     const result = computeProfit({
       ...baseOpts,
-      tokenToMaticRate: 100_000_000_000_000_000_000n, // 1 unit = 100 MATIC (huge)
+      tokenToMaticRate: 100_000_000_000_000_000_000_000_000_000_000_000_000n, // 1e38 (huge)
       grossProfitInTokens: 1_000n, // 1000 units * 100 MATIC = 100,000 MATIC value
       gasUnits: 300_000,
       minProfitMaticWei: 1_000_000_000_000_000n,

@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779707954.131574,
-    "ast_hash": "11f6a57884d2f955092436f556ce2fbd",
+    "mtime": 1779715499.4044528,
+    "ast_hash": "7f5cef997fffac9d9eb4b989f86f0716",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/uniswap_v3.ts": {
-    "mtime": 1779428861.684683,
-    "ast_hash": "ef8bc66f78b7d3b4ebe06ac184146648",
+    "mtime": 1779715490.7046893,
+    "ast_hash": "064c387a893e63118680fc20b56ab9c3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/tick_math.ts": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/profit.ts": {
-    "mtime": 1779545729.1442847,
-    "ast_hash": "53298ee101a6589cc425c7616d690f5e",
+    "mtime": 1779708837.033372,
+    "ast_hash": "1358e85ea6ead584e623ee4711d1a507",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/risk.test.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779707079.6028957,
-    "ast_hash": "97bf9d9ce5c78dc3721628be450c9798",
+    "mtime": 1779708862.509084,
+    "ast_hash": "2c59eded1c5bbd4cd03ba77e08779b88",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
-    "mtime": 1779604780.1163006,
-    "ast_hash": "b25af1a78ce3e757c0d2a0c7ec387e3a",
+    "mtime": 1779714976.5564225,
+    "ast_hash": "a3dc409340b4d1bd3788cb51b221535f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779708218.5764508,
-    "ast_hash": "c1d318fa23e293ee5c12222120a39c19",
+    "mtime": 1779714969.1684914,
+    "ast_hash": "8db698aedd10fa968aa9f756da6aa91a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -565,8 +565,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1779597375.566872,
-    "ast_hash": "bed1fe553dae3e093bec417feb116d12",
+    "mtime": 1779709868.0202959,
+    "ast_hash": "21b03471e1fa0bed444748e8a98a174d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.superpowers/brainstorm/47831-1779183660/content/recommendation.html": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1779707606.6638672,
-    "ast_hash": "c4cef541930ac4544d941bc259c21fc2",
+    "mtime": 1779715746.862512,
+    "ast_hash": "7569ba2b57c11984acbe67131fe990bb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/lifecycle.ts": {
@@ -1107,6 +1107,21 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-25-tui-redesign-design.md": {
     "mtime": 1779695400.9732573,
     "ast_hash": "efab07d2e7e24227b07a00ad2ac31c2e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/check_price.ts": {
+    "mtime": 1779713808.3032987,
+    "ast_hash": "5f3b209b021675656086d4521953b489",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/pools.json": {
+    "mtime": 1779714739.218636,
+    "ast_hash": "73a15eb56c301071d543c2bd794cd8c5",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/find_pools.ts": {
+    "mtime": 1779714728.2107387,
+    "ast_hash": "cab33c597415a98ab7c5f869c141eb53",
     "semantic_hash": ""
   }
 }

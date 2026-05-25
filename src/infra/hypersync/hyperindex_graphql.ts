@@ -54,43 +54,95 @@ export async function buildStateCacheFromGraphQL(
   adminSecret: string,
 ): Promise<Map<string, any>> {
   try {
-    const v2Result = await graphQLQuery(
-      graphqlUrl,
-      adminSecret,
-      `{ V2PoolState(limit: 15000) { id reserve0 reserve1 initialized } }`,
-    );
-
-    const v3Result = await graphQLQuery(
-      graphqlUrl,
-      adminSecret,
-      `{ V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity initialized } }`,
-    );
+    const [v2Result, v3Result, v4Result, balancerResult, curveResult, dodoResult, woofiResult] = await Promise.all([
+      graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState(limit: 15000) { id reserve0 reserve1 } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ V4PoolState(limit: 5000) { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ BalancerPoolState(limit: 5000) { id poolId balances weights amp swapFee scalingFactors } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ CurvePoolState(limit: 5000) { id balances A fee rates } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate } }`),
+      graphQLQuery(graphqlUrl, adminSecret, `{ WoofiPoolState(limit: 5000) { id price coefficient spread fee } }`),
+    ]);
 
     const v2States = (v2Result?.V2PoolState || []) as any[];
-    const v3States = (v3Result?.V3PoolState || []) as any[];
-
     for (const s of v2States) {
-      if (s.initialized) {
-        _cachedState.set(s.id.toLowerCase(), {
-          reserve0: BigInt(s.reserve0),
-          reserve1: BigInt(s.reserve1),
-          initialized: true,
-        });
-      }
+      _cachedState.set(s.id.toLowerCase(), {
+        reserve0: BigInt(s.reserve0),
+        reserve1: BigInt(s.reserve1),
+      });
     }
 
+    const v3States = (v3Result?.V3PoolState || []) as any[];
     for (const s of v3States) {
-      if (s.initialized) {
-        _cachedState.set(s.id.toLowerCase(), {
-          sqrtPriceX96: BigInt(s.sqrtPriceX96),
-          tick: Number(s.tick),
-          liquidity: BigInt(s.liquidity),
-          initialized: true,
-        });
-      }
+      _cachedState.set(s.id.toLowerCase(), {
+        sqrtPriceX96: BigInt(s.sqrtPriceX96),
+        tick: Number(s.tick),
+        liquidity: BigInt(s.liquidity),
+      });
+    }
+
+    const v4States = (v4Result?.V4PoolState || []) as any[];
+    for (const s of v4States) {
+      _cachedState.set(s.id.toLowerCase(), {
+        sqrtPriceX96: BigInt(s.sqrtPriceX96),
+        liquidity: BigInt(s.liquidity),
+        tick: Number(s.tick),
+        fee: BigInt(s.fee),
+        tickSpacing: Number(s.tickSpacing),
+        hooks: s.hooks,
+      });
+    }
+
+    const balancerStates = (balancerResult?.BalancerPoolState || []) as any[];
+    for (const s of balancerStates) {
+      _cachedState.set(s.id.toLowerCase(), {
+        poolId: s.poolId,
+        balances: parseBigIntArray(s.balances),
+        weights: parseBigIntArray(s.weights),
+        amp: s.amp ? BigInt(s.amp) : undefined,
+        swapFee: BigInt(s.swapFee),
+        scalingFactors: parseBigIntArray(s.scalingFactors),
+      });
+    }
+
+    const curveStates = (curveResult?.CurvePoolState || []) as any[];
+    for (const s of curveStates) {
+      _cachedState.set(s.id.toLowerCase(), {
+        balances: parseBigIntArray(s.balances),
+        A: BigInt(s.A),
+        fee: BigInt(s.fee),
+        rates: parseBigIntArray(s.rates),
+      });
+    }
+
+    const dodoStates = (dodoResult?.DodoPoolState || []) as any[];
+    for (const s of dodoStates) {
+      _cachedState.set(s.id.toLowerCase(), {
+        baseReserve: BigInt(s.baseReserve),
+        quoteReserve: BigInt(s.quoteReserve),
+        rStatus: s.rStatus,
+        k: BigInt(s.k),
+        fee: BigInt(s.fee),
+        i: BigInt(s.i),
+        targetBase: BigInt(s.targetBase),
+        targetQuote: BigInt(s.targetQuote),
+        lpFeeRate: BigInt(s.lpFeeRate),
+        mtFeeRate: BigInt(s.mtFeeRate),
+      });
+    }
+
+    const woofiStates = (woofiResult?.WoofiPoolState || []) as any[];
+    for (const s of woofiStates) {
+      _cachedState.set(s.id.toLowerCase(), {
+        price: BigInt(s.price),
+        coefficient: BigInt(s.coefficient),
+        spread: BigInt(s.spread),
+        fee: BigInt(s.fee),
+      });
     }
   } catch (err) {
     // Silently fail
+    console.error("Failed to build state cache from GraphQL", err);
   }
 
   return _cachedState;

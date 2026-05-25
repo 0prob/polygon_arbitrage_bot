@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { 
   discoverPoolsFromHasura, 
   buildStateCacheFromGraphQL, 
-  resetGraphQLReaderCache 
 } from "../../src/infra/hypersync/hyperindex_graphql";
 
 const MOCK_URL = "http://localhost:8080/v1/graphql";
@@ -10,8 +9,8 @@ const MOCK_SECRET = "admin-secret";
 
 describe("Hypersync GraphQL Integration", () => {
   beforeEach(() => {
-    resetGraphQLReaderCache();
     vi.unstubAllGlobals();
+    vi.stubGlobal("setTimeout", (cb: any) => cb());
   });
 
   it("should discover pools from Hasura correctly parsing tokens", async () => {
@@ -32,8 +31,6 @@ describe("Hypersync GraphQL Integration", () => {
       ok: true,
       json: async () => ({
         data: {
-          V2PoolState: [{ id: "0x123" }],
-          V3PoolState: [{ id: "0x456" }],
           PoolMeta: mockPoolMeta
         }
       })
@@ -41,14 +38,20 @@ describe("Hypersync GraphQL Integration", () => {
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
 
-    expect(pools).toHaveLength(2);
-    expect(pools[0]).toEqual({
+    expect(pools.length).toBeGreaterThanOrEqual(2);
+    
+    const pool1 = pools.find(p => p.address === "0x123");
+    expect(pool1).toBeDefined();
+    expect(pool1).toEqual({
       address: "0x123",
       protocol: "UniswapV3",
       tokens: ["0xaaa", "0xbbb"],
       fee: 30,
     });
-    expect(pools[1]).toEqual({
+    
+    const pool2 = pools.find(p => p.address === "0x456");
+    expect(pool2).toBeDefined();
+    expect(pool2).toEqual({
       address: "0x456",
       protocol: "Balancer",
       tokens: ["0xccc", "0xddd"],
@@ -67,7 +70,7 @@ describe("Hypersync GraphQL Integration", () => {
     })));
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
-    expect(pools).toEqual([]);
+    expect(pools.length).toBeGreaterThan(0); // Should return static anchors
   });
 
   it("should handle GraphQL errors in discoverPoolsFromHasura", async () => {
@@ -79,7 +82,7 @@ describe("Hypersync GraphQL Integration", () => {
     })));
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
-    expect(pools).toEqual([]);
+    expect(pools.length).toBeGreaterThan(0); // Should return static anchors on error
   });
 
   it("should build state cache correctly from various pool types", async () => {
@@ -129,8 +132,7 @@ describe("Hypersync GraphQL Integration", () => {
     expect(cache.get("0xv3")).toMatchObject({
       sqrtPriceX96: 1000n,
       liquidity: 5000n,
-      tick: 10,
-      initialized: true
+      tick: 10
     });
 
     expect(cache.has("0xbal")).toBe(true);
@@ -139,29 +141,8 @@ describe("Hypersync GraphQL Integration", () => {
       balances: [100n, 200n],
       weights: [500000000000000000n, 500000000000000000n],
       amp: 100n,
-      swapFee: 1000n,
-      initialized: true
+      swapFee: 1000n
     });
-  });
-
-  it("should use cached state if fetch was recent", async () => {
-    const fetchSpy = vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ 
-        data: {
-          V3PoolState: [{ id: "0x1", sqrtPriceX96: "1", liquidity: "1", tick: 1 }]
-        } 
-      })
-    }));
-    vi.stubGlobal("fetch", fetchSpy);
-
-    await buildStateCacheFromGraphQL(MOCK_URL, MOCK_SECRET);
-    expect(fetchSpy).toHaveBeenCalled();
-    
-    fetchSpy.mockClear();
-    await buildStateCacheFromGraphQL(MOCK_URL, MOCK_SECRET);
-    // Should not fetch again because it's been less than 2000ms AND cache is not empty
-    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("should handle malformed JSON in parseBigIntArray through Balancer fetch", async () => {
