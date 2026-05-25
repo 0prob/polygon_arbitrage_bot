@@ -7,10 +7,6 @@ function cursor(row: number, col: number): string {
   return `${ESC}[${row + 1};${col + 1}H`;
 }
 
-function clearLine(): string {
-  return `${ESC}[2K`;
-}
-
 function hideCursor(): string {
   return `${ESC}[?25l`;
 }
@@ -39,6 +35,16 @@ function color(text: string, code: number): string {
   return `${ESC}[${code}m${text}${ESC}[0m`;
 }
 
+function visibleLength(str: string): number {
+  return str.replace(/\x1B\[\d+m/g, "").length;
+}
+
+function padRight(str: string, width: number): string {
+  const len = visibleLength(str);
+  if (len >= width) return str;
+  return str + " ".repeat(width - len);
+}
+
 const GREEN = 32;
 const YELLOW = 33;
 const RED = 31;
@@ -62,7 +68,7 @@ export class Renderer {
     let buf = "";
     buf += enterAltScreen();
     buf += hideCursor();
-    buf += clearLine();
+    buf += `${ESC}[2J`; // clear entire screen once on enter
     this.stdout.write(buf);
     this.initialized = true;
   }
@@ -79,10 +85,11 @@ export class Renderer {
   render(layout: TuiLayout, state: TuiState): void {
     const panels: RenderedPanel[] = [];
 
-    panels.push(this.renderStatusBar(layout, state));
-    panels.push(this.renderMetrics(layout, state));
-    panels.push(this.renderSystem(layout, state));
-    panels.push(this.renderLog(layout, state));
+    panels.push(this.renderHeader(layout, state));
+    panels.push(this.renderPipeline(layout, state));
+    panels.push(this.renderMainTable(layout, state));
+    panels.push(this.renderSidebar(layout, state));
+    panels.push(this.renderFooterLog(layout, state));
     panels.push(this.renderKeymap(layout, state));
 
     let buf = "";
@@ -92,40 +99,78 @@ export class Renderer {
     this.stdout.write(buf);
   }
 
-  private renderStatusBar(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const running = state.isRunning ? color("● running", GREEN) : color("● stopped", RED);
-    const paused = state.isPaused ? color(" PAUSED", YELLOW) : "";
-    const pools = `${state.system.poolCount} pools`;
-    const title = `${bold("Arb Bot")}  ${running}${paused}  ${dim(pools)}`;
-    const line = title.padEnd(layout.statusBar.width, "─");
+  private renderHeader(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const running = state.isRunning ? color("[● RUNNING]", GREEN) : color("[○ PAUSED]", RED);
+    const uptime = formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
+    const m = state.metrics;
+    const profit = formatWei(m.totalProfitWei);
+    
+    const leftText = ` ${bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
+    const rightText = ` Uptime: ${uptime} | Total P/L: +${profit} MATIC | Errors: ${m.totalErrors} `;
+    
+    const rawLeftLen = visibleLength(leftText);
+    const rawRightLen = visibleLength(rightText);
+    const padding = Math.max(0, layout.header.width - rawLeftLen - rawRightLen);
+    
+    const line = leftText + " ".repeat(padding) + rightText;
 
     return {
-      y: layout.statusBar.y,
-      content: cursor(layout.statusBar.y, layout.statusBar.x) + clearLine() + line,
+      y: layout.header.y,
+      content: cursor(layout.header.y, layout.header.x) + padRight(line, layout.header.width),
     };
   }
 
-  private renderMetrics(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const m = state.metrics;
+  private renderPipeline(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const s = state.system;
+    
+    let simProgressStr = "";
+    if (s.pipelineStage === "SIMULATING" && s.simProgress.total > 0) {
+      const pct = Math.floor((s.simProgress.current / s.simProgress.total) * 100);
+      const barLen = 15;
+      const filled = Math.floor((pct / 100) * barLen);
+      const bar = "=".repeat(filled) + (filled < barLen ? ">" : "") + " ".repeat(Math.max(0, barLen - filled - 1));
+      simProgressStr = ` [${bar}] ${pct}% (${s.simProgress.current}/${s.simProgress.total})`;
+    }
+
     const lines = [
-      bold("📊 Metrics"),
-      `  Opportunities:  ${color(String(m.opportunitiesFound), CYAN)}`,
-      `  Executed:       ${color(String(m.executed), WHITE)}`,
-      `  Successful:     ${color(String(m.successful), GREEN)}`,
-      `  Failed:         ${color(String(m.failed), m.failed > 0 ? RED : WHITE)}`,
-      `  Cycles:         ${color(String(m.totalCycles), WHITE)}`,
-      `  Errors:         ${color(String(m.totalErrors), m.totalErrors > 0 ? RED : WHITE)}`,
-      `  Total Profit:   ${color(formatWei(m.totalProfitWei), CYAN)}`,
-      `  Profit/s:       ${color(formatWei(BigInt(Math.floor(m.profitPerSecond))), CYAN)}`,
+      bold("🔄 Pipeline Monitor"),
+      `  [${s.pipelineStage === "DISCOVERY" ? color("●", CYAN) : (s.poolCount > 0 ? color("✔", GREEN) : " ")}] Discovery:   ${s.poolCount} pools`,
+      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : (s.cycleCount > 0 ? color("✔", GREEN) : " ")}] Enumerate:   ${s.cycleCount} cycles found`,
+      `  [${s.pipelineStage === "SIMULATING" ? color("●", CYAN) : " "}] Simulation:  ${s.pipelineStage === "SIMULATING" ? "Running..." : "Idle"} ${simProgressStr}`,
+      `  [${s.pipelineStage === "EXECUTING" ? color("●", YELLOW) : " "}] Execution:   ${s.pipelineStage === "EXECUTING" ? "Submitting TXs..." : "Idle"}`,
+      ``,
+      `  ${dim(`Last Pass: ${s.lastCycleTimeMs}ms | ${state.metrics.opportunitiesFound} profitable overall`)}`
     ];
-    return this.panelBox(lines, layout.metricsPanel);
+    return this.panelBox(lines, layout.pipeline);
   }
 
-  private renderSystem(layout: TuiLayout, state: TuiState): RenderedPanel {
+  private renderMainTable(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const lines = [
+      bold("⭐ Top Opportunities"),
+      `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(12)} ${dim("Status")}`
+    ];
+    
+    if (state.system.activeOpportunities.length === 0) {
+      lines.push(`  ${dim("No active opportunities.")}`);
+    } else {
+      for (const opp of state.system.activeOpportunities) {
+        const profit = formatWei(opp.profit);
+        let statusColor = WHITE;
+        if (opp.status === "Confirmed") statusColor = GREEN;
+        if (opp.status === "Failed" || opp.status === "Quarantined") statusColor = RED;
+        if (opp.status === "Executing") statusColor = YELLOW;
+        
+        lines.push(`  ${opp.path.padEnd(30)} ${color(profit, CYAN).padEnd(20)} ${color(opp.status, statusColor)}`);
+      }
+    }
+    
+    return this.panelBox(lines, layout.mainTable);
+  }
+
+  private renderSidebar(layout: TuiLayout, state: TuiState): RenderedPanel {
     const s = state.system;
     const gwei = s.gasPriceWei > 0n ? formatGwei(s.gasPriceWei) : "—";
 
-    // Indexer status: use color + label based on state
     let hiLabel: string;
     let hiColor: number;
     if (s.hiSyncedBlock > 0) {
@@ -142,52 +187,49 @@ export class Renderer {
       hiLabel = dim(s.hiStatus);
     }
     const hiRemote = s.hiRemoteBlock > 0 ? ` / ${formatBlock(s.hiRemoteBlock)}` : "";
-    const syncPct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0
-      ? ` (${Math.min(100, (s.hiSyncedBlock / s.hiRemoteBlock) * 100).toFixed(1)}%)`
-      : "";
-    // Time since last indexer update
     const hiAge = s.hiLastSeen > 0 ? Date.now() - s.hiLastSeen : 0;
     const hiAgeStr = hiAge > 0 ? dim(` ${formatDuration(hiAge)}`) : "";
-    const chainLabel = s.hiChain ? ` (${s.hiChain})` : "";
-
-    const protocolStr = Object.entries(s.poolsPerProtocol)
-      .map(([name, count]) => `${name}:${count}`)
-      .join(" ");
 
     const lines = [
-      bold("⚡ System"),
+      bold("⚡ System & Infra"),
       `  Gas Price:    ${color(gwei, YELLOW)}`,
-      `  Pools:        ${color(String(s.poolCount), CYAN)} ${dim(protocolStr)}`,
-      `  Routes:       ${color(String(s.cycleCount), WHITE)} ${dim(`(${s.maxHops} hops)`)}`,
+      `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
-      `  Indexer${chainLabel}: ${hiLabel}${hiRemote}${syncPct}${hiAgeStr}`,
-      `  Uptime:       ${dim(formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0))}`,
+      `  Throughput:   ${color(String(s.cycleCount > 0 ? Math.floor(1000 / Math.max(1, s.lastCycleTimeMs)) : 0), WHITE)} passes/s`,
+      ``,
+      bold("📊 Executions"),
+      `  Attempted:    ${color(String(state.metrics.executed), WHITE)}`,
+      `  Successful:   ${color(String(state.metrics.successful), GREEN)}`,
+      `  Failed:       ${color(String(state.metrics.failed), state.metrics.failed > 0 ? RED : WHITE)}`
     ];
-    return this.panelBox(lines, layout.systemPanel);
+    return this.panelBox(lines, layout.sidebar);
   }
 
-  private renderLog(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const visibleCount = Math.max(0, layout.logPanel.height - 1);
+  private renderFooterLog(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const visibleCount = Math.max(0, layout.footerLog.height - 1);
     const startIdx = Math.max(0, state.log.length - visibleCount);
     const visible = state.log.slice(startIdx, startIdx + visibleCount);
 
-    const lines: string[] = [bold("📋 Activity Log")];
+    const lines: string[] = [bold("📋 Event Log (Filtered)")];
     for (const entry of visible) {
       const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
-      const component = color(entry.component.padEnd(12).slice(0, 12), CYAN);
+      let component = color(entry.component.padEnd(10).slice(0, 10), CYAN);
+      if (entry.component === "ERROR" || entry.component === "Failed") {
+        component = color(entry.component.padEnd(10).slice(0, 10), RED);
+      }
       lines.push(`  ${dim(time)}  ${component} ${entry.message}`);
     }
-    while (lines.length < layout.logPanel.height) {
+    while (lines.length < layout.footerLog.height) {
       lines.push("");
     }
-    return this.panelBox(lines, layout.logPanel);
+    return this.panelBox(lines, layout.footerLog);
   }
 
   private renderKeymap(layout: TuiLayout, _state: TuiState): RenderedPanel {
     const hints = dim("Ctrl+Q quit  |  P pause  |  R reset stats");
     return {
-      y: layout.keymapBar.y,
-      content: cursor(layout.keymapBar.y, layout.keymapBar.x) + clearLine() + hints,
+      y: layout.keymap.y,
+      content: cursor(layout.keymap.y, layout.keymap.x) + padRight(hints, layout.keymap.width),
     };
   }
 
@@ -197,8 +239,7 @@ export class Renderer {
       if (i > 0) content += "\n";
       const line = lines[i] ?? "";
       content += cursor(rect.y + i, rect.x);
-      content += clearLine();
-      content += line.slice(0, rect.width);
+      content += padRight(line, rect.width);
     }
     return { y: rect.y, content };
   }

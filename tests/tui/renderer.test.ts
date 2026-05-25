@@ -30,7 +30,7 @@ describe("Renderer", () => {
     expect(stdout.write).toHaveBeenCalledWith(expect.stringContaining("?1049l"));
   });
 
-  it("renders status bar with title", () => {
+  it("renders header with title and status", () => {
     const stdout = createMockStdout();
     const r = new Renderer(stdout);
     const layout = computeLayout(80, 24);
@@ -39,10 +39,11 @@ describe("Renderer", () => {
 
     r.render(layout, state);
     const output = stdout.getBuffer();
-    expect(output).toContain("Arb Bot");
+    expect(output).toContain("Polygon Arb Bot");
+    expect(output).toContain("[● RUNNING]");
   });
 
-  it("renders metrics panel with counts", () => {
+  it("renders pipeline panel with counts", () => {
     const stdout = createMockStdout();
     const r = new Renderer(stdout);
     const layout = computeLayout(80, 24);
@@ -52,10 +53,11 @@ describe("Renderer", () => {
 
     r.render(layout, state);
     const output = stdout.getBuffer();
-    expect(output).toContain("1");
+    expect(output).toContain("Pipeline Monitor");
+    expect(output).toContain("1 profitable");
   });
 
-  it("renders log entries", () => {
+  it("renders log entries in footer", () => {
     const stdout = createMockStdout();
     const r = new Renderer(stdout);
     const layout = computeLayout(80, 24);
@@ -67,10 +69,10 @@ describe("Renderer", () => {
     expect(output).toContain("hello world");
   });
 
-  it("renders detailed system stats", () => {
+  it("renders detailed system stats in sidebar", () => {
     const stdout = createMockStdout();
     const r = new Renderer(stdout);
-    const layout = computeLayout(160, 24); // Use much wider layout to accommodate ANSI escapes
+    const layout = computeLayout(160, 24);
     const state = createInitialState();
     
     applyEvent(state, { 
@@ -91,10 +93,9 @@ describe("Renderer", () => {
 
     r.render(layout, state);
     const output = stdout.getBuffer();
-    expect(output).toContain("V3:60");
-    expect(output).toContain("V2:40");
-    expect(output).toContain("(3 hops)");
-    expect(output).toContain("(ethereum)");
-    expect(output).toContain("50.0%");
+    expect(output).toContain("syncing");
+    expect(output).toContain("1.0K");
+    expect(output).toContain("2.0K");
+    expect(output).toContain("System & Infra");
   });
 });

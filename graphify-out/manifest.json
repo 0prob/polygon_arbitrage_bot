@@ -170,13 +170,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/settings.json": {
-    "mtime": 1779228774.078167,
+    "mtime": 1779687468.4977145,
     "ast_hash": "f080aabf772e803c9e24b9ad0acbf2b6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.opencode/opencode.json": {
-    "mtime": 1779228643.542712,
-    "ast_hash": "e5f74d14a81702b55bdf53b33ec991d7",
+    "mtime": 1779688327.5964913,
+    "ast_hash": "ae06c84d30cc7b52025b04599d7baa9e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.opencode/package.json": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.ts": {
-    "mtime": 1779677947.4777656,
-    "ast_hash": "09464beb7c780a51e3b7e2fd83e38b8f",
+    "mtime": 1779688938.9386218,
+    "ast_hash": "59e9921fe2020808f5eb15262fe312f4",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
@@ -475,13 +475,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779685789.083238,
-    "ast_hash": "56b7e9b8898b4e96f8537facbce67147",
+    "mtime": 1779689005.7261062,
+    "ast_hash": "df8f07c19129b9d04e68835712983902",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779685785.6072836,
-    "ast_hash": "055631cef56c6a93366d949a4429910c",
+    "mtime": 1779688929.9506888,
+    "ast_hash": "7f491f42e6fd2f4c6c56752f36a147a0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -554,13 +554,8 @@
     "ast_hash": "8acfa769e1857b85952ba91bc41736a8",
     "semantic_hash": ""
   },
-  "/home/x/arb/t/AGENTS.md": {
-    "mtime": 1779228780.1061432,
-    "ast_hash": "62c05a2bf20bf036a0b2633478663e64",
-    "semantic_hash": ""
-  },
   "/home/x/arb/t/GEMINI.md": {
-    "mtime": 1779228621.2108128,
+    "mtime": 1779687468.4977145,
     "ast_hash": "82efb97a359f5c7290bf2513d14686be",
     "semantic_hash": ""
   },
@@ -635,8 +630,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/renderer.test.ts": {
-    "mtime": 1779539441.092119,
-    "ast_hash": "003afbd67d68ab0631a72ff773b873a2",
+    "mtime": 1779688911.4588256,
+    "ast_hash": "23ce2a4f0805203bcc7f4084f3ff97dc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {

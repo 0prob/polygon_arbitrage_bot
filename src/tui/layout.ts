@@ -6,30 +6,39 @@ export interface PanelRect {
 }
 
 export interface TuiLayout {
-  statusBar: PanelRect;
-  metricsPanel: PanelRect;
-  systemPanel: PanelRect;
-  logPanel: PanelRect;
-  keymapBar: PanelRect;
+  header: PanelRect;
+  pipeline: PanelRect;
+  mainTable: PanelRect;
+  sidebar: PanelRect;
+  footerLog: PanelRect;
+  keymap: PanelRect;
 }
 
 const STATUS_HEIGHT = 1;
 const KEYMAP_HEIGHT = 1;
-const TOP_PANEL_HEIGHT = 7;
+const SIDEBAR_WIDTH = 40;
+const FOOTER_LOG_HEIGHT = 6;
 
 export function computeLayout(cols: number | undefined, rows: number | undefined): TuiLayout {
-  const safeCols = cols ?? 80;
-  const safeRows = rows ?? 24;
+  const safeCols = Math.max(80, cols ?? 80);
+  const safeRows = Math.max(20, rows ?? 24);
   const middleHeight = safeRows - STATUS_HEIGHT - KEYMAP_HEIGHT;
-  const topHeight = Math.min(TOP_PANEL_HEIGHT, Math.floor(middleHeight / 3));
-  const logHeight = middleHeight - topHeight;
-  const halfCols = Math.floor(safeCols / 2);
+  
+  const sidebarWidth = Math.min(SIDEBAR_WIDTH, Math.floor(safeCols / 3));
+  const mainWidth = safeCols - sidebarWidth;
+  
+  const logHeight = Math.min(FOOTER_LOG_HEIGHT, Math.floor(middleHeight / 3));
+  const upperMainHeight = middleHeight - logHeight;
+  
+  const pipelineHeight = Math.min(7, Math.floor(upperMainHeight / 2));
+  const tableHeight = upperMainHeight - pipelineHeight;
 
   return {
-    statusBar: { x: 0, y: 0, width: safeCols, height: STATUS_HEIGHT },
-    metricsPanel: { x: 0, y: STATUS_HEIGHT, width: halfCols, height: topHeight },
-    systemPanel: { x: halfCols, y: STATUS_HEIGHT, width: safeCols - halfCols, height: topHeight },
-    logPanel: { x: 0, y: STATUS_HEIGHT + topHeight, width: safeCols, height: logHeight },
-    keymapBar: { x: 0, y: safeRows - KEYMAP_HEIGHT, width: safeCols, height: KEYMAP_HEIGHT },
+    header: { x: 0, y: 0, width: safeCols, height: STATUS_HEIGHT },
+    sidebar: { x: mainWidth, y: STATUS_HEIGHT, width: sidebarWidth, height: middleHeight },
+    pipeline: { x: 0, y: STATUS_HEIGHT, width: mainWidth, height: pipelineHeight },
+    mainTable: { x: 0, y: STATUS_HEIGHT + pipelineHeight, width: mainWidth, height: tableHeight },
+    footerLog: { x: 0, y: STATUS_HEIGHT + upperMainHeight, width: mainWidth, height: logHeight },
+    keymap: { x: 0, y: safeRows - KEYMAP_HEIGHT, width: safeCols, height: KEYMAP_HEIGHT },
   };
 }

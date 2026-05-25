@@ -11,6 +11,15 @@ export interface MetricsState {
   totalErrors: number;
 }
 
+export interface OpportunityEntry {
+  routeKey: string;
+  path: string;
+  profit: bigint;
+  roi: number;
+  status: "Simulated" | "Executing" | "Confirmed" | "Failed" | "Quarantined";
+  timestamp: number;
+}
+
 export interface SystemState {
   gasPriceWei: bigint;
   poolCount: number;
@@ -23,6 +32,9 @@ export interface SystemState {
   hiLastSeen: number;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
+  pipelineStage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING";
+  simProgress: { current: number; total: number; profitable: number };
+  activeOpportunities: OpportunityEntry[];
 }
 
 export interface LogEntry {
@@ -65,6 +77,9 @@ export function createInitialState(): TuiState {
       hiLastSeen: 0,
       poolsPerProtocol: {},
       maxHops: 0,
+      pipelineStage: "IDLE",
+      simProgress: { current: 0, total: 0, profitable: 0 },
+      activeOpportunities: [],
     },
     log: [],
     isRunning: false,
@@ -80,8 +95,44 @@ function appendLog(state: TuiState, component: string, message: string): void {
   }
 }
 
+function updateOpportunity(state: TuiState, routeKey: string, update: Partial<OpportunityEntry>): void {
+  const existing = state.system.activeOpportunities.find(o => o.routeKey === routeKey);
+  if (existing) {
+    Object.assign(existing, update);
+    existing.timestamp = Date.now();
+  } else {
+    // Basic path representation from routeKey
+    const addrs = routeKey.split(":");
+    const shortPath = addrs.length >= 2 
+      ? `${addrs[0].slice(0, 6)}... -> ${addrs[addrs.length-1].slice(0, 6)}...`
+      : routeKey.slice(0, 10) + "...";
+      
+    state.system.activeOpportunities.unshift({
+      routeKey,
+      path: shortPath,
+      profit: 0n,
+      roi: 0,
+      status: "Simulated",
+      timestamp: Date.now(),
+      ...update
+    });
+  }
+  
+  // Sort by profit descending and keep top 10
+  state.system.activeOpportunities.sort((a, b) => Number(b.profit - a.profit));
+  if (state.system.activeOpportunities.length > 10) {
+    state.system.activeOpportunities.length = 10;
+  }
+}
+
 export function applyEvent(state: TuiState, event: ArbEvent): void {
   switch (event.type) {
+    case "pipeline_stage":
+      state.system.pipelineStage = event.stage;
+      break;
+    case "simulation_progress":
+      state.system.simProgress = { current: event.current, total: event.total, profitable: event.profitable };
+      break;
     case "pass_loop_started":
       state.isRunning = true;
       state._startTime = state._startTime === 0 ? Date.now() : state._startTime;
@@ -92,7 +143,7 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.system.cycleCount = event.cycleCount;
       state.system.poolsPerProtocol = event.poolsPerProtocol ?? {};
       state.system.maxHops = event.maxHops;
-      appendLog(state, "Graph", `${event.poolCount} pools, ${event.cycleCount} cycles`);
+      // Removed repetitive graph log
       break;
     case "opportunity_found":
       state.metrics.opportunitiesFound++;
@@ -101,18 +152,22 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
       }
+      updateOpportunity(state, event.routeKey, { profit: event.profitWei, status: "Simulated" });
       appendLog(state, "Pipeline", `Profit: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
       break;
     case "execution_submitted":
+      updateOpportunity(state, event.routeKey, { status: "Executing" });
       appendLog(state, "Exec", `Submitted [${event.routeKey.slice(0, 10)}]`);
       break;
     case "execution_result":
       state.metrics.executed++;
       if (event.success) {
         state.metrics.successful++;
+        updateOpportunity(state, event.routeKey, { status: "Confirmed" });
         appendLog(state, "Exec", `Confirmed ${event.txHash?.slice(0, 10) ?? ""}...`);
       } else {
         state.metrics.failed++;
+        updateOpportunity(state, event.routeKey, { status: event.error?.includes("quarantine") ? "Quarantined" : "Failed" });
         appendLog(state, "Exec", `Failed: ${event.error ?? "unknown"}`);
       }
       break;

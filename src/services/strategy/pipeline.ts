@@ -17,6 +17,7 @@ export interface PipelineOptions {
   flashLoanSource?: FlashLoanSource;
   ternarySearchIterations?: number;
   maxPriceImpactThreshold?: number;
+  onProgress?: (current: number, total: number, profitable: number) => void;
 }
 
 export function getTestAmount(tokenAddress: string): bigint {
@@ -206,8 +207,16 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       if (attempted % 10000 === 0) {
         process.stderr.write(`[pipeline] Error in cycle ${attempted}: ${err instanceof Error ? err.message : err}\n`);
       }
-      continue;
     }
+
+    if (attempted % 100 === 0 && options.onProgress) {
+      options.onProgress(attempted, cycles.length, profitable.length);
+    }
+  }
+
+  // Final progress update
+  if (options.onProgress) {
+    options.onProgress(attempted, cycles.length, profitable.length);
   }
 
   return {

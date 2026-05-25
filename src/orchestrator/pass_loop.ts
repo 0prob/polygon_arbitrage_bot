@@ -337,6 +337,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       let pools = hasuraPoolsCache ?? ctx.getPools();
 
       if (pools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())) {
+        bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
         const graphqlUrl = ctx.config.hasuraUrl;
         const secret = ctx.config.hasuraSecret;
         if (pools.length === 0) {
@@ -409,6 +410,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       if (shouldReEnumerate || !cachedGraph) {
+        bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
         if (shouldFullRebuild || !cachedGraph) {
           cachedGraph = deps.buildGraph(pools, stateCache);
         }
@@ -444,6 +446,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const currentCycles = cachedCycles;
 
       if (currentCycles.length === 0) {
+        bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
       }
@@ -453,6 +456,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const gasSnapshot = ctx.gasOracle.getSnapshot();
       if (!gasSnapshot) {
         ctx.logger.debug({}, "Waiting for gas oracle snapshot");
+        bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(100);
         continue;
       }
@@ -467,6 +471,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await ctx.dryRunner.fetchPendingState();
       }
 
+      bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
+
       const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,
         gasPriceWei: gasSnapshot.gasPrice,
@@ -476,6 +482,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
         ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
         maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
+        onProgress: (current, total, profitable) => {
+          bus?.emit({ type: "simulation_progress", current, total, profitable });
+        },
       };
 
       const result = deps.evaluatePipeline(currentCycles, stateCache, options);
@@ -537,6 +546,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           }
 
           if (candidates.length > 0) {
+            bus?.emit({ type: "pipeline_stage", stage: "EXECUTING" });
             const candidateExecs = candidates.map(c => c.candidate);
             const groups = groupCompatibleCandidates(candidateExecs);
 
@@ -603,6 +613,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       const waitMs = Math.max(0, HF_INTERVAL - elapsed);
+      bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
       if (waitMs > 0) await sleep(waitMs);
     } catch (err) {
       ctx.logger.error({ err }, "Pass loop error");

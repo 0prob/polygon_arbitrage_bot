@@ -40,11 +40,32 @@ describe("applyEvent", () => {
     expect(s.system.gasPriceWei).toBe(32n * 10n ** 9n);
   });
 
-  it("updates pool count on graph_built", () => {
+  it("updates pool count on graph_built but does not log", () => {
     const s = createInitialState();
-    applyEvent(s, { type: "graph_built", poolCount: 184, cycleCount: 42 });
+    applyEvent(s, { type: "graph_built", poolCount: 184, cycleCount: 42, maxHops: 4 });
     expect(s.system.poolCount).toBe(184);
     expect(s.system.cycleCount).toBe(42);
+    expect(s.log.length).toBe(0); // Assuming no other events fired
+  });
+
+  it("updates pipeline stage and simulation progress", () => {
+    const s = createInitialState();
+    applyEvent(s, { type: "pipeline_stage", stage: "SIMULATING" });
+    expect(s.system.pipelineStage).toBe("SIMULATING");
+    
+    applyEvent(s, { type: "simulation_progress", current: 50, total: 100, profitable: 2 });
+    expect(s.system.simProgress.current).toBe(50);
+    expect(s.system.simProgress.profitable).toBe(2);
+  });
+
+  it("updates active opportunities on execution_result", () => {
+    const s = createInitialState();
+    applyEvent(s, { type: "opportunity_found", routeKey: "0x1:0x2", profitWei: 100n });
+    expect(s.system.activeOpportunities.length).toBe(1);
+    expect(s.system.activeOpportunities[0].status).toBe("Simulated");
+    
+    applyEvent(s, { type: "execution_result", routeKey: "0x1:0x2", success: true });
+    expect(s.system.activeOpportunities[0].status).toBe("Confirmed");
   });
 
   it("appends to log on error events", () => {
