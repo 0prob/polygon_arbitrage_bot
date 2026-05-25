@@ -63,6 +63,7 @@ export function findCycles(
       for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
         const e2 = out2[j];
         if (e2.tokenOut.toLowerCase() !== startToken) continue;
+        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
         cycles.push({
           startToken: startToken as Address,
           edges: [e1, e2],
@@ -87,6 +88,7 @@ export function findCycles(
       for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
         const e2 = out2[j];
         if (e2.tokenOut.toLowerCase() === startToken) continue;
+        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
         const third = adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
         const out3 = third;
@@ -96,6 +98,7 @@ export function findCycles(
         for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
           const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
+          if (e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()) continue;
           cycles.push({
             startToken: startToken as Address,
             edges: [e1, e2, e3],
@@ -121,6 +124,7 @@ export function findCycles(
       for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
         const e2 = out2[j];
         if (e2.tokenOut.toLowerCase() === startToken) continue;
+        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
         const third = adjacency.get(e2.tokenOut.toLowerCase());
         if (!third) continue;
         const out3 = third;
@@ -130,6 +134,7 @@ export function findCycles(
         for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
           const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() === startToken) continue;
+          if (e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()) continue;
           const fourth = adjacency.get(e3.tokenOut.toLowerCase());
           if (!fourth) continue;
           const out4 = fourth;
@@ -139,6 +144,7 @@ export function findCycles(
           for (let l = 0; l < o4len && cycles.length < maxCycles; l++) {
             const e4 = out4[l];
             if (e4.tokenOut.toLowerCase() !== startToken) continue;
+            if (e4.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e4.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase() || e4.poolAddress.toLowerCase() === e3.poolAddress.toLowerCase()) continue;
             cycles.push({
               startToken: startToken as Address,
               edges: [e1, e2, e3, e4],

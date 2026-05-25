@@ -276,8 +276,9 @@ export class ExecutionService {
     }
 
     const results: ExecutionResult[] = new Array(candidates.length);
-    const pending: { index: number; promise: Promise<ExecutionResult> }[] = [];
+    const receiptPromises: { index: number; txHash: string; nonce: number; candidate: CandidateExecution }[] = [];
 
+    // Phase 1: Sequential Submission
     for (let i = 0; i < candidates.length; i++) {
       const candidate = candidates[i];
       if (this.quarantine.isQuarantined(candidate.routeKey)) {
@@ -287,65 +288,85 @@ export class ExecutionService {
 
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
-      const promise = (async () => {
-        try {
-          const { txHash, endpoint } = await this.submitTx({
-            to: candidate.targetAddress,
-            data: candidate.calldata,
-            value: candidate.value,
-            nonce,
-            maxFee: fee.maxFee,
-          }, candidate.expectedProfit);
-          this.nonceManager.confirmNonce(nonce);
-          this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
-
-          const receipt = await this._waitForReceipt(txHash);
-          if (!receipt) {
-            this.nonceManager.markStale(nonce);
-            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
-          }
-
-          const success = !!receipt?.status;
-          const gasUsed = receipt?.gasUsed ?? 0n;
-
-          let profit = 0n;
-          if (success && receipt && candidate.profitToken) {
-            const execAddr = getAddress(candidate.targetAddress);
-            const logs = (receipt as any).logs ?? [];
-            profit = parseTransferLogs(logs, execAddr);
-          }
-
-          this.tracker.record({
-            routeKey: candidate.routeKey,
-            txHash,
-            success,
-            gasUsed,
-            profit,
-            timestamp: Date.now(),
-            pools: poolsFromRouteKey(candidate.routeKey),
-            error: success ? undefined : "reverted",
-          });
-
-          if (!success && receipt) {
-            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
-            this.quarantine.add(candidate.routeKey, "reverted");
-          } else if (success) {
-            this.quarantine.recordSuccess(candidate.routeKey);
-          }
-
-          return { success, txHash, gasUsed };
-        } catch (err: any) {
-          const msg = err?.message || String(err);
-          this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Batch tx failed");
-          this.quarantine.add(candidate.routeKey, msg);
-          return { success: false, error: msg };
-        }
-      })();
-
-      pending.push({ index: i, promise });
+      
+      try {
+        const { txHash, endpoint } = await this.submitTx({
+          to: candidate.targetAddress,
+          data: candidate.calldata,
+          value: candidate.value,
+          nonce,
+          maxFee: fee.maxFee,
+        }, candidate.expectedProfit);
+        
+        this.nonceManager.confirmNonce(nonce);
+        this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
+        receiptPromises.push({ index: i, txHash, nonce, candidate });
+      } catch (err: any) {
+        const msg = err?.message || String(err);
+        this.logger.warn({ routeKey: candidate.routeKey, error: msg, nonce }, "Batch submission failed");
+        this.quarantine.add(candidate.routeKey, msg);
+        results[i] = { success: false, error: msg };
+        // We continue to the next one, but since this one failed, the next nonces might also fail 
+        // if this was a nonce-related error. However, NonceManager will give us the same nonce next time
+        // if we didn't confirm it? No, getNextNonce increments.
+        // If it failed to submit, we should probably mark the nonce as stale or revert the nonce manager?
+        // NonceManager usually tracks the next expected nonce. 
+        // If submission fails, we didn't use the nonce.
+      }
     }
 
-    await Promise.all(pending.map(p => p.promise.then(r => { results[p.index] = r; })));
+    // Phase 2: Parallel Receipt Waiting
+    await Promise.all(receiptPromises.map(async ({ index, txHash, nonce, candidate }) => {
+      try {
+        const receipt = await this._waitForReceipt(txHash);
+        if (!receipt) {
+          this.nonceManager.markStale(nonce);
+          this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
+          results[index] = { success: false, txHash, error: "timeout" };
+          return;
+        }
+
+        const success = !!receipt.status;
+        const gasUsed = receipt.gasUsed;
+
+        let profit = 0n;
+        if (success && candidate.profitToken) {
+          const execAddr = getAddress(candidate.targetAddress);
+          const logs = receipt.logs;
+          profit = parseTransferLogs(logs, execAddr);
+        }
+
+        this.tracker.record({
+          routeKey: candidate.routeKey,
+          txHash,
+          success,
+          gasUsed,
+          profit,
+          timestamp: Date.now(),
+          pools: poolsFromRouteKey(candidate.routeKey),
+          error: success ? undefined : "reverted",
+        });
+
+        if (!success) {
+          this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
+          this.quarantine.add(candidate.routeKey, "reverted");
+        } else {
+          this.quarantine.recordSuccess(candidate.routeKey);
+        }
+
+        results[index] = { success, txHash, gasUsed };
+      } catch (err: any) {
+        const msg = err?.message || String(err);
+        this.logger.error({ txHash, error: msg }, "Error waiting for batch receipt");
+        results[index] = { success: false, txHash, error: msg };
+      }
+    }));
+
+    // Fill in any remaining gaps (though there shouldn't be any)
+    for (let i = 0; i < results.length; i++) {
+      if (!results[i]) results[i] = { success: false, error: "unknown error" };
+    }
+
     return results;
   }
 

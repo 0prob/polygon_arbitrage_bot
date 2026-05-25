@@ -189,6 +189,7 @@ describe("runPassLoop", () => {
         profitableCount: 2,
       }),
       discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
+      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
     };
@@ -257,6 +258,7 @@ describe("runPassLoop", () => {
       enumerateCycles: enumerateCyclesSpy,
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
       discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
+      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
     };

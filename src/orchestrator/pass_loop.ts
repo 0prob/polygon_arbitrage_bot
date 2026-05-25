@@ -45,10 +45,15 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
     batches.push(toFetch.slice(i, i + BATCH_SIZE));
   }
 
+  const poolLookup = new Map<string, PoolMeta>();
+  for (const p of pools) {
+    poolLookup.set(p.address.toLowerCase(), p);
+  }
+
   await Promise.all(batches.map(async (batch) => {
     const calls: any[] = [];
     for (const addr of batch) {
-      const meta = pools.find(p => p.address.toLowerCase() === addr);
+      const meta = poolLookup.get(addr);
       if (!meta) continue;
       if (meta.protocol.includes("v2")) {
         calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
@@ -68,7 +73,7 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
 
       let resultIdx = 0;
       for (const addr of batch) {
-        const meta = pools.find(p => p.address.toLowerCase() === addr);
+        const meta = poolLookup.get(addr);
         if (!meta) continue;
 
         if (meta.protocol.includes("v2")) {

@@ -9,8 +9,8 @@ describe("findCycles", () => {
   it("finds a simple 2-hop cycle", () => {
     const WETH = "0xa" as Address;
     const USDC = "0xb" as Address;
-    const pool: PoolMeta = {
-      address: "0xpool" as Address,
+    const p1: PoolMeta = {
+      address: "0xp1" as Address,
       protocol: "V2",
       token0: WETH,
       token1: USDC,
@@ -18,7 +18,16 @@ describe("findCycles", () => {
       fee: 30,
       status: "active",
     };
-    const graph = buildGraph([pool], new Map());
+    const p2: PoolMeta = {
+      address: "0xp2" as Address,
+      protocol: "V2",
+      token0: WETH,
+      token1: USDC,
+      tokens: [WETH, USDC],
+      fee: 30,
+      status: "active",
+    };
+    const graph = buildGraph([p1, p2], new Map());
     const cycles = findCycles(graph, 2);
     expect(cycles.length).toBeGreaterThanOrEqual(1);
     expect(cycles[0].hopCount).toBe(2);
@@ -31,7 +40,8 @@ describe("findCycles", () => {
     const p1: PoolMeta = { address: "0xp1" as Address, protocol: "V2", token0: A, token1: B, tokens: [A, B], fee: 30, status: "active" };
     const p2: PoolMeta = { address: "0xp2" as Address, protocol: "V2", token0: B, token1: C, tokens: [B, C], fee: 30, status: "active" };
     const p3: PoolMeta = { address: "0xp3" as Address, protocol: "V2", token0: C, token1: A, tokens: [C, A], fee: 30, status: "active" };
-    const graph = buildGraph([p1, p2, p3], new Map());
+    const p4: PoolMeta = { address: "0xp4" as Address, protocol: "V2", token0: A, token1: B, tokens: [A, B], fee: 30, status: "active" };
+    const graph = buildGraph([p1, p2, p3, p4], new Map());
     const cycles = findCycles(graph, 3);
     expect(cycles.some((c) => c.hopCount === 2)).toBe(true);
     expect(cycles.some((c) => c.hopCount === 3)).toBe(true);
