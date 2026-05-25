@@ -287,16 +287,23 @@ export function getBalancerAmountIn(amountOut: bigint, poolState: unknown, inIdx
   if (quotedOut < amountOut) {
     low = high;
     high = high > 0n ? high * 2n : 1n;
+    let satisfied = false;
     for (let i = 0; i < MAX_POW_ITERATIONS; i++) {
       quotedOut = quoteAt(high);
-      if (quotedOut >= amountOut) break;
+      if (quotedOut >= amountOut) {
+        satisfied = true;
+        break;
+      }
       low = high;
       high *= 2n;
+      // Safety: Cap expansion at a reasonable multiple of pool balance to prevent overflow/infinite loop
+      if (high > balIn * 1000n) break;
     }
-    if (quotedOut < amountOut) return 0n;
+    if (!satisfied) return 0n;
   }
 
-  while (high - low > 1n) {
+  // Binary search for the minimum input that satisfies the requested output
+  for (let i = 0; i < MAX_POW_ITERATIONS && high - low > 1n; i++) {
     const mid = (low + high) / 2n;
     if (quoteAt(mid) >= amountOut) {
       high = mid;

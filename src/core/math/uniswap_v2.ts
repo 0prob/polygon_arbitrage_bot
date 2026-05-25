@@ -104,8 +104,10 @@ export function simulateV2Swap(
   }
 
   const pool = asPoolState(poolState);
-  const reserveIn = toBigInt(zeroForOne ? pool.reserve0 : pool.reserve1);
-  const reserveOut = toBigInt(zeroForOne ? pool.reserve1 : pool.reserve0);
+  const reserve0 = toBigInt(pool.reserve0);
+  const reserve1 = toBigInt(pool.reserve1);
+  const reserveIn = zeroForOne ? reserve0 : reserve1;
+  const reserveOut = zeroForOne ? reserve1 : reserve0;
 
   if (reserveIn <= 0n || reserveOut <= 0n) {
     return { amountOut: 0n, gasEstimate: 0 };
@@ -116,8 +118,9 @@ export function simulateV2Swap(
   let resolvedFeeNumerator = feeNumerator;
   
   if (resolvedFeeNumerator === undefined) {
-    if (pool.fee != null) {
-      const feeBps = toBigInt(pool.fee);
+    const feeRaw = pool.fee;
+    if (feeRaw != null) {
+      const feeBps = toBigInt(feeRaw);
       // If fee is small (e.g. 30), assume it's BPS and calculate numerator
       if (feeBps < 500n) { 
         resolvedFeeNumerator = resolvedFeeDenominator - feeBps;

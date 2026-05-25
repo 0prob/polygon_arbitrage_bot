@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779700339.8280637,
-    "ast_hash": "e17d02974d9ba51c584747585ed47b16",
+    "mtime": 1779702169.3783944,
+    "ast_hash": "a45d42feb0688c3cb9e26e4b00164d48",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.ts": {
-    "mtime": 1779604591.2348247,
-    "ast_hash": "f897a28cef88bc02932df0244caab21a",
+    "mtime": 1779702660.2613962,
+    "ast_hash": "0dd4ff570f9af3958921883650fabae8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
-    "mtime": 1779575033.0516639,
-    "ast_hash": "e0e50a7bfac52f989f2e8008ab2ac9cc",
+    "mtime": 1779702680.5531874,
+    "ast_hash": "e7dd8b3b084317a181fdc146325ba1a9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/crosschain/order.ts": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779685769.5274951,
-    "ast_hash": "3751c55e71f66927b02fcf1ff7adbe09",
+    "mtime": 1779702711.636867,
+    "ast_hash": "b00cea541b0ac7c886085a0fc301eaeb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.test.ts": {
@@ -470,13 +470,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1779604980.4428213,
-    "ast_hash": "76599971b32e4606c2d83392b20e8a80",
+    "mtime": 1779702613.7738745,
+    "ast_hash": "e9407d2796dde14d9b68f4522eedc91b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779701251.2468972,
-    "ast_hash": "599334c352b3b272313e97479df06737",
+    "mtime": 1779702632.67768,
+    "ast_hash": "7ef8dd7fddf148ad1ae9982ee9038f3f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
