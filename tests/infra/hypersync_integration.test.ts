@@ -45,12 +45,14 @@ describe("Hypersync GraphQL Integration", () => {
     expect(pools[0]).toEqual({
       address: "0x123",
       protocol: "UniswapV3",
-      tokens: ["0xaaa", "0xbbb"]
+      tokens: ["0xaaa", "0xbbb"],
+      fee: 30,
     });
     expect(pools[1]).toEqual({
       address: "0x456",
       protocol: "Balancer",
-      tokens: ["0xccc", "0xddd"]
+      tokens: ["0xccc", "0xddd"],
+      fee: 30,
     });
   });
 

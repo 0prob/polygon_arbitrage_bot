@@ -54,10 +54,20 @@ export function simulateHop(
 
   switch (normalizeProtocol(edge.protocol)) {
     case "V2":
-      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne);
+      // If edge.fee is present and < 500, treat as BPS
+      if (edge.fee != null) {
+        const f = BigInt(edge.fee);
+        if (f < 500n) {
+          result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, 10000n - f, 10000n);
+        } else {
+          result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, f);
+        }
+      } else {
+        result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne);
+      }
       break;
     case "V3":
-      result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne));
+      result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));
       break;
     case "CURVE":
       result = simulateCurveSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
@@ -114,6 +124,7 @@ export function simulateRoute(
       zeroForOne: edge.zeroForOne,
       tokenInIdx: edge.tokenInIdx,
       tokenOutIdx: edge.tokenOutIdx,
+      fee: edge.feeBps,
       stateRef: state as PoolState,
     };
 
@@ -159,6 +170,7 @@ export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateC
     zeroForOne: edge.zeroForOne,
     tokenInIdx: edge.tokenInIdx,
     tokenOutIdx: edge.tokenOutIdx,
+    fee: edge.feeBps,
     stateRef: state,
   };
 

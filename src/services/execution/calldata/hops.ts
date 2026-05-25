@@ -33,7 +33,8 @@ function poolTokensFromHop(hop: CalldataHop): { token0: `0x${string}`; token1: `
     : { token0: asAddress(hop.tokenOut), token1: asAddress(hop.tokenIn) };
 }
 
-function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string): bigint {
+function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string, options: RouteCalldataOptions = {}): bigint {
+  const { slippageBps = 50 } = options;
   const state = hop.stateRef ?? {};
   const sqrtBefore = normalizeUint(state.sqrtPriceX96, `${label} stateRef.sqrtPriceX96`);
   const liquidity = normalizeUint(state.liquidity, `${label} stateRef.liquidity`);
@@ -49,7 +50,8 @@ function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmo
     ? sqrtAfter < sqrtBefore && sqrtAfter > MIN_SQRT_RATIO
     : sqrtAfter > sqrtBefore && sqrtAfter < MAX_SQRT_RATIO;
   if (!movedOk) throw new Error(`${label}: unable to derive price limit`);
-  const SLIPPAGE_BPS = 10n;
+  
+  const SLIPPAGE_BPS = BigInt(slippageBps);
   const DENOM = 10_000n;
   return hop.zeroForOne ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
 }
@@ -105,13 +107,13 @@ export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteC
   return calls;
 }
 
-export function encodeV3Hop(hop: CalldataHop, recipient: string): ExecutorCall[] {
+export function encodeV3Hop(hop: CalldataHop, recipient: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const pool = asAddress(hop.poolAddress);
   const { token0, token1 } = poolTokensFromHop(hop);
   const amountSpecified = normalizePositiveUint(hop.amountIn, "encodeV3Hop amountIn");
   const amountOut = normalizePositiveUint(hop.amountOut, "encodeV3Hop amountOut");
   const fee = normalizeUint24(hop.fee ?? 0, "encodeV3Hop fee");
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, fee, "encodeV3Hop");
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, fee, "encodeV3Hop", options);
   const callbackData = encodeAbiParameters(
     [
       {
@@ -139,14 +141,14 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string): ExecutorCall[]
   ];
 }
 
-export function encodeKyberElasticHop(hop: CalldataHop, recipient: string): ExecutorCall[] {
+export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const pool = asAddress(hop.poolAddress);
   const { token0, token1 } = poolTokensFromHop(hop);
   const amountSpecified = normalizePositiveUint(hop.amountIn, "encodeKyberElasticHop amountIn");
   const isToken0 = Boolean(hop.zeroForOne);
   const swapFeePips = normalizeKyberSwapFeePips(hop);
   const simulated = simulateV3Swap(hop.stateRef ?? {}, amountSpecified, isToken0, swapFeePips);
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, simulated.amountOut, swapFeePips, "encodeKyberElasticHop");
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, simulated.amountOut, swapFeePips, "encodeKyberElasticHop", options);
   const callbackData = encodeAbiParameters(
     [
       {

@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779697810.064677,
-    "ast_hash": "393445ba80ee00d5cca8861fa616911c",
+    "mtime": 1779699321.768037,
+    "ast_hash": "bef14209f3c6ec0594190f1a166f9d35",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -345,13 +345,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
-    "mtime": 1779678139.215575,
-    "ast_hash": "68fa16b12f8cc3747d65c35355c0816a",
+    "mtime": 1779699578.376855,
+    "ast_hash": "17066e766e6e01fd24472f02121e2256",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779695794.3770642,
-    "ast_hash": "11c32ba078dfdcc22a8ae3ed8c623b74",
+    "mtime": 1779699521.0855503,
+    "ast_hash": "2b041b6942d92c2df44a38148413df3f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779697617.3866012,
-    "ast_hash": "2fa094c5d4a3c2f21fc4e8fd23e9f9b0",
+    "mtime": 1779699663.8518305,
+    "ast_hash": "e3ad41de077b5085e82e668e7307f85a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1779698375.06295,
-    "ast_hash": "ffe3052e812a0b2b059f45a63517bb79",
+    "mtime": 1779699592.2846873,
+    "ast_hash": "51c659f57752407b6985f0d68dc6a19f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/lifecycle.ts": {

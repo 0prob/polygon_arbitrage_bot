@@ -364,7 +364,7 @@ describe("getEffectivePriceImpact", () => {
       protocol: "UNISWAP_V3",
       tokenIn: "0xa" as Address,
       tokenOut: "0xb" as Address,
-      feeBps: 30n,
+      feeBps: 3000n,
       zeroForOne: true,
       tokenInIdx: 0,
       tokenOutIdx: 1,

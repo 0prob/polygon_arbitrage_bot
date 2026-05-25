@@ -190,12 +190,16 @@ export class Renderer {
     const hiAge = s.hiLastSeen > 0 ? Date.now() - s.hiLastSeen : 0;
     const hiAgeStr = hiAge > 0 ? dim(` ${formatDuration(hiAge)}`) : "";
 
+    const scanSpeed = s.lastCycleTimeMs > 0 ? Math.floor((s.cycleCount * 1000) / s.lastCycleTimeMs) : 0;
+    const passesPerSec = s.lastCycleTimeMs > 0 ? (1000 / s.lastCycleTimeMs).toFixed(2) : "0.00";
+
     const lines = [
       bold("⚡ System & Infra"),
       `  Gas Price:    ${color(gwei, YELLOW)}`,
       `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
-      `  Throughput:   ${color(String(s.cycleCount > 0 ? Math.floor(1000 / Math.max(1, s.lastCycleTimeMs)) : 0), WHITE)} passes/s`,
+      `  Scan Speed:   ${color(String(scanSpeed), WHITE)} routes/s`,
+      `  Throughput:   ${color(passesPerSec, WHITE)} passes/s`,
       ``,
       bold("📊 Executions"),
       `  Attempted:    ${color(String(state.metrics.executed), WHITE)}`,

@@ -361,6 +361,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               token0: (p.tokens[0] ?? "") as `0x${string}`,
               token1: (p.tokens[1] ?? "") as `0x${string}`,
               tokens: p.tokens as `0x${string}`[],
+              fee: p.fee,
             }));
             pools = hasuraPoolsCache;
             lastDiscoveryTime = now;
