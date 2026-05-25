@@ -48,8 +48,8 @@ describe("Renderer", () => {
     const r = new Renderer(stdout);
     const layout = computeLayout(80, 24);
     const state = createInitialState();
-    applyEvent(state, { type: "opportunity_found", routeKey: "0xtest", profitWei: 100n });
-    applyEvent(state, { type: "execution_result", routeKey: "0xtest", success: true });
+    applyEvent(state, { type: "opportunity_found", routeKey: "0xtest", profitWei: 100n, path: "WETH -> USDC", roi: 0.1 });
+    applyEvent(state, { type: "execution_result", routeKey: "0xtest", success: true, profitWei: 100n });
 
     r.render(layout, state);
     const output = stdout.getBuffer();

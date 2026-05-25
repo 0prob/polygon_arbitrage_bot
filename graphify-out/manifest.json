@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779686532.5377626,
-    "ast_hash": "5dc3b9941791909f8a66519ce371ceae",
+    "mtime": 1779694201.321978,
+    "ast_hash": "ae1253a73f82431811b37f5105d3e479",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779685752.8557148,
-    "ast_hash": "aae9ad482f30b88c37df2109552a9004",
+    "mtime": 1779695794.3770642,
+    "ast_hash": "11c32ba078dfdcc22a8ae3ed8c623b74",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779689005.7261062,
-    "ast_hash": "df8f07c19129b9d04e68835712983902",
+    "mtime": 1779695829.3046944,
+    "ast_hash": "8f840db9e89d4b30f8b8911d0e776bf6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1779678087.8721602,
-    "ast_hash": "cc38d81f762ed81a9d7ccea30da9b24f",
+    "mtime": 1779695671.9703631,
+    "ast_hash": "f608427f374be39cdf3abc8f5d4b6b03",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-arb-bot-tui.md": {
@@ -610,33 +610,33 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/state.test.ts": {
-    "mtime": 1779499225.772823,
-    "ast_hash": "101b582340636e7f99b369c0c5a10f92",
+    "mtime": 1779695739.1736495,
+    "ast_hash": "6dcbab40f126a7f3184bb3ab26a4de40",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779679915.6223853,
-    "ast_hash": "6383c492b42aeb6ca72d58468cb4ba90",
+    "mtime": 1779695715.7098985,
+    "ast_hash": "c8a5ec5f68763cd0da38e5f4891a98e2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
-    "mtime": 1779471940.4974816,
-    "ast_hash": "d2c9230bc547cc8c20b29a691c25a81e",
+    "mtime": 1779696208.2966971,
+    "ast_hash": "a2c5867aa7a5801e89a0823782de6d30",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {
-    "mtime": 1779526612.2479029,
-    "ast_hash": "8b8b2bf3d269f3f0949d4a43df54e531",
+    "mtime": 1779695876.152199,
+    "ast_hash": "db4a56feda531fe58d0fdc9759d94c5b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/renderer.test.ts": {
-    "mtime": 1779688911.4588256,
-    "ast_hash": "23ce2a4f0805203bcc7f4084f3ff97dc",
+    "mtime": 1779695980.8070936,
+    "ast_hash": "33f273ffeef38c2b9cc6fc2b064f2e72",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779679930.278216,
-    "ast_hash": "ec9473faace1296c175035022483a9f3",
+    "mtime": 1779696164.0571625,
+    "ast_hash": "8e319c86eeb177b9440c4f7da402c22f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
@@ -1097,6 +1097,16 @@
   "/home/x/arb/t/docs/superpowers/plans/2026-05-24-arb-bot-improvements.md": {
     "mtime": 1779677897.982334,
     "ast_hash": "40e3c02f7e518b78d816b1675d605a0e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-25-tui-redesign.md": {
+    "mtime": 1779695425.220997,
+    "ast_hash": "28e729751723c892180cd1af93f1cdd4",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-25-tui-redesign-design.md": {
+    "mtime": 1779695400.9732573,
+    "ast_hash": "efab07d2e7e24227b07a00ad2ac31c2e",
     "semantic_hash": ""
   }
 }

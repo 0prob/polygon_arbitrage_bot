@@ -518,7 +518,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             if (!ctx.isRunning) break;
 
             const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
-            bus?.emit({ type: "opportunity_found", routeKey, profitWei: profitable.assessment.netProfitAfterGas });
+            
+            // Format a readable path for the TUI
+            const path = profitable.result.tokenPath.map(t => t.slice(0, 6)).join(" -> ");
+            const roi = profitable.assessment.roi;
+
+            bus?.emit({ 
+              type: "opportunity_found", 
+              routeKey, 
+              profitWei: profitable.assessment.netProfitAfterGas,
+              path,
+              roi
+            });
 
             try {
               const candidate = deps.buildExecutionCandidate(

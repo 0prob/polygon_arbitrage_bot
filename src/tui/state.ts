@@ -101,15 +101,9 @@ function updateOpportunity(state: TuiState, routeKey: string, update: Partial<Op
     Object.assign(existing, update);
     existing.timestamp = Date.now();
   } else {
-    // Basic path representation from routeKey
-    const addrs = routeKey.split(":");
-    const shortPath = addrs.length >= 2 
-      ? `${addrs[0].slice(0, 6)}... -> ${addrs[addrs.length-1].slice(0, 6)}...`
-      : routeKey.slice(0, 10) + "...";
-      
     state.system.activeOpportunities.unshift({
       routeKey,
-      path: shortPath,
+      path: update.path ?? routeKey.slice(0, 10) + "...",
       profit: 0n,
       roi: 0,
       status: "Simulated",
@@ -152,7 +146,12 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
       }
-      updateOpportunity(state, event.routeKey, { profit: event.profitWei, status: "Simulated" });
+      updateOpportunity(state, event.routeKey, { 
+        profit: event.profitWei, 
+        path: event.path, 
+        roi: event.roi, 
+        status: "Simulated" 
+      });
       appendLog(state, "Pipeline", `Profit: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
       break;
     case "execution_submitted":
