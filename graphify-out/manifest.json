@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779715499.4044528,
-    "ast_hash": "7f5cef997fffac9d9eb4b989f86f0716",
+    "mtime": 1779721567.4830658,
+    "ast_hash": "e24a9daee8ee24788023cb7b026e93d5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/profit.test.ts": {
-    "mtime": 1779155514.8107715,
-    "ast_hash": "ccd15d68f07f7dd0b2f42c4862640cbb",
+    "mtime": 1779722372.6941202,
+    "ast_hash": "ac68f608c4549ab23bfdc8295037c0a0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/route.ts": {
@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
-    "mtime": 1779699578.376855,
-    "ast_hash": "17066e766e6e01fd24472f02121e2256",
+    "mtime": 1779722410.537891,
+    "ast_hash": "dc8f90dbdd7a5b9ced1b9a16f4aaf65e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1779715746.862512,
-    "ast_hash": "7569ba2b57c11984acbe67131fe990bb",
+    "mtime": 1779721708.1677387,
+    "ast_hash": "d45f49d742bad0b5e8e3041549cd6385",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/lifecycle.ts": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/infra/hypersync_integration.test.ts": {
-    "mtime": 1779701456.1811888,
-    "ast_hash": "b2b4c69b7d74d4cb579be04fecf8e00b",
+    "mtime": 1779722464.809547,
+    "ast_hash": "051c82eaa1fa5cc2e2eacf108d9e3733",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-tui-routing-enhancements.md": {
@@ -1122,6 +1122,11 @@
   "/home/x/arb/t/scripts/find_pools.ts": {
     "mtime": 1779714728.2107387,
     "ast_hash": "cab33c597415a98ab7c5f869c141eb53",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/patch-profit-test.sh": {
+    "mtime": 1779721915.8918974,
+    "ast_hash": "425d76180f644802eb38ebdf4b8a8a13",
     "semantic_hash": ""
   }
 }
