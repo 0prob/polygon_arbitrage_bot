@@ -3,9 +3,11 @@ import type { GasOracle } from "./gas.ts";
 import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { NonceManager } from "./nonce.ts";
 import { ExecutionTracker } from "./tracker.ts";
+import { QuarantineManager } from "./quarantine.ts";
 import { createPublicClient, http, getAddress, type PublicClient, decodeEventLog } from "viem";
 import { getChain } from "../../infra/rpc/chains.ts";
 import { SubmissionStrategy } from "../../config/schema.ts";
+import type { FastLaneSubmitter } from "../../infra/rpc/fastlane.ts";
 
 const ERC20_TRANSFER_EVENT = {
   anonymous: false,
@@ -52,8 +54,10 @@ export type SubmitTxFn = (tx: { to: string; data: string; value: bigint; nonce: 
 export interface ExecutionServiceOptions {
   submissionStrategy?: SubmissionStrategy;
   privateSubmitter?: SubmitTxFn;
+  fastLaneSubmitter?: FastLaneSubmitter;
   chainId?: number;
   receiptTimeoutMs?: number;
+  receiptPollMs?: number;
 }
 
 function poolsFromRouteKey(routeKey: string): string[] {
@@ -93,14 +97,14 @@ export function groupCompatibleCandidates(candidates: CandidateExecution[]): Can
 }
 
 export class ExecutionService {
-  private quarantine = new Set<string>();
-  private readonly MAX_QUARANTINE = 10_000;
-  private _quarantineQueue: string[] = [];
+  private quarantine: QuarantineManager;
   readonly tracker = new ExecutionTracker();
   private receiptClient: PublicClient | null = null;
   private readonly receiptTimeoutMs: number;
+  private readonly receiptPollMs: number;
   private readonly submissionStrategy: SubmissionStrategy;
   private readonly privateSubmitter: SubmitTxFn | null;
+  private readonly fastLaneSubmitter: FastLaneSubmitter | null;
 
   constructor(
     private logger: Logger,
@@ -109,9 +113,12 @@ export class ExecutionService {
     private submitters: SubmitTxFn[],
     options: ExecutionServiceOptions = {},
   ) {
+    this.quarantine = new QuarantineManager();
     this.receiptTimeoutMs = options.receiptTimeoutMs ?? 30_000;
+    this.receiptPollMs = (options as any).receiptPollMs ?? 500;
     this.submissionStrategy = options.submissionStrategy ?? "hybrid";
     this.privateSubmitter = options.privateSubmitter ?? null;
+    this.fastLaneSubmitter = options.fastLaneSubmitter ?? null;
 
     if (options.chainId) {
       this.receiptClient = createPublicClient({
@@ -128,7 +135,7 @@ export class ExecutionService {
   async start(): Promise<void> {
     await this.gasOracle.start();
     await this.nonceManager.initialize();
-    this.logger.info({ submissionStrategy: this.submissionStrategy }, "ExecutionService started");
+    this.logger.info({ submissionStrategy: this.submissionStrategy, fastLaneEnabled: this.fastLaneSubmitter?.isEnabled() }, "ExecutionService started");
   }
 
   stop(): void {
@@ -139,12 +146,30 @@ export class ExecutionService {
   private async submitTx(tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }, expectedProfit?: bigint): Promise<{ txHash: string; endpoint: string }> {
     const snapshot = this.gasOracle.getSnapshot();
     let adjustedFee = tx.maxFee;
+    let priorityFee = snapshot?.priorityFee ?? 1n * 10n ** 9n;
     if (expectedProfit && expectedProfit > 0n && snapshot) {
       const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, this.gasOracle.config?.maxBidMultiplier ?? 3);
-      adjustedFee = snapshot.baseFee * 2n + scaled;
+      adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
+      priorityFee = scaled;
     }
 
     const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee });
+
+    if (this.fastLaneSubmitter?.isEnabled()) {
+      try {
+        const txHash = await this.fastLaneSubmitter.submitTransaction({
+          to: tx.to,
+          data: tx.data,
+          value: tx.value,
+          nonce: tx.nonce,
+          maxFee: adjustedFee,
+          priorityFee,
+        });
+        return { txHash, endpoint: "fastlane" };
+      } catch (err) {
+        this.logger.warn({ err }, "FastLane submission failed, falling back");
+      }
+    }
 
     if (this.submissionStrategy === "private" && this.privateSubmitter) {
       const txHash = await submit(this.privateSubmitter);
@@ -170,14 +195,15 @@ export class ExecutionService {
   }
 
   async execute(candidate: CandidateExecution): Promise<ExecutionResult> {
-    if (this.quarantine.has(candidate.routeKey)) {
-      return { success: false, error: "route quarantined" };
+    if (this.quarantine.isQuarantined(candidate.routeKey)) {
+      const entry = this.quarantine.getEntry(candidate.routeKey);
+      return { success: false, error: `route quarantined (backoff: attempt ${entry?.attempt ?? 0})` };
     }
 
     try {
       const fee = this.gasOracle.getSnapshot();
       if (!fee) {
-        this._addQuarantine(candidate.routeKey);
+        this.quarantine.add(candidate.routeKey, "no gas data");
         return { success: false, error: "no gas data" };
       }
 
@@ -218,9 +244,9 @@ export class ExecutionService {
 
       if (!success && receipt) {
         this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Transaction reverted");
-        this._addQuarantine(candidate.routeKey);
+        this.quarantine.add(candidate.routeKey, "reverted");
       } else if (success) {
-        this.quarantine.delete(candidate.routeKey);
+        this.quarantine.recordSuccess(candidate.routeKey);
       }
 
       return { success, txHash, gasUsed };
@@ -228,12 +254,12 @@ export class ExecutionService {
       if (err instanceof AggregateError) {
         const msg = err.errors[0]?.message || String(err);
         this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Transaction submission failed");
-        this._addQuarantine(candidate.routeKey);
+        this.quarantine.add(candidate.routeKey, msg);
         return { success: false, error: msg };
       }
       const msg = err?.message || String(err);
       this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Transaction submission failed");
-      this._addQuarantine(candidate.routeKey);
+      this.quarantine.add(candidate.routeKey, msg);
       return { success: false, error: msg };
     }
   }
@@ -252,7 +278,7 @@ export class ExecutionService {
 
     for (let i = 0; i < candidates.length; i++) {
       const candidate = candidates[i];
-      if (this.quarantine.has(candidate.routeKey)) {
+      if (this.quarantine.isQuarantined(candidate.routeKey)) {
         results[i] = { success: false, error: "route quarantined" };
         continue;
       }
@@ -300,16 +326,16 @@ export class ExecutionService {
 
           if (!success && receipt) {
             this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
-            this._addQuarantine(candidate.routeKey);
+            this.quarantine.add(candidate.routeKey, "reverted");
           } else if (success) {
-            this.quarantine.delete(candidate.routeKey);
+            this.quarantine.recordSuccess(candidate.routeKey);
           }
 
           return { success, txHash, gasUsed };
         } catch (err: any) {
           const msg = err?.message || String(err);
           this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Batch tx failed");
-          this._addQuarantine(candidate.routeKey);
+          this.quarantine.add(candidate.routeKey, msg);
           return { success: false, error: msg };
         }
       })();
@@ -333,21 +359,16 @@ export class ExecutionService {
       } catch {
         // Receipt not yet available
       }
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, this.receiptPollMs));
     }
     return null;
   }
 
   isQuarantined(routeKey: string): boolean {
-    return this.quarantine.has(routeKey);
+    return this.quarantine.isQuarantined(routeKey);
   }
 
-  private _addQuarantine(routeKey: string): void {
-    if (this.quarantine.size >= this.MAX_QUARANTINE) {
-      const oldest = this._quarantineQueue.shift();
-      if (oldest) this.quarantine.delete(oldest);
-    }
-    this.quarantine.add(routeKey);
-    this._quarantineQueue.push(routeKey);
+  getQuarantineManager(): QuarantineManager {
+    return this.quarantine;
   }
 }

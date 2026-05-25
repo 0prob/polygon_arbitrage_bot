@@ -88,7 +88,7 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
     case "graph_built":
       state.system.poolCount = event.poolCount;
       state.system.cycleCount = event.cycleCount;
-      state.system.poolsPerProtocol = event.poolsPerProtocol;
+      state.system.poolsPerProtocol = event.poolsPerProtocol ?? {};
       state.system.maxHops = event.maxHops;
       appendLog(state, "Graph", `${event.poolCount} pools, ${event.cycleCount} cycles`);
       break;

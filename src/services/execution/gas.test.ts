@@ -23,15 +23,17 @@ describe("GasOracle", () => {
     expect(snap).not.toBeNull();
     expect(snap!.baseFee).toBe(40n * 10n ** 9n);
     expect(snap!.priorityFee).toBe(35n * 10n ** 9n);
-    expect(snap!.maxFee).toBe(40n * 10n ** 9n * 2n + 35n * 10n ** 9n);
-    expect(snap!.gasPrice).toBe(40n * 10n ** 9n + 35n * 10n ** 9n);
+    // baseFeeBufferMultiplier = 1.1, emaBaseFee = 40gwei * 1.1 = 44gwei
+    // maxFee = 44gwei * 2 + 35gwei = 88gwei + 35gwei = 123gwei
+    const predictedBase = (40n * 10n ** 9n * 110n) / 100n;
+    expect(snap!.maxFee).toBe(predictedBase * 2n + 35n * 10n ** 9n);
+    expect(snap!.gasPrice).toBe(predictedBase + 35n * 10n ** 9n);
     expect(typeof snap!.timestamp).toBe("number");
     expect(fetchGas).toHaveBeenCalledTimes(1);
     oracle.stop();
   });
 
   it("clamps priority fee to configured floor", async () => {
-    // priorityFee = 0.5 gwei, floor = 1 gwei
     const fetchGas = vi.fn().mockResolvedValue({ baseFee: 50n * 10n ** 9n, priorityFee: 5n * 10n ** 8n });
     const oracle = new GasOracle(DEFAULT_GAS_CONFIG, fetchGas);
     await oracle.start();
@@ -58,9 +60,7 @@ describe("GasOracle", () => {
     await oracle.start();
     const first = oracle.getSnapshot();
     expect(first).not.toBeNull();
-    // Trigger a refresh cycle
     vi.advanceTimersByTime(200);
-    // Use real timers to flush microtasks from the rejected promise
     vi.useRealTimers();
     await new Promise((r) => setTimeout(r, 10));
     vi.useFakeTimers();
@@ -68,6 +68,12 @@ describe("GasOracle", () => {
     expect(second!.baseFee).toBe(first!.baseFee);
     expect(second!.priorityFee).toBe(first!.priorityFee);
     oracle.stop();
+  });
+
+  it("returns predicted base fee", () => {
+    const fetchGas = vi.fn().mockResolvedValue({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n });
+    const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, emaAlpha: 0.5 }, fetchGas);
+    expect(oracle.getPredictedBaseFee()).toBeNull();
   });
 
   it("stop clears interval", async () => {
@@ -78,6 +84,17 @@ describe("GasOracle", () => {
     const countBefore = fetchGas.mock.calls.length;
     vi.advanceTimersByTime(100);
     expect(fetchGas.mock.calls.length).toBe(countBefore);
+  });
+
+  it("returns congestion hints based on base fee ratio", async () => {
+    const fetchGas = vi.fn()
+      .mockResolvedValue({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n });
+    const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, pollIntervalMs: 1000 }, fetchGas);
+    await oracle.start();
+    const hints = oracle.estimateCongestion();
+    expect(typeof hints.congestion).toBe("number");
+    expect(typeof hints.isSpiking).toBe("boolean");
+    oracle.stop();
   });
 });
 

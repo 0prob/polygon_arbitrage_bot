@@ -25,6 +25,12 @@ export const DEFAULTS = {
     cacheTtlMs: 120_000,
     cacheSize: 2_048,
     defaultGasBufferBps: 105,
+    eip1559Enabled: true,
+    feeHistoryPercentile: 50,
+    emaAlpha: 0.3,
+    baseFeeBufferMultiplier: 1.1,
+    maxPriorityFeePercentile: 75,
+    historySize: 20,
   },
   routing: {
     maxHops: 4,
@@ -70,6 +76,12 @@ export const DEFAULTS = {
     websocketUrl: "" as string, // optional
     coalesceTtlMs: 100,
     largeSwapThresholdUsd: 10_000,
+  },
+  fastlane: {
+    enabled: false,
+    rpcUrl: "https://polygon-rpc.fastlane.xyz",
+    blockNumberWindow: 50,
+    timestampWindowS: 60,
   },
   observability: {
     logLevel: "info" as const,

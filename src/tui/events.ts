@@ -1,6 +1,6 @@
 export type ArbEvent =
   | { type: "pass_loop_started"; intervalMs: number }
-  | { type: "graph_built"; poolCount: number; cycleCount: number; poolsPerProtocol: Record<string, number>; maxHops: number }
+  | { type: "graph_built"; poolCount: number; cycleCount: number; poolsPerProtocol?: Record<string, number>; maxHops: number }
   | { type: "opportunity_found"; routeKey: string; profitWei: bigint }
   | { type: "execution_submitted"; routeKey: string; txHash?: string }
   | { type: "execution_result"; routeKey: string; success: boolean; txHash?: string; error?: string }

@@ -46,6 +46,12 @@ export const GasConfigSchema = z.object({
   cacheTtlMs: numberFromString.int().nonnegative(),
   cacheSize: numberFromString.int().positive(),
   defaultGasBufferBps: numberFromString.int().nonnegative(),
+  eip1559Enabled: z.coerce.boolean().default(true),
+  feeHistoryPercentile: numberFromString.int().min(0).max(100).default(50),
+  emaAlpha: numberFromString.min(0).max(1).default(0.3),
+  baseFeeBufferMultiplier: numberFromString.min(1).max(5).default(1.1),
+  maxPriorityFeePercentile: numberFromString.int().min(0).max(100).default(75),
+  historySize: numberFromString.int().positive().default(20),
 });
 export type GasConfig = z.infer<typeof GasConfigSchema>;
 
@@ -113,6 +119,14 @@ export const MempoolConfigSchema = z.object({
 });
 export type MempoolConfig = z.infer<typeof MempoolConfigSchema>;
 
+export const FastLaneConfigSchema = z.object({
+  enabled: z.coerce.boolean().default(false),
+  rpcUrl: z.string().default("https://polygon-rpc.fastlane.xyz"),
+  blockNumberWindow: z.coerce.number().int().positive().default(50),
+  timestampWindowS: z.coerce.number().int().positive().default(60),
+});
+export type FastLaneConfig = z.infer<typeof FastLaneConfigSchema>;
+
 export const ObservabilityConfigSchema = z.object({
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]),
   tuiEnabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
@@ -134,6 +148,7 @@ export const AppConfigSchema = z.object({
   watcher: WatcherConfigSchema,
   predictiveCache: PredictiveCacheConfigSchema,
   mempool: MempoolConfigSchema,
+  fastlane: FastLaneConfigSchema,
   observability: ObservabilityConfigSchema,
   paths: PathsConfigSchema,
   envioApiToken: z.string().min(1, "ENVIO_API_TOKEN is required"),

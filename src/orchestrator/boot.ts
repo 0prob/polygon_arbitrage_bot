@@ -1,4 +1,5 @@
-import { type PublicClient } from "viem";
+import { type PublicClient, createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -14,7 +15,12 @@ import { ServiceRegistry } from "../infra/di/service_registry.ts";
 import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
-
+import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
+import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
+import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
+import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
+import { IncrementalGraphUpdater } from "../services/strategy/graph_incremental.ts";
+import { getChain } from "../infra/rpc/chains.ts";
 import { type Metrics } from "../core/types/metrics.ts";
 
 export interface RuntimeContext {
@@ -35,6 +41,10 @@ export interface RuntimeContext {
   hasuraCircuit: CircuitBreaker;
   tierManager: TierManager;
   hyperIndexMonitor?: HyperIndexMonitor;
+  reorgDetector?: ReorgDetector;
+  wsSubscriber?: WebSocketSubscriber;
+  dryRunner?: MempoolAwareDryRunner;
+  graphUpdater?: IncrementalGraphUpdater;
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
@@ -86,6 +96,12 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     priorityFeeFloorGwei: config.gas.priorityFeeFloorGwei,
     priorityFeeCeilingGwei: config.gas.priorityFeeCeilingGwei,
     maxBidMultiplier: config.gas.maxBidMultiplier,
+    eip1559Enabled: true,
+    feeHistoryPercentile: 50,
+    emaAlpha: 0.3,
+    baseFeeBufferMultiplier: 1.1,
+    maxPriorityFeePercentile: 75,
+    historySize: 20,
   };
 
   const fetchGas = async () => {
@@ -171,11 +187,32 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     };
   }
 
+  // FastLane submitter
+  let fastLaneSubmitter: FastLaneSubmitter | undefined;
+  if (config.fastlane.enabled) {
+    const fastLaneClient = createWalletClient({
+      account: privateKeyToAccount(config.execution.privateKey as `0x${string}`),
+      chain: getChain(137),
+      transport: http(config.fastlane.rpcUrl),
+    });
+    fastLaneSubmitter = new FastLaneSubmitter({
+      enabled: config.fastlane.enabled,
+      rpcUrl: config.fastlane.rpcUrl,
+      conditional: {
+        blockNumberWindow: config.fastlane.blockNumberWindow,
+        timestampWindowS: config.fastlane.timestampWindowS,
+      },
+    }, fastLaneClient);
+    logger.info({ rpcUrl: config.fastlane.rpcUrl }, "FastLane submitter initialized");
+  }
+
   const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitters, {
     submissionStrategy: config.execution.submissionStrategy,
     privateSubmitter,
+    fastLaneSubmitter,
     chainId: config.execution.chainId,
     receiptTimeoutMs: config.execution.receiptTimeoutMs,
+    receiptPollMs: config.execution.receiptPollMs,
   });
 
   const mempoolOptions: MempoolServiceOptions = {
@@ -273,6 +310,38 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   services.register("hasuraCircuit", hasuraCircuit);
   services.register("tierManager", tierManager);
 
+  // Reorg detector
+  const reorgDetector = new ReorgDetector(publicClient, 10);
+
+  // WebSocket subscriber
+  let wsSubscriber: WebSocketSubscriber | undefined;
+  if (config.mempool.websocketUrl) {
+    wsSubscriber = new WebSocketSubscriber({
+      url: config.mempool.websocketUrl,
+      maxPendingTxsPerTick: 10,
+      reconnectDelayMs: 5_000,
+      pingIntervalMs: 15_000,
+    });
+  }
+
+  // Mempool-aware dry runner
+  const dryRunner = new MempoolAwareDryRunner(publicClient);
+
+  // Incremental graph updater
+  const graphUpdater = new IncrementalGraphUpdater(60);
+
+  // Boot warmup: pre-warm gas oracle and state cache
+  logger.info("Starting boot warmup...");
+  try {
+    // Warm gas oracle with 3 quick polls
+    await gasOracle.start();
+    for (let i = 0; i < 3; i++) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+  } catch (err) {
+    logger.warn({ err }, "Gas oracle warmup failed, continuing with cold start");
+  }
+
   logger.info("Ready — entering pass loop");
 
   return {
@@ -292,5 +361,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     rpcCircuit,
     hasuraCircuit,
     tierManager,
+    reorgDetector,
+    wsSubscriber,
+    dryRunner,
+    graphUpdater,
   };
 }

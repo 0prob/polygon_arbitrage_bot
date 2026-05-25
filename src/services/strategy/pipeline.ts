@@ -6,7 +6,9 @@ import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../../config/addresses.ts";
 
-const MAX_IMPACT_THRESHOLD = 0.20; // 20%
+const MAX_IMPACT_THRESHOLD = 0.20;
+const TERNARY_ITERATIONS = 12;
+const CONVERGENCE_DIVISOR = 10000n;
 
 export interface PipelineOptions {
   minProfitMaticWei: bigint;
@@ -19,22 +21,18 @@ export interface PipelineOptions {
 
 export function getTestAmount(tokenAddress: string): bigint {
   const addr = tokenAddress.toLowerCase();
-  // Target roughly $500 USD for discovery
   if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
-    return 500n * 10n ** 6n; // 500 USDC/USDT
+    return 500n * 10n ** 6n;
   }
   if (addr === WBTC.toLowerCase()) {
-    return 700_000n; // 0.007 BTC (~$500)
+    return 700_000n;
   }
-  // WETH: 0.16 ETH (~$500)
   if (addr === "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619") {
     return 160_000_000_000_000_000n;
   }
-  // WMATIC: 800 MATIC (~$500)
   if (addr === "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270") {
     return 800n * 10n ** 18n;
   }
-  // Default to 10 unit of 18-decimal token
   return 10n * 10n ** 18n;
 }
 
@@ -52,7 +50,51 @@ export interface PipelineResult {
   maxGrossProfitMatic?: bigint;
 }
 
-/** Run the full assessment pipeline: simulate, assess profitability, return only profitable. */
+function getEffectivePriceImpactForCycle(cycle: FoundCycle, amount: bigint, stateCache: RouteStateCache): boolean {
+  for (const edge of cycle.edges) {
+    const impact = getEffectivePriceImpact(edge, amount, stateCache);
+    if (impact > MAX_IMPACT_THRESHOLD) return true;
+  }
+  return false;
+}
+
+function evaluateAmount(
+  cycle: FoundCycle,
+  amount: bigint,
+  stateCache: RouteStateCache,
+  options: PipelineOptions,
+): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
+  if (getEffectivePriceImpactForCycle(cycle, amount, stateCache)) {
+    return { result: null, assessment: null, grossProfitMatic: null };
+  }
+
+  try {
+    const result = simulateRoute(cycle.edges, amount, stateCache);
+    const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+    if (rate === 0n) {
+      return { result: null, assessment: null, grossProfitMatic: null };
+    }
+
+    const assessment = computeProfit({
+      grossProfitInTokens: result.profit,
+      amountInTokens: result.amountIn,
+      gasUnits: result.totalGas,
+      gasPriceWei: options.gasPriceWei,
+      tokenToMaticRate: rate,
+      hopCount: cycle.hopCount,
+      minProfitMaticWei: options.minProfitMaticWei,
+      slippageBps: options.slippageBps,
+      revertRiskBps: options.revertRiskBps,
+      flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
+    });
+
+    const grossMatic = result.profit * rate;
+    return { result, assessment, grossProfitMatic: grossMatic };
+  } catch {
+    return { result: null, assessment: null, grossProfitMatic: null };
+  }
+}
+
 export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): PipelineResult {
   const profitable: PipelineResult["profitable"] = [];
   let attempted = 0;
@@ -65,96 +107,94 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
     attempted++;
     try {
       const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-      
+
       if (rate === 0n) {
         noRate++;
         continue;
       }
 
-      // 1. Generate geometric progression of input amounts
       const baseAmount = getTestAmount(cycle.startToken);
-      let amt = baseAmount / 5000n;
-      if (amt === 0n) amt = 1n; // fallback for tiny decimals
-      const amounts: bigint[] = [];
-      while (amt <= baseAmount) {
-        amounts.push(amt);
-        amt = amt * 5n;
-      }
-      if (amounts[amounts.length - 1] < baseAmount) {
-        amounts.push(baseAmount);
-      }
+      const low = baseAmount / 5000n;
+      if (low === 0n) continue;
+      const high = baseAmount;
 
-      let bestResult: RouteSimulationResult | undefined;
-      let bestAssessment: ProfitAssessment | undefined;
-      let isPruned = false;
-
-      simulated++; // count cycle as simulated if we enter sweeping
-      
-      for (let i = 0; i < amounts.length; i++) {
-        const testAmt = amounts[i];
-        
-        // Predictive pruning based on impact for current amount
-        let cycleImpactTooHigh = false;
-        for (const edge of cycle.edges) {
-          const impact = getEffectivePriceImpact(edge, testAmt, stateCache);
-          if (impact > MAX_IMPACT_THRESHOLD) {
-            cycleImpactTooHigh = true;
-            break;
-          }
-        }
-
-        if (cycleImpactTooHigh) {
-          if (i === 0) {
-            isPruned = true; // Prune entirely if even the smallest bucket has too high impact
-          }
-          break; // Stop sweeping, impact only increases with larger amounts
-        }
-
-        const result = simulateRoute(cycle.edges, testAmt, stateCache);
-        
-        // Early exit based on micro-profitability on the smallest bucket
-        if (i === 0) {
-          const bps = testAmt > 0n ? (result.profit * 10000n) / testAmt : -10000n;
-          if (bps < -200n) {
-            // Unprofitable even without price impact -> prune early
-            break;
-          }
-        }
-
-        const assessment = computeProfit({
-          grossProfitInTokens: result.profit,
-          amountInTokens: result.amountIn,
-          gasUnits: result.totalGas,
-          gasPriceWei: options.gasPriceWei,
-          tokenToMaticRate: rate,
-          hopCount: cycle.hopCount,
-          minProfitMaticWei: options.minProfitMaticWei,
-          slippageBps: options.slippageBps,
-          revertRiskBps: options.revertRiskBps,
-          flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
-        });
-
-        const grossMatic = result.profit * rate;
-        if (maxGrossMatic === undefined || grossMatic > maxGrossMatic) {
-          maxGrossMatic = grossMatic;
-        }
-
-        // We want the highest netProfitAfterGasMaticWei (or netProfitAfterGasInTokens)
-        if (!bestAssessment || assessment.netProfitAfterGasMaticWei > bestAssessment.netProfitAfterGasMaticWei) {
-          bestResult = result;
-          bestAssessment = assessment;
-        }
-      }
-
-      if (isPruned) {
+      // Check if even the smallest amount has too much impact
+      if (getEffectivePriceImpactForCycle(cycle, low, stateCache)) {
         pruned++;
         continue;
       }
-      
-      // If we broke early due to negative profit, bestResult might be undefined
-      if (!bestResult || !bestAssessment) {
-        continue;
+
+      // Ternary search for optimal input amount
+      let left = low;
+      let right = high;
+      let bestResult: RouteSimulationResult | null = null;
+      let bestAssessment: ProfitAssessment | null = null;
+      let bestProfit = -1n;
+      let bestGrossMatic = 0n;
+      simulated++;
+
+      for (let iter = 0; iter < TERNARY_ITERATIONS; iter++) {
+        const range = right - left;
+        if (range <= baseAmount / CONVERGENCE_DIVISOR) {
+          // Binary search refinement for precision
+          const mid = left + range / 2n;
+          const { result, assessment, grossProfitMatic } = evaluateAmount(cycle, mid, stateCache, options);
+          if (result && assessment && assessment.netProfitAfterGas > bestProfit) {
+            bestResult = result;
+            bestAssessment = assessment;
+            bestProfit = assessment.netProfitAfterGas;
+            bestGrossMatic = grossProfitMatic ?? 0n;
+          }
+          break;
+        }
+
+        const m1 = left + range / 3n;
+        const m2 = right - range / 3n;
+
+        const eval1 = evaluateAmount(cycle, m1, stateCache, options);
+        const eval2 = evaluateAmount(cycle, m2, stateCache, options);
+
+        const profit1 = (eval1.assessment?.netProfitAfterGas ?? -1n);
+        const profit2 = (eval2.assessment?.netProfitAfterGas ?? -1n);
+
+        if (profit1 > bestProfit && eval1.result && eval1.assessment) {
+          bestResult = eval1.result;
+          bestAssessment = eval1.assessment;
+          bestProfit = profit1;
+          bestGrossMatic = eval1.grossProfitMatic ?? 0n;
+        }
+        if (profit2 > bestProfit && eval2.result && eval2.assessment) {
+          bestResult = eval2.result;
+          bestAssessment = eval2.assessment;
+          bestProfit = profit2;
+          bestGrossMatic = eval2.grossProfitMatic ?? 0n;
+        }
+
+        if (profit1 < 0 && profit2 < 0) {
+          // Both too high impact — search toward smaller amounts
+          if (eval1.result === null && eval2.result === null) {
+            // Both exceeded impact threshold, narrow left
+            right = m1;
+          } else {
+            // At least one returned a result, narrow toward better one
+            if (profit1 > profit2) {
+              right = m2;
+            } else {
+              left = m1;
+            }
+          }
+        } else if (profit1 > profit2) {
+          right = m2;
+        } else {
+          left = m1;
+        }
       }
+
+      if (bestGrossMatic > 0n && (maxGrossMatic === undefined || bestGrossMatic > maxGrossMatic)) {
+        maxGrossMatic = bestGrossMatic;
+      }
+
+      if (!bestResult || !bestAssessment) continue;
 
       if (bestAssessment.shouldExecute) {
         profitable.push({ cycle, result: bestResult, assessment: bestAssessment });
@@ -167,13 +207,13 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
     }
   }
 
-  return { 
-    profitable, 
-    attempted, 
-    profitableCount: profitable.length, 
-    simulated, 
-    pruned, 
-    noRate, 
-    maxGrossProfitMatic: maxGrossMatic 
+  return {
+    profitable,
+    attempted,
+    profitableCount: profitable.length,
+    simulated,
+    pruned,
+    noRate,
+    maxGrossProfitMatic: maxGrossMatic,
   };
 }

@@ -5,6 +5,12 @@ export interface GasOracleConfig {
   priorityFeeFloorGwei: number;
   priorityFeeCeilingGwei: number;
   maxBidMultiplier: number;
+  eip1559Enabled: boolean;
+  feeHistoryPercentile: number;
+  emaAlpha: number;
+  baseFeeBufferMultiplier: number;
+  maxPriorityFeePercentile: number;
+  historySize: number;
 }
 
 export const DEFAULT_GAS_CONFIG: GasOracleConfig = {
@@ -12,6 +18,12 @@ export const DEFAULT_GAS_CONFIG: GasOracleConfig = {
   priorityFeeFloorGwei: 1,
   priorityFeeCeilingGwei: 50,
   maxBidMultiplier: 3,
+  eip1559Enabled: true,
+  feeHistoryPercentile: 50,
+  emaAlpha: 0.3,
+  baseFeeBufferMultiplier: 1.1,
+  maxPriorityFeePercentile: 75,
+  historySize: 20,
 };
 
 export interface PolygonGasHints {
@@ -23,9 +35,9 @@ export interface PolygonGasHints {
 export class GasOracle {
   private current: FeeSnapshot | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
-  private history: FeeSnapshot[] = [];
-  private _basesSum = 0n;
-  private static readonly HISTORY_SIZE = 10;
+  private baseFeeHistory: bigint[] = [];
+  private priorityFeeHistory: bigint[] = [];
+  private emaBaseFee: bigint | null = null;
 
   constructor(
     public config: GasOracleConfig = DEFAULT_GAS_CONFIG,
@@ -36,16 +48,20 @@ export class GasOracle {
     return this.current;
   }
 
+  getPredictedBaseFee(): bigint | null {
+    return this.emaBaseFee;
+  }
+
   estimateCongestion(): PolygonGasHints {
     const current = this.current;
-    if (!current || this.history.length < 2) {
+    if (!current || this.baseFeeHistory.length < 2) {
       return { congestion: 0, recommendedPriorityFee: 0n, isSpiking: false };
     }
-    const avg = this._basesSum / BigInt(this.history.length);
+    const avg = this.baseFeeHistory.reduce((a, b) => a + b, 0n) / BigInt(this.baseFeeHistory.length);
     const ratio = avg === 0n ? 1 : Number(current.baseFee) / Number(avg);
     const congestion = Math.min(1, Math.max(0, ratio - 1));
     const isSpiking = ratio > 1.5;
-    const recommendedPriorityFee = BigInt(Math.round(Number(current.baseFee) * ratio * 0.1));
+    const recommendedPriorityFee = this.computePercentilePriorityFee();
     return { congestion, recommendedPriorityFee, isSpiking };
   }
 
@@ -61,24 +77,60 @@ export class GasOracle {
   private async refresh(): Promise<void> {
     try {
       const { baseFee, priorityFee } = await this.fetchGas();
-      const clampedPriority = clampPriorityFee(priorityFee, this.config);
-      const maxFee = baseFee * 2n + clampedPriority;
+
+      this.baseFeeHistory.push(baseFee);
+      if (this.baseFeeHistory.length > this.config.historySize) {
+        this.baseFeeHistory.shift();
+      }
+
+      this.priorityFeeHistory.push(priorityFee);
+      if (this.priorityFeeHistory.length > this.config.historySize) {
+        this.priorityFeeHistory.shift();
+      }
+
+      // EMA for base fee prediction
+      if (this.emaBaseFee === null) {
+        this.emaBaseFee = baseFee;
+      } else {
+        const alpha = BigInt(Math.round(this.config.emaAlpha * 100));
+        const oneMinusAlpha = 100n - alpha;
+        this.emaBaseFee = (this.emaBaseFee * oneMinusAlpha + baseFee * alpha) / 100n;
+      }
+
+      const clampedPriority = this.config.eip1559Enabled
+        ? this.computeDynamicPriorityFee()
+        : clampPriorityFee(priorityFee, this.config);
+
+      const predictedBase = this.config.eip1559Enabled && this.emaBaseFee !== null
+        ? (this.emaBaseFee * BigInt(Math.round(this.config.baseFeeBufferMultiplier * 100))) / 100n
+        : baseFee;
+
+      const maxFee = predictedBase * 2n + clampedPriority;
       this.current = {
         baseFee,
         priorityFee: clampedPriority,
         maxFee,
-        gasPrice: baseFee + clampedPriority,
+        gasPrice: predictedBase + clampedPriority,
         timestamp: Date.now(),
       };
-      this.history.push(this.current);
-      this._basesSum += this.current.baseFee;
-      if (this.history.length > GasOracle.HISTORY_SIZE) {
-        const removed = this.history.shift()!;
-        this._basesSum -= removed.baseFee;
-      }
     } catch {
       // Keep last known values on fetch failure
     }
+  }
+
+  private computePercentilePriorityFee(): bigint {
+    if (this.priorityFeeHistory.length === 0) return 1n * 10n ** 9n;
+    const sorted = [...this.priorityFeeHistory].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+    const idx = Math.min(
+      Math.floor(sorted.length * this.config.maxPriorityFeePercentile / 100),
+      sorted.length - 1,
+    );
+    return sorted[idx];
+  }
+
+  private computeDynamicPriorityFee(): bigint {
+    const percentileFee = this.computePercentilePriorityFee();
+    return clampPriorityFee(percentileFee, this.config);
   }
 }
 

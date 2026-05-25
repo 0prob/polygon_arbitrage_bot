@@ -21,8 +21,7 @@ const _failedPools = new Map<string, { count: number; lastTry: number }>();
 async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], currentCycles: FoundCycle[]): Promise<void> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
-  
-  // Collect all missing pools from current cycles
+
   for (const cycle of currentCycles) {
     for (const edge of cycle.edges) {
       const addr = edge.poolAddress.toLowerCase();
@@ -36,12 +35,10 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
 
   if (missingAddresses.size === 0) return;
 
-  // Fetch all missing pools
   const toFetch = Array.from(missingAddresses);
 
   ctx.logger.info({ count: toFetch.length }, "RPC pre-fetch in progress");
 
-  // Split into batches of 500 for multicall
   const BATCH_SIZE = 500;
   const batches: string[][] = [];
   for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
@@ -77,18 +74,15 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
         if (meta.protocol.includes("v2")) {
           const res = results[resultIdx++];
           if (res?.status === "success" && res.result) {
-            if (resultIdx <= 5 && process.env.DEBUG_MULTICALL) {
-              process.stderr.write(`[multicall-diag] V2 Result for ${addr}: ${JSON.stringify(res.result, (_, v) => typeof v === "bigint" ? v.toString() : v)}\n`);
-            }
             const r = res.result as any;
             const r0 = r[0] !== undefined ? r[0] : r.reserve0;
             const r1 = r[1] !== undefined ? r[1] : r.reserve1;
 
             if (r0 !== undefined && r1 !== undefined) {
-              ctx.stateCache.set(addr, { 
-                reserve0: BigInt(r0), 
-                reserve1: BigInt(r1), 
-                initialized: true 
+              ctx.stateCache.set(addr, {
+                reserve0: BigInt(r0),
+                reserve1: BigInt(r1),
+                initialized: true,
               });
               _failedPools.delete(addr);
             } else {
@@ -109,7 +103,7 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
                 sqrtPriceX96: BigInt(sqrtPriceX96),
                 tick: Number(tick),
                 liquidity: BigInt(liqRes.result as any),
-                initialized: true
+                initialized: true,
               });
               _failedPools.delete(addr);
             } else {
@@ -119,12 +113,11 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
           }
         }
       }
-    } catch (err) {
+    } catch {
       // Ignore individual batch failures
     }
   }));
 }
-
 
 export interface PassLoopDeps {
   buildGraph: typeof buildGraph;
@@ -204,6 +197,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   await ctx.executionService.start();
   await ctx.mempoolService.start();
 
+  // Start WebSocket subscriber if configured
+  if (ctx.wsSubscriber) {
+    try {
+      await ctx.wsSubscriber.start();
+      ctx.logger.info({}, "WebSocket subscriber started for real-time events");
+    } catch (err) {
+      ctx.logger.warn({ err }, "Failed to start WebSocket subscriber");
+    }
+  }
+
   bus?.emit({ type: "pass_loop_started", intervalMs: 200 });
   ctx.logger.info({}, "Pass loop started with multi-frequency cycles");
 
@@ -222,10 +225,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const TIER_CHECK_INTERVAL = 5000;
   let lastTierCheck = 0;
 
+  // Track simulation block for reorg safety
+  let lastSimulationBlock = 0;
+
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
       ctx.logger.info({ txHash: signal.data.txHash }, "New pool deployment detected in mempool! Scheduling rapid discovery.");
-      // Force discovery on next iteration
       lastDiscoveryTime = 0;
     }
     if (signal.type === "large_swap") {
@@ -233,7 +238,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         { pool: signal.data.poolAddress, size: signal.data.estimatedSwapSize.toString(), txHash: signal.data.txHash },
         "Large swap detected in mempool — triggering fast re-simulation",
       );
-      // Force re-enumeration on next cycle to catch backrunning opportunities
       lastRefreshTime = 0;
     }
   });
@@ -241,81 +245,98 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let cycleWindowStart = Date.now();
 
   while (ctx.isRunning) {
-  const now = Date.now();
-  const startTime = now;
+    const now = Date.now();
+    const startTime = now;
 
-  const cycleWindow = 60000;
-  const elapsedCycleWindow = now - cycleWindowStart;
-  ctx.metrics.currentCyclesPerMinute = elapsedCycleWindow > 0
-    ? Math.round((ctx.metrics.cycles * 60000) / elapsedCycleWindow)
-    : 0;
-  if (ctx.metrics.currentCyclesPerMinute > ctx.metrics.peakCyclesPerMinute) {
-    ctx.metrics.peakCyclesPerMinute = ctx.metrics.currentCyclesPerMinute;
-  }
-  if (elapsedCycleWindow > cycleWindow) {
-    cycleWindowStart = now;
-  }
-
-  try {
-  ctx.metrics.cycles++;
-
-  if (now - lastTierCheck > TIER_CHECK_INTERVAL) {
-    const tier = ctx.tierManager.assess();
-    lastTierCheck = now;
-    ctx.logger.debug({ tier }, ctx.tierManager.label());
-  }
-  
-  let pools = hasuraPoolsCache ?? ctx.getPools();
-
-  if (pools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())) {
-    const graphqlUrl = ctx.config.hasuraUrl;
-    const secret = ctx.config.hasuraSecret;
-    if (pools.length === 0) {
-      ctx.logger.info({}, "No pools — discovering from Hasura");
-    } else {
-      ctx.logger.info({}, "Polling Hasura for new pools");
+    const cycleWindow = 60000;
+    const elapsedCycleWindow = now - cycleWindowStart;
+    ctx.metrics.currentCyclesPerMinute = elapsedCycleWindow > 0
+      ? Math.round((ctx.metrics.cycles * 60000) / elapsedCycleWindow)
+      : 0;
+    if (ctx.metrics.currentCyclesPerMinute > ctx.metrics.peakCyclesPerMinute) {
+      ctx.metrics.peakCyclesPerMinute = ctx.metrics.currentCyclesPerMinute;
+    }
+    if (elapsedCycleWindow > cycleWindow) {
+      cycleWindowStart = now;
     }
 
     try {
-      const hasuraPools = await ctx.rpcCircuit.execute(
-        () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
-        async () => { ctx.logger.warn({}, "Hasura circuit open, returning empty pool list"); return []; },
-      );
-      if (hasuraPools.length > 0) {
-        hasuraPoolsCache = hasuraPools.map(p => ({
-          address: p.address as `0x${string}`,
-          protocol: p.protocol,
-          token0: (p.tokens[0] ?? "") as `0x${string}`,
-          token1: (p.tokens[1] ?? "") as `0x${string}`,
-          tokens: p.tokens as `0x${string}`[],
-        }));
-        pools = hasuraPoolsCache;
-        lastDiscoveryTime = now;
-        ctx.logger.info({ discovered: pools.length }, "Updated pools from Hasura");
+      ctx.metrics.cycles++;
+
+      if (now - lastTierCheck > TIER_CHECK_INTERVAL) {
+        const tier = ctx.tierManager.assess();
+        lastTierCheck = now;
+        ctx.logger.debug({ tier }, ctx.tierManager.label());
       }
-    } catch (e) {
-      ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
-      ctx.metrics.totalErrors++;
-      ctx.metrics.lastErrorTime = Date.now();
-      ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
-    }
-  }
+
+      // Reorg safety check on every cycle
+      if (ctx.reorgDetector && lastSimulationBlock > 0) {
+        const reorged = await ctx.reorgDetector.checkReorg();
+        if (reorged.size > 0) {
+          ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
+          const affectedPools = new Set<string>();
+          for (const cycle of cachedCycles) {
+            for (const edge of cycle.edges) {
+              affectedPools.add(edge.poolAddress.toLowerCase());
+            }
+          }
+          // Force re-enumeration on reorg
+          lastRefreshTime = 0;
+          ctx.reorgDetector.clearReorged();
+        }
+      }
+
+      let pools = hasuraPoolsCache ?? ctx.getPools();
+
+      if (pools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())) {
+        const graphqlUrl = ctx.config.hasuraUrl;
+        const secret = ctx.config.hasuraSecret;
+        if (pools.length === 0) {
+          ctx.logger.info({}, "No pools — discovering from Hasura");
+        } else {
+          ctx.logger.info({}, "Polling Hasura for new pools");
+        }
+
+        try {
+          const hasuraPools = await ctx.rpcCircuit.execute(
+            () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
+            async () => { ctx.logger.warn({}, "Hasura circuit open, returning empty pool list"); return []; },
+          );
+          if (hasuraPools.length > 0) {
+            hasuraPoolsCache = hasuraPools.map(p => ({
+              address: p.address as `0x${string}`,
+              protocol: p.protocol,
+              token0: (p.tokens[0] ?? "") as `0x${string}`,
+              token1: (p.tokens[1] ?? "") as `0x${string}`,
+              tokens: p.tokens as `0x${string}`[],
+            }));
+            pools = hasuraPoolsCache;
+            lastDiscoveryTime = now;
+            ctx.logger.info({ discovered: pools.length }, "Updated pools from Hasura");
+          }
+        } catch (e) {
+          ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+          ctx.metrics.totalErrors++;
+          ctx.metrics.lastErrorTime = Date.now();
+          ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
+        }
+      }
+
       const stateCache = ctx.stateCache;
 
       if (lastPoolsCount !== pools.length) {
         cachedGraph = deps.buildGraph(pools, stateCache);
         lastPoolsCount = pools.length;
       }
-      
+
       const shouldReEnumerate = (now - lastRefreshTime) >= LF_INTERVAL;
 
       // Force refresh state for ALL active pools via RPC multicall on low-frequency passes
       if (shouldReEnumerate && pools.length > 0) {
-        // Create dummy cycles so fetchMissingPoolState picks up all addresses
         const dummyCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
         await fetchMissingPoolState(ctx, pools, dummyCycles);
       }
-      
+
       if (shouldReEnumerate || !cachedGraph) {
         cachedCycles = deps.enumerateCycles(
           cachedGraph!,
@@ -325,20 +346,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         );
 
         lastRefreshTime = now;
+        ctx.logger.info(
+          {
+            pools: pools.length,
+            cycles: cachedCycles.length,
+          },
+          "Graph and cycles re-enumerated",
+        );
         const poolsPerProtocol: Record<string, number> = {};
         for (const p of pools) {
           poolsPerProtocol[p.protocol] = (poolsPerProtocol[p.protocol] || 0) + 1;
         }
-        ctx.logger.info(
-          { 
-            pools: pools.length, 
-            cycles: cachedCycles.length,
-          }, 
-          "Graph and cycles re-enumerated"
-        );
-        bus?.emit({ 
-          type: "graph_built", 
-          poolCount: pools.length, 
+        bus?.emit({
+          type: "graph_built",
+          poolCount: pools.length,
           cycleCount: cachedCycles.length,
           poolsPerProtocol,
           maxHops: MAX_HOPS,
@@ -352,7 +373,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      // Fill in missing pool states via RPC multicall if needed
       await fetchMissingPoolState(ctx, pools, currentCycles);
 
       const gasSnapshot = ctx.gasOracle.getSnapshot();
@@ -366,8 +386,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedRates = computeMaticRates(pools, stateCache);
       }
       const tokenToMaticRates = cachedRates!;
-      
-      ctx.logger.debug({ ratesCount: tokenToMaticRates.size }, "Updated token conversion rates");
+
+      // Mempool-aware dry run: check pending state before submitting
+      if (ctx.dryRunner) {
+        await ctx.dryRunner.fetchPendingState();
+      }
 
       const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,
@@ -410,6 +433,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
             const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
             bus?.emit({ type: "opportunity_found", routeKey, profitWei: profitable.assessment.netProfitAfterGas });
+
+            // Mempool-aware dry run before building candidate
+            if (ctx.dryRunner) {
+              const dryResult = await ctx.dryRunner.dryRun(
+                { routeKey, calldata: "", targetAddress: executorAddress, value: 0n },
+                executorAddress,
+              );
+              if (!dryResult.success) {
+                ctx.logger.warn({ routeKey, reason: dryResult.revertReason }, "Dry-run against pending state failed, skipping");
+                continue;
+              }
+            }
 
             try {
               const candidate = deps.buildExecutionCandidate(
@@ -503,6 +538,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
       const payload = buildStatusPayload(ctx.metrics, gasSnapshot.gasPrice, pools.length);
       await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
+
+      // Track current block for reorg safety
+      if (ctx.reorgDetector && ctx.publicClient) {
+        try {
+          const latest = await ctx.publicClient.getBlock({ blockTag: "latest" });
+          if (latest.number && latest.hash) {
+            await ctx.reorgDetector.trackBlock(Number(latest.number), latest.hash);
+            lastSimulationBlock = Number(latest.number);
+          }
+        } catch { /* best effort */ }
+      }
+
       const waitMs = Math.max(0, HF_INTERVAL - elapsed);
       if (waitMs > 0) await sleep(waitMs);
     } catch (err) {

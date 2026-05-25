@@ -37,6 +37,12 @@ describe('bootApplication', () => {
         cacheTtlMs: 1000,
         cacheSize: 1,
         defaultGasBufferBps: 0,
+        eip1559Enabled: false,
+        feeHistoryPercentile: 50,
+        emaAlpha: 0.3,
+        baseFeeBufferMultiplier: 1.0,
+        maxPriorityFeePercentile: 75,
+        historySize: 10,
       },
       routing: {
         maxHops: 2,
@@ -77,6 +83,12 @@ describe('bootApplication', () => {
       paths: {
         dataDir: '/tmp',
         perfJsonFile: '/tmp/perf.json',
+      },
+      fastlane: {
+        enabled: false,
+        rpcUrl: 'https://polygon-rpc.fastlane.xyz',
+        blockNumberWindow: 50,
+        timestampWindowS: 60,
       },
       envioApiToken: 'token',
       hasuraUrl: 'http://localhost:8080/v1/graphql',

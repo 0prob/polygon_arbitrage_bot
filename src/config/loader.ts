@@ -22,6 +22,12 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   GAS_CACHE_TTL_MS: ["gas", "cacheTtlMs"],
   GAS_CACHE_SIZE: ["gas", "cacheSize"],
   GAS_DEFAULT_BUFFER_BPS: ["gas", "defaultGasBufferBps"],
+  EIP1559_ENABLED: ["gas", "eip1559Enabled"],
+  GAS_FEE_HISTORY_PERCENTILE: ["gas", "feeHistoryPercentile"],
+  GAS_EMA_ALPHA: ["gas", "emaAlpha"],
+  GAS_BASE_FEE_BUFFER_MULTIPLIER: ["gas", "baseFeeBufferMultiplier"],
+  GAS_MAX_PRIORITY_FEE_PERCENTILE: ["gas", "maxPriorityFeePercentile"],
+  GAS_HISTORY_SIZE: ["gas", "historySize"],
 
   ROUTING_MAX_HOPS: ["routing", "maxHops"],
   MAX_TOTAL_PATHS: ["routing", "maxTotalPaths"],
@@ -80,6 +86,11 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   POLYGON_SOLVER_PRIVATE_KEY: ["crossChainArb", "polygonSolverPrivateKey"],
   KATANA_SOLVER_PRIVATE_KEY: ["crossChainArb", "katanaSolverPrivateKey"],
   KATANA_EXECUTOR_ENABLED: ["crossChainArb", "katanaExecutorEnabled"],
+
+  FASTLANE_ENABLED: ["fastlane", "enabled"],
+  FASTLANE_RPC_URL: ["fastlane", "rpcUrl"],
+  FASTLANE_BLOCK_WINDOW: ["fastlane", "blockNumberWindow"],
+  FASTLANE_TIMESTAMP_WINDOW_S: ["fastlane", "timestampWindowS"],
 
   LOG_LEVEL: ["observability", "logLevel"],
   TUI: ["observability", "tuiEnabled"],

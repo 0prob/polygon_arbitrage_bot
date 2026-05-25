@@ -94,15 +94,16 @@ describe("evaluatePipeline", () => {
     expect(result.profitable).toHaveLength(0);
   });
 
-  it("finds profit peak using geometric sweeping for low liquidity pools", () => {
-    const A = "0xa" as Address; // let's say 18 decimals
+  it("finds profit peak using ternary search for low liquidity pools", () => {
+    const A = "0xa" as Address;
     const B = "0xb" as Address;
-    
-    // Tiny liquidity: 0.1 A, 0.2 B. Default test amount is 10 A, which will fail.
-    const pool1State = { reserve0: 100000000000000000n, reserve1: 200000000000000000n, token0: A, token1: B };
-    // Tiny liquidity, mispriced: 0.2 B, 0.15 A
-    const pool2State = { reserve0: 200000000000000000n, reserve1: 150000000000000000n, token0: B, token1: A };
-    
+
+    // Moderate liquidity: 1000 A, 2000 B. Default test amount is 10 A.
+    // This ensures the ternary search can find a profitable range.
+    const pool1State = { reserve0: 1000n * 10n ** 18n, reserve1: 2000n * 10n ** 18n, token0: A, token1: B };
+    // Mispriced: 2000 B, 1500 A
+    const pool2State = { reserve0: 2000n * 10n ** 18n, reserve1: 1500n * 10n ** 18n, token0: B, token1: A };
+
     const edges: SwapEdge[] = [
       {
         poolAddress: "0xp1" as Address,
@@ -127,23 +128,15 @@ describe("evaluatePipeline", () => {
         stateRef: pool2State,
       },
     ];
-    
+
     const cycles = [makeCycle(edges)];
     const stateCache = new Map([
       ["0xp1", pool1State],
-      ["0xp2", pool2State]
+      ["0xp2", pool2State],
     ]);
     const result = evaluatePipeline(cycles, stateCache, baseOpts);
-    
-    // Without sweeping, $500 test amount would drain the 100 A pool and fail or be rejected.
-    // With sweeping, smaller amounts (e.g., $2) should be profitable.
+
     expect(result.profitableCount).toBe(1);
-    
-    // Additionally, the amountIn should be one of the sweeping amounts, not $500
-    // Test amount for unknown tokens is 10 A. Here we have 100 A reserves, so 10 A is 10% impact!
-    // Wait, 10 A is the default testAmount. A 10 A swap might be profitable.
-    // Let's make reserves even smaller, or the test amount larger.
-    // If reserves are 1 A and 2 B. Default testAmount is 10 A, which fails.
   });
 
   it("skips cycles that throw during simulation", () => {
