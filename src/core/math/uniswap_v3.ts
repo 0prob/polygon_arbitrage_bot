@@ -183,12 +183,21 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   let amountCalculated = 0n; // accumulated output
   let ticksCrossed = 0;
 
+  // If we have no ticks loaded, we must artificially bound the swap to the current tick interval
+  // to avoid assuming infinite liquidity up to the absolute price limits.
+  const hasTicks = sortedTicks.length > 0;
+
   // Safety: max iterations to prevent infinite loops
   const MAX_ITERATIONS = 500;
 
   for (let i = 0; i < MAX_ITERATIONS && amountRemaining > 0n; i++) {
     // Find the next initialized tick boundary
-    const nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
+    let nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
+
+    if (nextTick === null && !hasTicks) {
+      // Artificially bound to immediate tick +/- 1 to prevent infinite liquidity assumption
+      nextTick = zeroForOne ? tick - 1 : tick + 1;
+    }
 
     // Determine the sqrt price at the next tick boundary
     const sqrtPriceNextTickX96 = nextTick !== null ? getSqrtRatioAtTick(nextTick) : sqrtPriceLimitX96;
@@ -224,6 +233,10 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
         // When moving right (!zeroForOne), we add liquidityNet
         liquidity = zeroForOne ? liquidity - liquidityNet : liquidity + liquidityNet;
         ticksCrossed++;
+      } else if (!hasTicks) {
+        // If we crossed an artificial boundary and have no tick data,
+        // we must assume liquidity drops to 0 to prevent infinite liquidity exploit.
+        liquidity = 0n;
       }
 
       // Update tick position

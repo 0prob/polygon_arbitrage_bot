@@ -4,7 +4,7 @@ import { type RoutingGraph, buildGraph } from "../services/strategy/graph.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
-import { discoverPoolsFromHasura, buildStateCacheFromGraphQL } from "../infra/hypersync/hyperindex_graphql.ts";
+import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { WMATIC } from "../config/addresses.ts";
@@ -21,6 +21,14 @@ const _failedPools = new Map<string, { count: number; lastTry: number }>();
 async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], currentCycles: FoundCycle[]): Promise<void> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
+
+  // Always check core anchor pools for rate propagation
+  for (const anchor of STATIC_ANCHORS) {
+    const addr = anchor.address.toLowerCase();
+    if (!ctx.stateCache.has(addr)) {
+      missingAddresses.add(addr);
+    }
+  }
 
   for (const cycle of currentCycles) {
     for (const edge of cycle.edges) {
@@ -141,9 +149,13 @@ function sleep(ms: number): Promise<void> {
 
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
-function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<string, unknown>>): Map<string, bigint> {
+function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<string, unknown>>, logger?: any): Map<string, bigint> {
   const rates = new Map<string, bigint>();
-  rates.set(WMATIC_LOWER, 1n);
+  const RATE_PRECISION = 1000000000000000000n;
+  rates.set(WMATIC_LOWER, RATE_PRECISION);
+
+  const logs: string[] = [];
+  if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);
 
   // Use a more thorough BFS-style propagation
   for (let i = 0; i < 10; i++) {
@@ -175,38 +187,27 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
 
       for (const unknownIdx of unknownIndices) {
         const unknownToken = tokens[unknownIdx];
-        let priceUnknownPerKnown: number | null = null;
 
         try {
           // Protocol-specific spot price calculation
           const protocol = pool.protocol.toLowerCase();
+          let newRate = 0n;
           if (protocol.includes("v2")) {
             const r0 = BigInt(state.reserve0 as any);
             const r1 = BigInt(state.reserve1 as any);
             if (r0 > 0n && r1 > 0n) {
-              // price1per0 = r1 / r0. unknown is t1, known is t0 => price = r1/r0
-              // we want rateUnknown = rateKnown * known/unknown = rateKnown * rKnown / rUnknown
               const rKnown = knownIdx === 0 ? r0 : r1;
               const rUnknown = unknownIdx === 0 ? r0 : r1;
-              const rate = (knownRate * rKnown) / rUnknown;
-              if (rate > 0n) {
-                rates.set(unknownToken, rate);
-                changed = true;
-              }
+              newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
             const sq = BigInt(state.sqrtPriceX96 as any);
             if (sq > 0n) {
               const p192 = sq * sq;
-              // price1per0 = p192 / 2^192
-              // rate1 = rate0 * 2^192 / p192
-              // rate0 = rate1 * p192 / 2^192
               if (knownIdx === 0 && unknownIdx === 1) {
-                const rate = (knownRate * (1n << 192n)) / p192;
-                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+                newRate = (knownRate * (1n << 192n)) / p192;
               } else if (knownIdx === 1 && unknownIdx === 0) {
-                const rate = (knownRate * p192) / (1n << 192n);
-                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+                newRate = (knownRate * p192) / (1n << 192n);
               }
             }
           } else if (protocol.includes("balancer")) {
@@ -214,37 +215,41 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
               const weights = state.weights as bigint[];
               if (weights && weights[knownIdx] > 0n && weights[unknownIdx] > 0n) {
-                // Weighted spot price: (balanceIn / weightIn) / (balanceOut / weightOut)
-                // priceOutPerIn = (balanceIn * weightOut) / (balanceOut * weightIn)
-                // rateOut = rateIn * balanceIn * weightOut / (balanceOut * weightIn)
-                const rate = (knownRate * balances[knownIdx] * weights[unknownIdx]) / (balances[unknownIdx] * weights[knownIdx]);
-                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+                newRate = (knownRate * balances[knownIdx] * weights[unknownIdx]) / (balances[unknownIdx] * weights[knownIdx]);
               } else {
-                // Stable or equal weight approximation
-                const rate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
-                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+                newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
               }
             }
           } else if (protocol.includes("curve")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
-              const rate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
-              if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
             }
           } else if (protocol.includes("dodo")) {
             const b = BigInt(state.baseReserve as any);
             const q = BigInt(state.quoteReserve as any);
             if (b > 0n && q > 0n) {
-              const rate = knownIdx === 0 ? (knownRate * b) / q : (knownRate * q) / b;
-              if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              newRate = knownIdx === 0 ? (knownRate * b) / q : (knownRate * q) / b;
             }
           }
-        } catch {
+
+          if (newRate > 0n && (!rates.has(unknownToken) || rates.get(unknownToken)! < newRate)) {
+            rates.set(unknownToken, newRate);
+            changed = true;
+            if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${pool.address} [${protocol}])`);
+          }
+        } catch (e) {
           continue;
         }
       }
     }
     if (!changed) break;
+  }
+  
+  if (logger && rates.size > 1) {
+    logger.debug({ rates: rates.size, propagation: logs }, "Rate propagation complete");
+  } else if (logger) {
+    logger.debug({ pools: pools.length, withState: stateCache.size }, "Rate propagation failed to find any rates beyond WMATIC");
   }
   return rates;
 }
@@ -413,6 +418,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           ctx.logger.info({}, "Polling Hasura for new pools");
         }
 
+        lastDiscoveryTime = now; // Update even if we fail, to avoid infinite polling
         try {
           const discoveryStartTime = Date.now();
           const hasuraPools = await ctx.rpcCircuit.execute(
@@ -439,9 +445,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 fee: p.fee,
               }));
               pools = hasuraPoolsCache;
-              lastDiscoveryTime = now;
               ctx.logger.info({ discovered: pools.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
             }
+          } else if (hasuraPoolsCache === undefined) {
+            hasuraPoolsCache = []; // Mark as discovered even if empty
           }
         } catch (e) {
           ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
@@ -471,8 +478,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const shouldReEnumerate = (now - lastRefreshTime) >= LF_INTERVAL;
       const shouldFullRebuild = ctx.graphUpdater?.shouldFullRebuild() ?? true;
 
-      // Force refresh state for ALL active pools via GraphQL + RPC on low-frequency passes
+      // Low-frequency maintenance: Refresh all state and re-calculate rates
       if (shouldReEnumerate && pools.length > 0) {
+        bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
         try {
           const graphqlUrl = ctx.config.hasuraUrl;
           const secret = ctx.config.hasuraSecret;
@@ -484,13 +492,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         } catch (err) {
           ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
         }
-      }
 
-      // Always fetch missing state for current cycles and update rates
-      if (pools.length > 0) {
-        const dummyCycles = shouldReEnumerate ? pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any)) : [];
-        await fetchMissingPoolState(ctx, pools, [...cachedCycles, ...dummyCycles]);
-        cachedRates = computeMaticRates(pools, stateCache);
+        // Fetch missing state for ALL pools to ensure rate propagation is complete
+        // We only do this occasionally to avoid RPC hammering
+        const poolCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
+        await fetchMissingPoolState(ctx, pools, poolCycles);
+        
+        // Re-calculate MATIC rates for all tokens
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
       }
 
       if (shouldReEnumerate || !cachedGraph) {
@@ -517,17 +526,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           },
           "Graph and cycles re-enumerated",
         );
-        const poolsPerProtocol: Record<string, number> = {};
-        for (const p of pools) {
-          poolsPerProtocol[p.protocol] = (poolsPerProtocol[p.protocol] || 0) + 1;
-        }
-        bus?.emit({
-          type: "graph_built",
-          poolCount: pools.length,
-          cycleCount: cachedCycles.length,
-          poolsPerProtocol,
-          maxHops: MAX_HOPS,
-        });
       }
 
       const currentCycles = cachedCycles;
@@ -538,7 +536,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      await fetchMissingPoolState(ctx, pools, currentCycles);
+      // High-frequency pre-fetch: Only for pools in current cycles
+      // Always fetch if we just re-enumerated to ensure we have state for new pools
+      if (shouldReEnumerate || now % 5 === 0) { 
+        await fetchMissingPoolState(ctx, pools, currentCycles);
+        // Force rate recalculation after state fetch
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
+      }
 
       const gasSnapshot = ctx.gasOracle.getSnapshot();
       if (!gasSnapshot) {
@@ -548,6 +552,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
+      if (!cachedRates) {
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
+      }
       const tokenToMaticRates = cachedRates!;
 
       // Mempool-aware dry run: check pending state before submitting
@@ -624,7 +631,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               const candidate = deps.buildExecutionCandidate(
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
-                { slippageBps: Number(options.slippageBps ?? 50n), flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER" },
+                { 
+                  slippageBps: Number(options.slippageBps ?? 50n), 
+                  flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
+                  stateCache
+                },
               );
 
               // Mempool-aware dry run after building candidate

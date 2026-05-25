@@ -1,12 +1,14 @@
 import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "./builder.ts";
 import type { CandidateExecution } from "./service.ts";
 import type { PipelineResult } from "../strategy/pipeline.ts";
+import type { RouteStateCache } from "../../core/types/route.ts";
 
 export type ProfitableResult = PipelineResult["profitable"][number];
 
 export interface CandidateBuilderOptions {
   slippageBps: number;
   flashLoanSource?: "BALANCER" | "AAVE_V3";
+  stateCache?: RouteStateCache;
 }
 
 export function buildExecutionCandidate(
@@ -16,6 +18,9 @@ export function buildExecutionCandidate(
 ): CandidateExecution {
   const edges = profitable.cycle.edges.map((e) => {
     const fee = Number(e.feeBps ?? 0);
+    const addr = e.poolAddress.toLowerCase();
+    const state = options.stateCache?.get(addr);
+    
     return {
       poolAddress: e.poolAddress,
       tokenIn: e.tokenIn,
@@ -27,6 +32,7 @@ export function buildExecutionCandidate(
       metadata: {},
       tokenInIdx: e.tokenInIdx,
       tokenOutIdx: e.tokenOutIdx,
+      stateRef: (state as any) ?? e.stateRef,
     };
   });
 

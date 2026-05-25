@@ -90,7 +90,7 @@ function evaluateAmount(
       flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
     });
 
-    const grossMatic = result.profit * rate;
+    const grossMatic = (result.profit * rate) / 1000000000000000000n;
     return { result, assessment, grossProfitMatic: grossMatic };
   } catch {
     return { result: null, assessment: null, grossProfitMatic: null };

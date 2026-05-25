@@ -8,23 +8,22 @@ import type { ProfitAssessment } from "../types/execution.ts";
  * Convert a token-denominated amount to MATIC wei using an oracle rate.
  *
  * `tokenToMaticRate` is the number of MATIC wei equivalent to 1 unit (smallest denomination)
- * of the token. E.g. if token has 6 decimals and the price is 0.5 MATIC/token, then
- * tokenToMaticRate = 0.5 * 10^18 / 10^6 = 5 * 10^11 wei per smallest token unit.
+ * of the token, SCALED by 1e18.
  */
 export function tokensToMaticWei(amountInTokens: bigint, tokenToMaticRate: bigint): bigint {
   if (amountInTokens <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
-  return amountInTokens * tokenToMaticRate;
+  return (amountInTokens * tokenToMaticRate) / 1000000000000000000n;
 }
 
 /**
  * Convert MATIC wei to token units using an oracle rate, rounding up (conservative).
- * Used to express MATIC-denominated costs (e.g. gas) in token units when needed.
+ * `tokenToMaticRate` is SCALED by 1e18.
  */
 export function maticWeiToTokens(amountInMaticWei: bigint, tokenToMaticRate: bigint): bigint {
   if (amountInMaticWei <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
-  return divRoundingUp(amountInMaticWei, tokenToMaticRate);
+  return divRoundingUp(amountInMaticWei * 1000000000000000000n, tokenToMaticRate);
 }
 
 /** Compute gas cost in MATIC wei from gas units and gas price. */
