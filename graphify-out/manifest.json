@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779704635.0430598,
-    "ast_hash": "3fefdb293e1324e873e1f390fbf30837",
+    "mtime": 1779705309.2883356,
+    "ast_hash": "3f266b398e942b2959e14af9e196d17f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -515,13 +515,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779679882.8347642,
-    "ast_hash": "674081dec3c98960bd4379e40ea1a4aa",
+    "mtime": 1779705833.7075274,
+    "ast_hash": "368f591697e647f055c41decef1c3236",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779600498.8451133,
-    "ast_hash": "1e93ce2f9afa27e3682b728ac135740e",
+    "mtime": 1779705895.7349234,
+    "ast_hash": "f8dcd0d564535678ab72967aa949cb93",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/hyperindex_monitor.ts": {
-    "mtime": 1779679887.5707095,
-    "ast_hash": "fdd0694924f6a05d82168f2f90238f86",
+    "mtime": 1779705870.3951707,
+    "ast_hash": "b27b05354cf631e39c9f7755269af32e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/tier_manager.test.ts": {

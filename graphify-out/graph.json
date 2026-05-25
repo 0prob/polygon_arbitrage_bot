@@ -4,193 +4,400 @@
   "graph": {},
   "nodes": [
     {
+      "label": "main.ts",
+      "file_type": "code",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L1",
+      "id": "src_cli_main_ts",
+      "community": 123,
+      "norm_label": "main.ts"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L14",
+      "id": "cli_main_main",
+      "community": 123,
+      "norm_label": "main()"
+    },
+    {
+      "label": "hyperindex_process.ts",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L1",
+      "id": "src_infra_hypersync_hyperindex_process_ts",
+      "community": 88,
+      "norm_label": "hyperindex_process.ts"
+    },
+    {
+      "label": "HyperIndexStatusEvent",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "id": "hypersync_hyperindex_process_hyperindexstatusevent",
+      "community": 88,
+      "norm_label": "hyperindexstatusevent"
+    },
+    {
+      "label": "EventBusLike",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "id": "hypersync_hyperindex_process_eventbuslike",
+      "community": 88,
+      "norm_label": "eventbuslike"
+    },
+    {
+      "label": "HyperIndexProcessOptions",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L15",
+      "id": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "community": 88,
+      "norm_label": "hyperindexprocessoptions"
+    },
+    {
+      "label": "HyperIndexProcess",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L24",
+      "id": "hypersync_hyperindex_process_hyperindexprocess",
+      "community": 88,
+      "norm_label": "hyperindexprocess"
+    },
+    {
+      "label": "createHyperIndexProcess()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L30",
+      "id": "hypersync_hyperindex_process_createhyperindexprocess",
+      "community": 123,
+      "norm_label": "createhyperindexprocess()"
+    },
+    {
+      "label": "hyperindex_monitor.ts",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L1",
+      "id": "src_infra_resilience_hyperindex_monitor_ts",
+      "community": 88,
+      "norm_label": "hyperindex_monitor.ts"
+    },
+    {
+      "label": "sleep()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L6",
+      "id": "resilience_hyperindex_monitor_sleep",
+      "community": 149,
+      "norm_label": "sleep()"
+    },
+    {
+      "label": "HyperIndexMonitorOptions",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L10",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "community": 88,
+      "norm_label": "hyperindexmonitoroptions"
+    },
+    {
+      "label": "HyperIndexMonitor",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L17",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "community": 149,
+      "norm_label": "hyperindexmonitor"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L27",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
+      "community": 149,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".prepare()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L33",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_prepare",
+      "community": 149,
+      "norm_label": ".prepare()"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L44",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_start",
+      "community": 149,
+      "norm_label": ".start()"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L48",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_stop",
+      "community": 149,
+      "norm_label": ".stop()"
+    },
+    {
+      "label": ".isHealthy()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L60",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_ishealthy",
+      "community": 149,
+      "norm_label": ".ishealthy()"
+    },
+    {
+      "label": ".isRunning()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L64",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning",
+      "community": 149,
+      "norm_label": ".isrunning()"
+    },
+    {
+      "label": ".updateSyncedBlock()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L68",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_updatesyncedblock",
+      "community": 149,
+      "norm_label": ".updatesyncedblock()"
+    },
+    {
+      "label": ".checkHealth()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L75",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
+      "community": 149,
+      "norm_label": ".checkhealth()"
+    },
+    {
+      "label": ".getLastSyncedBlock()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L103",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_getlastsyncedblock",
+      "community": 149,
+      "norm_label": ".getlastsyncedblock()"
+    },
+    {
+      "label": ".getLastStatus()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L107",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_getlaststatus",
+      "community": 149,
+      "norm_label": ".getlaststatus()"
+    },
+    {
+      "label": ".restart()",
+      "file_type": "code",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L111",
+      "id": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
+      "community": 149,
+      "norm_label": ".restart()"
+    },
+    {
       "label": "balancer.ts",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L1",
-      "id": "src_core_math_balancer_ts",
       "community": 42,
-      "norm_label": "balancer.ts"
+      "norm_label": "balancer.ts",
+      "id": "src_core_math_balancer_ts"
     },
     {
       "label": "BalancerPoolState",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L50",
-      "id": "math_balancer_balancerpoolstate",
       "community": 42,
-      "norm_label": "balancerpoolstate"
+      "norm_label": "balancerpoolstate",
+      "id": "math_balancer_balancerpoolstate"
     },
     {
       "label": "asPoolState()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L52",
-      "id": "math_balancer_aspoolstate",
       "community": 42,
-      "norm_label": "aspoolstate()"
+      "norm_label": "aspoolstate()",
+      "id": "math_balancer_aspoolstate"
     },
     {
       "label": "absDiff()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L56",
-      "id": "math_balancer_absdiff",
       "community": 42,
-      "norm_label": "absdiff()"
+      "norm_label": "absdiff()",
+      "id": "math_balancer_absdiff"
     },
     {
       "label": "ln()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L73",
-      "id": "math_balancer_ln",
       "community": 42,
-      "norm_label": "ln()"
+      "norm_label": "ln()",
+      "id": "math_balancer_ln"
     },
     {
       "label": "exp()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L123",
-      "id": "math_balancer_exp",
       "community": 42,
-      "norm_label": "exp()"
+      "norm_label": "exp()",
+      "id": "math_balancer_exp"
     },
     {
       "label": "powDown()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L150",
-      "id": "math_balancer_powdown",
       "community": 42,
-      "norm_label": "powdown()"
+      "norm_label": "powdown()",
+      "id": "math_balancer_powdown"
     },
     {
       "label": "getBalancerAmountOut()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L172",
-      "id": "math_balancer_getbalanceramountout",
       "community": 42,
-      "norm_label": "getbalanceramountout()"
+      "norm_label": "getbalanceramountout()",
+      "id": "math_balancer_getbalanceramountout"
     },
     {
       "label": "getBalancerAmountIn()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L231",
-      "id": "math_balancer_getbalanceramountin",
       "community": 42,
-      "norm_label": "getbalanceramountin()"
+      "norm_label": "getbalanceramountin()",
+      "id": "math_balancer_getbalanceramountin"
     },
     {
       "label": "getScaledBalances()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L318",
-      "id": "math_balancer_getscaledbalances",
       "community": 42,
-      "norm_label": "getscaledbalances()"
+      "norm_label": "getscaledbalances()",
+      "id": "math_balancer_getscaledbalances"
     },
     {
       "label": "calculateBalancerStableInvariant()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L338",
-      "id": "math_balancer_calculatebalancerstableinvariant",
       "community": 42,
-      "norm_label": "calculatebalancerstableinvariant()"
+      "norm_label": "calculatebalancerstableinvariant()",
+      "id": "math_balancer_calculatebalancerstableinvariant"
     },
     {
       "label": "getTokenBalanceGivenStableInvariant()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L374",
-      "id": "math_balancer_gettokenbalancegivenstableinvariant",
       "community": 42,
-      "norm_label": "gettokenbalancegivenstableinvariant()"
+      "norm_label": "gettokenbalancegivenstableinvariant()",
+      "id": "math_balancer_gettokenbalancegivenstableinvariant"
     },
     {
       "label": "getBalancerStableAmountOut()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L432",
-      "id": "math_balancer_getbalancerstableamountout",
       "community": 42,
-      "norm_label": "getbalancerstableamountout()"
+      "norm_label": "getbalancerstableamountout()",
+      "id": "math_balancer_getbalancerstableamountout"
     },
     {
       "label": "simulateBalancerSwap()",
       "file_type": "code",
       "source_file": "src/core/math/balancer.ts",
       "source_location": "L478",
-      "id": "math_balancer_simulatebalancerswap",
       "community": 42,
-      "norm_label": "simulatebalancerswap()"
+      "norm_label": "simulatebalancerswap()",
+      "id": "math_balancer_simulatebalancerswap"
     },
     {
       "label": "uniswap_v2.ts",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L1",
-      "id": "src_core_math_uniswap_v2_ts",
       "community": 98,
-      "norm_label": "uniswap_v2.ts"
+      "norm_label": "uniswap_v2.ts",
+      "id": "src_core_math_uniswap_v2_ts"
     },
     {
       "label": "V2PoolStateLike",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L18",
-      "id": "math_uniswap_v2_v2poolstatelike",
       "community": 98,
-      "norm_label": "v2poolstatelike"
+      "norm_label": "v2poolstatelike",
+      "id": "math_uniswap_v2_v2poolstatelike"
     },
     {
       "label": "asPoolState()",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L20",
-      "id": "math_uniswap_v2_aspoolstate",
       "community": 98,
-      "norm_label": "aspoolstate()"
+      "norm_label": "aspoolstate()",
+      "id": "math_uniswap_v2_aspoolstate"
     },
     {
       "label": "getV2AmountOut()",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L37",
-      "id": "math_uniswap_v2_getv2amountout",
       "community": 98,
-      "norm_label": "getv2amountout()"
+      "norm_label": "getv2amountout()",
+      "id": "math_uniswap_v2_getv2amountout"
     },
     {
       "label": "getV2AmountIn()",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L66",
-      "id": "math_uniswap_v2_getv2amountin",
       "community": 98,
-      "norm_label": "getv2amountin()"
+      "norm_label": "getv2amountin()",
+      "id": "math_uniswap_v2_getv2amountin"
     },
     {
       "label": "simulateV2Swap()",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L95",
-      "id": "math_uniswap_v2_simulatev2swap",
       "community": 98,
-      "norm_label": "simulatev2swap()"
+      "norm_label": "simulatev2swap()",
+      "id": "math_uniswap_v2_simulatev2swap"
     },
     {
       "label": "quoteV2()",
       "file_type": "code",
       "source_file": "src/core/math/uniswap_v2.ts",
       "source_location": "L152",
-      "id": "math_uniswap_v2_quotev2",
       "community": 98,
-      "norm_label": "quotev2()"
+      "norm_label": "quotev2()",
+      "id": "math_uniswap_v2_quotev2"
     },
     {
       "label": "pass_loop.test.ts",
@@ -773,7 +980,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L6",
-      "community": 148,
+      "community": 19,
       "norm_label": "foundcycle",
       "id": "strategy_finder_foundcycle"
     },
@@ -863,7 +1070,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L14",
-      "community": 35,
+      "community": 9,
       "norm_label": "graphqlquery()",
       "id": "hypersync_hyperindex_graphql_graphqlquery"
     },
@@ -881,7 +1088,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L56",
-      "community": 35,
+      "community": 9,
       "norm_label": "buildstatecachefromgraphql()",
       "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
     },
@@ -899,7 +1106,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L163",
-      "community": 35,
+      "community": 9,
       "norm_label": "discoverpoolsfromhasura()",
       "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
     },
@@ -1196,7 +1403,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L1",
-      "community": 111,
+      "community": 28,
       "norm_label": "simulator.ts",
       "id": "src_services_strategy_simulator_ts"
     },
@@ -1214,7 +1421,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L26",
-      "community": 111,
+      "community": 28,
       "norm_label": "normalizeprotocol()",
       "id": "strategy_simulator_normalizeprotocol"
     },
@@ -1223,7 +1430,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L40",
-      "community": 111,
+      "community": 28,
       "norm_label": "simulatehop()",
       "id": "strategy_simulator_simulatehop"
     },
@@ -1232,7 +1439,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L96",
-      "community": 111,
+      "community": 28,
       "norm_label": "extractgasresult()",
       "id": "strategy_simulator_extractgasresult"
     },
@@ -1718,7 +1925,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L40",
-      "community": 148,
+      "community": 19,
       "norm_label": "pipelineresult",
       "id": "strategy_pipeline_pipelineresult"
     },
@@ -1754,7 +1961,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 123,
       "norm_label": "events.ts",
       "id": "src_tui_events_ts"
     },
@@ -1763,7 +1970,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 123,
       "norm_label": "arbevent",
       "id": "tui_events_arbevent"
     },
@@ -1772,7 +1979,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L16",
-      "community": 40,
+      "community": 123,
       "norm_label": "eventhandler",
       "id": "tui_events_eventhandler"
     },
@@ -1781,7 +1988,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L18",
-      "community": 40,
+      "community": 123,
       "norm_label": "eventbus",
       "id": "tui_events_eventbus"
     },
@@ -1790,7 +1997,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L21",
-      "community": 40,
+      "community": 123,
       "norm_label": ".on()",
       "id": "tui_events_eventbus_on"
     },
@@ -1799,7 +2006,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L28",
-      "community": 40,
+      "community": 164,
       "norm_label": ".emit()",
       "id": "tui_events_eventbus_emit"
     },
@@ -1808,7 +2015,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 113,
       "norm_label": "state.ts",
       "id": "src_tui_state_ts"
     },
@@ -1817,7 +2024,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L3",
-      "community": 40,
+      "community": 113,
       "norm_label": "metricsstate",
       "id": "tui_state_metricsstate"
     },
@@ -1826,7 +2033,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L14",
-      "community": 40,
+      "community": 113,
       "norm_label": "opportunityentry",
       "id": "tui_state_opportunityentry"
     },
@@ -1835,7 +2042,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L23",
-      "community": 40,
+      "community": 113,
       "norm_label": "systemstate",
       "id": "tui_state_systemstate"
     },
@@ -1844,7 +2051,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L40",
-      "community": 40,
+      "community": 113,
       "norm_label": "logentry",
       "id": "tui_state_logentry"
     },
@@ -1862,7 +2069,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L57",
-      "community": 40,
+      "community": 113,
       "norm_label": "createinitialstate()",
       "id": "tui_state_createinitialstate"
     },
@@ -1871,7 +2078,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L91",
-      "community": 40,
+      "community": 113,
       "norm_label": "appendlog()",
       "id": "tui_state_appendlog"
     },
@@ -1880,7 +2087,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L98",
-      "community": 40,
+      "community": 113,
       "norm_label": "updateopportunity()",
       "id": "tui_state_updateopportunity"
     },
@@ -1889,7 +2096,7 @@
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L122",
-      "community": 40,
+      "community": 113,
       "norm_label": "applyevent()",
       "id": "tui_state_applyevent"
     },
@@ -1898,7 +2105,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 113,
       "norm_label": "renderer.test.ts",
       "id": "tests_tui_renderer_test_ts"
     },
@@ -1907,7 +2114,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L6",
-      "community": 40,
+      "community": 113,
       "norm_label": "createmockstdout()",
       "id": "tui_renderer_test_createmockstdout"
     },
@@ -1916,7 +2123,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L18",
-      "community": 40,
+      "community": 113,
       "norm_label": "stdout",
       "id": "tui_renderer_test_stdout"
     },
@@ -1925,7 +2132,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L19",
-      "community": 40,
+      "community": 113,
       "norm_label": "r",
       "id": "tui_renderer_test_r"
     },
@@ -1934,7 +2141,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L36",
-      "community": 40,
+      "community": 113,
       "norm_label": "layout",
       "id": "tui_renderer_test_layout"
     },
@@ -1943,7 +2150,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L37",
-      "community": 40,
+      "community": 113,
       "norm_label": "state",
       "id": "tui_renderer_test_state"
     },
@@ -1952,7 +2159,7 @@
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L41",
-      "community": 40,
+      "community": 113,
       "norm_label": "output",
       "id": "tui_renderer_test_output"
     },
@@ -1988,7 +2195,7 @@
       "file_type": "code",
       "source_file": "src/tui/layout.ts",
       "source_location": "L22",
-      "community": 40,
+      "community": 113,
       "norm_label": "computelayout()",
       "id": "tui_layout_computelayout"
     },
@@ -2015,7 +2222,7 @@
       "file_type": "code",
       "source_file": "tests/tui/state.test.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 113,
       "norm_label": "state.test.ts",
       "id": "tests_tui_state_test_ts"
     },
@@ -2024,7 +2231,7 @@
       "file_type": "code",
       "source_file": "tests/tui/state.test.ts",
       "source_location": "L6",
-      "community": 40,
+      "community": 113,
       "norm_label": "s",
       "id": "tui_state_test_s"
     },
@@ -2123,7 +2330,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L1",
-      "community": 151,
+      "community": 152,
       "norm_label": "boot.ts",
       "id": "src_orchestrator_boot_ts"
     },
@@ -2141,7 +2348,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L50",
-      "community": 151,
+      "community": 152,
       "norm_label": "bootapplication()",
       "id": "orchestrator_boot_bootapplication"
     },
@@ -3931,7 +4138,7 @@
       "file_type": "code",
       "source_file": "tests/tui/main.test.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 123,
       "norm_label": "main.test.ts",
       "id": "tests_tui_main_test_ts"
     },
@@ -3940,7 +4147,7 @@
       "file_type": "code",
       "source_file": "tests/tui/main.test.ts",
       "source_location": "L6",
-      "community": 40,
+      "community": 123,
       "norm_label": "tui",
       "id": "tui_main_test_tui"
     },
@@ -3949,7 +4156,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 164,
       "norm_label": "events.test.ts",
       "id": "tests_tui_events_test_ts"
     },
@@ -3958,7 +4165,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L6",
-      "community": 40,
+      "community": 164,
       "norm_label": "bus",
       "id": "tui_events_test_bus"
     },
@@ -3967,7 +4174,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L7",
-      "community": 40,
+      "community": 164,
       "norm_label": "handler",
       "id": "tui_events_test_handler"
     },
@@ -3976,7 +4183,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L10",
-      "community": 40,
+      "community": 164,
       "norm_label": "event",
       "id": "tui_events_test_event"
     },
@@ -3985,7 +4192,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L19",
-      "community": 40,
+      "community": 164,
       "norm_label": "off",
       "id": "tui_events_test_off"
     },
@@ -3994,7 +4201,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L29",
-      "community": 40,
+      "community": 164,
       "norm_label": "h1",
       "id": "tui_events_test_h1"
     },
@@ -4003,7 +4210,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L30",
-      "community": 40,
+      "community": 164,
       "norm_label": "h2",
       "id": "tui_events_test_h2"
     },
@@ -4012,7 +4219,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L42",
-      "community": 40,
+      "community": 164,
       "norm_label": "throwing",
       "id": "tui_events_test_throwing"
     },
@@ -4021,7 +4228,7 @@
       "file_type": "code",
       "source_file": "tests/tui/events.test.ts",
       "source_location": "L45",
-      "community": 40,
+      "community": 164,
       "norm_label": "good",
       "id": "tui_events_test_good"
     },
@@ -4030,7 +4237,7 @@
       "file_type": "code",
       "source_file": "tests/tui/metrics.test.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 113,
       "norm_label": "metrics.test.ts",
       "id": "tests_tui_metrics_test_ts"
     },
@@ -4039,7 +4246,7 @@
       "file_type": "code",
       "source_file": "tests/tui/metrics.test.ts",
       "source_location": "L14",
-      "community": 40,
+      "community": 113,
       "norm_label": "state",
       "id": "tui_metrics_test_state"
     },
@@ -4048,7 +4255,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L1",
-      "community": 142,
+      "community": 160,
       "norm_label": "graph_manager.test.ts",
       "id": "tests_services_strategy_graph_manager_test_ts"
     },
@@ -4057,7 +4264,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L8",
-      "community": 142,
+      "community": 160,
       "norm_label": "pooladdr",
       "id": "strategy_graph_manager_test_pooladdr"
     },
@@ -4066,7 +4273,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L9",
-      "community": 142,
+      "community": 160,
       "norm_label": "pool",
       "id": "strategy_graph_manager_test_pool"
     },
@@ -4075,7 +4282,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L16",
-      "community": 142,
+      "community": 160,
       "norm_label": "state",
       "id": "strategy_graph_manager_test_state"
     },
@@ -4084,7 +4291,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L21",
-      "community": 142,
+      "community": 160,
       "norm_label": "cache",
       "id": "strategy_graph_manager_test_cache"
     },
@@ -4093,7 +4300,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L24",
-      "community": 142,
+      "community": 160,
       "norm_label": "manager",
       "id": "strategy_graph_manager_test_manager"
     },
@@ -4102,7 +4309,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L26",
-      "community": 142,
+      "community": 160,
       "norm_label": "newstate",
       "id": "strategy_graph_manager_test_newstate"
     },
@@ -4111,7 +4318,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L66",
-      "community": 142,
+      "community": 160,
       "norm_label": "tokencedges",
       "id": "strategy_graph_manager_test_tokencedges"
     },
@@ -4120,7 +4327,7 @@
       "file_type": "code",
       "source_file": "tests/services/strategy/graph_manager.test.ts",
       "source_location": "L81",
-      "community": 142,
+      "community": 160,
       "norm_label": "tokendedges",
       "id": "strategy_graph_manager_test_tokendedges"
     },
@@ -4174,7 +4381,7 @@
       "file_type": "code",
       "source_file": "src/tui/main.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 123,
       "norm_label": "main.ts",
       "id": "src_tui_main_ts"
     },
@@ -4183,7 +4390,7 @@
       "file_type": "code",
       "source_file": "src/tui/main.ts",
       "source_location": "L6",
-      "community": 40,
+      "community": 123,
       "norm_label": "tuiinstance",
       "id": "tui_main_tuiinstance"
     },
@@ -4192,7 +4399,7 @@
       "file_type": "code",
       "source_file": "src/tui/main.ts",
       "source_location": "L12",
-      "community": 88,
+      "community": 123,
       "norm_label": "createtui()",
       "id": "tui_main_createtui"
     },
@@ -4354,7 +4561,7 @@
       "file_type": "code",
       "source_file": "src/core/math/curve.ts",
       "source_location": "L292",
-      "community": 111,
+      "community": 29,
       "norm_label": "simulatecurveswap()",
       "id": "math_curve_simulatecurveswap"
     },
@@ -5191,7 +5398,7 @@
       "file_type": "code",
       "source_file": "src/core/math/dodo.ts",
       "source_location": "L192",
-      "community": 111,
+      "community": 28,
       "norm_label": "simulatedodoswap()",
       "id": "math_dodo_simulatedodoswap"
     },
@@ -5398,7 +5605,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L25",
-      "community": 111,
+      "community": 11,
       "norm_label": "simulatedhopresult",
       "id": "types_route_simulatedhopresult"
     },
@@ -5443,7 +5650,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L55",
-      "community": 102,
+      "community": 28,
       "norm_label": "routestatecache",
       "id": "types_route_routestatecache"
     },
@@ -5461,7 +5668,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L64",
-      "community": 11,
+      "community": 18,
       "norm_label": "routeidentityedge",
       "id": "types_route_routeidentityedge"
     },
@@ -5470,7 +5677,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.test.ts",
       "source_location": "L1",
-      "community": 150,
+      "community": 18,
       "norm_label": "common.test.ts",
       "id": "src_core_types_common_test_ts"
     },
@@ -5479,7 +5686,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.test.ts",
       "source_location": "L9",
-      "community": 150,
+      "community": 18,
       "norm_label": "snap",
       "id": "types_common_test_snap"
     },
@@ -5506,7 +5713,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L9",
-      "community": 148,
+      "community": 19,
       "norm_label": "profitassessment",
       "id": "types_execution_profitassessment"
     },
@@ -5578,7 +5785,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 18,
       "norm_label": "common.ts",
       "id": "src_core_types_common_ts"
     },
@@ -5596,7 +5803,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.ts",
       "source_location": "L4",
-      "community": 113,
+      "community": 18,
       "norm_label": "bigintlike",
       "id": "types_common_bigintlike"
     },
@@ -5614,7 +5821,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.ts",
       "source_location": "L8",
-      "community": 88,
+      "community": 168,
       "norm_label": "loglevel",
       "id": "types_common_loglevel"
     },
@@ -5632,7 +5839,7 @@
       "file_type": "code",
       "source_file": "src/core/types/common.ts",
       "source_location": "L18",
-      "community": 113,
+      "community": 18,
       "norm_label": "tokenmetadata",
       "id": "types_common_tokenmetadata"
     },
@@ -5668,7 +5875,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L1",
-      "community": 18,
+      "community": 163,
       "norm_label": "pool.ts",
       "id": "src_core_types_pool_ts"
     },
@@ -5677,7 +5884,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L3",
-      "community": 18,
+      "community": 163,
       "norm_label": "v2poolstate",
       "id": "types_pool_v2poolstate"
     },
@@ -5686,7 +5893,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L10",
-      "community": 18,
+      "community": 163,
       "norm_label": "v3poolstate",
       "id": "types_pool_v3poolstate"
     },
@@ -5695,7 +5902,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L19",
-      "community": 18,
+      "community": 163,
       "norm_label": "curvepoolstate",
       "id": "types_pool_curvepoolstate"
     },
@@ -5704,7 +5911,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L28",
-      "community": 18,
+      "community": 163,
       "norm_label": "balancerpoolstate",
       "id": "types_pool_balancerpoolstate"
     },
@@ -5713,7 +5920,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L39",
-      "community": 18,
+      "community": 163,
       "norm_label": "dodopoolstate",
       "id": "types_pool_dodopoolstate"
     },
@@ -5722,7 +5929,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L52",
-      "community": 18,
+      "community": 163,
       "norm_label": "woofipoolstate",
       "id": "types_pool_woofipoolstate"
     },
@@ -5731,7 +5938,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L62",
-      "community": 18,
+      "community": 163,
       "norm_label": "woofibaseinfo",
       "id": "types_pool_woofibaseinfo"
     },
@@ -5758,7 +5965,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L85",
-      "community": 18,
+      "community": 163,
       "norm_label": "poolrecord",
       "id": "types_pool_poolrecord"
     },
@@ -5767,7 +5974,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L91",
-      "community": 18,
+      "community": 163,
       "norm_label": "cachedpoolfee",
       "id": "types_pool_cachedpoolfee"
     },
@@ -5776,7 +5983,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L97",
-      "community": 18,
+      "community": 163,
       "norm_label": "cachedtokenmeta",
       "id": "types_pool_cachedtokenmeta"
     },
@@ -6172,7 +6379,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 142,
       "norm_label": "graph.ts",
       "id": "src_services_strategy_graph_ts"
     },
@@ -6199,7 +6406,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L26",
-      "community": 27,
+      "community": 142,
       "norm_label": "buildgraph()",
       "id": "strategy_graph_buildgraph"
     },
@@ -6334,7 +6541,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 142,
       "norm_label": "graph_incremental.test.ts",
       "id": "src_services_strategy_graph_incremental_test_ts"
     },
@@ -6343,7 +6550,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L7",
-      "community": 27,
+      "community": 142,
       "norm_label": "makepool()",
       "id": "strategy_graph_incremental_test_makepool"
     },
@@ -6352,7 +6559,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L18",
-      "community": 27,
+      "community": 142,
       "norm_label": "makegraph()",
       "id": "strategy_graph_incremental_test_makegraph"
     },
@@ -6361,7 +6568,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L24",
-      "community": 27,
+      "community": 142,
       "norm_label": "updater",
       "id": "strategy_graph_incremental_test_updater"
     },
@@ -6370,7 +6577,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L32",
-      "community": 27,
+      "community": 142,
       "norm_label": "graph",
       "id": "strategy_graph_incremental_test_graph"
     },
@@ -6379,7 +6586,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_incremental.test.ts",
       "source_location": "L34",
-      "community": 27,
+      "community": 142,
       "norm_label": "pool",
       "id": "strategy_graph_incremental_test_pool"
     },
@@ -6757,7 +6964,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/nonce.ts",
       "source_location": "L22",
-      "community": 20,
+      "community": 141,
       "norm_label": ".initialize()",
       "id": "execution_nonce_noncemanager_initialize"
     },
@@ -6820,7 +7027,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/nonce.ts",
       "source_location": "L87",
-      "community": 20,
+      "community": 141,
       "norm_label": ".resync()",
       "id": "execution_nonce_noncemanager_resync"
     },
@@ -7063,7 +7270,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/builder.ts",
       "source_location": "L47",
-      "community": 1,
+      "community": 13,
       "norm_label": "builttransaction",
       "id": "execution_builder_builttransaction"
     },
@@ -8143,7 +8350,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L1",
-      "community": 8,
+      "community": 18,
       "norm_label": "signals.ts",
       "id": "src_services_mempool_signals_ts"
     },
@@ -8152,7 +8359,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L3",
-      "community": 8,
+      "community": 18,
       "norm_label": "largeswapsignal",
       "id": "mempool_signals_largeswapsignal"
     },
@@ -8161,7 +8368,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L12",
-      "community": 8,
+      "community": 18,
       "norm_label": "poolstateinvalidatedsignal",
       "id": "mempool_signals_poolstateinvalidatedsignal"
     },
@@ -8170,7 +8377,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L16",
-      "community": 8,
+      "community": 18,
       "norm_label": "newblocksignal",
       "id": "mempool_signals_newblocksignal"
     },
@@ -8179,7 +8386,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L23",
-      "community": 8,
+      "community": 18,
       "norm_label": "newpoolpendingsignal",
       "id": "mempool_signals_newpoolpendingsignal"
     },
@@ -8323,7 +8530,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/service.ts",
       "source_location": "L41",
-      "community": 8,
+      "community": 132,
       "norm_label": ".emit()",
       "id": "mempool_service_mempoolservice_emit"
     },
@@ -8332,7 +8539,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/service.ts",
       "source_location": "L48",
-      "community": 8,
+      "community": 132,
       "norm_label": ".processpendingtx()",
       "id": "mempool_service_mempoolservice_processpendingtx"
     },
@@ -8386,7 +8593,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L1",
-      "community": 160,
+      "community": 87,
       "norm_label": "subscriber.ts",
       "id": "src_services_mempool_subscriber_ts"
     },
@@ -8395,7 +8602,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L4",
-      "community": 160,
+      "community": 87,
       "norm_label": "subscriberoptions",
       "id": "mempool_subscriber_subscriberoptions"
     },
@@ -8404,7 +8611,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L9",
-      "community": 102,
+      "community": 87,
       "norm_label": "poolstatesubscriber",
       "id": "mempool_subscriber_poolstatesubscriber"
     },
@@ -8413,7 +8620,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L13",
-      "community": 102,
+      "community": 87,
       "norm_label": ".constructor()",
       "id": "mempool_subscriber_poolstatesubscriber_constructor"
     },
@@ -8422,7 +8629,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L18",
-      "community": 102,
+      "community": 87,
       "norm_label": ".subscribe()",
       "id": "mempool_subscriber_poolstatesubscriber_subscribe"
     },
@@ -8485,7 +8692,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L1",
-      "community": 151,
+      "community": 152,
       "norm_label": "boot.test.ts",
       "id": "src_orchestrator_boot_test_ts"
     },
@@ -8494,7 +8701,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L7",
-      "community": 151,
+      "community": 152,
       "norm_label": "config",
       "id": "orchestrator_boot_test_config"
     },
@@ -8584,7 +8791,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L38",
-      "community": 102,
+      "community": 87,
       "norm_label": ".subscriber()",
       "id": "orchestrator_system_botsystem_subscriber"
     },
@@ -8899,7 +9106,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L1",
-      "community": 151,
+      "community": 4,
       "norm_label": "chains.ts",
       "id": "src_infra_rpc_chains_ts"
     },
@@ -8908,7 +9115,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L18",
-      "community": 151,
+      "community": 4,
       "norm_label": "chains",
       "id": "rpc_chains_chains"
     },
@@ -8917,7 +9124,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L23",
-      "community": 151,
+      "community": 4,
       "norm_label": "getchain()",
       "id": "rpc_chains_getchain"
     },
@@ -8962,7 +9169,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L1",
-      "community": 151,
+      "community": 4,
       "norm_label": "client_factory.ts",
       "id": "src_infra_rpc_client_factory_ts"
     },
@@ -8971,7 +9178,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L5",
-      "community": 151,
+      "community": 4,
       "norm_label": "clientfactoryoptions",
       "id": "rpc_client_factory_clientfactoryoptions"
     },
@@ -8980,7 +9187,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L17",
-      "community": 151,
+      "community": 4,
       "norm_label": "createoptimizedtransport()",
       "id": "rpc_client_factory_createoptimizedtransport"
     },
@@ -8989,7 +9196,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L30",
-      "community": 151,
+      "community": 4,
       "norm_label": "createwebsockettransport()",
       "id": "rpc_client_factory_createwebsockettransport"
     },
@@ -8998,7 +9205,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L36",
-      "community": 151,
+      "community": 4,
       "norm_label": "createreadclient()",
       "id": "rpc_client_factory_createreadclient"
     },
@@ -9007,7 +9214,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L57",
-      "community": 151,
+      "community": 4,
       "norm_label": "createexecutionclient()",
       "id": "rpc_client_factory_createexecutionclient"
     },
@@ -9016,7 +9223,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L69",
-      "community": 151,
+      "community": 4,
       "norm_label": "creategasestimationclient()",
       "id": "rpc_client_factory_creategasestimationclient"
     },
@@ -9340,7 +9547,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L1",
-      "community": 88,
+      "community": 168,
       "norm_label": "logger.ts",
       "id": "src_infra_observability_logger_ts"
     },
@@ -9358,7 +9565,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L7",
-      "community": 88,
+      "community": 168,
       "norm_label": "loggeroptions",
       "id": "observability_logger_loggeroptions"
     },
@@ -9367,7 +9574,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L20",
-      "community": 88,
+      "community": 168,
       "norm_label": "level_labels",
       "id": "observability_logger_level_labels"
     },
@@ -9376,7 +9583,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L29",
-      "community": 88,
+      "community": 168,
       "norm_label": "createlogsinkstream()",
       "id": "observability_logger_createlogsinkstream"
     },
@@ -9385,7 +9592,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L53",
-      "community": 88,
+      "community": 168,
       "norm_label": "createrootlogger()",
       "id": "observability_logger_createrootlogger"
     },
@@ -9394,7 +9601,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L82",
-      "community": 88,
+      "community": 168,
       "norm_label": "childlogger()",
       "id": "observability_logger_childlogger"
     },
@@ -9430,7 +9637,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L51",
-      "community": 109,
+      "community": 166,
       "norm_label": "healthserver",
       "id": "observability_health_server_healthserver"
     },
@@ -9439,7 +9646,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L54",
-      "community": 109,
+      "community": 166,
       "norm_label": ".constructor()",
       "id": "observability_health_server_healthserver_constructor"
     },
@@ -9448,7 +9655,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L59",
-      "community": 109,
+      "community": 166,
       "norm_label": ".prepare()",
       "id": "observability_health_server_healthserver_prepare"
     },
@@ -9457,7 +9664,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L61",
-      "community": 109,
+      "community": 166,
       "norm_label": ".start()",
       "id": "observability_health_server_healthserver_start"
     },
@@ -9466,7 +9673,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L82",
-      "community": 109,
+      "community": 166,
       "norm_label": ".stop()",
       "id": "observability_health_server_healthserver_stop"
     },
@@ -9475,7 +9682,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L87",
-      "community": 109,
+      "community": 166,
       "norm_label": ".getport()",
       "id": "observability_health_server_healthserver_getport"
     },
@@ -9484,7 +9691,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L91",
-      "community": 109,
+      "community": 166,
       "norm_label": ".buildhealthpayload()",
       "id": "observability_health_server_healthserver_buildhealthpayload"
     },
@@ -9493,70 +9700,16 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L124",
-      "community": 109,
+      "community": 166,
       "norm_label": ".buildmetricstext()",
       "id": "observability_health_server_healthserver_buildmetricstext"
-    },
-    {
-      "label": "hyperindex_process.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L1",
-      "community": 88,
-      "norm_label": "hyperindex_process.ts",
-      "id": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "label": "HyperIndexStatusEvent",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "community": 88,
-      "norm_label": "hyperindexstatusevent",
-      "id": "hypersync_hyperindex_process_hyperindexstatusevent"
-    },
-    {
-      "label": "EventBusLike",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "community": 88,
-      "norm_label": "eventbuslike",
-      "id": "hypersync_hyperindex_process_eventbuslike"
-    },
-    {
-      "label": "HyperIndexProcessOptions",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L15",
-      "community": 88,
-      "norm_label": "hyperindexprocessoptions",
-      "id": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "label": "HyperIndexProcess",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L24",
-      "community": 88,
-      "norm_label": "hyperindexprocess",
-      "id": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "label": "createHyperIndexProcess()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L30",
-      "community": 88,
-      "norm_label": "createhyperindexprocess()",
-      "id": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "label": "circuit_breaker.ts",
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 169,
       "norm_label": "circuit_breaker.ts",
       "id": "src_infra_resilience_circuit_breaker_ts"
     },
@@ -9565,7 +9718,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 169,
       "norm_label": "circuitstate",
       "id": "resilience_circuit_breaker_circuitstate"
     },
@@ -9574,7 +9727,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L3",
-      "community": 167,
+      "community": 169,
       "norm_label": "circuitbreakeroptions",
       "id": "resilience_circuit_breaker_circuitbreakeroptions"
     },
@@ -9583,7 +9736,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L9",
-      "community": 167,
+      "community": 169,
       "norm_label": "default_circuit_options",
       "id": "resilience_circuit_breaker_default_circuit_options"
     },
@@ -9813,128 +9966,11 @@
       "id": "resilience_tier_manager_tiermanager_label"
     },
     {
-      "label": "hyperindex_monitor.ts",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L1",
-      "community": 88,
-      "norm_label": "hyperindex_monitor.ts",
-      "id": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "label": "sleep()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L6",
-      "community": 149,
-      "norm_label": "sleep()",
-      "id": "resilience_hyperindex_monitor_sleep"
-    },
-    {
-      "label": "HyperIndexMonitorOptions",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L10",
-      "community": 88,
-      "norm_label": "hyperindexmonitoroptions",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitoroptions"
-    },
-    {
-      "label": "HyperIndexMonitor",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L17",
-      "community": 149,
-      "norm_label": "hyperindexmonitor",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L24",
-      "community": 149,
-      "norm_label": ".constructor()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_constructor"
-    },
-    {
-      "label": ".prepare()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L29",
-      "community": 149,
-      "norm_label": ".prepare()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_prepare"
-    },
-    {
-      "label": ".start()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L40",
-      "community": 149,
-      "norm_label": ".start()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_start"
-    },
-    {
-      "label": ".stop()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L44",
-      "community": 149,
-      "norm_label": ".stop()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_stop"
-    },
-    {
-      "label": ".isHealthy()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L56",
-      "community": 149,
-      "norm_label": ".ishealthy()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_ishealthy"
-    },
-    {
-      "label": ".isRunning()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L60",
-      "community": 149,
-      "norm_label": ".isrunning()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning"
-    },
-    {
-      "label": ".checkHealth()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L64",
-      "community": 149,
-      "norm_label": ".checkhealth()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth"
-    },
-    {
-      "label": ".getLastStatus()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L75",
-      "community": 149,
-      "norm_label": ".getlaststatus()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_getlaststatus"
-    },
-    {
-      "label": ".restart()",
-      "file_type": "code",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L79",
-      "community": 149,
-      "norm_label": ".restart()",
-      "id": "resilience_hyperindex_monitor_hyperindexmonitor_restart"
-    },
-    {
       "label": "tier_manager.test.ts",
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 170,
       "norm_label": "tier_manager.test.ts",
       "id": "src_infra_resilience_tier_manager_test_ts"
     },
@@ -9943,7 +9979,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L6",
-      "community": 167,
+      "community": 170,
       "norm_label": "healthycb()",
       "id": "resilience_tier_manager_test_healthycb"
     },
@@ -9952,7 +9988,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L10",
-      "community": 167,
+      "community": 170,
       "norm_label": "unhealthycb()",
       "id": "resilience_tier_manager_test_unhealthycb"
     },
@@ -9961,7 +9997,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L14",
-      "community": 167,
+      "community": 170,
       "norm_label": "healthyhi()",
       "id": "resilience_tier_manager_test_healthyhi"
     },
@@ -9970,7 +10006,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L18",
-      "community": 167,
+      "community": 170,
       "norm_label": "unhealthyhi()",
       "id": "resilience_tier_manager_test_unhealthyhi"
     },
@@ -9979,7 +10015,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L24",
-      "community": 167,
+      "community": 170,
       "norm_label": "tm",
       "id": "resilience_tier_manager_test_tm"
     },
@@ -10024,7 +10060,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L1",
-      "community": 48,
+      "community": 169,
       "norm_label": "circuit_breaker.test.ts",
       "id": "src_infra_resilience_circuit_breaker_test_ts"
     },
@@ -10033,7 +10069,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L29",
-      "community": 48,
+      "community": 169,
       "norm_label": "result",
       "id": "resilience_circuit_breaker_test_result"
     },
@@ -10042,7 +10078,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L42",
-      "community": 48,
+      "community": 169,
       "norm_label": "fb",
       "id": "resilience_circuit_breaker_test_fb"
     },
@@ -10144,24 +10180,6 @@
       "community": 115,
       "norm_label": ".prune()",
       "id": "resilience_reorg_detector_reorgdetector_prune"
-    },
-    {
-      "label": "main.ts",
-      "file_type": "code",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L1",
-      "community": 88,
-      "norm_label": "main.ts",
-      "id": "src_cli_main_ts"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L14",
-      "community": 88,
-      "norm_label": "main()",
-      "id": "cli_main_main"
     },
     {
       "label": "loader.ts",
@@ -14380,7 +14398,7 @@
       "file_type": "code",
       "source_file": "tests/tui/metrics.test.ts",
       "source_location": "L7",
-      "community": 40,
+      "community": 113,
       "norm_label": "now",
       "id": "tui_metrics_test_now"
     },
@@ -14425,7 +14443,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L26",
-      "community": 27,
+      "community": 142,
       "norm_label": "inferzeroforone()",
       "id": "strategy_graph_inferzeroforone"
     },
@@ -14434,7 +14452,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L37",
-      "community": 27,
+      "community": 142,
       "norm_label": "infertokenidx()",
       "id": "strategy_graph_infertokenidx"
     },
@@ -14443,7 +14461,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.ts",
       "source_location": "L83",
-      "community": 27,
+      "community": 142,
       "norm_label": "buildhubgraph()",
       "id": "strategy_graph_buildhubgraph"
     },
@@ -15568,7 +15586,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L159",
-      "community": 12,
+      "community": 33,
       "norm_label": "client",
       "id": "hypersync_client_client"
     },
@@ -15613,7 +15631,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L203",
-      "community": 12,
+      "community": 33,
       "norm_label": "blockfield",
       "id": "hypersync_client_blockfield"
     },
@@ -15631,7 +15649,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L1",
-      "community": 123,
+      "community": 33,
       "norm_label": "stream.ts",
       "id": "src_infra_hypersync_stream_ts"
     },
@@ -15640,7 +15658,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L6",
-      "community": 123,
+      "community": 33,
       "norm_label": "parseblock()",
       "id": "hypersync_stream_parseblock"
     },
@@ -15649,7 +15667,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L14",
-      "community": 123,
+      "community": 33,
       "norm_label": "parseoptionalblock()",
       "id": "hypersync_stream_parseoptionalblock"
     },
@@ -15658,7 +15676,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L19",
-      "community": 123,
+      "community": 33,
       "norm_label": "pagelogsfromresponse()",
       "id": "hypersync_stream_pagelogsfromresponse"
     },
@@ -15667,7 +15685,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L28",
-      "community": 123,
+      "community": 33,
       "norm_label": "fireprogress()",
       "id": "hypersync_stream_fireprogress"
     },
@@ -15676,7 +15694,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L38",
-      "community": 123,
+      "community": 33,
       "norm_label": "fetchalllogsresult",
       "id": "hypersync_stream_fetchalllogsresult"
     },
@@ -15685,7 +15703,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L45",
-      "community": 123,
+      "community": 33,
       "norm_label": "fetchalllogs()",
       "id": "hypersync_stream_fetchalllogs"
     },
@@ -15694,7 +15712,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L1",
-      "community": 145,
+      "community": 171,
       "norm_label": "endpoint_pool.ts",
       "id": "src_infra_rpc_endpoint_pool_ts"
     },
@@ -15703,7 +15721,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L13",
-      "community": 145,
+      "community": 171,
       "norm_label": "ensurehttps()",
       "id": "rpc_endpoint_pool_ensurehttps"
     },
@@ -15730,7 +15748,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L53",
-      "community": 145,
+      "community": 171,
       "norm_label": ".constructor()",
       "id": "rpc_endpoint_pool_rpcendpoint_constructor"
     },
@@ -15802,7 +15820,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L120",
-      "community": 145,
+      "community": 171,
       "norm_label": "endpointpooloptions",
       "id": "rpc_endpoint_pool_endpointpooloptions"
     },
@@ -15937,7 +15955,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L257",
-      "community": 145,
+      "community": 171,
       "norm_label": "normalizerpcmethod()",
       "id": "rpc_endpoint_pool_normalizerpcmethod"
     },
@@ -15946,7 +15964,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L290",
-      "community": 145,
+      "community": 171,
       "norm_label": "createdynamicpublicclient()",
       "id": "rpc_endpoint_pool_createdynamicpublicclient"
     },
@@ -16054,7 +16072,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/hyperindex_reader.ts",
       "source_location": "L17",
-      "community": 30,
+      "community": 152,
       "norm_label": "resethyperindexreadercache()",
       "id": "db_hyperindex_reader_resethyperindexreadercache"
     },
@@ -16225,7 +16243,7 @@
       "file_type": "code",
       "source_file": "src/tui/index.ts",
       "source_location": "L1",
-      "community": 40,
+      "community": 123,
       "norm_label": "index.ts",
       "id": "src_tui_index_ts"
     },
@@ -16342,7 +16360,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L1",
-      "community": 11,
+      "community": 165,
       "norm_label": "optimizer.test.ts",
       "id": "src_core_assessment_optimizer_test_ts"
     },
@@ -16351,7 +16369,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L5",
-      "community": 11,
+      "community": 165,
       "norm_label": "mkresult()",
       "id": "assessment_optimizer_test_mkresult"
     },
@@ -16360,7 +16378,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L23",
-      "community": 11,
+      "community": 165,
       "norm_label": "simulate()",
       "id": "assessment_optimizer_test_simulate"
     },
@@ -16369,7 +16387,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L28",
-      "community": 11,
+      "community": 165,
       "norm_label": "result",
       "id": "assessment_optimizer_test_result"
     },
@@ -16378,7 +16396,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L1",
-      "community": 11,
+      "community": 165,
       "norm_label": "optimizer.ts",
       "id": "src_core_assessment_optimizer_ts"
     },
@@ -16387,7 +16405,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L5",
-      "community": 11,
+      "community": 165,
       "norm_label": "optimizeoptions",
       "id": "assessment_optimizer_optimizeoptions"
     },
@@ -16396,7 +16414,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L20",
-      "community": 11,
+      "community": 165,
       "norm_label": "optimizeinputamount()",
       "id": "assessment_optimizer_optimizeinputamount"
     },
@@ -16405,7 +16423,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/index.ts",
       "source_location": "L1",
-      "community": 15,
+      "community": 165,
       "norm_label": "index.ts",
       "id": "src_core_assessment_index_ts"
     },
@@ -16675,7 +16693,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 18,
       "norm_label": "chainlink.ts",
       "id": "src_core_pricing_chainlink_ts"
     },
@@ -16684,7 +16702,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L3",
-      "community": 113,
+      "community": 18,
       "norm_label": "chainlinkanswer",
       "id": "pricing_chainlink_chainlinkanswer"
     },
@@ -16693,7 +16711,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L12",
-      "community": 113,
+      "community": 18,
       "norm_label": "chainlinkfeedconfig",
       "id": "pricing_chainlink_chainlinkfeedconfig"
     },
@@ -16702,7 +16720,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L20",
-      "community": 113,
+      "community": 18,
       "norm_label": "default_matic_usd_feed",
       "id": "pricing_chainlink_default_matic_usd_feed"
     },
@@ -16711,7 +16729,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L27",
-      "community": 113,
+      "community": 18,
       "norm_label": "isfreshchainlinkanswer()",
       "id": "pricing_chainlink_isfreshchainlinkanswer"
     },
@@ -16720,7 +16738,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L33",
-      "community": 113,
+      "community": 18,
       "norm_label": "pricesagreewithinbps()",
       "id": "pricing_chainlink_pricesagreewithinbps"
     },
@@ -16729,7 +16747,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/index.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 18,
       "norm_label": "index.ts",
       "id": "src_core_pricing_index_ts"
     },
@@ -16774,7 +16792,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/oracle.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 18,
       "norm_label": "oracle.ts",
       "id": "src_core_pricing_oracle_ts"
     },
@@ -16783,7 +16801,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/oracle.ts",
       "source_location": "L13",
-      "community": 113,
+      "community": 18,
       "norm_label": "priceoracle",
       "id": "pricing_oracle_priceoracle"
     },
@@ -16936,7 +16954,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/evaluator.ts",
       "source_location": "L1",
-      "community": 148,
+      "community": 28,
       "norm_label": "evaluator.ts",
       "id": "src_services_strategy_evaluator_ts"
     },
@@ -16945,7 +16963,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/evaluator.ts",
       "source_location": "L5",
-      "community": 148,
+      "community": 28,
       "norm_label": "evaluatedroute",
       "id": "strategy_evaluator_evaluatedroute"
     },
@@ -16954,7 +16972,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/evaluator.ts",
       "source_location": "L11",
-      "community": 148,
+      "community": 28,
       "norm_label": "evaluatepaths()",
       "id": "strategy_evaluator_evaluatepaths"
     },
@@ -17872,7 +17890,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/index.ts",
       "source_location": "L1",
-      "community": 88,
+      "community": 168,
       "norm_label": "index.ts",
       "id": "src_infra_observability_index_ts"
     },
@@ -17998,7 +18016,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/index.ts",
       "source_location": "L1",
-      "community": 64,
+      "community": 26,
       "norm_label": "index.ts",
       "id": "src_infra_db_index_ts"
     },
@@ -18223,7 +18241,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L1",
-      "community": 152,
+      "community": 64,
       "norm_label": "connection.ts",
       "id": "src_infra_db_connection_ts"
     },
@@ -18232,7 +18250,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L3",
-      "community": 152,
+      "community": 64,
       "norm_label": "sqlinputvalue",
       "id": "db_connection_sqlinputvalue"
     },
@@ -18259,7 +18277,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L25",
-      "community": 152,
+      "community": 64,
       "norm_label": "compatstatement",
       "id": "db_connection_compatstatement"
     },
@@ -18268,7 +18286,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L27",
-      "community": 152,
+      "community": 64,
       "norm_label": ".constructor()",
       "id": "db_connection_compatstatement_constructor"
     },
@@ -18277,7 +18295,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L31",
-      "community": 152,
+      "community": 64,
       "norm_label": ".run()",
       "id": "db_connection_compatstatement_run"
     },
@@ -18295,7 +18313,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L39",
-      "community": 152,
+      "community": 64,
       "norm_label": ".all()",
       "id": "db_connection_compatstatement_all"
     },
@@ -18304,7 +18322,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L43",
-      "community": 152,
+      "community": 64,
       "norm_label": ".iterate()",
       "id": "db_connection_compatstatement_iterate"
     },
@@ -18511,7 +18529,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/pools.ts",
       "source_location": "L84",
-      "community": 26,
+      "community": 7,
       "norm_label": "getallpoolstates()",
       "id": "db_pools_getallpoolstates"
     },
@@ -18520,7 +18538,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/pools.ts",
       "source_location": "L98",
-      "community": 151,
+      "community": 152,
       "norm_label": "getrecentpoolstates()",
       "id": "db_pools_getrecentpoolstates"
     },
@@ -18529,7 +18547,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L1",
-      "community": 64,
+      "community": 26,
       "norm_label": "assets.ts",
       "id": "src_infra_db_assets_ts"
     },
@@ -18538,7 +18556,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L3",
-      "community": 64,
+      "community": 26,
       "norm_label": "upserttokenmeta()",
       "id": "db_assets_upserttokenmeta"
     },
@@ -18547,7 +18565,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L18",
-      "community": 64,
+      "community": 26,
       "norm_label": "gettokenmeta()",
       "id": "db_assets_gettokenmeta"
     },
@@ -18556,7 +18574,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L23",
-      "community": 64,
+      "community": 26,
       "norm_label": "getalltokenmeta()",
       "id": "db_assets_getalltokenmeta"
     },
@@ -18565,7 +18583,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L28",
-      "community": 64,
+      "community": 26,
       "norm_label": "upsertpoolfeetier()",
       "id": "db_assets_upsertpoolfeetier"
     },
@@ -18574,7 +18592,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L42",
-      "community": 64,
+      "community": 26,
       "norm_label": "getpoolfeetier()",
       "id": "db_assets_getpoolfeetier"
     },
@@ -18799,7 +18817,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L1",
-      "community": 123,
+      "community": 33,
       "norm_label": "stream.test.ts",
       "id": "src_infra_hypersync_stream_test_ts"
     },
@@ -18808,7 +18826,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L8",
-      "community": 123,
+      "community": 33,
       "norm_label": "mockclient",
       "id": "hypersync_stream_test_mockclient"
     },
@@ -18817,7 +18835,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L19",
-      "community": 123,
+      "community": 33,
       "norm_label": "query",
       "id": "hypersync_stream_test_query"
     },
@@ -18835,7 +18853,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L3",
-      "community": 33,
+      "community": 14,
       "norm_label": "hypersynclogfilter",
       "id": "hypersync_types_hypersynclogfilter"
     },
@@ -18844,7 +18862,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L8",
-      "community": 33,
+      "community": 14,
       "norm_label": "hypersyncfieldselection",
       "id": "hypersync_types_hypersyncfieldselection"
     },
@@ -18853,7 +18871,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L13",
-      "community": 123,
+      "community": 33,
       "norm_label": "hypersyncquery",
       "id": "hypersync_types_hypersyncquery"
     },
@@ -18862,7 +18880,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L23",
-      "community": 33,
+      "community": 45,
       "norm_label": "hypersyncclientconfig",
       "id": "hypersync_types_hypersyncclientconfig"
     },
@@ -18943,7 +18961,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L83",
-      "community": 33,
+      "community": 12,
       "norm_label": "hypersyncdecoderruntime",
       "id": "hypersync_types_hypersyncdecoderruntime"
     },
@@ -19120,6 +19138,899 @@
     }
   ],
   "links": [
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "config_loader_loadconfig"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_runner_passrunner"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_shutdown_shutdownapplication"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "tui_main_createtui"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "observability_health_server_healthserver"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "cli_main_main"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_boot_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_tui_main_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_runner_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_shutdown_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_observability_health_server_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_config_loader_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_boot_bootapplication"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "tui_main_createtui"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_shutdown_shutdownapplication"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "config_loader_loadconfig"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_eventbuslike"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "orchestrator_lifecycle_lifecycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "resilience_hyperindex_monitor_sleep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitoroptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_orchestrator_lifecycle_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/tier_manager.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_tier_manager_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/tier_manager.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_tier_manager_test_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L85",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
+      "target": "resilience_hyperindex_monitor_sleep"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_prepare"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_stop"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_ishealthy"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_updatesyncedblock",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_getlastsyncedblock",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_getlaststatus"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_restart"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_runtimecontext",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "implements",
+      "context": "type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "orchestrator_lifecycle_lifecycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthdependencies",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/tier_manager.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_tier_manager_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/tier_manager.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_tier_manager_tiermanager_constructor",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/tier_manager.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_tier_manager_test_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_prepare",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_stop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_restart"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor_getlastsyncedblock",
+      "confidence_score": 1.0
+    },
     {
       "relation": "imports",
       "context": "import",
@@ -20648,17 +21559,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L13",
       "weight": 1.0,
@@ -20951,28 +21851,6 @@
       "weight": 1.0,
       "source": "orchestrator_pass_loop_runpassloop",
       "target": "orchestrator_status_writer_writestatusfile"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "orchestrator_pass_loop_runpassloop"
     },
     {
       "relation": "imports",
@@ -26144,17 +27022,6 @@
       "target": "src_tui_events_ts"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
       "relation": "re_exports",
       "context": "export",
       "confidence": "EXTRACTED",
@@ -26260,17 +27127,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_runner_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
       "target": "tui_events_eventbus"
     },
     {
@@ -27096,17 +27952,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L18",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -27413,17 +28258,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L18",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -27472,17 +28306,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_shutdown_ts",
-      "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
       "target": "src_orchestrator_boot_ts"
     },
     {
@@ -27787,17 +28610,6 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_runtimecontext",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L44",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -27835,28 +28647,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_test_ts",
-      "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
       "target": "orchestrator_boot_bootapplication"
     },
     {
@@ -30261,17 +31051,6 @@
       "target": "tui_main_createtui"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_tui_main_ts"
-    },
-    {
       "relation": "re_exports",
       "context": "export",
       "confidence": "EXTRACTED",
@@ -30281,28 +31060,6 @@
       "confidence_score": 1.0,
       "source": "src_tui_index_ts",
       "target": "src_tui_main_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "tui_main_createtui"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "tui_main_createtui"
     },
     {
       "relation": "re_exports",
@@ -40851,17 +41608,6 @@
       "target": "orchestrator_runner_passrunner"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_runner_ts"
-    },
-    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/runner.ts",
@@ -40880,17 +41626,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_runner_passrunner",
       "target": "orchestrator_runner_passrunner_run"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_runner_passrunner"
     },
     {
       "relation": "contains",
@@ -40936,17 +41671,6 @@
       "target": "src_orchestrator_lifecycle_ts"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_orchestrator_lifecycle_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -40977,17 +41701,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_infra_observability_health_server_ts",
-      "target": "orchestrator_lifecycle_lifecycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
       "target": "orchestrator_lifecycle_lifecycle"
     },
     {
@@ -41032,17 +41745,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "observability_health_server_healthserver",
-      "target": "orchestrator_lifecycle_lifecycle"
-    },
-    {
-      "relation": "implements",
-      "context": "type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
       "target": "orchestrator_lifecycle_lifecycle"
     },
     {
@@ -41393,17 +42095,6 @@
       "target": "orchestrator_shutdown_shutdownapplication"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_shutdown_ts"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -41413,28 +42104,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_shutdown_shutdownapplication",
       "target": "orchestrator_shutdown_stopservice"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_shutdown_shutdownapplication"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "orchestrator_shutdown_shutdownapplication"
     },
     {
       "relation": "contains",
@@ -42842,39 +43511,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/circuit_breaker.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -42892,50 +43528,6 @@
       "confidence_score": 1.0,
       "source": "src_infra_observability_index_ts",
       "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "imports",
@@ -42982,28 +43574,6 @@
       "target": "observability_logger_createlogsinkstream"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
       "relation": "re_exports",
       "context": "re-export",
       "confidence": "EXTRACTED",
@@ -43046,28 +43616,6 @@
       "confidence_score": 1.0,
       "source": "src_infra_observability_health_server_ts",
       "target": "resilience_circuit_breaker_circuitbreaker"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
     },
     {
       "relation": "imports_from",
@@ -43122,17 +43670,6 @@
       "target": "observability_health_server_healthserver"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_observability_health_server_ts"
-    },
-    {
       "relation": "references",
       "context": "field",
       "confidence": "EXTRACTED",
@@ -43153,17 +43690,6 @@
       "confidence_score": 1.0,
       "source": "observability_health_server_healthdependencies",
       "target": "resilience_circuit_breaker_circuitbreaker"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthdependencies",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
     },
     {
       "relation": "references",
@@ -43245,177 +43771,6 @@
       "confidence_score": 1.0,
       "source": "observability_health_server_healthserver",
       "target": "observability_health_server_healthserver_buildmetricstext"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "observability_health_server_healthserver"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_eventbuslike"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "relation": "contains",
@@ -43733,28 +44088,6 @@
       "target": "resilience_circuit_breaker_circuitbreaker_reset"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/tier_manager.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_tier_manager_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/tier_manager.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_tier_manager_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/infra/resilience/tier_manager.ts",
@@ -43895,247 +44228,6 @@
       "confidence_score": 1.0,
       "source": "src_infra_resilience_tier_manager_test_ts",
       "target": "resilience_tier_manager_tiermanager"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/tier_manager.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_tier_manager_tiermanager_constructor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "resilience_hyperindex_monitor_sleep"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitoroptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/tier_manager.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_tier_manager_test_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L85",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
-      "target": "resilience_hyperindex_monitor_sleep"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_prepare"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_stop"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_ishealthy"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L64",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_getlaststatus"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_restart"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/tier_manager.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_tier_manager_test_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_prepare",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L87",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_start"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_stop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L65",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_isrunning"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_checkhealth",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor_restart"
     },
     {
       "relation": "contains",
@@ -44358,49 +44450,6 @@
       "confidence_score": 1.0,
       "source": "resilience_reorg_detector_reorgdetector",
       "target": "resilience_reorg_detector_reorgdetector_prune"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_config_loader_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "config_loader_loadconfig"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "cli_main_main"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "config_loader_loadconfig"
     },
     {
       "relation": "imports_from",
@@ -56616,5 +56665,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "63428af47f14f9654c95abe4cdc643e8d1bd8d8d"
+  "built_at_commit": "37e6312a0eb932bb7013fdd276321b106199e19b"
 }

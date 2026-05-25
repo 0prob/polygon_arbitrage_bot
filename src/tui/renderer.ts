@@ -36,12 +36,36 @@ function color(text: string, code: number): string {
 }
 
 function visibleLength(str: string): number {
-  return str.replace(/\x1B\[\d+m/g, "").length;
+  return str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").length;
+}
+
+function visibleSlice(str: string, width: number): string {
+  let result = "";
+  let len = 0;
+  let i = 0;
+  while (i < str.length && len < width) {
+    if (str[i] === "\x1b") {
+      const match = str.slice(i).match(/^\x1b\[[0-9;]*[a-zA-Z]/);
+      if (match) {
+        result += match[0];
+        i += match[0].length;
+        continue;
+      }
+    }
+    result += str[i];
+    len++;
+    i++;
+  }
+  // Ensure we reset any open color tags if we truncated
+  if (i < str.length) {
+    result += "\x1b[0m";
+  }
+  return result;
 }
 
 function padRight(str: string, width: number): string {
   const len = visibleLength(str);
-  if (len >= width) return str;
+  if (len >= width) return visibleSlice(str, width);
   return str + " ".repeat(width - len);
 }
 
@@ -239,8 +263,7 @@ export class Renderer {
 
   private panelBox(lines: string[], rect: PanelRect): RenderedPanel {
     let content = "";
-    for (let i = 0; i < lines.length && i < rect.height; i++) {
-      if (i > 0) content += "\n";
+    for (let i = 0; i < rect.height; i++) {
       const line = lines[i] ?? "";
       content += cursor(rect.y + i, rect.x);
       content += padRight(line, rect.width);
