@@ -36,6 +36,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _lastRemoteBlock = 0;
   let _lastEmitTime = 0;
   let _statusTimer: ReturnType<typeof setInterval> | null = null;
+  let _stderrBuffer: string[] = [];
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
@@ -127,7 +128,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   async function start(): Promise<void> {
     if (proc) return;
 
+    // Explicitly stop any existing envio instances to clear Docker containers/ports
+    try {
+      opts.logger.info("Ensuring previous HyperIndex instances are stopped...");
+      execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 15000 });
+    } catch {
+      // ignore
+    }
+
     freePort(9898);
+    _stderrBuffer = [];
 
     const env: Record<string, string> = {
       PATH: process.env.PATH ?? "",
@@ -163,12 +173,23 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       const line = data.toString().trim();
       if (!line) return;
       opts.logger.debug({ source: "hyperindex", line }, "");
+      
+      _stderrBuffer.push(line);
+      if (_stderrBuffer.length > 10) _stderrBuffer.shift();
+
       parseEnvioLine(line);
     };
     proc.stderr?.on("data", _stderrHandler);
 
     _exitHandler = (code, signal) => {
-      opts.logger.warn({ code, signal }, "HyperIndex process exited");
+      if (code !== 0 && code !== null) {
+        opts.logger.error(
+          { code, signal, lastStderr: _stderrBuffer.join("\n") },
+          "HyperIndex process crashed"
+        );
+      } else {
+        opts.logger.warn({ code, signal }, "HyperIndex process exited");
+      }
       _statusTimer = null;
       proc = null;
     };

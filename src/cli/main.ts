@@ -61,6 +61,13 @@ async function main() {
   const ctx = await bootApplication(config, undefined, logger);
   ctx.hyperIndexMonitor = hyperIndexMonitor;
 
+  // Wire event bus to monitor for stall detection
+  bus.on((ev) => {
+    if (ev.type === "hyperindex_status" && (ev.status === "syncing" || ev.status === "synced")) {
+      hyperIndexMonitor.updateSyncedBlock(ev.syncedBlock);
+    }
+  });
+
   await hyperIndexMonitor.start();
 
   const healthServer = new HealthServer(9090, {

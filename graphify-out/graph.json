@@ -4,634 +4,823 @@
   "graph": {},
   "nodes": [
     {
+      "label": "balancer.ts",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L1",
+      "id": "src_core_math_balancer_ts",
+      "community": 42,
+      "norm_label": "balancer.ts"
+    },
+    {
+      "label": "BalancerPoolState",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L50",
+      "id": "math_balancer_balancerpoolstate",
+      "community": 42,
+      "norm_label": "balancerpoolstate"
+    },
+    {
+      "label": "asPoolState()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L52",
+      "id": "math_balancer_aspoolstate",
+      "community": 42,
+      "norm_label": "aspoolstate()"
+    },
+    {
+      "label": "absDiff()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L56",
+      "id": "math_balancer_absdiff",
+      "community": 42,
+      "norm_label": "absdiff()"
+    },
+    {
+      "label": "ln()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L73",
+      "id": "math_balancer_ln",
+      "community": 42,
+      "norm_label": "ln()"
+    },
+    {
+      "label": "exp()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L123",
+      "id": "math_balancer_exp",
+      "community": 42,
+      "norm_label": "exp()"
+    },
+    {
+      "label": "powDown()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L150",
+      "id": "math_balancer_powdown",
+      "community": 42,
+      "norm_label": "powdown()"
+    },
+    {
+      "label": "getBalancerAmountOut()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L172",
+      "id": "math_balancer_getbalanceramountout",
+      "community": 42,
+      "norm_label": "getbalanceramountout()"
+    },
+    {
+      "label": "getBalancerAmountIn()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L231",
+      "id": "math_balancer_getbalanceramountin",
+      "community": 42,
+      "norm_label": "getbalanceramountin()"
+    },
+    {
+      "label": "getScaledBalances()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L318",
+      "id": "math_balancer_getscaledbalances",
+      "community": 42,
+      "norm_label": "getscaledbalances()"
+    },
+    {
+      "label": "calculateBalancerStableInvariant()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L338",
+      "id": "math_balancer_calculatebalancerstableinvariant",
+      "community": 42,
+      "norm_label": "calculatebalancerstableinvariant()"
+    },
+    {
+      "label": "getTokenBalanceGivenStableInvariant()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L374",
+      "id": "math_balancer_gettokenbalancegivenstableinvariant",
+      "community": 42,
+      "norm_label": "gettokenbalancegivenstableinvariant()"
+    },
+    {
+      "label": "getBalancerStableAmountOut()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L432",
+      "id": "math_balancer_getbalancerstableamountout",
+      "community": 42,
+      "norm_label": "getbalancerstableamountout()"
+    },
+    {
+      "label": "simulateBalancerSwap()",
+      "file_type": "code",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L478",
+      "id": "math_balancer_simulatebalancerswap",
+      "community": 42,
+      "norm_label": "simulatebalancerswap()"
+    },
+    {
+      "label": "uniswap_v2.ts",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L1",
+      "id": "src_core_math_uniswap_v2_ts",
+      "community": 98,
+      "norm_label": "uniswap_v2.ts"
+    },
+    {
+      "label": "V2PoolStateLike",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L18",
+      "id": "math_uniswap_v2_v2poolstatelike",
+      "community": 98,
+      "norm_label": "v2poolstatelike"
+    },
+    {
+      "label": "asPoolState()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L20",
+      "id": "math_uniswap_v2_aspoolstate",
+      "community": 98,
+      "norm_label": "aspoolstate()"
+    },
+    {
+      "label": "getV2AmountOut()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L37",
+      "id": "math_uniswap_v2_getv2amountout",
+      "community": 98,
+      "norm_label": "getv2amountout()"
+    },
+    {
+      "label": "getV2AmountIn()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L66",
+      "id": "math_uniswap_v2_getv2amountin",
+      "community": 98,
+      "norm_label": "getv2amountin()"
+    },
+    {
+      "label": "simulateV2Swap()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L95",
+      "id": "math_uniswap_v2_simulatev2swap",
+      "community": 98,
+      "norm_label": "simulatev2swap()"
+    },
+    {
+      "label": "quoteV2()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L152",
+      "id": "math_uniswap_v2_quotev2",
+      "community": 98,
+      "norm_label": "quotev2()"
+    },
+    {
       "label": "pass_loop.test.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_test_ts",
       "community": 161,
-      "norm_label": "pass_loop.test.ts"
+      "norm_label": "pass_loop.test.ts",
+      "id": "src_orchestrator_pass_loop_test_ts"
     },
     {
       "label": "MOCK_CANDIDATE_EXECUTION",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L6",
-      "id": "orchestrator_pass_loop_test_mock_candidate_execution",
       "community": 161,
-      "norm_label": "mock_candidate_execution"
+      "norm_label": "mock_candidate_execution",
+      "id": "orchestrator_pass_loop_test_mock_candidate_execution"
     },
     {
       "label": "mockTracker()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L13",
-      "id": "orchestrator_pass_loop_test_mocktracker",
       "community": 161,
-      "norm_label": "mocktracker()"
+      "norm_label": "mocktracker()",
+      "id": "orchestrator_pass_loop_test_mocktracker"
     },
     {
       "label": "mockTierManager()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L24",
-      "id": "orchestrator_pass_loop_test_mocktiermanager",
       "community": 161,
-      "norm_label": "mocktiermanager()"
+      "norm_label": "mocktiermanager()",
+      "id": "orchestrator_pass_loop_test_mocktiermanager"
     },
     {
       "label": "mockCircuitBreaker()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L38",
-      "id": "orchestrator_pass_loop_test_mockcircuitbreaker",
       "community": 161,
-      "norm_label": "mockcircuitbreaker()"
+      "norm_label": "mockcircuitbreaker()",
+      "id": "orchestrator_pass_loop_test_mockcircuitbreaker"
     },
     {
       "label": "stateWithPool",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L52",
-      "id": "orchestrator_pass_loop_test_statewithpool",
       "community": 161,
-      "norm_label": "statewithpool"
+      "norm_label": "statewithpool",
+      "id": "orchestrator_pass_loop_test_statewithpool"
     },
     {
       "label": "mockExecute",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L57",
-      "id": "orchestrator_pass_loop_test_mockexecute",
       "community": 161,
-      "norm_label": "mockexecute"
+      "norm_label": "mockexecute",
+      "id": "orchestrator_pass_loop_test_mockexecute"
     },
     {
       "label": "mockContext",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L59",
-      "id": "orchestrator_pass_loop_test_mockcontext",
       "community": 161,
-      "norm_label": "mockcontext"
+      "norm_label": "mockcontext",
+      "id": "orchestrator_pass_loop_test_mockcontext"
     },
     {
       "label": "deps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L110",
-      "id": "orchestrator_pass_loop_test_deps",
       "community": 161,
-      "norm_label": "deps"
+      "norm_label": "deps",
+      "id": "orchestrator_pass_loop_test_deps"
     },
     {
       "label": "enumerateCyclesSpy",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L246",
-      "id": "orchestrator_pass_loop_test_enumeratecyclesspy",
       "community": 161,
-      "norm_label": "enumeratecyclesspy"
+      "norm_label": "enumeratecyclesspy",
+      "id": "orchestrator_pass_loop_test_enumeratecyclesspy"
     },
     {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 9,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "V2_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L16",
-      "id": "orchestrator_pass_loop_v2_abi",
       "community": 9,
-      "norm_label": "v2_abi"
+      "norm_label": "v2_abi",
+      "id": "orchestrator_pass_loop_v2_abi"
     },
     {
       "label": "V3_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L17",
-      "id": "orchestrator_pass_loop_v3_abi",
       "community": 9,
-      "norm_label": "v3_abi"
+      "norm_label": "v3_abi",
+      "id": "orchestrator_pass_loop_v3_abi"
     },
     {
       "label": "_failedPools",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L19",
-      "id": "orchestrator_pass_loop_failedpools",
       "community": 9,
-      "norm_label": "_failedpools"
+      "norm_label": "_failedpools",
+      "id": "orchestrator_pass_loop_failedpools"
     },
     {
       "label": "fetchMissingPoolState()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L21",
-      "id": "orchestrator_pass_loop_fetchmissingpoolstate",
       "community": 9,
-      "norm_label": "fetchmissingpoolstate()"
+      "norm_label": "fetchmissingpoolstate()",
+      "id": "orchestrator_pass_loop_fetchmissingpoolstate"
     },
     {
       "label": "PassLoopDeps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L127",
-      "id": "orchestrator_pass_loop_passloopdeps",
       "community": 9,
-      "norm_label": "passloopdeps"
+      "norm_label": "passloopdeps",
+      "id": "orchestrator_pass_loop_passloopdeps"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L138",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 9,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L142",
-      "id": "orchestrator_pass_loop_wmatic_lower",
       "community": 9,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "orchestrator_pass_loop_wmatic_lower"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L144",
-      "id": "orchestrator_pass_loop_computematicrates",
       "community": 9,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "orchestrator_pass_loop_computematicrates"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L190",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 9,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L201",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 9,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "service.ts",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
-      "id": "src_services_execution_service_ts",
       "community": 95,
-      "norm_label": "service.ts"
+      "norm_label": "service.ts",
+      "id": "src_services_execution_service_ts"
     },
     {
       "label": "ERC20_TRANSFER_EVENT",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L12",
-      "id": "execution_service_erc20_transfer_event",
       "community": 95,
-      "norm_label": "erc20_transfer_event"
+      "norm_label": "erc20_transfer_event",
+      "id": "execution_service_erc20_transfer_event"
     },
     {
       "label": "parseTransferLogs()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L23",
-      "id": "execution_service_parsetransferlogs",
       "community": 122,
-      "norm_label": "parsetransferlogs()"
+      "norm_label": "parsetransferlogs()",
+      "id": "execution_service_parsetransferlogs"
     },
     {
       "label": "CandidateExecution",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L36",
-      "id": "execution_service_candidateexecution",
       "community": 153,
-      "norm_label": "candidateexecution"
+      "norm_label": "candidateexecution",
+      "id": "execution_service_candidateexecution"
     },
     {
       "label": "ExecutionResult",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L45",
-      "id": "execution_service_executionresult",
       "community": 95,
-      "norm_label": "executionresult"
+      "norm_label": "executionresult",
+      "id": "execution_service_executionresult"
     },
     {
       "label": "SubmitTxFn",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L52",
-      "id": "execution_service_submittxfn",
       "community": 95,
-      "norm_label": "submittxfn"
+      "norm_label": "submittxfn",
+      "id": "execution_service_submittxfn"
     },
     {
       "label": "ExecutionServiceOptions",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L54",
-      "id": "execution_service_executionserviceoptions",
       "community": 95,
-      "norm_label": "executionserviceoptions"
+      "norm_label": "executionserviceoptions",
+      "id": "execution_service_executionserviceoptions"
     },
     {
       "label": "poolsFromRouteKey()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L65",
-      "id": "execution_service_poolsfromroutekey",
       "community": 95,
-      "norm_label": "poolsfromroutekey()"
+      "norm_label": "poolsfromroutekey()",
+      "id": "execution_service_poolsfromroutekey"
     },
     {
       "label": "areCandidatesCompatible()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L69",
-      "id": "execution_service_arecandidatescompatible",
       "community": 95,
-      "norm_label": "arecandidatescompatible()"
+      "norm_label": "arecandidatescompatible()",
+      "id": "execution_service_arecandidatescompatible"
     },
     {
       "label": "groupCompatibleCandidates()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L75",
-      "id": "execution_service_groupcompatiblecandidates",
       "community": 95,
-      "norm_label": "groupcompatiblecandidates()"
+      "norm_label": "groupcompatiblecandidates()",
+      "id": "execution_service_groupcompatiblecandidates"
     },
     {
       "label": "ExecutionService",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L101",
-      "id": "execution_service_executionservice",
       "community": 122,
-      "norm_label": "executionservice"
+      "norm_label": "executionservice",
+      "id": "execution_service_executionservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L111",
-      "id": "execution_service_executionservice_constructor",
       "community": 150,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "execution_service_executionservice_constructor"
     },
     {
       "label": ".getSubmissionStrategy()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L133",
-      "id": "execution_service_executionservice_getsubmissionstrategy",
       "community": 95,
-      "norm_label": ".getsubmissionstrategy()"
+      "norm_label": ".getsubmissionstrategy()",
+      "id": "execution_service_executionservice_getsubmissionstrategy"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L137",
-      "id": "execution_service_executionservice_start",
       "community": 122,
-      "norm_label": ".start()"
+      "norm_label": ".start()",
+      "id": "execution_service_executionservice_start"
     },
     {
       "label": ".stop()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L143",
-      "id": "execution_service_executionservice_stop",
       "community": 122,
-      "norm_label": ".stop()"
+      "norm_label": ".stop()",
+      "id": "execution_service_executionservice_stop"
     },
     {
       "label": ".submitTx()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L148",
-      "id": "execution_service_executionservice_submittx",
       "community": 122,
-      "norm_label": ".submittx()"
+      "norm_label": ".submittx()",
+      "id": "execution_service_executionservice_submittx"
     },
     {
       "label": ".execute()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L199",
-      "id": "execution_service_executionservice_execute",
       "community": 122,
-      "norm_label": ".execute()"
+      "norm_label": ".execute()",
+      "id": "execution_service_executionservice_execute"
     },
     {
       "label": ".batchExecute()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L269",
-      "id": "execution_service_executionservice_batchexecute",
       "community": 122,
-      "norm_label": ".batchexecute()"
+      "norm_label": ".batchexecute()",
+      "id": "execution_service_executionservice_batchexecute"
     },
     {
       "label": "._waitForReceipt()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L373",
-      "id": "execution_service_executionservice_waitforreceipt",
       "community": 122,
-      "norm_label": "._waitforreceipt()"
+      "norm_label": "._waitforreceipt()",
+      "id": "execution_service_executionservice_waitforreceipt"
     },
     {
       "label": ".isQuarantined()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L390",
-      "id": "execution_service_executionservice_isquarantined",
       "community": 122,
-      "norm_label": ".isquarantined()"
+      "norm_label": ".isquarantined()",
+      "id": "execution_service_executionservice_isquarantined"
     },
     {
       "label": ".getQuarantineManager()",
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L394",
-      "id": "execution_service_executionservice_getquarantinemanager",
       "community": 122,
-      "norm_label": ".getquarantinemanager()"
+      "norm_label": ".getquarantinemanager()",
+      "id": "execution_service_executionservice_getquarantinemanager"
     },
     {
       "label": "finder.test.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_finder_test_ts",
       "community": 16,
-      "norm_label": "finder.test.ts"
+      "norm_label": "finder.test.ts",
+      "id": "src_services_strategy_finder_test_ts"
     },
     {
       "label": "WETH",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L10",
-      "id": "strategy_finder_test_weth",
       "community": 16,
-      "norm_label": "weth"
+      "norm_label": "weth",
+      "id": "strategy_finder_test_weth"
     },
     {
       "label": "USDC",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L11",
-      "id": "strategy_finder_test_usdc",
       "community": 16,
-      "norm_label": "usdc"
+      "norm_label": "usdc",
+      "id": "strategy_finder_test_usdc"
     },
     {
       "label": "p1",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L12",
-      "id": "strategy_finder_test_p1",
       "community": 16,
-      "norm_label": "p1"
+      "norm_label": "p1",
+      "id": "strategy_finder_test_p1"
     },
     {
       "label": "p2",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L21",
-      "id": "strategy_finder_test_p2",
       "community": 16,
-      "norm_label": "p2"
+      "norm_label": "p2",
+      "id": "strategy_finder_test_p2"
     },
     {
       "label": "graph",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L30",
-      "id": "strategy_finder_test_graph",
       "community": 16,
-      "norm_label": "graph"
+      "norm_label": "graph",
+      "id": "strategy_finder_test_graph"
     },
     {
       "label": "cycles",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L31",
-      "id": "strategy_finder_test_cycles",
       "community": 16,
-      "norm_label": "cycles"
+      "norm_label": "cycles",
+      "id": "strategy_finder_test_cycles"
     },
     {
       "label": "A",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L37",
-      "id": "strategy_finder_test_a",
       "community": 16,
-      "norm_label": "a"
+      "norm_label": "a",
+      "id": "strategy_finder_test_a"
     },
     {
       "label": "B",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L38",
-      "id": "strategy_finder_test_b",
       "community": 16,
-      "norm_label": "b"
+      "norm_label": "b",
+      "id": "strategy_finder_test_b"
     },
     {
       "label": "C",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L39",
-      "id": "strategy_finder_test_c",
       "community": 16,
-      "norm_label": "c"
+      "norm_label": "c",
+      "id": "strategy_finder_test_c"
     },
     {
       "label": "p3",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L42",
-      "id": "strategy_finder_test_p3",
       "community": 16,
-      "norm_label": "p3"
+      "norm_label": "p3",
+      "id": "strategy_finder_test_p3"
     },
     {
       "label": "p4",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L43",
-      "id": "strategy_finder_test_p4",
       "community": 16,
-      "norm_label": "p4"
+      "norm_label": "p4",
+      "id": "strategy_finder_test_p4"
     },
     {
       "label": "D",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L54",
-      "id": "strategy_finder_test_d",
       "community": 16,
-      "norm_label": "d"
+      "norm_label": "d",
+      "id": "strategy_finder_test_d"
     },
     {
       "label": "adjacency",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L65",
-      "id": "strategy_finder_test_adjacency",
       "community": 16,
-      "norm_label": "adjacency"
+      "norm_label": "adjacency",
+      "id": "strategy_finder_test_adjacency"
     },
     {
       "label": "tA",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L68",
-      "id": "strategy_finder_test_ta",
       "community": 16,
-      "norm_label": "ta"
+      "norm_label": "ta",
+      "id": "strategy_finder_test_ta"
     },
     {
       "label": "tB",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L69",
-      "id": "strategy_finder_test_tb",
       "community": 16,
-      "norm_label": "tb"
+      "norm_label": "tb",
+      "id": "strategy_finder_test_tb"
     },
     {
       "label": "tC",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L70",
-      "id": "strategy_finder_test_tc",
       "community": 16,
-      "norm_label": "tc"
+      "norm_label": "tc",
+      "id": "strategy_finder_test_tc"
     },
     {
       "label": "e1",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L72",
-      "id": "strategy_finder_test_e1",
       "community": 16,
-      "norm_label": "e1"
+      "norm_label": "e1",
+      "id": "strategy_finder_test_e1"
     },
     {
       "label": "e2",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L73",
-      "id": "strategy_finder_test_e2",
       "community": 16,
-      "norm_label": "e2"
+      "norm_label": "e2",
+      "id": "strategy_finder_test_e2"
     },
     {
       "label": "e3",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L74",
-      "id": "strategy_finder_test_e3",
       "community": 16,
-      "norm_label": "e3"
+      "norm_label": "e3",
+      "id": "strategy_finder_test_e3"
     },
     {
       "label": "key",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L140",
-      "id": "strategy_finder_test_key",
       "community": 16,
-      "norm_label": "key"
+      "norm_label": "key",
+      "id": "strategy_finder_test_key"
     },
     {
       "label": "finder.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_finder_ts",
       "community": 16,
-      "norm_label": "finder.ts"
+      "norm_label": "finder.ts",
+      "id": "src_services_strategy_finder_ts"
     },
     {
       "label": "FoundCycle",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L6",
-      "id": "strategy_finder_foundcycle",
       "community": 148,
-      "norm_label": "foundcycle"
+      "norm_label": "foundcycle",
+      "id": "strategy_finder_foundcycle"
     },
     {
       "label": "routeKeyFromEdges()",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L14",
-      "id": "strategy_finder_routekeyfromedges",
       "community": 41,
-      "norm_label": "routekeyfromedges()"
+      "norm_label": "routekeyfromedges()",
+      "id": "strategy_finder_routekeyfromedges"
     },
     {
       "label": "feeLogWeight()",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L20",
-      "id": "strategy_finder_feelogweight",
       "community": 16,
-      "norm_label": "feelogweight()"
+      "norm_label": "feelogweight()",
+      "id": "strategy_finder_feelogweight"
     },
     {
       "label": "scoreCycleWithFeedback()",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L26",
-      "id": "strategy_finder_scorecyclewithfeedback",
       "community": 38,
-      "norm_label": "scorecyclewithfeedback()"
+      "norm_label": "scorecyclewithfeedback()",
+      "id": "strategy_finder_scorecyclewithfeedback"
     },
     {
       "label": "findCycles()",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L39",
-      "id": "strategy_finder_findcycles",
       "community": 16,
-      "norm_label": "findcycles()"
+      "norm_label": "findcycles()",
+      "id": "strategy_finder_findcycles"
     },
     {
       "label": "enumerateCycles()",
       "file_type": "code",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L164",
-      "id": "strategy_finder_enumeratecycles",
       "community": 16,
-      "norm_label": "enumeratecycles()"
+      "norm_label": "enumeratecycles()",
+      "id": "strategy_finder_enumeratecycles"
     },
     {
       "label": "hyperindex_graphql.ts",
@@ -4710,132 +4899,6 @@
       "id": "math_woofi_test_result"
     },
     {
-      "label": "balancer.ts",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L1",
-      "community": 42,
-      "norm_label": "balancer.ts",
-      "id": "src_core_math_balancer_ts"
-    },
-    {
-      "label": "BalancerPoolState",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L50",
-      "community": 42,
-      "norm_label": "balancerpoolstate",
-      "id": "math_balancer_balancerpoolstate"
-    },
-    {
-      "label": "asPoolState()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L52",
-      "community": 42,
-      "norm_label": "aspoolstate()",
-      "id": "math_balancer_aspoolstate"
-    },
-    {
-      "label": "absDiff()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L56",
-      "community": 42,
-      "norm_label": "absdiff()",
-      "id": "math_balancer_absdiff"
-    },
-    {
-      "label": "ln()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L73",
-      "community": 42,
-      "norm_label": "ln()",
-      "id": "math_balancer_ln"
-    },
-    {
-      "label": "exp()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L123",
-      "community": 42,
-      "norm_label": "exp()",
-      "id": "math_balancer_exp"
-    },
-    {
-      "label": "powDown()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L150",
-      "community": 42,
-      "norm_label": "powdown()",
-      "id": "math_balancer_powdown"
-    },
-    {
-      "label": "getBalancerAmountOut()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L172",
-      "community": 42,
-      "norm_label": "getbalanceramountout()",
-      "id": "math_balancer_getbalanceramountout"
-    },
-    {
-      "label": "getBalancerAmountIn()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L231",
-      "community": 42,
-      "norm_label": "getbalanceramountin()",
-      "id": "math_balancer_getbalanceramountin"
-    },
-    {
-      "label": "getScaledBalances()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L311",
-      "community": 42,
-      "norm_label": "getscaledbalances()",
-      "id": "math_balancer_getscaledbalances"
-    },
-    {
-      "label": "calculateBalancerStableInvariant()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L331",
-      "community": 42,
-      "norm_label": "calculatebalancerstableinvariant()",
-      "id": "math_balancer_calculatebalancerstableinvariant"
-    },
-    {
-      "label": "getTokenBalanceGivenStableInvariant()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L367",
-      "community": 42,
-      "norm_label": "gettokenbalancegivenstableinvariant()",
-      "id": "math_balancer_gettokenbalancegivenstableinvariant"
-    },
-    {
-      "label": "getBalancerStableAmountOut()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L425",
-      "community": 42,
-      "norm_label": "getbalancerstableamountout()",
-      "id": "math_balancer_getbalancerstableamountout"
-    },
-    {
-      "label": "simulateBalancerSwap()",
-      "file_type": "code",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L471",
-      "community": 42,
-      "norm_label": "simulatebalancerswap()",
-      "id": "math_balancer_simulatebalancerswap"
-    },
-    {
       "label": "curve.test.ts",
       "file_type": "code",
       "source_file": "src/core/math/curve.test.ts",
@@ -5014,69 +5077,6 @@
       "community": 112,
       "norm_label": "getamount1delta()",
       "id": "math_sqrt_price_math_getamount1delta"
-    },
-    {
-      "label": "uniswap_v2.ts",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L1",
-      "community": 98,
-      "norm_label": "uniswap_v2.ts",
-      "id": "src_core_math_uniswap_v2_ts"
-    },
-    {
-      "label": "V2PoolStateLike",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L18",
-      "community": 98,
-      "norm_label": "v2poolstatelike",
-      "id": "math_uniswap_v2_v2poolstatelike"
-    },
-    {
-      "label": "asPoolState()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L20",
-      "community": 98,
-      "norm_label": "aspoolstate()",
-      "id": "math_uniswap_v2_aspoolstate"
-    },
-    {
-      "label": "getV2AmountOut()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L37",
-      "community": 98,
-      "norm_label": "getv2amountout()",
-      "id": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "label": "getV2AmountIn()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L66",
-      "community": 98,
-      "norm_label": "getv2amountin()",
-      "id": "math_uniswap_v2_getv2amountin"
-    },
-    {
-      "label": "simulateV2Swap()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L95",
-      "community": 98,
-      "norm_label": "simulatev2swap()",
-      "id": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "label": "quoteV2()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L149",
-      "community": 98,
-      "norm_label": "quotev2()",
-      "id": "math_uniswap_v2_quotev2"
     },
     {
       "label": "dodo.ts",
@@ -19121,6 +19121,889 @@
   ],
   "links": [
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_full_math_divroundingup"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_balancerpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_absdiff"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_ln"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_exp"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L150",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_powdown"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L172",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_getbalanceramountout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L231",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_getbalanceramountin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L311",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_getscaledbalances"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L331",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_calculatebalancerstableinvariant"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L367",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_gettokenbalancegivenstableinvariant"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L425",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_getbalancerstableamountout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L471",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "src_core_math_balancer_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "src_core_math_full_math_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_test_ts",
+      "target": "src_core_math_balancer_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_ts",
+      "target": "src_core_utils_bigint_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L376",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_core_math_balancer_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "src_core_math_balancer_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L176",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalanceramountout",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L235",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalanceramountin",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L312",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getscaledbalances",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L430",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalancerstableamountout",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L482",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_simulatebalancerswap",
+      "target": "math_balancer_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L361",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_calculatebalancerstableinvariant",
+      "target": "math_balancer_absdiff"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L416",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_gettokenbalancegivenstableinvariant",
+      "target": "math_balancer_absdiff"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L154",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_powdown",
+      "target": "math_balancer_ln"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L155",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_powdown",
+      "target": "math_balancer_exp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L210",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalanceramountout",
+      "target": "math_balancer_powdown"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L265",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalanceramountin",
+      "target": "math_balancer_powdown"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L486",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_simulatebalancerswap",
+      "target": "math_balancer_getbalanceramountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_test_ts",
+      "target": "math_balancer_getbalanceramountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L173",
+      "weight": 1.0,
+      "source": "math_balancer_getbalanceramountout",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_balancer_getbalanceramountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L232",
+      "weight": 1.0,
+      "source": "math_balancer_getbalanceramountin",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_balancer_getbalanceramountin"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L431",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalancerstableamountout",
+      "target": "math_balancer_getscaledbalances"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L318",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getscaledbalances",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L445",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalancerstableamountout",
+      "target": "math_balancer_calculatebalancerstableinvariant"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L332",
+      "weight": 1.0,
+      "source": "math_balancer_calculatebalancerstableinvariant",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_balancer_calculatebalancerstableinvariant"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L450",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_getbalancerstableamountout",
+      "target": "math_balancer_gettokenbalancegivenstableinvariant"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L407",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_gettokenbalancegivenstableinvariant",
+      "target": "math_full_math_divroundingup"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L374",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_gettokenbalancegivenstableinvariant",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L485",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_balancer_simulatebalancerswap",
+      "target": "math_balancer_getbalancerstableamountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L426",
+      "weight": 1.0,
+      "source": "math_balancer_getbalancerstableamountout",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_balancer_getbalancerstableamountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "strategy_simulator_simulatehop",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/balancer.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_balancer_test_ts",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/balancer.ts",
+      "source_location": "L477",
+      "weight": 1.0,
+      "source": "math_balancer_simulatebalancerswap",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L376",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_balancer_simulatebalancerswap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_v2poolstatelike"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_aspoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_getv2amountout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_getv2amountin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L95",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "math_uniswap_v2_quotev2"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "src_core_math_uniswap_v2_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_test_ts",
+      "target": "src_core_math_uniswap_v2_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_ts",
+      "target": "src_core_utils_bigint_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L374",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_core_math_uniswap_v2_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "src_core_math_uniswap_v2_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_uniswap_v2_simulatev2swap",
+      "target": "math_uniswap_v2_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L117",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_uniswap_v2_simulatev2swap",
+      "target": "math_uniswap_v2_getv2amountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_test_ts",
+      "target": "math_uniswap_v2_getv2amountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L116",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "math_uniswap_v2_getv2amountout"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_uniswap_v2_getv2amountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L116",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "math_uniswap_v2_getv2amountin"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_uniswap_v2_getv2amountin"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_uniswap_v2_quotev2",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "strategy_simulator_simulatehop",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/uniswap_v2.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_uniswap_v2_test_ts",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/uniswap_v2.ts",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "math_uniswap_v2_simulatev2swap",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L374",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_uniswap_v2_simulatev2swap"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_uniswap_v2_quotev2"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20815,9 +21698,9 @@
       "source_file": "src/services/execution/service.ts",
       "source_location": "L293",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "execution_service_executionservice_batchexecute",
-      "target": "execution_service_executionservice_submittx",
-      "confidence_score": 1.0
+      "target": "execution_service_executionservice_submittx"
     },
     {
       "relation": "calls",
@@ -23158,17 +24041,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -23185,17 +24057,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_simulator_ts",
       "target": "math_curve_simulatecurveswap"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "math_balancer_simulatebalancerswap"
     },
     {
       "relation": "imports",
@@ -23333,28 +24194,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_simulator_ts",
       "target": "src_core_math_uniswap_v3_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "src_core_math_balancer_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "src_core_math_uniswap_v2_ts"
     },
     {
       "relation": "imports_from",
@@ -23520,28 +24359,6 @@
       "weight": 1.0,
       "source": "strategy_simulator_simulatehop",
       "target": "math_uniswap_v3_simulatev3swap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L73",
-      "weight": 1.0,
-      "source": "strategy_simulator_simulatehop",
-      "target": "math_balancer_simulatebalancerswap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "source": "strategy_simulator_simulatehop",
-      "target": "math_uniswap_v2_simulatev2swap"
     },
     {
       "relation": "calls",
@@ -30307,17 +31124,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "src_core_math_full_math_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/core/math/sqrt_price_math.ts",
       "source_location": "L12",
       "weight": 1.0,
@@ -30582,17 +31388,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_full_math_divroundingup"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/core/math/sqrt_price_math.ts",
       "source_location": "L12",
       "weight": 1.0,
@@ -30609,17 +31404,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_core_assessment_profit_ts",
-      "target": "math_full_math_divroundingup"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L407",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_gettokenbalancegivenstableinvariant",
       "target": "math_full_math_divroundingup"
     },
     {
@@ -31379,39 +32163,6 @@
       "target": "math_woofi_simulatewoofiswap"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_test_ts",
-      "target": "src_core_math_balancer_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_test_ts",
-      "target": "math_balancer_getbalanceramountout"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_test_ts",
-      "target": "math_balancer_simulatebalancerswap"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/core/math/balancer.test.ts",
@@ -31941,499 +32692,6 @@
       "target": "math_woofi_test_result"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "src_core_utils_bigint_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_balancerpoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L52",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_absdiff"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L73",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_ln"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L123",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_exp"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L150",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_powdown"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L172",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_getbalanceramountout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L231",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_getbalanceramountin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L311",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_getscaledbalances"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L331",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_calculatebalancerstableinvariant"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L367",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_gettokenbalancegivenstableinvariant"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L425",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_getbalancerstableamountout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L471",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_balancer_ts",
-      "target": "math_balancer_simulatebalancerswap"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L376",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_core_math_balancer_ts"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "src_core_math_balancer_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L176",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalanceramountout",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L235",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalanceramountin",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L312",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getscaledbalances",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L430",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalancerstableamountout",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L482",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_simulatebalancerswap",
-      "target": "math_balancer_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L361",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_calculatebalancerstableinvariant",
-      "target": "math_balancer_absdiff"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L416",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_gettokenbalancegivenstableinvariant",
-      "target": "math_balancer_absdiff"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L154",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_powdown",
-      "target": "math_balancer_ln"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L155",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_powdown",
-      "target": "math_balancer_exp"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L210",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalanceramountout",
-      "target": "math_balancer_powdown"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L265",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalanceramountin",
-      "target": "math_balancer_powdown"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L486",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_simulatebalancerswap",
-      "target": "math_balancer_getbalanceramountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L173",
-      "weight": 1.0,
-      "source": "math_balancer_getbalanceramountout",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_balancer_getbalanceramountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L232",
-      "weight": 1.0,
-      "source": "math_balancer_getbalanceramountin",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_balancer_getbalanceramountin"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L431",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalancerstableamountout",
-      "target": "math_balancer_getscaledbalances"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L318",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getscaledbalances",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L445",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalancerstableamountout",
-      "target": "math_balancer_calculatebalancerstableinvariant"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L332",
-      "weight": 1.0,
-      "source": "math_balancer_calculatebalancerstableinvariant",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_balancer_calculatebalancerstableinvariant"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L450",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_getbalancerstableamountout",
-      "target": "math_balancer_gettokenbalancegivenstableinvariant"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L374",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_gettokenbalancegivenstableinvariant",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L485",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_balancer_simulatebalancerswap",
-      "target": "math_balancer_getbalancerstableamountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L426",
-      "weight": 1.0,
-      "source": "math_balancer_getbalancerstableamountout",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_balancer_getbalancerstableamountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/balancer.ts",
-      "source_location": "L477",
-      "weight": 1.0,
-      "source": "math_balancer_simulatebalancerswap",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L376",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "math_balancer_simulatebalancerswap"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_balancer_simulatebalancerswap"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/core/math/curve.test.ts",
@@ -32472,39 +32730,6 @@
       "confidence_score": 1.0,
       "source": "src_core_math_curve_test_ts",
       "target": "math_curve_test_result"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_test_ts",
-      "target": "src_core_math_uniswap_v2_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_test_ts",
-      "target": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_test_ts",
-      "target": "math_uniswap_v2_simulatev2swap"
     },
     {
       "relation": "contains",
@@ -32756,231 +32981,6 @@
       "confidence_score": 1.0,
       "source": "src_core_math_index_ts",
       "target": "math_sqrt_price_math_getamount1delta"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "src_core_utils_bigint_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_v2poolstatelike"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_aspoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_getv2amountin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L95",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L132",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_uniswap_v2_ts",
-      "target": "math_uniswap_v2_quotev2"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L374",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_core_math_uniswap_v2_ts"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "src_core_math_uniswap_v2_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_uniswap_v2_simulatev2swap",
-      "target": "math_uniswap_v2_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L117",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_uniswap_v2_simulatev2swap",
-      "target": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L116",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_uniswap_v2_getv2amountout"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L116",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "math_uniswap_v2_getv2amountin"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_uniswap_v2_getv2amountin"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L133",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_uniswap_v2_quotev2",
-      "target": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/uniswap_v2.ts",
-      "source_location": "L107",
-      "weight": 1.0,
-      "source": "math_uniswap_v2_simulatev2swap",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L374",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_uniswap_v2_simulatev2swap"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_uniswap_v2_quotev2"
     },
     {
       "relation": "imports_from",
@@ -56616,5 +56616,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a0d9238fa4440d9671bedddb10a6559ff8240c30"
+  "built_at_commit": "63428af47f14f9654c95abe4cdc643e8d1bd8d8d"
 }

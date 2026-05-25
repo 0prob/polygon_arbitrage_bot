@@ -20,10 +20,14 @@ export class HyperIndexMonitor implements Lifecycle {
   private _isHealthy = false;
   private restartAttempts = 0;
   private readonly checkIntervalMs: number;
+  private readonly maxStallMs: number;
+  private lastSyncedBlock = 0;
+  private lastProgressTime = Date.now();
 
   constructor(private opts: HyperIndexMonitorOptions) {
     this.proc = createHyperIndexProcess(opts.processOptions);
     this.checkIntervalMs = opts.checkIntervalMs ?? 10_000;
+    this.maxStallMs = opts.maxStallMs ?? 60_000;
   }
 
   async prepare(): Promise<void> {
@@ -61,6 +65,13 @@ export class HyperIndexMonitor implements Lifecycle {
     return this.proc.isRunning();
   }
 
+  updateSyncedBlock(block: number): void {
+    if (block > this.lastSyncedBlock) {
+      this.lastSyncedBlock = block;
+      this.lastProgressTime = Date.now();
+    }
+  }
+
   private async checkHealth(): Promise<void> {
     if (!this.proc.isRunning()) {
       this._isHealthy = false;
@@ -68,8 +79,29 @@ export class HyperIndexMonitor implements Lifecycle {
       await this.restart();
       return;
     }
+
+    const current = this.getLastSyncedBlock();
+    if (current > 0) {
+      if (current > this.lastSyncedBlock) {
+        this.lastSyncedBlock = current;
+        this.lastProgressTime = Date.now();
+      } else if (Date.now() - this.lastProgressTime > this.maxStallMs) {
+        this.opts.logger.warn(
+          { lastSynced: this.lastSyncedBlock, stallMs: Date.now() - this.lastProgressTime },
+          "HyperIndex sync stalled, forcing restart"
+        );
+        this._isHealthy = false;
+        await this.restart();
+        return;
+      }
+    }
+
     this._isHealthy = true;
     this.restartAttempts = 0;
+  }
+
+  private getLastSyncedBlock(): number {
+    return this.lastSyncedBlock;
   }
 
   getLastStatus(): { status: string; synced: number; remote: number } {

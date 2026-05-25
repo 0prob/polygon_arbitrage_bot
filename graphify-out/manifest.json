@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779702169.3783944,
-    "ast_hash": "a45d42feb0688c3cb9e26e4b00164d48",
+    "mtime": 1779704635.0430598,
+    "ast_hash": "3fefdb293e1324e873e1f390fbf30837",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/balancer.ts": {
-    "mtime": 1779430302.0950668,
-    "ast_hash": "22b6b205186c3159e0e1975f759177ab",
+    "mtime": 1779704765.7896383,
+    "ast_hash": "6cde8d48070f2e1522719a475561927d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/curve.test.ts": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/uniswap_v2.ts": {
-    "mtime": 1779559565.1253266,
-    "ast_hash": "a49b9dbc13417a57c6e3200c18112c51",
+    "mtime": 1779704777.0935154,
+    "ast_hash": "3230b17aff674fd34b660ee885d3b3fd",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/dodo.ts": {
