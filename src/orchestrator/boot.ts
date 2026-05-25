@@ -83,12 +83,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   let lastPoolFetch = 0;
 
   const getPools = (): PoolMeta[] => {
-    if (cachedPools && Date.now() - lastPoolFetch < 60_000) {
-      return cachedPools;
-    }
-    cachedPools = [];
-    lastPoolFetch = Date.now();
-    return cachedPools;
+    return cachedPools || [];
   };
 
   const gasOracleConfig: GasOracleConfig = {

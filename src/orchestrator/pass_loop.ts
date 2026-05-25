@@ -145,7 +145,8 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
   const rates = new Map<string, bigint>();
   rates.set(WMATIC_LOWER, 1n);
 
-  for (let i = 0; i < 3; i++) {
+  // Increase iterations to 6 for better propagation across larger graphs
+  for (let i = 0; i < 6; i++) {
     let changed = false;
     for (const pool of pools) {
       const t0 = pool.token0.toLowerCase();
@@ -360,17 +361,26 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           const discoveryElapsed = Date.now() - discoveryStartTime;
 
           if (hasuraPools.length > 0) {
-            hasuraPoolsCache = hasuraPools.map(p => ({
-              address: p.address as `0x${string}`,
-              protocol: p.protocol,
-              token0: (p.tokens[0] ?? "") as `0x${string}`,
-              token1: (p.tokens[1] ?? "") as `0x${string}`,
-              tokens: p.tokens as `0x${string}`[],
-              fee: p.fee,
-            }));
-            pools = hasuraPoolsCache;
-            lastDiscoveryTime = now;
-            ctx.logger.info({ discovered: pools.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
+            // Resilience: don't replace a large pool list with a tiny one (less than 10% of previous size)
+            // unless the previous list was very small or this is the first discovery.
+            if (pools.length > 100 && hasuraPools.length < pools.length / 10) {
+              ctx.logger.warn(
+                { previous: pools.length, discovered: hasuraPools.length },
+                "Suspiciously low number of pools discovered, keeping previous list"
+              );
+            } else {
+              hasuraPoolsCache = hasuraPools.map(p => ({
+                address: p.address as `0x${string}`,
+                protocol: p.protocol,
+                token0: (p.tokens[0] ?? "") as `0x${string}`,
+                token1: (p.tokens[1] ?? "") as `0x${string}`,
+                tokens: p.tokens as `0x${string}`[],
+                fee: p.fee,
+              }));
+              pools = hasuraPoolsCache;
+              lastDiscoveryTime = now;
+              ctx.logger.info({ discovered: pools.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
+            }
           }
         } catch (e) {
           ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
@@ -413,9 +423,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         } catch (err) {
           ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
         }
+      }
 
-        const dummyCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
-        await fetchMissingPoolState(ctx, pools, dummyCycles);
+      // Always fetch missing state for current cycles and update rates
+      if (pools.length > 0) {
+        const dummyCycles = shouldReEnumerate ? pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any)) : [];
+        await fetchMissingPoolState(ctx, pools, [...currentCycles, ...dummyCycles]);
+        cachedRates = computeMaticRates(pools, stateCache);
       }
 
       if (shouldReEnumerate || !cachedGraph) {
@@ -473,9 +487,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      if (shouldReEnumerate || !cachedRates) {
-        cachedRates = computeMaticRates(pools, stateCache);
-      }
       const tokenToMaticRates = cachedRates!;
 
       // Mempool-aware dry run: check pending state before submitting

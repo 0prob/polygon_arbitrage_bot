@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779705309.2883356,
-    "ast_hash": "3f266b398e942b2959e14af9e196d17f",
+    "mtime": 1779705991.597981,
+    "ast_hash": "bbf644c8354b91a7179b0b58b25b8724",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -635,8 +635,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779700436.3789823,
-    "ast_hash": "9bc351cc2f3f018099277eae53c8eece",
+    "mtime": 1779706255.9153383,
+    "ast_hash": "8a76016fa1b82c81581334f93b10d348",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
