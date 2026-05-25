@@ -145,42 +145,103 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
   const rates = new Map<string, bigint>();
   rates.set(WMATIC_LOWER, 1n);
 
-  // Increase iterations to 6 for better propagation across larger graphs
-  for (let i = 0; i < 6; i++) {
+  // Use a more thorough BFS-style propagation
+  for (let i = 0; i < 10; i++) {
     let changed = false;
     for (const pool of pools) {
-      const t0 = pool.token0.toLowerCase();
-      const t1 = pool.token1.toLowerCase();
-      const hasT0 = rates.has(t0);
-      const hasT1 = rates.has(t1);
-
-      if (hasT0 === hasT1) continue;
+      const tokens = pool.tokens?.map(t => t.toLowerCase()) ?? [pool.token0.toLowerCase(), pool.token1.toLowerCase()];
+      if (tokens.length < 2) continue;
 
       const state = stateCache.get(pool.address.toLowerCase());
       if (!state) continue;
 
-      let rate: bigint | null = null;
-      try {
-        if (state.reserve0 !== undefined && state.reserve1 !== undefined) {
-          const r0 = state.reserve0 as bigint;
-          const r1 = state.reserve1 as bigint;
-          if (r0 > 0n && r1 > 0n) {
-            rate = hasT0 ? (rates.get(t0)! * r0) / r1 : (rates.get(t1)! * r1) / r0;
-          }
-        } else if (state.sqrtPriceX96 !== undefined) {
-          const sq = state.sqrtPriceX96 as bigint;
-          if (sq > 0n) {
-            const p192 = sq * sq;
-            rate = hasT0 ? (rates.get(t0)! * (1n << 192n)) / p192 : (rates.get(t1)! * p192) / (1n << 192n);
-          }
+      // Find which tokens already have a rate
+      const knownIndices: number[] = [];
+      const unknownIndices: number[] = [];
+      for (let j = 0; j < tokens.length; j++) {
+        if (rates.has(tokens[j])) {
+          knownIndices.push(j);
+        } else {
+          unknownIndices.push(j);
         }
-      } catch {
-        continue;
       }
 
-      if (rate !== null && rate > 0n) {
-        rates.set(hasT0 ? t1 : t0, rate);
-        changed = true;
+      if (knownIndices.length === 0 || unknownIndices.length === 0) continue;
+
+      // Propagate from the first known token to all unknown tokens
+      const knownIdx = knownIndices[0];
+      const knownToken = tokens[knownIdx];
+      const knownRate = rates.get(knownToken)!;
+
+      for (const unknownIdx of unknownIndices) {
+        const unknownToken = tokens[unknownIdx];
+        let priceUnknownPerKnown: number | null = null;
+
+        try {
+          // Protocol-specific spot price calculation
+          const protocol = pool.protocol.toLowerCase();
+          if (protocol.includes("v2")) {
+            const r0 = BigInt(state.reserve0 as any);
+            const r1 = BigInt(state.reserve1 as any);
+            if (r0 > 0n && r1 > 0n) {
+              // price1per0 = r1 / r0. unknown is t1, known is t0 => price = r1/r0
+              // we want rateUnknown = rateKnown * known/unknown = rateKnown * rKnown / rUnknown
+              const rKnown = knownIdx === 0 ? r0 : r1;
+              const rUnknown = unknownIdx === 0 ? r0 : r1;
+              const rate = (knownRate * rKnown) / rUnknown;
+              if (rate > 0n) {
+                rates.set(unknownToken, rate);
+                changed = true;
+              }
+            }
+          } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+            const sq = BigInt(state.sqrtPriceX96 as any);
+            if (sq > 0n) {
+              const p192 = sq * sq;
+              // price1per0 = p192 / 2^192
+              // rate1 = rate0 * 2^192 / p192
+              // rate0 = rate1 * p192 / 2^192
+              if (knownIdx === 0 && unknownIdx === 1) {
+                const rate = (knownRate * (1n << 192n)) / p192;
+                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              } else if (knownIdx === 1 && unknownIdx === 0) {
+                const rate = (knownRate * p192) / (1n << 192n);
+                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              }
+            }
+          } else if (protocol.includes("balancer")) {
+            const balances = state.balances as bigint[];
+            if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
+              const weights = state.weights as bigint[];
+              if (weights && weights[knownIdx] > 0n && weights[unknownIdx] > 0n) {
+                // Weighted spot price: (balanceIn / weightIn) / (balanceOut / weightOut)
+                // priceOutPerIn = (balanceIn * weightOut) / (balanceOut * weightIn)
+                // rateOut = rateIn * balanceIn * weightOut / (balanceOut * weightIn)
+                const rate = (knownRate * balances[knownIdx] * weights[unknownIdx]) / (balances[unknownIdx] * weights[knownIdx]);
+                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              } else {
+                // Stable or equal weight approximation
+                const rate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
+                if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+              }
+            }
+          } else if (protocol.includes("curve")) {
+            const balances = state.balances as bigint[];
+            if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
+              const rate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
+              if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+            }
+          } else if (protocol.includes("dodo")) {
+            const b = BigInt(state.baseReserve as any);
+            const q = BigInt(state.quoteReserve as any);
+            if (b > 0n && q > 0n) {
+              const rate = knownIdx === 0 ? (knownRate * b) / q : (knownRate * q) / b;
+              if (rate > 0n) { rates.set(unknownToken, rate); changed = true; }
+            }
+          }
+        } catch {
+          continue;
+        }
       }
     }
     if (!changed) break;

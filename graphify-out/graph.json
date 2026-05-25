@@ -4,12 +4,534 @@
   "graph": {},
   "nodes": [
     {
+      "label": "balancer_metadata.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_balancer_metadata_ts",
+      "community": 21,
+      "norm_label": "balancer_metadata.ts"
+    },
+    {
+      "label": "client",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L5",
+      "id": "effects_balancer_metadata_client",
+      "community": 21,
+      "norm_label": "client"
+    },
+    {
+      "label": "BALANCER_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L16",
+      "id": "effects_balancer_metadata_balancer_abi",
+      "community": 21,
+      "norm_label": "balancer_abi"
+    },
+    {
+      "label": "VAULT_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L24",
+      "id": "effects_balancer_metadata_vault_abi",
+      "community": 21,
+      "norm_label": "vault_abi"
+    },
+    {
+      "label": "fetchBalancerMetadata",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L28",
+      "id": "effects_balancer_metadata_fetchbalancermetadata",
+      "community": 21,
+      "norm_label": "fetchbalancermetadata"
+    },
+    {
+      "label": "curve_metadata.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_curve_metadata_ts",
+      "community": 46,
+      "norm_label": "curve_metadata.ts"
+    },
+    {
+      "label": "client",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L5",
+      "id": "effects_curve_metadata_client",
+      "community": 46,
+      "norm_label": "client"
+    },
+    {
+      "label": "CURVE_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L16",
+      "id": "effects_curve_metadata_curve_abi",
+      "community": 46,
+      "norm_label": "curve_abi"
+    },
+    {
+      "label": "fetchCurveMetadata",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L24",
+      "id": "effects_curve_metadata_fetchcurvemetadata",
+      "community": 46,
+      "norm_label": "fetchcurvemetadata"
+    },
+    {
+      "label": "dodo_metadata.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_dodo_metadata_ts",
+      "community": 60,
+      "norm_label": "dodo_metadata.ts"
+    },
+    {
+      "label": "client",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L5",
+      "id": "effects_dodo_metadata_client",
+      "community": 60,
+      "norm_label": "client"
+    },
+    {
+      "label": "DODO_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L16",
+      "id": "effects_dodo_metadata_dodo_abi",
+      "community": 60,
+      "norm_label": "dodo_abi"
+    },
+    {
+      "label": "fetchDodoMetadata",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L28",
+      "id": "effects_dodo_metadata_fetchdodometadata",
+      "community": 60,
+      "norm_label": "fetchdodometadata"
+    },
+    {
+      "label": "balancer.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_balancer_ts",
+      "community": 21,
+      "norm_label": "balancer.ts"
+    },
+    {
+      "label": "pool",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L8",
+      "id": "handlers_balancer_pool",
+      "community": 21,
+      "norm_label": "pool"
+    },
+    {
+      "label": "poolId",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L9",
+      "id": "handlers_balancer_poolid",
+      "community": 21,
+      "norm_label": "poolid"
+    },
+    {
+      "label": "tokens",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L49",
+      "id": "handlers_balancer_tokens",
+      "community": 21,
+      "norm_label": "tokens"
+    },
+    {
+      "label": "tIn",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L106",
+      "id": "handlers_balancer_tin",
+      "community": 21,
+      "norm_label": "tin"
+    },
+    {
+      "label": "tOut",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L107",
+      "id": "handlers_balancer_tout",
+      "community": 21,
+      "norm_label": "tout"
+    },
+    {
+      "label": "balances",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L112",
+      "id": "handlers_balancer_balances",
+      "community": 21,
+      "norm_label": "balances"
+    },
+    {
+      "label": "idxIn",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L114",
+      "id": "handlers_balancer_idxin",
+      "community": 21,
+      "norm_label": "idxin"
+    },
+    {
+      "label": "idxOut",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L115",
+      "id": "handlers_balancer_idxout",
+      "community": 21,
+      "norm_label": "idxout"
+    },
+    {
+      "label": "eventTokens",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L143",
+      "id": "handlers_balancer_eventtokens",
+      "community": 21,
+      "norm_label": "eventtokens"
+    },
+    {
+      "label": "metaTokens",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L145",
+      "id": "handlers_balancer_metatokens",
+      "community": 21,
+      "norm_label": "metatokens"
+    },
+    {
+      "label": "idx",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L149",
+      "id": "handlers_balancer_idx",
+      "community": 21,
+      "norm_label": "idx"
+    },
+    {
+      "label": "curve_factory.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_factory.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_curve_factory_ts",
+      "community": 46,
+      "norm_label": "curve_factory.ts"
+    },
+    {
+      "label": "pool",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_factory.ts",
+      "source_location": "L15",
+      "id": "handlers_curve_factory_pool",
+      "community": 46,
+      "norm_label": "pool"
+    },
+    {
+      "label": "dodo_factory.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_dodo_factory_ts",
+      "community": 60,
+      "norm_label": "dodo_factory.ts"
+    },
+    {
+      "label": "handleDodoPool()",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L5",
+      "id": "handlers_dodo_factory_handledodopool",
+      "community": 60,
+      "norm_label": "handledodopool()"
+    },
+    {
+      "label": "v2_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/katana/v2_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_katana_v2_pool_ts",
+      "community": 81,
+      "norm_label": "v2_pool.ts"
+    },
+    {
+      "label": "v3_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/katana/v3_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_katana_v3_pool_ts",
+      "community": 83,
+      "norm_label": "v3_pool.ts"
+    },
+    {
+      "label": "v2_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/v2_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_v2_pool_ts",
+      "community": 78,
+      "norm_label": "v2_pool.ts"
+    },
+    {
+      "label": "v3_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/v3_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_v3_pool_ts",
+      "community": 80,
+      "norm_label": "v3_pool.ts"
+    },
+    {
+      "label": "tsconfig.json",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L1",
+      "id": "hyperindex_tsconfig_json",
+      "community": 44,
+      "norm_label": "tsconfig.json"
+    },
+    {
+      "label": "compilerOptions",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L2",
+      "id": "hyperindex_tsconfig_compileroptions",
+      "community": 44,
+      "norm_label": "compileroptions"
+    },
+    {
+      "label": "target",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L3",
+      "id": "hyperindex_tsconfig_compileroptions_target",
+      "community": 44,
+      "norm_label": "target"
+    },
+    {
+      "label": "module",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L4",
+      "id": "hyperindex_tsconfig_compileroptions_module",
+      "community": 44,
+      "norm_label": "module"
+    },
+    {
+      "label": "moduleResolution",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L5",
+      "id": "hyperindex_tsconfig_compileroptions_moduleresolution",
+      "community": 44,
+      "norm_label": "moduleresolution"
+    },
+    {
+      "label": "strict",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L6",
+      "id": "hyperindex_tsconfig_compileroptions_strict",
+      "community": 44,
+      "norm_label": "strict"
+    },
+    {
+      "label": "esModuleInterop",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L7",
+      "id": "hyperindex_tsconfig_compileroptions_esmoduleinterop",
+      "community": 44,
+      "norm_label": "esmoduleinterop"
+    },
+    {
+      "label": "outDir",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L8",
+      "id": "hyperindex_tsconfig_compileroptions_outdir",
+      "community": 44,
+      "norm_label": "outdir"
+    },
+    {
+      "label": "rootDir",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L9",
+      "id": "hyperindex_tsconfig_compileroptions_rootdir",
+      "community": 44,
+      "norm_label": "rootdir"
+    },
+    {
+      "label": "skipLibCheck",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L10",
+      "id": "hyperindex_tsconfig_compileroptions_skiplibcheck",
+      "community": 44,
+      "norm_label": "skiplibcheck"
+    },
+    {
+      "label": "typeRoots",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L11",
+      "id": "hyperindex_tsconfig_compileroptions_typeroots",
+      "community": 44,
+      "norm_label": "typeroots"
+    },
+    {
+      "label": "include",
+      "file_type": "code",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L13",
+      "id": "hyperindex_tsconfig_include",
+      "community": 44,
+      "norm_label": "include"
+    },
+    {
+      "label": "dodo.ts",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L1",
+      "id": "src_core_math_dodo_ts",
+      "community": 111,
+      "norm_label": "dodo.ts"
+    },
+    {
+      "label": "DodoPoolState",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L30",
+      "id": "math_dodo_dodopoolstate",
+      "community": 111,
+      "norm_label": "dodopoolstate"
+    },
+    {
+      "label": "asPoolState()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L32",
+      "id": "math_dodo_aspoolstate",
+      "community": 111,
+      "norm_label": "aspoolstate()"
+    },
+    {
+      "label": "sqrt()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L36",
+      "id": "math_dodo_sqrt",
+      "community": 111,
+      "norm_label": "sqrt()"
+    },
+    {
+      "label": "mulFloor()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L51",
+      "id": "math_dodo_mulfloor",
+      "community": 111,
+      "norm_label": "mulfloor()"
+    },
+    {
+      "label": "divFloor()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L55",
+      "id": "math_dodo_divfloor",
+      "community": 111,
+      "norm_label": "divfloor()"
+    },
+    {
+      "label": "divCeil()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L60",
+      "id": "math_dodo_divceil",
+      "community": 111,
+      "norm_label": "divceil()"
+    },
+    {
+      "label": "reciprocalFloor()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L65",
+      "id": "math_dodo_reciprocalfloor",
+      "community": 111,
+      "norm_label": "reciprocalfloor()"
+    },
+    {
+      "label": "generalIntegrate()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L70",
+      "id": "math_dodo_generalintegrate",
+      "community": 111,
+      "norm_label": "generalintegrate()"
+    },
+    {
+      "label": "solveQuadraticFunctionForTrade()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L82",
+      "id": "math_dodo_solvequadraticfunctionfortrade",
+      "community": 111,
+      "norm_label": "solvequadraticfunctionfortrade()"
+    },
+    {
+      "label": "getDodoGrossAmountOut()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L125",
+      "id": "math_dodo_getdodogrossamountout",
+      "community": 111,
+      "norm_label": "getdodogrossamountout()"
+    },
+    {
+      "label": "getDodoAmountOut()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L180",
+      "id": "math_dodo_getdodoamountout",
+      "community": 111,
+      "norm_label": "getdodoamountout()"
+    },
+    {
+      "label": "simulateDodoSwap()",
+      "file_type": "code",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L192",
+      "id": "math_dodo_simulatedodoswap",
+      "community": 111,
+      "norm_label": "simulatedodoswap()"
+    },
+    {
       "label": "hyperindex_graphql.ts",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L1",
       "id": "src_infra_hypersync_hyperindex_graphql_ts",
-      "community": 9,
+      "community": 27,
       "norm_label": "hyperindex_graphql.ts"
     },
     {
@@ -18,7 +540,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L4",
       "id": "hypersync_hyperindex_graphql_cachedstate",
-      "community": 9,
+      "community": 27,
       "norm_label": "_cachedstate"
     },
     {
@@ -27,7 +549,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L5",
       "id": "hypersync_hyperindex_graphql_cacheaccessorder",
-      "community": 9,
+      "community": 27,
       "norm_label": "_cacheaccessorder"
     },
     {
@@ -36,7 +558,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L8",
       "id": "hypersync_hyperindex_graphql_resetgraphqlreadercache",
-      "community": 9,
+      "community": 27,
       "norm_label": "resetgraphqlreadercache()"
     },
     {
@@ -54,7 +576,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L37",
       "id": "hypersync_hyperindex_graphql_merge",
-      "community": 9,
+      "community": 27,
       "norm_label": "merge()"
     },
     {
@@ -72,7 +594,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L156",
       "id": "hypersync_hyperindex_graphql_hasurapoolmeta",
-      "community": 9,
+      "community": 27,
       "norm_label": "hasurapoolmeta"
     },
     {
@@ -90,7 +612,7 @@
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L222",
       "id": "hypersync_hyperindex_graphql_parsebigintarray",
-      "community": 9,
+      "community": 27,
       "norm_label": "parsebigintarray()"
     },
     {
@@ -98,351 +620,351 @@
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L1",
-      "id": "src_infra_observability_health_server_ts",
       "community": 167,
-      "norm_label": "health_server.ts"
+      "norm_label": "health_server.ts",
+      "id": "src_infra_observability_health_server_ts"
     },
     {
       "label": "HealthPayload",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L7",
-      "id": "observability_health_server_healthpayload",
       "community": 167,
-      "norm_label": "healthpayload"
+      "norm_label": "healthpayload",
+      "id": "observability_health_server_healthpayload"
     },
     {
       "label": "HealthDependencies",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L43",
-      "id": "observability_health_server_healthdependencies",
       "community": 167,
-      "norm_label": "healthdependencies"
+      "norm_label": "healthdependencies",
+      "id": "observability_health_server_healthdependencies"
     },
     {
       "label": "HealthServer",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L51",
-      "id": "observability_health_server_healthserver",
       "community": 166,
-      "norm_label": "healthserver"
+      "norm_label": "healthserver",
+      "id": "observability_health_server_healthserver"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L54",
-      "id": "observability_health_server_healthserver_constructor",
       "community": 166,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "observability_health_server_healthserver_constructor"
     },
     {
       "label": ".prepare()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L59",
-      "id": "observability_health_server_healthserver_prepare",
       "community": 166,
-      "norm_label": ".prepare()"
+      "norm_label": ".prepare()",
+      "id": "observability_health_server_healthserver_prepare"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L61",
-      "id": "observability_health_server_healthserver_start",
       "community": 166,
-      "norm_label": ".start()"
+      "norm_label": ".start()",
+      "id": "observability_health_server_healthserver_start"
     },
     {
       "label": ".stop()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L81",
-      "id": "observability_health_server_healthserver_stop",
       "community": 166,
-      "norm_label": ".stop()"
+      "norm_label": ".stop()",
+      "id": "observability_health_server_healthserver_stop"
     },
     {
       "label": ".getPort()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L86",
-      "id": "observability_health_server_healthserver_getport",
       "community": 166,
-      "norm_label": ".getport()"
+      "norm_label": ".getport()",
+      "id": "observability_health_server_healthserver_getport"
     },
     {
       "label": ".buildHealthPayload()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L90",
-      "id": "observability_health_server_healthserver_buildhealthpayload",
       "community": 166,
-      "norm_label": ".buildhealthpayload()"
+      "norm_label": ".buildhealthpayload()",
+      "id": "observability_health_server_healthserver_buildhealthpayload"
     },
     {
       "label": ".buildMetricsText()",
       "file_type": "code",
       "source_file": "src/infra/observability/health_server.ts",
       "source_location": "L123",
-      "id": "observability_health_server_healthserver_buildmetricstext",
       "community": 166,
-      "norm_label": ".buildmetricstext()"
+      "norm_label": ".buildmetricstext()",
+      "id": "observability_health_server_healthserver_buildmetricstext"
     },
     {
       "label": "logger.ts",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L1",
-      "id": "src_infra_observability_logger_ts",
       "community": 88,
-      "norm_label": "logger.ts"
+      "norm_label": "logger.ts",
+      "id": "src_infra_observability_logger_ts"
     },
     {
       "label": "Logger",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L5",
-      "id": "observability_logger_logger",
       "community": 88,
-      "norm_label": "logger"
+      "norm_label": "logger",
+      "id": "observability_logger_logger"
     },
     {
       "label": "LoggerOptions",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L7",
-      "id": "observability_logger_loggeroptions",
       "community": 88,
-      "norm_label": "loggeroptions"
+      "norm_label": "loggeroptions",
+      "id": "observability_logger_loggeroptions"
     },
     {
       "label": "LEVEL_LABELS",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L20",
-      "id": "observability_logger_level_labels",
       "community": 88,
-      "norm_label": "level_labels"
+      "norm_label": "level_labels",
+      "id": "observability_logger_level_labels"
     },
     {
       "label": "createLogSinkStream()",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L29",
-      "id": "observability_logger_createlogsinkstream",
       "community": 88,
-      "norm_label": "createlogsinkstream()"
+      "norm_label": "createlogsinkstream()",
+      "id": "observability_logger_createlogsinkstream"
     },
     {
       "label": "createRootLogger()",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L52",
-      "id": "observability_logger_createrootlogger",
       "community": 88,
-      "norm_label": "createrootlogger()"
+      "norm_label": "createrootlogger()",
+      "id": "observability_logger_createrootlogger"
     },
     {
       "label": "childLogger()",
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L81",
-      "id": "observability_logger_childlogger",
       "community": 88,
-      "norm_label": "childlogger()"
+      "norm_label": "childlogger()",
+      "id": "observability_logger_childlogger"
     },
     {
       "label": "boot.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_boot_ts",
-      "community": 152,
-      "norm_label": "boot.ts"
+      "community": 151,
+      "norm_label": "boot.ts",
+      "id": "src_orchestrator_boot_ts"
     },
     {
       "label": "RuntimeContext",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L26",
-      "id": "orchestrator_boot_runtimecontext",
-      "community": 9,
-      "norm_label": "runtimecontext"
+      "community": 123,
+      "norm_label": "runtimecontext",
+      "id": "orchestrator_boot_runtimecontext"
     },
     {
       "label": "bootApplication()",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L50",
-      "id": "orchestrator_boot_bootapplication",
-      "community": 152,
-      "norm_label": "bootapplication()"
+      "community": 151,
+      "norm_label": "bootapplication()",
+      "id": "orchestrator_boot_bootapplication"
     },
     {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 9,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "V2_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L16",
-      "id": "orchestrator_pass_loop_v2_abi",
       "community": 9,
-      "norm_label": "v2_abi"
+      "norm_label": "v2_abi",
+      "id": "orchestrator_pass_loop_v2_abi"
     },
     {
       "label": "V3_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L17",
-      "id": "orchestrator_pass_loop_v3_abi",
       "community": 9,
-      "norm_label": "v3_abi"
+      "norm_label": "v3_abi",
+      "id": "orchestrator_pass_loop_v3_abi"
     },
     {
       "label": "_failedPools",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L19",
-      "id": "orchestrator_pass_loop_failedpools",
       "community": 9,
-      "norm_label": "_failedpools"
+      "norm_label": "_failedpools",
+      "id": "orchestrator_pass_loop_failedpools"
     },
     {
       "label": "fetchMissingPoolState()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L21",
-      "id": "orchestrator_pass_loop_fetchmissingpoolstate",
       "community": 9,
-      "norm_label": "fetchmissingpoolstate()"
+      "norm_label": "fetchmissingpoolstate()",
+      "id": "orchestrator_pass_loop_fetchmissingpoolstate"
     },
     {
       "label": "PassLoopDeps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L127",
-      "id": "orchestrator_pass_loop_passloopdeps",
       "community": 9,
-      "norm_label": "passloopdeps"
+      "norm_label": "passloopdeps",
+      "id": "orchestrator_pass_loop_passloopdeps"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L138",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 9,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L142",
-      "id": "orchestrator_pass_loop_wmatic_lower",
       "community": 9,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "orchestrator_pass_loop_wmatic_lower"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L144",
-      "id": "orchestrator_pass_loop_computematicrates",
       "community": 9,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "orchestrator_pass_loop_computematicrates"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L191",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 9,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L202",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 9,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "pipeline.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_pipeline_ts",
       "community": 28,
-      "norm_label": "pipeline.ts"
+      "norm_label": "pipeline.ts",
+      "id": "src_services_strategy_pipeline_ts"
     },
     {
       "label": "PipelineOptions",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L11",
-      "id": "strategy_pipeline_pipelineoptions",
-      "community": 15,
-      "norm_label": "pipelineoptions"
+      "community": 28,
+      "norm_label": "pipelineoptions",
+      "id": "strategy_pipeline_pipelineoptions"
     },
     {
       "label": "getTestAmount()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L23",
-      "id": "strategy_pipeline_gettestamount",
       "community": 28,
-      "norm_label": "gettestamount()"
+      "norm_label": "gettestamount()",
+      "id": "strategy_pipeline_gettestamount"
     },
     {
       "label": "PipelineResult",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L40",
-      "id": "strategy_pipeline_pipelineresult",
       "community": 28,
-      "norm_label": "pipelineresult"
+      "norm_label": "pipelineresult",
+      "id": "strategy_pipeline_pipelineresult"
     },
     {
       "label": "getEffectivePriceImpactForCycle()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L54",
-      "id": "strategy_pipeline_geteffectivepriceimpactforcycle",
       "community": 28,
-      "norm_label": "geteffectivepriceimpactforcycle()"
+      "norm_label": "geteffectivepriceimpactforcycle()",
+      "id": "strategy_pipeline_geteffectivepriceimpactforcycle"
     },
     {
       "label": "evaluateAmount()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L62",
-      "id": "strategy_pipeline_evaluateamount",
       "community": 28,
-      "norm_label": "evaluateamount()"
+      "norm_label": "evaluateamount()",
+      "id": "strategy_pipeline_evaluateamount"
     },
     {
       "label": "evaluatePipeline()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L100",
-      "id": "strategy_pipeline_evaluatepipeline",
       "community": 28,
-      "norm_label": "evaluatepipeline()"
+      "norm_label": "evaluatepipeline()",
+      "id": "strategy_pipeline_evaluatepipeline"
     },
     {
       "label": "renderer.ts",
@@ -719,7 +1241,7 @@
       "file_type": "code",
       "source_file": "src/cli/main.ts",
       "source_location": "L1",
-      "community": 88,
+      "community": 40,
       "norm_label": "main.ts",
       "id": "src_cli_main_ts"
     },
@@ -728,7 +1250,7 @@
       "file_type": "code",
       "source_file": "src/cli/main.ts",
       "source_location": "L14",
-      "community": 88,
+      "community": 40,
       "norm_label": "main()",
       "id": "cli_main_main"
     },
@@ -782,7 +1304,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L30",
-      "community": 88,
+      "community": 40,
       "norm_label": "createhyperindexprocess()",
       "id": "hypersync_hyperindex_process_createhyperindexprocess"
     },
@@ -827,7 +1349,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/hyperindex_monitor.ts",
       "source_location": "L27",
-      "community": 88,
+      "community": 40,
       "norm_label": ".constructor()",
       "id": "resilience_hyperindex_monitor_hyperindexmonitor_constructor"
     },
@@ -1115,7 +1637,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 113,
       "norm_label": "pass_loop.test.ts",
       "id": "src_orchestrator_pass_loop_test_ts"
     },
@@ -1124,7 +1646,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L6",
-      "community": 9,
+      "community": 113,
       "norm_label": "mock_candidate_execution",
       "id": "orchestrator_pass_loop_test_mock_candidate_execution"
     },
@@ -1133,7 +1655,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L13",
-      "community": 9,
+      "community": 113,
       "norm_label": "mocktracker()",
       "id": "orchestrator_pass_loop_test_mocktracker"
     },
@@ -1142,7 +1664,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L24",
-      "community": 9,
+      "community": 113,
       "norm_label": "mocktiermanager()",
       "id": "orchestrator_pass_loop_test_mocktiermanager"
     },
@@ -1151,7 +1673,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L38",
-      "community": 9,
+      "community": 113,
       "norm_label": "mockcircuitbreaker()",
       "id": "orchestrator_pass_loop_test_mockcircuitbreaker"
     },
@@ -1160,7 +1682,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L52",
-      "community": 9,
+      "community": 113,
       "norm_label": "statewithpool",
       "id": "orchestrator_pass_loop_test_statewithpool"
     },
@@ -1169,7 +1691,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L57",
-      "community": 9,
+      "community": 113,
       "norm_label": "mockexecute",
       "id": "orchestrator_pass_loop_test_mockexecute"
     },
@@ -1178,7 +1700,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L59",
-      "community": 9,
+      "community": 113,
       "norm_label": "mockcontext",
       "id": "orchestrator_pass_loop_test_mockcontext"
     },
@@ -1187,7 +1709,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L110",
-      "community": 9,
+      "community": 113,
       "norm_label": "deps",
       "id": "orchestrator_pass_loop_test_deps"
     },
@@ -1196,7 +1718,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L246",
-      "community": 9,
+      "community": 113,
       "norm_label": "enumeratecyclesspy",
       "id": "orchestrator_pass_loop_test_enumeratecyclesspy"
     },
@@ -1205,7 +1727,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
-      "community": 95,
+      "community": 87,
       "norm_label": "service.ts",
       "id": "src_services_execution_service_ts"
     },
@@ -1214,7 +1736,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L12",
-      "community": 95,
+      "community": 87,
       "norm_label": "erc20_transfer_event",
       "id": "execution_service_erc20_transfer_event"
     },
@@ -1232,7 +1754,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L36",
-      "community": 9,
+      "community": 122,
       "norm_label": "candidateexecution",
       "id": "execution_service_candidateexecution"
     },
@@ -1241,7 +1763,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L45",
-      "community": 95,
+      "community": 87,
       "norm_label": "executionresult",
       "id": "execution_service_executionresult"
     },
@@ -1250,7 +1772,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L52",
-      "community": 95,
+      "community": 87,
       "norm_label": "submittxfn",
       "id": "execution_service_submittxfn"
     },
@@ -1259,7 +1781,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L54",
-      "community": 95,
+      "community": 87,
       "norm_label": "executionserviceoptions",
       "id": "execution_service_executionserviceoptions"
     },
@@ -1268,7 +1790,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L65",
-      "community": 95,
+      "community": 87,
       "norm_label": "poolsfromroutekey()",
       "id": "execution_service_poolsfromroutekey"
     },
@@ -1277,7 +1799,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L69",
-      "community": 95,
+      "community": 87,
       "norm_label": "arecandidatescompatible()",
       "id": "execution_service_arecandidatescompatible"
     },
@@ -1286,7 +1808,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L75",
-      "community": 95,
+      "community": 87,
       "norm_label": "groupcompatiblecandidates()",
       "id": "execution_service_groupcompatiblecandidates"
     },
@@ -1304,7 +1826,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L111",
-      "community": 95,
+      "community": 150,
       "norm_label": ".constructor()",
       "id": "execution_service_executionservice_constructor"
     },
@@ -1313,7 +1835,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L133",
-      "community": 95,
+      "community": 87,
       "norm_label": ".getsubmissionstrategy()",
       "id": "execution_service_executionservice_getsubmissionstrategy"
     },
@@ -1385,7 +1907,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L394",
-      "community": 157,
+      "community": 95,
       "norm_label": ".getquarantinemanager()",
       "id": "execution_service_executionservice_getquarantinemanager"
     },
@@ -1979,7 +2501,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L158",
-      "community": 28,
+      "community": 111,
       "norm_label": "geteffectivepriceimpact()",
       "id": "strategy_simulator_geteffectivepriceimpact"
     },
@@ -1988,7 +2510,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 27,
       "norm_label": "hypersync_integration.test.ts",
       "id": "tests_infra_hypersync_integration_test_ts"
     },
@@ -1997,7 +2519,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L18",
-      "community": 9,
+      "community": 27,
       "norm_label": "mockpoolmeta",
       "id": "infra_hypersync_integration_test_mockpoolmeta"
     },
@@ -2006,7 +2528,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L86",
-      "community": 9,
+      "community": 27,
       "norm_label": "mockdata",
       "id": "infra_hypersync_integration_test_mockdata"
     },
@@ -2015,7 +2537,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L108",
-      "community": 9,
+      "community": 27,
       "norm_label": "body",
       "id": "infra_hypersync_integration_test_body"
     },
@@ -2024,7 +2546,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L111",
-      "community": 9,
+      "community": 27,
       "norm_label": "data",
       "id": "infra_hypersync_integration_test_data"
     },
@@ -2033,7 +2555,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L148",
-      "community": 9,
+      "community": 27,
       "norm_label": "fetchspy",
       "id": "infra_hypersync_integration_test_fetchspy"
     },
@@ -2042,7 +2564,7 @@
       "file_type": "code",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L187",
-      "community": 9,
+      "community": 27,
       "norm_label": "entry",
       "id": "infra_hypersync_integration_test_entry"
     },
@@ -2528,7 +3050,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L1",
-      "community": 150,
+      "community": 17,
       "norm_label": "gas.ts",
       "id": "src_services_execution_gas_ts"
     },
@@ -2537,7 +3059,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L3",
-      "community": 150,
+      "community": 17,
       "norm_label": "gasoracleconfig",
       "id": "execution_gas_gasoracleconfig"
     },
@@ -2546,7 +3068,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L16",
-      "community": 150,
+      "community": 17,
       "norm_label": "default_gas_config",
       "id": "execution_gas_default_gas_config"
     },
@@ -2555,7 +3077,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L29",
-      "community": 150,
+      "community": 17,
       "norm_label": "polygongashints",
       "id": "execution_gas_polygongashints"
     },
@@ -3181,105 +3703,6 @@
       "id": "hyperindex_envio_env_d_ts"
     },
     {
-      "label": "tsconfig.json",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L1",
-      "community": 44,
-      "norm_label": "tsconfig.json",
-      "id": "hyperindex_tsconfig_json"
-    },
-    {
-      "label": "compilerOptions",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L2",
-      "community": 44,
-      "norm_label": "compileroptions",
-      "id": "hyperindex_tsconfig_compileroptions"
-    },
-    {
-      "label": "target",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L3",
-      "community": 44,
-      "norm_label": "target",
-      "id": "hyperindex_tsconfig_compileroptions_target"
-    },
-    {
-      "label": "module",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L4",
-      "community": 44,
-      "norm_label": "module",
-      "id": "hyperindex_tsconfig_compileroptions_module"
-    },
-    {
-      "label": "moduleResolution",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L5",
-      "community": 44,
-      "norm_label": "moduleresolution",
-      "id": "hyperindex_tsconfig_compileroptions_moduleresolution"
-    },
-    {
-      "label": "strict",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L6",
-      "community": 44,
-      "norm_label": "strict",
-      "id": "hyperindex_tsconfig_compileroptions_strict"
-    },
-    {
-      "label": "esModuleInterop",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L7",
-      "community": 44,
-      "norm_label": "esmoduleinterop",
-      "id": "hyperindex_tsconfig_compileroptions_esmoduleinterop"
-    },
-    {
-      "label": "outDir",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L8",
-      "community": 44,
-      "norm_label": "outdir",
-      "id": "hyperindex_tsconfig_compileroptions_outdir"
-    },
-    {
-      "label": "skipLibCheck",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L9",
-      "community": 44,
-      "norm_label": "skiplibcheck",
-      "id": "hyperindex_tsconfig_compileroptions_skiplibcheck"
-    },
-    {
-      "label": "typeRoots",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L10",
-      "community": 44,
-      "norm_label": "typeroots",
-      "id": "hyperindex_tsconfig_compileroptions_typeroots"
-    },
-    {
-      "label": "include",
-      "file_type": "code",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L12",
-      "community": 44,
-      "norm_label": "include",
-      "id": "hyperindex_tsconfig_include"
-    },
-    {
       "label": "env.d.ts",
       "file_type": "code",
       "source_file": "hyperindex/env.d.ts",
@@ -3685,15 +4108,6 @@
       "id": "handlers_v4_currency1"
     },
     {
-      "label": "v2_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/v2_pool.ts",
-      "source_location": "L1",
-      "community": 78,
-      "norm_label": "v2_pool.ts",
-      "id": "hyperindex_src_handlers_v2_pool_ts"
-    },
-    {
       "label": "dodo_pool.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/dodo_pool.ts",
@@ -3710,132 +4124,6 @@
       "community": 79,
       "norm_label": "addr",
       "id": "handlers_dodo_pool_addr"
-    },
-    {
-      "label": "dodo_factory.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L1",
-      "community": 60,
-      "norm_label": "dodo_factory.ts",
-      "id": "hyperindex_src_handlers_dodo_factory_ts"
-    },
-    {
-      "label": "handleDodoPool()",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L5",
-      "community": 60,
-      "norm_label": "handledodopool()",
-      "id": "handlers_dodo_factory_handledodopool"
-    },
-    {
-      "label": "balancer.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L1",
-      "community": 21,
-      "norm_label": "balancer.ts",
-      "id": "hyperindex_src_handlers_balancer_ts"
-    },
-    {
-      "label": "pool",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L8",
-      "community": 21,
-      "norm_label": "pool",
-      "id": "handlers_balancer_pool"
-    },
-    {
-      "label": "poolId",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L9",
-      "community": 21,
-      "norm_label": "poolid",
-      "id": "handlers_balancer_poolid"
-    },
-    {
-      "label": "tokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L48",
-      "community": 21,
-      "norm_label": "tokens",
-      "id": "handlers_balancer_tokens"
-    },
-    {
-      "label": "tIn",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L104",
-      "community": 21,
-      "norm_label": "tin",
-      "id": "handlers_balancer_tin"
-    },
-    {
-      "label": "tOut",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L105",
-      "community": 21,
-      "norm_label": "tout",
-      "id": "handlers_balancer_tout"
-    },
-    {
-      "label": "balances",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L110",
-      "community": 21,
-      "norm_label": "balances",
-      "id": "handlers_balancer_balances"
-    },
-    {
-      "label": "idxIn",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L112",
-      "community": 21,
-      "norm_label": "idxin",
-      "id": "handlers_balancer_idxin"
-    },
-    {
-      "label": "idxOut",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L113",
-      "community": 21,
-      "norm_label": "idxout",
-      "id": "handlers_balancer_idxout"
-    },
-    {
-      "label": "eventTokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L141",
-      "community": 21,
-      "norm_label": "eventtokens",
-      "id": "handlers_balancer_eventtokens"
-    },
-    {
-      "label": "metaTokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L143",
-      "community": 21,
-      "norm_label": "metatokens",
-      "id": "handlers_balancer_metatokens"
-    },
-    {
-      "label": "idx",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L147",
-      "community": 21,
-      "norm_label": "idx",
-      "id": "handlers_balancer_idx"
     },
     {
       "label": "v3_factory.ts",
@@ -3881,24 +4169,6 @@
       "community": 51,
       "norm_label": "factoryaddr",
       "id": "handlers_v3_factory_factoryaddr"
-    },
-    {
-      "label": "curve_factory.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L1",
-      "community": 46,
-      "norm_label": "curve_factory.ts",
-      "id": "hyperindex_src_handlers_curve_factory_ts"
-    },
-    {
-      "label": "pool",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L15",
-      "community": 46,
-      "norm_label": "pool",
-      "id": "handlers_curve_factory_pool"
     },
     {
       "label": "curve_pool.ts",
@@ -3955,15 +4225,6 @@
       "id": "handlers_curve_pool_coinindex"
     },
     {
-      "label": "v3_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/v3_pool.ts",
-      "source_location": "L1",
-      "community": 80,
-      "norm_label": "v3_pool.ts",
-      "id": "hyperindex_src_handlers_v3_pool_ts"
-    },
-    {
       "label": "v2_factory.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_factory.ts",
@@ -4009,15 +4270,6 @@
       "id": "handlers_v2_factory_factoryaddr"
     },
     {
-      "label": "v2_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/katana/v2_pool.ts",
-      "source_location": "L1",
-      "community": 81,
-      "norm_label": "v2_pool.ts",
-      "id": "hyperindex_src_handlers_katana_v2_pool_ts"
-    },
-    {
       "label": "v3_factory.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/katana/v3_factory.ts",
@@ -4025,15 +4277,6 @@
       "community": 82,
       "norm_label": "v3_factory.ts",
       "id": "hyperindex_src_handlers_katana_v3_factory_ts"
-    },
-    {
-      "label": "v3_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/katana/v3_pool.ts",
-      "source_location": "L1",
-      "community": 83,
-      "norm_label": "v3_pool.ts",
-      "id": "hyperindex_src_handlers_katana_v3_pool_ts"
     },
     {
       "label": "v2_factory.ts",
@@ -4045,87 +4288,6 @@
       "id": "hyperindex_src_handlers_katana_v2_factory_ts"
     },
     {
-      "label": "dodo_metadata.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L1",
-      "community": 60,
-      "norm_label": "dodo_metadata.ts",
-      "id": "hyperindex_src_effects_dodo_metadata_ts"
-    },
-    {
-      "label": "client",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L5",
-      "community": 60,
-      "norm_label": "client",
-      "id": "effects_dodo_metadata_client"
-    },
-    {
-      "label": "DODO_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L16",
-      "community": 60,
-      "norm_label": "dodo_abi",
-      "id": "effects_dodo_metadata_dodo_abi"
-    },
-    {
-      "label": "fetchDodoMetadata",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L28",
-      "community": 60,
-      "norm_label": "fetchdodometadata",
-      "id": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "label": "balancer_metadata.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L1",
-      "community": 21,
-      "norm_label": "balancer_metadata.ts",
-      "id": "hyperindex_src_effects_balancer_metadata_ts"
-    },
-    {
-      "label": "client",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L5",
-      "community": 21,
-      "norm_label": "client",
-      "id": "effects_balancer_metadata_client"
-    },
-    {
-      "label": "BALANCER_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L16",
-      "community": 21,
-      "norm_label": "balancer_abi",
-      "id": "effects_balancer_metadata_balancer_abi"
-    },
-    {
-      "label": "VAULT_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L21",
-      "community": 21,
-      "norm_label": "vault_abi",
-      "id": "effects_balancer_metadata_vault_abi"
-    },
-    {
-      "label": "fetchBalancerMetadata",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L25",
-      "community": 21,
-      "norm_label": "fetchbalancermetadata",
-      "id": "effects_balancer_metadata_fetchbalancermetadata"
-    },
-    {
       "label": "env.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/effects/env.ts",
@@ -4133,42 +4295,6 @@
       "community": 144,
       "norm_label": "env.ts",
       "id": "hyperindex_src_effects_env_ts"
-    },
-    {
-      "label": "curve_metadata.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L1",
-      "community": 46,
-      "norm_label": "curve_metadata.ts",
-      "id": "hyperindex_src_effects_curve_metadata_ts"
-    },
-    {
-      "label": "client",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L5",
-      "community": 46,
-      "norm_label": "client",
-      "id": "effects_curve_metadata_client"
-    },
-    {
-      "label": "CURVE_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L16",
-      "community": 46,
-      "norm_label": "curve_abi",
-      "id": "effects_curve_metadata_curve_abi"
-    },
-    {
-      "label": "fetchCurveMetadata",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L23",
-      "community": 46,
-      "norm_label": "fetchcurvemetadata",
-      "id": "effects_curve_metadata_fetchcurvemetadata"
     },
     {
       "label": "settings.json",
@@ -4507,7 +4633,7 @@
       "file_type": "code",
       "source_file": "tests/services/mempool/subscriber.test.ts",
       "source_location": "L1",
-      "community": 87,
+      "community": 102,
       "norm_label": "subscriber.test.ts",
       "id": "tests_services_mempool_subscriber_test_ts"
     },
@@ -4516,7 +4642,7 @@
       "file_type": "code",
       "source_file": "tests/services/mempool/subscriber.test.ts",
       "source_location": "L7",
-      "community": 87,
+      "community": 102,
       "norm_label": "onpoolupdate",
       "id": "mempool_subscriber_test_onpoolupdate"
     },
@@ -4525,7 +4651,7 @@
       "file_type": "code",
       "source_file": "tests/services/mempool/subscriber.test.ts",
       "source_location": "L8",
-      "community": 87,
+      "community": 102,
       "norm_label": "mockclient",
       "id": "mempool_subscriber_test_mockclient"
     },
@@ -4534,7 +4660,7 @@
       "file_type": "code",
       "source_file": "tests/services/mempool/subscriber.test.ts",
       "source_location": "L21",
-      "community": 87,
+      "community": 102,
       "norm_label": "subscriber",
       "id": "mempool_subscriber_test_subscriber"
     },
@@ -4543,7 +4669,7 @@
       "file_type": "code",
       "source_file": "tests/services/mempool/subscriber.test.ts",
       "source_location": "L26",
-      "community": 87,
+      "community": 102,
       "norm_label": "pooladdress",
       "id": "mempool_subscriber_test_pooladdress"
     },
@@ -4570,7 +4696,7 @@
       "file_type": "code",
       "source_file": "src/tui/main.ts",
       "source_location": "L12",
-      "community": 88,
+      "community": 40,
       "norm_label": "createtui()",
       "id": "tui_main_createtui"
     },
@@ -5457,123 +5583,6 @@
       "id": "math_sqrt_price_math_getamount1delta"
     },
     {
-      "label": "dodo.ts",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L1",
-      "community": 111,
-      "norm_label": "dodo.ts",
-      "id": "src_core_math_dodo_ts"
-    },
-    {
-      "label": "DodoPoolState",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L30",
-      "community": 111,
-      "norm_label": "dodopoolstate",
-      "id": "math_dodo_dodopoolstate"
-    },
-    {
-      "label": "asPoolState()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L32",
-      "community": 111,
-      "norm_label": "aspoolstate()",
-      "id": "math_dodo_aspoolstate"
-    },
-    {
-      "label": "sqrt()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L36",
-      "community": 111,
-      "norm_label": "sqrt()",
-      "id": "math_dodo_sqrt"
-    },
-    {
-      "label": "mulFloor()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L51",
-      "community": 111,
-      "norm_label": "mulfloor()",
-      "id": "math_dodo_mulfloor"
-    },
-    {
-      "label": "divFloor()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L55",
-      "community": 111,
-      "norm_label": "divfloor()",
-      "id": "math_dodo_divfloor"
-    },
-    {
-      "label": "divCeil()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L60",
-      "community": 111,
-      "norm_label": "divceil()",
-      "id": "math_dodo_divceil"
-    },
-    {
-      "label": "reciprocalFloor()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L65",
-      "community": 111,
-      "norm_label": "reciprocalfloor()",
-      "id": "math_dodo_reciprocalfloor"
-    },
-    {
-      "label": "generalIntegrate()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L70",
-      "community": 111,
-      "norm_label": "generalintegrate()",
-      "id": "math_dodo_generalintegrate"
-    },
-    {
-      "label": "solveQuadraticFunctionForTrade()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L82",
-      "community": 111,
-      "norm_label": "solvequadraticfunctionfortrade()",
-      "id": "math_dodo_solvequadraticfunctionfortrade"
-    },
-    {
-      "label": "getDodoGrossAmountOut()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L125",
-      "community": 111,
-      "norm_label": "getdodogrossamountout()",
-      "id": "math_dodo_getdodogrossamountout"
-    },
-    {
-      "label": "getDodoAmountOut()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L180",
-      "community": 111,
-      "norm_label": "getdodoamountout()",
-      "id": "math_dodo_getdodoamountout"
-    },
-    {
-      "label": "simulateDodoSwap()",
-      "file_type": "code",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L192",
-      "community": 111,
-      "norm_label": "simulatedodoswap()",
-      "id": "math_dodo_simulatedodoswap"
-    },
-    {
       "label": "profit.ts",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
@@ -5821,7 +5830,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L55",
-      "community": 102,
+      "community": 123,
       "norm_label": "routestatecache",
       "id": "types_route_routestatecache"
     },
@@ -6613,7 +6622,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 142,
       "norm_label": "graph.test.ts",
       "id": "src_services_strategy_graph_test_ts"
     },
@@ -6622,7 +6631,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L11",
-      "community": 27,
+      "community": 142,
       "norm_label": "pool",
       "id": "strategy_graph_test_pool"
     },
@@ -6631,7 +6640,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L20",
-      "community": 27,
+      "community": 142,
       "norm_label": "graph",
       "id": "strategy_graph_test_graph"
     },
@@ -6640,7 +6649,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L27",
-      "community": 27,
+      "community": 142,
       "norm_label": "state",
       "id": "strategy_graph_test_state"
     },
@@ -6649,7 +6658,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L28",
-      "community": 27,
+      "community": 142,
       "norm_label": "statemap",
       "id": "strategy_graph_test_statemap"
     },
@@ -6694,7 +6703,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_manager.ts",
       "source_location": "L46",
-      "community": 160,
+      "community": 142,
       "norm_label": ".updatepool()",
       "id": "strategy_graph_manager_graphmanager_updatepool"
     },
@@ -7477,7 +7486,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 122,
       "norm_label": "dryrun.ts",
       "id": "src_services_execution_dryrun_ts"
     },
@@ -7486,7 +7495,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L4",
-      "community": 9,
+      "community": 122,
       "norm_label": "dryrunresult",
       "id": "execution_dryrun_dryrunresult"
     },
@@ -7495,7 +7504,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L11",
-      "community": 9,
+      "community": 122,
       "norm_label": "pendingstate",
       "id": "execution_dryrun_pendingstate"
     },
@@ -7504,7 +7513,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L16",
-      "community": 9,
+      "community": 122,
       "norm_label": "mempoolawaredryrunner",
       "id": "execution_dryrun_mempoolawaredryrunner"
     },
@@ -7513,7 +7522,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L19",
-      "community": 9,
+      "community": 122,
       "norm_label": ".constructor()",
       "id": "execution_dryrun_mempoolawaredryrunner_constructor"
     },
@@ -7522,7 +7531,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L23",
-      "community": 9,
+      "community": 122,
       "norm_label": ".fetchpendingstate()",
       "id": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate"
     },
@@ -7531,7 +7540,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L37",
-      "community": 9,
+      "community": 122,
       "norm_label": ".getlastpendingstate()",
       "id": "execution_dryrun_mempoolawaredryrunner_getlastpendingstate"
     },
@@ -7540,7 +7549,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L41",
-      "community": 9,
+      "community": 122,
       "norm_label": ".dryrun()",
       "id": "execution_dryrun_mempoolawaredryrunner_dryrun"
     },
@@ -8521,7 +8530,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L1",
-      "community": 18,
+      "community": 8,
       "norm_label": "signals.ts",
       "id": "src_services_mempool_signals_ts"
     },
@@ -8530,7 +8539,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L3",
-      "community": 18,
+      "community": 8,
       "norm_label": "largeswapsignal",
       "id": "mempool_signals_largeswapsignal"
     },
@@ -8539,7 +8548,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L12",
-      "community": 18,
+      "community": 8,
       "norm_label": "poolstateinvalidatedsignal",
       "id": "mempool_signals_poolstateinvalidatedsignal"
     },
@@ -8548,7 +8557,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L16",
-      "community": 18,
+      "community": 8,
       "norm_label": "newblocksignal",
       "id": "mempool_signals_newblocksignal"
     },
@@ -8557,7 +8566,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/signals.ts",
       "source_location": "L23",
-      "community": 18,
+      "community": 8,
       "norm_label": "newpoolpendingsignal",
       "id": "mempool_signals_newpoolpendingsignal"
     },
@@ -8764,7 +8773,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L1",
-      "community": 87,
+      "community": 102,
       "norm_label": "subscriber.ts",
       "id": "src_services_mempool_subscriber_ts"
     },
@@ -8773,7 +8782,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L4",
-      "community": 87,
+      "community": 102,
       "norm_label": "subscriberoptions",
       "id": "mempool_subscriber_subscriberoptions"
     },
@@ -8782,7 +8791,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L9",
-      "community": 87,
+      "community": 102,
       "norm_label": "poolstatesubscriber",
       "id": "mempool_subscriber_poolstatesubscriber"
     },
@@ -8791,7 +8800,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L13",
-      "community": 87,
+      "community": 102,
       "norm_label": ".constructor()",
       "id": "mempool_subscriber_poolstatesubscriber_constructor"
     },
@@ -8800,7 +8809,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L18",
-      "community": 87,
+      "community": 102,
       "norm_label": ".subscribe()",
       "id": "mempool_subscriber_poolstatesubscriber_subscribe"
     },
@@ -8863,7 +8872,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L1",
-      "community": 123,
+      "community": 151,
       "norm_label": "boot.test.ts",
       "id": "src_orchestrator_boot_test_ts"
     },
@@ -8872,7 +8881,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L7",
-      "community": 123,
+      "community": 151,
       "norm_label": "config",
       "id": "orchestrator_boot_test_config"
     },
@@ -8953,7 +8962,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L37",
-      "community": 102,
+      "community": 123,
       "norm_label": ".statecache()",
       "id": "orchestrator_system_botsystem_statecache"
     },
@@ -8962,7 +8971,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L38",
-      "community": 87,
+      "community": 102,
       "norm_label": ".subscriber()",
       "id": "orchestrator_system_botsystem_subscriber"
     },
@@ -8971,7 +8980,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 132,
       "norm_label": "status_writer.ts",
       "id": "src_orchestrator_status_writer_ts"
     },
@@ -8980,7 +8989,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L5",
-      "community": 9,
+      "community": 132,
       "norm_label": "statuspayload",
       "id": "orchestrator_status_writer_statuspayload"
     },
@@ -8989,7 +8998,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L26",
-      "community": 9,
+      "community": 132,
       "norm_label": "formatgwei()",
       "id": "orchestrator_status_writer_formatgwei"
     },
@@ -8998,7 +9007,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L31",
-      "community": 9,
+      "community": 132,
       "norm_label": "buildstatuspayload()",
       "id": "orchestrator_status_writer_buildstatuspayload"
     },
@@ -9007,7 +9016,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L59",
-      "community": 9,
+      "community": 132,
       "norm_label": "writestatusfile()",
       "id": "orchestrator_status_writer_writestatusfile"
     },
@@ -9016,7 +9025,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 132,
       "norm_label": "shutdown.ts",
       "id": "src_orchestrator_shutdown_ts"
     },
@@ -9025,7 +9034,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L4",
-      "community": 9,
+      "community": 132,
       "norm_label": "stopservice()",
       "id": "orchestrator_shutdown_stopservice"
     },
@@ -9034,7 +9043,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L13",
-      "community": 9,
+      "community": 132,
       "norm_label": "shutdownapplication()",
       "id": "orchestrator_shutdown_shutdownapplication"
     },
@@ -9277,7 +9286,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 151,
       "norm_label": "chains.ts",
       "id": "src_infra_rpc_chains_ts"
     },
@@ -9286,7 +9295,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L18",
-      "community": 4,
+      "community": 151,
       "norm_label": "chains",
       "id": "rpc_chains_chains"
     },
@@ -9295,7 +9304,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L23",
-      "community": 4,
+      "community": 151,
       "norm_label": "getchain()",
       "id": "rpc_chains_getchain"
     },
@@ -9340,7 +9349,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 151,
       "norm_label": "client_factory.ts",
       "id": "src_infra_rpc_client_factory_ts"
     },
@@ -9349,7 +9358,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L5",
-      "community": 20,
+      "community": 151,
       "norm_label": "clientfactoryoptions",
       "id": "rpc_client_factory_clientfactoryoptions"
     },
@@ -9358,7 +9367,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L17",
-      "community": 4,
+      "community": 151,
       "norm_label": "createoptimizedtransport()",
       "id": "rpc_client_factory_createoptimizedtransport"
     },
@@ -9367,7 +9376,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L30",
-      "community": 4,
+      "community": 151,
       "norm_label": "createwebsockettransport()",
       "id": "rpc_client_factory_createwebsockettransport"
     },
@@ -9376,7 +9385,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L36",
-      "community": 4,
+      "community": 151,
       "norm_label": "createreadclient()",
       "id": "rpc_client_factory_createreadclient"
     },
@@ -9385,7 +9394,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L57",
-      "community": 4,
+      "community": 151,
       "norm_label": "createexecutionclient()",
       "id": "rpc_client_factory_createexecutionclient"
     },
@@ -9394,7 +9403,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L69",
-      "community": 4,
+      "community": 151,
       "norm_label": "creategasestimationclient()",
       "id": "rpc_client_factory_creategasestimationclient"
     },
@@ -9718,7 +9727,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 170,
       "norm_label": "circuit_breaker.ts",
       "id": "src_infra_resilience_circuit_breaker_ts"
     },
@@ -9727,7 +9736,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 170,
       "norm_label": "circuitstate",
       "id": "resilience_circuit_breaker_circuitstate"
     },
@@ -9736,7 +9745,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L3",
-      "community": 167,
+      "community": 170,
       "norm_label": "circuitbreakeroptions",
       "id": "resilience_circuit_breaker_circuitbreakeroptions"
     },
@@ -9745,7 +9754,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
       "source_location": "L9",
-      "community": 167,
+      "community": 170,
       "norm_label": "default_circuit_options",
       "id": "resilience_circuit_breaker_default_circuit_options"
     },
@@ -9889,7 +9898,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.ts",
       "source_location": "L9",
-      "community": 147,
+      "community": 149,
       "norm_label": ".constructor()",
       "id": "resilience_tier_manager_tiermanager_constructor"
     },
@@ -10069,7 +10078,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L1",
-      "community": 48,
+      "community": 170,
       "norm_label": "circuit_breaker.test.ts",
       "id": "src_infra_resilience_circuit_breaker_test_ts"
     },
@@ -10078,7 +10087,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L29",
-      "community": 48,
+      "community": 170,
       "norm_label": "result",
       "id": "resilience_circuit_breaker_test_result"
     },
@@ -10087,7 +10096,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.test.ts",
       "source_location": "L42",
-      "community": 48,
+      "community": 170,
       "norm_label": "fb",
       "id": "resilience_circuit_breaker_test_fb"
     },
@@ -10195,7 +10204,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L1",
-      "community": 35,
+      "community": 6,
       "norm_label": "loader.ts",
       "id": "src_config_loader_ts"
     },
@@ -10204,7 +10213,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L6",
-      "community": 35,
+      "community": 6,
       "norm_label": "env_to_path",
       "id": "config_loader_env_to_path"
     },
@@ -10213,7 +10222,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L109",
-      "community": 35,
+      "community": 6,
       "norm_label": "deepmerge()",
       "id": "config_loader_deepmerge"
     },
@@ -10222,7 +10231,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L126",
-      "community": 35,
+      "community": 6,
       "norm_label": "envtooverrides()",
       "id": "config_loader_envtooverrides"
     },
@@ -10231,7 +10240,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L145",
-      "community": 35,
+      "community": 6,
       "norm_label": "loadconfig()",
       "id": "config_loader_loadconfig"
     },
@@ -10240,7 +10249,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.ts",
       "source_location": "L160",
-      "community": 35,
+      "community": 6,
       "norm_label": "loadconfigordie()",
       "id": "config_loader_loadconfigordie"
     },
@@ -10375,7 +10384,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.ts",
       "source_location": "L75",
-      "community": 95,
+      "community": 87,
       "norm_label": "submissionstrategy",
       "id": "config_schema_submissionstrategy"
     },
@@ -10528,7 +10537,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.ts",
       "source_location": "L147",
-      "community": 35,
+      "community": 6,
       "norm_label": "appconfigschema",
       "id": "config_schema_appconfigschema"
     },
@@ -10546,7 +10555,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L1",
-      "community": 35,
+      "community": 6,
       "norm_label": "schema.test.ts",
       "id": "src_config_schema_test_ts"
     },
@@ -10555,7 +10564,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L4",
-      "community": 35,
+      "community": 6,
       "norm_label": "required_env",
       "id": "config_schema_test_required_env"
     },
@@ -10564,7 +10573,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.test.ts",
       "source_location": "L14",
-      "community": 35,
+      "community": 6,
       "norm_label": "cfg",
       "id": "config_schema_test_cfg"
     },
@@ -10573,7 +10582,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.test.ts",
       "source_location": "L1",
-      "community": 35,
+      "community": 6,
       "norm_label": "loader.test.ts",
       "id": "src_config_loader_test_ts"
     },
@@ -10582,7 +10591,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.test.ts",
       "source_location": "L5",
-      "community": 35,
+      "community": 6,
       "norm_label": "env",
       "id": "config_loader_test_env"
     },
@@ -10591,7 +10600,7 @@
       "file_type": "code",
       "source_file": "src/config/loader.test.ts",
       "source_location": "L19",
-      "community": 35,
+      "community": 6,
       "norm_label": "config",
       "id": "config_loader_test_config"
     },
@@ -10600,7 +10609,7 @@
       "file_type": "code",
       "source_file": "src/config/crosschain_schema.ts",
       "source_location": "L1",
-      "community": 122,
+      "community": 6,
       "norm_label": "crosschain_schema.ts",
       "id": "src_config_crosschain_schema_ts"
     },
@@ -10609,7 +10618,7 @@
       "file_type": "code",
       "source_file": "src/config/crosschain_schema.ts",
       "source_location": "L3",
-      "community": 122,
+      "community": 6,
       "norm_label": "crosschainarbschema",
       "id": "config_crosschain_schema_crosschainarbschema"
     },
@@ -10618,7 +10627,7 @@
       "file_type": "code",
       "source_file": "src/config/crosschain_schema.ts",
       "source_location": "L19",
-      "community": 122,
+      "community": 6,
       "norm_label": "crosschainarbconfig",
       "id": "config_crosschain_schema_crosschainarbconfig"
     },
@@ -14423,24 +14432,6 @@
     {
       "label": "HUB_TOKENS",
       "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L4",
-      "community": 46,
-      "norm_label": "hub_tokens",
-      "id": "handlers_curve_factory_hub_tokens"
-    },
-    {
-      "label": "hubFilter()",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L14",
-      "community": 46,
-      "norm_label": "hubfilter()",
-      "id": "handlers_curve_factory_hubfilter"
-    },
-    {
-      "label": "HUB_TOKENS",
-      "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_factory.ts",
       "source_location": "L14",
       "community": 50,
@@ -14479,7 +14470,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L57",
-      "community": 27,
+      "community": 142,
       "norm_label": "hubtokens",
       "id": "strategy_graph_test_hubtokens"
     },
@@ -14488,7 +14479,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L58",
-      "community": 27,
+      "community": 142,
       "norm_label": "pool1",
       "id": "strategy_graph_test_pool1"
     },
@@ -14497,7 +14488,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph.test.ts",
       "source_location": "L67",
-      "community": 27,
+      "community": 142,
       "norm_label": "pool2",
       "id": "strategy_graph_test_pool2"
     },
@@ -14578,7 +14569,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 123,
       "norm_label": "pass_loop_liquidity.test.ts",
       "id": "src_orchestrator_pass_loop_liquidity_test_ts"
     },
@@ -14587,7 +14578,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
       "source_location": "L7",
-      "community": 9,
+      "community": 123,
       "norm_label": "mock_candidate_execution",
       "id": "orchestrator_pass_loop_liquidity_test_mock_candidate_execution"
     },
@@ -14596,7 +14587,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
       "source_location": "L16",
-      "community": 9,
+      "community": 123,
       "norm_label": "mockcontext",
       "id": "orchestrator_pass_loop_liquidity_test_mockcontext"
     },
@@ -14605,7 +14596,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
       "source_location": "L48",
-      "community": 9,
+      "community": 123,
       "norm_label": "deps",
       "id": "orchestrator_pass_loop_liquidity_test_deps"
     },
@@ -14614,7 +14605,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
       "source_location": "L56",
-      "community": 9,
+      "community": 123,
       "norm_label": "poolspassed",
       "id": "orchestrator_pass_loop_liquidity_test_poolspassed"
     },
@@ -15595,7 +15586,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L159",
-      "community": 33,
+      "community": 12,
       "norm_label": "client",
       "id": "hypersync_client_client"
     },
@@ -15640,7 +15631,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L203",
-      "community": 33,
+      "community": 12,
       "norm_label": "blockfield",
       "id": "hypersync_client_blockfield"
     },
@@ -15658,7 +15649,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L1",
-      "community": 33,
+      "community": 35,
       "norm_label": "stream.ts",
       "id": "src_infra_hypersync_stream_ts"
     },
@@ -15667,7 +15658,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L6",
-      "community": 33,
+      "community": 35,
       "norm_label": "parseblock()",
       "id": "hypersync_stream_parseblock"
     },
@@ -15676,7 +15667,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L14",
-      "community": 33,
+      "community": 35,
       "norm_label": "parseoptionalblock()",
       "id": "hypersync_stream_parseoptionalblock"
     },
@@ -15685,7 +15676,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L19",
-      "community": 33,
+      "community": 35,
       "norm_label": "pagelogsfromresponse()",
       "id": "hypersync_stream_pagelogsfromresponse"
     },
@@ -15694,7 +15685,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L28",
-      "community": 33,
+      "community": 35,
       "norm_label": "fireprogress()",
       "id": "hypersync_stream_fireprogress"
     },
@@ -15703,7 +15694,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L38",
-      "community": 33,
+      "community": 35,
       "norm_label": "fetchalllogsresult",
       "id": "hypersync_stream_fetchalllogsresult"
     },
@@ -15712,7 +15703,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L45",
-      "community": 33,
+      "community": 35,
       "norm_label": "fetchalllogs()",
       "id": "hypersync_stream_fetchalllogs"
     },
@@ -15721,7 +15712,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 154,
       "norm_label": "endpoint_pool.ts",
       "id": "src_infra_rpc_endpoint_pool_ts"
     },
@@ -15730,7 +15721,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L13",
-      "community": 138,
+      "community": 154,
       "norm_label": "ensurehttps()",
       "id": "rpc_endpoint_pool_ensurehttps"
     },
@@ -15748,7 +15739,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L40",
-      "community": 138,
+      "community": 145,
       "norm_label": "rpcendpoint",
       "id": "rpc_endpoint_pool_rpcendpoint"
     },
@@ -15757,7 +15748,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L53",
-      "community": 138,
+      "community": 154,
       "norm_label": ".constructor()",
       "id": "rpc_endpoint_pool_rpcendpoint_constructor"
     },
@@ -15766,7 +15757,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L77",
-      "community": 138,
+      "community": 145,
       "norm_label": ".isratelimited()",
       "id": "rpc_endpoint_pool_rpcendpoint_isratelimited"
     },
@@ -15775,7 +15766,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L81",
-      "community": 138,
+      "community": 145,
       "norm_label": ".iscoolingdown()",
       "id": "rpc_endpoint_pool_rpcendpoint_iscoolingdown"
     },
@@ -15784,7 +15775,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L85",
-      "community": 138,
+      "community": 145,
       "norm_label": ".ismethodunavailable()",
       "id": "rpc_endpoint_pool_rpcendpoint_ismethodunavailable"
     },
@@ -15793,7 +15784,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L90",
-      "community": 138,
+      "community": 145,
       "norm_label": ".isunavailable()",
       "id": "rpc_endpoint_pool_rpcendpoint_isunavailable"
     },
@@ -15802,7 +15793,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L94",
-      "community": 138,
+      "community": 145,
       "norm_label": ".markratelimited()",
       "id": "rpc_endpoint_pool_rpcendpoint_markratelimited"
     },
@@ -15811,7 +15802,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L103",
-      "community": 138,
+      "community": 145,
       "norm_label": ".markerror()",
       "id": "rpc_endpoint_pool_rpcendpoint_markerror"
     },
@@ -15820,7 +15811,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L111",
-      "community": 138,
+      "community": 145,
       "norm_label": ".marksuccess()",
       "id": "rpc_endpoint_pool_rpcendpoint_marksuccess"
     },
@@ -15829,7 +15820,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L120",
-      "community": 20,
+      "community": 154,
       "norm_label": "endpointpooloptions",
       "id": "rpc_endpoint_pool_endpointpooloptions"
     },
@@ -15964,7 +15955,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L257",
-      "community": 20,
+      "community": 154,
       "norm_label": "normalizerpcmethod()",
       "id": "rpc_endpoint_pool_normalizerpcmethod"
     },
@@ -15973,7 +15964,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.ts",
       "source_location": "L290",
-      "community": 20,
+      "community": 154,
       "norm_label": "createdynamicpublicclient()",
       "id": "rpc_endpoint_pool_createdynamicpublicclient"
     },
@@ -15982,7 +15973,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L1",
-      "community": 19,
+      "community": 28,
       "norm_label": "backrunner.ts",
       "id": "src_services_strategy_backrunner_ts"
     },
@@ -15991,7 +15982,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L11",
-      "community": 19,
+      "community": 28,
       "norm_label": "largeswapsignal",
       "id": "strategy_backrunner_largeswapsignal"
     },
@@ -16000,7 +15991,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L21",
-      "community": 19,
+      "community": 28,
       "norm_label": "backruncandidate",
       "id": "strategy_backrunner_backruncandidate"
     },
@@ -16009,7 +16000,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L32",
-      "community": 19,
+      "community": 28,
       "norm_label": "backrunneroptions",
       "id": "strategy_backrunner_backrunneroptions"
     },
@@ -16018,7 +16009,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L47",
-      "community": 19,
+      "community": 28,
       "norm_label": "backrunner",
       "id": "strategy_backrunner_backrunner"
     },
@@ -16027,7 +16018,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L48",
-      "community": 19,
+      "community": 28,
       "norm_label": ".constructor()",
       "id": "strategy_backrunner_backrunner_constructor"
     },
@@ -16036,7 +16027,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L50",
-      "community": 19,
+      "community": 28,
       "norm_label": ".evaluate()",
       "id": "strategy_backrunner_backrunner_evaluate"
     },
@@ -16369,7 +16360,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L1",
-      "community": 165,
+      "community": 11,
       "norm_label": "optimizer.test.ts",
       "id": "src_core_assessment_optimizer_test_ts"
     },
@@ -16378,7 +16369,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L5",
-      "community": 165,
+      "community": 11,
       "norm_label": "mkresult()",
       "id": "assessment_optimizer_test_mkresult"
     },
@@ -16387,7 +16378,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L23",
-      "community": 165,
+      "community": 11,
       "norm_label": "simulate()",
       "id": "assessment_optimizer_test_simulate"
     },
@@ -16396,7 +16387,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.test.ts",
       "source_location": "L28",
-      "community": 165,
+      "community": 11,
       "norm_label": "result",
       "id": "assessment_optimizer_test_result"
     },
@@ -16405,7 +16396,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L1",
-      "community": 165,
+      "community": 11,
       "norm_label": "optimizer.ts",
       "id": "src_core_assessment_optimizer_ts"
     },
@@ -16414,7 +16405,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L5",
-      "community": 165,
+      "community": 11,
       "norm_label": "optimizeoptions",
       "id": "assessment_optimizer_optimizeoptions"
     },
@@ -16423,7 +16414,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/optimizer.ts",
       "source_location": "L20",
-      "community": 165,
+      "community": 11,
       "norm_label": "optimizeinputamount()",
       "id": "assessment_optimizer_optimizeinputamount"
     },
@@ -16432,7 +16423,7 @@
       "file_type": "code",
       "source_file": "src/core/assessment/index.ts",
       "source_location": "L1",
-      "community": 165,
+      "community": 11,
       "norm_label": "index.ts",
       "id": "src_core_assessment_index_ts"
     },
@@ -16702,7 +16693,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L1",
-      "community": 43,
+      "community": 18,
       "norm_label": "chainlink.ts",
       "id": "src_core_pricing_chainlink_ts"
     },
@@ -16711,7 +16702,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L3",
-      "community": 43,
+      "community": 18,
       "norm_label": "chainlinkanswer",
       "id": "pricing_chainlink_chainlinkanswer"
     },
@@ -16720,7 +16711,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L12",
-      "community": 43,
+      "community": 18,
       "norm_label": "chainlinkfeedconfig",
       "id": "pricing_chainlink_chainlinkfeedconfig"
     },
@@ -16729,7 +16720,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L20",
-      "community": 43,
+      "community": 18,
       "norm_label": "default_matic_usd_feed",
       "id": "pricing_chainlink_default_matic_usd_feed"
     },
@@ -16738,7 +16729,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L27",
-      "community": 43,
+      "community": 18,
       "norm_label": "isfreshchainlinkanswer()",
       "id": "pricing_chainlink_isfreshchainlinkanswer"
     },
@@ -16747,7 +16738,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/chainlink.ts",
       "source_location": "L33",
-      "community": 43,
+      "community": 18,
       "norm_label": "pricesagreewithinbps()",
       "id": "pricing_chainlink_pricesagreewithinbps"
     },
@@ -16756,7 +16747,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/index.ts",
       "source_location": "L1",
-      "community": 43,
+      "community": 18,
       "norm_label": "index.ts",
       "id": "src_core_pricing_index_ts"
     },
@@ -16801,7 +16792,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/oracle.ts",
       "source_location": "L1",
-      "community": 43,
+      "community": 18,
       "norm_label": "oracle.ts",
       "id": "src_core_pricing_oracle_ts"
     },
@@ -16810,7 +16801,7 @@
       "file_type": "code",
       "source_file": "src/core/pricing/oracle.ts",
       "source_location": "L13",
-      "community": 43,
+      "community": 18,
       "norm_label": "priceoracle",
       "id": "pricing_oracle_priceoracle"
     },
@@ -17836,7 +17827,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L1",
-      "community": 138,
+      "community": 153,
       "norm_label": "endpoint_pool.test.ts",
       "id": "src_infra_rpc_endpoint_pool_test_ts"
     },
@@ -17845,7 +17836,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L15",
-      "community": 138,
+      "community": 153,
       "norm_label": "makepool()",
       "id": "rpc_endpoint_pool_test_makepool"
     },
@@ -17854,7 +17845,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L21",
-      "community": 138,
+      "community": 153,
       "norm_label": "ep",
       "id": "rpc_endpoint_pool_test_ep"
     },
@@ -17863,7 +17854,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L94",
-      "community": 138,
+      "community": 153,
       "norm_label": "make()",
       "id": "rpc_endpoint_pool_test_make"
     },
@@ -17872,7 +17863,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L99",
-      "community": 138,
+      "community": 153,
       "norm_label": "pool",
       "id": "rpc_endpoint_pool_test_pool"
     },
@@ -17881,7 +17872,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L109",
-      "community": 138,
+      "community": 153,
       "norm_label": "best",
       "id": "rpc_endpoint_pool_test_best"
     },
@@ -17890,7 +17881,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/endpoint_pool.test.ts",
       "source_location": "L188",
-      "community": 138,
+      "community": 153,
       "norm_label": "spy",
       "id": "rpc_endpoint_pool_test_spy"
     },
@@ -18025,7 +18016,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/index.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 64,
       "norm_label": "index.ts",
       "id": "src_infra_db_index_ts"
     },
@@ -18250,7 +18241,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L1",
-      "community": 64,
+      "community": 152,
       "norm_label": "connection.ts",
       "id": "src_infra_db_connection_ts"
     },
@@ -18259,7 +18250,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L3",
-      "community": 64,
+      "community": 152,
       "norm_label": "sqlinputvalue",
       "id": "db_connection_sqlinputvalue"
     },
@@ -18286,7 +18277,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L25",
-      "community": 64,
+      "community": 152,
       "norm_label": "compatstatement",
       "id": "db_connection_compatstatement"
     },
@@ -18295,7 +18286,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L27",
-      "community": 64,
+      "community": 152,
       "norm_label": ".constructor()",
       "id": "db_connection_compatstatement_constructor"
     },
@@ -18304,7 +18295,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L31",
-      "community": 64,
+      "community": 152,
       "norm_label": ".run()",
       "id": "db_connection_compatstatement_run"
     },
@@ -18322,7 +18313,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L39",
-      "community": 64,
+      "community": 152,
       "norm_label": ".all()",
       "id": "db_connection_compatstatement_all"
     },
@@ -18331,7 +18322,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L43",
-      "community": 64,
+      "community": 152,
       "norm_label": ".iterate()",
       "id": "db_connection_compatstatement_iterate"
     },
@@ -18538,7 +18529,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/pools.ts",
       "source_location": "L84",
-      "community": 7,
+      "community": 26,
       "norm_label": "getallpoolstates()",
       "id": "db_pools_getallpoolstates"
     },
@@ -18547,7 +18538,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/pools.ts",
       "source_location": "L98",
-      "community": 152,
+      "community": 151,
       "norm_label": "getrecentpoolstates()",
       "id": "db_pools_getrecentpoolstates"
     },
@@ -18556,7 +18547,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 64,
       "norm_label": "assets.ts",
       "id": "src_infra_db_assets_ts"
     },
@@ -18565,7 +18556,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L3",
-      "community": 26,
+      "community": 64,
       "norm_label": "upserttokenmeta()",
       "id": "db_assets_upserttokenmeta"
     },
@@ -18574,7 +18565,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L18",
-      "community": 26,
+      "community": 64,
       "norm_label": "gettokenmeta()",
       "id": "db_assets_gettokenmeta"
     },
@@ -18583,7 +18574,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L23",
-      "community": 26,
+      "community": 64,
       "norm_label": "getalltokenmeta()",
       "id": "db_assets_getalltokenmeta"
     },
@@ -18592,7 +18583,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L28",
-      "community": 26,
+      "community": 64,
       "norm_label": "upsertpoolfeetier()",
       "id": "db_assets_upsertpoolfeetier"
     },
@@ -18601,7 +18592,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/assets.ts",
       "source_location": "L42",
-      "community": 26,
+      "community": 64,
       "norm_label": "getpoolfeetier()",
       "id": "db_assets_getpoolfeetier"
     },
@@ -18826,7 +18817,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L1",
-      "community": 33,
+      "community": 35,
       "norm_label": "stream.test.ts",
       "id": "src_infra_hypersync_stream_test_ts"
     },
@@ -18835,7 +18826,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L8",
-      "community": 33,
+      "community": 35,
       "norm_label": "mockclient",
       "id": "hypersync_stream_test_mockclient"
     },
@@ -18844,7 +18835,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L19",
-      "community": 33,
+      "community": 35,
       "norm_label": "query",
       "id": "hypersync_stream_test_query"
     },
@@ -18862,7 +18853,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L3",
-      "community": 14,
+      "community": 33,
       "norm_label": "hypersynclogfilter",
       "id": "hypersync_types_hypersynclogfilter"
     },
@@ -18871,7 +18862,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L8",
-      "community": 14,
+      "community": 33,
       "norm_label": "hypersyncfieldselection",
       "id": "hypersync_types_hypersyncfieldselection"
     },
@@ -18880,7 +18871,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L13",
-      "community": 33,
+      "community": 35,
       "norm_label": "hypersyncquery",
       "id": "hypersync_types_hypersyncquery"
     },
@@ -18889,7 +18880,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L23",
-      "community": 45,
+      "community": 33,
       "norm_label": "hypersyncclientconfig",
       "id": "hypersync_types_hypersyncclientconfig"
     },
@@ -18970,7 +18961,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L83",
-      "community": 12,
+      "community": 33,
       "norm_label": "hypersyncdecoderruntime",
       "id": "hypersync_types_hypersyncdecoderruntime"
     },
@@ -19147,6 +19138,818 @@
     }
   ],
   "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_balancer_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_vault_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_fetchbalancermetadata"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "hyperindex_src_effects_balancer_metadata_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "effects_balancer_metadata_fetchbalancermetadata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_curve_metadata_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_curve_metadata_curve_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_curve_metadata_fetchcurvemetadata"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_factory_ts",
+      "target": "hyperindex_src_effects_curve_metadata_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_factory_ts",
+      "target": "effects_curve_metadata_fetchcurvemetadata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_dodo_metadata_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_dodo_metadata_dodo_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_dodo_metadata_fetchdodometadata"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_factory_ts",
+      "target": "hyperindex_src_effects_dodo_metadata_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_factory_ts",
+      "target": "effects_dodo_metadata_fetchdodometadata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_pool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_poolid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L101",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L102",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L141",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_balances"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L109",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idxin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L110",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idxout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L138",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_eventtokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L140",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_metatokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L144",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_factory.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_factory_ts",
+      "target": "handlers_curve_factory_pool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_factory_ts",
+      "target": "handlers_dodo_factory_handledodopool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_json",
+      "target": "hyperindex_tsconfig_compileroptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_json",
+      "target": "hyperindex_tsconfig_include"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_target"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_module"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_moduleresolution"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_strict"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_esmoduleinterop"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_outdir"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_rootdir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_skiplibcheck"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/tsconfig.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_tsconfig_compileroptions",
+      "target": "hyperindex_tsconfig_compileroptions_typeroots"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_dodopoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_aspoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_sqrt"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_mulfloor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_divfloor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_divceil"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_reciprocalfloor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_generalintegrate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_solvequadraticfunctionfortrade"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_getdodogrossamountout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L180",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_getdodoamountout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L192",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "math_dodo_simulatedodoswap"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "src_core_math_dodo_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_test_ts",
+      "target": "src_core_math_dodo_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_ts",
+      "target": "src_core_utils_bigint_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "src_core_math_dodo_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L128",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodogrossamountout",
+      "target": "math_dodo_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L183",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodoamountout",
+      "target": "math_dodo_aspoolstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L108",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_solvequadraticfunctionfortrade",
+      "target": "math_dodo_sqrt"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_generalintegrate",
+      "target": "math_dodo_mulfloor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L86",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_solvequadraticfunctionfortrade",
+      "target": "math_dodo_mulfloor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L189",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodoamountout",
+      "target": "math_dodo_mulfloor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_generalintegrate",
+      "target": "math_dodo_divfloor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_solvequadraticfunctionfortrade",
+      "target": "math_dodo_divceil"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L161",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodogrossamountout",
+      "target": "math_dodo_reciprocalfloor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L152",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodogrossamountout",
+      "target": "math_dodo_generalintegrate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodogrossamountout",
+      "target": "math_dodo_solvequadraticfunctionfortrade"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_getdodoamountout",
+      "target": "math_dodo_getdodogrossamountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "math_dodo_getdodogrossamountout",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_dodo_getdodogrossamountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L195",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "math_dodo_simulatedodoswap",
+      "target": "math_dodo_getdodoamountout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/math/dodo.ts",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "math_dodo_getdodoamountout",
+      "target": "utils_bigint_tobigint"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_dodo_getdodoamountout"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_simulator_ts",
+      "target": "math_dodo_simulatedodoswap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/simulator.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "strategy_simulator_simulatehop",
+      "target": "math_dodo_simulatedodoswap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/dodo.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_dodo_test_ts",
+      "target": "math_dodo_simulatedodoswap"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/math/index.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_math_index_ts",
+      "target": "math_dodo_simulatedodoswap"
+    },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -27933,17 +28736,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "math_dodo_simulatedodoswap"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -28053,17 +28845,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_simulator_ts",
       "target": "src_core_math_uniswap_v3_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_simulator_ts",
-      "target": "src_core_math_dodo_ts"
     },
     {
       "relation": "imports_from",
@@ -28218,17 +28999,6 @@
       "weight": 1.0,
       "source": "strategy_simulator_simulatehop",
       "target": "math_uniswap_v3_simulatev3swap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/simulator.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "strategy_simulator_simulatehop",
-      "target": "math_dodo_simulatedodoswap"
     },
     {
       "relation": "imports",
@@ -30193,106 +30963,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_json",
-      "target": "hyperindex_tsconfig_compileroptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_json",
-      "target": "hyperindex_tsconfig_include"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_target"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_module"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_moduleresolution"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_strict"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_esmoduleinterop"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_outdir"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_skiplibcheck"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/tsconfig.json",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_tsconfig_compileroptions",
-      "target": "hyperindex_tsconfig_compileroptions_typeroots"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "hyperindex/env.d.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -30611,170 +31281,6 @@
       "target": "handlers_dodo_pool_addr"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_factory_ts",
-      "target": "hyperindex_src_effects_dodo_metadata_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_factory_ts",
-      "target": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_factory_ts",
-      "target": "handlers_dodo_factory_handledodopool"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "hyperindex_src_effects_balancer_metadata_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "effects_balancer_metadata_fetchbalancermetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_pool"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_poolid"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L101",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L102",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L141",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_balances"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L109",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idxin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L110",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idxout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L138",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_eventtokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L140",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_metatokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L144",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idx"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "hyperindex/src/handlers/v3_factory.ts",
@@ -30823,58 +31329,6 @@
       "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v3_factory_ts",
       "target": "handlers_v3_factory_hub_tokens"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_factory_ts",
-      "target": "hyperindex_src_effects_curve_metadata_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_factory_ts",
-      "target": "effects_curve_metadata_fetchcurvemetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_factory_ts",
-      "target": "handlers_curve_factory_pool"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_factory_ts",
-      "target": "handlers_curve_factory_hub_tokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_factory.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_factory_ts",
-      "target": "handlers_curve_factory_hubfilter"
     },
     {
       "relation": "contains",
@@ -30975,106 +31429,6 @@
       "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v2_factory_ts",
       "target": "handlers_v2_factory_hub_tokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_dodo_metadata_client"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_dodo_metadata_dodo_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_client"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_balancer_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_vault_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_fetchbalancermetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_curve_metadata_client"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_curve_metadata_curve_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_curve_metadata_fetchcurvemetadata"
     },
     {
       "relation": "contains",
@@ -32314,28 +32668,6 @@
       "confidence_score": 1.0,
       "source": "math_uniswap_v3_test_poolwithtick",
       "target": "math_tick_math_getsqrtratioattick"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_test_ts",
-      "target": "src_core_math_dodo_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_test_ts",
-      "target": "math_dodo_simulatedodoswap"
     },
     {
       "relation": "contains",
@@ -34313,357 +34645,6 @@
       "confidence_score": 1.0,
       "source": "src_core_math_index_ts",
       "target": "math_sqrt_price_math_getamount1delta"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "src_core_utils_bigint_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_dodopoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_aspoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_sqrt"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_mulfloor"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L55",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_divfloor"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_divceil"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L65",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_reciprocalfloor"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_generalintegrate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L82",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_solvequadraticfunctionfortrade"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_getdodogrossamountout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L180",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_getdodoamountout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L192",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_dodo_ts",
-      "target": "math_dodo_simulatedodoswap"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "src_core_math_dodo_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L128",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodogrossamountout",
-      "target": "math_dodo_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L183",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodoamountout",
-      "target": "math_dodo_aspoolstate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L108",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_solvequadraticfunctionfortrade",
-      "target": "math_dodo_sqrt"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_generalintegrate",
-      "target": "math_dodo_mulfloor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L86",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_solvequadraticfunctionfortrade",
-      "target": "math_dodo_mulfloor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L189",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodoamountout",
-      "target": "math_dodo_mulfloor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_generalintegrate",
-      "target": "math_dodo_divfloor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_solvequadraticfunctionfortrade",
-      "target": "math_dodo_divceil"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L161",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodogrossamountout",
-      "target": "math_dodo_reciprocalfloor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L152",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodogrossamountout",
-      "target": "math_dodo_generalintegrate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodogrossamountout",
-      "target": "math_dodo_solvequadraticfunctionfortrade"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L181",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_getdodoamountout",
-      "target": "math_dodo_getdodogrossamountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "source": "math_dodo_getdodogrossamountout",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_dodo_getdodogrossamountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L195",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "math_dodo_simulatedodoswap",
-      "target": "math_dodo_getdodoamountout"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/math/dodo.ts",
-      "source_location": "L185",
-      "weight": 1.0,
-      "source": "math_dodo_getdodoamountout",
-      "target": "utils_bigint_tobigint"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_dodo_getdodoamountout"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/math/index.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_math_index_ts",
-      "target": "math_dodo_simulatedodoswap"
     },
     {
       "relation": "imports_from",
@@ -56695,5 +56676,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d56f38579e94508ba880ee3b3b21cff42e336412"
+  "built_at_commit": "4aeaece19fc54591fb4f882edbaa339e730093fe"
 }
