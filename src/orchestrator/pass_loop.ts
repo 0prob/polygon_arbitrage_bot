@@ -347,10 +347,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
 
         try {
+          const discoveryStartTime = Date.now();
           const hasuraPools = await ctx.rpcCircuit.execute(
             () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
             async () => { ctx.logger.warn({}, "Hasura circuit open, returning empty pool list"); return []; },
           );
+          const discoveryElapsed = Date.now() - discoveryStartTime;
+
           if (hasuraPools.length > 0) {
             hasuraPoolsCache = hasuraPools.map(p => ({
               address: p.address as `0x${string}`,
@@ -361,7 +364,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }));
             pools = hasuraPoolsCache;
             lastDiscoveryTime = now;
-            ctx.logger.info({ discovered: pools.length }, "Updated pools from Hasura");
+            ctx.logger.info({ discovered: pools.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
           }
         } catch (e) {
           ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
@@ -414,12 +417,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         if (shouldFullRebuild || !cachedGraph) {
           cachedGraph = deps.buildGraph(pools, stateCache);
         }
+        const enumStartTime = Date.now();
         cachedCycles = deps.enumerateCycles(
           cachedGraph!,
           MAX_HOPS,
           ctx.config.routing.enumerationMaxPaths,
           (key) => ctx.executionService.tracker.getWinRate(key),
         );
+        const enumElapsed = Date.now() - enumStartTime;
 
         lastRefreshTime = now;
         ctx.logger.info(
@@ -427,6 +432,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             pools: pools.length,
             cycles: cachedCycles.length,
             fullRebuild: shouldFullRebuild,
+            durationMs: enumElapsed,
           },
           "Graph and cycles re-enumerated",
         );
@@ -483,11 +489,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
         maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
         onProgress: (current, total, profitable) => {
-          bus?.emit({ type: "simulation_progress", current, total, profitable });
+          if (current % 10 === 0 || current === total) {
+            bus?.emit({ type: "simulation_progress", current, total, profitable });
+          }
         },
       };
 
-      const result = deps.evaluatePipeline(currentCycles, stateCache, options);
+      const simStartTime = Date.now();
+      const result = await deps.evaluatePipeline(currentCycles, stateCache, options);
+      const simElapsed = Date.now() - simStartTime;
 
       ctx.metrics.opportunitiesFound += result.profitableCount;
 
@@ -504,6 +514,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             rates: tokenToMaticRates.size,
             cache: stateCache.size,
             isLowFreq: shouldReEnumerate,
+            durationMs: simElapsed,
             tier,
           },
           "Cycle assessment complete",

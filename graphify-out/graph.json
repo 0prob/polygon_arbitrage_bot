@@ -4,310 +4,400 @@
   "graph": {},
   "nodes": [
     {
+      "label": "hyperindex_graphql.ts",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L1",
+      "id": "src_infra_hypersync_hyperindex_graphql_ts",
+      "community": 35,
+      "norm_label": "hyperindex_graphql.ts"
+    },
+    {
+      "label": "_cachedState",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L4",
+      "id": "hypersync_hyperindex_graphql_cachedstate",
+      "community": 35,
+      "norm_label": "_cachedstate"
+    },
+    {
+      "label": "_cacheAccessOrder",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L5",
+      "id": "hypersync_hyperindex_graphql_cacheaccessorder",
+      "community": 35,
+      "norm_label": "_cacheaccessorder"
+    },
+    {
+      "label": "resetGraphQLReaderCache()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L8",
+      "id": "hypersync_hyperindex_graphql_resetgraphqlreadercache",
+      "community": 35,
+      "norm_label": "resetgraphqlreadercache()"
+    },
+    {
+      "label": "graphQLQuery()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L14",
+      "id": "hypersync_hyperindex_graphql_graphqlquery",
+      "community": 35,
+      "norm_label": "graphqlquery()"
+    },
+    {
+      "label": "merge()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L29",
+      "id": "hypersync_hyperindex_graphql_merge",
+      "community": 35,
+      "norm_label": "merge()"
+    },
+    {
+      "label": "buildStateCacheFromGraphQL()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L48",
+      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
+      "community": 35,
+      "norm_label": "buildstatecachefromgraphql()"
+    },
+    {
+      "label": "HasuraPoolMeta",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L132",
+      "id": "hypersync_hyperindex_graphql_hasurapoolmeta",
+      "community": 35,
+      "norm_label": "hasurapoolmeta"
+    },
+    {
+      "label": "discoverPoolsFromHasura()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L138",
+      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
+      "community": 35,
+      "norm_label": "discoverpoolsfromhasura()"
+    },
+    {
+      "label": "parseBigIntArray()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L197",
+      "id": "hypersync_hyperindex_graphql_parsebigintarray",
+      "community": 35,
+      "norm_label": "parsebigintarray()"
+    },
+    {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 9,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "V2_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L16",
-      "id": "orchestrator_pass_loop_v2_abi",
       "community": 9,
-      "norm_label": "v2_abi"
+      "norm_label": "v2_abi",
+      "id": "orchestrator_pass_loop_v2_abi"
     },
     {
       "label": "V3_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L17",
-      "id": "orchestrator_pass_loop_v3_abi",
       "community": 9,
-      "norm_label": "v3_abi"
+      "norm_label": "v3_abi",
+      "id": "orchestrator_pass_loop_v3_abi"
     },
     {
       "label": "_failedPools",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L19",
-      "id": "orchestrator_pass_loop_failedpools",
       "community": 9,
-      "norm_label": "_failedpools"
+      "norm_label": "_failedpools",
+      "id": "orchestrator_pass_loop_failedpools"
     },
     {
       "label": "fetchMissingPoolState()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L21",
-      "id": "orchestrator_pass_loop_fetchmissingpoolstate",
       "community": 9,
-      "norm_label": "fetchmissingpoolstate()"
+      "norm_label": "fetchmissingpoolstate()",
+      "id": "orchestrator_pass_loop_fetchmissingpoolstate"
     },
     {
       "label": "PassLoopDeps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L122",
-      "id": "orchestrator_pass_loop_passloopdeps",
       "community": 165,
-      "norm_label": "passloopdeps"
+      "norm_label": "passloopdeps",
+      "id": "orchestrator_pass_loop_passloopdeps"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L133",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 9,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L137",
-      "id": "orchestrator_pass_loop_wmatic_lower",
       "community": 9,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "orchestrator_pass_loop_wmatic_lower"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L139",
-      "id": "orchestrator_pass_loop_computematicrates",
       "community": 9,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "orchestrator_pass_loop_computematicrates"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L185",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 9,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L196",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 9,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "events.ts",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "id": "src_tui_events_ts",
       "community": 40,
-      "norm_label": "events.ts"
+      "norm_label": "events.ts",
+      "id": "src_tui_events_ts"
     },
     {
       "label": "ArbEvent",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "id": "tui_events_arbevent",
       "community": 40,
-      "norm_label": "arbevent"
+      "norm_label": "arbevent",
+      "id": "tui_events_arbevent"
     },
     {
       "label": "EventHandler",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L16",
-      "id": "tui_events_eventhandler",
       "community": 40,
-      "norm_label": "eventhandler"
+      "norm_label": "eventhandler",
+      "id": "tui_events_eventhandler"
     },
     {
       "label": "EventBus",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L18",
-      "id": "tui_events_eventbus",
       "community": 40,
-      "norm_label": "eventbus"
+      "norm_label": "eventbus",
+      "id": "tui_events_eventbus"
     },
     {
       "label": ".on()",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L21",
-      "id": "tui_events_eventbus_on",
       "community": 40,
-      "norm_label": ".on()"
+      "norm_label": ".on()",
+      "id": "tui_events_eventbus_on"
     },
     {
       "label": ".emit()",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L28",
-      "id": "tui_events_eventbus_emit",
       "community": 40,
-      "norm_label": ".emit()"
+      "norm_label": ".emit()",
+      "id": "tui_events_eventbus_emit"
     },
     {
       "label": "state.ts",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L1",
-      "id": "src_tui_state_ts",
       "community": 40,
-      "norm_label": "state.ts"
+      "norm_label": "state.ts",
+      "id": "src_tui_state_ts"
     },
     {
       "label": "MetricsState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L3",
-      "id": "tui_state_metricsstate",
       "community": 40,
-      "norm_label": "metricsstate"
+      "norm_label": "metricsstate",
+      "id": "tui_state_metricsstate"
     },
     {
       "label": "OpportunityEntry",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L14",
-      "id": "tui_state_opportunityentry",
       "community": 40,
-      "norm_label": "opportunityentry"
+      "norm_label": "opportunityentry",
+      "id": "tui_state_opportunityentry"
     },
     {
       "label": "SystemState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L23",
-      "id": "tui_state_systemstate",
       "community": 40,
-      "norm_label": "systemstate"
+      "norm_label": "systemstate",
+      "id": "tui_state_systemstate"
     },
     {
       "label": "LogEntry",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L40",
-      "id": "tui_state_logentry",
       "community": 40,
-      "norm_label": "logentry"
+      "norm_label": "logentry",
+      "id": "tui_state_logentry"
     },
     {
       "label": "TuiState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L46",
-      "id": "tui_state_tuistate",
       "community": 40,
-      "norm_label": "tuistate"
+      "norm_label": "tuistate",
+      "id": "tui_state_tuistate"
     },
     {
       "label": "createInitialState()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L57",
-      "id": "tui_state_createinitialstate",
       "community": 40,
-      "norm_label": "createinitialstate()"
+      "norm_label": "createinitialstate()",
+      "id": "tui_state_createinitialstate"
     },
     {
       "label": "appendLog()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L91",
-      "id": "tui_state_appendlog",
       "community": 40,
-      "norm_label": "appendlog()"
+      "norm_label": "appendlog()",
+      "id": "tui_state_appendlog"
     },
     {
       "label": "updateOpportunity()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L98",
-      "id": "tui_state_updateopportunity",
       "community": 40,
-      "norm_label": "updateopportunity()"
+      "norm_label": "updateopportunity()",
+      "id": "tui_state_updateopportunity"
     },
     {
       "label": "applyEvent()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L122",
-      "id": "tui_state_applyevent",
       "community": 40,
-      "norm_label": "applyevent()"
+      "norm_label": "applyevent()",
+      "id": "tui_state_applyevent"
     },
     {
       "label": "renderer.test.ts",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L1",
-      "id": "tests_tui_renderer_test_ts",
       "community": 40,
-      "norm_label": "renderer.test.ts"
+      "norm_label": "renderer.test.ts",
+      "id": "tests_tui_renderer_test_ts"
     },
     {
       "label": "createMockStdout()",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L6",
-      "id": "tui_renderer_test_createmockstdout",
       "community": 40,
-      "norm_label": "createmockstdout()"
+      "norm_label": "createmockstdout()",
+      "id": "tui_renderer_test_createmockstdout"
     },
     {
       "label": "stdout",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L18",
-      "id": "tui_renderer_test_stdout",
       "community": 40,
-      "norm_label": "stdout"
+      "norm_label": "stdout",
+      "id": "tui_renderer_test_stdout"
     },
     {
       "label": "r",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L19",
-      "id": "tui_renderer_test_r",
       "community": 40,
-      "norm_label": "r"
+      "norm_label": "r",
+      "id": "tui_renderer_test_r"
     },
     {
       "label": "layout",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L36",
-      "id": "tui_renderer_test_layout",
       "community": 40,
-      "norm_label": "layout"
+      "norm_label": "layout",
+      "id": "tui_renderer_test_layout"
     },
     {
       "label": "state",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L37",
-      "id": "tui_renderer_test_state",
       "community": 40,
-      "norm_label": "state"
+      "norm_label": "state",
+      "id": "tui_renderer_test_state"
     },
     {
       "label": "output",
       "file_type": "code",
       "source_file": "tests/tui/renderer.test.ts",
       "source_location": "L41",
-      "id": "tui_renderer_test_output",
       "community": 40,
-      "norm_label": "output"
+      "norm_label": "output",
+      "id": "tui_renderer_test_output"
     },
     {
       "label": "pipeline.ts",
@@ -9426,96 +9516,6 @@
       "id": "observability_health_server_healthserver_buildmetricstext"
     },
     {
-      "label": "hyperindex_graphql.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L1",
-      "community": 35,
-      "norm_label": "hyperindex_graphql.ts",
-      "id": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "label": "_cachedState",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L4",
-      "community": 35,
-      "norm_label": "_cachedstate",
-      "id": "hypersync_hyperindex_graphql_cachedstate"
-    },
-    {
-      "label": "_cacheAccessOrder",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L5",
-      "community": 35,
-      "norm_label": "_cacheaccessorder",
-      "id": "hypersync_hyperindex_graphql_cacheaccessorder"
-    },
-    {
-      "label": "resetGraphQLReaderCache()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L8",
-      "community": 35,
-      "norm_label": "resetgraphqlreadercache()",
-      "id": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
-    },
-    {
-      "label": "graphQLQuery()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L14",
-      "community": 35,
-      "norm_label": "graphqlquery()",
-      "id": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "label": "merge()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L29",
-      "community": 35,
-      "norm_label": "merge()",
-      "id": "hypersync_hyperindex_graphql_merge"
-    },
-    {
-      "label": "buildStateCacheFromGraphQL()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L48",
-      "community": 35,
-      "norm_label": "buildstatecachefromgraphql()",
-      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "label": "HasuraPoolMeta",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L132",
-      "community": 35,
-      "norm_label": "hasurapoolmeta",
-      "id": "hypersync_hyperindex_graphql_hasurapoolmeta"
-    },
-    {
-      "label": "discoverPoolsFromHasura()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L138",
-      "community": 35,
-      "norm_label": "discoverpoolsfromhasura()",
-      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "label": "parseBigIntArray()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L189",
-      "community": 35,
-      "norm_label": "parsebigintarray()",
-      "id": "hypersync_hyperindex_graphql_parsebigintarray"
-    },
-    {
       "label": "hyperindex_process.ts",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
@@ -18277,7 +18277,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L25",
-      "community": 164,
+      "community": 110,
       "norm_label": "compatstatement",
       "id": "db_connection_compatstatement"
     },
@@ -18286,7 +18286,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L27",
-      "community": 164,
+      "community": 110,
       "norm_label": ".constructor()",
       "id": "db_connection_compatstatement_constructor"
     },
@@ -18295,7 +18295,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L31",
-      "community": 164,
+      "community": 110,
       "norm_label": ".run()",
       "id": "db_connection_compatstatement_run"
     },
@@ -18313,7 +18313,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L39",
-      "community": 164,
+      "community": 110,
       "norm_label": ".all()",
       "id": "db_connection_compatstatement_all"
     },
@@ -18322,7 +18322,7 @@
       "file_type": "code",
       "source_file": "src/infra/db/connection.ts",
       "source_location": "L43",
-      "community": 164,
+      "community": 110,
       "norm_label": ".iterate()",
       "id": "db_connection_compatstatement_iterate"
     },
@@ -19139,6 +19139,228 @@
   ],
   "links": [
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_cachedstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_cacheaccessorder"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_merge"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_hasurapoolmeta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L202",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_parsebigintarray"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19269,28 +19491,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_ts",
       "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
     },
     {
       "relation": "imports",
@@ -19595,17 +19795,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L10",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19800,17 +19989,6 @@
       "target": "orchestrator_pass_loop_passloopdeps"
     },
     {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L127",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19941,28 +20119,6 @@
       "confidence_score": 1.0,
       "source": "cli_main_main",
       "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
     },
     {
       "relation": "imports",
@@ -25728,50 +25884,6 @@
       "confidence_score": 1.0,
       "source": "tests_services_mempool_subscriber_test_ts",
       "target": "mempool_subscriber_test_pooladdress"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
     },
     {
       "relation": "contains",
@@ -43164,118 +43276,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_cachedstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_cacheaccessorder"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_merge"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L133",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_hasurapoolmeta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L139",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L202",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_parsebigintarray"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L59",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L5",
       "weight": 1.0,
@@ -56632,5 +56632,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "64f88e0f1e2dee561e87da4f1561965972c518ab"
+  "built_at_commit": "7a6108adbeac66564594deac34aa232ab40d5f94"
 }

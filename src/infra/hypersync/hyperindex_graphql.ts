@@ -12,18 +12,26 @@ export function resetGraphQLReaderCache(): void {
 }
 
 async function graphQLQuery(url: string, secret: string, query: string): Promise<unknown> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-hasura-admin-secret": secret,
-    },
-    body: JSON.stringify({ query }),
-  });
-  if (!res.ok) throw new Error(`GraphQL error: ${res.status}`);
-  const json = await res.json();
-  if (json.errors) throw new Error(json.errors[0]?.message ?? "GraphQL error");
-  return json.data;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-hasura-admin-secret": secret,
+      },
+      body: JSON.stringify({ query }),
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`GraphQL error: ${res.status}`);
+    const json = await res.json();
+    if (json.errors) throw new Error(json.errors[0]?.message ?? "GraphQL error");
+    return json.data;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 function merge(rows: { id: string }[], mapper: (r: Record<string, unknown>) => Record<string, unknown>): void {

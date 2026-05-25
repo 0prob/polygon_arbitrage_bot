@@ -97,7 +97,7 @@ function evaluateAmount(
   }
 }
 
-export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): PipelineResult {
+export async function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): Promise<PipelineResult> {
   const profitable: PipelineResult["profitable"] = [];
   let attempted = 0;
   let simulated = 0;
@@ -107,6 +107,15 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
 
   for (const cycle of cycles) {
     attempted++;
+
+    // Yield to event loop to keep TUI responsive and prevent blocking
+    if (attempted % 100 === 0) {
+      if (options.onProgress) {
+        options.onProgress(attempted, cycles.length, profitable.length);
+      }
+      await new Promise(resolve => setImmediate(resolve));
+    }
+
     try {
       const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
 
@@ -207,10 +216,6 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       if (attempted % 10000 === 0) {
         process.stderr.write(`[pipeline] Error in cycle ${attempted}: ${err instanceof Error ? err.message : err}\n`);
       }
-    }
-
-    if (attempted % 100 === 0 && options.onProgress) {
-      options.onProgress(attempted, cycles.length, profitable.length);
     }
   }
 

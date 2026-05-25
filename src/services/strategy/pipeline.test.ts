@@ -21,7 +21,7 @@ describe("evaluatePipeline", () => {
     tokenToMaticRates: new Map([["0xa", 10n ** 12n]]),
   };
 
-  it("returns profitable routes when simulation yields profit", () => {
+  it("returns profitable routes when simulation yields profit", async () => {
     const A = "0xa" as Address;
     const B = "0xb" as Address;
     const edges: SwapEdge[] = [
@@ -49,12 +49,12 @@ describe("evaluatePipeline", () => {
       },
     ];
     const cycles = [makeCycle(edges), makeCycle(edges)];
-    const result = evaluatePipeline(cycles, new Map(), baseOpts);
+    const result = await evaluatePipeline(cycles, new Map(), baseOpts);
     expect(result.attempted).toBe(2);
     expect(result.profitableCount).toBe(result.profitable.length);
   });
 
-  it("filters unprofitable routes", () => {
+  it("filters unprofitable routes", async () => {
     const highMinProfit = { ...baseOpts, minProfitMaticWei: 10n ** 30n };
     const A = "0xa" as Address;
     const B = "0xb" as Address;
@@ -83,18 +83,18 @@ describe("evaluatePipeline", () => {
       },
     ];
     const cycles = [makeCycle(edges)];
-    const result = evaluatePipeline(cycles, new Map(), highMinProfit);
+    const result = await evaluatePipeline(cycles, new Map(), highMinProfit);
     expect(result.profitableCount).toBe(0);
   });
 
-  it("returns empty result for empty cycles", () => {
-    const result = evaluatePipeline([], new Map(), baseOpts);
+  it("returns empty result for empty cycles", async () => {
+    const result = await evaluatePipeline([], new Map(), baseOpts);
     expect(result.attempted).toBe(0);
     expect(result.profitableCount).toBe(0);
     expect(result.profitable).toHaveLength(0);
   });
 
-  it("finds profit peak using ternary search for low liquidity pools", () => {
+  it("finds profit peak using ternary search for low liquidity pools", async () => {
     const A = "0xa" as Address;
     const B = "0xb" as Address;
 
@@ -134,12 +134,12 @@ describe("evaluatePipeline", () => {
       ["0xp1", pool1State],
       ["0xp2", pool2State],
     ]);
-    const result = evaluatePipeline(cycles, stateCache, baseOpts);
+    const result = await evaluatePipeline(cycles, stateCache, baseOpts);
 
     expect(result.profitableCount).toBe(1);
   });
 
-  it("skips cycles that throw during simulation", () => {
+  it("skips cycles that throw during simulation", async () => {
     const badEdge: SwapEdge[] = [
       {
         poolAddress: "0xbad" as Address,
@@ -152,7 +152,7 @@ describe("evaluatePipeline", () => {
         tokenOutIdx: 1,
       },
     ];
-    const result = evaluatePipeline([makeCycle(badEdge)], new Map(), baseOpts);
+    const result = await evaluatePipeline([makeCycle(badEdge)], new Map(), baseOpts);
     expect(result.attempted).toBe(1);
     expect(result.profitableCount).toBe(0);
   });
