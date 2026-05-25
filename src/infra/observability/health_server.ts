@@ -76,7 +76,6 @@ export class HealthServer implements Lifecycle {
         return new Response("Not Found", { status: 404 });
       },
     });
-    process.stderr.write(`[health] HTTP server listening on :${this.port}\n`);
   }
 
   async stop(): Promise<void> {

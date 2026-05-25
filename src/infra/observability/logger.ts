@@ -42,7 +42,6 @@ function createLogSinkStream(sink: string[], max: number): DestinationStream {
           if (sink.length > max) sink.length = max;
         }
       }
-      process.stderr.write(raw + "\n");
       callback();
     },
     objectMode: false,

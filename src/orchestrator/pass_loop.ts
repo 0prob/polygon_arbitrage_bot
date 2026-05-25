@@ -428,7 +428,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Always fetch missing state for current cycles and update rates
       if (pools.length > 0) {
         const dummyCycles = shouldReEnumerate ? pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any)) : [];
-        await fetchMissingPoolState(ctx, pools, [...currentCycles, ...dummyCycles]);
+        await fetchMissingPoolState(ctx, pools, [...cachedCycles, ...dummyCycles]);
         cachedRates = computeMaticRates(pools, stateCache);
       }
 

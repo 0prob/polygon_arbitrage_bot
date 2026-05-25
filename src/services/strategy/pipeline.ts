@@ -213,9 +213,7 @@ export async function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteSt
         profitable.push({ cycle, result: bestResult, assessment: bestAssessment });
       }
     } catch (err) {
-      if (attempted % 10000 === 0) {
-        process.stderr.write(`[pipeline] Error in cycle ${attempted}: ${err instanceof Error ? err.message : err}\n`);
-      }
+      // Ignore individual cycle simulation errors to keep pipeline moving
     }
   }
 

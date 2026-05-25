@@ -147,7 +147,7 @@ export async function buildStateCacheFromGraphQL(
 
     _lastFetchTime = Date.now();
   } catch (err) {
-    process.stderr.write(`[hyperindex_graphql] buildStateCacheFromGraphQL failed: ${err instanceof Error ? err.message : err}\n`);
+    // Silently fail
   }
 
   return _cachedState;
@@ -215,7 +215,6 @@ export async function discoverPoolsFromHasura(
       };
     });
   } catch (err) {
-    process.stderr.write(`[hyperindex_graphql] discoverPoolsFromHasura failed: ${err instanceof Error ? err.message : err}\n`);
     return [];
   }
 }

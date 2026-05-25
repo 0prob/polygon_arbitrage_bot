@@ -80,7 +80,6 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   const stateCache: RouteStateCache = new Map();
 
   let cachedPools: PoolMeta[] | null = null;
-  let lastPoolFetch = 0;
 
   const getPools = (): PoolMeta[] => {
     return cachedPools || [];
