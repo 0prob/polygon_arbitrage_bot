@@ -106,9 +106,12 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
 
   const fetchGas = async () => {
     try {
-      const block = await publicClient.getBlock({ blockTag: "latest" });
+      const [block, priorityFee] = await Promise.all([
+        publicClient.getBlock({ blockTag: "latest" }),
+        publicClient.estimateMaxPriorityFeePerGas().catch(() => 30n * 10n ** 9n),
+      ]);
       const baseFee = block.baseFeePerGas ?? 30n * 10n ** 9n;
-      return { baseFee, priorityFee: 30n * 10n ** 9n };
+      return { baseFee, priorityFee };
     } catch {
       return { baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n };
     }

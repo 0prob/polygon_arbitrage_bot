@@ -66,6 +66,7 @@ export class GasOracle {
   }
 
   async start(): Promise<void> {
+    if (this.timer) return;
     await this.refresh();
     this.timer = setInterval(() => this.refresh(), this.config.pollIntervalMs);
   }

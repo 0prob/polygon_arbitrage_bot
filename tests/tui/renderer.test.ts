@@ -70,7 +70,7 @@ describe("Renderer", () => {
   it("renders detailed system stats", () => {
     const stdout = createMockStdout();
     const r = new Renderer(stdout);
-    const layout = computeLayout(120, 24); // Use wider layout
+    const layout = computeLayout(160, 24); // Use much wider layout to accommodate ANSI escapes
     const state = createInitialState();
     
     applyEvent(state, { 
