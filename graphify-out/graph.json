@@ -4,6 +4,258 @@
   "graph": {},
   "nodes": [
     {
+      "label": "hyperindex_graphql.ts",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L1",
+      "id": "src_infra_hypersync_hyperindex_graphql_ts",
+      "community": 9,
+      "norm_label": "hyperindex_graphql.ts"
+    },
+    {
+      "label": "_cachedState",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L4",
+      "id": "hypersync_hyperindex_graphql_cachedstate",
+      "community": 9,
+      "norm_label": "_cachedstate"
+    },
+    {
+      "label": "_cacheAccessOrder",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L5",
+      "id": "hypersync_hyperindex_graphql_cacheaccessorder",
+      "community": 9,
+      "norm_label": "_cacheaccessorder"
+    },
+    {
+      "label": "resetGraphQLReaderCache()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L8",
+      "id": "hypersync_hyperindex_graphql_resetgraphqlreadercache",
+      "community": 9,
+      "norm_label": "resetgraphqlreadercache()"
+    },
+    {
+      "label": "graphQLQuery()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L14",
+      "id": "hypersync_hyperindex_graphql_graphqlquery",
+      "community": 9,
+      "norm_label": "graphqlquery()"
+    },
+    {
+      "label": "merge()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L37",
+      "id": "hypersync_hyperindex_graphql_merge",
+      "community": 9,
+      "norm_label": "merge()"
+    },
+    {
+      "label": "buildStateCacheFromGraphQL()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L56",
+      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
+      "community": 9,
+      "norm_label": "buildstatecachefromgraphql()"
+    },
+    {
+      "label": "HasuraPoolMeta",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L156",
+      "id": "hypersync_hyperindex_graphql_hasurapoolmeta",
+      "community": 9,
+      "norm_label": "hasurapoolmeta"
+    },
+    {
+      "label": "discoverPoolsFromHasura()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L163",
+      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
+      "community": 9,
+      "norm_label": "discoverpoolsfromhasura()"
+    },
+    {
+      "label": "parseBigIntArray()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L222",
+      "id": "hypersync_hyperindex_graphql_parsebigintarray",
+      "community": 9,
+      "norm_label": "parsebigintarray()"
+    },
+    {
+      "label": "health_server.ts",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L1",
+      "id": "src_infra_observability_health_server_ts",
+      "community": 167,
+      "norm_label": "health_server.ts"
+    },
+    {
+      "label": "HealthPayload",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L7",
+      "id": "observability_health_server_healthpayload",
+      "community": 167,
+      "norm_label": "healthpayload"
+    },
+    {
+      "label": "HealthDependencies",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L43",
+      "id": "observability_health_server_healthdependencies",
+      "community": 167,
+      "norm_label": "healthdependencies"
+    },
+    {
+      "label": "HealthServer",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L51",
+      "id": "observability_health_server_healthserver",
+      "community": 166,
+      "norm_label": "healthserver"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L54",
+      "id": "observability_health_server_healthserver_constructor",
+      "community": 166,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".prepare()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L59",
+      "id": "observability_health_server_healthserver_prepare",
+      "community": 166,
+      "norm_label": ".prepare()"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L61",
+      "id": "observability_health_server_healthserver_start",
+      "community": 166,
+      "norm_label": ".start()"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L81",
+      "id": "observability_health_server_healthserver_stop",
+      "community": 166,
+      "norm_label": ".stop()"
+    },
+    {
+      "label": ".getPort()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L86",
+      "id": "observability_health_server_healthserver_getport",
+      "community": 166,
+      "norm_label": ".getport()"
+    },
+    {
+      "label": ".buildHealthPayload()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L90",
+      "id": "observability_health_server_healthserver_buildhealthpayload",
+      "community": 166,
+      "norm_label": ".buildhealthpayload()"
+    },
+    {
+      "label": ".buildMetricsText()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L123",
+      "id": "observability_health_server_healthserver_buildmetricstext",
+      "community": 166,
+      "norm_label": ".buildmetricstext()"
+    },
+    {
+      "label": "logger.ts",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L1",
+      "id": "src_infra_observability_logger_ts",
+      "community": 88,
+      "norm_label": "logger.ts"
+    },
+    {
+      "label": "Logger",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L5",
+      "id": "observability_logger_logger",
+      "community": 88,
+      "norm_label": "logger"
+    },
+    {
+      "label": "LoggerOptions",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L7",
+      "id": "observability_logger_loggeroptions",
+      "community": 88,
+      "norm_label": "loggeroptions"
+    },
+    {
+      "label": "LEVEL_LABELS",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L20",
+      "id": "observability_logger_level_labels",
+      "community": 88,
+      "norm_label": "level_labels"
+    },
+    {
+      "label": "createLogSinkStream()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L29",
+      "id": "observability_logger_createlogsinkstream",
+      "community": 88,
+      "norm_label": "createlogsinkstream()"
+    },
+    {
+      "label": "createRootLogger()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L52",
+      "id": "observability_logger_createrootlogger",
+      "community": 88,
+      "norm_label": "createrootlogger()"
+    },
+    {
+      "label": "childLogger()",
+      "file_type": "code",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L81",
+      "id": "observability_logger_childlogger",
+      "community": 88,
+      "norm_label": "childlogger()"
+    },
+    {
       "label": "boot.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
@@ -128,6 +380,69 @@
       "id": "orchestrator_pass_loop_runpassloop",
       "community": 9,
       "norm_label": "runpassloop()"
+    },
+    {
+      "label": "pipeline.ts",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "id": "src_services_strategy_pipeline_ts",
+      "community": 28,
+      "norm_label": "pipeline.ts"
+    },
+    {
+      "label": "PipelineOptions",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L11",
+      "id": "strategy_pipeline_pipelineoptions",
+      "community": 15,
+      "norm_label": "pipelineoptions"
+    },
+    {
+      "label": "getTestAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L23",
+      "id": "strategy_pipeline_gettestamount",
+      "community": 28,
+      "norm_label": "gettestamount()"
+    },
+    {
+      "label": "PipelineResult",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "id": "strategy_pipeline_pipelineresult",
+      "community": 28,
+      "norm_label": "pipelineresult"
+    },
+    {
+      "label": "getEffectivePriceImpactForCycle()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L54",
+      "id": "strategy_pipeline_geteffectivepriceimpactforcycle",
+      "community": 28,
+      "norm_label": "geteffectivepriceimpactforcycle()"
+    },
+    {
+      "label": "evaluateAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L62",
+      "id": "strategy_pipeline_evaluateamount",
+      "community": 28,
+      "norm_label": "evaluateamount()"
+    },
+    {
+      "label": "evaluatePipeline()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L100",
+      "id": "strategy_pipeline_evaluatepipeline",
+      "community": 28,
+      "norm_label": "evaluatepipeline()"
     },
     {
       "label": "renderer.ts",
@@ -1327,96 +1642,6 @@
       "id": "strategy_finder_enumeratecycles"
     },
     {
-      "label": "hyperindex_graphql.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L1",
-      "community": 9,
-      "norm_label": "hyperindex_graphql.ts",
-      "id": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "label": "_cachedState",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L4",
-      "community": 9,
-      "norm_label": "_cachedstate",
-      "id": "hypersync_hyperindex_graphql_cachedstate"
-    },
-    {
-      "label": "_cacheAccessOrder",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L5",
-      "community": 9,
-      "norm_label": "_cacheaccessorder",
-      "id": "hypersync_hyperindex_graphql_cacheaccessorder"
-    },
-    {
-      "label": "resetGraphQLReaderCache()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L8",
-      "community": 9,
-      "norm_label": "resetgraphqlreadercache()",
-      "id": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
-    },
-    {
-      "label": "graphQLQuery()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L14",
-      "community": 9,
-      "norm_label": "graphqlquery()",
-      "id": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "label": "merge()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L37",
-      "community": 9,
-      "norm_label": "merge()",
-      "id": "hypersync_hyperindex_graphql_merge"
-    },
-    {
-      "label": "buildStateCacheFromGraphQL()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L56",
-      "community": 9,
-      "norm_label": "buildstatecachefromgraphql()",
-      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "label": "HasuraPoolMeta",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L156",
-      "community": 9,
-      "norm_label": "hasurapoolmeta",
-      "id": "hypersync_hyperindex_graphql_hasurapoolmeta"
-    },
-    {
-      "label": "discoverPoolsFromHasura()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L163",
-      "community": 9,
-      "norm_label": "discoverpoolsfromhasura()",
-      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "label": "parseBigIntArray()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L223",
-      "community": 9,
-      "norm_label": "parsebigintarray()",
-      "id": "hypersync_hyperindex_graphql_parsebigintarray"
-    },
-    {
       "label": "hops.ts",
       "file_type": "code",
       "source_file": "src/services/execution/calldata/hops.ts",
@@ -1928,69 +2153,6 @@
       "community": 162,
       "norm_label": "badedge",
       "id": "strategy_pipeline_test_badedge"
-    },
-    {
-      "label": "pipeline.ts",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "community": 28,
-      "norm_label": "pipeline.ts",
-      "id": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "label": "PipelineOptions",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L11",
-      "community": 15,
-      "norm_label": "pipelineoptions",
-      "id": "strategy_pipeline_pipelineoptions"
-    },
-    {
-      "label": "getTestAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L23",
-      "community": 28,
-      "norm_label": "gettestamount()",
-      "id": "strategy_pipeline_gettestamount"
-    },
-    {
-      "label": "PipelineResult",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "community": 28,
-      "norm_label": "pipelineresult",
-      "id": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "label": "getEffectivePriceImpactForCycle()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L54",
-      "community": 28,
-      "norm_label": "geteffectivepriceimpactforcycle()",
-      "id": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "label": "evaluateAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L62",
-      "community": 28,
-      "norm_label": "evaluateamount()",
-      "id": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "label": "evaluatePipeline()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L100",
-      "community": 28,
-      "norm_label": "evaluatepipeline()",
-      "id": "strategy_pipeline_evaluatepipeline"
     },
     {
       "label": "events.ts",
@@ -9552,168 +9714,6 @@
       "id": "rpc_websocket_subscriber_test_handler"
     },
     {
-      "label": "logger.ts",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L1",
-      "community": 88,
-      "norm_label": "logger.ts",
-      "id": "src_infra_observability_logger_ts"
-    },
-    {
-      "label": "Logger",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L5",
-      "community": 88,
-      "norm_label": "logger",
-      "id": "observability_logger_logger"
-    },
-    {
-      "label": "LoggerOptions",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L7",
-      "community": 88,
-      "norm_label": "loggeroptions",
-      "id": "observability_logger_loggeroptions"
-    },
-    {
-      "label": "LEVEL_LABELS",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L20",
-      "community": 88,
-      "norm_label": "level_labels",
-      "id": "observability_logger_level_labels"
-    },
-    {
-      "label": "createLogSinkStream()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L29",
-      "community": 88,
-      "norm_label": "createlogsinkstream()",
-      "id": "observability_logger_createlogsinkstream"
-    },
-    {
-      "label": "createRootLogger()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L53",
-      "community": 88,
-      "norm_label": "createrootlogger()",
-      "id": "observability_logger_createrootlogger"
-    },
-    {
-      "label": "childLogger()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L82",
-      "community": 88,
-      "norm_label": "childlogger()",
-      "id": "observability_logger_childlogger"
-    },
-    {
-      "label": "health_server.ts",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L1",
-      "community": 167,
-      "norm_label": "health_server.ts",
-      "id": "src_infra_observability_health_server_ts"
-    },
-    {
-      "label": "HealthPayload",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L7",
-      "community": 167,
-      "norm_label": "healthpayload",
-      "id": "observability_health_server_healthpayload"
-    },
-    {
-      "label": "HealthDependencies",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L43",
-      "community": 167,
-      "norm_label": "healthdependencies",
-      "id": "observability_health_server_healthdependencies"
-    },
-    {
-      "label": "HealthServer",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L51",
-      "community": 166,
-      "norm_label": "healthserver",
-      "id": "observability_health_server_healthserver"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L54",
-      "community": 166,
-      "norm_label": ".constructor()",
-      "id": "observability_health_server_healthserver_constructor"
-    },
-    {
-      "label": ".prepare()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L59",
-      "community": 166,
-      "norm_label": ".prepare()",
-      "id": "observability_health_server_healthserver_prepare"
-    },
-    {
-      "label": ".start()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L61",
-      "community": 166,
-      "norm_label": ".start()",
-      "id": "observability_health_server_healthserver_start"
-    },
-    {
-      "label": ".stop()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L82",
-      "community": 166,
-      "norm_label": ".stop()",
-      "id": "observability_health_server_healthserver_stop"
-    },
-    {
-      "label": ".getPort()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L87",
-      "community": 166,
-      "norm_label": ".getport()",
-      "id": "observability_health_server_healthserver_getport"
-    },
-    {
-      "label": ".buildHealthPayload()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L91",
-      "community": 166,
-      "norm_label": ".buildhealthpayload()",
-      "id": "observability_health_server_healthserver_buildhealthpayload"
-    },
-    {
-      "label": ".buildMetricsText()",
-      "file_type": "code",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L124",
-      "community": 166,
-      "norm_label": ".buildmetricstext()",
-      "id": "observability_health_server_healthserver_buildmetricstext"
-    },
-    {
       "label": "circuit_breaker.ts",
       "file_type": "code",
       "source_file": "src/infra/resilience/circuit_breaker.ts",
@@ -15595,7 +15595,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L159",
-      "community": 12,
+      "community": 33,
       "norm_label": "client",
       "id": "hypersync_client_client"
     },
@@ -15640,7 +15640,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/client.ts",
       "source_location": "L203",
-      "community": 12,
+      "community": 33,
       "norm_label": "blockfield",
       "id": "hypersync_client_blockfield"
     },
@@ -15658,7 +15658,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 33,
       "norm_label": "stream.ts",
       "id": "src_infra_hypersync_stream_ts"
     },
@@ -15667,7 +15667,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L6",
-      "community": 113,
+      "community": 33,
       "norm_label": "parseblock()",
       "id": "hypersync_stream_parseblock"
     },
@@ -15676,7 +15676,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L14",
-      "community": 113,
+      "community": 33,
       "norm_label": "parseoptionalblock()",
       "id": "hypersync_stream_parseoptionalblock"
     },
@@ -15685,7 +15685,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L19",
-      "community": 113,
+      "community": 33,
       "norm_label": "pagelogsfromresponse()",
       "id": "hypersync_stream_pagelogsfromresponse"
     },
@@ -15694,7 +15694,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L28",
-      "community": 113,
+      "community": 33,
       "norm_label": "fireprogress()",
       "id": "hypersync_stream_fireprogress"
     },
@@ -15703,7 +15703,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L38",
-      "community": 113,
+      "community": 33,
       "norm_label": "fetchalllogsresult",
       "id": "hypersync_stream_fetchalllogsresult"
     },
@@ -15712,7 +15712,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.ts",
       "source_location": "L45",
-      "community": 113,
+      "community": 33,
       "norm_label": "fetchalllogs()",
       "id": "hypersync_stream_fetchalllogs"
     },
@@ -18826,7 +18826,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L1",
-      "community": 113,
+      "community": 33,
       "norm_label": "stream.test.ts",
       "id": "src_infra_hypersync_stream_test_ts"
     },
@@ -18835,7 +18835,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L8",
-      "community": 113,
+      "community": 33,
       "norm_label": "mockclient",
       "id": "hypersync_stream_test_mockclient"
     },
@@ -18844,7 +18844,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/stream.test.ts",
       "source_location": "L19",
-      "community": 113,
+      "community": 33,
       "norm_label": "query",
       "id": "hypersync_stream_test_query"
     },
@@ -18862,7 +18862,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L3",
-      "community": 33,
+      "community": 14,
       "norm_label": "hypersynclogfilter",
       "id": "hypersync_types_hypersynclogfilter"
     },
@@ -18871,7 +18871,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L8",
-      "community": 33,
+      "community": 14,
       "norm_label": "hypersyncfieldselection",
       "id": "hypersync_types_hypersyncfieldselection"
     },
@@ -18880,7 +18880,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L13",
-      "community": 113,
+      "community": 33,
       "norm_label": "hypersyncquery",
       "id": "hypersync_types_hypersyncquery"
     },
@@ -18889,7 +18889,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L23",
-      "community": 33,
+      "community": 45,
       "norm_label": "hypersyncclientconfig",
       "id": "hypersync_types_hypersyncclientconfig"
     },
@@ -18970,7 +18970,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/types.ts",
       "source_location": "L83",
-      "community": 33,
+      "community": 12,
       "norm_label": "hypersyncdecoderruntime",
       "id": "hypersync_types_hypersyncdecoderruntime"
     },
@@ -19148,15 +19148,936 @@
   ],
   "links": [
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_cachedstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_cacheaccessorder"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_merge"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_hasurapoolmeta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L202",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_graphql_ts",
+      "target": "hypersync_hyperindex_graphql_parsebigintarray"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
+      "target": "hypersync_hyperindex_graphql_graphqlquery"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L128",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/infra/hypersync_integration.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_infra_hypersync_integration_test_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "orchestrator_lifecycle_lifecycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "types_metrics_metrics"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "resilience_circuit_breaker_circuitbreaker"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "resilience_tier_manager_degradationtier"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "observability_health_server_healthpayload"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "observability_health_server_healthdependencies"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "observability_health_server_healthserver"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_observability_health_server_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_infra_resilience_hyperindex_monitor_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_core_types_metrics_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_orchestrator_lifecycle_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_infra_resilience_circuit_breaker_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_health_server_ts",
+      "target": "src_infra_resilience_tier_manager_ts"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthpayload",
+      "target": "resilience_tier_manager_degradationtier"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthdependencies",
+      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthdependencies",
+      "target": "types_metrics_metrics"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthdependencies",
+      "target": "resilience_circuit_breaker_circuitbreaker"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthdependencies",
+      "target": "resilience_tier_manager_degradationtier"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_prepare"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_start"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_stop"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_getport"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_buildhealthpayload"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "observability_health_server_healthserver_buildmetricstext"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "observability_health_server_healthserver"
+    },
+    {
+      "relation": "implements",
+      "context": "type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/health_server.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_health_server_healthserver",
+      "target": "orchestrator_lifecycle_lifecycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "types_common_loglevel"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_loggeroptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_level_labels"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_createlogsinkstream"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "observability_logger_childlogger"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_service_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_logger_ts",
+      "target": "src_core_types_common_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/service.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_service_test_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/mempool/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_mempool_service_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_system_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/circuit_breaker.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_circuit_breaker_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_index_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_ts",
-      "target": "config_schema_appconfig"
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_runtimecontext",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_service_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/service.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_service_executionservice_constructor",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/service.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_service_test_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/mempool/service.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_mempool_service_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/mempool/service.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mempool_service_mempoolservice_constructor",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_system_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_system_botsystem",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_system_botsystem_logger",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/circuit_breaker.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_circuit_breaker_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_index_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_logger_loggeroptions",
+      "target": "types_common_loglevel"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_index_ts",
+      "target": "observability_logger_loggeroptions"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/logger.ts",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "observability_logger_createrootlogger",
+      "target": "observability_logger_createlogsinkstream"
     },
     {
       "relation": "imports",
@@ -19170,15 +20091,92 @@
       "target": "observability_logger_createrootlogger"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "orchestrator_boot_bootapplication",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_system_ts",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "orchestrator_system_botsystem_constructor",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_index_ts",
+      "target": "observability_logger_createrootlogger"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/observability/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_observability_index_ts",
+      "target": "observability_logger_childlogger"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L4",
+      "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_ts",
-      "target": "observability_logger_logger"
+      "target": "config_schema_appconfig"
     },
     {
       "relation": "imports",
@@ -19689,17 +20687,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L18",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20096,17 +21083,6 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_runtimecontext",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
       "source_location": "L39",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20200,17 +21176,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_boot_test_ts",
       "target": "orchestrator_boot_bootapplication"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "orchestrator_boot_bootapplication",
-      "target": "observability_logger_createrootlogger"
     },
     {
       "relation": "calls",
@@ -20356,6 +21321,17 @@
       "target": "strategy_graph_buildgraph"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20409,28 +21385,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_ts",
       "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
     },
     {
       "relation": "imports",
@@ -20647,28 +21601,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20830,6 +21762,17 @@
       "target": "orchestrator_pass_loop_fetchmissingpoolstate"
     },
     {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20861,39 +21804,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_pass_loop_passloopdeps",
       "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L128",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L127",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_pipeline_evaluatepipeline"
     },
     {
       "relation": "references",
@@ -21039,28 +21949,6 @@
       "target": "execution_service_groupcompatiblecandidates"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -21114,6 +22002,440 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_liquidity_test_ts",
       "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_route_routesimulationresult"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_route_routestatecache"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_execution_profitassessment"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_gettestamount"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_pipelineresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_evaluateamount"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_services_strategy_simulator_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_types_route_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_types_execution_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_config_addresses_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/candidate.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_candidate_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L266",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineoptions",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_gettestamount"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "types_route_routesimulationresult"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "types_execution_profitassessment"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/candidate.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_candidate_ts",
+      "target": "strategy_pipeline_pipelineresult"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L122",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L141",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_evaluateamount"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L266",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
     },
     {
       "relation": "imports",
@@ -22202,17 +23524,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/cli/main.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
       "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -22251,17 +23562,6 @@
       "confidence_score": 1.0,
       "source": "src_cli_main_ts",
       "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "observability_health_server_healthserver"
     },
     {
       "relation": "contains",
@@ -22316,28 +23616,6 @@
       "confidence_score": 1.0,
       "source": "src_cli_main_ts",
       "target": "src_orchestrator_shutdown_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_observability_health_server_ts"
     },
     {
       "relation": "imports_from",
@@ -22399,17 +23677,6 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/cli/main.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
       "source_location": "L11",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -22426,17 +23693,6 @@
       "confidence_score": 1.0,
       "source": "cli_main_main",
       "target": "config_loader_loadconfig"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "contains",
@@ -22500,17 +23756,6 @@
       "target": "src_infra_hypersync_hyperindex_process_ts"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -22531,17 +23776,6 @@
       "confidence_score": 1.0,
       "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
       "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "imports",
@@ -22599,17 +23833,6 @@
       "target": "orchestrator_lifecycle_lifecycle"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "observability_logger_logger"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/infra/resilience/hyperindex_monitor.ts",
@@ -22654,28 +23877,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_infra_resilience_hyperindex_monitor_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/infra/resilience/tier_manager.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -22704,17 +23905,6 @@
       "confidence_score": 1.0,
       "source": "resilience_hyperindex_monitor_hyperindexmonitor_restart",
       "target": "resilience_hyperindex_monitor_sleep"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "method",
@@ -22836,28 +24026,6 @@
       "confidence_score": 1.0,
       "source": "resilience_hyperindex_monitor_hyperindexmonitor",
       "target": "orchestrator_lifecycle_lifecycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthdependencies",
-      "target": "resilience_hyperindex_monitor_hyperindexmonitor"
     },
     {
       "relation": "imports",
@@ -23958,17 +25126,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/execution/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_service_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/service.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -24195,17 +25352,6 @@
       "confidence_score": 1.0,
       "source": "src_services_execution_dryrun_ts",
       "target": "src_services_execution_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_service_ts",
-      "target": "src_infra_observability_logger_ts"
     },
     {
       "relation": "imports_from",
@@ -24570,17 +25716,6 @@
       "confidence_score": 1.0,
       "source": "execution_service_executionservice_constructor",
       "target": "execution_nonce_noncemanager"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/service.ts",
-      "source_location": "L111",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_service_executionservice_constructor",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "calls",
@@ -25110,17 +26245,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/finder.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -25247,28 +26371,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_services_strategy_pipeline_test_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
       "target": "strategy_finder_foundcycle"
     },
     {
@@ -25424,162 +26526,6 @@
       "confidence_score": 1.0,
       "source": "src_diagnostic_runner_ts",
       "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_cachedstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_cacheaccessorder"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_merge"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L133",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_hasurapoolmeta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L139",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L202",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_graphql_ts",
-      "target": "hypersync_hyperindex_graphql_parsebigintarray"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_resetgraphqlreadercache"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L59",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
-      "target": "hypersync_hyperindex_graphql_graphqlquery"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/infra/hypersync_integration.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_infra_hypersync_integration_test_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
     },
     {
       "relation": "imports",
@@ -27079,17 +28025,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_services_strategy_simulator_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L5",
       "weight": 1.0,
@@ -27321,39 +28256,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L73",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/backrunner.ts",
       "source_location": "L4",
       "weight": 1.0,
@@ -27393,39 +28295,6 @@
       "weight": 1.0,
       "source": "strategy_evaluator_evaluatepaths",
       "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_geteffectivepriceimpact"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L55",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
-      "target": "strategy_simulator_geteffectivepriceimpact"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L119",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_simulator_geteffectivepriceimpact"
     },
     {
       "relation": "contains",
@@ -27486,28 +28355,6 @@
       "confidence_score": 1.0,
       "source": "tests_infra_hypersync_integration_test_ts",
       "target": "infra_hypersync_integration_test_entry"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
     },
     {
       "relation": "imports",
@@ -27662,308 +28509,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_pipeline_test_ts",
       "target": "src_services_strategy_graph_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_route_routesimulationresult"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_route_routestatecache"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_execution_profitassessment"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_pipelineoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_gettestamount"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L53",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_assessment_profit_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_types_route_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_types_execution_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_config_addresses_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/candidate.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_candidate_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L266",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineoptions",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L114",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_gettestamount"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
-      "target": "types_route_routesimulationresult"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
-      "target": "types_execution_profitassessment"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/candidate.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_candidate_ts",
-      "target": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L122",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L141",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L266",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
     },
     {
       "relation": "contains",
@@ -35777,17 +36322,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "src_core_types_common_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/config/addresses.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -36335,28 +36869,6 @@
       "target": "types_common_loggerfn"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "types_common_loglevel"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_logger_loggeroptions",
-      "target": "types_common_loglevel"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/core/types/metrics.ts",
@@ -36388,17 +36900,6 @@
       "target": "src_core_types_metrics_ts"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_core_types_metrics_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -36407,28 +36908,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_orchestrator_status_writer_ts",
-      "target": "types_metrics_metrics"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "types_metrics_metrics"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L44",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthdependencies",
       "target": "types_metrics_metrics"
     },
     {
@@ -38952,28 +39431,6 @@
       "target": "rpc_retry_withretry"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/service.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_service_test_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/service.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_service_test_ts",
-      "target": "observability_logger_logger"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/execution/service.test.ts",
@@ -41309,28 +41766,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mempool/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_mempool_service_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/mempool/service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_mempool_service_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/mempool/service.ts",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -41469,17 +41904,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_system_ts",
       "target": "mempool_service_mempoolservice"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/mempool/service.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mempool_service_mempoolservice_constructor",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "calls",
@@ -41690,17 +42114,6 @@
       "target": "src_orchestrator_lifecycle_ts"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_orchestrator_lifecycle_ts"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -41720,17 +42133,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_infra_di_service_registry_ts",
-      "target": "orchestrator_lifecycle_lifecycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
       "target": "orchestrator_lifecycle_lifecycle"
     },
     {
@@ -41764,17 +42166,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "di_service_registry_serviceregistry_register",
-      "target": "orchestrator_lifecycle_lifecycle"
-    },
-    {
-      "relation": "implements",
-      "context": "type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
       "target": "orchestrator_lifecycle_lifecycle"
     },
     {
@@ -41830,39 +42221,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_system_ts",
       "target": "config_schema_appconfig"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_system_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_system_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_system_ts",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "contains",
@@ -41956,17 +42314,6 @@
     },
     {
       "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_system_botsystem",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/system.ts",
@@ -41975,28 +42322,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_system_botsystem_constructor",
       "target": "config_schema_appconfig"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "source": "orchestrator_system_botsystem_constructor",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_system_botsystem_logger",
-      "target": "observability_logger_logger"
     },
     {
       "relation": "references",
@@ -43476,331 +43801,6 @@
       "confidence_score": 1.0,
       "source": "src_infra_rpc_websocket_subscriber_test_ts",
       "target": "rpc_websocket_subscriber_test_handler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_loggeroptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_level_labels"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_createlogsinkstream"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L53",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L82",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_logger_ts",
-      "target": "observability_logger_childlogger"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/circuit_breaker.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_circuit_breaker_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/index.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_index_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/circuit_breaker.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_circuit_breaker_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/index.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_index_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/index.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_index_ts",
-      "target": "observability_logger_loggeroptions"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/logger.ts",
-      "source_location": "L64",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_logger_createrootlogger",
-      "target": "observability_logger_createlogsinkstream"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/index.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_index_ts",
-      "target": "observability_logger_createrootlogger"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/index.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_index_ts",
-      "target": "observability_logger_childlogger"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_infra_resilience_circuit_breaker_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "resilience_circuit_breaker_circuitbreaker"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "src_infra_resilience_tier_manager_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "resilience_tier_manager_degradationtier"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "observability_health_server_healthpayload"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "observability_health_server_healthdependencies"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_observability_health_server_ts",
-      "target": "observability_health_server_healthserver"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthpayload",
-      "target": "resilience_tier_manager_degradationtier"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthdependencies",
-      "target": "resilience_circuit_breaker_circuitbreaker"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthdependencies",
-      "target": "resilience_tier_manager_degradationtier"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L59",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_prepare"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_start"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L82",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_stop"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L87",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_getport"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L91",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_buildhealthpayload"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/observability/health_server.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "observability_health_server_healthserver",
-      "target": "observability_health_server_healthserver_buildmetricstext"
     },
     {
       "relation": "contains",
@@ -56695,5 +56695,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8827dd1907df7bd6688fa59b33d5ec0ce8a679ee"
+  "built_at_commit": "d56f38579e94508ba880ee3b3b21cff42e336412"
 }

@@ -134,7 +134,7 @@ export function getDodoGrossAmountOut(poolState: unknown, amountIn: bigint, base
     Q: toBigInt(pool.quoteReserve ?? pool.Q),
     B0: toBigInt(pool.baseTarget ?? pool.B0),
     Q0: toBigInt(pool.quoteTarget ?? pool.Q0),
-    R: Number(pool.rState ?? pool.R ?? DODO_RSTATE_ONE),
+    R: Number(pool.rStatus ?? pool.rState ?? pool.R ?? DODO_RSTATE_ONE),
   };
 
   if (state.i <= 0n || state.K < 0n || state.K > ONE) return 0n;

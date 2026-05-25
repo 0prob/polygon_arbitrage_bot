@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779705991.597981,
-    "ast_hash": "bbf644c8354b91a7179b0b58b25b8724",
+    "mtime": 1779706659.5392256,
+    "ast_hash": "7224066bf6e0849539af50e3d291ff00",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779699521.0855503,
-    "ast_hash": "2b041b6942d92c2df44a38148413df3f",
+    "mtime": 1779707079.6028957,
+    "ast_hash": "97bf9d9ce5c78dc3721628be450c9798",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -475,13 +475,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779706491.796943,
-    "ast_hash": "ab69de2051e93ea231f295468c5c3253",
+    "mtime": 1779707056.0071397,
+    "ast_hash": "5c7453dbe6b09ae537df08cfc042a73a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779706431.7415552,
-    "ast_hash": "e37885415a99247069a32f4ed2f7e24a",
+    "mtime": 1779707153.7261248,
+    "ast_hash": "9eb243e365b8b0e857118eb54c02b248",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/observability/logger.ts": {
-    "mtime": 1779155515.3387764,
-    "ast_hash": "202d595212e0d8bcac67c97a8e59476a",
+    "mtime": 1779707059.535103,
+    "ast_hash": "3dbc1966fb9dc756334638ebfec9364e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1779701329.9422622,
-    "ast_hash": "6909b93c7573f0e59a7205aee4395961",
+    "mtime": 1779707128.4543903,
+    "ast_hash": "444cc4302f29942ff6f60b934b1530fe",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/lifecycle.ts": {
@@ -1000,8 +1000,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/observability/health_server.ts": {
-    "mtime": 1779602431.9221115,
-    "ast_hash": "a4cb9544b795ce6863735ad1c6ddc3c3",
+    "mtime": 1779707079.6028957,
+    "ast_hash": "5cf0f993936ba77bd9a77200507c8578",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {

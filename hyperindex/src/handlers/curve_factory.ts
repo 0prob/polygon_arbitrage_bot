@@ -39,6 +39,7 @@ indexer.onEvent(
       balances: meta.balances,
       A: meta.A,
       fee: meta.fee,
+      rates: meta.rates,
     });
 
     for (const coin of meta.coins) {

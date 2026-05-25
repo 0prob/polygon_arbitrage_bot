@@ -10,6 +10,7 @@ indexer.onEvent(
       sqrtPriceX96: event.params.sqrtPriceX96,
       liquidity: event.params.liquidity,
       tick: Number(event.params.tick),
+      fee: undefined,
     });
   },
 );

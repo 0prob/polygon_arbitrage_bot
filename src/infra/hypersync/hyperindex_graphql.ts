@@ -69,11 +69,11 @@ export async function buildStateCacheFromGraphQL(
 
   try {
     await Promise.all([
-      graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState${whereClause} { id sqrtPriceX96 liquidity tick fee } }`).then(result => {
-        const rows = ((result as Record<string, unknown>).V3PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number; fee: number }[] | undefined;
+      graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState${whereClause} { id sqrtPriceX96 liquidity tick } }`).then(result => {
+        const rows = ((result as Record<string, unknown>).V3PoolState) as { id: string; sqrtPriceX96: string; liquidity: string; tick: number }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
-          return { sqrtPriceX96: BigInt(row.sqrtPriceX96), liquidity: BigInt(row.liquidity), tick: row.tick, fee: row.fee };
+          return { sqrtPriceX96: BigInt(row.sqrtPriceX96), liquidity: BigInt(row.liquidity), tick: row.tick };
         });
       }),
 
@@ -111,11 +111,11 @@ export async function buildStateCacheFromGraphQL(
         });
       }),
 
-      graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState${whereClause} { id reserve0 reserve1 fee } }`).then(result => {
-        const rows = ((result as Record<string, unknown>).V2PoolState) as { id: string; reserve0: string; reserve1: string; fee: number }[] | undefined;
+      graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState${whereClause} { id reserve0 reserve1 } }`).then(result => {
+        const rows = ((result as Record<string, unknown>).V2PoolState) as { id: string; reserve0: string; reserve1: string }[] | undefined;
         if (rows) merge(rows, r => {
           const row = r as any;
-          return { reserve0: BigInt(row.reserve0), reserve1: BigInt(row.reserve1), fee: row.fee };
+          return { reserve0: BigInt(row.reserve0), reserve1: BigInt(row.reserve1) };
         });
       }),
 

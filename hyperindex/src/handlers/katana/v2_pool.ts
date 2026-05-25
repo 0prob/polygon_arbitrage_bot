@@ -9,6 +9,7 @@ indexer.onEvent(
       lastUpdatedBlock: Number(event.block.number),
       reserve0: event.params.reserve0,
       reserve1: event.params.reserve1,
+      fee: undefined,
     });
   },
 );

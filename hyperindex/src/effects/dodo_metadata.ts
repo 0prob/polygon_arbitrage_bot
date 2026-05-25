@@ -38,6 +38,8 @@ export const fetchDodoMetadata = createEffect(
       quoteTarget: S.bigint,
       rStatus: S.number,
       fee: S.bigint,
+      lpFeeRate: S.bigint,
+      mtFeeRate: S.bigint,
     },
     rateLimit: { calls: 100, per: "second" },
     cache: true,
@@ -56,9 +58,13 @@ export const fetchDodoMetadata = createEffect(
         client.readContract({ address, abi: DODO_ABI, functionName: "_LP_FEE_RATE_" }),
         client.readContract({ address, abi: DODO_ABI, functionName: "_MT_FEE_RATE_" }),
       ]);
-      return { i, k, baseReserve: b, quoteReserve: q, baseTarget: b0, quoteTarget: q0, rStatus: Number(r), fee: (lp as bigint) + (mt as bigint) };
+      return { 
+        i, k, baseReserve: b, quoteReserve: q, baseTarget: b0, quoteTarget: q0, 
+        rStatus: Number(r), fee: (lp as bigint) + (mt as bigint),
+        lpFeeRate: lp as bigint, mtFeeRate: mt as bigint,
+      };
     } catch {
-      return { i: 0n, k: 0n, baseReserve: 0n, quoteReserve: 0n, baseTarget: 0n, quoteTarget: 0n, rStatus: 0, fee: 0n };
+      return { i: 0n, k: 0n, baseReserve: 0n, quoteReserve: 0n, baseTarget: 0n, quoteTarget: 0n, rStatus: 0, fee: 0n, lpFeeRate: 0n, mtFeeRate: 0n };
     }
   },
 );

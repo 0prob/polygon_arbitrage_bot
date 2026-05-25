@@ -21,6 +21,7 @@ type V2PoolState {
   lastUpdatedBlock: Int!
   reserve0: BigInt!
   reserve1: BigInt!
+  fee: Int
 }
 
 type V3PoolState {
@@ -30,6 +31,7 @@ type V3PoolState {
   sqrtPriceX96: BigInt!
   liquidity: BigInt!
   tick: Int!
+  fee: Int
 }
 
 type V4PoolState {
@@ -51,6 +53,7 @@ type CurvePoolState {
   balances: [BigInt!]!
   A: BigInt!
   fee: BigInt!
+  rates: [BigInt!]
 }
 
 type BalancerPoolState {
@@ -62,6 +65,7 @@ type BalancerPoolState {
   weights: [BigInt!]
   amp: BigInt
   swapFee: BigInt!
+  scalingFactors: [BigInt!]
 }
 
 type DodoPoolState {
@@ -75,6 +79,9 @@ type DodoPoolState {
   rStatus: Int!
   k: BigInt!
   fee: BigInt!
+  i: BigInt!
+  lpFeeRate: BigInt!
+  mtFeeRate: BigInt!
 }
 
 type WoofiPoolState {

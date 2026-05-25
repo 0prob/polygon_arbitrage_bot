@@ -18,13 +18,14 @@ const CURVE_ABI = parseAbi([
   "function fee() view returns (uint256)",
   "function balances(uint256 i) view returns (uint256)",
   "function coins(uint256 i) view returns (address)",
+  "function rates(uint256 i) view returns (uint256)",
 ]);
 
 export const fetchCurveMetadata = createEffect(
   {
     name: "fetchCurveMetadata",
     input: { pool: S.string, nCoins: S.number },
-    output: { A: S.bigint, fee: S.bigint, balances: S.array(S.bigint), coins: S.array(S.string) },
+    output: { A: S.bigint, fee: S.bigint, balances: S.array(S.bigint), coins: S.array(S.string), rates: S.array(S.bigint) },
     rateLimit: { calls: 100, per: "second" },
     cache: true,
   },
@@ -34,29 +35,35 @@ export const fetchCurveMetadata = createEffect(
       const [A, fee, ...all] = await Promise.all([
         client.readContract({ address: pool, abi: CURVE_ABI, functionName: "A" }).catch(() => 0n),
         client.readContract({ address: pool, abi: CURVE_ABI, functionName: "fee" }).catch(() => 0n),
-        ...Array.from({ length: input.nCoins * 2 }, (_, i) => {
-          const fn = i < input.nCoins ? "balances" : "coins";
-          const arg = i < input.nCoins ? BigInt(i) : BigInt(i - input.nCoins);
-          return client.readContract({ address: pool, abi: CURVE_ABI, functionName: fn, args: [arg] });
+        ...Array.from({ length: input.nCoins * 3 }, (_, i) => {
+          let fn: "balances" | "coins" | "rates";
+          let arg: bigint;
+          if (i < input.nCoins) {
+            fn = "balances";
+            arg = BigInt(i);
+          } else if (i < input.nCoins * 2) {
+            fn = "coins";
+            arg = BigInt(i - input.nCoins);
+          } else {
+            fn = "rates";
+            arg = BigInt(i - input.nCoins * 2);
+          }
+          return client.readContract({ address: pool, abi: CURVE_ABI, functionName: fn, args: [arg] }).catch(() => 10n ** 18n);
         }),
       ]);
 
       const balances: bigint[] = [];
       const coins: string[] = [];
+      const rates: bigint[] = [];
       for (let i = 0; i < input.nCoins; i++) {
-        const b = all[i];
-        const c = all[i + input.nCoins];
-        if (b != null && c != null) {
-          balances.push(BigInt(b));
-          coins.push((c as string).toLowerCase());
-        } else {
-          break;
-        }
+        balances.push(BigInt(all[i] as bigint));
+        coins.push((all[i + input.nCoins] as string).toLowerCase());
+        rates.push(BigInt(all[i + input.nCoins * 2] as bigint));
       }
 
-      return { A: A as bigint, fee: fee as bigint, balances, coins };
+      return { A: A as bigint, fee: fee as bigint, balances, coins, rates };
     } catch {
-      return { A: 100n, fee: 0n, balances: [], coins: [] };
+      return { A: 100n, fee: 0n, balances: [], coins: [], rates: [] };
     }
   },
 );

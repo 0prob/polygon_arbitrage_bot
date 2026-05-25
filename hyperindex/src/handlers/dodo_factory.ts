@@ -34,6 +34,9 @@ async function handleDodoPool(
     rStatus: meta.rStatus,
     k: meta.k,
     fee: meta.fee,
+    i: meta.i,
+    lpFeeRate: meta.lpFeeRate,
+    mtFeeRate: meta.mtFeeRate,
   });
 
   const [baseMeta, quoteMeta] = await Promise.all([

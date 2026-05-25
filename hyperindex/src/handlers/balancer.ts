@@ -30,9 +30,10 @@ indexer.onEvent(
       lastUpdatedBlock: Number(event.block.number),
       poolId: poolId,
       balances: meta.balances,
-      weights: undefined,
-      amp: undefined,
+      weights: meta.weights,
+      amp: meta.amp,
       swapFee: meta.swapFee,
+      scalingFactors: meta.scalingFactors,
     });
 
     for (const token of meta.tokens) {
@@ -94,9 +95,10 @@ indexer.onEvent(
         lastUpdatedBlock: Number(event.block.number),
         poolId: poolId,
         balances: metaEffect.balances,
-        weights: undefined,
-        amp: undefined,
+        weights: metaEffect.weights,
+        amp: metaEffect.amp,
         swapFee: metaEffect.swapFee,
+        scalingFactors: metaEffect.scalingFactors,
       });
       return;
     }

@@ -18,6 +18,11 @@ const ERC20_ABI = parseAbi([
   "function decimals() view returns (uint8)",
 ]);
 
+function safeDecimals(d: number): number {
+  if (isNaN(d) || d < 0 || d > 255) return 18;
+  return d;
+}
+
 export const fetchTokenMeta = createEffect(
   {
     name: "fetchTokenMeta",

@@ -6,6 +6,7 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./generated",
+    "rootDir": ".",
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types"]
   },
