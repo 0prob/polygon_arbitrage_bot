@@ -20,6 +20,7 @@ export interface SystemState {
   hiSyncedBlock: number;
   hiRemoteBlock: number;
   hiChain?: string;
+  hiLastSeen: number;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
 }
@@ -61,6 +62,7 @@ export function createInitialState(): TuiState {
       hiStatus: "starting",
       hiSyncedBlock: 0,
       hiRemoteBlock: 0,
+      hiLastSeen: 0,
       poolsPerProtocol: {},
       maxHops: 0,
     },
@@ -138,9 +140,13 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       }
       break;
     case "hyperindex_status":
+      // Don't downgrade from synced/syncing to running/starting if we already have block data
+      if (event.status === "running" && state.system.hiSyncedBlock > 0) break;
+      if (event.status === "starting" && state.system.hiSyncedBlock > 0) break;
       state.system.hiStatus = event.status;
-      state.system.hiSyncedBlock = event.syncedBlock;
-      state.system.hiRemoteBlock = event.remoteBlock;
+      state.system.hiLastSeen = Date.now();
+      if (event.syncedBlock > 0) state.system.hiSyncedBlock = event.syncedBlock;
+      if (event.remoteBlock > 0) state.system.hiRemoteBlock = event.remoteBlock;
       if (event.chain) {
         state.system.hiChain = event.chain;
       }

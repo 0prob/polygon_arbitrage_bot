@@ -16,11 +16,18 @@ export function computeBackoff(attempt: number): number {
 export class QuarantineManager {
   private entries = new Map<string, QuarantineEntry>();
   private queue: string[] = [];
+  private baseMs: number;
+  private maxMs: number;
+
+  constructor(baseMs: number = 2000, maxMs: number = 600_000) {
+    this.baseMs = baseMs;
+    this.maxMs = maxMs;
+  }
 
   add(routeKey: string, error: string = ""): void {
     const existing = this.entries.get(routeKey);
     const attempt = existing ? existing.attempt + 1 : 1;
-    const delay = computeBackoff(attempt);
+    const delay = Math.min(this.baseMs * Math.pow(2, attempt - 1), this.maxMs);
     this.entries.set(routeKey, {
       attempt,
       nextRetry: Date.now() + delay,

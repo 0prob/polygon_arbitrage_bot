@@ -124,14 +124,30 @@ export class Renderer {
   private renderSystem(layout: TuiLayout, state: TuiState): RenderedPanel {
     const s = state.system;
     const gwei = s.gasPriceWei > 0n ? formatGwei(s.gasPriceWei) : "—";
-    const hiColor = s.hiStatus === "synced" ? GREEN : s.hiStatus === "syncing" ? YELLOW : s.hiStatus === "error" ? RED : WHITE;
-    const hiLabel = s.hiSyncedBlock > 0
-      ? `${s.hiStatus} ${color(formatBlock(s.hiSyncedBlock), hiColor)}`
-      : dim(s.hiStatus);
+
+    // Indexer status: use color + label based on state
+    let hiLabel: string;
+    let hiColor: number;
+    if (s.hiSyncedBlock > 0) {
+      hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
+      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}`;
+    } else if (s.hiStatus === "running") {
+      hiColor = CYAN;
+      hiLabel = color("running", hiColor);
+    } else if (s.hiStatus === "error") {
+      hiColor = RED;
+      hiLabel = color("error", hiColor);
+    } else {
+      hiColor = WHITE;
+      hiLabel = dim(s.hiStatus);
+    }
     const hiRemote = s.hiRemoteBlock > 0 ? ` / ${formatBlock(s.hiRemoteBlock)}` : "";
-    const syncPct = s.hiRemoteBlock > 0
+    const syncPct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0
       ? ` (${Math.min(100, (s.hiSyncedBlock / s.hiRemoteBlock) * 100).toFixed(1)}%)`
       : "";
+    // Time since last indexer update
+    const hiAge = s.hiLastSeen > 0 ? Date.now() - s.hiLastSeen : 0;
+    const hiAgeStr = hiAge > 0 ? dim(` ${formatDuration(hiAge)}`) : "";
     const chainLabel = s.hiChain ? ` (${s.hiChain})` : "";
 
     const protocolStr = Object.entries(s.poolsPerProtocol)
@@ -144,7 +160,7 @@ export class Renderer {
       `  Pools:        ${color(String(s.poolCount), CYAN)} ${dim(protocolStr)}`,
       `  Routes:       ${color(String(s.cycleCount), WHITE)} ${dim(`(${s.maxHops} hops)`)}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
-      `  Indexer${chainLabel}: ${hiLabel}${hiRemote}${syncPct}`,
+      `  Indexer${chainLabel}: ${hiLabel}${hiRemote}${syncPct}${hiAgeStr}`,
       `  Uptime:       ${dim(formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0))}`,
     ];
     return this.panelBox(lines, layout.systemPanel);
@@ -210,4 +226,13 @@ function formatUptime(ms: number): string {
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+function formatDuration(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  if (totalSec < 5) return "";
+  if (totalSec < 60) return `${totalSec}s ago`;
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}m${s}s ago`;
 }

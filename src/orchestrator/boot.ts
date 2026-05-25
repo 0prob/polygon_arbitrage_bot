@@ -96,12 +96,12 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     priorityFeeFloorGwei: config.gas.priorityFeeFloorGwei,
     priorityFeeCeilingGwei: config.gas.priorityFeeCeilingGwei,
     maxBidMultiplier: config.gas.maxBidMultiplier,
-    eip1559Enabled: true,
-    feeHistoryPercentile: 50,
-    emaAlpha: 0.3,
-    baseFeeBufferMultiplier: 1.1,
-    maxPriorityFeePercentile: 75,
-    historySize: 20,
+    eip1559Enabled: config.gas.eip1559Enabled,
+    feeHistoryPercentile: config.gas.feeHistoryPercentile,
+    emaAlpha: config.gas.emaAlpha,
+    baseFeeBufferMultiplier: config.gas.baseFeeBufferMultiplier,
+    maxPriorityFeePercentile: config.gas.maxPriorityFeePercentile,
+    historySize: config.gas.historySize,
   };
 
   const fetchGas = async () => {
@@ -213,6 +213,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     chainId: config.execution.chainId,
     receiptTimeoutMs: config.execution.receiptTimeoutMs,
     receiptPollMs: config.execution.receiptPollMs,
+    quarantineBaseMs: config.execution.quarantineBaseMs,
+    quarantineMaxMs: config.execution.quarantineMaxMs,
   });
 
   const mempoolOptions: MempoolServiceOptions = {
@@ -328,7 +330,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   const dryRunner = new MempoolAwareDryRunner(publicClient);
 
   // Incremental graph updater
-  const graphUpdater = new IncrementalGraphUpdater(60);
+  const graphUpdater = new IncrementalGraphUpdater(config.routing.graphFullRebuildInterval);
 
   // Boot warmup: pre-warm gas oracle and state cache
   logger.info("Starting boot warmup...");

@@ -58,6 +58,8 @@ export interface ExecutionServiceOptions {
   chainId?: number;
   receiptTimeoutMs?: number;
   receiptPollMs?: number;
+  quarantineBaseMs?: number;
+  quarantineMaxMs?: number;
 }
 
 function poolsFromRouteKey(routeKey: string): string[] {
@@ -113,7 +115,7 @@ export class ExecutionService {
     private submitters: SubmitTxFn[],
     options: ExecutionServiceOptions = {},
   ) {
-    this.quarantine = new QuarantineManager();
+    this.quarantine = new QuarantineManager(options.quarantineBaseMs, options.quarantineMaxMs);
     this.receiptTimeoutMs = options.receiptTimeoutMs ?? 30_000;
     this.receiptPollMs = (options as any).receiptPollMs ?? 500;
     this.submissionStrategy = options.submissionStrategy ?? "hybrid";

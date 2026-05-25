@@ -42,6 +42,9 @@ export const DEFAULTS = {
     evalWorkerThreshold: 20,
     enumerationMaxPaths: 5_000,
     enumerationMax4HopPaths: 2_000,
+    ternarySearchIterations: 15,
+    maxPriceImpactThreshold: 0.15,
+    graphFullRebuildInterval: 100,
   },
   execution: {
     minProfitWei: 100_000_000_000_000_000n, // 0.1 MATIC (~$0.10)
@@ -54,7 +57,9 @@ export const DEFAULTS = {
     submissionStrategy: "hybrid" as const,
     dryRunBeforeSubmit: true,
     receiptTimeoutMs: 30_000,
-    maxConcurrentExecutions: 1,
+    maxConcurrentExecutions: 2,
+    quarantineBaseMs: 2_000,
+    quarantineMaxMs: 600_000,
   },
   discovery: {
     refreshIntervalMs: 300_000,

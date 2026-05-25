@@ -42,20 +42,20 @@ describe("QuarantineManager", () => {
   });
 
   it("increases attempt count on repeated failures", () => {
-    const qm = new QuarantineManager();
+    const qm = new QuarantineManager(2000, 300000);
     qm.add("route1", "error1");
     qm.add("route1", "error2");
     expect(qm.getEntry("route1")?.attempt).toBe(2);
     const entry = qm.getEntry("route1")!;
-    expect(entry.nextRetry).toBe(Date.now() + 2000);
+    expect(entry.nextRetry).toBe(Date.now() + 4000);
   });
 
   it("releases route after backoff expires", () => {
-    const qm = new QuarantineManager();
+    const qm = new QuarantineManager(2000, 300000);
     qm.add("route1", "error1");
     expect(qm.isQuarantined("route1")).toBe(true);
-    // Advance past the 1s backoff
-    vi.advanceTimersByTime(1001);
+    // Advance past the 2s backoff
+    vi.advanceTimersByTime(2001);
     expect(qm.isQuarantined("route1")).toBe(false);
   });
 
@@ -68,10 +68,10 @@ describe("QuarantineManager", () => {
   });
 
   it("prunes expired entries", () => {
-    const qm = new QuarantineManager();
+    const qm = new QuarantineManager(2000, 300000);
     qm.add("route1", "error1");
     qm.add("route2", "error2");
-    vi.advanceTimersByTime(500);
+    vi.advanceTimersByTime(1500);
     qm.prune();
     expect(qm.size).toBe(2);
     vi.advanceTimersByTime(501);

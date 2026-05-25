@@ -6,8 +6,6 @@ import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../../config/addresses.ts";
 
-const MAX_IMPACT_THRESHOLD = 0.20;
-const TERNARY_ITERATIONS = 12;
 const CONVERGENCE_DIVISOR = 10000n;
 
 export interface PipelineOptions {
@@ -17,6 +15,8 @@ export interface PipelineOptions {
   slippageBps?: bigint;
   revertRiskBps?: bigint;
   flashLoanSource?: FlashLoanSource;
+  ternarySearchIterations?: number;
+  maxPriceImpactThreshold?: number;
 }
 
 export function getTestAmount(tokenAddress: string): bigint {
@@ -50,10 +50,10 @@ export interface PipelineResult {
   maxGrossProfitMatic?: bigint;
 }
 
-function getEffectivePriceImpactForCycle(cycle: FoundCycle, amount: bigint, stateCache: RouteStateCache): boolean {
+function getEffectivePriceImpactForCycle(cycle: FoundCycle, amount: bigint, stateCache: RouteStateCache, maxImpactThreshold: number = 0.15): boolean {
   for (const edge of cycle.edges) {
     const impact = getEffectivePriceImpact(edge, amount, stateCache);
-    if (impact > MAX_IMPACT_THRESHOLD) return true;
+    if (impact > maxImpactThreshold) return true;
   }
   return false;
 }
@@ -64,7 +64,8 @@ function evaluateAmount(
   stateCache: RouteStateCache,
   options: PipelineOptions,
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
-  if (getEffectivePriceImpactForCycle(cycle, amount, stateCache)) {
+  const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+  if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
     return { result: null, assessment: null, grossProfitMatic: null };
   }
 
@@ -117,9 +118,11 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       const low = baseAmount / 5000n;
       if (low === 0n) continue;
       const high = baseAmount;
+      const ternaryIters = options.ternarySearchIterations ?? 15;
+      const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
 
       // Check if even the smallest amount has too much impact
-      if (getEffectivePriceImpactForCycle(cycle, low, stateCache)) {
+      if (getEffectivePriceImpactForCycle(cycle, low, stateCache, maxImpact)) {
         pruned++;
         continue;
       }
@@ -133,7 +136,7 @@ export function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCac
       let bestGrossMatic = 0n;
       simulated++;
 
-      for (let iter = 0; iter < TERNARY_ITERATIONS; iter++) {
+      for (let iter = 0; iter < ternaryIters; iter++) {
         const range = right - left;
         if (range <= baseAmount / CONVERGENCE_DIVISOR) {
           // Binary search refinement for precision

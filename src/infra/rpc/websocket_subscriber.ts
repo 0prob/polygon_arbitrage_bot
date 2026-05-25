@@ -155,7 +155,7 @@ export class WebSocketSubscriber {
   private subscribePendingTransactions(): void {
     this.sendSubscription("newPendingTransactions", (result: string) => {
       // result is tx hash, we need to fetch details
-      this.fetchAndEmitPendingTx(result);
+      void this.fetchAndEmitPendingTx(result);
     });
   }
 

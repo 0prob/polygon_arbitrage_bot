@@ -34,8 +34,25 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _exitHandler: ((code: number | null, signal: string | null) => void) | null = null;
   let _lastParsedBlock = 0;
   let _lastRemoteBlock = 0;
+  let _lastEmitTime = 0;
+  let _statusTimer: ReturnType<typeof setInterval> | null = null;
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
+
+  function emitStatus(status: string, synced: number, remote: number, chain?: string): void {
+    const bus = opts.eventBus;
+    if (!bus) return;
+    _lastEmitTime = Date.now();
+    _lastParsedBlock = synced;
+    _lastRemoteBlock = remote;
+    bus.emit({
+      type: "hyperindex_status",
+      status,
+      syncedBlock: synced,
+      remoteBlock: remote,
+      chain,
+    });
+  }
 
   function freePort(port: number): void {
     try {
@@ -56,7 +73,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     const bus = opts.eventBus;
     if (!bus) return;
 
-    // Extract chain name from [chain] prefix
     const chainMatch = line.match(/^\[([^\]]+)\]/);
     const chain = chainMatch && !chainMatch[1].includes(":") ? chainMatch[1].toLowerCase() : undefined;
 
@@ -64,54 +80,47 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     const blockMatch = trimmed.match(/(\d{5,})\s*->\s*(\d{5,})/);
     if (blockMatch) {
-      _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(blockMatch[2], 10));
-      _lastRemoteBlock = Math.max(_lastRemoteBlock, parseInt(blockMatch[2], 10));
-      bus.emit({
-        type: "hyperindex_status",
-        status: "syncing",
-        syncedBlock: _lastParsedBlock,
-        remoteBlock: _lastRemoteBlock,
-        chain,
-      });
+      const synced = Math.max(_lastParsedBlock, parseInt(blockMatch[1], 10));
+      const remote = Math.max(_lastRemoteBlock, parseInt(blockMatch[2], 10));
+      emitStatus("syncing", synced, remote, chain);
       return;
     }
 
     const progressMatch = trimmed.match(/(\d{5,})\s*\/\s*(\d{5,})/);
     if (progressMatch) {
-      _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(progressMatch[1], 10));
-      _lastRemoteBlock = Math.max(_lastRemoteBlock, parseInt(progressMatch[2], 10));
-      bus.emit({
-        type: "hyperindex_status",
-        status: "syncing",
-        syncedBlock: _lastParsedBlock,
-        remoteBlock: _lastRemoteBlock,
-        chain,
-      });
+      const synced = Math.max(_lastParsedBlock, parseInt(progressMatch[1], 10));
+      const remote = Math.max(_lastRemoteBlock, parseInt(progressMatch[2], 10));
+      emitStatus("syncing", synced, remote, chain);
       return;
     }
 
     if (trimmed.includes("indexed") || trimmed.includes("synced") || trimmed.includes("caught")) {
       const nums = trimmed.match(/\d{5,}/g);
       if (nums) {
-        _lastParsedBlock = Math.max(_lastParsedBlock, parseInt(nums[nums.length - 1], 10));
-        bus.emit({
-          type: "hyperindex_status",
-          status: "synced",
-          syncedBlock: _lastParsedBlock,
-          remoteBlock: _lastParsedBlock,
-          chain,
-        });
+        const block = Math.max(_lastParsedBlock, parseInt(nums[nums.length - 1], 10));
+        emitStatus("synced", block, block, chain);
       }
+      return;
+    }
+
+    // Detect "connected" or "listening" or "ready" indicators from envio
+    if (trimmed.includes("connected") || trimmed.includes("listening") || trimmed.includes("ready") || trimmed.includes("running")) {
+      if (_lastParsedBlock === 0) {
+        emitStatus("running", 0, 0, chain);
+      }
+      return;
+    }
+
+    // Detect graphql or hasura startup
+    if (trimmed.includes("graphql") || trimmed.includes("hasura") || trimmed.includes("docker")) {
+      if (_lastParsedBlock === 0) {
+        emitStatus("running", 0, 0, chain);
+      }
+      return;
     }
 
     if (trimmed.includes("error") || trimmed.includes("fail")) {
-      bus.emit({
-        type: "hyperindex_status",
-        status: "error",
-        syncedBlock: _lastParsedBlock,
-        remoteBlock: _lastRemoteBlock,
-        chain,
-      });
+      emitStatus("error", _lastParsedBlock, _lastRemoteBlock, chain);
     }
   }
 
@@ -160,14 +169,55 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     _exitHandler = (code, signal) => {
       opts.logger.warn({ code, signal }, "HyperIndex process exited");
+      _statusTimer = null;
       proc = null;
     };
     proc.on("exit", _exitHandler);
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Emit initial status so TUI shows syncing/starting immediately
+    if (proc && proc.exitCode === null) {
+      // Emit "running" status to move off "starting" in TUI
+      const bus = opts.eventBus;
+      if (bus) {
+        bus.emit({
+          type: "hyperindex_status",
+          status: "running",
+          syncedBlock: 0,
+          remoteBlock: 0,
+        });
+        opts.logger.info({}, "HyperIndex process started — emitted running status");
+      }
+
+      // Heartbeat timer: re-emit status every 10s so TUI never goes stale
+      if (!_statusTimer) {
+        _statusTimer = setInterval(() => {
+          if (proc && proc.exitCode === null) {
+            const bus = opts.eventBus;
+            if (bus && Date.now() - _lastEmitTime > 8_000) {
+              const status = _lastParsedBlock > 0 ? "syncing" : "running";
+              bus.emit({
+                type: "hyperindex_status",
+                status,
+                syncedBlock: _lastParsedBlock,
+                remoteBlock: _lastRemoteBlock > 0 ? _lastRemoteBlock : _lastParsedBlock,
+              });
+            }
+          } else if (_statusTimer) {
+            clearInterval(_statusTimer);
+            _statusTimer = null;
+          }
+        }, 10_000);
+      }
+    }
   }
 
   async function stop(): Promise<void> {
+    if (_statusTimer) {
+      clearInterval(_statusTimer);
+      _statusTimer = null;
+    }
     const p = proc;
     if (!p) {
       // Still try to stop envio just in case containers are orphans

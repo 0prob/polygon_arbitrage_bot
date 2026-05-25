@@ -202,6 +202,22 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     try {
       await ctx.wsSubscriber.start();
       ctx.logger.info({}, "WebSocket subscriber started for real-time events");
+
+      // Wire WebSocket events into mempool + pass loop
+      ctx.wsSubscriber.onEvent((event) => {
+        if (event.type === "newPendingTx" && event.to) {
+          ctx.mempoolService.processPendingTx({
+            hash: event.hash,
+            to: event.to,
+            input: event.input,
+            value: event.value,
+          });
+        }
+        if (event.type === "newHead") {
+          // Track new head for freshness — the existing LF_INTERVAL handles re-evaluation
+          ctx.metrics.currentCyclesPerMinute = ctx.metrics.currentCyclesPerMinute || 1;
+        }
+      });
     } catch (err) {
       ctx.logger.warn({ err }, "Failed to start WebSocket subscriber");
     }
@@ -327,9 +343,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       if (lastPoolsCount !== pools.length) {
         cachedGraph = deps.buildGraph(pools, stateCache);
         lastPoolsCount = pools.length;
+        ctx.graphUpdater?.resetRebuildCounter();
+      } else if (ctx.graphUpdater && cachedGraph) {
+        // Incremental update: apply new pool states without full rebuild
+        for (const pool of pools) {
+          const addr = pool.address.toLowerCase();
+          const state = stateCache.get(addr);
+          if (state) {
+            ctx.graphUpdater.applyPoolStateUpdate(cachedGraph, addr, state);
+          }
+        }
       }
 
       const shouldReEnumerate = (now - lastRefreshTime) >= LF_INTERVAL;
+      const shouldFullRebuild = ctx.graphUpdater?.shouldFullRebuild() ?? true;
 
       // Force refresh state for ALL active pools via RPC multicall on low-frequency passes
       if (shouldReEnumerate && pools.length > 0) {
@@ -338,6 +365,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       if (shouldReEnumerate || !cachedGraph) {
+        if (shouldFullRebuild || !cachedGraph) {
+          cachedGraph = deps.buildGraph(pools, stateCache);
+        }
         cachedCycles = deps.enumerateCycles(
           cachedGraph!,
           MAX_HOPS,
@@ -350,6 +380,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           {
             pools: pools.length,
             cycles: cachedCycles.length,
+            fullRebuild: shouldFullRebuild,
           },
           "Graph and cycles re-enumerated",
         );
@@ -399,6 +430,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         slippageBps: ctx.config.execution.slippageBps,
         revertRiskBps: ctx.config.execution.revertRiskBps,
         flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
+        ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
+        maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
       };
 
       const result = deps.evaluatePipeline(currentCycles, stateCache, options);

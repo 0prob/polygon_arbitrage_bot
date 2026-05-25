@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779652325.9415276,
-    "ast_hash": "f93b19f5ab50a13c6e2808bf03d560d9",
+    "mtime": 1779677084.060021,
+    "ast_hash": "981fb3cdc63d6243e275f6a8b8faef35",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -345,13 +345,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
-    "mtime": 1779564782.026122,
-    "ast_hash": "9810c2af13234275156428f231e3df35",
+    "mtime": 1779678139.215575,
+    "ast_hash": "68fa16b12f8cc3747d65c35355c0816a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779602446.233967,
-    "ast_hash": "a3d31b6fe64385d9acc3ead7746e6bac",
+    "mtime": 1779678112.3958805,
+    "ast_hash": "85b0e56f10c7fdb38d373f1d85cea952",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779604886.67723,
-    "ast_hash": "27ce3177e8f5c05ce7eb85bbace8511a",
+    "mtime": 1779677968.7615216,
+    "ast_hash": "e6236cc14aa03271e6a50c6cb3083c0f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.test.ts": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.ts": {
-    "mtime": 1779604670.5701537,
-    "ast_hash": "2aa6941c556efd366230e6627a0855ff",
+    "mtime": 1779677947.4777656,
+    "ast_hash": "09464beb7c780a51e3b7e2fd83e38b8f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.test.ts": {
-    "mtime": 1779461549.5482945,
-    "ast_hash": "0e99a0649ef0ff448ea9fee4462fde8c",
+    "mtime": 1779678155.5593889,
+    "ast_hash": "74392dd0aee888f968be321b94ddfac0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/crosschain_calldata.ts": {
@@ -475,13 +475,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779604839.7105355,
-    "ast_hash": "da7a0cfa5cce410ca5264031b9d02b4c",
+    "mtime": 1779678091.8561146,
+    "ast_hash": "e418d6ccd49206c2d3faea906b7b3ab5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1779604852.386176,
-    "ast_hash": "ae568a19a6c7c9b6c084facce8b872a1",
+    "mtime": 1779678278.7779884,
+    "ast_hash": "3185e7b614a1cdc171d8ca02fc433da5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
-    "mtime": 1779604815.4712381,
-    "ast_hash": "8855a71f55e6932fc896f5ef7c24da11",
+    "mtime": 1779678081.2122362,
+    "ast_hash": "6aede5d9193e93f8a7bb73df1fe0c479",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/addresses.ts": {
@@ -535,13 +535,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/defaults.ts": {
-    "mtime": 1779604801.215661,
-    "ast_hash": "a92bf97d0d19cb19c2cafb82b4bed5f6",
+    "mtime": 1779678076.9522846,
+    "ast_hash": "56b101cbdbc104eb71c20aaa849f5fa6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.ts": {
-    "mtime": 1779604791.5839508,
-    "ast_hash": "32df9d1bccec5cd7d34f17663aa4d23c",
+    "mtime": 1779678072.708333,
+    "ast_hash": "033d570da4e511d55c79ba5680903075",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.test.ts": {
@@ -600,8 +600,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1779574108.0907238,
-    "ast_hash": "b2acded3bedfbae96692b04815147925",
+    "mtime": 1779678087.8721602,
+    "ast_hash": "cc38d81f762ed81a9d7ccea30da9b24f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-22-arb-bot-tui.md": {
@@ -620,8 +620,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779574108.0907238,
-    "ast_hash": "bfcd0228e7fe89dbd961009572ef33ea",
+    "mtime": 1779678286.221904,
+    "ast_hash": "153ce77272fc503a92fc091954125826",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
@@ -775,8 +775,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.test.ts": {
-    "mtime": 1779597411.2787418,
-    "ast_hash": "86eaf38c1f73716a080497ba632e66e5",
+    "mtime": 1779678179.6831143,
+    "ast_hash": "d00df40210fc69f0189bea5a1442ab7e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-23-execution-service-refactor.md": {
@@ -1047,6 +1047,61 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-23-architecture-improvements.md": {
     "mtime": 1779600375.6700394,
     "ast_hash": "fd19a62ed883682287f762135b502701",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/strategy/graph_incremental.ts": {
+    "mtime": 1779677989.4492848,
+    "ast_hash": "7524950f21ee5454f68692026234f279",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/strategy/graph_incremental.test.ts": {
+    "mtime": 1779678211.474753,
+    "ast_hash": "d5551578515fe0ce199b668d5404bc7f",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/execution/dryrun.ts": {
+    "mtime": 1779678009.1330595,
+    "ast_hash": "13eacf1c3a560cef09e38d3a324e58a4",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/execution/quarantine.ts": {
+    "mtime": 1779677929.8699677,
+    "ast_hash": "0e42a66a4971cefce50dd773878375e0",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/execution/quarantine.test.ts": {
+    "mtime": 1779678193.682955,
+    "ast_hash": "bf5cda4028f2598ec60276e93f38c2c2",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/rpc/fastlane.ts": {
+    "mtime": 1779677909.6382,
+    "ast_hash": "12d6293dcd94e626fe2643b42c8bc92a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/rpc/websocket_subscriber.ts": {
+    "mtime": 1779678290.10186,
+    "ast_hash": "8954cfcdc150cbe540e00108eee46cbd",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/rpc/websocket_subscriber.test.ts": {
+    "mtime": 1779678204.866828,
+    "ast_hash": "86922777a3f1362b6a5c46a711bb0e09",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/resilience/reorg_detector.test.ts": {
+    "mtime": 1779678244.7623746,
+    "ast_hash": "174bf651026269fc1d7563a6f7d6291d",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/resilience/reorg_detector.ts": {
+    "mtime": 1779677937.417881,
+    "ast_hash": "35f50384db2efdf7d10a5da47f70bc8a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-24-arb-bot-improvements.md": {
+    "mtime": 1779677897.982334,
+    "ast_hash": "40e3c02f7e518b78d816b1675d605a0e",
     "semantic_hash": ""
   }
 }

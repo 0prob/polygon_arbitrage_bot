@@ -72,6 +72,10 @@ export class HyperIndexMonitor implements Lifecycle {
     this.restartAttempts = 0;
   }
 
+  getLastStatus(): { status: string; synced: number; remote: number } {
+    return { status: this._isHealthy ? "running" : "error", synced: 0, remote: 0 };
+  }
+
   private async restart(): Promise<void> {
     this._isHealthy = false;
     try {
