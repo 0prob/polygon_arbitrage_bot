@@ -119,8 +119,16 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);
   const netProfitAfterGasInTokens = netProfitInTokens - gasCostInTokens;
 
-  const shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
-  const roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
+  let roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
+  
+  let shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
+  let rejectReason: string | undefined;
+
+  // ROI Sanity Check: If ROI > 10.0 (1000%), it's almost certainly poisoned data
+  if (roi > 10_000_000) {
+    shouldExecute = false;
+    rejectReason = `ROI outlier detected: ${roi / 1_000_000}x exceeds safety cap (10.0x)`;
+  }
 
   const result: ProfitAssessment = {
     shouldExecute,
@@ -134,9 +142,10 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
     netProfitAfterGas: netProfitAfterGasInTokens,
     netProfitAfterGasMaticWei: netProfitAfterGasMaticWei,
     roi,
+    rejectReason,
   };
 
-  if (!shouldExecute) {
+  if (!shouldExecute && !rejectReason) {
     if (netProfitAfterGasMaticWei < 0n) {
       result.rejectReason = `unprofitable after gas: ${netProfitAfterGasMaticWei} wei`;
     } else {

@@ -131,9 +131,13 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // Explicitly stop any existing envio instances to clear Docker containers/ports
     try {
       opts.logger.info("Ensuring previous HyperIndex instances are stopped...");
-      execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 15000 });
-    } catch {
-      // ignore
+      execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 5000 });
+    } catch (e: any) {
+      if (e.code === 'ETIMEDOUT') {
+        opts.logger.warn("envio stop timed out, continuing anyway...");
+      } else {
+        opts.logger.debug({ err: e.message }, "envio stop failed, likely nothing to stop");
+      }
     }
 
     freePort(9898);

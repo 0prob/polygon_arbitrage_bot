@@ -324,21 +324,20 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
             const sq = BigInt(state.sqrtPriceX96 as any);
             const liq = BigInt(state.liquidity as any);
-            // Rough estimate of known value in V3: use sqrtPrice and liquidity
-            // For simplicity, just check if liquidity is significant
-            if (liq < 1000000n) continue; 
+            
+            // Require significant liquidity depth for V3 rate propagation (10^19 is ~10 units of liquidity)
+            if (liq < 10n ** 19n) continue; 
             
             if (sq > 0n) {
               const p192 = sq * sq;
               if (knownIdx === 0 && unknownIdx === 1) {
                 newRate = (knownRate * (1n << 192n)) / p192;
-                knownValueMatic = knownRate; // Placeholder: assume at least some value if liq > 1M
               } else if (knownIdx === 1 && unknownIdx === 0) {
                 newRate = (knownRate * p192) / (1n << 192n);
-                knownValueMatic = knownRate;
               }
+              // For V3, assume 20 MATIC value if liq is high enough to be trusted
+              knownValueMatic = 20n * RATE_PRECISION;
             }
-            knownValueMatic = 100n * RATE_PRECISION; // Bypass for V3 if liq is high
           } else if (protocol.includes("balancer")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
@@ -361,13 +360,20 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
             const q = BigInt(state.quoteReserve as any);
             if (b > 0n && q > 0n) {
               const rKnown = knownIdx === 0 ? b : q;
+              const rUnknown = unknownIdx === 0 ? b : q;
               knownValueMatic = (knownRate * rKnown) / RATE_PRECISION;
-              newRate = knownIdx === 0 ? (knownRate * b) / q : (knownRate * q) / b;
+              newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("woofi")) {
             const rawPrice = BigInt(state.price as any);
             if (rawPrice > 0n) {
-              knownValueMatic = 100n * RATE_PRECISION; // WooFi usually has high liquidity
+              const balances = state.balances as bigint[] | undefined;
+              if (balances && balances[knownIdx] > 0n) {
+                knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;
+              } else {
+                knownValueMatic = 10n * RATE_PRECISION; 
+              }
+
               if (knownIdx === 0) {
                 newRate = (knownRate * RATE_PRECISION) / rawPrice;
               } else {
@@ -376,14 +382,30 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
             }
           }
 
-          // Require at least 10 MATIC worth of known token to propagate rate
-          if (knownValueMatic < 10n * RATE_PRECISION) continue;
+          // Require at least 50 MATIC worth of known token to propagate rate (raised from 20)
+          if (knownValueMatic < 50n * RATE_PRECISION) continue;
+
+          // SANITY CHECK: If newRate is astronomical (> 10^25), it's likely poisoned.
+          // 10^25 = 10 million MATIC per token.
+          if (newRate > 10n ** 25n) continue;
+
+          // DEPTH CHECK: If the pool price ratio is extreme, it's likely a dead/broken pool.
+          // For V2, check reserve ratio. For V3, check sqrtPrice bounds.
+          if (protocol.includes("v2")) {
+            const r0 = BigInt(state.reserve0 as any);
+            const r1 = BigInt(state.reserve1 as any);
+            if (r0 > 0n && r1 > 0n) {
+              const ratio = r0 > r1 ? r0 / r1 : r1 / r0;
+              if (ratio > 10n ** 12n) continue; // Ratio > 1 trillion: too unbalanced
+            }
+          }
 
           if (newRate > 0n && (!rates.has(unknownToken) || rates.get(unknownToken)! < newRate)) {
             rates.set(unknownToken, newRate);
             changed = true;
             if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${pool.address} [${protocol}])`);
           }
+
         } catch (e) {
           continue;
         }

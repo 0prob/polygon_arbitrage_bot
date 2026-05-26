@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779799506.3441482,
-    "ast_hash": "d3cf5f05d93ca0cbdc0e9d9ef0589d8d",
+    "mtime": 1779799580.1953042,
+    "ast_hash": "3ac33902043cd9b65e9cf6ba7de16284",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/system.ts": {
-    "mtime": 1779727071.57841,
-    "ast_hash": "f4ab1dfdbd3573d4b613a3776e38a0c8",
+    "mtime": 1779799946.9871888,
+    "ast_hash": "4ed7dc7cae8435b37dbbec108a111c28",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/harness.ts": {
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/dryrun.ts": {
-    "mtime": 1779798746.9405234,
-    "ast_hash": "49dd54fa74fa1b848d929b7649fa6c8e",
+    "mtime": 1779799976.66686,
+    "ast_hash": "825abfd5d58051b2e8f25806063ef188",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/quarantine.ts": {
@@ -932,6 +932,11 @@
   "/home/x/arb/t/src/infra/rpc/multicall.ts": {
     "mtime": 1779799523.1399555,
     "ast_hash": "9f55afb142e7480c3403b8c4c8a19788",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/services/strategy/jit_discovery.ts": {
+    "mtime": 1779799974.1148882,
+    "ast_hash": "3f3e15ec38b9195e7b5717b03c39f81e",
     "semantic_hash": ""
   }
 }

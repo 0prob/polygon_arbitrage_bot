@@ -80,59 +80,75 @@ export class MempoolAwareDryRunner {
   }
 
   async dryRun(candidate: CandidateExecution, fromAddress: string): Promise<DryRunResult> {
-    try {
-      await this.client.call({
-        account: fromAddress as `0x${string}`,
-        to: candidate.targetAddress as `0x${string}`,
-        data: candidate.calldata as `0x${string}`,
-        value: candidate.value,
-        blockTag: "pending",
-      });
+    const MAX_RETRIES = 3;
+    let lastResult: DryRunResult | null = null;
 
-      const gasEstimate = await this.client
-        .estimateGas({
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        await this.client.call({
           account: fromAddress as `0x${string}`,
           to: candidate.targetAddress as `0x${string}`,
           data: candidate.calldata as `0x${string}`,
           value: candidate.value,
-        })
-        .catch(() => 500_000n);
+          blockTag: "pending",
+        });
 
-      return {
-        success: true,
-        gasUsed: gasEstimate,
-      };
-    } catch (err: any) {
-      let reason = "Unknown revert";
-      let revertData: Hex | undefined;
+        const gasEstimate = await this.client
+          .estimateGas({
+            account: fromAddress as `0x${string}`,
+            to: candidate.targetAddress as `0x${string}`,
+            data: candidate.calldata as `0x${string}`,
+            value: candidate.value,
+          })
+          .catch(() => 500_000n);
 
-      if (err instanceof BaseError) {
-        const revertError = err.walk((e) => (e as any).data !== undefined) as any;
-        if (revertError?.data) {
-          revertData = revertError.data;
-          try {
-            const decoded = decodeErrorResult({
-              abi: DECODABLE_ABIS,
-              data: revertData!,
-            });
-            reason = `${decoded.errorName}(${decoded.args?.join(", ") || ""})`;
-          } catch {
-            // Fallback to simple message if decoding fails
+        return {
+          success: true,
+          gasUsed: gasEstimate,
+        };
+      } catch (err: any) {
+        let reason = "Unknown revert";
+        let revertData: Hex | undefined;
+
+        if (err instanceof BaseError) {
+          const revertError = err.walk((e) => (e as any).data !== undefined) as any;
+          if (revertError?.data) {
+            revertData = revertError.data;
+            
+            // 0x82b42900 is Uniswap V3 'LOK' (Locked)
+            if (revertData === "0x82b42900" && attempt < MAX_RETRIES - 1) {
+              await new Promise(r => setTimeout(r, 50));
+              continue;
+            }
+
+            try {
+              const decoded = decodeErrorResult({
+                abi: DECODABLE_ABIS,
+                data: revertData!,
+              });
+              reason = `${decoded.errorName}(${decoded.args?.join(", ") || ""})`;
+            } catch {
+              reason = err.shortMessage || err.message;
+            }
+          } else {
             reason = err.shortMessage || err.message;
           }
         } else {
-          reason = err.shortMessage || err.message;
+          reason = err?.message || String(err);
         }
-      } else {
-        reason = err?.message || String(err);
-      }
 
-      return {
-        success: false,
-        error: err?.message || String(err),
-        revertReason: reason,
-        revertData,
-      };
+        lastResult = {
+          success: false,
+          error: err?.message || String(err),
+          revertReason: reason,
+          revertData,
+        };
+        
+        // If not a lock error, don't retry
+        if (revertData !== "0x82b42900") break;
+      }
     }
+
+    return lastResult!;
   }
 }
