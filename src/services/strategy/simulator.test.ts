@@ -165,7 +165,7 @@ describe("simulateHop", () => {
       protocol: "UNISWAP_V2",
       zeroForOne: true,
     };
-    expect(() => simulateHop(edge, 1000n, new Map())).toThrow("No state for pool 0xpool");
+    expect(() => simulateHop(edge, 1000n, new Map())).toThrow("No valid state");
   });
 
   it("falls back to stateCache when stateRef is not on edge", () => {
@@ -315,7 +315,7 @@ describe("simulateRoute", () => {
         tokenOutIdx: 1,
       },
     ];
-    expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No state");
+    expect(() => simulateRoute(edges, 1000n, new Map())).toThrow("No valid state");
   });
 });
 

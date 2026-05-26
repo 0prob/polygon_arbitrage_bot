@@ -1,4 +1,5 @@
 import type { PoolState } from "../../core/types/pool.ts";
+import { isInvalidState } from "../../core/types/pool.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../../core/types/route.ts";
 import { simulateV2Swap } from "../../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../../core/math/uniswap_v3.ts";
@@ -45,7 +46,7 @@ export function simulateHop(
 ): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
   const state = stateCache.get(poolAddr) ?? edge.stateRef;
-  if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
+  if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
   // Apply sell tax: What the pool actually receives
   const effectiveAmountIn = tokenRegistry ? tokenRegistry.applySellTax(edge.tokenIn, amountIn) : amountIn;
@@ -114,7 +115,7 @@ export function simulateRoute(
     const edge = edges[i];
     const poolAddr = edge.poolAddress.toLowerCase();
     const state = stateCache.get(poolAddr) ?? edge.stateRef;
-    if (!state) throw new Error(`No state for pool ${edge.poolAddress}`);
+    if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
     const simEdge: SimulationEdge = {
       poolAddress: poolAddr,
@@ -165,7 +166,7 @@ export function getEffectivePriceImpact(
 
   const poolAddr = edge.poolAddress.toLowerCase();
   const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
-  if (!state) return 0;
+  if (!state || isInvalidState(state)) return 0;
 
   const simEdge: SimulationEdge = {
     poolAddress: edge.poolAddress,

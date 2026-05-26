@@ -1,5 +1,11 @@
 import type { Address } from "./common.ts";
 
+export const INVALID_POOL_STATE = { __invalid: true } as const;
+
+export function isInvalidState(state: unknown): boolean {
+  return typeof state === "object" && state !== null && "__invalid" in state;
+}
+
 export interface V2PoolState {
   reserve0: bigint;
   reserve1: bigint;

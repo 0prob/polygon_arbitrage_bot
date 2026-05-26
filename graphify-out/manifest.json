@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779779133.524275,
-    "ast_hash": "d9874d729762224a334d5f8d030bf8e8",
+    "mtime": 1779780395.7729225,
+    "ast_hash": "e9b2537b2185c91bd22683bc100900c6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779776136.6423588,
-    "ast_hash": "2a365163bb48db7aed22d021b356e335",
+    "mtime": 1779780367.7852085,
+    "ast_hash": "0b845d41e3d9d4cc5891780bbd2d96eb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779727072.0184057,
-    "ast_hash": "852bce81823f19c70ad1bf0f290aa7fc",
+    "mtime": 1779780626.234548,
+    "ast_hash": "5656d779b6a5ed569c545e4501ed800f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/layout.test.ts": {
@@ -625,8 +625,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779727071.998406,
-    "ast_hash": "bb131cba06eb79b2087b9255fe7bce8f",
+    "mtime": 1779780645.146352,
+    "ast_hash": "efb36f6a619c5538a0fdf222f5d6e031",
     "semantic_hash": ""
   },
   "/home/x/arb/t/tests/tui/main.test.ts": {
@@ -920,8 +920,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/AGENTS.md": {
-    "mtime": 1779779395.7183836,
-    "ast_hash": "423f91526406963dc6e92a8d03cb528d",
+    "mtime": 1779780695.4858294,
+    "ast_hash": "2b1ef55c8688f461f4ec48c76ccb6103",
     "semantic_hash": ""
   }
 }

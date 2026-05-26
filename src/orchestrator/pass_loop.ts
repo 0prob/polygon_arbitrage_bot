@@ -3,6 +3,7 @@ import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges } from 
 import { type RoutingGraph, buildGraph } from "../services/strategy/graph.ts";
 import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pipeline.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
+import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
@@ -84,9 +85,10 @@ async function fetchMissingPoolState(
       for (const addr of batch) {
         const meta = poolLookup.get(addr);
         if (!meta) continue;
-        if (meta.protocol.includes("v2")) {
+        const proto = meta.protocol.toLowerCase();
+        if (proto.includes("v2")) {
           calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
-        } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
+        } else if (proto.includes("v3") || proto.includes("elastic")) {
           calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
           calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
         }
@@ -104,8 +106,9 @@ async function fetchMissingPoolState(
         for (const addr of batch) {
           const meta = poolLookup.get(addr);
           if (!meta) continue;
+          const proto = meta.protocol.toLowerCase();
 
-          if (meta.protocol.includes("v2")) {
+          if (proto.includes("v2")) {
             const res = results[resultIdx++];
             if (res?.status === "success" && res.result) {
               const r = res.result as any;
@@ -122,9 +125,18 @@ async function fetchMissingPoolState(
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
                 _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                  ctx.stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                ctx.stateCache.set(addr, INVALID_POOL_STATE);
               }
             }
-          } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
+          } else if (proto.includes("v3") || proto.includes("elastic")) {
             const slot0Res = results[resultIdx++];
             const liqRes = results[resultIdx++];
             if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
@@ -143,6 +155,15 @@ async function fetchMissingPoolState(
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
                 _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                  ctx.stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                ctx.stateCache.set(addr, INVALID_POOL_STATE);
               }
             }
           }
