@@ -207,26 +207,29 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
 
   try {
     const metaArr = result.PoolMeta as { id: string; protocol: string; tokens: unknown; fee: number | null }[];
-    const discovered = metaArr.map((pm) => {
-      let tokens: string[];
-      if (typeof pm.tokens === "string") {
-        try {
-          tokens = JSON.parse(pm.tokens) as string[];
-        } catch {
+    const discovered = metaArr
+      .filter((pm) => pm && pm.id && pm.protocol)
+      .map((pm) => {
+        let tokens: string[];
+        if (typeof pm.tokens === "string") {
+          try {
+            tokens = JSON.parse(pm.tokens) as string[];
+          } catch {
+            tokens = [];
+          }
+        } else if (Array.isArray(pm.tokens)) {
+          tokens = pm.tokens.map((t: unknown) => String(t));
+        } else {
           tokens = [];
         }
-      } else if (Array.isArray(pm.tokens)) {
-        tokens = pm.tokens.map((t: unknown) => String(t));
-      } else {
-        tokens = [];
-      }
-      return {
-        address: pm.id.toLowerCase(),
-        protocol: pm.protocol,
-        tokens: tokens.map((t) => t.toLowerCase()),
-        fee: pm.fee ?? 30,
-      };
-    });
+        return {
+          address: pm.id.toLowerCase(),
+          protocol: pm.protocol,
+          tokens: tokens.map((t) => t.toLowerCase()),
+          fee: pm.fee ?? 30,
+        };
+      })
+      .filter((p) => p.address.startsWith("0x") && p.tokens.length >= 2);
 
     const combined = [...anchors];
     const seen = new Set(anchors.map((a) => a.address.toLowerCase()));

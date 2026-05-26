@@ -37,6 +37,7 @@ export class ExecutionTracker {
         if (removed.success) stats.totalSuccesses--;
         else stats.totalReverts--;
         stats.totalProfit -= removed.profit;
+        if (stats.totalAttempts <= 0) this.routeStats.delete(removed.routeKey);
       }
     }
 

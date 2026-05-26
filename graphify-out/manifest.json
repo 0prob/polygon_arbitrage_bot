@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779782078.3824992,
-    "ast_hash": "72c2d80a2f15037a2906a1fa0dcb3a81",
+    "mtime": 1779790013.713686,
+    "ast_hash": "de127d944301fedddce1691c4db03702",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779781262.1115117,
-    "ast_hash": "2e1b2e0b1eca6b4fc6817cf2cd1b7408",
+    "mtime": 1779789596.207041,
+    "ast_hash": "4c573133d75b30ee86f95fa5f748d05e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779727071.790408,
-    "ast_hash": "a5dc76a62d48ab607af68e1fe06b46b0",
+    "mtime": 1779790277.0584574,
+    "ast_hash": "de032eaa0a72078f8a8a038a678a7f05",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.test.ts": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
-    "mtime": 1779727071.6984088,
-    "ast_hash": "303adec7baad14350df50313530a88bb",
+    "mtime": 1779789596.207041,
+    "ast_hash": "28f3056f9151f59a0b7b5e6d06aa30d8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779781979.643576,
-    "ast_hash": "7ae880885183904c6129967b5554bd28",
+    "mtime": 1779790231.7390077,
+    "ast_hash": "4fdb22518ab268cd83b1d755b8815f70",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -805,8 +805,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/calldata/hops.ts": {
-    "mtime": 1779727071.662409,
-    "ast_hash": "7fa761480a4174805c78108b2bfb4883",
+    "mtime": 1779789596.207041,
+    "ast_hash": "d7fb405d578b8b9507dbbb04be8b5d2b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/di/service_registry.ts": {
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/dryrun.ts": {
-    "mtime": 1779727071.7104087,
-    "ast_hash": "bf0d502812a064977c5c9936e5dc059d",
+    "mtime": 1779789596.207041,
+    "ast_hash": "713dad3dcc6f45c18aaa7b249dc7dfc7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/quarantine.ts": {

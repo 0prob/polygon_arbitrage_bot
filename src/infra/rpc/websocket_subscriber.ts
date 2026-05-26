@@ -93,16 +93,26 @@ export class WebSocketSubscriber {
 
       this.ws.onmessage = (msg: MessageEvent) => {
         try {
-          const data = JSON.parse(msg.data as string) as Record<string, unknown>;
+          if (typeof msg.data !== "string") return;
+          const data = JSON.parse(msg.data) as Record<string, unknown>;
+          
+          if (data.error) {
+            this.emit({ type: "error", message: JSON.stringify(data.error) } as any);
+            return;
+          }
+
           if (data.method === "eth_subscription" && data.params) {
             const params = data.params as Record<string, unknown>;
-            const result = params.result as Record<string, string> | undefined;
+            const result = params.result as Record<string, any> | undefined;
             if (result) {
               this.handleSubscriptionMessage(result);
             }
+          } else if (data.id !== undefined && data.result) {
+            // Handle response to one-off requests (like getTransactionByHash)
+            this.handleRpcResponse(data as { id: number; result: any });
           }
-        } catch {
-          /* skip malformed */
+        } catch (err) {
+          /* skip malformed or unexpected formats */
         }
       };
 
@@ -212,7 +222,20 @@ export class WebSocketSubscriber {
     );
   }
 
-  private handleSubscriptionMessage(result: Record<string, string>): void {
+  private handleRpcResponse(data: { id: number; result: any }): void {
+    if (data.result && typeof data.result === "object" && data.result.hash && data.result.from) {
+      this.emit({
+        type: "newPendingTx",
+        hash: data.result.hash,
+        from: data.result.from,
+        to: data.result.to ?? null,
+        input: data.result.input ?? "0x",
+        value: data.result.value ?? "0x0",
+      } as NewPendingTxEvent);
+    }
+  }
+
+  private handleSubscriptionMessage(result: Record<string, any>): void {
     if (result.number) {
       const blockNum = parseInt(result.number ?? "0x0", 16);
       this.emit({
@@ -231,6 +254,9 @@ export class WebSocketSubscriber {
         input: result.input ?? "0x",
         value: result.value ?? "0x0",
       } as NewPendingTxEvent);
+    } else if (typeof result === "string") {
+      // Potentially a subscription hash if used for newPendingTransactions without detail
+      // but we handle that in fetchAndEmitPendingTx
     }
   }
 

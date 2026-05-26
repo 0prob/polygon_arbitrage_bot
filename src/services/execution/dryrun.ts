@@ -1,17 +1,22 @@
-import type { PublicClient } from "viem";
+import { decodeErrorResult, type PublicClient, BaseError, type Hex } from "viem";
 import type { CandidateExecution } from "./service.ts";
+import { EXECUTOR_ABI, EXECUTOR_AAVE_ABI, V2_PAIR_SWAP_ABI, V3_POOL_SWAP_ABI, BALANCER_VAULT_SWAP_ABI } from "./calldata/abis.ts";
 
 export interface DryRunResult {
   success: boolean;
   gasUsed?: bigint;
   revertReason?: string;
   error?: string;
+  revertData?: Hex;
 }
 
 export interface PendingState {
   blockNumber: number;
   blockHash: string;
 }
+
+// Combine relevant ABIs for decoding common reverts
+const DECODABLE_ABIS = [...EXECUTOR_ABI, ...EXECUTOR_AAVE_ABI, ...V2_PAIR_SWAP_ABI, ...V3_POOL_SWAP_ABI, ...BALANCER_VAULT_SWAP_ABI];
 
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
@@ -40,7 +45,7 @@ export class MempoolAwareDryRunner {
 
   async dryRun(candidate: CandidateExecution, fromAddress: string): Promise<DryRunResult> {
     try {
-      const result = await this.client.call({
+      await this.client.call({
         account: fromAddress as `0x${string}`,
         to: candidate.targetAddress as `0x${string}`,
         data: candidate.calldata as `0x${string}`,
@@ -48,9 +53,6 @@ export class MempoolAwareDryRunner {
         blockTag: "pending",
       });
 
-      // A successful call to a void-returning function (like executeArb) returns { data: "0x" }
-      // or even { data: undefined }. The ONLY failure signal from eth_call is a thrown exception.
-      // Do NOT check result.data — its absence is normal for non-view functions.
       const gasEstimate = await this.client
         .estimateGas({
           account: fromAddress as `0x${string}`,
@@ -65,11 +67,36 @@ export class MempoolAwareDryRunner {
         gasUsed: gasEstimate,
       };
     } catch (err: any) {
-      const msg = err?.message || String(err);
-      // Extract revert reason if available
-      const revertMatch = msg.match(/reverted with reason string '(.+?)'/);
-      const reason = revertMatch ? revertMatch[1] : msg;
-      return { success: false, error: msg, revertReason: reason };
+      let reason = "Unknown revert";
+      let revertData: Hex | undefined;
+
+      if (err instanceof BaseError) {
+        const revertError = err.walk((e) => (e as any).data !== undefined) as any;
+        if (revertError?.data) {
+          revertData = revertError.data;
+          try {
+            const decoded = decodeErrorResult({
+              abi: DECODABLE_ABIS,
+              data: revertData!,
+            });
+            reason = `${decoded.errorName}(${decoded.args?.join(", ") || ""})`;
+          } catch {
+            // Fallback to simple message if decoding fails
+            reason = err.shortMessage || err.message;
+          }
+        } else {
+          reason = err.shortMessage || err.message;
+        }
+      } else {
+        reason = err?.message || String(err);
+      }
+
+      return {
+        success: false,
+        error: err?.message || String(err),
+        revertReason: reason,
+        revertData,
+      };
     }
   }
 }

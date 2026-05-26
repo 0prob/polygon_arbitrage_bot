@@ -72,7 +72,7 @@ export function createExecutionClient(rpcUrl: string, privateKey?: string, chain
   return createWalletClient({
     ...(account ? { account } : {}),
     chain,
-    transport: createOptimizedTransport(rpcUrl, { timeoutMs: 15_000 }), // Higher timeout for submission
+    transport: createOptimizedTransport(rpcUrl, { timeoutMs: 15_000, batchSize: 50 }), // Higher timeout for submission
   });
 }
 
@@ -82,7 +82,7 @@ export function createGasEstimationClient(rpcUrl: string, chainId: number = 137)
     chain,
     transport: createOptimizedTransport(rpcUrl, { timeoutMs: 5_000 }),
     batch: {
-      multicall: { wait: 10 },
+      multicall: { wait: 10, batchSize: 100 },
     },
   });
 }

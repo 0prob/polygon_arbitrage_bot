@@ -208,8 +208,11 @@ describe("runPassLoop", () => {
       }),
       discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
-      routeKeyFromEdges: vi.fn().mockReturnValue("mocked-route-key"),
+      routeKeyFromEdges: vi.fn()
+        .mockReturnValueOnce("mocked-route-key-1")
+        .mockReturnValueOnce("mocked-route-key-2"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
+      instrumenter: { captureTrace: vi.fn() } as any,
     };
 
     await runPassLoop(mockContext, deps);
@@ -297,6 +300,7 @@ describe("runPassLoop", () => {
       buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
+      instrumenter: { captureTrace: vi.fn() } as any,
     };
 
     await runPassLoop(mockContext, deps);

@@ -143,18 +143,13 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "opportunity_found":
       state.metrics.opportunitiesFound++;
-      state.metrics.totalProfitWei += event.profitWei;
-      if (state._startTime > 0) {
-        const elapsedSec = (Date.now() - state._startTime) / 1000;
-        state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
-      }
       updateOpportunity(state, event.routeKey, {
         profit: event.profitWei,
         path: event.path,
         roi: event.roi,
         status: "Simulated",
       });
-      appendLog(state, "Pipeline", `Profit: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
+      appendLog(state, "Pipeline", `Profitable: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
       break;
     case "execution_submitted":
       updateOpportunity(state, event.routeKey, { status: "Executing" });
@@ -164,8 +159,9 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.metrics.executed++;
       if (event.success) {
         state.metrics.successful++;
-        updateOpportunity(state, event.routeKey, { status: "Confirmed" });
-        appendLog(state, "Exec", `Confirmed ${event.txHash?.slice(0, 10) ?? ""}...`);
+        state.metrics.totalProfitWei += event.profitWei ?? 0n;
+        updateOpportunity(state, event.routeKey, { status: "Confirmed", profit: event.profitWei });
+        appendLog(state, "Exec", `Confirmed ${event.txHash?.slice(0, 10) ?? ""}... (+${event.profitWei ?? 0n} wei)`);
       } else {
         state.metrics.failed++;
         updateOpportunity(state, event.routeKey, { status: event.error?.includes("quarantine") ? "Quarantined" : "Failed" });

@@ -53,8 +53,7 @@ describe("ExecutionTracker", () => {
     small.record(makeRecord({ routeKey: "r1", profit: 10n }));
     small.record(makeRecord({ routeKey: "r2", profit: 20n }));
     small.record(makeRecord({ routeKey: "r3", profit: 30n }));
-    const r1Stats = small.getRouteStats("r1");
-    expect(r1Stats?.totalAttempts).toBe(0);
+    expect(small.getRouteStats("r1")).toBeUndefined();
     expect(small.summary.totalAttempts).toBe(2);
   });
 

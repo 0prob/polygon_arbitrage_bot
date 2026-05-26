@@ -242,22 +242,6 @@ export async function evaluatePipeline(
 
       if (!bestResult || !bestAssessment) continue;
 
-      // Log first profitable cycle breakdown for diagnostics
-      if (bestAssessment.shouldExecute && profitable.length === 0) {
-        const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-        const hopAmts = bestResult.hopAmounts.map((a) => a.toString()).join(",");
-        const poolInfo = cycle.edges.map((e) => `${e.poolAddress.slice(0,10)}:${e.protocol}:${e.tokenIn.slice(0,10)}->${e.tokenOut.slice(0,10)}`).join(" | ");
-        console.warn(
-          `[DIAG] profit=%s amountIn=%s amountOut=%s hops=[%s] pools=[%s] path=%s`,
-          bestResult.profit.toString(),
-          bestResult.amountIn.toString(),
-          bestResult.amountOut.toString(),
-          hopAmts,
-          poolInfo,
-          bestResult.tokenPath.join("->"),
-        );
-      }
-
       if (bestAssessment.shouldExecute) {
         profitable.push({ cycle, result: bestResult, assessment: bestAssessment });
       }

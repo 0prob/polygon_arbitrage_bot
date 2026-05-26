@@ -55,17 +55,11 @@ export function simulateHop(
 
   switch (normalizeProtocol(edge.protocol)) {
     case "V2":
-      // If edge.fee is present and < 500, treat as BPS
-      if (edge.fee != null) {
-        const f = BigInt(edge.fee);
-        if (f < 500n) {
-          result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, 10000n - f, 10000n);
-        } else {
-          result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, f);
-        }
-      } else {
-        result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne);
-      }
+      // Priority: edge.swapFeeBps -> edge.fee -> default (30 bps)
+      const feeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : 
+                    (edge.fee != null ? (BigInt(edge.fee) < 1000n ? BigInt(edge.fee) : (10000n - BigInt(edge.fee))) : 30n);
+      
+      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, 10000n - feeBps, 10000n);
       break;
     case "V3":
       result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));
@@ -192,11 +186,43 @@ export function getEffectivePriceImpact(
     if (r0 && r1) {
       spotPrice = edge.zeroForOne ? Number(r1) / Number(r0) : Number(r0) / Number(r1);
     }
-  } else if (protocol === "V3") {
+  } else if (protocol === "V3" || protocol === "V4") {
     const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
     if (sqrtPriceX96) {
       const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
       spotPrice = edge.zeroForOne ? price : 1 / price;
+    }
+  } else if (protocol === "BALANCER") {
+    const balances = state.balances as bigint[] | undefined;
+    const weights = state.weights as bigint[] | undefined;
+    if (balances && balances.length >= 2 && weights && weights.length >= 2) {
+      const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
+      const outIdx = edge.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0);
+      if (balances[inIdx] > 0n && balances[outIdx] > 0n && weights[inIdx] > 0n && weights[outIdx] > 0n) {
+        // spotPrice = (balanceOut * weightIn) / (balanceIn * weightOut)
+        spotPrice = Number(balances[outIdx] * weights[inIdx]) / Number(balances[inIdx] * weights[outIdx]);
+      }
+    }
+  } else if (protocol === "CURVE") {
+    const balances = state.balances as bigint[] | undefined;
+    if (balances && balances.length >= 2) {
+      const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
+      const outIdx = edge.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0);
+      if (balances[inIdx] > 0n && balances[outIdx] > 0n) {
+        spotPrice = Number(balances[outIdx]) / Number(balances[inIdx]);
+      }
+    }
+  } else if (protocol === "DODO") {
+    const b = state.baseReserve as bigint | undefined;
+    const q = state.quoteReserve as bigint | undefined;
+    if (b && q && b > 0n && q > 0n) {
+      // DODO: base = 0, quote = 1. zeroForOne = base -> quote
+      spotPrice = edge.zeroForOne ? Number(q) / Number(b) : Number(b) / Number(q);
+    }
+  } else if (protocol === "WOOFI") {
+    const rawPrice = state.price as bigint | undefined;
+    if (rawPrice && rawPrice > 0n) {
+      spotPrice = edge.zeroForOne ? Number(rawPrice) / 1e18 : 1e18 / Number(rawPrice);
     }
   }
 

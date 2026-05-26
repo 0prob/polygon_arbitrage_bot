@@ -8,6 +8,7 @@ import { groupCompatibleCandidates, type CandidateExecution } from "../services/
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
+import { ArbInstrumenter } from "../services/strategy/instrumentation.ts";
 import { WMATIC } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
@@ -19,6 +20,17 @@ const V3_ABI = parseAbi([
   "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function liquidity() external view returns (uint128)",
 ]);
+const V4_ABI = parseAbi([
+  "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
+  "function liquidity() external view returns (uint128)",
+  "function fee() external view returns (uint24)",
+  "function tickSpacing() external view returns (int24)",
+  "function hooks() external view returns (address)",
+]);
+const WOOFI_PAIR_ABI = parseAbi([
+  "function price() external view returns (uint256)",
+  "function fee() external view returns (uint256)",
+]);
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
 
@@ -28,7 +40,6 @@ async function fetchMissingPoolState(
   currentCycles: FoundCycle[],
   forceRefresh: boolean = false,
 ): Promise<void> {
-  try { require("fs").appendFileSync("/tmp/debug.log", `[DBG fetch] called forceRefresh=${forceRefresh} cycles=${currentCycles?.length} pools=${pools?.length}\n`); } catch {}
   const missingAddresses = new Set<string>();
   const now = Date.now();
 
@@ -67,19 +78,6 @@ async function fetchMissingPoolState(
 
   if (missingAddresses.size === 0) return;
 
-  // Debug: log _failedPools state for bad pools
-  for (const cycle of currentCycles) {
-    for (const edge of cycle.edges) {
-      const addr = edge.poolAddress.toLowerCase();
-      if (addr.includes("153d9ecf") || addr.includes("0a28c2f5")) {
-        const fail = _failedPools.get(addr);
-        const hasState = ctx.stateCache.has(addr);
-        const state = ctx.stateCache.get(addr);
-        console.warn("[DBG fetch] %s fail=%s hasCache=%s stateType=%s", addr.slice(0,10), JSON.stringify(fail), hasState, typeof state === 'object' && state?.__invalid ? 'INVALID' : typeof state);
-      }
-    }
-  }
-
   const toFetch = Array.from(missingAddresses);
 
   const BATCH_SIZE = 500;
@@ -100,11 +98,20 @@ async function fetchMissingPoolState(
         const meta = poolLookup.get(addr);
         if (!meta) continue;
         const proto = meta.protocol.toLowerCase();
-        if (proto.includes("v2")) {
+        if (proto.includes("v2") || proto.includes("dodo")) {
           calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
         } else if (proto.includes("v3") || proto.includes("elastic")) {
           calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
           calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
+        } else if (proto.includes("v4")) {
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "slot0" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "liquidity" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "fee" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "tickSpacing" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "hooks" });
+        } else if (proto.includes("woofi")) {
+          calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "price" });
+          calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "fee" });
         }
       }
 
@@ -122,7 +129,7 @@ async function fetchMissingPoolState(
           if (!meta) continue;
           const proto = meta.protocol.toLowerCase();
 
-          if (proto.includes("v2")) {
+          if (proto.includes("v2") || proto.includes("dodo")) {
             const res = results[resultIdx++];
             if (res?.status === "success" && res.result) {
               const r = res.result as any;
@@ -180,6 +187,59 @@ async function fetchMissingPoolState(
                 ctx.stateCache.set(addr, INVALID_POOL_STATE);
               }
             }
+          } else if (proto.includes("v4")) {
+            const slot0Res = results[resultIdx++];
+            const liqRes = results[resultIdx++];
+            const feeRes = results[resultIdx++];
+            const tsRes = results[resultIdx++];
+            const hooksRes = results[resultIdx++];
+            if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              const s = slot0Res.result as any;
+              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
+              const tick = s[1] !== undefined ? s[1] : s.tick;
+
+              if (sqrtPriceX96 !== undefined && tick !== undefined) {
+                ctx.stateCache.set(addr, {
+                  sqrtPriceX96: BigInt(sqrtPriceX96),
+                  liquidity: BigInt(liqRes.result as any),
+                  tick: Number(tick),
+                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                  tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
+                  hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 1) {
+                  ctx.stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                ctx.stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
+          } else if (proto.includes("woofi")) {
+            const priceRes = results[resultIdx++];
+            const feeRes = results[resultIdx++];
+            if (priceRes?.status === "success" && priceRes.result) {
+              ctx.stateCache.set(addr, {
+                price: BigInt(priceRes.result as any),
+                fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                initialized: true,
+              });
+              _failedPools.delete(addr);
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                ctx.stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
           }
         }
       } catch {
@@ -198,6 +258,7 @@ export interface PassLoopDeps {
   buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
   routeKeyFromEdges: (edges: any[], startToken: `0x${string}`) => string;
   buildExecutionCandidate: typeof buildExecutionCandidate;
+  instrumenter: ArbInstrumenter;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -249,27 +310,39 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
           // Protocol-specific spot price calculation
           const protocol = pool.protocol.toLowerCase();
           let newRate = 0n;
+          let knownValueMatic = 0n;
+
           if (protocol.includes("v2")) {
             const r0 = BigInt(state.reserve0 as any);
             const r1 = BigInt(state.reserve1 as any);
+            const rKnown = knownIdx === 0 ? r0 : r1;
+            const rUnknown = unknownIdx === 0 ? r0 : r1;
+            knownValueMatic = (knownRate * rKnown) / RATE_PRECISION;
             if (r0 > 0n && r1 > 0n) {
-              const rKnown = knownIdx === 0 ? r0 : r1;
-              const rUnknown = unknownIdx === 0 ? r0 : r1;
               newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
             const sq = BigInt(state.sqrtPriceX96 as any);
+            const liq = BigInt(state.liquidity as any);
+            // Rough estimate of known value in V3: use sqrtPrice and liquidity
+            // For simplicity, just check if liquidity is significant
+            if (liq < 1000000n) continue; 
+            
             if (sq > 0n) {
               const p192 = sq * sq;
               if (knownIdx === 0 && unknownIdx === 1) {
                 newRate = (knownRate * (1n << 192n)) / p192;
+                knownValueMatic = knownRate; // Placeholder: assume at least some value if liq > 1M
               } else if (knownIdx === 1 && unknownIdx === 0) {
                 newRate = (knownRate * p192) / (1n << 192n);
+                knownValueMatic = knownRate;
               }
             }
+            knownValueMatic = 100n * RATE_PRECISION; // Bypass for V3 if liq is high
           } else if (protocol.includes("balancer")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
+              knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;
               const weights = state.weights as bigint[];
               if (weights && weights[knownIdx] > 0n && weights[unknownIdx] > 0n) {
                 newRate = (knownRate * balances[knownIdx] * weights[unknownIdx]) / (balances[unknownIdx] * weights[knownIdx]);
@@ -280,15 +353,31 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
           } else if (protocol.includes("curve")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
+              knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;
               newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
             }
           } else if (protocol.includes("dodo")) {
             const b = BigInt(state.baseReserve as any);
             const q = BigInt(state.quoteReserve as any);
             if (b > 0n && q > 0n) {
+              const rKnown = knownIdx === 0 ? b : q;
+              knownValueMatic = (knownRate * rKnown) / RATE_PRECISION;
               newRate = knownIdx === 0 ? (knownRate * b) / q : (knownRate * q) / b;
             }
+          } else if (protocol.includes("woofi")) {
+            const rawPrice = BigInt(state.price as any);
+            if (rawPrice > 0n) {
+              knownValueMatic = 100n * RATE_PRECISION; // WooFi usually has high liquidity
+              if (knownIdx === 0) {
+                newRate = (knownRate * RATE_PRECISION) / rawPrice;
+              } else {
+                newRate = (knownRate * rawPrice) / RATE_PRECISION;
+              }
+            }
           }
+
+          // Require at least 10 MATIC worth of known token to propagate rate
+          if (knownValueMatic < 10n * RATE_PRECISION) continue;
 
           if (newRate > 0n && (!rates.has(unknownToken) || rates.get(unknownToken)! < newRate)) {
             rates.set(unknownToken, newRate);
@@ -311,6 +400,8 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
   return rates;
 }
 
+const instrumenter = new ArbInstrumenter();
+
 export const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
   findCycles,
@@ -320,6 +411,7 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   buildStateCacheFromGraphQL,
   routeKeyFromEdges,
   buildExecutionCandidate,
+  instrumenter,
 };
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
@@ -375,6 +467,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   // Track simulation block for reorg safety
   let lastSimulationBlock = 0;
+
+  const recentRouteTimestamps = new Map<string, number>();
+  const ROUTE_COOLDOWN_MS = 5000;
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
@@ -443,6 +538,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         const tier = ctx.tierManager.assess();
         lastTierCheck = now;
         ctx.logger.debug({ tier }, ctx.tierManager.label());
+        // Prune stale route cooldown entries
+        for (const [key, ts] of recentRouteTimestamps) {
+          if (now - ts > ROUTE_COOLDOWN_MS * 2) recentRouteTimestamps.delete(key);
+        }
       }
 
       // Reorg safety check on every cycle
@@ -619,31 +718,43 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
       const tokenToMaticRates = cachedRates!;
 
-      // Mempool-aware dry run: check pending state before submitting
-      if (ctx.dryRunner) {
-        await ctx.dryRunner.fetchPendingState();
+      // Filter out quarantined routes before simulation to avoid repetitive noise
+      const filteredCycles = currentCycles.filter((cycle) => {
+        const routeKey = deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
+        return !ctx.executionService.isQuarantined(routeKey);
+      });
+
+      if (filteredCycles.length === 0) {
+        bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
+        await sleep(HF_INTERVAL);
+        continue;
       }
 
-      bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
+  // Mempool-aware dry run: check pending state before submitting
+  if (ctx.dryRunner) {
+    await ctx.dryRunner.fetchPendingState();
+  }
 
-      const options: PipelineOptions = {
-        minProfitMaticWei: ctx.config.execution.minProfitWei,
-        gasPriceWei: gasSnapshot.gasPrice,
-        tokenToMaticRates,
-        slippageBps: ctx.config.execution.slippageBps,
-        revertRiskBps: ctx.config.execution.revertRiskBps,
-        flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
-        ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
-        maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
-        onProgress: (current, total, profitable) => {
-          if (current % 10 === 0 || current === total) {
-            bus?.emit({ type: "simulation_progress", current, total, profitable });
-          }
-        },
-      };
+  bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
 
-      const simStartTime = Date.now();
-      const result = await deps.evaluatePipeline(currentCycles, stateCache, options);
+  const options: PipelineOptions = {
+    minProfitMaticWei: ctx.config.execution.minProfitWei,
+    gasPriceWei: gasSnapshot.gasPrice,
+    tokenToMaticRates,
+    slippageBps: ctx.config.execution.slippageBps,
+    revertRiskBps: ctx.config.execution.revertRiskBps,
+    flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
+    ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
+    maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
+    onProgress: (current, total, profitable) => {
+      if (current % 10 === 0 || current === total) {
+        bus?.emit({ type: "simulation_progress", current, total, profitable });
+      }
+    },
+  };
+
+  const simStartTime = Date.now();
+  const result = await deps.evaluatePipeline(filteredCycles, stateCache, options);
       const simElapsed = Date.now() - simStartTime;
 
       ctx.metrics.opportunitiesFound += result.profitableCount;
@@ -678,16 +789,41 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
             const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
 
+            const lastSubmit = recentRouteTimestamps.get(routeKey);
+            if (lastSubmit && now - lastSubmit < ROUTE_COOLDOWN_MS) {
+              ctx.logger.debug({ routeKey, lastSubmit, now }, "Route recently submitted, skipping cooldown");
+              continue;
+            }
+            recentRouteTimestamps.set(routeKey, now);
+
             // Format a readable path for the TUI
             const path = profitable.result.tokenPath.map((t) => t.slice(0, 6)).join(" -> ");
-            const roi = profitable.assessment.roi;
+            const roi = Number(profitable.assessment.roi);
+            const isNearMiss = roi > 0.95 && roi < 1.0;
+
+            if (isNearMiss) {
+              ctx.logger.debug(
+                {
+                  routeKey,
+                  roi,
+                  profit: profitable.assessment.netProfitAfterGas.toString(),
+                  path: profitable.result.tokenPath.join(" -> "),
+                },
+                "Near-miss opportunity identified",
+              );
+            }
+
+            if (!profitable.result.profitable) continue;
+
+            // Capture full simulation trace for debugging
+            deps.instrumenter.captureTrace(routeKey, profitable.result, stateCache);
 
             bus?.emit({
               type: "opportunity_found",
               routeKey,
               profitWei: profitable.assessment.netProfitAfterGas,
               path,
-              roi,
+              roi: profitable.assessment.roi,
             });
 
             try {
@@ -703,12 +839,25 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
               // Mempool-aware dry run after building candidate
               if (ctx.dryRunner) {
-                const dryResult = await ctx.dryRunner.dryRun(candidate, executorAddress);
-                if (!dryResult.success) {
-                  ctx.logger.warn({ routeKey, reason: dryResult.revertReason }, "Dry-run against pending state failed, skipping");
+                const dryRun = await ctx.dryRunner.dryRun(candidate, executorAddress);
+                if (!dryRun.success) {
+                  ctx.logger.warn(
+                    {
+                      routeKey,
+                      reason: dryRun.revertReason || dryRun.error,
+                      revertData: dryRun.revertData,
+                      profitable: {
+                        roi: profitable.assessment.roi,
+                        profit: profitable.assessment.netProfitAfterGas.toString(),
+                        pools: profitable.cycle.edges.map(e => e.poolAddress),
+                        protocols: profitable.cycle.edges.map(e => e.protocol)
+                      }
+                    },
+                    "Dry-run against pending state failed, skipping",
+                  );
+                  ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
                   continue;
-                }
-              }
+                }              }
 
               candidates.push({ candidate, profitable, routeKey });
             } catch (err) {
@@ -733,6 +882,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               const groupRouteKeys = group.map((c) => c.routeKey);
               ctx.logger.info({ groupSize: group.length, routeKeys: groupRouteKeys }, "Executing batch");
 
+              // Emit submitted event for each candidate in the group
+              for (const routeKey of groupRouteKeys) {
+                bus?.emit({ type: "execution_submitted", routeKey });
+              }
+
               const results =
                 group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
 
@@ -743,7 +897,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 if (execResult.success) {
                   ctx.metrics.executionsSuccessful++;
                   ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
-                  bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash });
+                  
+                  // Try to get actual profit from tracker if available
+                  const tracked = ctx.executionService.tracker.getRecentRecords(10).find(e => e.txHash === execResult.txHash);
+                  const profitWei = tracked ? tracked.profit : candidates.find(c => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
+
+                  bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash, profitWei });
                 } else if (execResult.error === "reverted") {
                   ctx.metrics.executionReverts++;
                   ctx.logger.warn({ routeKey }, "Transaction reverted on chain");

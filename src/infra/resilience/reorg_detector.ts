@@ -48,39 +48,38 @@ export class ReorgDetector {
     const latest = this.trackedBlocks[this.trackedBlocks.length - 1];
     if (!latest) return reorged;
 
-    const start = Math.max(0, latest.number - this.checkDepth);
-    const targets = this.trackedBlocks.filter((b) => b.number >= start);
-    if (targets.length < 2) return reorged;
+    // We check from the latest block down to checkDepth
+    for (let depth = 0; depth <= this.checkDepth; depth++) {
+      const blockNum = latest.number - depth;
+      if (blockNum < 0) break;
 
-    try {
-      const current = await this.client.getBlock({ blockNumber: BigInt(latest.number) });
-      if (!current.hash || current.hash.toLowerCase() === latest.hash.toLowerCase()) {
-        this.lastSafeBlock = latest.number;
-        return reorged;
-      }
+      const tracked = this.trackedBlocks.find((b) => b.number === blockNum);
+      if (!tracked) continue;
 
-      for (let depth = 1; depth <= this.checkDepth; depth++) {
-        const blockNum = latest.number - depth;
-        if (blockNum < 0) break;
-        const tracked = this.trackedBlocks.find((b) => b.number === blockNum);
-        if (!tracked) continue;
-        try {
-          const block = await this.client.getBlock({ blockNumber: BigInt(blockNum) });
-          if (block.hash && block.hash.toLowerCase() !== tracked.hash.toLowerCase()) {
-            reorged.add(blockNum);
-            this.reorgedBlocks.add(blockNum);
-            this.lastSafeBlock = blockNum - 1;
-            for (const tb of this.trackedBlocks) {
-              if (tb.number >= blockNum) reorged.add(tb.number);
+      try {
+        const block = await this.client.getBlock({ blockNumber: BigInt(blockNum) });
+        if (block.hash && block.hash.toLowerCase() !== tracked.hash.toLowerCase()) {
+          // Reorg detected at this height
+          reorged.add(blockNum);
+          this.reorgedBlocks.add(blockNum);
+          this.lastSafeBlock = Math.min(this.lastSafeBlock, blockNum - 1);
+
+          // All blocks from this point forward in our tracked list are potentially invalid
+          for (const tb of this.trackedBlocks) {
+            if (tb.number >= blockNum) {
+              reorged.add(tb.number);
+              this.reorgedBlocks.add(tb.number);
             }
           }
-        } catch {
-          /* skip */
+          break; // Found the fork point
         }
-        if (reorged.size > 0) break;
+      } catch (err) {
+        /* skip this depth if RPC fails */
       }
-    } catch {
-      /* skip */
+    }
+
+    if (reorged.size === 0) {
+      this.lastSafeBlock = latest.number;
     }
 
     return reorged;

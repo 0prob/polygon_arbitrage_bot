@@ -113,7 +113,24 @@ export class ExecutionService {
   private readonly submissionStrategy: SubmissionStrategy;
   private readonly privateSubmitter: SubmitTxFn | null;
   private readonly fastLaneSubmitter: FastLaneSubmitter | null;
-  private inFlightRouteHashes = new Set<string>();
+  private inFlightRouteHashes = new Map<string, number>();
+
+  private cleanInFlight(): void {
+    const cutoff = Date.now() - this.receiptTimeoutMs - 5_000;
+    for (const [key, ts] of this.inFlightRouteHashes) {
+      if (ts < cutoff) this.inFlightRouteHashes.delete(key);
+    }
+  }
+
+  private isInFlight(routeKey: string): boolean {
+    this.cleanInFlight();
+    return this.inFlightRouteHashes.has(routeKey);
+  }
+
+  private markInFlight(routeKey: string): void {
+    this.cleanInFlight();
+    this.inFlightRouteHashes.set(routeKey, Date.now());
+  }
 
   constructor(
     private logger: Logger,
@@ -213,7 +230,7 @@ export class ExecutionService {
       return { success: false, error: `route quarantined (backoff: attempt ${entry?.attempt ?? 0})` };
     }
 
-    if (this.inFlightRouteHashes.has(candidate.routeKey)) {
+    if (this.isInFlight(candidate.routeKey)) {
       return { success: false, error: "route already in-flight (same calldata pending)" };
     }
 
@@ -224,7 +241,7 @@ export class ExecutionService {
         return { success: false, error: "no gas data" };
       }
 
-      this.inFlightRouteHashes.add(candidate.routeKey);
+      this.markInFlight(candidate.routeKey);
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
       const { txHash, endpoint } = await this.submitTx(
@@ -308,12 +325,12 @@ export class ExecutionService {
         continue;
       }
 
-      if (this.inFlightRouteHashes.has(candidate.routeKey)) {
+      if (this.isInFlight(candidate.routeKey)) {
         results[i] = { success: false, error: "route already in-flight" };
         continue;
       }
 
-      this.inFlightRouteHashes.add(candidate.routeKey);
+      this.markInFlight(candidate.routeKey);
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
 
