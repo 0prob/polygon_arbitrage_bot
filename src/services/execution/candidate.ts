@@ -20,7 +20,7 @@ export function buildExecutionCandidate(
     const fee = Number(e.feeBps ?? 0);
     const addr = e.poolAddress.toLowerCase();
     const state = options.stateCache?.get(addr);
-    
+
     return {
       poolAddress: e.poolAddress,
       tokenIn: e.tokenIn,

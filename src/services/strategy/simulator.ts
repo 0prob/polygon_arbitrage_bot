@@ -41,7 +41,7 @@ export function simulateHop(
   edge: SimulationEdge,
   amountIn: bigint,
   stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry
+  tokenRegistry?: TokenRegistry,
 ): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
   const state = stateCache.get(poolAddr) ?? edge.stateRef;
@@ -102,7 +102,7 @@ export function simulateRoute(
   edges: SwapEdge[],
   amountIn: bigint,
   stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry
+  tokenRegistry?: TokenRegistry,
 ): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
@@ -155,7 +155,12 @@ export function simulateRoute(
   };
 }
 
-export function getEffectivePriceImpact(edge: SwapEdge, amountIn: bigint, stateCache: RouteStateCache, tokenRegistry?: TokenRegistry): number {
+export function getEffectivePriceImpact(
+  edge: SwapEdge,
+  amountIn: bigint,
+  stateCache: RouteStateCache,
+  tokenRegistry?: TokenRegistry,
+): number {
   if (amountIn === 0n) return 0;
 
   const poolAddr = edge.poolAddress.toLowerCase();

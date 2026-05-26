@@ -56,7 +56,9 @@ export class HealthServer implements Lifecycle {
     private deps: HealthDependencies,
   ) {}
 
-  async prepare(): Promise<void> { /* no-op */ }
+  async prepare(): Promise<void> {
+    /* no-op */
+  }
 
   async start(): Promise<void> {
     this.server = Bun.serve({
@@ -79,7 +81,7 @@ export class HealthServer implements Lifecycle {
   }
 
   async stop(): Promise<void> {
-    this.server?.stop();
+    void this.server?.stop();
     this.server = null;
   }
 

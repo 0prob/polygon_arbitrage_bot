@@ -3,26 +3,18 @@ import { encodeRoute, computeRouteHash, buildFlashParams } from "./index.ts";
 
 describe("calldata module", () => {
   it("computeRouteHash produces deterministic 32-byte hash", () => {
-    const hash = computeRouteHash([
-      { target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x" },
-    ]);
+    const hash = computeRouteHash([{ target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x" }]);
     expect(hash).toMatch(/^0x[0-9a-f]{64}$/);
   });
 
   it("computeRouteHash is deterministic", () => {
-    const calls = [
-      { target: "0x0000000000000000000000000000000000000001" as const, value: 0n, data: "0x" as const },
-    ];
+    const calls = [{ target: "0x0000000000000000000000000000000000000001" as const, value: 0n, data: "0x" as const }];
     expect(computeRouteHash(calls)).toBe(computeRouteHash(calls));
   });
 
   it("computeRouteHash changes when data changes", () => {
-    const a = computeRouteHash([
-      { target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x" },
-    ]);
-    const b = computeRouteHash([
-      { target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x01" },
-    ]);
+    const a = computeRouteHash([{ target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x" }]);
+    const b = computeRouteHash([{ target: "0x0000000000000000000000000000000000000001", value: 0n, data: "0x01" }]);
     expect(a).not.toBe(b);
   });
 
@@ -31,9 +23,7 @@ describe("calldata module", () => {
       profitToken: "0x0000000000000000000000000000000000000002",
       minProfit: 100n,
       deadline: 9999999999n,
-      calls: [
-        { target: "0x0000000000000000000000000000000000000003", value: 0n, data: "0x" },
-      ],
+      calls: [{ target: "0x0000000000000000000000000000000000000003", value: 0n, data: "0x" }],
     });
     expect(result.profitToken).toMatch(/^0x[0-9a-f]{40}$/);
     expect(result.minProfit).toBe(100n);
@@ -42,12 +32,14 @@ describe("calldata module", () => {
   });
 
   it("buildFlashParams validates calls array", () => {
-    expect(() => buildFlashParams({
-      profitToken: "0x0000000000000000000000000000000000000002",
-      minProfit: 100n,
-      deadline: 9999999999n,
-      calls: "not-an-array",
-    })).toThrow("executor calls must be an array");
+    expect(() =>
+      buildFlashParams({
+        profitToken: "0x0000000000000000000000000000000000000002",
+        minProfit: 100n,
+        deadline: 9999999999n,
+        calls: "not-an-array",
+      }),
+    ).toThrow("executor calls must be an array");
   });
 
   it("encodeRoute produces executor calls for a V2 route", () => {
@@ -55,7 +47,14 @@ describe("calldata module", () => {
       {
         path: {
           edges: [
-            { protocol: "QUICKSWAP_V2", poolAddress: "0x0000000000000000000000000000000000000001", tokenIn: "0x0000000000000000000000000000000000000002", tokenOut: "0x0000000000000000000000000000000000000003", zeroForOne: true, stateRef: {} },
+            {
+              protocol: "QUICKSWAP_V2",
+              poolAddress: "0x0000000000000000000000000000000000000001",
+              tokenIn: "0x0000000000000000000000000000000000000002",
+              tokenOut: "0x0000000000000000000000000000000000000003",
+              zeroForOne: true,
+              stateRef: {},
+            },
           ],
         },
         result: { hopAmounts: [1000n, 900n] },
@@ -68,12 +67,14 @@ describe("calldata module", () => {
   });
 
   it("encodeRoute throws on unsupported protocol", () => {
-    expect(() => encodeRoute(
-      {
-        path: { edges: [{ protocol: "UNKNOWN_PROTO", stateRef: {} }] },
-        result: { hopAmounts: [100n, 90n] },
-      },
-      "0x0000000000000000000000000000000000000005",
-    )).toThrow("Unsupported protocol for execution: UNKNOWN_PROTO");
+    expect(() =>
+      encodeRoute(
+        {
+          path: { edges: [{ protocol: "UNKNOWN_PROTO", stateRef: {} }] },
+          result: { hopAmounts: [100n, 90n] },
+        },
+        "0x0000000000000000000000000000000000000005",
+      ),
+    ).toThrow("Unsupported protocol for execution: UNKNOWN_PROTO");
   });
 });

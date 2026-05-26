@@ -23,13 +23,13 @@ export function computeLayout(cols: number | undefined, rows: number | undefined
   const safeCols = Math.max(80, cols ?? 80);
   const safeRows = Math.max(20, rows ?? 24);
   const middleHeight = safeRows - STATUS_HEIGHT - KEYMAP_HEIGHT;
-  
+
   const sidebarWidth = Math.min(SIDEBAR_WIDTH, Math.floor(safeCols / 3));
   const mainWidth = safeCols - sidebarWidth;
-  
+
   const logHeight = Math.min(FOOTER_LOG_HEIGHT, Math.floor(middleHeight / 3));
   const upperMainHeight = middleHeight - logHeight;
-  
+
   const pipelineHeight = Math.min(7, Math.floor(upperMainHeight / 2));
   const tableHeight = upperMainHeight - pipelineHeight;
 

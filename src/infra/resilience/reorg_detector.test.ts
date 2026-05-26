@@ -31,7 +31,7 @@ describe("ReorgDetector", () => {
     const client = makeMockClient();
     const rd = new ReorgDetector(client, 10);
     await rd.trackBlock(1, "0xhash1");
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     const before = rd.getTrackedBlocks().length;
     await rd.trackBlock(2, "0xhash2");
     rd.prune(5); // prune blocks older than 5ms

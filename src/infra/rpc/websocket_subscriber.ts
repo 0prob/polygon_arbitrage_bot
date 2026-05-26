@@ -43,15 +43,14 @@ export class WebSocketSubscriber {
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private requestId = 0;
 
-  constructor(private options: WebSocketSubscriberOptions) {
-  }
+  constructor(private options: WebSocketSubscriberOptions) {}
 
   onEvent(handler: WsEventHandler): void {
     this.eventHandlers.push(handler);
   }
 
   removeHandler(handler: WsEventHandler): void {
-    this.eventHandlers = this.eventHandlers.filter(h => h !== handler);
+    this.eventHandlers = this.eventHandlers.filter((h) => h !== handler);
   }
 
   async start(): Promise<void> {
@@ -102,7 +101,9 @@ export class WebSocketSubscriber {
               this.handleSubscriptionMessage(result);
             }
           }
-        } catch { /* skip malformed */ }
+        } catch {
+          /* skip malformed */
+        }
       };
 
       this.ws.onclose = () => {
@@ -136,7 +137,9 @@ export class WebSocketSubscriber {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: this.requestId++ }));
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   private subscribeNewHeads(): void {
@@ -162,14 +165,18 @@ export class WebSocketSubscriber {
   private async fetchAndEmitPendingTx(hash: string): Promise<void> {
     try {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({
-          jsonrpc: "2.0",
-          method: "eth_getTransactionByHash",
-          params: [hash],
-          id: this.requestId++,
-        }));
+        this.ws.send(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            method: "eth_getTransactionByHash",
+            params: [hash],
+            id: this.requestId++,
+          }),
+        );
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   private sendSubscription(subscriptionType: string, onResult: (result: any) => void): void {
@@ -188,17 +195,21 @@ export class WebSocketSubscriber {
             onResult(subResult as Record<string, string>);
           }
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
       if (origOnMessage) {
         (origOnMessage as Function)(msg);
       }
     };
-    this.ws.send(JSON.stringify({
-      jsonrpc: "2.0",
-      method: "eth_subscribe",
-      params: [subscriptionType],
-      id,
-    }));
+    this.ws.send(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        method: "eth_subscribe",
+        params: [subscriptionType],
+        id,
+      }),
+    );
   }
 
   private handleSubscriptionMessage(result: Record<string, string>): void {
@@ -227,7 +238,9 @@ export class WebSocketSubscriber {
     for (const handler of this.eventHandlers) {
       try {
         handler(event);
-      } catch { /* handler error */ }
+      } catch {
+        /* handler error */
+      }
     }
   }
 }

@@ -50,7 +50,9 @@ describe("ServiceRegistry", () => {
     const mkLifecycle = (name: string) => ({
       prepare: async () => {},
       start: async () => {},
-      stop: async () => { order.push(name); },
+      stop: async () => {
+        order.push(name);
+      },
     });
     reg.register("a", {}, mkLifecycle("a"));
     reg.register("b", {}, mkLifecycle("b"));
@@ -61,8 +63,29 @@ describe("ServiceRegistry", () => {
   it("continues stopAll even if one throws", async () => {
     const reg = new ServiceRegistry();
     const order: string[] = [];
-    reg.register("a", {}, { prepare: async () => {}, start: async () => {}, stop: async () => { order.push("a"); throw new Error("oops"); } });
-    reg.register("b", {}, { prepare: async () => {}, start: async () => {}, stop: async () => { order.push("b"); } });
+    reg.register(
+      "a",
+      {},
+      {
+        prepare: async () => {},
+        start: async () => {},
+        stop: async () => {
+          order.push("a");
+          throw new Error("oops");
+        },
+      },
+    );
+    reg.register(
+      "b",
+      {},
+      {
+        prepare: async () => {},
+        start: async () => {},
+        stop: async () => {
+          order.push("b");
+        },
+      },
+    );
     await reg.stopAll();
     expect(order).toEqual(["b", "a"]);
   });

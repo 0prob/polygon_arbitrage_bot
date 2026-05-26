@@ -14,7 +14,10 @@ import { parseAbi } from "viem";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
-const V3_ABI = parseAbi(["function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)", "function liquidity() external view returns (uint128)"]);
+const V3_ABI = parseAbi([
+  "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
+  "function liquidity() external view returns (uint128)",
+]);
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
 
@@ -58,78 +61,80 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
     poolLookup.set(p.address.toLowerCase(), p);
   }
 
-  await Promise.all(batches.map(async (batch) => {
-    const calls: any[] = [];
-    for (const addr of batch) {
-      const meta = poolLookup.get(addr);
-      if (!meta) continue;
-      if (meta.protocol.includes("v2")) {
-        calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
-      } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
-        calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
-        calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
-      }
-    }
-
-    if (calls.length === 0) return;
-
-    try {
-      const results = await ctx.publicClient.multicall({
-        contracts: calls,
-        allowFailure: true,
-      });
-
-      let resultIdx = 0;
+  await Promise.all(
+    batches.map(async (batch) => {
+      const calls: any[] = [];
       for (const addr of batch) {
         const meta = poolLookup.get(addr);
         if (!meta) continue;
-
         if (meta.protocol.includes("v2")) {
-          const res = results[resultIdx++];
-          if (res?.status === "success" && res.result) {
-            const r = res.result as any;
-            const r0 = r[0] !== undefined ? r[0] : r.reserve0;
-            const r1 = r[1] !== undefined ? r[1] : r.reserve1;
-
-            if (r0 !== undefined && r1 !== undefined) {
-              ctx.stateCache.set(addr, {
-                reserve0: BigInt(r0),
-                reserve1: BigInt(r1),
-                initialized: true,
-              });
-              _failedPools.delete(addr);
-            } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-            }
-          }
+          calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
         } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
-          const slot0Res = results[resultIdx++];
-          const liqRes = results[resultIdx++];
-          if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
-            const s = slot0Res.result as any;
-            const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
-            const tick = s[1] !== undefined ? s[1] : s.tick;
+          calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
+          calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
+        }
+      }
 
-            if (sqrtPriceX96 !== undefined && tick !== undefined) {
-              ctx.stateCache.set(addr, {
-                sqrtPriceX96: BigInt(sqrtPriceX96),
-                tick: Number(tick),
-                liquidity: BigInt(liqRes.result as any),
-                initialized: true,
-              });
-              _failedPools.delete(addr);
-            } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+      if (calls.length === 0) return;
+
+      try {
+        const results = await ctx.publicClient.multicall({
+          contracts: calls,
+          allowFailure: true,
+        });
+
+        let resultIdx = 0;
+        for (const addr of batch) {
+          const meta = poolLookup.get(addr);
+          if (!meta) continue;
+
+          if (meta.protocol.includes("v2")) {
+            const res = results[resultIdx++];
+            if (res?.status === "success" && res.result) {
+              const r = res.result as any;
+              const r0 = r[0] !== undefined ? r[0] : r.reserve0;
+              const r1 = r[1] !== undefined ? r[1] : r.reserve1;
+
+              if (r0 !== undefined && r1 !== undefined) {
+                ctx.stateCache.set(addr, {
+                  reserve0: BigInt(r0),
+                  reserve1: BigInt(r1),
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              }
+            }
+          } else if (meta.protocol.includes("v3") || meta.protocol.includes("elastic")) {
+            const slot0Res = results[resultIdx++];
+            const liqRes = results[resultIdx++];
+            if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              const s = slot0Res.result as any;
+              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
+              const tick = s[1] !== undefined ? s[1] : s.tick;
+
+              if (sqrtPriceX96 !== undefined && tick !== undefined) {
+                ctx.stateCache.set(addr, {
+                  sqrtPriceX96: BigInt(sqrtPriceX96),
+                  tick: Number(tick),
+                  liquidity: BigInt(liqRes.result as any),
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              }
             }
           }
         }
+      } catch {
+        // Ignore individual batch failures
       }
-    } catch {
-      // Ignore individual batch failures
-    }
-  }));
+    }),
+  );
 }
 
 export interface PassLoopDeps {
@@ -161,7 +166,7 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
   for (let i = 0; i < 10; i++) {
     let changed = false;
     for (const pool of pools) {
-      const tokens = pool.tokens?.map(t => t.toLowerCase()) ?? [pool.token0.toLowerCase(), pool.token1.toLowerCase()];
+      const tokens = pool.tokens?.map((t) => t.toLowerCase()) ?? [pool.token0.toLowerCase(), pool.token1.toLowerCase()];
       if (tokens.length < 2) continue;
 
       const state = stateCache.get(pool.address.toLowerCase());
@@ -245,7 +250,7 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
     }
     if (!changed) break;
   }
-  
+
   if (logger && rates.size > 1) {
     logger.debug({ rates: rates.size, propagation: logs }, "Rate propagation complete");
   } else if (logger) {
@@ -336,7 +341,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   // Start cross-chain scanner in a dedicated background loop if enabled
   if (ctx.config.crossChainArb?.enabled) {
-    (async () => {
+    void (async () => {
       ctx.logger.info({}, "Cross-chain scanner background loop started");
       while (ctx.isRunning) {
         try {
@@ -370,9 +375,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
     const cycleWindow = 60000;
     const elapsedCycleWindow = now - cycleWindowStart;
-    ctx.metrics.currentCyclesPerMinute = elapsedCycleWindow > 0
-      ? Math.round((ctx.metrics.cycles * 60000) / elapsedCycleWindow)
-      : 0;
+    ctx.metrics.currentCyclesPerMinute = elapsedCycleWindow > 0 ? Math.round((ctx.metrics.cycles * 60000) / elapsedCycleWindow) : 0;
     if (ctx.metrics.currentCyclesPerMinute > ctx.metrics.peakCyclesPerMinute) {
       ctx.metrics.peakCyclesPerMinute = ctx.metrics.currentCyclesPerMinute;
     }
@@ -423,7 +426,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           const discoveryStartTime = Date.now();
           const hasuraPools = await ctx.rpcCircuit.execute(
             () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
-            async () => { ctx.logger.warn({}, "Hasura circuit open, returning empty pool list"); return []; },
+            async () => {
+              ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
+              return [];
+            },
           );
           const discoveryElapsed = Date.now() - discoveryStartTime;
 
@@ -433,10 +439,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             if (pools.length > 100 && hasuraPools.length < pools.length / 10) {
               ctx.logger.warn(
                 { previous: pools.length, discovered: hasuraPools.length },
-                "Suspiciously low number of pools discovered, keeping previous list"
+                "Suspiciously low number of pools discovered, keeping previous list",
               );
             } else {
-              hasuraPoolsCache = hasuraPools.map(p => ({
+              hasuraPoolsCache = hasuraPools.map((p) => ({
                 address: p.address as `0x${string}`,
                 protocol: p.protocol,
                 token0: (p.tokens[0] ?? "") as `0x${string}`,
@@ -475,7 +481,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
       }
 
-      const shouldReEnumerate = (now - lastRefreshTime) >= LF_INTERVAL;
+      const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL;
       const shouldFullRebuild = ctx.graphUpdater?.shouldFullRebuild() ?? true;
 
       // Low-frequency maintenance: Refresh all state and re-calculate rates
@@ -495,9 +501,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
         // Fetch missing state for ALL pools to ensure rate propagation is complete
         // We only do this occasionally to avoid RPC hammering
-        const poolCycles = pools.map(p => ({ edges: [{ poolAddress: p.address }] } as any));
+        const poolCycles = pools.map((p) => ({ edges: [{ poolAddress: p.address }] }) as any);
         await fetchMissingPoolState(ctx, pools, poolCycles);
-        
+
         // Re-calculate MATIC rates for all tokens
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
       }
@@ -508,11 +514,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           cachedGraph = deps.buildGraph(pools, stateCache);
         }
         const enumStartTime = Date.now();
-        cachedCycles = deps.enumerateCycles(
-          cachedGraph!,
-          MAX_HOPS,
-          ctx.config.routing.enumerationMaxPaths,
-          (key) => ctx.executionService.tracker.getWinRate(key),
+        cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
+          ctx.executionService.tracker.getWinRate(key),
         );
         const enumElapsed = Date.now() - enumStartTime;
 
@@ -538,7 +541,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // High-frequency pre-fetch: Only for pools in current cycles
       // Always fetch if we just re-enumerated to ensure we have state for new pools
-      if (shouldReEnumerate || now % 5 === 0) { 
+      if (shouldReEnumerate || now % 5 === 0) {
         await fetchMissingPoolState(ctx, pools, currentCycles);
         // Force rate recalculation after state fetch
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
@@ -595,7 +598,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             pruned: result.pruned,
             noRate: result.noRate,
             profitable: result.profitableCount,
-            maxGrossMatic: result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n**15n).toString() + "mMATIC" : "N/A",
+            maxGrossMatic:
+              result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
             rates: tokenToMaticRates.size,
             cache: stateCache.size,
             isLowFreq: shouldReEnumerate,
@@ -608,33 +612,33 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
           ctx.logger.info({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
         } else if (result.profitable.length > 0) {
-          const candidates: { candidate: CandidateExecution; profitable: typeof result.profitable[number]; routeKey: string }[] = [];
+          const candidates: { candidate: CandidateExecution; profitable: (typeof result.profitable)[number]; routeKey: string }[] = [];
 
           for (const profitable of result.profitable) {
             if (!ctx.isRunning) break;
 
             const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
-            
+
             // Format a readable path for the TUI
-            const path = profitable.result.tokenPath.map(t => t.slice(0, 6)).join(" -> ");
+            const path = profitable.result.tokenPath.map((t) => t.slice(0, 6)).join(" -> ");
             const roi = profitable.assessment.roi;
 
-            bus?.emit({ 
-              type: "opportunity_found", 
-              routeKey, 
+            bus?.emit({
+              type: "opportunity_found",
+              routeKey,
               profitWei: profitable.assessment.netProfitAfterGas,
               path,
-              roi
+              roi,
             });
 
             try {
               const candidate = deps.buildExecutionCandidate(
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
-                { 
-                  slippageBps: Number(options.slippageBps ?? 50n), 
+                {
+                  slippageBps: Number(options.slippageBps ?? 50n),
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
-                  stateCache
+                  stateCache,
                 },
               );
 
@@ -658,24 +662,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
           if (candidates.length > 0) {
             bus?.emit({ type: "pipeline_stage", stage: "EXECUTING" });
-            const candidateExecs = candidates.map(c => c.candidate);
+            const candidateExecs = candidates.map((c) => c.candidate);
             const groups = groupCompatibleCandidates(candidateExecs);
 
-            ctx.logger.info(
-              { total: candidates.length, groups: groups.length },
-              "Executing opportunities in batches",
-            );
+            ctx.logger.info({ total: candidates.length, groups: groups.length }, "Executing opportunities in batches");
 
             for (const group of groups) {
               if (!ctx.isRunning) break;
               ctx.metrics.executionsAttempted += group.length;
 
-              const groupRouteKeys = group.map(c => c.routeKey);
+              const groupRouteKeys = group.map((c) => c.routeKey);
               ctx.logger.info({ groupSize: group.length, routeKeys: groupRouteKeys }, "Executing batch");
 
-              const results = group.length === 1
-                ? [await ctx.executionService.execute(group[0])]
-                : await ctx.executionService.batchExecute(group);
+              const results =
+                group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
 
               for (let i = 0; i < results.length; i++) {
                 const execResult = results[i];
@@ -720,7 +720,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             await ctx.reorgDetector.trackBlock(Number(latest.number), latest.hash);
             lastSimulationBlock = Number(latest.number);
           }
-        } catch { /* best effort */ }
+        } catch {
+          /* best effort */
+        }
       }
 
       const waitMs = Math.max(0, HF_INTERVAL - elapsed);

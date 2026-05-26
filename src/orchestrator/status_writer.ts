@@ -28,11 +28,7 @@ export function formatGwei(gasPrice: bigint | undefined): number {
   return Number(gasPrice) / 1e9;
 }
 
-export function buildStatusPayload(
-  metrics: Metrics,
-  gasPrice: bigint | undefined,
-  poolCount: number,
-): StatusPayload {
+export function buildStatusPayload(metrics: Metrics, gasPrice: bigint | undefined, poolCount: number): StatusPayload {
   const uptimeSec = Math.floor((Date.now() - metrics.startTime) / 1000);
   return {
     status: "running",
@@ -56,10 +52,7 @@ export function buildStatusPayload(
   };
 }
 
-export async function writeStatusFile(
-  dataDir: string,
-  payload: StatusPayload,
-): Promise<void> {
+export async function writeStatusFile(dataDir: string, payload: StatusPayload): Promise<void> {
   const tmp = join(dataDir, "status.json.tmp");
   const finalPath = join(dataDir, "status.json");
   await writeFile(tmp, JSON.stringify(payload, null, 2) + "\n");

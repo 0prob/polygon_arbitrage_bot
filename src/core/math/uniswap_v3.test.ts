@@ -86,37 +86,26 @@ describe("V3 swap property-based", () => {
 
   it("property: zeroForOne pushes price down, oneForZero pushes price up", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: -50000, max: 50000 }),
-        fc.bigInt({ min: 1n, max: 1n << 60n }),
-        (tick, amountIn) => {
-          const liquidity = 1_000_000_000_000_000_000n;
-          const amount = (amountIn % 1_000_000_000n) + 1n;
-          const state = poolWithTick(tick, liquidity);
-          const zeroForOne = simulateV3Swap(state, amount, true);
-          const oneForZero = simulateV3Swap(state, amount, false);
-          return (
-            zeroForOne.sqrtPriceX96After <= state.sqrtPriceX96 &&
-            oneForZero.sqrtPriceX96After >= state.sqrtPriceX96
-          );
-        },
-      ),
+      fc.property(fc.integer({ min: -50000, max: 50000 }), fc.bigInt({ min: 1n, max: 1n << 60n }), (tick, amountIn) => {
+        const liquidity = 1_000_000_000_000_000_000n;
+        const amount = (amountIn % 1_000_000_000n) + 1n;
+        const state = poolWithTick(tick, liquidity);
+        const zeroForOne = simulateV3Swap(state, amount, true);
+        const oneForZero = simulateV3Swap(state, amount, false);
+        return zeroForOne.sqrtPriceX96After <= state.sqrtPriceX96 && oneForZero.sqrtPriceX96After >= state.sqrtPriceX96;
+      }),
       { numRuns: 100 },
     );
   });
 
   it("property: gas estimate is always positive", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: -100000, max: 100000 }),
-        fc.bigInt({ min: 1n, max: 1n << 60n }),
-        (tick, amountIn) => {
-          const amount = (amountIn % 1_000_000_000n) + 1n;
-          const state = poolWithTick(tick, 1_000_000_000_000_000_000n);
-          const result = simulateV3Swap(state, amount, true);
-          return result.gasEstimate >= 185000;
-        },
-      ),
+      fc.property(fc.integer({ min: -100000, max: 100000 }), fc.bigInt({ min: 1n, max: 1n << 60n }), (tick, amountIn) => {
+        const amount = (amountIn % 1_000_000_000n) + 1n;
+        const state = poolWithTick(tick, 1_000_000_000_000_000_000n);
+        const result = simulateV3Swap(state, amount, true);
+        return result.gasEstimate >= 185000;
+      }),
       { numRuns: 100 },
     );
   });

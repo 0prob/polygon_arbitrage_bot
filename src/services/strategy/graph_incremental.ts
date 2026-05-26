@@ -7,9 +7,7 @@ const DEFAULT_FEE_BPS = 30n;
 export class IncrementalGraphUpdater {
   private fullRebuildCount = 0;
 
-  constructor(
-    private readonly fullRebuildInterval: number = 60,
-  ) {}
+  constructor(private readonly fullRebuildInterval: number = 60) {}
 
   getFullRebuildCount(): number {
     return this.fullRebuildCount;
@@ -85,7 +83,7 @@ export class IncrementalGraphUpdater {
     graph.stateRefs.delete(addr);
 
     for (const [token, edges] of graph.adjacency) {
-      const filtered = edges.filter(e => e.poolAddress.toLowerCase() !== addr);
+      const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
       if (filtered.length === 0) {
         graph.adjacency.delete(token);
       } else {

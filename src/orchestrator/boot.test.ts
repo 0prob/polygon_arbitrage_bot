@@ -1,22 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import { bootApplication } from './boot';
-import type { AppConfig } from '../config/schema';
+import { describe, it, expect } from "vitest";
+import { bootApplication } from "./boot";
+import type { AppConfig } from "../config/schema";
 
-describe('bootApplication', () => {
-  it('should instantiate multiple submitters if multiple private relays are provided', async () => {
+describe("bootApplication", () => {
+  it("should instantiate multiple submitters if multiple private relays are provided", async () => {
     const config = {
       rpc: {
-        polygonRpcUrls: ['http://localhost:8545'],
-        executionRpcUrl: 'http://localhost:8545',
-        gasEstimationRpcUrl: 'http://localhost:8545',
+        polygonRpcUrls: ["http://localhost:8545"],
+        executionRpcUrl: "http://localhost:8545",
+        gasEstimationRpcUrl: "http://localhost:8545",
         requestTimeoutMs: 1000,
         batchWaitMs: 0,
         batchSize: 1,
       },
       execution: {
-        privateRelayUrls: ['http://relay1.com', 'http://relay2.com'],
-        privateKey: '0x' + '1'.repeat(64),
-        executorAddress: '0x' + '2'.repeat(40),
+        privateRelayUrls: ["http://relay1.com", "http://relay2.com"],
+        privateKey: "0x" + "1".repeat(64),
+        executorAddress: "0x" + "2".repeat(40),
         minProfitWei: 0n,
         slippageBps: 0n,
         revertRiskBps: 0n,
@@ -72,27 +72,27 @@ describe('bootApplication', () => {
       },
       mempool: {
         enabled: false,
-        websocketUrl: '',
+        websocketUrl: "",
         coalesceTtlMs: 1000,
         largeSwapThresholdUsd: 1,
       },
       observability: {
-        logLevel: 'info',
+        logLevel: "info",
         tuiEnabled: false,
       },
       paths: {
-        dataDir: '/tmp',
-        perfJsonFile: '/tmp/perf.json',
+        dataDir: "/tmp",
+        perfJsonFile: "/tmp/perf.json",
       },
       fastlane: {
         enabled: false,
-        rpcUrl: 'https://polygon-rpc.fastlane.xyz',
+        rpcUrl: "https://polygon-rpc.fastlane.xyz",
         blockNumberWindow: 50,
         timestampWindowS: 60,
       },
-      envioApiToken: 'token',
-      hasuraUrl: 'http://localhost:8080/v1/graphql',
-      hasuraSecret: 'testing',
+      envioApiToken: "token",
+      hasuraUrl: "http://localhost:8080/v1/graphql",
+      hasuraSecret: "testing",
     } as AppConfig;
 
     const context = await bootApplication(config);

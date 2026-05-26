@@ -12,28 +12,40 @@ export class ArbBotError extends Error {
 }
 
 export class RpcError extends ArbBotError {
-  constructor(message: string, public readonly url?: string) {
+  constructor(
+    message: string,
+    public readonly url?: string,
+  ) {
     super(message, "RPC_ERROR", true);
     this.name = "RpcError";
   }
 }
 
 export class CircuitOpenError extends ArbBotError {
-  constructor(breakerName: string, public readonly msRemaining: number) {
+  constructor(
+    breakerName: string,
+    public readonly msRemaining: number,
+  ) {
     super(`Circuit '${breakerName}' is open (${msRemaining}ms remaining)`, "CIRCUIT_OPEN", true);
     this.name = "CircuitOpenError";
   }
 }
 
 export class SimulationError extends ArbBotError {
-  constructor(message: string, public readonly poolAddress?: string) {
+  constructor(
+    message: string,
+    public readonly poolAddress?: string,
+  ) {
     super(message, "SIMULATION_ERROR", true);
     this.name = "SimulationError";
   }
 }
 
 export class CalldataError extends ArbBotError {
-  constructor(message: string, public readonly protocol?: string) {
+  constructor(
+    message: string,
+    public readonly protocol?: string,
+  ) {
     super(message, "CALLDATA_ERROR", false);
     this.name = "CalldataError";
   }
@@ -47,7 +59,10 @@ export class ConfigError extends ArbBotError {
 }
 
 export class ExecutionError extends ArbBotError {
-  constructor(message: string, public readonly txHash?: string) {
+  constructor(
+    message: string,
+    public readonly txHash?: string,
+  ) {
     super(message, "EXECUTION_ERROR", false);
     this.name = "ExecutionError";
   }

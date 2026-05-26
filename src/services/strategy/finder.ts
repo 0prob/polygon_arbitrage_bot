@@ -23,11 +23,7 @@ function feeLogWeight(feeBps: bigint): number {
   return -Math.log(factor);
 }
 
-export function scoreCycleWithFeedback(
-  logWeight: number,
-  routeKey: string,
-  getWinRate: (key: string) => number,
-): number {
+export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getWinRate: (key: string) => number): number {
   const winRate = getWinRate(routeKey);
   if (winRate <= 0) return logWeight;
   const feedbackBonus = Math.log(1 + 10 * winRate);
@@ -36,11 +32,7 @@ export function scoreCycleWithFeedback(
 
 const MAX_CYCLES_PER_PASS = 250_000;
 
-export function findCycles(
-  graph: RoutingGraph,
-  maxHops: number,
-  maxCycles: number = MAX_CYCLES_PER_PASS,
-): FoundCycle[] {
+export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   const hopLimit = Math.min(maxHops, 8);
   const { adjacency } = graph;
@@ -98,7 +90,11 @@ export function findCycles(
         for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
           const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() !== startToken) continue;
-          if (e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()) continue;
+          if (
+            e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
+            e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()
+          )
+            continue;
           cycles.push({
             startToken: startToken as Address,
             edges: [e1, e2, e3],
@@ -134,7 +130,11 @@ export function findCycles(
         for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
           const e3 = out3[k];
           if (e3.tokenOut.toLowerCase() === startToken) continue;
-          if (e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()) continue;
+          if (
+            e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
+            e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()
+          )
+            continue;
           const fourth = adjacency.get(e3.tokenOut.toLowerCase());
           if (!fourth) continue;
           const out4 = fourth;
@@ -144,7 +144,12 @@ export function findCycles(
           for (let l = 0; l < o4len && cycles.length < maxCycles; l++) {
             const e4 = out4[l];
             if (e4.tokenOut.toLowerCase() !== startToken) continue;
-            if (e4.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() || e4.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase() || e4.poolAddress.toLowerCase() === e3.poolAddress.toLowerCase()) continue;
+            if (
+              e4.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
+              e4.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase() ||
+              e4.poolAddress.toLowerCase() === e3.poolAddress.toLowerCase()
+            )
+              continue;
             cycles.push({
               startToken: startToken as Address,
               edges: [e1, e2, e3, e4],

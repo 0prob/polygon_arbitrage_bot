@@ -96,7 +96,7 @@ function appendLog(state: TuiState, component: string, message: string): void {
 }
 
 function updateOpportunity(state: TuiState, routeKey: string, update: Partial<OpportunityEntry>): void {
-  const existing = state.system.activeOpportunities.find(o => o.routeKey === routeKey);
+  const existing = state.system.activeOpportunities.find((o) => o.routeKey === routeKey);
   if (existing) {
     Object.assign(existing, update);
     existing.timestamp = Date.now();
@@ -108,10 +108,10 @@ function updateOpportunity(state: TuiState, routeKey: string, update: Partial<Op
       roi: 0,
       status: "Simulated",
       timestamp: Date.now(),
-      ...update
+      ...update,
     });
   }
-  
+
   // Sort by profit descending and keep top 10
   state.system.activeOpportunities.sort((a, b) => Number(b.profit - a.profit));
   if (state.system.activeOpportunities.length > 10) {
@@ -146,11 +146,11 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
       }
-      updateOpportunity(state, event.routeKey, { 
-        profit: event.profitWei, 
-        path: event.path, 
-        roi: event.roi, 
-        status: "Simulated" 
+      updateOpportunity(state, event.routeKey, {
+        profit: event.profitWei,
+        path: event.path,
+        roi: event.roi,
+        status: "Simulated",
       });
       appendLog(state, "Pipeline", `Profit: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
       break;

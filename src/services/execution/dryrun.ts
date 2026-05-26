@@ -16,9 +16,7 @@ export interface PendingState {
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
 
-  constructor(
-    private client: PublicClient,
-  ) {}
+  constructor(private client: PublicClient) {}
 
   async fetchPendingState(): Promise<PendingState | null> {
     try {
@@ -30,7 +28,9 @@ export class MempoolAwareDryRunner {
         };
         return this.lastPendingState;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return null;
   }
 
@@ -49,12 +49,14 @@ export class MempoolAwareDryRunner {
       });
 
       if (result && result.data) {
-        const gasEstimate = await this.client.estimateGas({
-          account: fromAddress as `0x${string}`,
-          to: candidate.targetAddress as `0x${string}`,
-          data: candidate.calldata as `0x${string}`,
-          value: candidate.value,
-        }).catch(() => 500_000n);
+        const gasEstimate = await this.client
+          .estimateGas({
+            account: fromAddress as `0x${string}`,
+            to: candidate.targetAddress as `0x${string}`,
+            data: candidate.calldata as `0x${string}`,
+            value: candidate.value,
+          })
+          .catch(() => 500_000n);
 
         return {
           success: true,

@@ -48,10 +48,12 @@ export interface RuntimeContext {
 }
 
 export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
-  const logger = passedLogger ?? createRootLogger({
-    level: config.observability.logLevel,
-    logSink: logBuffer,
-  });
+  const logger =
+    passedLogger ??
+    createRootLogger({
+      level: config.observability.logLevel,
+      logSink: logBuffer,
+    });
 
   const metrics: Metrics = {
     cycles: 0,
@@ -79,7 +81,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
 
   const stateCache: RouteStateCache = new Map();
 
-  let cachedPools: PoolMeta[] | null = null;
+  const cachedPools: PoolMeta[] | null = null;
 
   const getPools = (): PoolMeta[] => {
     return cachedPools || [];
@@ -121,31 +123,34 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   const stuckTxHandler = async (nonce: number, maxFee: bigint): Promise<void> => {
     if (walletClients.length === 0) return;
     const wc = walletClients[0];
-    await wc.sendTransaction({
-      account: wc.account!,
-      chain: wc.chain,
-      to: wc.account!.address,
-      value: 0n,
-      data: "0x",
-      nonce,
-      maxFeePerGas: maxFee,
-      maxPriorityFeePerGas: maxFee / 2n,
-    }).catch(() => {});
+    await wc
+      .sendTransaction({
+        account: wc.account!,
+        chain: wc.chain,
+        to: wc.account!.address,
+        value: 0n,
+        data: "0x",
+        nonce,
+        maxFeePerGas: maxFee,
+        maxPriorityFeePerGas: maxFee / 2n,
+      })
+      .catch(() => {});
   };
 
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
 
-  const walletClients = config.execution.privateRelayUrls.length > 0
-    ? config.execution.privateRelayUrls.map(url => createExecutionClient(url, config.execution.privateKey, 137))
-    : [createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137)];
+  const walletClients =
+    config.execution.privateRelayUrls.length > 0
+      ? config.execution.privateRelayUrls.map((url) => createExecutionClient(url, config.execution.privateKey, 137))
+      : [createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137)];
 
-  walletClients.forEach(wc => {
+  walletClients.forEach((wc) => {
     if (!wc.account) {
       throw new Error("Execution client is not configured with an account.");
     }
   });
 
-  const submitters = walletClients.map(walletClient => {
+  const submitters = walletClients.map((walletClient) => {
     return async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
       const hash = await walletClient.sendTransaction({
         account: walletClient.account!,
@@ -163,10 +168,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
 
   let privateSubmitter: SubmitTxFn | undefined;
   if (config.execution.submissionStrategy !== "public" && config.execution.privateRelayUrls.length > 0) {
-    const privateClients = config.execution.privateRelayUrls.map(url =>
-      createExecutionClient(url, config.execution.privateKey, 137)
-    );
-    privateClients.forEach(wc => {
+    const privateClients = config.execution.privateRelayUrls.map((url) => createExecutionClient(url, config.execution.privateKey, 137));
+    privateClients.forEach((wc) => {
       if (!wc.account) throw new Error("Private relay client is not configured with an account.");
     });
     privateSubmitter = async (tx) => {
@@ -192,14 +195,17 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
       chain: getChain(137),
       transport: http(config.fastlane.rpcUrl),
     });
-    fastLaneSubmitter = new FastLaneSubmitter({
-      enabled: config.fastlane.enabled,
-      rpcUrl: config.fastlane.rpcUrl,
-      conditional: {
-        blockNumberWindow: config.fastlane.blockNumberWindow,
-        timestampWindowS: config.fastlane.timestampWindowS,
+    fastLaneSubmitter = new FastLaneSubmitter(
+      {
+        enabled: config.fastlane.enabled,
+        rpcUrl: config.fastlane.rpcUrl,
+        conditional: {
+          blockNumberWindow: config.fastlane.blockNumberWindow,
+          timestampWindowS: config.fastlane.timestampWindowS,
+        },
       },
-    }, fastLaneClient);
+      fastLaneClient,
+    );
     logger.info({ rpcUrl: config.fastlane.rpcUrl }, "FastLane submitter initialized");
   }
 
@@ -241,7 +247,9 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
                   value: tx.value?.toString() ?? "0",
                 });
               }
-            } catch { /* tx may have been mined before we fetch it */ }
+            } catch {
+              /* tx may have been mined before we fetch it */
+            }
           }
         },
       });
@@ -278,18 +286,30 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   services.register("logger", logger);
   services.register("execution", executionService, {
     prepare: async () => {},
-    start: async () => { await executionService.start(); },
-    stop: async () => { executionService.stop(); },
+    start: async () => {
+      await executionService.start();
+    },
+    stop: async () => {
+      executionService.stop();
+    },
   });
   services.register("mempool", mempoolService, {
     prepare: async () => {},
-    start: async () => { await mempoolService.start(); },
-    stop: async () => { mempoolService.stop(); },
+    start: async () => {
+      await mempoolService.start();
+    },
+    stop: async () => {
+      mempoolService.stop();
+    },
   });
   services.register("gasOracle", gasOracle, {
     prepare: async () => {},
-    start: async () => { await gasOracle.start(); },
-    stop: async () => { gasOracle.stop(); },
+    start: async () => {
+      await gasOracle.start();
+    },
+    stop: async () => {
+      gasOracle.stop();
+    },
   });
 
   const rpcCircuit = new CircuitBreaker("polygon-rpc", {
@@ -335,7 +355,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     // Warm gas oracle with 3 quick polls
     await gasOracle.start();
     for (let i = 0; i < 3; i++) {
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
     }
   } catch (err) {
     logger.warn({ err }, "Gas oracle warmup failed, continuing with cold start");

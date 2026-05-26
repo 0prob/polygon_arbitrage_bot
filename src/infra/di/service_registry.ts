@@ -42,7 +42,11 @@ export class ServiceRegistry {
     const reversed = [...this.services.entries()].reverse();
     for (const [, entry] of reversed) {
       if (entry.lifecycle) {
-        try { await entry.lifecycle.stop(); } catch { /* best effort */ }
+        try {
+          await entry.lifecycle.stop();
+        } catch {
+          /* best effort */
+        }
       }
     }
   }

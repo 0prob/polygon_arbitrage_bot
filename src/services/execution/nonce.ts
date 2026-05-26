@@ -75,7 +75,7 @@ export class NonceManager {
     const oldest = this.staleNonces.values().next().value;
     if (oldest == null) return false;
     try {
-      const boostedFee = maxFee * 150n / 100n;
+      const boostedFee = (maxFee * 150n) / 100n;
       await this.onStuckTx(oldest, boostedFee);
       this.staleNonces.delete(oldest);
       return true;

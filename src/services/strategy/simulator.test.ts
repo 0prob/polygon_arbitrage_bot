@@ -184,7 +184,7 @@ describe("simulateHop", () => {
 
   it("applies sell tax correctly", () => {
     const registry = new TokenRegistry({
-      "0xa": { buyTaxMultiplier: 1.0, sellTaxMultiplier: 0.9 }
+      "0xa": { buyTaxMultiplier: 1.0, sellTaxMultiplier: 0.9 },
     });
     const edge: SimulationEdge = {
       poolAddress: "0xpool",
@@ -197,7 +197,7 @@ describe("simulateHop", () => {
     // Without tax, 1000 in -> 100000 - (100000 * 100000 / (100000 + 1000)) = 100000 - 99009 = 991 (approx)
     // With 10% sell tax, effective in = 900
     // 900 in -> 100000 - (100000 * 100000 / (100000 + 900)) = 100000 - 99108 = 892 (approx)
-    
+
     // Test without registry
     const resNoTax = simulateHop(edge, 1000n, new Map());
     // Test with registry
@@ -208,7 +208,7 @@ describe("simulateHop", () => {
 
   it("applies buy tax correctly", () => {
     const registry = new TokenRegistry({
-      "0xb": { buyTaxMultiplier: 0.9, sellTaxMultiplier: 1.0 }
+      "0xb": { buyTaxMultiplier: 0.9, sellTaxMultiplier: 1.0 },
     });
     const edge: SimulationEdge = {
       poolAddress: "0xpool",
@@ -218,7 +218,7 @@ describe("simulateHop", () => {
       zeroForOne: true,
       stateRef: { reserve0: 100000n, reserve1: 100000n },
     };
-    
+
     // Test without registry
     const resNoTax = simulateHop(edge, 1000n, new Map());
     // Test with registry
@@ -332,7 +332,7 @@ describe("getEffectivePriceImpact", () => {
       tokenOutIdx: 1,
       stateRef: { reserve0: 1000000n, reserve1: 1000000n, token0: "0xa", token1: "0xb" },
     };
-    
+
     // amountIn = 10000n, pool reserves = 1,000,000. Impact should be roughly 1%
     const impact = getEffectivePriceImpact(edge, 10000n, new Map());
     expect(impact).toBeGreaterThan(0);
@@ -351,7 +351,7 @@ describe("getEffectivePriceImpact", () => {
       tokenOutIdx: 1,
       stateRef: { reserve0: 100000000n, reserve1: 200000000n, token0: "0xa", token1: "0xb" },
     };
-    
+
     // Spot price is 2.0. small amountIn should have impact near 0.3% (fee)
     const impact = getEffectivePriceImpact(edge, 1000n, new Map());
     expect(impact).toBeGreaterThan(0.002);
@@ -376,7 +376,7 @@ describe("getEffectivePriceImpact", () => {
         initialized: true,
       },
     };
-    
+
     // Spot price is 2.0. small amountIn should have impact near 0.3% (fee)
     const impact = getEffectivePriceImpact(edge, 10000n, new Map());
     expect(impact).toBeGreaterThan(0.002);

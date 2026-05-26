@@ -6,7 +6,7 @@ export interface SkimOpportunity {
   token1: Address;
   imbalance0: bigint;
   imbalance1: bigint;
-  profitableToken: '0' | '1';
+  profitableToken: "0" | "1";
 }
 
 export interface SkimConfig {

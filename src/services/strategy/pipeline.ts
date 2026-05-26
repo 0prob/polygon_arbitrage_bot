@@ -51,7 +51,12 @@ export interface PipelineResult {
   maxGrossProfitMatic?: bigint;
 }
 
-function getEffectivePriceImpactForCycle(cycle: FoundCycle, amount: bigint, stateCache: RouteStateCache, maxImpactThreshold: number = 0.15): boolean {
+function getEffectivePriceImpactForCycle(
+  cycle: FoundCycle,
+  amount: bigint,
+  stateCache: RouteStateCache,
+  maxImpactThreshold: number = 0.15,
+): boolean {
   for (const edge of cycle.edges) {
     const impact = getEffectivePriceImpact(edge, amount, stateCache);
     if (impact > maxImpactThreshold) return true;
@@ -97,7 +102,11 @@ function evaluateAmount(
   }
 }
 
-export async function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteStateCache, options: PipelineOptions): Promise<PipelineResult> {
+export async function evaluatePipeline(
+  cycles: FoundCycle[],
+  stateCache: RouteStateCache,
+  options: PipelineOptions,
+): Promise<PipelineResult> {
   const profitable: PipelineResult["profitable"] = [];
   let attempted = 0;
   let simulated = 0;
@@ -113,7 +122,7 @@ export async function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteSt
       if (options.onProgress) {
         options.onProgress(attempted, cycles.length, profitable.length);
       }
-      await new Promise(resolve => setImmediate(resolve));
+      await new Promise((resolve) => setImmediate(resolve));
     }
 
     try {
@@ -167,8 +176,8 @@ export async function evaluatePipeline(cycles: FoundCycle[], stateCache: RouteSt
         const eval1 = evaluateAmount(cycle, m1, stateCache, options);
         const eval2 = evaluateAmount(cycle, m2, stateCache, options);
 
-        const profit1 = (eval1.assessment?.netProfitAfterGas ?? -1n);
-        const profit2 = (eval2.assessment?.netProfitAfterGas ?? -1n);
+        const profit1 = eval1.assessment?.netProfitAfterGas ?? -1n;
+        const profit2 = eval2.assessment?.netProfitAfterGas ?? -1n;
 
         if (profit1 > bestProfit && eval1.result && eval1.assessment) {
           bestResult = eval1.result;

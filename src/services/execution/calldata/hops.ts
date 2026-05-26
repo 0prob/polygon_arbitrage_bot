@@ -3,15 +3,31 @@ import { MIN_SQRT_RATIO, MAX_SQRT_RATIO } from "../../../core/math/tick_math.ts"
 import { simulateV3Swap } from "../../../core/math/uniswap_v3.ts";
 import { asAddress, normalizePositiveUint, normalizeUint, normalizeUint24, slippageAdjustedAmountOut, normalizeBytes32 } from "./utils.ts";
 import {
-  CALLBACK_PROTOCOL_UNISWAP_V3, CALLBACK_PROTOCOL_SUSHISWAP_V3, CALLBACK_PROTOCOL_QUICKSWAP_V3,
-  CALLBACK_PROTOCOL_KYBER_ELASTIC, MAX_UINT24, BALANCER_VAULT, WOOFI_ROUTER_V2, POOL_MANAGER_ADDRESS,
-  ZERO_ADDRESS, BPS_DENOMINATOR,
+  CALLBACK_PROTOCOL_UNISWAP_V3,
+  CALLBACK_PROTOCOL_SUSHISWAP_V3,
+  CALLBACK_PROTOCOL_QUICKSWAP_V3,
+  CALLBACK_PROTOCOL_KYBER_ELASTIC,
+  MAX_UINT24,
+  BALANCER_VAULT,
+  WOOFI_ROUTER_V2,
+  POOL_MANAGER_ADDRESS,
+  ZERO_ADDRESS,
+  BPS_DENOMINATOR,
 } from "./constants.ts";
 import {
-  ERC20_TRANSFER_ABI, V2_PAIR_SWAP_ABI, V3_POOL_SWAP_ABI, KYBER_ELASTIC_POOL_SWAP_ABI,
-  DODO_SELL_BASE_ABI, DODO_SELL_QUOTE_ABI, WOOFI_ROUTER_SWAP_ABI, CURVE_EXCHANGE_INT128_ABI,
-  CURVE_EXCHANGE_UINT256_ABI, CURVE_EXCHANGE_INT128_RECEIVER_ABI, BALANCER_VAULT_SWAP_ABI,
-  EXECUTOR_APPROVE_IF_NEEDED_ABI, POOL_MANAGER_LOCK_ABI,
+  ERC20_TRANSFER_ABI,
+  V2_PAIR_SWAP_ABI,
+  V3_POOL_SWAP_ABI,
+  KYBER_ELASTIC_POOL_SWAP_ABI,
+  DODO_SELL_BASE_ABI,
+  DODO_SELL_QUOTE_ABI,
+  WOOFI_ROUTER_SWAP_ABI,
+  CURVE_EXCHANGE_INT128_ABI,
+  CURVE_EXCHANGE_UINT256_ABI,
+  CURVE_EXCHANGE_INT128_RECEIVER_ABI,
+  BALANCER_VAULT_SWAP_ABI,
+  EXECUTOR_APPROVE_IF_NEEDED_ABI,
+  POOL_MANAGER_LOCK_ABI,
 } from "./abis.ts";
 import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts";
 
@@ -19,11 +35,16 @@ import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts
 
 function callbackProtocolId(protocol: unknown): number {
   switch (protocol) {
-    case "UNISWAP_V3": return CALLBACK_PROTOCOL_UNISWAP_V3;
-    case "SUSHISWAP_V3": return CALLBACK_PROTOCOL_SUSHISWAP_V3;
-    case "QUICKSWAP_V3": return CALLBACK_PROTOCOL_QUICKSWAP_V3;
-    case "KYBERSWAP_ELASTIC": return CALLBACK_PROTOCOL_KYBER_ELASTIC;
-    default: throw new Error(`encodeV3Hop: unsupported callback protocol ${protocol}`);
+    case "UNISWAP_V3":
+      return CALLBACK_PROTOCOL_UNISWAP_V3;
+    case "SUSHISWAP_V3":
+      return CALLBACK_PROTOCOL_SUSHISWAP_V3;
+    case "QUICKSWAP_V3":
+      return CALLBACK_PROTOCOL_QUICKSWAP_V3;
+    case "KYBERSWAP_ELASTIC":
+      return CALLBACK_PROTOCOL_KYBER_ELASTIC;
+    default:
+      throw new Error(`encodeV3Hop: unsupported callback protocol ${protocol}`);
   }
 }
 
@@ -33,7 +54,14 @@ function poolTokensFromHop(hop: CalldataHop): { token0: `0x${string}`; token1: `
     : { token0: asAddress(hop.tokenOut), token1: asAddress(hop.tokenIn) };
 }
 
-function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmountOut: bigint, fee: number, label: string, options: RouteCalldataOptions = {}): bigint {
+function deriveTightV3PriceLimit(
+  hop: CalldataHop,
+  amountIn: bigint,
+  expectedAmountOut: bigint,
+  fee: number,
+  label: string,
+  options: RouteCalldataOptions = {},
+): bigint {
   const { slippageBps = 50 } = options;
   const state = hop.stateRef ?? {};
   const sqrtBefore = normalizeUint(state.sqrtPriceX96, `${label} stateRef.sqrtPriceX96`);
@@ -50,7 +78,7 @@ function deriveTightV3PriceLimit(hop: CalldataHop, amountIn: bigint, expectedAmo
     ? sqrtAfter < sqrtBefore && sqrtAfter > MIN_SQRT_RATIO
     : sqrtAfter > sqrtBefore && sqrtAfter < MAX_SQRT_RATIO;
   if (!movedOk) throw new Error(`${label}: unable to derive price limit`);
-  
+
   const SLIPPAGE_BPS = BigInt(slippageBps);
   const DENOM = 10_000n;
   return hop.zeroForOne ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
@@ -148,7 +176,14 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, optio
   const isToken0 = Boolean(hop.zeroForOne);
   const swapFeePips = normalizeKyberSwapFeePips(hop);
   const simulated = simulateV3Swap(hop.stateRef ?? {}, amountSpecified, isToken0, swapFeePips);
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, simulated.amountOut, swapFeePips, "encodeKyberElasticHop", options);
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(
+    hop,
+    amountSpecified,
+    simulated.amountOut,
+    swapFeePips,
+    "encodeKyberElasticHop",
+    options,
+  );
   const callbackData = encodeAbiParameters(
     [
       {

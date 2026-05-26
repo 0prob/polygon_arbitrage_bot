@@ -20,7 +20,7 @@ export class ReorgDetector {
   ) {}
 
   async trackBlock(blockNumber: number, blockHash: string): Promise<void> {
-    const parent = this.trackedBlocks.find(b => b.number === blockNumber - 1);
+    const parent = this.trackedBlocks.find((b) => b.number === blockNumber - 1);
     let parentHash = "";
     if (parent) {
       parentHash = parent.hash;
@@ -28,7 +28,9 @@ export class ReorgDetector {
       try {
         const block = await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
         parentHash = block.hash ?? "";
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     this.trackedBlocks.push({
       number: blockNumber,
@@ -47,7 +49,7 @@ export class ReorgDetector {
     if (!latest) return reorged;
 
     const start = Math.max(0, latest.number - this.checkDepth);
-    const targets = this.trackedBlocks.filter(b => b.number >= start);
+    const targets = this.trackedBlocks.filter((b) => b.number >= start);
     if (targets.length < 2) return reorged;
 
     try {
@@ -60,7 +62,7 @@ export class ReorgDetector {
       for (let depth = 1; depth <= this.checkDepth; depth++) {
         const blockNum = latest.number - depth;
         if (blockNum < 0) break;
-        const tracked = this.trackedBlocks.find(b => b.number === blockNum);
+        const tracked = this.trackedBlocks.find((b) => b.number === blockNum);
         if (!tracked) continue;
         try {
           const block = await this.client.getBlock({ blockNumber: BigInt(blockNum) });
@@ -72,10 +74,14 @@ export class ReorgDetector {
               if (tb.number >= blockNum) reorged.add(tb.number);
             }
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
         if (reorged.size > 0) break;
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     return reorged;
   }
@@ -98,7 +104,7 @@ export class ReorgDetector {
 
   prune(olderThanMs: number): void {
     const cutoff = Date.now() - olderThanMs;
-    this.trackedBlocks = this.trackedBlocks.filter(b => b.timestamp >= cutoff);
+    this.trackedBlocks = this.trackedBlocks.filter((b) => b.timestamp >= cutoff);
     this.reorgedBlocks.clear();
   }
 }

@@ -4,7 +4,7 @@ import { createHyperIndexProcess, type HyperIndexProcess } from "../hypersync/hy
 import type { Logger } from "../observability/logger.ts";
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 export interface HyperIndexMonitorOptions {
@@ -88,7 +88,7 @@ export class HyperIndexMonitor implements Lifecycle {
       } else if (Date.now() - this.lastProgressTime > this.maxStallMs) {
         this.opts.logger.warn(
           { lastSynced: this.lastSyncedBlock, stallMs: Date.now() - this.lastProgressTime },
-          "HyperIndex sync stalled, forcing restart"
+          "HyperIndex sync stalled, forcing restart",
         );
         this._isHealthy = false;
         await this.restart();

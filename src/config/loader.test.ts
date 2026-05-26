@@ -26,5 +26,3 @@ test("loadConfig maps all environment variables correctly", () => {
   expect(config.crossChainArb?.minProfitBps).toBe(50);
   expect(config.crossChainArb?.maxSwapHops).toBe(4);
 });
-
-

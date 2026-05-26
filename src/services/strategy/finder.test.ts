@@ -69,9 +69,36 @@ describe("findCycles", () => {
       const tB = `tokenB_${i}` as Address;
       const tC = `tokenC_${i}` as Address;
 
-      const e1: SwapEdge = { poolAddress: "pool1" as Address, protocol: "v2", tokenIn: tA, tokenOut: tB, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
-      const e2: SwapEdge = { poolAddress: "pool2" as Address, protocol: "v2", tokenIn: tB, tokenOut: tC, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
-      const e3: SwapEdge = { poolAddress: "pool3" as Address, protocol: "v2", tokenIn: tC, tokenOut: tA, feeBps: 30n, zeroForOne: true, tokenInIdx: 0, tokenOutIdx: 1 };
+      const e1: SwapEdge = {
+        poolAddress: "pool1" as Address,
+        protocol: "v2",
+        tokenIn: tA,
+        tokenOut: tB,
+        feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
+      };
+      const e2: SwapEdge = {
+        poolAddress: "pool2" as Address,
+        protocol: "v2",
+        tokenIn: tB,
+        tokenOut: tC,
+        feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
+      };
+      const e3: SwapEdge = {
+        poolAddress: "pool3" as Address,
+        protocol: "v2",
+        tokenIn: tC,
+        tokenOut: tA,
+        feeBps: 30n,
+        zeroForOne: true,
+        tokenInIdx: 0,
+        tokenOutIdx: 1,
+      };
 
       adjacency.set(tA.toLowerCase(), [e1]);
       adjacency.set(tB.toLowerCase(), [e2]);

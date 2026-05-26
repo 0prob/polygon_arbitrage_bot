@@ -1,4 +1,4 @@
-import { FeeSnapshot } from '../../core/types/common.ts';
+import { FeeSnapshot } from "../../core/types/common.ts";
 
 export interface GasOracleConfig {
   pollIntervalMs: number;
@@ -98,13 +98,12 @@ export class GasOracle {
         this.emaBaseFee = (this.emaBaseFee * oneMinusAlpha + baseFee * alpha) / 100n;
       }
 
-      const clampedPriority = this.config.eip1559Enabled
-        ? this.computeDynamicPriorityFee()
-        : clampPriorityFee(priorityFee, this.config);
+      const clampedPriority = this.config.eip1559Enabled ? this.computeDynamicPriorityFee() : clampPriorityFee(priorityFee, this.config);
 
-      const predictedBase = this.config.eip1559Enabled && this.emaBaseFee !== null
-        ? (this.emaBaseFee * BigInt(Math.round(this.config.baseFeeBufferMultiplier * 100))) / 100n
-        : baseFee;
+      const predictedBase =
+        this.config.eip1559Enabled && this.emaBaseFee !== null
+          ? (this.emaBaseFee * BigInt(Math.round(this.config.baseFeeBufferMultiplier * 100))) / 100n
+          : baseFee;
 
       const maxFee = predictedBase * 2n + clampedPriority;
       this.current = {
@@ -121,11 +120,8 @@ export class GasOracle {
 
   private computePercentilePriorityFee(): bigint {
     if (this.priorityFeeHistory.length === 0) return 1n * 10n ** 9n;
-    const sorted = [...this.priorityFeeHistory].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
-    const idx = Math.min(
-      Math.floor(sorted.length * this.config.maxPriorityFeePercentile / 100),
-      sorted.length - 1,
-    );
+    const sorted = [...this.priorityFeeHistory].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const idx = Math.min(Math.floor((sorted.length * this.config.maxPriorityFeePercentile) / 100), sorted.length - 1);
     return sorted[idx];
   }
 

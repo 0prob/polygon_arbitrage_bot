@@ -33,11 +33,7 @@ export interface FastLaneBundle {
   params: [string, ConditionalTransactionOptions];
 }
 
-export function createFastLaneBundle(
-  signedTx: string,
-  options: ConditionalTransactionOptions,
-  id: number = 1,
-): FastLaneBundle {
+export function createFastLaneBundle(signedTx: string, options: ConditionalTransactionOptions, id: number = 1): FastLaneBundle {
   return {
     jsonrpc: "2.0",
     id,
@@ -83,10 +79,14 @@ export class FastLaneSubmitter {
     });
 
     this.bundleId++;
-    const bundle = createFastLaneBundle(signedTx, {
-      blockNumberMax: this.config.conditional.blockNumberWindow,
-      timestampMax: this.config.conditional.timestampWindowS,
-    }, this.bundleId);
+    const bundle = createFastLaneBundle(
+      signedTx,
+      {
+        blockNumberMax: this.config.conditional.blockNumberWindow,
+        timestampMax: this.config.conditional.timestampWindowS,
+      },
+      this.bundleId,
+    );
 
     const response = await fetch(this.config.rpcUrl, {
       method: "POST",
@@ -99,7 +99,7 @@ export class FastLaneSubmitter {
       throw new Error(`FastLane RPC error: ${response.status}`);
     }
 
-    const json = await response.json() as { result?: string; error?: { message: string } };
+    const json = (await response.json()) as { result?: string; error?: { message: string } };
     if (json.error) {
       throw new Error(`FastLane submission failed: ${json.error.message}`);
     }

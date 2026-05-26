@@ -173,7 +173,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       const line = data.toString().trim();
       if (!line) return;
       opts.logger.debug({ source: "hyperindex", line }, "");
-      
+
       _stderrBuffer.push(line);
       if (_stderrBuffer.length > 10) _stderrBuffer.shift();
 
@@ -183,10 +183,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     _exitHandler = (code, signal) => {
       if (code !== 0 && code !== null) {
-        opts.logger.error(
-          { code, signal, lastStderr: _stderrBuffer.join("\n") },
-          "HyperIndex process crashed"
-        );
+        opts.logger.error({ code, signal, lastStderr: _stderrBuffer.join("\n") }, "HyperIndex process crashed");
       } else {
         opts.logger.warn({ code, signal }, "HyperIndex process exited");
       }
@@ -251,7 +248,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     opts.logger.info("Stopping HyperIndex ingestion");
-    
+
     try {
       // Kill the entire process group
       if (p.pid) process.kill(-p.pid, "SIGTERM");
@@ -276,7 +273,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         p!.off("exit", cleanup);
         p!.stdout?.off("data", _stdoutHandler!);
         p!.stderr?.off("data", _stderrHandler!);
-        
+
         // Final explicit envio stop to clean up Docker containers
         try {
           opts.logger.info("Running explicit envio stop to clean up containers");

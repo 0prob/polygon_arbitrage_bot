@@ -86,11 +86,11 @@ export class ExecutionTracker {
   prune(olderThanMs: number): void {
     const cutoff = Date.now() - olderThanMs;
     const before = this.records.length;
-    this.records = this.records.filter(r => r.timestamp >= cutoff);
+    this.records = this.records.filter((r) => r.timestamp >= cutoff);
     const removed = before - this.records.length;
 
     if (removed > 0) {
-      const stale = new Set(this.records.map(r => r.routeKey));
+      const stale = new Set(this.records.map((r) => r.routeKey));
       for (const [key] of this.routeStats) {
         if (!stale.has(key)) this.routeStats.delete(key);
       }

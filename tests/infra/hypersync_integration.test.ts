@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { 
   discoverPoolsFromHasura, 
   buildStateCacheFromGraphQL, 
@@ -7,10 +7,25 @@ import {
 const MOCK_URL = "http://localhost:8080/v1/graphql";
 const MOCK_SECRET = "admin-secret";
 
+function mockFetch(handler: (url: string, init?: any) => any) {
+  globalThis.fetch = handler as any;
+}
+
+function restoreFetch() {
+  delete (globalThis as any).fetch;
+}
+
 describe("Hypersync GraphQL Integration", () => {
+  let origSetTimeout: any;
+
   beforeEach(() => {
-    vi.unstubAllGlobals();
-    vi.stubGlobal("setTimeout", (cb: any) => cb());
+    origSetTimeout = globalThis.setTimeout;
+    (globalThis as any).setTimeout = (cb: any) => cb();
+  });
+
+  afterEach(() => {
+    globalThis.setTimeout = origSetTimeout;
+    delete (globalThis as any).fetch;
   });
 
   it("should discover pools from Hasura correctly parsing tokens", async () => {
@@ -27,14 +42,14 @@ describe("Hypersync GraphQL Integration", () => {
       }
     ];
 
-    vi.stubGlobal("fetch", vi.fn(async () => ({
+    mockFetch(async () => ({
       ok: true,
       json: async () => ({
         data: {
           PoolMeta: mockPoolMeta
         }
       })
-    })));
+    }));
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
 
@@ -60,26 +75,26 @@ describe("Hypersync GraphQL Integration", () => {
   });
 
   it("should handle empty PoolMeta response", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({
+    mockFetch(async () => ({
       ok: true,
       json: async () => ({
         data: {
           PoolMeta: null
         }
       })
-    })));
+    }));
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
     expect(pools.length).toBeGreaterThan(0); // Should return static anchors
   });
 
   it("should handle GraphQL errors in discoverPoolsFromHasura", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({
+    mockFetch(async () => ({
       ok: true,
       json: async () => ({
         errors: [{ message: "Some error" }]
       })
-    })));
+    }));
 
     const pools = await discoverPoolsFromHasura(MOCK_URL, MOCK_SECRET);
     expect(pools.length).toBeGreaterThan(0); // Should return static anchors on error
@@ -107,7 +122,7 @@ describe("Hypersync GraphQL Integration", () => {
       WoofiPoolState: []
     };
 
-    vi.stubGlobal("fetch", vi.fn(async (url, init: any) => {
+    mockFetch(async (url, init: any) => {
       const body = JSON.parse(init.body);
       const query = body.query;
       
@@ -124,7 +139,7 @@ describe("Hypersync GraphQL Integration", () => {
         ok: true,
         json: async () => ({ data })
       };
-    }));
+    });
 
     const cache = await buildStateCacheFromGraphQL(MOCK_URL, MOCK_SECRET);
 
@@ -146,7 +161,7 @@ describe("Hypersync GraphQL Integration", () => {
   });
 
   it("should handle malformed JSON in parseBigIntArray through Balancer fetch", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({
+    mockFetch(async () => ({
       ok: true,
       json: async () => ({
         data: {
@@ -162,7 +177,7 @@ describe("Hypersync GraphQL Integration", () => {
           ]
         }
       })
-    })));
+    }));
 
     const cache = await buildStateCacheFromGraphQL(MOCK_URL, MOCK_SECRET);
     const entry = cache.get("0xmal");

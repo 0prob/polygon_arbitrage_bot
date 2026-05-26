@@ -32,7 +32,7 @@ describe("NonceManager", () => {
     await nm.initialize();
     nm.getNextNonce(); // 7
     nm.getNextNonce(); // 8
-    await nm.confirmNonce(8); // confirmed nonce 8
+    nm.confirmNonce(8); // confirmed nonce 8
     expect(nm.expectedNextNonce).toBe(9); // 8 + 1 + 0 pending
   });
 

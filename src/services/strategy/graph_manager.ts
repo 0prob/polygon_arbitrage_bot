@@ -12,7 +12,7 @@ export class GraphManager {
 
   addPool(pool: PoolMeta, state: unknown): void {
     const addr = pool.address.toLowerCase();
-    
+
     if (this._graph.poolMeta.has(addr)) return;
 
     this._graph.poolMeta.set(addr, pool);
@@ -46,7 +46,7 @@ export class GraphManager {
   updatePool(address: Address, state: PoolState): void {
     const addr = address.toLowerCase();
     this._graph.stateRefs.set(addr, state);
-    
+
     // Iterate through adjacency to update relevant edges
     for (const [_, edges] of this._graph.adjacency) {
       for (const edge of edges) {

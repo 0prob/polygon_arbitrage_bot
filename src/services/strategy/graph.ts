@@ -58,5 +58,3 @@ export function buildGraph(pools: PoolMeta[], stateCache: Map<string, unknown>):
   }
   return { adjacency, poolMeta, stateRefs, tokens };
 }
-
-

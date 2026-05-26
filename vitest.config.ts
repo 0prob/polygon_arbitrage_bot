@@ -3,7 +3,7 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       include: ["src/**"],
       exclude: ["src/**/*.test.ts", "src/**/*.d.ts"],
     },

@@ -13,28 +13,26 @@
     "bun": ">=1.2.0"
   },
   "scripts": {
-    "start": "bun --env-file=.env run src/cli/main.ts",
-    "start:tui": "bun --env-file=.env run src/cli/main.ts --tui",
+    "run": "bun --env-file=.env run src/cli/main.ts",
+    "tui": "bun --env-file=.env run src/cli/main.ts --tui",
     "typecheck": "bunx tsc --noEmit",
-    "typecheck:watch": "bunx tsc --noEmit --watch",
     "test": "bun --bun run vitest run",
-    "test:watch": "bun --bun run vitest",
     "test:coverage": "bun --bun run vitest run --coverage",
-    "lint": "bunx eslint src/",
-    "lint:fix": "bunx eslint src/ --fix",
-    "fmt": "bunx prettier --check src/",
-    "fmt:fix": "bunx prettier --write src/",
-    "hi:compile": "cd hyperindex && npx tsc --outDir src/handlers_mjs --skipLibCheck --moduleResolution bundler; true",
-    "hi:start": "cd hyperindex && bunx envio start",
-    "hi:codegen": "cd hyperindex && bunx envio codegen"
+    "lint": "bunx eslint src/ --fix",
+    "fmt": "bunx prettier --write src/",
+    "compile": "cd hyperindex && npx tsc --outDir src/handlers_mjs --skipLibCheck --moduleResolution bundler; true",
+    "dev": "cd hyperindex && bunx envio dev",
+    "cgen": "cd hyperindex && bunx envio codegen"
   },
   "dependencies": {
+    "envio": "^3.0.2",
     "pino": "^10.3.1",
-    "viem": "^2.50.4",
+    "viem": "^2.51.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "@vitest/coverage-istanbul": "^4.1.7",
     "@vitest/coverage-v8": "^4.1.7",
     "bun-types": "^1.3.14",
     "eslint": "^10.4.0",

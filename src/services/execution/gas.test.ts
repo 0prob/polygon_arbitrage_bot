@@ -87,8 +87,7 @@ describe("GasOracle", () => {
   });
 
   it("returns congestion hints based on base fee ratio", async () => {
-    const fetchGas = vi.fn()
-      .mockResolvedValue({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n });
+    const fetchGas = vi.fn().mockResolvedValue({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n });
     const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, pollIntervalMs: 1000 }, fetchGas);
     await oracle.start();
     const hints = oracle.estimateCongestion();

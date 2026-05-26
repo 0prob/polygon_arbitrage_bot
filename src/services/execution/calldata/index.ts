@@ -1,9 +1,22 @@
 import { getAddress, encodeFunctionData, encodeAbiParameters, keccak256 } from "viem";
 import { normalizeUint, normalizeBytes32, asAddress } from "./utils.ts";
-import { V2_PROTOCOLS, CURVE_STABLE_PROTOCOLS, CURVE_CRYPTO_PROTOCOLS, DODO_PROTOCOLS, WOOFI_PROTOCOLS, BALANCER_PROTOCOLS } from "./constants.ts";
 import {
-  encodeV2Hop, encodeV3Hop, encodeKyberElasticHop, encodeDodoHop, encodeWoofiHop,
-  encodeCurveHop, encodeBalancerHop, encodeV4Hop,
+  V2_PROTOCOLS,
+  CURVE_STABLE_PROTOCOLS,
+  CURVE_CRYPTO_PROTOCOLS,
+  DODO_PROTOCOLS,
+  WOOFI_PROTOCOLS,
+  BALANCER_PROTOCOLS,
+} from "./constants.ts";
+import {
+  encodeV2Hop,
+  encodeV3Hop,
+  encodeKyberElasticHop,
+  encodeDodoHop,
+  encodeWoofiHop,
+  encodeCurveHop,
+  encodeBalancerHop,
+  encodeV4Hop,
 } from "./hops.ts";
 import { EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI, EXECUTOR_AAVE_ABI } from "./abis.ts";
 import type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput } from "./types.ts";
@@ -12,7 +25,9 @@ export type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, Fl
 
 function normalizeProtocolKey(protocol: unknown): string {
   if (typeof protocol === "string") return protocol.toUpperCase().replace(/\s+/g, "_");
-  return String(protocol ?? "").toUpperCase().replace(/\s+/g, "_");
+  return String(protocol ?? "")
+    .toUpperCase()
+    .replace(/\s+/g, "_");
 }
 
 export function encodeRoute(route: CalldataRoute, executorAddress: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
@@ -42,7 +57,9 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
       tokenOutIdx: edge.tokenOutIdx ?? meta.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0),
       isCrypto: CURVE_CRYPTO_PROTOCOLS.has(proto),
       poolId: normalizeBytes32(
-        meta.poolId ?? meta.pool_id ?? edge.poolId ??
+        meta.poolId ??
+          meta.pool_id ??
+          edge.poolId ??
           (edge.stateRef as Record<string, unknown> | undefined)?.balancerPoolId ??
           (edge.stateRef as Record<string, unknown> | undefined)?.poolId,
       ),

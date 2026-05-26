@@ -24,11 +24,17 @@ function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, exec
   let netProfit = 0n;
   for (const log of logs) {
     try {
-      const parsed = decodeEventLog({ abi: [ERC20_TRANSFER_EVENT], data: log.data as `0x${string}`, topics: log.topics as [`0x${string}`, ...`0x${string}`[]] });
+      const parsed = decodeEventLog({
+        abi: [ERC20_TRANSFER_EVENT],
+        data: log.data as `0x${string}`,
+        topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      });
       if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
         netProfit += parsed.args.value ?? 0n;
       }
-    } catch { /* skip unmatched logs */ }
+    } catch {
+      /* skip unmatched logs */
+    }
   }
   return netProfit;
 }
@@ -63,13 +69,13 @@ export interface ExecutionServiceOptions {
 }
 
 function poolsFromRouteKey(routeKey: string): string[] {
-  return routeKey.split(":").filter(p => p.length === 42);
+  return routeKey.split(":").filter((p) => p.length === 42);
 }
 
 export function areCandidatesCompatible(a: CandidateExecution, b: CandidateExecution): boolean {
   const poolsA = new Set(poolsFromRouteKey(a.routeKey));
   const poolsB = poolsFromRouteKey(b.routeKey);
-  return !poolsB.some(p => poolsA.has(p));
+  return !poolsB.some((p) => poolsA.has(p));
 }
 
 export function groupCompatibleCandidates(candidates: CandidateExecution[]): CandidateExecution[][] {
@@ -85,7 +91,7 @@ export function groupCompatibleCandidates(candidates: CandidateExecution[]): Can
     for (let j = i + 1; j < candidates.length; j++) {
       if (assigned.has(j)) continue;
       const poolsJ = new Set(poolsFromRouteKey(candidates[j].routeKey));
-      const disjoint = ![...poolsJ].some(p => groupPools.has(p));
+      const disjoint = ![...poolsJ].some((p) => groupPools.has(p));
       if (disjoint) {
         group.push(candidates[j]);
         assigned.add(j);
@@ -137,7 +143,10 @@ export class ExecutionService {
   async start(): Promise<void> {
     await this.gasOracle.start();
     await this.nonceManager.initialize();
-    this.logger.info({ submissionStrategy: this.submissionStrategy, fastLaneEnabled: this.fastLaneSubmitter?.isEnabled() }, "ExecutionService started");
+    this.logger.info(
+      { submissionStrategy: this.submissionStrategy, fastLaneEnabled: this.fastLaneSubmitter?.isEnabled() },
+      "ExecutionService started",
+    );
   }
 
   stop(): void {
@@ -145,7 +154,10 @@ export class ExecutionService {
     this.logger.info({}, "ExecutionService stopped");
   }
 
-  private async submitTx(tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }, expectedProfit?: bigint): Promise<{ txHash: string; endpoint: string }> {
+  private async submitTx(
+    tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint },
+    expectedProfit?: bigint,
+  ): Promise<{ txHash: string; endpoint: string }> {
     const snapshot = this.gasOracle.getSnapshot();
     let adjustedFee = tx.maxFee;
     let priorityFee = snapshot?.priorityFee ?? 1n * 10n ** 9n;
@@ -181,7 +193,7 @@ export class ExecutionService {
     if (this.submissionStrategy === "hybrid" && this.privateSubmitter) {
       try {
         const txHash = await Promise.race([
-          submit(this.privateSubmitter).then(h => ({ txHash: h, endpoint: "private" as const })),
+          submit(this.privateSubmitter).then((h) => ({ txHash: h, endpoint: "private" as const })),
           new Promise<null>((_, reject) => setTimeout(() => reject(new Error("private timeout")), 2_000)),
         ]);
         if (txHash) return txHash;
@@ -190,9 +202,7 @@ export class ExecutionService {
       }
     }
 
-    const txHash = await Promise.any(
-      this.submitters.map(fn => submit(fn))
-    );
+    const txHash = await Promise.any(this.submitters.map((fn) => submit(fn)));
     return { txHash, endpoint: "public" };
   }
 
@@ -211,13 +221,16 @@ export class ExecutionService {
 
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
-      const { txHash, endpoint } = await this.submitTx({
-        to: candidate.targetAddress,
-        data: candidate.calldata,
-        value: candidate.value,
-        nonce,
-        maxFee: fee.maxFee,
-      }, candidate.expectedProfit);
+      const { txHash, endpoint } = await this.submitTx(
+        {
+          to: candidate.targetAddress,
+          data: candidate.calldata,
+          value: candidate.value,
+          nonce,
+          maxFee: fee.maxFee,
+        },
+        candidate.expectedProfit,
+      );
 
       this.nonceManager.confirmNonce(nonce);
       this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Transaction submitted");
@@ -288,16 +301,19 @@ export class ExecutionService {
 
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
-      
+
       try {
-        const { txHash, endpoint } = await this.submitTx({
-          to: candidate.targetAddress,
-          data: candidate.calldata,
-          value: candidate.value,
-          nonce,
-          maxFee: fee.maxFee,
-        }, candidate.expectedProfit);
-        
+        const { txHash, endpoint } = await this.submitTx(
+          {
+            to: candidate.targetAddress,
+            data: candidate.calldata,
+            value: candidate.value,
+            nonce,
+            maxFee: fee.maxFee,
+          },
+          candidate.expectedProfit,
+        );
+
         this.nonceManager.confirmNonce(nonce);
         this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
         receiptPromises.push({ index: i, txHash, nonce, candidate });
@@ -306,61 +322,63 @@ export class ExecutionService {
         this.logger.warn({ routeKey: candidate.routeKey, error: msg, nonce }, "Batch submission failed");
         this.quarantine.add(candidate.routeKey, msg);
         results[i] = { success: false, error: msg };
-        // We continue to the next one, but since this one failed, the next nonces might also fail 
+        // We continue to the next one, but since this one failed, the next nonces might also fail
         // if this was a nonce-related error. However, NonceManager will give us the same nonce next time
         // if we didn't confirm it? No, getNextNonce increments.
         // If it failed to submit, we should probably mark the nonce as stale or revert the nonce manager?
-        // NonceManager usually tracks the next expected nonce. 
+        // NonceManager usually tracks the next expected nonce.
         // If submission fails, we didn't use the nonce.
       }
     }
 
     // Phase 2: Parallel Receipt Waiting
-    await Promise.all(receiptPromises.map(async ({ index, txHash, nonce, candidate }) => {
-      try {
-        const receipt = await this._waitForReceipt(txHash);
-        if (!receipt) {
-          this.nonceManager.markStale(nonce);
-          this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
-          results[index] = { success: false, txHash, error: "timeout" };
-          return;
+    await Promise.all(
+      receiptPromises.map(async ({ index, txHash, nonce, candidate }) => {
+        try {
+          const receipt = await this._waitForReceipt(txHash);
+          if (!receipt) {
+            this.nonceManager.markStale(nonce);
+            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
+            results[index] = { success: false, txHash, error: "timeout" };
+            return;
+          }
+
+          const success = !!receipt.status;
+          const gasUsed = receipt.gasUsed;
+
+          let profit = 0n;
+          if (success && candidate.profitToken) {
+            const execAddr = getAddress(candidate.targetAddress);
+            const logs = receipt.logs;
+            profit = parseTransferLogs(logs, execAddr);
+          }
+
+          this.tracker.record({
+            routeKey: candidate.routeKey,
+            txHash,
+            success,
+            gasUsed,
+            profit,
+            timestamp: Date.now(),
+            pools: poolsFromRouteKey(candidate.routeKey),
+            error: success ? undefined : "reverted",
+          });
+
+          if (!success) {
+            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
+            this.quarantine.add(candidate.routeKey, "reverted");
+          } else {
+            this.quarantine.recordSuccess(candidate.routeKey);
+          }
+
+          results[index] = { success, txHash, gasUsed };
+        } catch (err: any) {
+          const msg = err?.message || String(err);
+          this.logger.error({ txHash, error: msg }, "Error waiting for batch receipt");
+          results[index] = { success: false, txHash, error: msg };
         }
-
-        const success = !!receipt.status;
-        const gasUsed = receipt.gasUsed;
-
-        let profit = 0n;
-        if (success && candidate.profitToken) {
-          const execAddr = getAddress(candidate.targetAddress);
-          const logs = receipt.logs;
-          profit = parseTransferLogs(logs, execAddr);
-        }
-
-        this.tracker.record({
-          routeKey: candidate.routeKey,
-          txHash,
-          success,
-          gasUsed,
-          profit,
-          timestamp: Date.now(),
-          pools: poolsFromRouteKey(candidate.routeKey),
-          error: success ? undefined : "reverted",
-        });
-
-        if (!success) {
-          this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
-          this.quarantine.add(candidate.routeKey, "reverted");
-        } else {
-          this.quarantine.recordSuccess(candidate.routeKey);
-        }
-
-        results[index] = { success, txHash, gasUsed };
-      } catch (err: any) {
-        const msg = err?.message || String(err);
-        this.logger.error({ txHash, error: msg }, "Error waiting for batch receipt");
-        results[index] = { success: false, txHash, error: msg };
-      }
-    }));
+      }),
+    );
 
     // Fill in any remaining gaps (though there shouldn't be any)
     for (let i = 0; i < results.length; i++) {
@@ -370,7 +388,9 @@ export class ExecutionService {
     return results;
   }
 
-  private async _waitForReceipt(txHash: string): Promise<{ status: boolean; gasUsed: bigint; logs: Array<{ topics: string[]; data: string }> } | null> {
+  private async _waitForReceipt(
+    txHash: string,
+  ): Promise<{ status: boolean; gasUsed: bigint; logs: Array<{ topics: string[]; data: string }> } | null> {
     if (!this.receiptClient) return null;
     const deadline = Date.now() + this.receiptTimeoutMs;
     while (Date.now() < deadline) {
@@ -382,7 +402,7 @@ export class ExecutionService {
       } catch {
         // Receipt not yet available
       }
-      await new Promise(r => setTimeout(r, this.receiptPollMs));
+      await new Promise((r) => setTimeout(r, this.receiptPollMs));
     }
     return null;
   }

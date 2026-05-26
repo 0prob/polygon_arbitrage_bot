@@ -128,14 +128,14 @@ export class Renderer {
     const uptime = formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
     const m = state.metrics;
     const profit = formatWei(m.totalProfitWei);
-    
+
     const leftText = ` ${bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
     const rightText = ` Uptime: ${uptime} | Total P/L: +${profit} MATIC | Errors: ${m.totalErrors} `;
-    
+
     const rawLeftLen = visibleLength(leftText);
     const rawRightLen = visibleLength(rightText);
     const padding = Math.max(0, layout.header.width - rawLeftLen - rawRightLen);
-    
+
     const line = leftText + " ".repeat(padding) + rightText;
 
     return {
@@ -146,7 +146,7 @@ export class Renderer {
 
   private renderPipeline(layout: TuiLayout, state: TuiState): RenderedPanel {
     const s = state.system;
-    
+
     let simProgressStr = "";
     if (s.pipelineStage === "SIMULATING" && s.simProgress.total > 0) {
       const pct = Math.floor((s.simProgress.current / s.simProgress.total) * 100);
@@ -158,22 +158,19 @@ export class Renderer {
 
     const lines = [
       bold("🔄 Pipeline Monitor"),
-      `  [${s.pipelineStage === "DISCOVERY" ? color("●", CYAN) : (s.poolCount > 0 ? color("✔", GREEN) : " ")}] Discovery:   ${s.poolCount} pools`,
-      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : (s.cycleCount > 0 ? color("✔", GREEN) : " ")}] Enumerate:   ${s.cycleCount} cycles found`,
+      `  [${s.pipelineStage === "DISCOVERY" ? color("●", CYAN) : s.poolCount > 0 ? color("✔", GREEN) : " "}] Discovery:   ${s.poolCount} pools`,
+      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : s.cycleCount > 0 ? color("✔", GREEN) : " "}] Enumerate:   ${s.cycleCount} cycles found`,
       `  [${s.pipelineStage === "SIMULATING" ? color("●", CYAN) : " "}] Simulation:  ${s.pipelineStage === "SIMULATING" ? "Running..." : "Idle"} ${simProgressStr}`,
       `  [${s.pipelineStage === "EXECUTING" ? color("●", YELLOW) : " "}] Execution:   ${s.pipelineStage === "EXECUTING" ? "Submitting TXs..." : "Idle"}`,
       ``,
-      `  ${dim(`Last Pass: ${s.lastCycleTimeMs}ms | ${state.metrics.opportunitiesFound} profitable overall`)}`
+      `  ${dim(`Last Pass: ${s.lastCycleTimeMs}ms | ${state.metrics.opportunitiesFound} profitable overall`)}`,
     ];
     return this.panelBox(lines, layout.pipeline);
   }
 
   private renderMainTable(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const lines = [
-      bold("⭐ Top Opportunities"),
-      `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(12)} ${dim("Status")}`
-    ];
-    
+    const lines = [bold("⭐ Top Opportunities"), `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(12)} ${dim("Status")}`];
+
     if (state.system.activeOpportunities.length === 0) {
       lines.push(`  ${dim("No active opportunities.")}`);
     } else {
@@ -183,11 +180,11 @@ export class Renderer {
         if (opp.status === "Confirmed") statusColor = GREEN;
         if (opp.status === "Failed" || opp.status === "Quarantined") statusColor = RED;
         if (opp.status === "Executing") statusColor = YELLOW;
-        
+
         lines.push(`  ${opp.path.padEnd(30)} ${color(profit, CYAN).padEnd(20)} ${color(opp.status, statusColor)}`);
       }
     }
-    
+
     return this.panelBox(lines, layout.mainTable);
   }
 
@@ -228,7 +225,7 @@ export class Renderer {
       bold("📊 Executions"),
       `  Attempted:    ${color(String(state.metrics.executed), WHITE)}`,
       `  Successful:   ${color(String(state.metrics.successful), GREEN)}`,
-      `  Failed:       ${color(String(state.metrics.failed), state.metrics.failed > 0 ? RED : WHITE)}`
+      `  Failed:       ${color(String(state.metrics.failed), state.metrics.failed > 0 ? RED : WHITE)}`,
     ];
     return this.panelBox(lines, layout.sidebar);
   }

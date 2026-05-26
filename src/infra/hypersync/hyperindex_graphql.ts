@@ -1,4 +1,3 @@
-import { RuntimeContext } from "../../orchestrator/system.ts";
 import poolsJson from "../../../scripts/pools.json";
 
 export interface HasuraPoolMeta {
@@ -47,22 +46,39 @@ export interface HasuraPoolState {
   initialized: boolean;
 }
 
-let _cachedState: Map<string, any> = new Map();
+const _cachedState: Map<string, any> = new Map();
 
-export async function buildStateCacheFromGraphQL(
-  graphqlUrl: string,
-  adminSecret: string,
-): Promise<Map<string, any>> {
+export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string): Promise<Map<string, any>> {
   try {
-    const [v2Result, v3Result, v4Result, balancerResult, curveResult, dodoResult, woofiResult] = await Promise.all([
+    const results = await Promise.allSettled([
       graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState(limit: 15000) { id reserve0 reserve1 } }`),
       graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity } }`),
       graphQLQuery(graphqlUrl, adminSecret, `{ V4PoolState(limit: 5000) { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }`),
       graphQLQuery(graphqlUrl, adminSecret, `{ BalancerPoolState(limit: 5000) { id poolId balances weights amp swapFee scalingFactors } }`),
       graphQLQuery(graphqlUrl, adminSecret, `{ CurvePoolState(limit: 5000) { id balances A fee rates } }`),
-      graphQLQuery(graphqlUrl, adminSecret, `{ DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate } }`),
+      graphQLQuery(
+        graphqlUrl,
+        adminSecret,
+        `{ DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate } }`,
+      ),
       graphQLQuery(graphqlUrl, adminSecret, `{ WoofiPoolState(limit: 5000) { id price coefficient spread fee } }`),
     ]);
+
+    const queries = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState", "WoofiPoolState"];
+
+    for (let i = 0; i < results.length; i++) {
+      if (results[i].status === "rejected") {
+        console.warn(`GraphQL query "${queries[i]}" failed:`, (results[i] as PromiseRejectedResult).reason);
+      }
+    }
+
+    const v2Result = results[0].status === "fulfilled" ? results[0].value : null;
+    const v3Result = results[1].status === "fulfilled" ? results[1].value : null;
+    const v4Result = results[2].status === "fulfilled" ? results[2].value : null;
+    const balancerResult = results[3].status === "fulfilled" ? results[3].value : null;
+    const curveResult = results[4].status === "fulfilled" ? results[4].value : null;
+    const dodoResult = results[5].status === "fulfilled" ? results[5].value : null;
+    const woofiResult = results[6].status === "fulfilled" ? results[6].value : null;
 
     const v2States = (v2Result?.V2PoolState || []) as any[];
     for (const s of v2States) {
@@ -141,17 +157,13 @@ export async function buildStateCacheFromGraphQL(
       });
     }
   } catch (err) {
-    // Silently fail
-    console.error("Failed to build state cache from GraphQL", err);
+    console.warn("buildStateCacheFromGraphQL unexpected error", err);
   }
 
   return _cachedState;
 }
 
-export async function discoverPoolsFromHasura(
-  graphqlUrl: string,
-  adminSecret: string,
-): Promise<HasuraPoolMeta[]> {
+export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string): Promise<HasuraPoolMeta[]> {
   const anchors = STATIC_ANCHORS;
 
   let result: any = null;
@@ -159,15 +171,11 @@ export async function discoverPoolsFromHasura(
 
   for (let i = 0; i < 5; i++) {
     try {
-      result = await graphQLQuery(
-        graphqlUrl,
-        adminSecret,
-        `{ PoolMeta(limit: 2500) { id protocol tokens fee } }`,
-      );
+      result = await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 2500) { id protocol tokens fee } }`);
       if (result && result.PoolMeta) break;
     } catch (err) {
       lastErr = err;
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
 
@@ -180,25 +188,29 @@ export async function discoverPoolsFromHasura(
 
   try {
     const metaArr = result.PoolMeta as { id: string; protocol: string; tokens: unknown; fee: number | null }[];
-    const discovered = metaArr.map(pm => {
+    const discovered = metaArr.map((pm) => {
       let tokens: string[];
       if (typeof pm.tokens === "string") {
-        try { tokens = JSON.parse(pm.tokens) as string[]; } catch { tokens = []; }
+        try {
+          tokens = JSON.parse(pm.tokens) as string[];
+        } catch {
+          tokens = [];
+        }
       } else if (Array.isArray(pm.tokens)) {
         tokens = pm.tokens.map((t: unknown) => String(t));
       } else {
         tokens = [];
       }
-      return { 
-        address: pm.id.toLowerCase(), 
-        protocol: pm.protocol, 
-        tokens: tokens.map(t => t.toLowerCase()),
+      return {
+        address: pm.id.toLowerCase(),
+        protocol: pm.protocol,
+        tokens: tokens.map((t) => t.toLowerCase()),
         fee: pm.fee ?? 30,
       };
     });
 
     const combined = [...anchors];
-    const seen = new Set(anchors.map(a => a.address.toLowerCase()));
+    const seen = new Set(anchors.map((a) => a.address.toLowerCase()));
     for (const p of discovered) {
       if (!seen.has(p.address.toLowerCase())) {
         combined.push(p);

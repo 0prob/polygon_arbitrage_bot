@@ -46,7 +46,7 @@ export const PAIR_ABI = [
 export class SkimScanner {
   constructor(
     private client: PublicClient,
-    private factoryAddress: Address
+    private factoryAddress: Address,
   ) {}
 
   async getAllPairs(batchSize: number = 500): Promise<Address[]> {
@@ -59,7 +59,7 @@ export class SkimScanner {
     const pairs: Address[] = [];
     for (let i = 0n; i < length; i += BigInt(batchSize)) {
       const calls = [];
-      for (let j = 0; j < batchSize && (i + BigInt(j)) < length; j++) {
+      for (let j = 0; j < batchSize && i + BigInt(j) < length; j++) {
         calls.push(factory.read.allPairs([i + BigInt(j)]));
       }
       const results = await Promise.all(calls);

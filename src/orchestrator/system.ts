@@ -10,17 +10,20 @@ export class BotSystem implements Lifecycle {
   private _stateCache: RouteStateCache = new Map();
   private _subscriber: PoolStateSubscriber | null = null;
 
-  constructor(private _config: AppConfig, private _client: PublicClient) {
+  constructor(
+    private _config: AppConfig,
+    private _client: PublicClient,
+  ) {
     this._logger = createRootLogger({ level: _config.observability.logLevel });
   }
 
   async prepare(): Promise<void> {
     this._logger.info("Preparing bot system");
     this._subscriber = new PoolStateSubscriber({
-        client: this._client,
-        onPoolUpdate: (addr, state) => {
-            this._stateCache.set(addr.toLowerCase(), state);
-        }
+      client: this._client,
+      onPoolUpdate: (addr, state) => {
+        this._stateCache.set(addr.toLowerCase(), state);
+      },
     });
   }
 
@@ -32,8 +35,16 @@ export class BotSystem implements Lifecycle {
     this._logger.info("Stopping bot system");
   }
 
-  get logger(): Logger { return this._logger; }
-  get config(): AppConfig { return this._config; }
-  get stateCache(): RouteStateCache { return this._stateCache; }
-  get subscriber(): PoolStateSubscriber | null { return this._subscriber; }
+  get logger(): Logger {
+    return this._logger;
+  }
+  get config(): AppConfig {
+    return this._config;
+  }
+  get stateCache(): RouteStateCache {
+    return this._stateCache;
+  }
+  get subscriber(): PoolStateSubscriber | null {
+    return this._subscriber;
+  }
 }

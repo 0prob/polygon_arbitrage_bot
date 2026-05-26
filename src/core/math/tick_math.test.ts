@@ -48,16 +48,12 @@ describe("tick math property-based", () => {
 
   it("property: sqrt ratio bounds strictly increase with tick", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: MIN_TICK, max: MAX_TICK - 1000 }),
-        fc.integer({ min: 100, max: 1000 }),
-        (lowTick, offset) => {
-          const highTick = lowTick + offset;
-          const sqrtLow = getSqrtRatioAtTick(lowTick);
-          const sqrtHigh = getSqrtRatioAtTick(highTick);
-          return sqrtLow < sqrtHigh;
-        },
-      ),
+      fc.property(fc.integer({ min: MIN_TICK, max: MAX_TICK - 1000 }), fc.integer({ min: 100, max: 1000 }), (lowTick, offset) => {
+        const highTick = lowTick + offset;
+        const sqrtLow = getSqrtRatioAtTick(lowTick);
+        const sqrtHigh = getSqrtRatioAtTick(highTick);
+        return sqrtLow < sqrtHigh;
+      }),
       { numRuns: 200 },
     );
   });

@@ -116,13 +116,13 @@ export function simulateV2Swap(
   // Handle fee mapping: if fee is in bps (e.g. 30), numerator should be 9970/10000
   let resolvedFeeDenominator = feeDenominator ?? toBigInt(pool.feeDenominator, 10000n);
   let resolvedFeeNumerator = feeNumerator;
-  
+
   if (resolvedFeeNumerator === undefined) {
     const feeRaw = pool.fee;
     if (feeRaw != null) {
       const feeBps = toBigInt(feeRaw);
       // If fee is small (e.g. 30), assume it's BPS and calculate numerator
-      if (feeBps < 500n) { 
+      if (feeBps < 500n) {
         resolvedFeeNumerator = resolvedFeeDenominator - feeBps;
       } else {
         // Otherwise assume it's already a numerator

@@ -51,5 +51,3 @@ describe("buildGraph", () => {
     expect(graph.adjacency.size).toBe(0);
   });
 });
-
-
