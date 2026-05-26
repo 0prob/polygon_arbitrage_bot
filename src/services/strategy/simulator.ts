@@ -227,6 +227,6 @@ export function getEffectivePriceImpact(
   }
 
   if (spotPrice === 0) return 0;
-  const impact = Math.abs(spotPrice - realizedPrice) / spotPrice;
+  const impact = (spotPrice - realizedPrice) / spotPrice;
   return impact;
 }

@@ -145,10 +145,12 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     _stderrBuffer = [];
 
     const env: Record<string, string> = {
+      ...process.env,
       PATH: process.env.PATH ?? "",
       HOME: process.env.HOME ?? "",
       POLYGON_RPC_URL: opts.polygonRpcUrl,
-    };
+    } as Record<string, string>;
+    
     if (opts.katanaRpcUrl) {
       env.KATANA_RPC_URL = opts.katanaRpcUrl;
     }

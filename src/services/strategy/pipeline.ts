@@ -21,6 +21,7 @@ export interface PipelineOptions {
   maxPriceImpactThreshold?: number;
   concurrency?: number;
   roiSafetyCap?: number;
+  logger?: any;
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 
@@ -64,7 +65,10 @@ function getEffectivePriceImpactForCycle(
   let currentAmount = amount;
   for (const edge of cycle.edges) {
     const impact = getEffectivePriceImpact(edge, currentAmount, stateCache);
-    if (impact > maxImpactThreshold) return true;
+    if (impact > maxImpactThreshold) {
+      // console.debug(`Pruning edge ${edge.poolAddress}: impact=${(impact * 100).toFixed(2)}% > ${(maxImpactThreshold * 100).toFixed(2)}%`);
+      return true;
+    }
     const poolAddr = edge.poolAddress.toLowerCase();
     const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
     if (!state) return false;
@@ -230,6 +234,29 @@ export async function evaluatePipeline(
         }
       })
     );
+
+    const sortedResults = results
+      .filter((r) => r.type === "success")
+      .sort((a: any, b: any) => Number(b.bestGrossMatic - a.bestGrossMatic));
+
+    if (sortedResults.length > 0 && (sortedResults[0] as any).bestGrossMatic > 0n) {
+      const top = sortedResults[0] as any;
+      if (top.bestAssessment && top.bestResult) {
+        // Only log if it's very large to find the outliers
+        if (top.bestGrossMatic > 10n * 10n ** 18n) {
+          const path = top.bestResult.poolPath.join(" -> ");
+          const roi = top.bestAssessment.roi / 1_000_000;
+          if (options.logger) {
+            options.logger.debug({ 
+              grossMatic: (top.bestGrossMatic / 10n**15n).toString() + "mMATIC",
+              roi,
+              path,
+              reason: top.bestAssessment.rejectReason 
+            }, "Top outlier detected in pass");
+          }
+        }
+      }
+    }
 
     for (const res of results) {
       if (res.type === "noRate") noRate++;

@@ -195,8 +195,12 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
     let nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
 
     if (nextTick === null && !hasTicks) {
-      // Artificially bound to immediate tick +/- 1 to prevent infinite liquidity assumption
-      nextTick = zeroForOne ? tick - 1 : tick + 1;
+      // Artificially bound to +/- 200 ticks (~2% price movement) to prevent infinite liquidity assumption
+      // while still allowing realistic trades to be simulated even without full tick data.
+      nextTick = zeroForOne ? tick - 200 : tick + 200;
+      // Clamp to absolute protocol limits
+      if (nextTick < MIN_TICK) nextTick = MIN_TICK;
+      if (nextTick > MAX_TICK) nextTick = MAX_TICK;
     }
 
     // Determine the sqrt price at the next tick boundary

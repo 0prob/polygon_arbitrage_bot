@@ -782,8 +782,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
         concurrency: ctx.config.routing.concurrency,
         roiSafetyCap: ctx.config.execution.roiSafetyCap,
-        onProgress: (current, total, profitable) => {
-      if (current % 10 === 0 || current === total) {
+        logger: ctx.logger,
+        onProgress: (current, total, profitable) => {      if (current % 10 === 0 || current === total) {
         bus?.emit({ type: "simulation_progress", current, total, profitable });
       }
     },
