@@ -35,6 +35,7 @@ export interface SystemState {
   pipelineStage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING";
   simProgress: { current: number; total: number; profitable: number };
   activeOpportunities: OpportunityEntry[];
+  maticPriceUsd: number;
 }
 
 export interface LogEntry {
@@ -80,6 +81,7 @@ export function createInitialState(): TuiState {
       pipelineStage: "IDLE",
       simProgress: { current: 0, total: 0, profitable: 0 },
       activeOpportunities: [],
+      maticPriceUsd: 0.70,
     },
     log: [],
     isRunning: false,

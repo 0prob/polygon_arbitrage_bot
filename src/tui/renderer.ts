@@ -128,9 +128,10 @@ export class Renderer {
     const uptime = formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
     const m = state.metrics;
     const profit = formatWei(m.totalProfitWei);
+    const usd = formatUsd(m.totalProfitWei, state.system.maticPriceUsd);
 
     const leftText = ` ${bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
-    const rightText = ` Uptime: ${uptime} | Total P/L: +${profit} MATIC | Errors: ${m.totalErrors} `;
+    const rightText = ` Uptime: ${uptime} | Total P/L: +${profit} MATIC (${usd}) | Errors: ${m.totalErrors} `;
 
     const rawLeftLen = visibleLength(leftText);
     const rawRightLen = visibleLength(rightText);
@@ -169,19 +170,25 @@ export class Renderer {
   }
 
   private renderMainTable(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const lines = [bold("⭐ Top Opportunities"), `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(12)} ${dim("Status")}`];
+    const lines = [
+      bold("⭐ Top Opportunities"),
+      `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(16)} ${dim("USD").padEnd(10)} ${dim("Status")}`,
+    ];
 
     if (state.system.activeOpportunities.length === 0) {
       lines.push(`  ${dim("No active opportunities.")}`);
     } else {
       for (const opp of state.system.activeOpportunities) {
         const profit = formatWei(opp.profit);
+        const usd = formatUsd(opp.profit, state.system.maticPriceUsd);
         let statusColor = WHITE;
         if (opp.status === "Confirmed") statusColor = GREEN;
         if (opp.status === "Failed" || opp.status === "Quarantined") statusColor = RED;
         if (opp.status === "Executing") statusColor = YELLOW;
 
-        lines.push(`  ${opp.path.padEnd(30)} ${color(profit, CYAN).padEnd(20)} ${color(opp.status, statusColor)}`);
+        lines.push(
+          `  ${opp.path.padEnd(30)} ${color(profit, CYAN).padEnd(16)} ${color(usd, GREEN).padEnd(10)} ${color(opp.status, statusColor)}`,
+        );
       }
     }
 
@@ -272,6 +279,14 @@ export class Renderer {
 function formatWei(wei: bigint): string {
   const eth = Number(wei) / 1e18;
   return eth < 0.001 ? eth.toFixed(6) : eth.toFixed(4);
+}
+
+function formatUsd(wei: bigint, maticPriceUsd: number): string {
+  const matic = Number(wei) / 1e18;
+  const usd = matic * maticPriceUsd;
+  if (usd < 0.01) return `$${usd.toFixed(4)}`;
+  if (usd < 100) return `$${usd.toFixed(2)}`;
+  return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function formatGwei(wei: bigint): string {

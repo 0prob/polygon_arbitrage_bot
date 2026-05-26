@@ -21,25 +21,44 @@ const V3_ABI = parseAbi([
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
 
-async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], currentCycles: FoundCycle[]): Promise<void> {
+async function fetchMissingPoolState(
+  ctx: RuntimeContext,
+  pools: PoolMeta[],
+  currentCycles: FoundCycle[],
+  forceRefresh: boolean = false,
+): Promise<void> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
 
-  // Always check core anchor pools for rate propagation
-  for (const anchor of STATIC_ANCHORS) {
-    const addr = anchor.address.toLowerCase();
-    if (!ctx.stateCache.has(addr)) {
-      missingAddresses.add(addr);
+  if (forceRefresh) {
+    // Force-refresh state for all pools in current cycles (used on LF path
+    // to overwrite stale HyperIndex data with fresh RPC state).
+    for (const cycle of currentCycles) {
+      for (const edge of cycle.edges) {
+        missingAddresses.add(edge.poolAddress.toLowerCase());
+      }
     }
-  }
-
-  for (const cycle of currentCycles) {
-    for (const edge of cycle.edges) {
-      const addr = edge.poolAddress.toLowerCase();
+    // Also force-refresh anchor pools for rate propagation
+    for (const anchor of STATIC_ANCHORS) {
+      missingAddresses.add(anchor.address.toLowerCase());
+    }
+  } else {
+    // Always check core anchor pools for rate propagation
+    for (const anchor of STATIC_ANCHORS) {
+      const addr = anchor.address.toLowerCase();
       if (!ctx.stateCache.has(addr)) {
-        const fail = _failedPools.get(addr);
-        if (fail && fail.count > 3 && now - fail.lastTry < 300_000) continue;
         missingAddresses.add(addr);
+      }
+    }
+
+    for (const cycle of currentCycles) {
+      for (const edge of cycle.edges) {
+        const addr = edge.poolAddress.toLowerCase();
+        if (!ctx.stateCache.has(addr)) {
+          const fail = _failedPools.get(addr);
+          if (fail && fail.count > 3 && now - fail.lastTry < 300_000) continue;
+          missingAddresses.add(addr);
+        }
       }
     }
   }
@@ -47,8 +66,6 @@ async function fetchMissingPoolState(ctx: RuntimeContext, pools: PoolMeta[], cur
   if (missingAddresses.size === 0) return;
 
   const toFetch = Array.from(missingAddresses);
-
-  ctx.logger.info({ count: toFetch.length }, "RPC pre-fetch in progress");
 
   const BATCH_SIZE = 500;
   const batches: string[][] = [];
@@ -492,18 +509,23 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           const graphqlUrl = ctx.config.hasuraUrl;
           const secret = ctx.config.hasuraSecret;
           const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret));
+          let newEntries = 0;
           for (const [addr, state] of gqlCache.entries()) {
-            ctx.stateCache.set(addr, state);
+            if (!ctx.stateCache.has(addr)) {
+              ctx.stateCache.set(addr, state);
+              newEntries++;
+            }
           }
-          ctx.logger.info({ entries: gqlCache.size }, "State cache refreshed from HyperIndex");
+          ctx.logger.info({ entries: gqlCache.size, newEntries }, "State cache refreshed from HyperIndex");
         } catch (err) {
           ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
         }
 
-        // Fetch missing state for ALL pools to ensure rate propagation is complete
-        // We only do this occasionally to avoid RPC hammering
+        // Force-refresh state via RPC for ALL pools — HyperIndex data may be
+        // stale (from an older indexed block) and is now only used for pools
+        // without existing state. RPC gives us current on-chain prices.
         const poolCycles = pools.map((p) => ({ edges: [{ poolAddress: p.address }] }) as any);
-        await fetchMissingPoolState(ctx, pools, poolCycles);
+        await fetchMissingPoolState(ctx, pools, poolCycles, true);
 
         // Re-calculate MATIC rates for all tokens
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
