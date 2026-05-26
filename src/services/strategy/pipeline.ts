@@ -92,10 +92,13 @@ function evaluateAmount(
   amount: bigint,
   stateCache: RouteStateCache,
   options: PipelineOptions,
+  skipImpactCheck: boolean = false
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
-  const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-  if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
-    return { result: null, assessment: null, grossProfitMatic: null };
+  if (!skipImpactCheck) {
+    const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+    if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
+      return { result: null, assessment: null, grossProfitMatic: null };
+    }
   }
 
   try {

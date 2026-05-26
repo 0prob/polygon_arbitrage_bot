@@ -139,7 +139,35 @@ function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint 
   return priorityFee;
 }
 
-export function scalePriorityFeeByProfitMargin(priorityFee: bigint, profitMarginBps: bigint, maxMultiplier: number): bigint {
-  const multiplier = Math.max(1, Math.min(maxMultiplier, Number(profitMarginBps) / 100));
-  return priorityFee * BigInt(multiplier);
+/**
+ * Scale the priority fee based on the expected profit.
+ * This ensures we bid aggressively for high-value opportunities
+ * and conservatively for marginal ones.
+ *
+ * @param basePriorityFee The current network priority fee (median)
+ * @param expectedProfitWei The expected net profit in token-wei
+ * @param maxBidMultiplier Maximum multiplier to apply to the base fee
+ */
+export function scalePriorityFeeByProfitMargin(
+  basePriorityFee: bigint,
+  expectedProfitWei: bigint,
+  maxBidMultiplier: number = 3
+): bigint {
+  if (expectedProfitWei <= 0n) return basePriorityFee;
+
+  // We are willing to spend a portion of the expected profit on priority fees
+  // to beat competitors.
+  const maxBidFromProfit = expectedProfitWei / 2n;
+
+  // Tiered multiplier strategy
+  let multiplier = 1.1;
+  // If profit > 10 MATIC (assuming 1e18), bid more aggressively
+  if (expectedProfitWei > 10n ** 19n) multiplier = 2.0;
+  // If profit > 50 MATIC, go to max
+  if (expectedProfitWei > 5n * 10n ** 19n) multiplier = maxBidMultiplier;
+
+  const bid = (basePriorityFee * BigInt(Math.floor(multiplier * 100))) / 100n;
+
+  // Final safety check: Never bid more than 50% of our expected profit
+  return bid > maxBidFromProfit ? maxBidFromProfit : bid;
 }
