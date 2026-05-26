@@ -246,16 +246,19 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
   }
 }
 
-function parseBigIntArray(input: unknown): bigint[] {
-  if (Array.isArray(input)) {
-    return input.map((b: any) => BigInt(b));
-  }
-  if (typeof input === "string") {
-    try {
-      return JSON.parse(input).map((b: string) => BigInt(b));
-    } catch {
-      return [];
+export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret: string): Promise<Map<string, { decimals: number }>> {
+  const metas = new Map<string, { decimals: number }>();
+  try {
+    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
+    if (result && result.TokenMeta) {
+      for (const m of result.TokenMeta) {
+        if (m.address && m.decimals != null) {
+          metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
+        }
+      }
     }
+  } catch (err) {
+    console.warn("fetchTokenMetasFromHasura failed", err);
   }
-  return [];
+  return metas;
 }

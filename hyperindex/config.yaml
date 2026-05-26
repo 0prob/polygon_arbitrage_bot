@@ -61,6 +61,9 @@ chains:
           - event: Swap
             field_selection:
               transaction_fields: ["hash"]
+          - event: Initialize
+            field_selection:
+              transaction_fields: ["hash"]
 
       # Specific Single-Address Contracts
       - name: CurveRegistry
@@ -186,5 +189,8 @@ chains:
         handler: src/handlers/katana/v3_pool.ts
         events:
           - event: Swap
+            field_selection:
+              transaction_fields: ["hash"]
+          - event: Initialize
             field_selection:
               transaction_fields: ["hash"]

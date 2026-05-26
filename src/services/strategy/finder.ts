@@ -145,16 +145,20 @@ export function enumerateCycles(
   getWinRate?: (key: string) => number,
 ): FoundCycle[] {
   const allCycles = findCycles(graph, maxHops, maxCycles);
+  
   if (getWinRate) {
-    return allCycles
-      .sort((a, b) => {
-        const keyA = routeKeyFromEdges(a.edges, a.startToken);
-        const keyB = routeKeyFromEdges(b.edges, b.startToken);
-        const scoreA = scoreCycleWithFeedback(a.logWeight, keyA, getWinRate);
-        const scoreB = scoreCycleWithFeedback(b.logWeight, keyB, getWinRate);
-        return scoreA - scoreB;
-      })
-      .slice(0, maxCycles);
+    // Pre-compute scores to avoid O(N log N) string manipulation in sort
+    const scored = allCycles.map(cycle => {
+      const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
+      const score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
+      return { cycle, score };
+    });
+
+    return scored
+      .sort((a, b) => a.score - b.score)
+      .slice(0, maxCycles)
+      .map(s => s.cycle);
   }
+
   return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);
 }

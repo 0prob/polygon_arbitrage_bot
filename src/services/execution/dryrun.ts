@@ -115,8 +115,9 @@ export class MempoolAwareDryRunner {
           if (revertError?.data) {
             revertData = revertError.data;
             
-            // 0x82b42900 is Uniswap V3 'LOK' (Locked)
-            if (revertData === "0x82b42900" && attempt < MAX_RETRIES - 1) {
+            // Uniswap V3 'LOK' (Locked) - often a string revert "LOK"
+            const isLockError = revertData?.includes("4c4f4b"); // "LOK" in hex
+            if (isLockError && attempt < MAX_RETRIES - 1) {
               await new Promise(r => setTimeout(r, 50));
               continue;
             }
@@ -144,8 +145,9 @@ export class MempoolAwareDryRunner {
           revertData,
         };
         
-        // If not a lock error, don't retry
-        if (revertData !== "0x82b42900") break;
+        // Only retry on lock errors
+        const isLockError = revertData?.includes("4c4f4b");
+        if (!isLockError) break;
       }
     }
 

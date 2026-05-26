@@ -5,7 +5,7 @@ import { evaluatePipeline, type PipelineOptions } from "../services/strategy/pip
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
-import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
+import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, STATIC_ANCHORS, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { ArbInstrumenter } from "../services/strategy/instrumentation.ts";
@@ -13,6 +13,7 @@ import { WMATIC } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
 import { parseAbi } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
@@ -256,6 +257,7 @@ export interface PassLoopDeps {
   evaluatePipeline: typeof evaluatePipeline;
   discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
   buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
+  fetchTokenMetasFromHasura: typeof fetchTokenMetasFromHasura;
   routeKeyFromEdges: (edges: any[], startToken: `0x${string}`) => string;
   buildExecutionCandidate: typeof buildExecutionCandidate;
   instrumenter: ArbInstrumenter;
@@ -280,7 +282,7 @@ function computeMaticRates(
   const logs: string[] = [];
   if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);
 
-  const minLiquidityV3 = options.minLiquidityV3 ?? 10n ** 19n;
+  const minLiquidityV3 = options.minLiquidityV3 ?? 100_000_000_000_000_000n;
 
   let skippedNoState = 0;
   let skippedLowLiquidity = 0;
@@ -341,7 +343,7 @@ function computeMaticRates(
             const liq = BigInt(state.liquidity as any || 0n);
             
             // Require some liquidity for rate propagation
-            if (liq < 10n ** 15n) { // 0.001 MATIC equivalent units?
+            if (liq < minLiquidityV3) {
               skippedLowLiquidity++;
               continue;
             }
@@ -374,8 +376,8 @@ function computeMaticRates(
               newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
             }
           } else if (protocol.includes("dodo")) {
-            const b = BigInt(state.baseReserve as any || 0n);
-            const q = BigInt(state.quoteReserve as any || 0n);
+            const b = BigInt(state.baseReserve as any || state.reserve0 as any || 0n);
+            const q = BigInt(state.quoteReserve as any || state.reserve1 as any || 0n);
             if (b > 0n && q > 0n) {
               const rKnown = knownIdx === 0 ? b : q;
               const rUnknown = unknownIdx === 0 ? b : q;
@@ -406,8 +408,10 @@ function computeMaticRates(
             continue;
           }
 
-          // SANITY CHECK: If newRate is astronomical (> 10^22), it's likely poisoned.
-          if (newRate > 10n ** 22n) {
+          // SANITY CHECK: If newRate is astronomical (> 10^36), it's likely poisoned.
+          // 10^36 = 1,000,000,000,000,000,000 MATIC per token unit (for 18-dec token).
+          // For USDC (6 dec), 10^30 is normal (1 MATIC/USDC). 10^36 allows for 1,000,000x deviation.
+          if (newRate > 10n ** 36n) {
             skippedExtremeRatio++;
             continue;
           }
@@ -462,6 +466,7 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   evaluatePipeline,
   discoverPoolsFromHasura,
   buildStateCacheFromGraphQL,
+  fetchTokenMetasFromHasura,
   routeKeyFromEdges,
   buildExecutionCandidate,
   instrumenter,
@@ -469,6 +474,8 @@ export const DEFAULT_DEPS: PassLoopDeps = {
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
   const executorAddress = ctx.config.execution.executorAddress;
+  const operatorAccount = privateKeyToAccount(ctx.config.execution.privateKey as `0x${string}`);
+  const operatorAddress = operatorAccount.address;
 
   await ctx.executionService.start();
   await ctx.mempoolService.start();
@@ -506,9 +513,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let cachedCycles: FoundCycle[] = [];
   let hasuraPoolsCache: PoolMeta[] | null = null;
   let lastRefreshTime = 0;
+  let lastFullRefreshTime = 0;
   let lastDiscoveryTime = 0;
   let lastPoolsCount = 0;
   let cachedRates: Map<string, bigint> | null = null;
+  let cachedMetas: Map<string, { decimals: number }> | null = null;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
@@ -517,6 +526,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const TIER_CHECK_INTERVAL = 5000;
   let preFetchCounter = 0;
   let lastTierCheck = 0;
+
+  // ... rest of the setup ...
 
   // Track simulation block for reorg safety
   let lastSimulationBlock = 0;
@@ -703,7 +714,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               newEntries++;
             }
           }
-          ctx.logger.info({ entries: gqlCache.size, newEntries }, "State cache refreshed from HyperIndex");
+          cachedMetas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret);
+          ctx.logger.info({ entries: gqlCache.size, metas: cachedMetas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
         } catch (err) {
           ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
         }
@@ -718,28 +730,54 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
+
+        // Track that we just did a full refresh to avoid redundant pre-fetch below
+        lastFullRefreshTime = now;
         }
 
         if (shouldReEnumerate || !cachedGraph) {
-        bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
-        if (shouldFullRebuild || !cachedGraph) {
-          cachedGraph = deps.buildGraph(pools, stateCache);
-        }
-        const enumStartTime = Date.now();
-        cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
-          ctx.executionService.tracker.getWinRate(key),
-        );
-        const enumElapsed = Date.now() - enumStartTime;
-        lastRefreshTime = now;
-        ctx.logger.info(
-          {
-            pools: pools.length,
-            cycles: cachedCycles.length,
-            fullRebuild: shouldFullRebuild,
-            durationMs: enumElapsed,
-          },
-          "Graph and cycles re-enumerated",
-        );
+          bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+          const filteredPools = pools.filter((p) => {
+            const protocol = p.protocol.toLowerCase();
+            const addr = p.address.toLowerCase();
+            if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+              const state = stateCache.get(addr);
+              if (!state) return false; // Exclude if no state
+              const liq = BigInt(state.liquidity as any || 0n);
+              if (liq < ctx.config.execution.minLiquidityV3Rate) {
+                if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
+                  ctx.logger.debug({ addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() }, "Specifically filtered 0x56ff");
+                }
+                return false;
+              }
+            }
+            return true;
+          });
+
+          ctx.logger.info({ 
+            total: pools.length, 
+            filtered: filteredPools.length, 
+            removed: pools.length - filteredPools.length 
+          }, "Pools filtered for graph building");
+
+          // Rebuild graph every time we re-enumerate to ensure filters are applied
+          cachedGraph = deps.buildGraph(filteredPools, stateCache);
+          
+          const enumStartTime = Date.now();
+          cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
+            ctx.executionService.tracker.getWinRate(key),
+          );
+          const enumElapsed = Date.now() - enumStartTime;
+          lastRefreshTime = now;
+          ctx.logger.info(
+            {
+              pools: pools.length,
+              filtered: filteredPools.length,
+              cycles: cachedCycles.length,
+              durationMs: enumElapsed,
+            },
+            "Graph and cycles re-enumerated",
+          );
         }
 
         const currentCycles = cachedCycles;
@@ -751,14 +789,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
 
         // High-frequency pre-fetch: Only for pools in current cycles
-        // Always fetch if we just re-enumerated to ensure we have state for new pools
+        // Skip if we just did a full refresh in the same pass
         preFetchCounter++;
-        if (shouldReEnumerate || preFetchCounter % 5 === 0) {
-        await fetchMissingPoolState(ctx, pools, currentCycles);
-        // Force rate recalculation after state fetch
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-        });
+        if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
+          await fetchMissingPoolState(ctx, pools, currentCycles);
+          // Force rate recalculation after state fetch
+          cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+          });
+          if (!cachedMetas) {
+            cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+          }
         }
 
         const gasSnapshot = ctx.gasOracle.getSnapshot();
@@ -799,6 +840,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         minProfitMaticWei: ctx.config.execution.minProfitWei,
         gasPriceWei: gasSnapshot.gasPrice,
         tokenToMaticRates,
+        tokenMetas: cachedMetas ?? undefined,
         slippageBps: ctx.config.execution.slippageBps,
         revertRiskBps: ctx.config.execution.revertRiskBps,
         flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
@@ -859,7 +901,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             // Format a readable path for the TUI
             const path = profitable.result.tokenPath.map((t) => t.slice(0, 6)).join(" -> ");
             const roi = Number(profitable.assessment.roi);
-            const isNearMiss = roi > 0.95 && roi < 1.0;
+            const isNearMiss = roi > 950_000 && roi < 1_000_000;
 
             if (isNearMiss) {
               ctx.logger.debug(
@@ -899,7 +941,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
               // Mempool-aware dry run after building candidate
               if (ctx.dryRunner) {
-                const dryRun = await ctx.dryRunner.dryRun(candidate, executorAddress);
+                const dryRun = await ctx.dryRunner.dryRun(candidate, operatorAddress);
                 if (!dryRun.success) {
                   ctx.logger.warn(
                     {
@@ -1003,9 +1045,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
       }
 
-      const waitMs = Math.max(0, HF_INTERVAL - elapsed);
+      const waitMs = Math.max(50, HF_INTERVAL - elapsed);
       bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
-      if (waitMs > 0) await sleep(waitMs);
+      await sleep(waitMs);
     } catch (err) {
       ctx.logger.error({ err }, "Pass loop error");
       ctx.metrics.totalErrors++;

@@ -1,6 +1,21 @@
 import { indexer } from "envio";
 
 indexer.onEvent(
+  { contract: "KatanaV3Pool", event: "Initialize" },
+  async ({ event, context }) => {
+    context.V3PoolState.set({
+      id: event.srcAddress.toLowerCase(),
+      address: event.srcAddress.toLowerCase(),
+      lastUpdatedBlock: Number(event.block.number),
+      sqrtPriceX96: event.params.sqrtPriceX96,
+      liquidity: 0n,
+      tick: Number(event.params.tick),
+      fee: undefined,
+    });
+  },
+);
+
+indexer.onEvent(
   { contract: "KatanaV3Pool", event: "Swap" },
   async ({ event, context }) => {
     context.V3PoolState.set({

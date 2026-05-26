@@ -14,6 +14,7 @@ export interface PipelineOptions {
   minProfitMaticWei: bigint;
   gasPriceWei: bigint;
   tokenToMaticRates: Map<string, bigint>;
+  tokenMetas?: Map<string, { decimals: number }>;
   slippageBps?: bigint;
   revertRiskBps?: bigint;
   flashLoanSource?: FlashLoanSource;
@@ -25,21 +26,26 @@ export interface PipelineOptions {
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 
-export function getTestAmount(tokenAddress: string): bigint {
+export function getTestAmount(tokenAddress: string, metas?: Map<string, { decimals: number }>): bigint {
   const addr = tokenAddress.toLowerCase();
+  
+  // High-value token overrides
   if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
     return 500n * 10n ** 6n;
   }
   if (addr === WBTC.toLowerCase()) {
-    return 700_000n;
+    return 700_000n; // 0.007 WBTC
   }
-  if (addr === "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619") {
-    return 160_000_000_000_000_000n;
+  if (addr === "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619") { // WETH
+    return 160_000_000_000_000_000n; // 0.16 WETH
   }
-  if (addr === "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270") {
+  if (addr === "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270") { // WMATIC
     return 800n * 10n ** 18n;
   }
-  return 10n * 10n ** 18n;
+
+  // Default: ~500 MATIC worth of the token if we can't find specific override
+  const decimals = metas?.get(addr)?.decimals ?? 18;
+  return 500n * 10n ** BigInt(decimals);
 }
 
 export interface PipelineResult {
@@ -109,9 +115,29 @@ function evaluateAmount(
 
   try {
     const result = simulateRoute(cycle.edges, amount, stateCache);
-    const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-    if (rate === 0n) {
+    const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+    if (startRate === 0n) {
       return { result: null, assessment: null, grossProfitMatic: null };
+    }
+
+    // SANITY CHECK: Check for extreme value loss or gain in any single hop.
+    // Use the results ALREADY calculated in simulateRoute to avoid redundant CPU cycles.
+    for (let i = 0; i < cycle.edges.length; i++) {
+      const edge = cycle.edges[i];
+      const rateIn = options.tokenToMaticRates.get(edge.tokenIn.toLowerCase()) ?? 0n;
+      const rateOut = options.tokenToMaticRates.get(edge.tokenOut.toLowerCase()) ?? 0n;
+      
+      if (rateIn > 0n && rateOut > 0n) {
+        const valIn = (result.hopAmounts[i] * rateIn) / 10n**18n;
+        const valOut = (result.hopAmounts[i+1] * rateOut) / 10n**18n;
+        
+        const isExtremeLoss = valOut < valIn / 2n;
+        const isExtremeGain = valOut > valIn * 5n;
+
+        if ((isExtremeLoss || isExtremeGain) && valIn > 10n**15n) { 
+           return { result: null, assessment: null, grossProfitMatic: null };
+        }
+      }
     }
 
     const assessment = computeProfit({
@@ -119,16 +145,13 @@ function evaluateAmount(
       amountInTokens: result.amountIn,
       gasUnits: result.totalGas,
       gasPriceWei: options.gasPriceWei,
-      tokenToMaticRate: rate,
-      hopCount: cycle.hopCount,
-      minProfitMaticWei: options.minProfitMaticWei,
-      slippageBps: options.slippageBps,
-      revertRiskBps: options.revertRiskBps,
-      flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
-      roiSafetyCap: options.roiSafetyCap,
+      tokenToMaticRate: startRate,
+      hopCount: cycle.edges.length,
+      minProfitMaticWei: options.minProfitMaticWei ?? 0n,
+      flashLoanSource: options.flashLoanSource,
     });
 
-    const grossMatic = (result.profit * rate) / 1000000000000000000n;
+    const grossMatic = (result.profit * startRate) / 10n ** 18n;
     return { result, assessment, grossProfitMatic: grossMatic };
   } catch {
     return { result: null, assessment: null, grossProfitMatic: null };
@@ -160,25 +183,29 @@ export async function evaluatePipeline(
       batch.map(async (cycle) => {
         attempted++;
         try {
-          const rate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-          if (rate === 0n) return { type: "noRate" as const };
+          // All tokens in the cycle must have a rate for sanity checks
+          const tokens = [cycle.startToken, ...cycle.edges.map(e => e.tokenOut)];
+          const hasAllRates = tokens.every(t => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
+          if (!hasAllRates) return { type: "noRate" as const };
 
-          const baseAmount = getTestAmount(cycle.startToken);
+          const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase())!;
+          const baseAmount = getTestAmount(cycle.startToken, options.tokenMetas);
           const low = baseAmount / 5000n;
           if (low === 0n) return { type: "pruned" as const };
           const high = baseAmount;
           const ternaryIters = options.ternarySearchIterations ?? 15;
           const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
 
-          if (getEffectivePriceImpactForCycle(cycle, low, stateCache, maxImpact)) {
-            return { type: "pruned" as const };
+          const evalLow = evaluateAmount(cycle, low, stateCache, options);
+          if (!evalLow.result || evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
+            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as const };
           }
 
           let left = low;
           let right = high;
           let bestResult: RouteSimulationResult | null = null;
           let bestAssessment: ProfitAssessment | null = null;
-          let bestProfit = -1n;
+          let bestProfit = -1_000_000_000_000_000_000_000_000_000_000n; // Capture even deeply unprofitable cycles for stats
           let bestGrossMatic = 0n;
 
           for (let iter = 0; iter < ternaryIters; iter++) {
@@ -186,11 +213,15 @@ export async function evaluatePipeline(
             if (range <= baseAmount / CONVERGENCE_DIVISOR) {
               const mid = left + range / 2n;
               const { result, assessment, grossProfitMatic } = evaluateAmount(cycle, mid, stateCache, options);
+              
+              if (grossProfitMatic && grossProfitMatic > bestGrossMatic) {
+                bestGrossMatic = grossProfitMatic;
+              }
+
               if (result && assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
                 bestResult = result;
                 bestAssessment = assessment;
                 bestProfit = assessment.netProfitAfterGasMaticWei;
-                bestGrossMatic = grossProfitMatic ?? 0n;
               }
               break;
             }
@@ -199,20 +230,27 @@ export async function evaluatePipeline(
             const m2 = right - range / 3n;
             const eval1 = evaluateAmount(cycle, m1, stateCache, options);
             const eval2 = evaluateAmount(cycle, m2, stateCache, options);
-            const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1n;
-            const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1n;
+
+            // Always track best gross regardless of net profit
+            if (eval1.grossProfitMatic && eval1.grossProfitMatic > bestGrossMatic) {
+              bestGrossMatic = eval1.grossProfitMatic;
+            }
+            if (eval2.grossProfitMatic && eval2.grossProfitMatic > bestGrossMatic) {
+              bestGrossMatic = eval2.grossProfitMatic;
+            }
+
+            const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
+            const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
 
             if (profit1 > bestProfit && eval1.result && eval1.assessment) {
               bestResult = eval1.result;
               bestAssessment = eval1.assessment;
               bestProfit = profit1;
-              bestGrossMatic = eval1.grossProfitMatic ?? 0n;
             }
             if (profit2 > bestProfit && eval2.result && eval2.assessment) {
               bestResult = eval2.result;
               bestAssessment = eval2.assessment;
               bestProfit = profit2;
-              bestGrossMatic = eval2.grossProfitMatic ?? 0n;
             }
 
             if (profit1 < 0 && profit2 < 0) {
@@ -267,6 +305,14 @@ export async function evaluatePipeline(
           maxGrossMatic = res.bestGrossMatic;
         }
         if (res.bestResult && res.bestAssessment && res.bestAssessment.shouldExecute) {
+          if (options.logger) {
+            options.logger.info({
+              routeKey: batch[results.indexOf(res)].id,
+              profit: res.bestAssessment.netProfitAfterGasMaticWei.toString(),
+              roi: res.bestAssessment.roi / 1_000_000,
+              path: res.bestResult.poolPath.join(" -> ")
+            }, "Evaluating profitable candidate");
+          }
           profitable.push({ cycle: batch[results.indexOf(res)], result: res.bestResult, assessment: res.bestAssessment });
         }
       }

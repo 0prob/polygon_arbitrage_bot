@@ -4,177 +4,6 @@
   "graph": {},
   "nodes": [
     {
-      "label": "uniswap_v3.ts",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L1",
-      "id": "src_core_math_uniswap_v3_ts",
-      "community": 0,
-      "norm_label": "uniswap_v3.ts"
-    },
-    {
-      "label": "V3PoolStateLike",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L19",
-      "id": "math_uniswap_v3_v3poolstatelike",
-      "community": 0,
-      "norm_label": "v3poolstatelike"
-    },
-    {
-      "label": "V3TickData",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L20",
-      "id": "math_uniswap_v3_v3tickdata",
-      "community": 0,
-      "norm_label": "v3tickdata"
-    },
-    {
-      "label": "sortedTicksCache",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L23",
-      "id": "math_uniswap_v3_sortedtickscache",
-      "community": 0,
-      "norm_label": "sortedtickscache"
-    },
-    {
-      "label": "sortedTicksAccessOrder",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L31",
-      "id": "math_uniswap_v3_sortedticksaccessorder",
-      "community": 0,
-      "norm_label": "sortedticksaccessorder"
-    },
-    {
-      "label": "sortedTicksAccessPos",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L32",
-      "id": "math_uniswap_v3_sortedticksaccesspos",
-      "community": 0,
-      "norm_label": "sortedticksaccesspos"
-    },
-    {
-      "label": "asPoolState()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L34",
-      "id": "math_uniswap_v3_aspoolstate",
-      "community": 0,
-      "norm_label": "aspoolstate()"
-    },
-    {
-      "label": "asTickData()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L38",
-      "id": "math_uniswap_v3_astickdata",
-      "community": 0,
-      "norm_label": "astickdata()"
-    },
-    {
-      "label": "poolCacheKey()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L42",
-      "id": "math_uniswap_v3_poolcachekey",
-      "community": 0,
-      "norm_label": "poolcachekey()"
-    },
-    {
-      "label": "nextInitializedTickOptimized()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L57",
-      "id": "math_uniswap_v3_nextinitializedtickoptimized",
-      "community": 0,
-      "norm_label": "nextinitializedtickoptimized()"
-    },
-    {
-      "label": "getSortedTicks()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L91",
-      "id": "math_uniswap_v3_getsortedticks",
-      "community": 0,
-      "norm_label": "getsortedticks()"
-    },
-    {
-      "label": "simulateV3Swap()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L144",
-      "id": "math_uniswap_v3_simulatev3swap",
-      "community": 0,
-      "norm_label": "simulatev3swap()"
-    },
-    {
-      "label": "quoteV3()",
-      "file_type": "code",
-      "source_file": "src/core/math/uniswap_v3.ts",
-      "source_location": "L284",
-      "id": "math_uniswap_v3_quotev3",
-      "community": 0,
-      "norm_label": "quotev3()"
-    },
-    {
-      "label": "hyperindex_process.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L1",
-      "id": "src_infra_hypersync_hyperindex_process_ts",
-      "community": 88,
-      "norm_label": "hyperindex_process.ts"
-    },
-    {
-      "label": "HyperIndexStatusEvent",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "id": "hypersync_hyperindex_process_hyperindexstatusevent",
-      "community": 88,
-      "norm_label": "hyperindexstatusevent"
-    },
-    {
-      "label": "EventBusLike",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "id": "hypersync_hyperindex_process_eventbuslike",
-      "community": 88,
-      "norm_label": "eventbuslike"
-    },
-    {
-      "label": "HyperIndexProcessOptions",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L15",
-      "id": "hypersync_hyperindex_process_hyperindexprocessoptions",
-      "community": 88,
-      "norm_label": "hyperindexprocessoptions"
-    },
-    {
-      "label": "HyperIndexProcess",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L24",
-      "id": "hypersync_hyperindex_process_hyperindexprocess",
-      "community": 88,
-      "norm_label": "hyperindexprocess"
-    },
-    {
-      "label": "createHyperIndexProcess()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L30",
-      "id": "hypersync_hyperindex_process_createhyperindexprocess",
-      "community": 88,
-      "norm_label": "createhyperindexprocess()"
-    },
-    {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
@@ -277,7 +106,7 @@
       "label": "instrumenter",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L432",
+      "source_location": "L456",
       "id": "orchestrator_pass_loop_instrumenter",
       "community": 152,
       "norm_label": "instrumenter"
@@ -286,7 +115,7 @@
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L434",
+      "source_location": "L458",
       "id": "orchestrator_pass_loop_default_deps",
       "community": 152,
       "norm_label": "default_deps"
@@ -295,136 +124,307 @@
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L446",
+      "source_location": "L470",
       "id": "orchestrator_pass_loop_runpassloop",
       "community": 152,
       "norm_label": "runpassloop()"
+    },
+    {
+      "label": "uniswap_v3.ts",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "uniswap_v3.ts",
+      "id": "src_core_math_uniswap_v3_ts"
+    },
+    {
+      "label": "V3PoolStateLike",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L19",
+      "community": 0,
+      "norm_label": "v3poolstatelike",
+      "id": "math_uniswap_v3_v3poolstatelike"
+    },
+    {
+      "label": "V3TickData",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L20",
+      "community": 0,
+      "norm_label": "v3tickdata",
+      "id": "math_uniswap_v3_v3tickdata"
+    },
+    {
+      "label": "sortedTicksCache",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L23",
+      "community": 0,
+      "norm_label": "sortedtickscache",
+      "id": "math_uniswap_v3_sortedtickscache"
+    },
+    {
+      "label": "sortedTicksAccessOrder",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L31",
+      "community": 0,
+      "norm_label": "sortedticksaccessorder",
+      "id": "math_uniswap_v3_sortedticksaccessorder"
+    },
+    {
+      "label": "sortedTicksAccessPos",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L32",
+      "community": 0,
+      "norm_label": "sortedticksaccesspos",
+      "id": "math_uniswap_v3_sortedticksaccesspos"
+    },
+    {
+      "label": "asPoolState()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L34",
+      "community": 0,
+      "norm_label": "aspoolstate()",
+      "id": "math_uniswap_v3_aspoolstate"
+    },
+    {
+      "label": "asTickData()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L38",
+      "community": 0,
+      "norm_label": "astickdata()",
+      "id": "math_uniswap_v3_astickdata"
+    },
+    {
+      "label": "poolCacheKey()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L42",
+      "community": 0,
+      "norm_label": "poolcachekey()",
+      "id": "math_uniswap_v3_poolcachekey"
+    },
+    {
+      "label": "nextInitializedTickOptimized()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L57",
+      "community": 0,
+      "norm_label": "nextinitializedtickoptimized()",
+      "id": "math_uniswap_v3_nextinitializedtickoptimized"
+    },
+    {
+      "label": "getSortedTicks()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L91",
+      "community": 0,
+      "norm_label": "getsortedticks()",
+      "id": "math_uniswap_v3_getsortedticks"
+    },
+    {
+      "label": "simulateV3Swap()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L144",
+      "community": 0,
+      "norm_label": "simulatev3swap()",
+      "id": "math_uniswap_v3_simulatev3swap"
+    },
+    {
+      "label": "quoteV3()",
+      "file_type": "code",
+      "source_file": "src/core/math/uniswap_v3.ts",
+      "source_location": "L284",
+      "community": 0,
+      "norm_label": "quotev3()",
+      "id": "math_uniswap_v3_quotev3"
+    },
+    {
+      "label": "hyperindex_process.ts",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L1",
+      "community": 88,
+      "norm_label": "hyperindex_process.ts",
+      "id": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "label": "HyperIndexStatusEvent",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "community": 88,
+      "norm_label": "hyperindexstatusevent",
+      "id": "hypersync_hyperindex_process_hyperindexstatusevent"
+    },
+    {
+      "label": "EventBusLike",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "community": 88,
+      "norm_label": "eventbuslike",
+      "id": "hypersync_hyperindex_process_eventbuslike"
+    },
+    {
+      "label": "HyperIndexProcessOptions",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L15",
+      "community": 88,
+      "norm_label": "hyperindexprocessoptions",
+      "id": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "label": "HyperIndexProcess",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L24",
+      "community": 88,
+      "norm_label": "hyperindexprocess",
+      "id": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "label": "createHyperIndexProcess()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L30",
+      "community": 88,
+      "norm_label": "createhyperindexprocess()",
+      "id": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "label": "pipeline.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_pipeline_ts",
       "community": 23,
-      "norm_label": "pipeline.ts"
+      "norm_label": "pipeline.ts",
+      "id": "src_services_strategy_pipeline_ts"
     },
     {
       "label": "PipelineOptions",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L13",
-      "id": "strategy_pipeline_pipelineoptions",
       "community": 1,
-      "norm_label": "pipelineoptions"
+      "norm_label": "pipelineoptions",
+      "id": "strategy_pipeline_pipelineoptions"
     },
     {
       "label": "getTestAmount()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L28",
-      "id": "strategy_pipeline_gettestamount",
       "community": 23,
-      "norm_label": "gettestamount()"
+      "norm_label": "gettestamount()",
+      "id": "strategy_pipeline_gettestamount"
     },
     {
       "label": "PipelineResult",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L45",
-      "id": "strategy_pipeline_pipelineresult",
       "community": 94,
-      "norm_label": "pipelineresult"
+      "norm_label": "pipelineresult",
+      "id": "strategy_pipeline_pipelineresult"
     },
     {
       "label": "getEffectivePriceImpactForCycle()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L59",
-      "id": "strategy_pipeline_geteffectivepriceimpactforcycle",
       "community": 23,
-      "norm_label": "geteffectivepriceimpactforcycle()"
+      "norm_label": "geteffectivepriceimpactforcycle()",
+      "id": "strategy_pipeline_geteffectivepriceimpactforcycle"
     },
     {
       "label": "evaluateAmount()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L96",
-      "id": "strategy_pipeline_evaluateamount",
       "community": 23,
-      "norm_label": "evaluateamount()"
+      "norm_label": "evaluateamount()",
+      "id": "strategy_pipeline_evaluateamount"
     },
     {
       "label": "evaluatePipeline()",
       "file_type": "code",
       "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L138",
-      "id": "strategy_pipeline_evaluatepipeline",
       "community": 23,
-      "norm_label": "evaluatepipeline()"
+      "norm_label": "evaluatepipeline()",
+      "id": "strategy_pipeline_evaluatepipeline"
     },
     {
       "label": "simulator.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_simulator_ts",
       "community": 23,
-      "norm_label": "simulator.ts"
+      "norm_label": "simulator.ts",
+      "id": "src_services_strategy_simulator_ts"
     },
     {
       "label": "SimulationEdge",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L13",
-      "id": "strategy_simulator_simulationedge",
       "community": 23,
-      "norm_label": "simulationedge"
+      "norm_label": "simulationedge",
+      "id": "strategy_simulator_simulationedge"
     },
     {
       "label": "normalizeProtocol()",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L27",
-      "id": "strategy_simulator_normalizeprotocol",
       "community": 23,
-      "norm_label": "normalizeprotocol()"
+      "norm_label": "normalizeprotocol()",
+      "id": "strategy_simulator_normalizeprotocol"
     },
     {
       "label": "simulateHop()",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L41",
-      "id": "strategy_simulator_simulatehop",
       "community": 23,
-      "norm_label": "simulatehop()"
+      "norm_label": "simulatehop()",
+      "id": "strategy_simulator_simulatehop"
     },
     {
       "label": "extractGasResult()",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L91",
-      "id": "strategy_simulator_extractgasresult",
       "community": 23,
-      "norm_label": "extractgasresult()"
+      "norm_label": "extractgasresult()",
+      "id": "strategy_simulator_extractgasresult"
     },
     {
       "label": "simulateRoute()",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L96",
-      "id": "strategy_simulator_simulateroute",
       "community": 23,
-      "norm_label": "simulateroute()"
+      "norm_label": "simulateroute()",
+      "id": "strategy_simulator_simulateroute"
     },
     {
       "label": "getEffectivePriceImpact()",
       "file_type": "code",
       "source_file": "src/services/strategy/simulator.ts",
       "source_location": "L153",
-      "id": "strategy_simulator_geteffectivepriceimpact",
       "community": 23,
-      "norm_label": "geteffectivepriceimpact()"
+      "norm_label": "geteffectivepriceimpact()",
+      "id": "strategy_simulator_geteffectivepriceimpact"
     },
     {
       "label": "defaults.ts",
@@ -2591,7 +2591,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L1",
-      "community": 18,
+      "community": 106,
       "norm_label": "pool.ts",
       "id": "src_core_types_pool_ts"
     },
@@ -2618,7 +2618,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L9",
-      "community": 18,
+      "community": 106,
       "norm_label": "v2poolstate",
       "id": "types_pool_v2poolstate"
     },
@@ -2627,7 +2627,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L16",
-      "community": 18,
+      "community": 106,
       "norm_label": "v3poolstate",
       "id": "types_pool_v3poolstate"
     },
@@ -2636,7 +2636,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L25",
-      "community": 18,
+      "community": 106,
       "norm_label": "curvepoolstate",
       "id": "types_pool_curvepoolstate"
     },
@@ -2645,7 +2645,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L34",
-      "community": 18,
+      "community": 106,
       "norm_label": "balancerpoolstate",
       "id": "types_pool_balancerpoolstate"
     },
@@ -2654,7 +2654,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L45",
-      "community": 18,
+      "community": 106,
       "norm_label": "dodopoolstate",
       "id": "types_pool_dodopoolstate"
     },
@@ -2663,7 +2663,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L58",
-      "community": 18,
+      "community": 106,
       "norm_label": "woofipoolstate",
       "id": "types_pool_woofipoolstate"
     },
@@ -2672,7 +2672,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L68",
-      "community": 18,
+      "community": 106,
       "norm_label": "woofibaseinfo",
       "id": "types_pool_woofibaseinfo"
     },
@@ -2699,7 +2699,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L91",
-      "community": 18,
+      "community": 106,
       "norm_label": "poolrecord",
       "id": "types_pool_poolrecord"
     },
@@ -2708,7 +2708,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L97",
-      "community": 18,
+      "community": 106,
       "norm_label": "cachedpoolfee",
       "id": "types_pool_cachedpoolfee"
     },
@@ -2717,7 +2717,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L103",
-      "community": 18,
+      "community": 106,
       "norm_label": "cachedtokenmeta",
       "id": "types_pool_cachedtokenmeta"
     },
@@ -5516,7 +5516,7 @@
       "file_type": "code",
       "source_file": "src/services/strategy/graph_manager.ts",
       "source_location": "L46",
-      "community": 18,
+      "community": 142,
       "norm_label": ".updatepool()",
       "id": "strategy_graph_manager_graphmanager_updatepool"
     },
@@ -10123,7 +10123,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.test.ts",
       "source_location": "L1",
-      "community": 96,
+      "community": 18,
       "norm_label": "decoder.test.ts",
       "id": "src_services_mempool_decoder_test_ts"
     },
@@ -10132,7 +10132,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.test.ts",
       "source_location": "L6",
-      "community": 96,
+      "community": 18,
       "norm_label": "known",
       "id": "mempool_decoder_test_known"
     },
@@ -10141,7 +10141,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.test.ts",
       "source_location": "L9",
-      "community": 96,
+      "community": 18,
       "norm_label": "result",
       "id": "mempool_decoder_test_result"
     },
@@ -10150,7 +10150,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.test.ts",
       "source_location": "L23",
-      "community": 96,
+      "community": 18,
       "norm_label": "addrs",
       "id": "mempool_decoder_test_addrs"
     },
@@ -10357,7 +10357,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.ts",
       "source_location": "L1",
-      "community": 96,
+      "community": 18,
       "norm_label": "decoder.ts",
       "id": "src_services_mempool_decoder_ts"
     },
@@ -10366,7 +10366,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.ts",
       "source_location": "L4",
-      "community": 96,
+      "community": 18,
       "norm_label": "selectors",
       "id": "mempool_decoder_selectors"
     },
@@ -10375,7 +10375,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.ts",
       "source_location": "L16",
-      "community": 96,
+      "community": 18,
       "norm_label": "decodedswap",
       "id": "mempool_decoder_decodedswap"
     },
@@ -10393,7 +10393,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/decoder.ts",
       "source_location": "L54",
-      "community": 96,
+      "community": 18,
       "norm_label": "extractencodedaddresses()",
       "id": "mempool_decoder_extractencodedaddresses"
     },
@@ -18035,6 +18035,939 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_boot_runtimecontext"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_graph_routinggraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_graph_buildgraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_pool_invalid_pool_state"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_service_groupcompatiblecandidates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_service_candidateexecution"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_static_anchors"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "crosschain_types_polygonpoolstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_candidate_buildexecutioncandidate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_instrumentation_arbinstrumenter"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_pool_poolmeta"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_status_writer_buildstatuspayload"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_status_writer_writestatusfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v2_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v3_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v4_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_woofi_pair_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_failedpools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_sleep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_wmatic_lower"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L149",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_computematicrates"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L403",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_instrumenter"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_default_deps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_execution_service_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_execution_candidate_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_instrumentation_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_types_pool_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_orchestrator_boot_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_graph_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_orchestrator_status_writer_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_types_execution_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_crosschain_types_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_config_addresses_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_assessment_liquidity_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "assessment_liquidity_calculateliquidityusd"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_db_hyperindex_reader_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "db_hyperindex_reader_buildstatecachefromhyperindex"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L275",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L128",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "execution_candidate_buildexecutioncandidate"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L261",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_instrumentation_arbinstrumenter"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_graph_buildgraph"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner_constructor",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_sleep"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L335",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_computematicrates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_default_deps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L423",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "execution_service_groupcompatiblecandidates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L444",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_status_writer_buildstatuspayload"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L445",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_status_writer_writestatusfile"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "orchestrator_runner_passrunner_run",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/core/math/uniswap_v3.ts",
       "source_location": "L13",
       "weight": 1.0,
@@ -18695,939 +19628,6 @@
       "confidence_score": 1.0,
       "source": "cli_main_main",
       "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_graph_routinggraph"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_pipelineoptions"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_pool_invalid_pool_state"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_service_groupcompatiblecandidates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_static_anchors"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "crosschain_types_polygonpoolstate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_candidate_buildexecutioncandidate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_instrumentation_arbinstrumenter"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_pool_poolmeta"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_status_writer_buildstatuspayload"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_status_writer_writestatusfile"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v2_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v3_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v4_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_woofi_pair_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_failedpools"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_sleep"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_wmatic_lower"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L149",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_computematicrates"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L403",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_instrumenter"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_default_deps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_execution_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_execution_candidate_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_instrumentation_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_types_pool_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_graph_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_orchestrator_status_writer_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_types_execution_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_crosschain_types_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_config_addresses_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_assessment_liquidity_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "assessment_liquidity_calculateliquidityusd"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_db_hyperindex_reader_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "db_hyperindex_reader_buildstatecachefromhyperindex"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L275",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L128",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L127",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L129",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "execution_candidate_buildexecutioncandidate"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L261",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_instrumentation_arbinstrumenter"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L123",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner_constructor",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L100",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_sleep"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L335",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_computematicrates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_default_deps"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L423",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "execution_service_groupcompatiblecandidates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L444",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_status_writer_buildstatuspayload"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L445",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_status_writer_writestatusfile"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "source": "orchestrator_runner_passrunner_run",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
     },
     {
       "relation": "imports",
@@ -54919,5 +54919,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "07ddd74485a7deec0f4d84533cad204ebbdb232a"
+  "built_at_commit": "123818c2d01109ffa8bb9e41581ec2ed920a495b"
 }
