@@ -282,15 +282,23 @@ function computeMaticRates(
 
   const minLiquidityV3 = options.minLiquidityV3 ?? 10n ** 19n;
 
+  let skippedNoState = 0;
+  let skippedLowLiquidity = 0;
+  let skippedExtremeRatio = 0;
+
   // Use a more thorough BFS-style propagation
   for (let i = 0; i < 10; i++) {
     let changed = false;
     for (const pool of pools) {
+      const addr = pool.address.toLowerCase();
+      const state = stateCache.get(addr);
+      if (!state) {
+        skippedNoState++;
+        continue;
+      }
+
       const tokens = pool.tokens?.map((t) => t.toLowerCase()) ?? [pool.token0.toLowerCase(), pool.token1.toLowerCase()];
       if (tokens.length < 2) continue;
-
-      const state = stateCache.get(pool.address.toLowerCase());
-      if (!state) continue;
 
       // Find which tokens already have a rate
       const knownIndices: number[] = [];
@@ -320,8 +328,8 @@ function computeMaticRates(
           let knownValueMatic = 0n;
 
           if (protocol.includes("v2")) {
-            const r0 = BigInt(state.reserve0 as any);
-            const r1 = BigInt(state.reserve1 as any);
+            const r0 = BigInt(state.reserve0 as any || 0n);
+            const r1 = BigInt(state.reserve1 as any || 0n);
             const rKnown = knownIdx === 0 ? r0 : r1;
             const rUnknown = unknownIdx === 0 ? r0 : r1;
             knownValueMatic = (knownRate * rKnown) / RATE_PRECISION;
@@ -329,11 +337,14 @@ function computeMaticRates(
               newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-            const sq = BigInt(state.sqrtPriceX96 as any);
-            const liq = BigInt(state.liquidity as any);
+            const sq = BigInt(state.sqrtPriceX96 as any || 0n);
+            const liq = BigInt(state.liquidity as any || 0n);
             
-            // Require significant liquidity depth for V3 rate propagation
-            if (liq < minLiquidityV3) continue; 
+            // Require some liquidity for rate propagation
+            if (liq < 10n ** 15n) { // 0.001 MATIC equivalent units?
+              skippedLowLiquidity++;
+              continue;
+            }
             
             if (sq > 0n) {
               const p192 = sq * sq;
@@ -342,8 +353,8 @@ function computeMaticRates(
               } else if (knownIdx === 1 && unknownIdx === 0) {
                 newRate = (knownRate * p192) / (1n << 192n);
               }
-              // For V3, assume 20 MATIC value if liq is high enough to be trusted
-              knownValueMatic = 20n * RATE_PRECISION;
+              // For V3, assume 10 MATIC value if liq is present
+              knownValueMatic = 10n * RATE_PRECISION;
             }
           } else if (protocol.includes("balancer")) {
             const balances = state.balances as bigint[];
@@ -363,8 +374,8 @@ function computeMaticRates(
               newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
             }
           } else if (protocol.includes("dodo")) {
-            const b = BigInt(state.baseReserve as any);
-            const q = BigInt(state.quoteReserve as any);
+            const b = BigInt(state.baseReserve as any || 0n);
+            const q = BigInt(state.quoteReserve as any || 0n);
             if (b > 0n && q > 0n) {
               const rKnown = knownIdx === 0 ? b : q;
               const rUnknown = unknownIdx === 0 ? b : q;
@@ -372,7 +383,7 @@ function computeMaticRates(
               newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("woofi")) {
-            const rawPrice = BigInt(state.price as any);
+            const rawPrice = BigInt(state.price as any || 0n);
             if (rawPrice > 0n) {
               const balances = state.balances as bigint[] | undefined;
               if (balances && balances[knownIdx] > 0n) {
@@ -389,21 +400,28 @@ function computeMaticRates(
             }
           }
 
-          // Require at least 50 MATIC worth of known token to propagate rate (raised from 20)
-          if (knownValueMatic < 50n * RATE_PRECISION) continue;
+          // Require at least 1 MATIC worth of known token to propagate rate
+          if (knownValueMatic < 1n * RATE_PRECISION) {
+            skippedLowLiquidity++;
+            continue;
+          }
 
-          // SANITY CHECK: If newRate is astronomical (> 10^25), it's likely poisoned.
-          // 10^25 = 10 million MATIC per token.
-          if (newRate > 10n ** 25n) continue;
+          // SANITY CHECK: If newRate is astronomical (> 10^22), it's likely poisoned.
+          if (newRate > 10n ** 22n) {
+            skippedExtremeRatio++;
+            continue;
+          }
 
           // DEPTH CHECK: If the pool price ratio is extreme, it's likely a dead/broken pool.
-          // For V2, check reserve ratio. For V3, check sqrtPrice bounds.
           if (protocol.includes("v2")) {
-            const r0 = BigInt(state.reserve0 as any);
-            const r1 = BigInt(state.reserve1 as any);
+            const r0 = BigInt(state.reserve0 as any || 0n);
+            const r1 = BigInt(state.reserve1 as any || 0n);
             if (r0 > 0n && r1 > 0n) {
               const ratio = r0 > r1 ? r0 / r1 : r1 / r0;
-              if (ratio > 10n ** 12n) continue; // Ratio > 1 trillion: too unbalanced
+              if (ratio > 10n ** 12n) {
+                skippedExtremeRatio++;
+                continue; 
+              }
             }
           }
 
@@ -424,7 +442,13 @@ function computeMaticRates(
   if (logger && rates.size > 1) {
     logger.debug({ rates: rates.size, propagation: logs }, "Rate propagation complete");
   } else if (logger) {
-    logger.debug({ pools: pools.length, withState: stateCache.size }, "Rate propagation failed to find any rates beyond WMATIC");
+    logger.debug({ 
+      pools: pools.length, 
+      withState: stateCache.size,
+      skippedNoState,
+      skippedLowLiquidity,
+      skippedExtremeRatio 
+    }, "Rate propagation failed to find any rates beyond WMATIC");
   }
   return rates;
 }

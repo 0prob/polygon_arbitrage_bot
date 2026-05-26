@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779803441.1113763,
-    "ast_hash": "05f9bae67e26d96a1da03cf1548db4a9",
+    "mtime": 1779809717.0349865,
+    "ast_hash": "9a0770662384fd7f564e27898e6faa6b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/uniswap_v3.ts": {
-    "mtime": 1779715490.7046893,
-    "ast_hash": "064c387a893e63118680fc20b56ab9c3",
+    "mtime": 1779806658.8673012,
+    "ast_hash": "32e5900f7822bbab22c568319e67794c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/tick_math.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779804930.349517,
-    "ast_hash": "52d8a2cd71402c565109b5f62c3bbd7f",
+    "mtime": 1779809605.1509035,
+    "ast_hash": "65a809c4f7b4a7b4885b203c2dcd34c3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.ts": {
-    "mtime": 1779797697.5886528,
-    "ast_hash": "b387fae928a989429859688151fb53c1",
+    "mtime": 1779808175.6783295,
+    "ast_hash": "90c7418ac2a1bf4d9a05b382de9c2244",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779804964.12913,
-    "ast_hash": "1f7c18ebb07e5b9e96cc9106b94ae4f2",
+    "mtime": 1779809609.742912,
+    "ast_hash": "2b0cf5acef16687d3067ccf22106ad1a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779800937.9403572,
-    "ast_hash": "be59b2bed201bb416579ba6c148cf4d6",
+    "mtime": 1779809524.6232562,
+    "ast_hash": "ddd8f9d6bd7c1b55e9a73c7592f349d8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
