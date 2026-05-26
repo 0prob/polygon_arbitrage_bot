@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779799580.1953042,
-    "ast_hash": "3ac33902043cd9b65e9cf6ba7de16284",
+    "mtime": 1779803441.1113763,
+    "ast_hash": "05f9bae67e26d96a1da03cf1548db4a9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/profit.ts": {
-    "mtime": 1779708837.033372,
-    "ast_hash": "1358e85ea6ead584e623ee4711d1a507",
+    "mtime": 1779800774.690129,
+    "ast_hash": "0c11ae041406126d5a97426db7f62e3a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/assessment/risk.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779799144.2242048,
-    "ast_hash": "0691426d7cce485b1812ce1745dfae5f",
+    "mtime": 1779800752.7303677,
+    "ast_hash": "c6d81a7f96eaa5cf8beb2e31fbf5f591",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779776150.9662068,
-    "ast_hash": "fe59ee138d933968cc8850e12b77d8c3",
+    "mtime": 1779800937.9403572,
+    "ast_hash": "be59b2bed201bb416579ba6c148cf4d6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
@@ -865,8 +865,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/dryrun.ts": {
-    "mtime": 1779799976.66686,
-    "ast_hash": "825abfd5d58051b2e8f25806063ef188",
+    "mtime": 1779800536.1007242,
+    "ast_hash": "e7a0c8aabb652ce116480a37ae622494",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/quarantine.ts": {

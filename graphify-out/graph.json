@@ -4,94 +4,256 @@
   "graph": {},
   "nodes": [
     {
-      "label": "system.ts",
+      "label": "profit.ts",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
+      "source_file": "src/core/assessment/profit.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_system_ts",
-      "community": 9,
-      "norm_label": "system.ts"
+      "id": "src_core_assessment_profit_ts",
+      "community": 1,
+      "norm_label": "profit.ts"
     },
     {
-      "label": "BotSystem",
+      "label": "tokensToMaticWei()",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L10",
-      "id": "orchestrator_system_botsystem",
-      "community": 9,
-      "norm_label": "botsystem"
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L13",
+      "id": "assessment_profit_tokenstomaticwei",
+      "community": 1,
+      "norm_label": "tokenstomaticwei()"
     },
     {
-      "label": ".constructor()",
+      "label": "maticWeiToTokens()",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L16",
-      "id": "orchestrator_system_botsystem_constructor",
-      "community": 9,
-      "norm_label": ".constructor()"
-    },
-    {
-      "label": ".prepare()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
+      "source_file": "src/core/assessment/profit.ts",
       "source_location": "L23",
-      "id": "orchestrator_system_botsystem_prepare",
-      "community": 9,
-      "norm_label": ".prepare()"
+      "id": "assessment_profit_maticweitotokens",
+      "community": 1,
+      "norm_label": "maticweitotokens()"
     },
     {
-      "label": ".start()",
+      "label": "gasCostMaticWei()",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L48",
-      "id": "orchestrator_system_botsystem_start",
-      "community": 9,
-      "norm_label": ".start()"
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L30",
+      "id": "assessment_profit_gascostmaticwei",
+      "community": 1,
+      "norm_label": "gascostmaticwei()"
     },
     {
-      "label": ".stop()",
+      "label": "roiMicroUnits()",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L53",
-      "id": "orchestrator_system_botsystem_stop",
-      "community": 9,
-      "norm_label": ".stop()"
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L37",
+      "id": "assessment_profit_roimicrounits",
+      "community": 1,
+      "norm_label": "roimicrounits()"
     },
     {
-      "label": ".logger()",
+      "label": "ComputeProfitOptions",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L57",
-      "id": "orchestrator_system_botsystem_logger",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L46",
+      "id": "assessment_profit_computeprofitoptions",
+      "community": 1,
+      "norm_label": "computeprofitoptions"
+    },
+    {
+      "label": "computeProfit()",
+      "file_type": "code",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L82",
+      "id": "assessment_profit_computeprofit",
+      "community": 1,
+      "norm_label": "computeprofit()"
+    },
+    {
+      "label": "invalidAssessment()",
+      "file_type": "code",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L159",
+      "id": "assessment_profit_invalidassessment",
+      "community": 1,
+      "norm_label": "invalidassessment()"
+    },
+    {
+      "label": "hyperindex_process.ts",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L1",
+      "id": "src_infra_hypersync_hyperindex_process_ts",
       "community": 88,
-      "norm_label": ".logger()"
+      "norm_label": "hyperindex_process.ts"
     },
     {
-      "label": ".config()",
+      "label": "HyperIndexStatusEvent",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L60",
-      "id": "orchestrator_system_botsystem_config",
-      "community": 9,
-      "norm_label": ".config()"
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "id": "hypersync_hyperindex_process_hyperindexstatusevent",
+      "community": 88,
+      "norm_label": "hyperindexstatusevent"
     },
     {
-      "label": ".stateCache()",
+      "label": "EventBusLike",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L63",
-      "id": "orchestrator_system_botsystem_statecache",
-      "community": 9,
-      "norm_label": ".statecache()"
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "id": "hypersync_hyperindex_process_eventbuslike",
+      "community": 88,
+      "norm_label": "eventbuslike"
     },
     {
-      "label": ".subscriber()",
+      "label": "HyperIndexProcessOptions",
       "file_type": "code",
-      "source_file": "src/orchestrator/system.ts",
-      "source_location": "L66",
-      "id": "orchestrator_system_botsystem_subscriber",
-      "community": 101,
-      "norm_label": ".subscriber()"
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L15",
+      "id": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "community": 88,
+      "norm_label": "hyperindexprocessoptions"
+    },
+    {
+      "label": "HyperIndexProcess",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L24",
+      "id": "hypersync_hyperindex_process_hyperindexprocess",
+      "community": 88,
+      "norm_label": "hyperindexprocess"
+    },
+    {
+      "label": "createHyperIndexProcess()",
+      "file_type": "code",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L30",
+      "id": "hypersync_hyperindex_process_createhyperindexprocess",
+      "community": 88,
+      "norm_label": "createhyperindexprocess()"
+    },
+    {
+      "label": "pass_loop.ts",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L1",
+      "id": "src_orchestrator_pass_loop_ts",
+      "community": 152,
+      "norm_label": "pass_loop.ts"
+    },
+    {
+      "label": "V2_ABI",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L18",
+      "id": "orchestrator_pass_loop_v2_abi",
+      "community": 152,
+      "norm_label": "v2_abi"
+    },
+    {
+      "label": "V3_ABI",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L19",
+      "id": "orchestrator_pass_loop_v3_abi",
+      "community": 152,
+      "norm_label": "v3_abi"
+    },
+    {
+      "label": "V4_ABI",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L23",
+      "id": "orchestrator_pass_loop_v4_abi",
+      "community": 152,
+      "norm_label": "v4_abi"
+    },
+    {
+      "label": "WOOFI_PAIR_ABI",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L30",
+      "id": "orchestrator_pass_loop_woofi_pair_abi",
+      "community": 152,
+      "norm_label": "woofi_pair_abi"
+    },
+    {
+      "label": "_failedPools",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L35",
+      "id": "orchestrator_pass_loop_failedpools",
+      "community": 152,
+      "norm_label": "_failedpools"
+    },
+    {
+      "label": "fetchMissingPoolState()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L37",
+      "id": "orchestrator_pass_loop_fetchmissingpoolstate",
+      "community": 152,
+      "norm_label": "fetchmissingpoolstate()"
+    },
+    {
+      "label": "PassLoopDeps",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L252",
+      "id": "orchestrator_pass_loop_passloopdeps",
+      "community": 152,
+      "norm_label": "passloopdeps"
+    },
+    {
+      "label": "sleep()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L264",
+      "id": "orchestrator_pass_loop_sleep",
+      "community": 152,
+      "norm_label": "sleep()"
+    },
+    {
+      "label": "WMATIC_LOWER",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L268",
+      "id": "orchestrator_pass_loop_wmatic_lower",
+      "community": 152,
+      "norm_label": "wmatic_lower"
+    },
+    {
+      "label": "computeMaticRates()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L270",
+      "id": "orchestrator_pass_loop_computematicrates",
+      "community": 152,
+      "norm_label": "computematicrates()"
+    },
+    {
+      "label": "instrumenter",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L425",
+      "id": "orchestrator_pass_loop_instrumenter",
+      "community": 152,
+      "norm_label": "instrumenter"
+    },
+    {
+      "label": "DEFAULT_DEPS",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L427",
+      "id": "orchestrator_pass_loop_default_deps",
+      "community": 152,
+      "norm_label": "default_deps"
+    },
+    {
+      "label": "runPassLoop()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L439",
+      "id": "orchestrator_pass_loop_runpassloop",
+      "community": 152,
+      "norm_label": "runpassloop()"
     },
     {
       "label": "dryrun.ts",
@@ -193,67 +355,157 @@
       "norm_label": ".dryrun()"
     },
     {
+      "label": "system.ts",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L1",
+      "community": 9,
+      "norm_label": "system.ts",
+      "id": "src_orchestrator_system_ts"
+    },
+    {
+      "label": "BotSystem",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L10",
+      "community": 9,
+      "norm_label": "botsystem",
+      "id": "orchestrator_system_botsystem"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L16",
+      "community": 9,
+      "norm_label": ".constructor()",
+      "id": "orchestrator_system_botsystem_constructor"
+    },
+    {
+      "label": ".prepare()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L23",
+      "community": 9,
+      "norm_label": ".prepare()",
+      "id": "orchestrator_system_botsystem_prepare"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L48",
+      "community": 9,
+      "norm_label": ".start()",
+      "id": "orchestrator_system_botsystem_start"
+    },
+    {
+      "label": ".stop()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L53",
+      "community": 9,
+      "norm_label": ".stop()",
+      "id": "orchestrator_system_botsystem_stop"
+    },
+    {
+      "label": ".logger()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L57",
+      "community": 88,
+      "norm_label": ".logger()",
+      "id": "orchestrator_system_botsystem_logger"
+    },
+    {
+      "label": ".config()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L60",
+      "community": 9,
+      "norm_label": ".config()",
+      "id": "orchestrator_system_botsystem_config"
+    },
+    {
+      "label": ".stateCache()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L63",
+      "community": 9,
+      "norm_label": ".statecache()",
+      "id": "orchestrator_system_botsystem_statecache"
+    },
+    {
+      "label": ".subscriber()",
+      "file_type": "code",
+      "source_file": "src/orchestrator/system.ts",
+      "source_location": "L66",
+      "community": 101,
+      "norm_label": ".subscriber()",
+      "id": "orchestrator_system_botsystem_subscriber"
+    },
+    {
       "label": "jit_discovery.ts",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L1",
-      "id": "src_services_strategy_jit_discovery_ts",
       "community": 9,
-      "norm_label": "jit_discovery.ts"
+      "norm_label": "jit_discovery.ts",
+      "id": "src_services_strategy_jit_discovery_ts"
     },
     {
       "label": "V2_FACTORY_ABI",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L5",
-      "id": "strategy_jit_discovery_v2_factory_abi",
       "community": 9,
-      "norm_label": "v2_factory_abi"
+      "norm_label": "v2_factory_abi",
+      "id": "strategy_jit_discovery_v2_factory_abi"
     },
     {
       "label": "V3_FACTORY_ABI",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L6",
-      "id": "strategy_jit_discovery_v3_factory_abi",
       "community": 9,
-      "norm_label": "v3_factory_abi"
+      "norm_label": "v3_factory_abi",
+      "id": "strategy_jit_discovery_v3_factory_abi"
     },
     {
       "label": "DiscoveryOptions",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L8",
-      "id": "strategy_jit_discovery_discoveryoptions",
       "community": 9,
-      "norm_label": "discoveryoptions"
+      "norm_label": "discoveryoptions",
+      "id": "strategy_jit_discovery_discoveryoptions"
     },
     {
       "label": "JITPoolDiscovery",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L18",
-      "id": "strategy_jit_discovery_jitpooldiscovery",
       "community": 9,
-      "norm_label": "jitpooldiscovery"
+      "norm_label": "jitpooldiscovery",
+      "id": "strategy_jit_discovery_jitpooldiscovery"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L19",
-      "id": "strategy_jit_discovery_jitpooldiscovery_constructor",
       "community": 9,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "strategy_jit_discovery_jitpooldiscovery_constructor"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L25",
-      "id": "strategy_jit_discovery_jitpooldiscovery_start",
       "community": 9,
-      "norm_label": ".start()"
+      "norm_label": ".start()",
+      "id": "strategy_jit_discovery_jitpooldiscovery_start"
     },
     {
       "label": "multicall.ts",
@@ -1064,132 +1316,6 @@
       "community": 113,
       "norm_label": "enumeratecyclesspy",
       "id": "orchestrator_pass_loop_test_enumeratecyclesspy"
-    },
-    {
-      "label": "pass_loop.ts",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L1",
-      "community": 152,
-      "norm_label": "pass_loop.ts",
-      "id": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "label": "V2_ABI",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L18",
-      "community": 152,
-      "norm_label": "v2_abi",
-      "id": "orchestrator_pass_loop_v2_abi"
-    },
-    {
-      "label": "V3_ABI",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L19",
-      "community": 152,
-      "norm_label": "v3_abi",
-      "id": "orchestrator_pass_loop_v3_abi"
-    },
-    {
-      "label": "V4_ABI",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L23",
-      "community": 152,
-      "norm_label": "v4_abi",
-      "id": "orchestrator_pass_loop_v4_abi"
-    },
-    {
-      "label": "WOOFI_PAIR_ABI",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L30",
-      "community": 152,
-      "norm_label": "woofi_pair_abi",
-      "id": "orchestrator_pass_loop_woofi_pair_abi"
-    },
-    {
-      "label": "_failedPools",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L35",
-      "community": 152,
-      "norm_label": "_failedpools",
-      "id": "orchestrator_pass_loop_failedpools"
-    },
-    {
-      "label": "fetchMissingPoolState()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L37",
-      "community": 152,
-      "norm_label": "fetchmissingpoolstate()",
-      "id": "orchestrator_pass_loop_fetchmissingpoolstate"
-    },
-    {
-      "label": "PassLoopDeps",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L252",
-      "community": 152,
-      "norm_label": "passloopdeps",
-      "id": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "label": "sleep()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L264",
-      "community": 152,
-      "norm_label": "sleep()",
-      "id": "orchestrator_pass_loop_sleep"
-    },
-    {
-      "label": "WMATIC_LOWER",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L268",
-      "community": 152,
-      "norm_label": "wmatic_lower",
-      "id": "orchestrator_pass_loop_wmatic_lower"
-    },
-    {
-      "label": "computeMaticRates()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L270",
-      "community": 152,
-      "norm_label": "computematicrates()",
-      "id": "orchestrator_pass_loop_computematicrates"
-    },
-    {
-      "label": "instrumenter",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L403",
-      "community": 152,
-      "norm_label": "instrumenter",
-      "id": "orchestrator_pass_loop_instrumenter"
-    },
-    {
-      "label": "DEFAULT_DEPS",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L405",
-      "community": 152,
-      "norm_label": "default_deps",
-      "id": "orchestrator_pass_loop_default_deps"
-    },
-    {
-      "label": "runPassLoop()",
-      "file_type": "code",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L417",
-      "community": 152,
-      "norm_label": "runpassloop()",
-      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "candidate.ts",
@@ -2864,60 +2990,6 @@
       "community": 5,
       "norm_label": "vitest",
       "id": "t_package_devdependencies_vitest"
-    },
-    {
-      "label": "hyperindex_process.ts",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L1",
-      "community": 88,
-      "norm_label": "hyperindex_process.ts",
-      "id": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "label": "HyperIndexStatusEvent",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "community": 88,
-      "norm_label": "hyperindexstatusevent",
-      "id": "hypersync_hyperindex_process_hyperindexstatusevent"
-    },
-    {
-      "label": "EventBusLike",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "community": 88,
-      "norm_label": "eventbuslike",
-      "id": "hypersync_hyperindex_process_eventbuslike"
-    },
-    {
-      "label": "HyperIndexProcessOptions",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L15",
-      "community": 88,
-      "norm_label": "hyperindexprocessoptions",
-      "id": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "label": "HyperIndexProcess",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L24",
-      "community": 88,
-      "norm_label": "hyperindexprocess",
-      "id": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "label": "createHyperIndexProcess()",
-      "file_type": "code",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L30",
-      "community": 88,
-      "norm_label": "createhyperindexprocess()",
-      "id": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "label": "boot.ts",
@@ -5510,78 +5582,6 @@
       "community": 27,
       "norm_label": "pools.json",
       "id": "scripts_pools_json"
-    },
-    {
-      "label": "profit.ts",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "profit.ts",
-      "id": "src_core_assessment_profit_ts"
-    },
-    {
-      "label": "tokensToMaticWei()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L13",
-      "community": 1,
-      "norm_label": "tokenstomaticwei()",
-      "id": "assessment_profit_tokenstomaticwei"
-    },
-    {
-      "label": "maticWeiToTokens()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L23",
-      "community": 1,
-      "norm_label": "maticweitotokens()",
-      "id": "assessment_profit_maticweitotokens"
-    },
-    {
-      "label": "gasCostMaticWei()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L30",
-      "community": 1,
-      "norm_label": "gascostmaticwei()",
-      "id": "assessment_profit_gascostmaticwei"
-    },
-    {
-      "label": "roiMicroUnits()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L37",
-      "community": 1,
-      "norm_label": "roimicrounits()",
-      "id": "assessment_profit_roimicrounits"
-    },
-    {
-      "label": "ComputeProfitOptions",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L46",
-      "community": 1,
-      "norm_label": "computeprofitoptions",
-      "id": "assessment_profit_computeprofitoptions"
-    },
-    {
-      "label": "computeProfit()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L82",
-      "community": 1,
-      "norm_label": "computeprofit()",
-      "id": "assessment_profit_computeprofit"
-    },
-    {
-      "label": "invalidAssessment()",
-      "file_type": "code",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L150",
-      "community": 1,
-      "norm_label": "invalidassessment()",
-      "id": "assessment_profit_invalidassessment"
     },
     {
       "label": "uniswap_v3.ts",
@@ -18026,6 +18026,1863 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "math_full_math_divroundingup"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "utils_bigint_biginttoapproxnumber"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_risk_revertpenalty"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_risk_slippagededuction"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_risk_flashloanfee"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "types_execution_profitassessment"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_tokenstomaticwei"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_maticweitotokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_gascostmaticwei"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_roimicrounits"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_computeprofitoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L83",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L150",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "assessment_profit_invalidassessment"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_test_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "src_core_math_full_math_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "src_core_utils_bigint_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "src_core_assessment_risk_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_ts",
+      "target": "src_core_types_execution_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/index.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_index_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_profit_tokenstomaticwei"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_test_ts",
+      "target": "assessment_profit_tokenstomaticwei"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_tokenstomaticwei"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L120",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_profit_maticweitotokens"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_test_ts",
+      "target": "assessment_profit_maticweitotokens"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "assessment_profit_maticweitotokens",
+      "target": "math_full_math_divroundingup"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_profit_gascostmaticwei"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_test_ts",
+      "target": "assessment_profit_gascostmaticwei"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_gascostmaticwei"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_profit_roimicrounits"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "assessment_profit_roimicrounits",
+      "target": "utils_bigint_biginttoapproxnumber"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofitoptions",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_profit_invalidassessment"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/assessment/profit.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_core_assessment_profit_test_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_risk_slippagededuction"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_risk_revertpenalty"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/assessment/profit.ts",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "assessment_profit_computeprofit",
+      "target": "assessment_risk_flashloanfee"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/backrunner.ts",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "strategy_backrunner_backrunner_evaluate",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_eventbuslike"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_boot_runtimecontext"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_graph_routinggraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_graph_buildgraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_pool_invalid_pool_state"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_service_groupcompatiblecandidates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_service_candidateexecution"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "hypersync_hyperindex_graphql_static_anchors"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "crosschain_types_polygonpoolstate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "execution_candidate_buildexecutioncandidate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_instrumentation_arbinstrumenter"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "types_pool_poolmeta"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "tui_events_eventbus"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_status_writer_buildstatuspayload"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_status_writer_writestatusfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v2_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v3_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_v4_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_woofi_pair_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_failedpools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_sleep"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_wmatic_lower"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L149",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_computematicrates"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L403",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_instrumenter"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_default_deps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_hypersync_hyperindex_graphql_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_execution_service_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_execution_candidate_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_instrumentation_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_types_pool_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_orchestrator_boot_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_graph_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_orchestrator_status_writer_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_tui_events_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_types_execution_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_crosschain_types_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_config_addresses_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_core_assessment_liquidity_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "assessment_liquidity_calculateliquidityusd"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "src_orchestrator_pass_loop_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_infra_db_hyperindex_reader_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "db_hyperindex_reader_buildstatecachefromhyperindex"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L275",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L128",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "execution_candidate_buildexecutioncandidate"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L261",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_instrumentation_arbinstrumenter"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_graph_buildgraph"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_runner_passrunner_constructor",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "orchestrator_pass_loop_passloopdeps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_sleep"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L335",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_pass_loop_computematicrates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_default_deps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_test_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L423",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "execution_service_groupcompatiblecandidates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_runner_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L444",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_status_writer_buildstatuspayload"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L445",
+      "weight": 1.0,
+      "source": "orchestrator_pass_loop_runpassloop",
+      "target": "orchestrator_status_writer_writestatusfile"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/orchestrator/runner.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "orchestrator_runner_passrunner_run",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_cli_main_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/cli/main.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "cli_main_main",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
+      "target": "orchestrator_pass_loop_runpassloop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_service_candidateexecution"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "calldata_abis_executor_abi"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "calldata_abis_executor_aave_abi"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "calldata_abis_v2_pair_swap_abi"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "calldata_abis_v3_pool_swap_abi"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "calldata_abis_balancer_vault_swap_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_dryrun_dryrunresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_dryrun_pendingstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_dryrun_decodable_abis"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_dryrun_predictionresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "execution_dryrun_mempoolawaredryrunner"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_dryrun_ts",
+      "target": "src_services_execution_service_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "src_services_execution_dryrun_ts"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner",
+      "target": "execution_dryrun_mempoolawaredryrunner_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner",
+      "target": "execution_dryrun_mempoolawaredryrunner_predictstate"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner",
+      "target": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner",
+      "target": "execution_dryrun_mempoolawaredryrunner_getlastpendingstate"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner",
+      "target": "execution_dryrun_mempoolawaredryrunner_dryrun"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_boot_ts",
+      "target": "execution_dryrun_mempoolawaredryrunner"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/boot.ts",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_boot_runtimecontext",
+      "target": "execution_dryrun_mempoolawaredryrunner"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner_predictstate",
+      "target": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/dryrun.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "execution_dryrun_mempoolawaredryrunner_dryrun",
+      "target": "execution_service_candidateexecution"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -18095,9 +19952,9 @@
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_orchestrator_system_ts",
-      "target": "src_services_strategy_jit_discovery_ts",
-      "confidence_score": 1.0
+      "target": "src_services_strategy_jit_discovery_ts"
     },
     {
       "relation": "imports",
@@ -18106,9 +19963,9 @@
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_orchestrator_system_ts",
-      "target": "strategy_jit_discovery_jitpooldiscovery",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_jitpooldiscovery"
     },
     {
       "relation": "contains",
@@ -18350,9 +20207,9 @@
       "source_file": "src/orchestrator/system.ts",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "orchestrator_system_botsystem",
-      "target": "strategy_jit_discovery_jitpooldiscovery",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_jitpooldiscovery"
     },
     {
       "relation": "references",
@@ -18501,244 +20358,12 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "calldata_abis_executor_abi"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "calldata_abis_executor_aave_abi"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "calldata_abis_v2_pair_swap_abi"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "calldata_abis_v3_pool_swap_abi"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "calldata_abis_balancer_vault_swap_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_dryrun_dryrunresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_dryrun_pendingstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_dryrun_decodable_abis"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_dryrun_predictionresult",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "execution_dryrun_mempoolawaredryrunner"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_dryrun_ts",
-      "target": "src_services_execution_service_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "src_services_execution_dryrun_ts"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner",
-      "target": "execution_dryrun_mempoolawaredryrunner_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner",
-      "target": "execution_dryrun_mempoolawaredryrunner_predictstate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner",
-      "target": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner",
-      "target": "execution_dryrun_mempoolawaredryrunner_getlastpendingstate"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner",
-      "target": "execution_dryrun_mempoolawaredryrunner_dryrun"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_boot_ts",
-      "target": "execution_dryrun_mempoolawaredryrunner"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/boot.ts",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_boot_runtimecontext",
-      "target": "execution_dryrun_mempoolawaredryrunner"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner_predictstate",
-      "target": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/dryrun.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "execution_dryrun_mempoolawaredryrunner_dryrun",
-      "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "observability_logger_logger",
-      "confidence_score": 1.0
+      "target": "observability_logger_logger"
     },
     {
       "relation": "imports",
@@ -18747,9 +20372,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "types_pool_poolmeta",
-      "confidence_score": 1.0
+      "target": "types_pool_poolmeta"
     },
     {
       "relation": "contains",
@@ -18757,9 +20382,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "strategy_jit_discovery_v2_factory_abi",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_v2_factory_abi"
     },
     {
       "relation": "contains",
@@ -18767,9 +20392,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "strategy_jit_discovery_v3_factory_abi",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_v3_factory_abi"
     },
     {
       "relation": "contains",
@@ -18777,9 +20402,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "strategy_jit_discovery_discoveryoptions",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_discoveryoptions"
     },
     {
       "relation": "contains",
@@ -18787,9 +20412,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_strategy_jit_discovery_ts",
-      "target": "strategy_jit_discovery_jitpooldiscovery",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_jitpooldiscovery"
     },
     {
       "relation": "method",
@@ -18797,9 +20422,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "strategy_jit_discovery_jitpooldiscovery",
-      "target": "strategy_jit_discovery_jitpooldiscovery_constructor",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_jitpooldiscovery_constructor"
     },
     {
       "relation": "method",
@@ -18807,9 +20432,9 @@
       "source_file": "src/services/strategy/jit_discovery.ts",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "strategy_jit_discovery_jitpooldiscovery",
-      "target": "strategy_jit_discovery_jitpooldiscovery_start",
-      "confidence_score": 1.0
+      "target": "strategy_jit_discovery_jitpooldiscovery_start"
     },
     {
       "relation": "contains",
@@ -19348,17 +20973,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19451,17 +21065,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/services/execution/candidate.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -19518,17 +21121,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_assessment_profit_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19567,17 +21159,6 @@
       "confidence_score": 1.0,
       "source": "src_diagnostic_runner_ts",
       "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_pipelineoptions"
     },
     {
       "relation": "references",
@@ -19712,39 +21293,6 @@
       "target": "strategy_simulator_simulateroute"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19754,17 +21302,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_pipeline_test_ts",
       "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "assessment_profit_computeprofit"
     },
     {
       "relation": "calls",
@@ -19937,17 +21474,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_hypersync_hyperindex_graphql_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -19965,17 +21491,6 @@
       "confidence_score": 1.0,
       "source": "src_infra_hypersync_hyperindex_graphql_ts",
       "target": "scripts_pools_json"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_static_anchors"
     },
     {
       "relation": "calls",
@@ -20014,78 +21529,12 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L128",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "tests/infra/hypersync_integration.test.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "tests_infra_hypersync_integration_test_ts",
       "target": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L127",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
     },
     {
       "relation": "imports",
@@ -20995,39 +22444,6 @@
       "target": "rpc_websocket_subscriber_test_handler"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_test_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -21160,774 +22576,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_test_ts",
       "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_boot_runtimecontext"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_graph_routinggraph"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_pool_invalid_pool_state"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_execution_service_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_service_groupcompatiblecandidates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_service_candidateexecution"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "crosschain_types_polygonpoolstate"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_execution_candidate_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "execution_candidate_buildexecutioncandidate"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_instrumentation_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_instrumentation_arbinstrumenter"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "types_pool_poolmeta"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "tui_events_eventbus"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_status_writer_buildstatuspayload"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_status_writer_writestatusfile"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v2_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v3_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_v4_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_woofi_pair_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_failedpools"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_sleep"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_wmatic_lower"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L149",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_computematicrates"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L403",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_instrumenter"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L70",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_default_deps"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_types_pool_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_graph_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_orchestrator_status_writer_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_tui_events_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_types_execution_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_crosschain_types_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_config_addresses_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_core_assessment_liquidity_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "assessment_liquidity_calculateliquidityusd"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "src_orchestrator_pass_loop_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_infra_db_hyperindex_reader_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "db_hyperindex_reader_buildstatecachefromhyperindex"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L275",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_fetchmissingpoolstate"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L129",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "execution_candidate_buildexecutioncandidate"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L261",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_instrumentation_arbinstrumenter"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L123",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_runner_passrunner_constructor",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "orchestrator_pass_loop_passloopdeps"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L100",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_sleep"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L335",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_pass_loop_computematicrates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_default_deps"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L423",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "execution_service_groupcompatiblecandidates"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_runner_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L444",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_status_writer_buildstatuspayload"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L445",
-      "weight": 1.0,
-      "source": "orchestrator_pass_loop_runpassloop",
-      "target": "orchestrator_status_writer_writestatusfile"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/orchestrator/runner.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "source": "orchestrator_runner_passrunner_run",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "orchestrator_pass_loop_runpassloop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop_liquidity.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_liquidity_test_ts",
-      "target": "orchestrator_pass_loop_runpassloop"
     },
     {
       "relation": "imports",
@@ -27397,199 +28045,6 @@
       "confidence_score": 1.0,
       "source": "t_package_devdependencies",
       "target": "t_package_devdependencies_vitest"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_eventbuslike"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_cli_main_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/cli/main.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "cli_main_main",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "relation": "imports",
@@ -33631,50 +34086,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/core/assessment/profit.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_test_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_test_ts",
-      "target": "assessment_profit_tokenstomaticwei"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_test_ts",
-      "target": "assessment_profit_maticweitotokens"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_test_ts",
-      "target": "assessment_profit_gascostmaticwei"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.test.ts",
       "source_location": "L3",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -33720,17 +34131,6 @@
       "confidence_score": 1.0,
       "source": "src_core_assessment_profit_test_ts",
       "target": "assessment_profit_test_r4"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_test_ts",
-      "target": "src_core_assessment_profit_ts"
     },
     {
       "relation": "imports_from",
@@ -33954,406 +34354,6 @@
       "confidence_score": 1.0,
       "source": "scripts_find_pools_ts",
       "target": "scripts_find_pools_main"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "math_full_math_divroundingup"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "utils_bigint_biginttoapproxnumber"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_risk_revertpenalty"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_risk_slippagededuction"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_risk_flashloanfee"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "types_execution_profitassessment"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_tokenstomaticwei"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_maticweitotokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_gascostmaticwei"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_roimicrounits"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_computeprofitoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L83",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L150",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "assessment_profit_invalidassessment"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "src_core_math_full_math_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "src_core_utils_bigint_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "src_core_assessment_risk_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_profit_ts",
-      "target": "src_core_types_execution_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L184",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_core_assessment_profit_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_ts",
-      "target": "src_core_assessment_profit_ts"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/index.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_core_assessment_index_ts",
-      "target": "src_core_assessment_profit_ts"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L114",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_profit_tokenstomaticwei"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L184",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "assessment_profit_tokenstomaticwei"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L120",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_profit_maticweitotokens"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "assessment_profit_maticweitotokens",
-      "target": "math_full_math_divroundingup"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L111",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_profit_gascostmaticwei"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L184",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "assessment_profit_gascostmaticwei"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_profit_roimicrounits"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "source": "assessment_profit_roimicrounits",
-      "target": "utils_bigint_biginttoapproxnumber"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofitoptions",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L99",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_profit_invalidassessment"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L103",
-      "weight": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_risk_slippagededuction"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L104",
-      "weight": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_risk_revertpenalty"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/assessment/profit.ts",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "assessment_profit_computeprofit",
-      "target": "assessment_risk_flashloanfee"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L184",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/backrunner.ts",
-      "source_location": "L120",
-      "weight": 1.0,
-      "source": "strategy_backrunner_backrunner_evaluate",
-      "target": "assessment_profit_computeprofit"
     },
     {
       "relation": "imports",
@@ -54910,5 +54910,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "13b47dd757942ea90ce5dc8b0097a7712013412e"
+  "built_at_commit": "e5ef12dc76478f1d15822c3f8b4adeb10472311a"
 }

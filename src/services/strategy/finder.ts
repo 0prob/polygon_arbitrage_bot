@@ -37,31 +37,34 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
   const hopLimit = Math.min(maxHops, 8);
   const { adjacency } = graph;
 
-  for (const [startToken, firstEdges] of adjacency) {
-    if (cycles.length >= maxCycles) break;
-    const out1 = firstEdges;
-    const o1len = out1.length;
-    if (o1len === 0) continue;
+  // Pre-filter adjacency to skip empty or dead tokens
+  const activeAdjacency = new Map<string, SwapEdge[]>();
+  for (const [token, edges] of adjacency) {
+    if (edges.length > 0) activeAdjacency.set(token, edges);
+  }
 
+  for (const [startToken, firstEdges] of activeAdjacency) {
+    if (cycles.length >= maxCycles) break;
+
+    // BFS/DFS with hop tracking is more flexible, but for performance 
+    // we keep unrolled loops for common cases (2, 3 hops)
+    
     // ── 2-hop: A → B → A ─────────────────────────────────────────
-    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
-      const e1 = out1[i];
-      const second = adjacency.get(e1.tokenOut.toLowerCase());
+    for (const e1 of firstEdges) {
+      if (cycles.length >= maxCycles) break;
+      const second = activeAdjacency.get(e1.tokenOut);
       if (!second) continue;
-      const out2 = second;
-      const o2len = out2.length;
-      const w2 = feeLogWeight(e1.feeBps);
-      const cf2 = e1.feeBps;
-      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
-        const e2 = out2[j];
-        if (e2.tokenOut.toLowerCase() !== startToken) continue;
-        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
+
+      for (const e2 of second) {
+        if (e2.tokenOut !== startToken) continue;
+        if (e2.poolAddress === e1.poolAddress) continue;
+        
         cycles.push({
           startToken: startToken as Address,
           edges: [e1, e2],
           hopCount: 2,
-          logWeight: w2 + feeLogWeight(e2.feeBps),
-          cumulativeFeeBps: cf2 + e2.feeBps,
+          logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps),
+          cumulativeFeeBps: e1.feeBps + e2.feeBps,
         });
       }
     }
@@ -69,38 +72,27 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
     if (hopLimit < 3 || cycles.length >= maxCycles) continue;
 
     // ── 3-hop: A → B → C → A ─────────────────────────────────────
-    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
-      const e1 = out1[i];
-      const second = adjacency.get(e1.tokenOut.toLowerCase());
+    for (const e1 of firstEdges) {
+      if (cycles.length >= maxCycles) break;
+      const second = activeAdjacency.get(e1.tokenOut);
       if (!second) continue;
-      const out2 = second;
-      const o2len = out2.length;
-      const w3a = feeLogWeight(e1.feeBps);
-      const cf3a = e1.feeBps;
-      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
-        const e2 = out2[j];
-        if (e2.tokenOut.toLowerCase() === startToken) continue;
-        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
-        const third = adjacency.get(e2.tokenOut.toLowerCase());
+
+      for (const e2 of second) {
+        if (e2.tokenOut === startToken) continue;
+        if (e2.poolAddress === e1.poolAddress) continue;
+        const third = activeAdjacency.get(e2.tokenOut);
         if (!third) continue;
-        const out3 = third;
-        const o3len = out3.length;
-        const w3b = w3a + feeLogWeight(e2.feeBps);
-        const cf3b = cf3a + e2.feeBps;
-        for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
-          const e3 = out3[k];
-          if (e3.tokenOut.toLowerCase() !== startToken) continue;
-          if (
-            e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
-            e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()
-          )
-            continue;
+
+        for (const e3 of third) {
+          if (e3.tokenOut !== startToken) continue;
+          if (e3.poolAddress === e1.poolAddress || e3.poolAddress === e2.poolAddress) continue;
+
           cycles.push({
             startToken: startToken as Address,
             edges: [e1, e2, e3],
             hopCount: 3,
-            logWeight: w3b + feeLogWeight(e3.feeBps),
-            cumulativeFeeBps: cf3b + e3.feeBps,
+            logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps),
+            cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps,
           });
         }
       }
@@ -108,54 +100,34 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
     if (hopLimit < 4 || cycles.length >= maxCycles) continue;
 
-    // ── 4-hop: A → B → C → D → A ─────────────────────────────────
-    for (let i = 0; i < o1len && cycles.length < maxCycles; i++) {
-      const e1 = out1[i];
-      const second = adjacency.get(e1.tokenOut.toLowerCase());
+    // ── 4-hop: A → B → C → D → A (Selective high-quality search) ────
+    for (const e1 of firstEdges) {
+      if (cycles.length >= maxCycles) break;
+      const second = activeAdjacency.get(e1.tokenOut);
       if (!second) continue;
-      const out2 = second;
-      const o2len = out2.length;
-      const w4a = feeLogWeight(e1.feeBps);
-      const cf4a = e1.feeBps;
-      for (let j = 0; j < o2len && cycles.length < maxCycles; j++) {
-        const e2 = out2[j];
-        if (e2.tokenOut.toLowerCase() === startToken) continue;
-        if (e2.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase()) continue;
-        const third = adjacency.get(e2.tokenOut.toLowerCase());
+
+      for (const e2 of second) {
+        if (e2.tokenOut === startToken) continue;
+        if (e2.poolAddress === e1.poolAddress) continue;
+        const third = activeAdjacency.get(e2.tokenOut);
         if (!third) continue;
-        const out3 = third;
-        const o3len = out3.length;
-        const w4b = w4a + feeLogWeight(e2.feeBps);
-        const cf4b = cf4a + e2.feeBps;
-        for (let k = 0; k < o3len && cycles.length < maxCycles; k++) {
-          const e3 = out3[k];
-          if (e3.tokenOut.toLowerCase() === startToken) continue;
-          if (
-            e3.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
-            e3.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase()
-          )
-            continue;
-          const fourth = adjacency.get(e3.tokenOut.toLowerCase());
+
+        for (const e3 of third) {
+          if (e3.tokenOut === startToken) continue;
+          if (e3.poolAddress === e1.poolAddress || e3.poolAddress === e2.poolAddress) continue;
+          const fourth = activeAdjacency.get(e3.tokenOut);
           if (!fourth) continue;
-          const out4 = fourth;
-          const o4len = out4.length;
-          const w4c = w4b + feeLogWeight(e3.feeBps);
-          const cf4c = cf4b + e3.feeBps;
-          for (let l = 0; l < o4len && cycles.length < maxCycles; l++) {
-            const e4 = out4[l];
-            if (e4.tokenOut.toLowerCase() !== startToken) continue;
-            if (
-              e4.poolAddress.toLowerCase() === e1.poolAddress.toLowerCase() ||
-              e4.poolAddress.toLowerCase() === e2.poolAddress.toLowerCase() ||
-              e4.poolAddress.toLowerCase() === e3.poolAddress.toLowerCase()
-            )
-              continue;
+
+          for (const e4 of fourth) {
+            if (e4.tokenOut !== startToken) continue;
+            if (e4.poolAddress === e1.poolAddress || e4.poolAddress === e2.poolAddress || e4.poolAddress === e3.poolAddress) continue;
+
             cycles.push({
               startToken: startToken as Address,
               edges: [e1, e2, e3, e4],
               hopCount: 4,
-              logWeight: w4c + feeLogWeight(e4.feeBps),
-              cumulativeFeeBps: cf4c + e4.feeBps,
+              logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps) + feeLogWeight(e4.feeBps),
+              cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps + e4.feeBps,
             });
           }
         }
