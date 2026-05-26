@@ -113,6 +113,7 @@ export class ExecutionService {
   private readonly submissionStrategy: SubmissionStrategy;
   private readonly privateSubmitter: SubmitTxFn | null;
   private readonly fastLaneSubmitter: FastLaneSubmitter | null;
+  private inFlightRouteHashes = new Set<string>();
 
   constructor(
     private logger: Logger,
@@ -212,6 +213,10 @@ export class ExecutionService {
       return { success: false, error: `route quarantined (backoff: attempt ${entry?.attempt ?? 0})` };
     }
 
+    if (this.inFlightRouteHashes.has(candidate.routeKey)) {
+      return { success: false, error: "route already in-flight (same calldata pending)" };
+    }
+
     try {
       const fee = this.gasOracle.getSnapshot();
       if (!fee) {
@@ -219,6 +224,7 @@ export class ExecutionService {
         return { success: false, error: "no gas data" };
       }
 
+      this.inFlightRouteHashes.add(candidate.routeKey);
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
       const { txHash, endpoint } = await this.submitTx(
@@ -257,6 +263,8 @@ export class ExecutionService {
         error: success ? undefined : "reverted",
       });
 
+      this.inFlightRouteHashes.delete(candidate.routeKey);
+
       if (!success && receipt) {
         this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Transaction reverted");
         this.quarantine.add(candidate.routeKey, "reverted");
@@ -266,6 +274,7 @@ export class ExecutionService {
 
       return { success, txHash, gasUsed };
     } catch (err: any) {
+      this.inFlightRouteHashes.delete(candidate.routeKey);
       if (err instanceof AggregateError) {
         const msg = err.errors[0]?.message || String(err);
         this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Transaction submission failed");
@@ -299,6 +308,12 @@ export class ExecutionService {
         continue;
       }
 
+      if (this.inFlightRouteHashes.has(candidate.routeKey)) {
+        results[i] = { success: false, error: "route already in-flight" };
+        continue;
+      }
+
+      this.inFlightRouteHashes.add(candidate.routeKey);
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
 
@@ -318,16 +333,11 @@ export class ExecutionService {
         this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
         receiptPromises.push({ index: i, txHash, nonce, candidate });
       } catch (err: any) {
+        this.inFlightRouteHashes.delete(candidate.routeKey);
         const msg = err?.message || String(err);
         this.logger.warn({ routeKey: candidate.routeKey, error: msg, nonce }, "Batch submission failed");
         this.quarantine.add(candidate.routeKey, msg);
         results[i] = { success: false, error: msg };
-        // We continue to the next one, but since this one failed, the next nonces might also fail
-        // if this was a nonce-related error. However, NonceManager will give us the same nonce next time
-        // if we didn't confirm it? No, getNextNonce increments.
-        // If it failed to submit, we should probably mark the nonce as stale or revert the nonce manager?
-        // NonceManager usually tracks the next expected nonce.
-        // If submission fails, we didn't use the nonce.
       }
     }
 
@@ -337,6 +347,7 @@ export class ExecutionService {
         try {
           const receipt = await this._waitForReceipt(txHash);
           if (!receipt) {
+            this.inFlightRouteHashes.delete(candidate.routeKey);
             this.nonceManager.markStale(nonce);
             this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
             results[index] = { success: false, txHash, error: "timeout" };
@@ -353,6 +364,7 @@ export class ExecutionService {
             profit = parseTransferLogs(logs, execAddr);
           }
 
+          this.inFlightRouteHashes.delete(candidate.routeKey);
           this.tracker.record({
             routeKey: candidate.routeKey,
             txHash,
@@ -373,6 +385,7 @@ export class ExecutionService {
 
           results[index] = { success, txHash, gasUsed };
         } catch (err: any) {
+          this.inFlightRouteHashes.delete(candidate.routeKey);
           const msg = err?.message || String(err);
           this.logger.error({ txHash, error: msg }, "Error waiting for batch receipt");
           results[index] = { success: false, txHash, error: msg };

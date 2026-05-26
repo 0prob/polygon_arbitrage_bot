@@ -48,22 +48,22 @@ export class MempoolAwareDryRunner {
         blockTag: "pending",
       });
 
-      if (result && result.data) {
-        const gasEstimate = await this.client
-          .estimateGas({
-            account: fromAddress as `0x${string}`,
-            to: candidate.targetAddress as `0x${string}`,
-            data: candidate.calldata as `0x${string}`,
-            value: candidate.value,
-          })
-          .catch(() => 500_000n);
+      // A successful call to a void-returning function (like executeArb) returns { data: "0x" }
+      // or even { data: undefined }. The ONLY failure signal from eth_call is a thrown exception.
+      // Do NOT check result.data — its absence is normal for non-view functions.
+      const gasEstimate = await this.client
+        .estimateGas({
+          account: fromAddress as `0x${string}`,
+          to: candidate.targetAddress as `0x${string}`,
+          data: candidate.calldata as `0x${string}`,
+          value: candidate.value,
+        })
+        .catch(() => 500_000n);
 
-        return {
-          success: true,
-          gasUsed: gasEstimate,
-        };
-      }
-      return { success: false, error: "no return data" };
+      return {
+        success: true,
+        gasUsed: gasEstimate,
+      };
     } catch (err: any) {
       const msg = err?.message || String(err);
       // Extract revert reason if available

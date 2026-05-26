@@ -174,7 +174,7 @@ export async function evaluatePipeline(
       let right = high;
       let bestResult: RouteSimulationResult | null = null;
       let bestAssessment: ProfitAssessment | null = null;
-      let bestProfit = -1n;
+      let bestProfit = -1n; // canonical MATIC wei units
       let bestGrossMatic = 0n;
       simulated++;
 
@@ -184,10 +184,10 @@ export async function evaluatePipeline(
           // Binary search refinement for precision
           const mid = left + range / 2n;
           const { result, assessment, grossProfitMatic } = evaluateAmount(cycle, mid, stateCache, options);
-          if (result && assessment && assessment.netProfitAfterGas > bestProfit) {
+          if (result && assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
             bestResult = result;
             bestAssessment = assessment;
-            bestProfit = assessment.netProfitAfterGas;
+            bestProfit = assessment.netProfitAfterGasMaticWei;
             bestGrossMatic = grossProfitMatic ?? 0n;
           }
           break;
@@ -199,8 +199,9 @@ export async function evaluatePipeline(
         const eval1 = evaluateAmount(cycle, m1, stateCache, options);
         const eval2 = evaluateAmount(cycle, m2, stateCache, options);
 
-        const profit1 = eval1.assessment?.netProfitAfterGas ?? -1n;
-        const profit2 = eval2.assessment?.netProfitAfterGas ?? -1n;
+        // Compare in canonical MATIC wei to avoid cross-token unit confusion
+        const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1n;
+        const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1n;
 
         if (profit1 > bestProfit && eval1.result && eval1.assessment) {
           bestResult = eval1.result;

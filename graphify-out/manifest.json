@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779780395.7729225,
-    "ast_hash": "e9b2537b2185c91bd22683bc100900c6",
+    "mtime": 1779782078.3824992,
+    "ast_hash": "72c2d80a2f15037a2906a1fa0dcb3a81",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/types/pool.ts": {
-    "mtime": 1779121663.1727211,
-    "ast_hash": "c548dc04eba4223558e9a8d53c84a5cb",
+    "mtime": 1779781920.65222,
+    "ast_hash": "696fe45ec9bd18a5218296ae845c8cd1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/bigint.test.ts": {
@@ -350,13 +350,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779773426.3266215,
-    "ast_hash": "4f801942667579830247b4f6384edbf4",
+    "mtime": 1779781262.1115117,
+    "ast_hash": "2e1b2e0b1eca6b4fc6817cf2cd1b7408",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
-    "mtime": 1779727071.9344065,
-    "ast_hash": "b05b9081e5ed89ee6b7c1401d098cec8",
+    "mtime": 1779781999.7513564,
+    "ast_hash": "741adfb6406a066e64b15b547843e90f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/graph.test.ts": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.ts": {
-    "mtime": 1779727071.9464064,
-    "ast_hash": "250df69654f562327a032959cd734b00",
+    "mtime": 1779781945.7159462,
+    "ast_hash": "b03641fed41c066e96336e1f68b42e8d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.test.ts": {
@@ -475,8 +475,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779780367.7852085,
-    "ast_hash": "0b845d41e3d9d4cc5891780bbd2d96eb",
+    "mtime": 1779781979.643576,
+    "ast_hash": "7ae880885183904c6129967b5554bd28",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {

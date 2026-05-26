@@ -79,9 +79,17 @@ function deriveTightV3PriceLimit(
     : sqrtAfter > sqrtBefore && sqrtAfter < MAX_SQRT_RATIO;
   if (!movedOk) throw new Error(`${label}: unable to derive price limit`);
 
+  // Slippage must be applied geometrically on sqrtPriceX96, because price = (sqrtPrice)^2.
+  // A linear BPS adjustment on sqrtPrice corresponds to ~2x that BPS in price terms.
+  // We use sqrt(1 ± slippage) ≈ 1 ± slippage/2 on sqrtPrice, which is still approximate
+  // but far more correct than applying the full BPS directly.
+  // Represented as: sqrtAfter * sqrt(1 - s) ≈ sqrtAfter * (1 - s/2) for zeroForOne,
+  // and sqrtAfter * sqrt(1 + s) ≈ sqrtAfter * (1 + s/2) for !zeroForOne.
   const SLIPPAGE_BPS = BigInt(slippageBps);
-  const DENOM = 10_000n;
-  return hop.zeroForOne ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
+  const DENOM = 20_000n; // half-BPS denominator for sqrt-space adjustment
+  return hop.zeroForOne
+    ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM
+    : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
 }
 
 function encodeDynamicApprovalCall(executor: string, token: string, spender: string, amount: bigint): ExecutorCall {
@@ -367,7 +375,7 @@ export function encodeV4Hop(hop: CalldataHop, executor: string): ExecutorCall[] 
         ],
       },
       { name: "zeroForOne", type: "bool" },
-      { name: "amountSpecified", type: "int128" },
+      { name: "amountSpecified", type: "int256" },
       { name: "sqrtPriceLimitX96", type: "uint160" },
     ],
     [poolKey, zeroForOne, BigInt(amountIn), sqrtPriceLimitX96],

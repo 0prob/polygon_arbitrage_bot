@@ -28,6 +28,7 @@ async function fetchMissingPoolState(
   currentCycles: FoundCycle[],
   forceRefresh: boolean = false,
 ): Promise<void> {
+  try { require("fs").appendFileSync("/tmp/debug.log", `[DBG fetch] called forceRefresh=${forceRefresh} cycles=${currentCycles?.length} pools=${pools?.length}\n`); } catch {}
   const missingAddresses = new Set<string>();
   const now = Date.now();
 
@@ -65,6 +66,19 @@ async function fetchMissingPoolState(
   }
 
   if (missingAddresses.size === 0) return;
+
+  // Debug: log _failedPools state for bad pools
+  for (const cycle of currentCycles) {
+    for (const edge of cycle.edges) {
+      const addr = edge.poolAddress.toLowerCase();
+      if (addr.includes("153d9ecf") || addr.includes("0a28c2f5")) {
+        const fail = _failedPools.get(addr);
+        const hasState = ctx.stateCache.has(addr);
+        const state = ctx.stateCache.get(addr);
+        console.warn("[DBG fetch] %s fail=%s hasCache=%s stateType=%s", addr.slice(0,10), JSON.stringify(fail), hasState, typeof state === 'object' && state?.__invalid ? 'INVALID' : typeof state);
+      }
+    }
+  }
 
   const toFetch = Array.from(missingAddresses);
 
@@ -125,14 +139,14 @@ async function fetchMissingPoolState(
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
                 _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-                if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                if (fail.count >= 1) {
                   ctx.stateCache.set(addr, INVALID_POOL_STATE);
                 }
               }
             } else {
               const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
               _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+              if (fail.count >= 1) {
                 ctx.stateCache.set(addr, INVALID_POOL_STATE);
               }
             }
@@ -155,14 +169,14 @@ async function fetchMissingPoolState(
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
                 _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-                if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+                if (fail.count >= 1) {
                   ctx.stateCache.set(addr, INVALID_POOL_STATE);
                 }
               }
             } else {
               const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
               _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 2 && ctx.stateCache.has(addr)) {
+              if (fail.count >= 1) {
                 ctx.stateCache.set(addr, INVALID_POOL_STATE);
               }
             }
