@@ -81,10 +81,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
 
   const stateCache: RouteStateCache = new Map();
 
-  const cachedPools: PoolMeta[] | null = null;
-
   const getPools = (): PoolMeta[] => {
-    return cachedPools || [];
+    return [];
   };
 
   const gasOracleConfig: GasOracleConfig = {

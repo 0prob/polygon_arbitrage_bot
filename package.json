@@ -13,7 +13,7 @@
     "bun": ">=1.2.0"
   },
   "scripts": {
-    "run": "bun --env-file=.env run src/cli/main.ts",
+    "start": "bun --env-file=.env run src/cli/main.ts",
     "tui": "bun --env-file=.env run src/cli/main.ts --tui",
     "typecheck": "bunx tsc --noEmit",
     "test": "bun --bun run vitest run",

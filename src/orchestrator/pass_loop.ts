@@ -318,6 +318,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const DISCOVERY_INTERVAL = 60000;
   const MAX_HOPS = ctx.config.routing.maxHops;
   const TIER_CHECK_INTERVAL = 5000;
+  let preFetchCounter = 0;
   let lastTierCheck = 0;
 
   // Track simulation block for reorg safety
@@ -541,7 +542,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // High-frequency pre-fetch: Only for pools in current cycles
       // Always fetch if we just re-enumerated to ensure we have state for new pools
-      if (shouldReEnumerate || now % 5 === 0) {
+      preFetchCounter++;
+      if (shouldReEnumerate || preFetchCounter % 5 === 0) {
         await fetchMissingPoolState(ctx, pools, currentCycles);
         // Force rate recalculation after state fetch
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger);

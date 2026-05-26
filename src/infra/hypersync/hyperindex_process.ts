@@ -137,6 +137,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     freePort(9898);
+    freePort(8080);
     _stderrBuffer = [];
 
     const env: Record<string, string> = {

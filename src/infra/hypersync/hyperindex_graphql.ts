@@ -14,26 +14,36 @@ export const STATIC_ANCHORS: HasuraPoolMeta[] = poolsJson.map((p: any) => ({
   fee: p.fee,
 }));
 
+const GRAPHQL_TIMEOUT = 10_000;
+
 export async function graphQLQuery(url: string, adminSecret: string, query: string): Promise<any> {
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-hasura-admin-secret": adminSecret,
-    },
-    body: JSON.stringify({ query }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GRAPHQL_TIMEOUT);
 
-  if (!resp.ok) {
-    throw new Error(`GraphQL query failed: ${resp.statusText}`);
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-hasura-admin-secret": adminSecret,
+      },
+      body: JSON.stringify({ query }),
+      signal: controller.signal,
+    });
+
+    if (!resp.ok) {
+      throw new Error(`GraphQL query failed: ${resp.statusText}`);
+    }
+
+    const json = (await resp.json()) as any;
+    if (json.errors) {
+      throw new Error(`GraphQL error: ${JSON.stringify(json.errors)}`);
+    }
+
+    return json.data;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const json = (await resp.json()) as any;
-  if (json.errors) {
-    throw new Error(`GraphQL error: ${JSON.stringify(json.errors)}`);
-  }
-
-  return json.data;
 }
 
 export interface HasuraPoolState {
@@ -50,6 +60,7 @@ const _cachedState: Map<string, any> = new Map();
 
 export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string): Promise<Map<string, any>> {
   try {
+    _cachedState.clear();
     const results = await Promise.allSettled([
       graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState(limit: 15000) { id reserve0 reserve1 } }`),
       graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity } }`),
@@ -66,10 +77,17 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
 
     const queries = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState", "WoofiPoolState"];
 
+    let anyFulfilled = false;
     for (let i = 0; i < results.length; i++) {
       if (results[i].status === "rejected") {
         console.warn(`GraphQL query "${queries[i]}" failed:`, (results[i] as PromiseRejectedResult).reason);
+      } else {
+        anyFulfilled = true;
       }
+    }
+
+    if (!anyFulfilled) {
+      throw new Error("All GraphQL state queries failed — HyperIndex endpoint unreachable");
     }
 
     const v2Result = results[0].status === "fulfilled" ? results[0].value : null;
@@ -158,6 +176,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
     }
   } catch (err) {
     console.warn("buildStateCacheFromGraphQL unexpected error", err);
+    throw err;
   }
 
   return _cachedState;

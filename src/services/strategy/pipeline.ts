@@ -1,10 +1,12 @@
 import type { FoundCycle } from "./finder.ts";
 import type { RouteSimulationResult, RouteStateCache } from "../../core/types/route.ts";
-import { simulateRoute, getEffectivePriceImpact } from "./simulator.ts";
+import { simulateRoute, simulateHop, getEffectivePriceImpact } from "./simulator.ts";
+import type { SimulationEdge } from "./simulator.ts";
 import { computeProfit } from "../../core/assessment/profit.ts";
 import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../../config/addresses.ts";
+import type { PoolState } from "../../core/types/pool.ts";
 
 const CONVERGENCE_DIVISOR = 10000n;
 
@@ -57,9 +59,30 @@ function getEffectivePriceImpactForCycle(
   stateCache: RouteStateCache,
   maxImpactThreshold: number = 0.15,
 ): boolean {
+  let currentAmount = amount;
   for (const edge of cycle.edges) {
-    const impact = getEffectivePriceImpact(edge, amount, stateCache);
+    const impact = getEffectivePriceImpact(edge, currentAmount, stateCache);
     if (impact > maxImpactThreshold) return true;
+    const poolAddr = edge.poolAddress.toLowerCase();
+    const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
+    if (!state) return false;
+    const simEdge: SimulationEdge = {
+      poolAddress: edge.poolAddress,
+      tokenIn: edge.tokenIn,
+      tokenOut: edge.tokenOut,
+      protocol: edge.protocol,
+      zeroForOne: edge.zeroForOne,
+      tokenInIdx: edge.tokenInIdx,
+      tokenOutIdx: edge.tokenOutIdx,
+      fee: edge.feeBps,
+      stateRef: state,
+    };
+    try {
+      const result = simulateHop(simEdge, currentAmount, stateCache);
+      currentAmount = result.amountOut;
+    } catch {
+      return true;
+    }
   }
   return false;
 }
