@@ -4,355 +4,490 @@
   "graph": {},
   "nodes": [
     {
+      "label": "TODO.md",
+      "file_type": "document",
+      "source_file": "TODO.md",
+      "source_location": "L1",
+      "id": "todo_md",
+      "community": 107,
+      "norm_label": "todo.md"
+    },
+    {
+      "label": "finder.ts",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L1",
+      "id": "src_services_strategy_finder_ts",
+      "community": 100,
+      "norm_label": "finder.ts"
+    },
+    {
+      "label": "FoundCycle",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L6",
+      "id": "strategy_finder_foundcycle",
+      "community": 41,
+      "norm_label": "foundcycle"
+    },
+    {
+      "label": "routeKeyFromEdges()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L14",
+      "id": "strategy_finder_routekeyfromedges",
+      "community": 41,
+      "norm_label": "routekeyfromedges()"
+    },
+    {
+      "label": "feeLogWeight()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L20",
+      "id": "strategy_finder_feelogweight",
+      "community": 100,
+      "norm_label": "feelogweight()"
+    },
+    {
+      "label": "scoreCycleWithFeedback()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L26",
+      "id": "strategy_finder_scorecyclewithfeedback",
+      "community": 38,
+      "norm_label": "scorecyclewithfeedback()"
+    },
+    {
+      "label": "findCycles()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L35",
+      "id": "strategy_finder_findcycles",
+      "community": 100,
+      "norm_label": "findcycles()"
+    },
+    {
+      "label": "enumerateCycles()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L141",
+      "id": "strategy_finder_enumeratecycles",
+      "community": 100,
+      "norm_label": "enumeratecycles()"
+    },
+    {
+      "label": "pipeline.ts",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "id": "src_services_strategy_pipeline_ts",
+      "community": 23,
+      "norm_label": "pipeline.ts"
+    },
+    {
+      "label": "PipelineOptions",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L13",
+      "id": "strategy_pipeline_pipelineoptions",
+      "community": 1,
+      "norm_label": "pipelineoptions"
+    },
+    {
+      "label": "getTestAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L25",
+      "id": "strategy_pipeline_gettestamount",
+      "community": 23,
+      "norm_label": "gettestamount()"
+    },
+    {
+      "label": "PipelineResult",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L42",
+      "id": "strategy_pipeline_pipelineresult",
+      "community": 94,
+      "norm_label": "pipelineresult"
+    },
+    {
+      "label": "getEffectivePriceImpactForCycle()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L56",
+      "id": "strategy_pipeline_geteffectivepriceimpactforcycle",
+      "community": 23,
+      "norm_label": "geteffectivepriceimpactforcycle()"
+    },
+    {
+      "label": "evaluateAmount()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L90",
+      "id": "strategy_pipeline_evaluateamount",
+      "community": 23,
+      "norm_label": "evaluateamount()"
+    },
+    {
+      "label": "evaluatePipeline()",
+      "file_type": "code",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L131",
+      "id": "strategy_pipeline_evaluatepipeline",
+      "community": 23,
+      "norm_label": "evaluatepipeline()"
+    },
+    {
       "label": "profit.ts",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L1",
-      "id": "src_core_assessment_profit_ts",
       "community": 1,
-      "norm_label": "profit.ts"
+      "norm_label": "profit.ts",
+      "id": "src_core_assessment_profit_ts"
     },
     {
       "label": "tokensToMaticWei()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L13",
-      "id": "assessment_profit_tokenstomaticwei",
       "community": 1,
-      "norm_label": "tokenstomaticwei()"
+      "norm_label": "tokenstomaticwei()",
+      "id": "assessment_profit_tokenstomaticwei"
     },
     {
       "label": "maticWeiToTokens()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L23",
-      "id": "assessment_profit_maticweitotokens",
       "community": 1,
-      "norm_label": "maticweitotokens()"
+      "norm_label": "maticweitotokens()",
+      "id": "assessment_profit_maticweitotokens"
     },
     {
       "label": "gasCostMaticWei()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L30",
-      "id": "assessment_profit_gascostmaticwei",
       "community": 1,
-      "norm_label": "gascostmaticwei()"
+      "norm_label": "gascostmaticwei()",
+      "id": "assessment_profit_gascostmaticwei"
     },
     {
       "label": "roiMicroUnits()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L37",
-      "id": "assessment_profit_roimicrounits",
       "community": 1,
-      "norm_label": "roimicrounits()"
+      "norm_label": "roimicrounits()",
+      "id": "assessment_profit_roimicrounits"
     },
     {
       "label": "ComputeProfitOptions",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L46",
-      "id": "assessment_profit_computeprofitoptions",
       "community": 1,
-      "norm_label": "computeprofitoptions"
+      "norm_label": "computeprofitoptions",
+      "id": "assessment_profit_computeprofitoptions"
     },
     {
       "label": "computeProfit()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L82",
-      "id": "assessment_profit_computeprofit",
       "community": 1,
-      "norm_label": "computeprofit()"
+      "norm_label": "computeprofit()",
+      "id": "assessment_profit_computeprofit"
     },
     {
       "label": "invalidAssessment()",
       "file_type": "code",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L159",
-      "id": "assessment_profit_invalidassessment",
       "community": 1,
-      "norm_label": "invalidassessment()"
+      "norm_label": "invalidassessment()",
+      "id": "assessment_profit_invalidassessment"
     },
     {
       "label": "hyperindex_process.ts",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L1",
-      "id": "src_infra_hypersync_hyperindex_process_ts",
       "community": 88,
-      "norm_label": "hyperindex_process.ts"
+      "norm_label": "hyperindex_process.ts",
+      "id": "src_infra_hypersync_hyperindex_process_ts"
     },
     {
       "label": "HyperIndexStatusEvent",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L5",
-      "id": "hypersync_hyperindex_process_hyperindexstatusevent",
       "community": 88,
-      "norm_label": "hyperindexstatusevent"
+      "norm_label": "hyperindexstatusevent",
+      "id": "hypersync_hyperindex_process_hyperindexstatusevent"
     },
     {
       "label": "EventBusLike",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L13",
-      "id": "hypersync_hyperindex_process_eventbuslike",
       "community": 88,
-      "norm_label": "eventbuslike"
+      "norm_label": "eventbuslike",
+      "id": "hypersync_hyperindex_process_eventbuslike"
     },
     {
       "label": "HyperIndexProcessOptions",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L15",
-      "id": "hypersync_hyperindex_process_hyperindexprocessoptions",
       "community": 88,
-      "norm_label": "hyperindexprocessoptions"
+      "norm_label": "hyperindexprocessoptions",
+      "id": "hypersync_hyperindex_process_hyperindexprocessoptions"
     },
     {
       "label": "HyperIndexProcess",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L24",
-      "id": "hypersync_hyperindex_process_hyperindexprocess",
       "community": 88,
-      "norm_label": "hyperindexprocess"
+      "norm_label": "hyperindexprocess",
+      "id": "hypersync_hyperindex_process_hyperindexprocess"
     },
     {
       "label": "createHyperIndexProcess()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_process.ts",
       "source_location": "L30",
-      "id": "hypersync_hyperindex_process_createhyperindexprocess",
       "community": 88,
-      "norm_label": "createhyperindexprocess()"
+      "norm_label": "createhyperindexprocess()",
+      "id": "hypersync_hyperindex_process_createhyperindexprocess"
     },
     {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 152,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "V2_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L18",
-      "id": "orchestrator_pass_loop_v2_abi",
       "community": 152,
-      "norm_label": "v2_abi"
+      "norm_label": "v2_abi",
+      "id": "orchestrator_pass_loop_v2_abi"
     },
     {
       "label": "V3_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L19",
-      "id": "orchestrator_pass_loop_v3_abi",
       "community": 152,
-      "norm_label": "v3_abi"
+      "norm_label": "v3_abi",
+      "id": "orchestrator_pass_loop_v3_abi"
     },
     {
       "label": "V4_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L23",
-      "id": "orchestrator_pass_loop_v4_abi",
       "community": 152,
-      "norm_label": "v4_abi"
+      "norm_label": "v4_abi",
+      "id": "orchestrator_pass_loop_v4_abi"
     },
     {
       "label": "WOOFI_PAIR_ABI",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L30",
-      "id": "orchestrator_pass_loop_woofi_pair_abi",
       "community": 152,
-      "norm_label": "woofi_pair_abi"
+      "norm_label": "woofi_pair_abi",
+      "id": "orchestrator_pass_loop_woofi_pair_abi"
     },
     {
       "label": "_failedPools",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L35",
-      "id": "orchestrator_pass_loop_failedpools",
       "community": 152,
-      "norm_label": "_failedpools"
+      "norm_label": "_failedpools",
+      "id": "orchestrator_pass_loop_failedpools"
     },
     {
       "label": "fetchMissingPoolState()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L37",
-      "id": "orchestrator_pass_loop_fetchmissingpoolstate",
       "community": 152,
-      "norm_label": "fetchmissingpoolstate()"
+      "norm_label": "fetchmissingpoolstate()",
+      "id": "orchestrator_pass_loop_fetchmissingpoolstate"
     },
     {
       "label": "PassLoopDeps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L252",
-      "id": "orchestrator_pass_loop_passloopdeps",
       "community": 152,
-      "norm_label": "passloopdeps"
+      "norm_label": "passloopdeps",
+      "id": "orchestrator_pass_loop_passloopdeps"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L264",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 152,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L268",
-      "id": "orchestrator_pass_loop_wmatic_lower",
       "community": 152,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "orchestrator_pass_loop_wmatic_lower"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L270",
-      "id": "orchestrator_pass_loop_computematicrates",
       "community": 152,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "orchestrator_pass_loop_computematicrates"
     },
     {
       "label": "instrumenter",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L425",
-      "id": "orchestrator_pass_loop_instrumenter",
       "community": 152,
-      "norm_label": "instrumenter"
+      "norm_label": "instrumenter",
+      "id": "orchestrator_pass_loop_instrumenter"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L427",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 152,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L439",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 152,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "dryrun.ts",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L1",
-      "id": "src_services_execution_dryrun_ts",
       "community": 173,
-      "norm_label": "dryrun.ts"
+      "norm_label": "dryrun.ts",
+      "id": "src_services_execution_dryrun_ts"
     },
     {
       "label": "DryRunResult",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L5",
-      "id": "execution_dryrun_dryrunresult",
       "community": 173,
-      "norm_label": "dryrunresult"
+      "norm_label": "dryrunresult",
+      "id": "execution_dryrun_dryrunresult"
     },
     {
       "label": "PendingState",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L13",
-      "id": "execution_dryrun_pendingstate",
       "community": 173,
-      "norm_label": "pendingstate"
+      "norm_label": "pendingstate",
+      "id": "execution_dryrun_pendingstate"
     },
     {
       "label": "DECODABLE_ABIS",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L19",
-      "id": "execution_dryrun_decodable_abis",
       "community": 173,
-      "norm_label": "decodable_abis"
+      "norm_label": "decodable_abis",
+      "id": "execution_dryrun_decodable_abis"
     },
     {
       "label": "PredictionResult",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L21",
-      "id": "execution_dryrun_predictionresult",
       "community": 173,
-      "norm_label": "predictionresult"
+      "norm_label": "predictionresult",
+      "id": "execution_dryrun_predictionresult"
     },
     {
       "label": "MempoolAwareDryRunner",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L27",
-      "id": "execution_dryrun_mempoolawaredryrunner",
       "community": 28,
-      "norm_label": "mempoolawaredryrunner"
+      "norm_label": "mempoolawaredryrunner",
+      "id": "execution_dryrun_mempoolawaredryrunner"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L30",
-      "id": "execution_dryrun_mempoolawaredryrunner_constructor",
       "community": 28,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "execution_dryrun_mempoolawaredryrunner_constructor"
     },
     {
       "label": ".predictState()",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L36",
-      "id": "execution_dryrun_mempoolawaredryrunner_predictstate",
       "community": 28,
-      "norm_label": ".predictstate()"
+      "norm_label": ".predictstate()",
+      "id": "execution_dryrun_mempoolawaredryrunner_predictstate"
     },
     {
       "label": ".fetchPendingState()",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L62",
-      "id": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate",
       "community": 28,
-      "norm_label": ".fetchpendingstate()"
+      "norm_label": ".fetchpendingstate()",
+      "id": "execution_dryrun_mempoolawaredryrunner_fetchpendingstate"
     },
     {
       "label": ".getLastPendingState()",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L78",
-      "id": "execution_dryrun_mempoolawaredryrunner_getlastpendingstate",
       "community": 28,
-      "norm_label": ".getlastpendingstate()"
+      "norm_label": ".getlastpendingstate()",
+      "id": "execution_dryrun_mempoolawaredryrunner_getlastpendingstate"
     },
     {
       "label": ".dryRun()",
       "file_type": "code",
       "source_file": "src/services/execution/dryrun.ts",
       "source_location": "L82",
-      "id": "execution_dryrun_mempoolawaredryrunner_dryrun",
       "community": 28,
-      "norm_label": ".dryrun()"
+      "norm_label": ".dryrun()",
+      "id": "execution_dryrun_mempoolawaredryrunner_dryrun"
     },
     {
       "label": "system.ts",
@@ -686,69 +821,6 @@
       "community": 92,
       "norm_label": "scalepriorityfeebyprofitmargin()",
       "id": "execution_gas_scalepriorityfeebyprofitmargin"
-    },
-    {
-      "label": "pipeline.ts",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "community": 23,
-      "norm_label": "pipeline.ts",
-      "id": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "label": "PipelineOptions",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L13",
-      "community": 1,
-      "norm_label": "pipelineoptions",
-      "id": "strategy_pipeline_pipelineoptions"
-    },
-    {
-      "label": "getTestAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L25",
-      "community": 23,
-      "norm_label": "gettestamount()",
-      "id": "strategy_pipeline_gettestamount"
-    },
-    {
-      "label": "PipelineResult",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L42",
-      "community": 94,
-      "norm_label": "pipelineresult",
-      "id": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "label": "getEffectivePriceImpactForCycle()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L56",
-      "community": 23,
-      "norm_label": "geteffectivepriceimpactforcycle()",
-      "id": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "label": "evaluateAmount()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L90",
-      "community": 23,
-      "norm_label": "evaluateamount()",
-      "id": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "label": "evaluatePipeline()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L131",
-      "community": 23,
-      "norm_label": "evaluatepipeline()",
-      "id": "strategy_pipeline_evaluatepipeline"
     },
     {
       "label": "defaults.ts",
@@ -4799,69 +4871,6 @@
       "community": 16,
       "norm_label": "key",
       "id": "strategy_finder_test_key"
-    },
-    {
-      "label": "finder.ts",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L1",
-      "community": 100,
-      "norm_label": "finder.ts",
-      "id": "src_services_strategy_finder_ts"
-    },
-    {
-      "label": "FoundCycle",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L6",
-      "community": 41,
-      "norm_label": "foundcycle",
-      "id": "strategy_finder_foundcycle"
-    },
-    {
-      "label": "routeKeyFromEdges()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L14",
-      "community": 41,
-      "norm_label": "routekeyfromedges()",
-      "id": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "label": "feeLogWeight()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L20",
-      "community": 100,
-      "norm_label": "feelogweight()",
-      "id": "strategy_finder_feelogweight"
-    },
-    {
-      "label": "scoreCycleWithFeedback()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L26",
-      "community": 38,
-      "norm_label": "scorecyclewithfeedback()",
-      "id": "strategy_finder_scorecyclewithfeedback"
-    },
-    {
-      "label": "findCycles()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L35",
-      "community": 100,
-      "norm_label": "findcycles()",
-      "id": "strategy_finder_findcycles"
-    },
-    {
-      "label": "enumerateCycles()",
-      "file_type": "code",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L169",
-      "community": 100,
-      "norm_label": "enumeratecycles()",
-      "id": "strategy_finder_enumeratecycles"
     },
     {
       "label": "graph.test.ts",
@@ -18026,6 +18035,1050 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "types_common_address"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_graph_routinggraph"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_graph_swapedge"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_feelogweight"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_scorecyclewithfeedback"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "src_services_strategy_graph_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "src_core_types_common_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "config_addresses_hub_4_tokens"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_ts",
+      "target": "src_config_addresses_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L233",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/cache.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_cache_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/evaluator.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_evaluator_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/cache.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_cache_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/evaluator.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_evaluator_test_ts",
+      "target": "src_services_strategy_finder_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_finder_foundcycle",
+      "target": "strategy_graph_swapedge"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_finder_foundcycle",
+      "target": "types_common_address"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/cache.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_cache_test_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/evaluator.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_evaluator_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/cache.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_cache_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/backrunner.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_backrunner_test_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/evaluator.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_evaluator_test_ts",
+      "target": "strategy_finder_foundcycle"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_test_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/cache.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_cache_ts",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/cache.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "strategy_cache_routecache_update",
+      "target": "strategy_finder_routekeyfromedges"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_finder_findcycles",
+      "target": "strategy_finder_feelogweight"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "strategy_finder_scorecyclewithfeedback",
+      "target": "execution_tracker_executiontracker_getwinrate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.ts",
+      "source_location": "L152",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_finder_enumeratecycles",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L124",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_test_ts",
+      "target": "strategy_finder_findcycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/finder.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_finder_test_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L233",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_finder_enumeratecycles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_route_routesimulationresult"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_route_routestatecache"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_simulatehop"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_simulator_simulationedge"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_execution_profitassessment"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "types_pool_poolstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_gettestamount"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_pipelineresult"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_evaluateamount"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_assessment_profit_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/candidate.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_candidate_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_services_strategy_simulator_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_types_pool_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_types_route_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_core_types_execution_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_ts",
+      "target": "src_config_addresses_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L266",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "src_services_strategy_pipeline_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_pipelineoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineoptions",
+      "target": "types_execution_flashloansource"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_gettestamount"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/execution/candidate.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_execution_candidate_ts",
+      "target": "strategy_pipeline_pipelineresult"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "types_route_routesimulationresult"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_pipelineresult",
+      "target": "types_execution_profitassessment"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L122",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
+      "target": "strategy_simulator_simulatehop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L141",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_pipeline_evaluateamount"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "strategy_pipeline_evaluateamount",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "assessment_profit_computeprofit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_orchestrator_pass_loop_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/pass_loop.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "orchestrator_pass_loop_passloopdeps",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/strategy/pipeline.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_services_strategy_pipeline_test_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_simulator_simulateroute"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/services/strategy/pipeline.ts",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "strategy_pipeline_evaluatepipeline",
+      "target": "strategy_simulator_geteffectivepriceimpact"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/diagnostic/runner.ts",
+      "source_location": "L266",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_diagnostic_runner_ts",
+      "target": "strategy_pipeline_evaluatepipeline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/core/assessment/profit.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -18168,17 +19221,6 @@
       "confidence_score": 1.0,
       "source": "src_core_assessment_profit_ts",
       "target": "assessment_profit_invalidassessment"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_assessment_profit_ts"
     },
     {
       "relation": "imports_from",
@@ -18410,39 +19452,6 @@
       "confidence_score": 1.0,
       "source": "assessment_profit_computeprofit",
       "target": "assessment_profit_invalidassessment"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "assessment_profit_computeprofit"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "assessment_profit_computeprofit"
     },
     {
       "relation": "imports",
@@ -18730,50 +19739,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -18790,28 +19755,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_ts",
       "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "strategy_pipeline_pipelineoptions"
     },
     {
       "relation": "imports",
@@ -19102,17 +20045,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19184,17 +20116,6 @@
       "confidence_score": 1.0,
       "source": "src_orchestrator_pass_loop_ts",
       "target": "src_orchestrator_boot_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_orchestrator_pass_loop_ts",
-      "target": "src_services_strategy_finder_ts"
     },
     {
       "relation": "imports_from",
@@ -19355,17 +20276,6 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L126",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L128",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19437,28 +20347,6 @@
       "confidence_score": 1.0,
       "source": "orchestrator_pass_loop_passloopdeps",
       "target": "strategy_graph_buildgraph"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/orchestrator/pass_loop.ts",
-      "source_location": "L125",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "orchestrator_pass_loop_passloopdeps",
-      "target": "strategy_finder_enumeratecycles"
     },
     {
       "relation": "references",
@@ -20890,451 +21778,6 @@
       "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
       "target": "execution_gas_scalepriorityfeebyprofitmargin"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_route_routesimulationresult"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_route_routestatecache"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_simulatehop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_geteffectivepriceimpact"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_simulator_simulationedge"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_execution_profitassessment"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "types_pool_poolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_pipelineoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_gettestamount"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L53",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L61",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/candidate.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_candidate_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_services_strategy_simulator_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_types_pool_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_types_route_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_core_types_execution_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_ts",
-      "target": "src_config_addresses_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L266",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_services_strategy_pipeline_ts"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineoptions",
-      "target": "types_execution_flashloansource"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L114",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_gettestamount"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/execution/candidate.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_execution_candidate_ts",
-      "target": "strategy_pipeline_pipelineresult"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
-      "target": "types_route_routesimulationresult"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_pipelineresult",
-      "target": "types_execution_profitassessment"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L67",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L122",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_geteffectivepriceimpactforcycle"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L55",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
-      "target": "strategy_simulator_geteffectivepriceimpact"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L81",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_geteffectivepriceimpactforcycle",
-      "target": "strategy_simulator_simulatehop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L141",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_pipeline_evaluateamount"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L73",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_pipeline_evaluateamount",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_simulator_simulateroute"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/pipeline.ts",
-      "source_location": "L119",
-      "weight": 1.0,
-      "source": "strategy_pipeline_evaluatepipeline",
-      "target": "strategy_simulator_geteffectivepriceimpact"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L266",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "strategy_pipeline_evaluatepipeline"
     },
     {
       "relation": "contains",
@@ -23700,17 +24143,6 @@
       "confidence_score": 1.0,
       "source": "execution_tracker_executiontracker",
       "target": "execution_tracker_executiontracker_prune"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "source": "strategy_finder_scorecyclewithfeedback",
-      "target": "execution_tracker_executiontracker_getwinrate"
     },
     {
       "relation": "imports",
@@ -32328,50 +32760,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/strategy/finder.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_test_ts",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_test_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_test_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.test.ts",
       "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -32621,385 +33009,6 @@
       "confidence_score": 1.0,
       "source": "src_services_strategy_finder_test_ts",
       "target": "src_core_types_common_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "types_common_address"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "src_services_strategy_graph_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_graph_routinggraph"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_graph_swapedge"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_feelogweight"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_scorecyclewithfeedback"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L123",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "strategy_finder_enumeratecycles"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "src_core_types_common_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "config_addresses_hub_4_tokens"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_finder_ts",
-      "target": "src_config_addresses_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L233",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/cache.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_cache_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/evaluator.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_evaluator_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/cache.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_cache_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/evaluator.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_evaluator_test_ts",
-      "target": "src_services_strategy_finder_ts"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_finder_foundcycle",
-      "target": "strategy_graph_swapedge"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/pipeline.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_pipeline_test_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_finder_foundcycle",
-      "target": "types_common_address"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/cache.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_cache_test_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/evaluator.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_evaluator_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/cache.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_cache_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/backrunner.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_backrunner_test_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/evaluator.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_evaluator_test_ts",
-      "target": "strategy_finder_foundcycle"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/cache.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_services_strategy_cache_ts",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/strategy/cache.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "strategy_cache_routecache_update",
-      "target": "strategy_finder_routekeyfromedges"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L50",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_finder_findcycles",
-      "target": "strategy_finder_feelogweight"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/strategy/finder.ts",
-      "source_location": "L152",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "strategy_finder_enumeratecycles",
-      "target": "strategy_finder_findcycles"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/diagnostic/runner.ts",
-      "source_location": "L233",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_diagnostic_runner_ts",
-      "target": "strategy_finder_enumeratecycles"
     },
     {
       "relation": "imports_from",
@@ -54910,5 +54919,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e5ef12dc76478f1d15822c3f8b4adeb10472311a"
+  "built_at_commit": "25eca4eeb2a80c0712ca6d1a42ec10d9b66958fc"
 }

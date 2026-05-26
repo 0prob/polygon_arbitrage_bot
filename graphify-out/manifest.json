@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/finder.ts": {
-    "mtime": 1779727071.8664072,
-    "ast_hash": "202d6c02f59e3bbe16bbbbb0e420733a",
+    "mtime": 1779803701.7560196,
+    "ast_hash": "f961c1b582730b60cfbbd793513ede62",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.test.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779799510.9840949,
-    "ast_hash": "c77055842ac50e0567bc5b114f42af5b",
+    "mtime": 1779803717.0678282,
+    "ast_hash": "34a8f32729a02a6fd7004a449d5a1232",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -937,6 +937,11 @@
   "/home/x/arb/t/src/services/strategy/jit_discovery.ts": {
     "mtime": 1779799974.1148882,
     "ast_hash": "3f3e15ec38b9195e7b5717b03c39f81e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/TODO.md": {
+    "mtime": 1779804731.8597984,
+    "ast_hash": "0c82f508c9654a35037ad87375c66e76",
     "semantic_hash": ""
   }
 }

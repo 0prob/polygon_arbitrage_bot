@@ -267,13 +267,20 @@ function sleep(ms: number): Promise<void> {
 
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
-function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<string, unknown>>, logger?: any): Map<string, bigint> {
+function computeMaticRates(
+  pools: PoolMeta[],
+  stateCache: Map<string, Record<string, unknown>>,
+  logger?: any,
+  options: { minLiquidityV3?: bigint } = {},
+): Map<string, bigint> {
   const rates = new Map<string, bigint>();
   const RATE_PRECISION = 1000000000000000000n;
   rates.set(WMATIC_LOWER, RATE_PRECISION);
 
   const logs: string[] = [];
   if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);
+
+  const minLiquidityV3 = options.minLiquidityV3 ?? 10n ** 19n;
 
   // Use a more thorough BFS-style propagation
   for (let i = 0; i < 10; i++) {
@@ -325,8 +332,8 @@ function computeMaticRates(pools: PoolMeta[], stateCache: Map<string, Record<str
             const sq = BigInt(state.sqrtPriceX96 as any);
             const liq = BigInt(state.liquidity as any);
             
-            // Require significant liquidity depth for V3 rate propagation (10^19 is ~10 units of liquidity)
-            if (liq < 10n ** 19n) continue; 
+            // Require significant liquidity depth for V3 rate propagation
+            if (liq < minLiquidityV3) continue; 
             
             if (sq > 0n) {
               const p192 = sq * sq;
@@ -684,10 +691,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await fetchMissingPoolState(ctx, pools, poolCycles, true);
 
         // Re-calculate MATIC rates for all tokens
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
-      }
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        });
+        }
 
-      if (shouldReEnumerate || !cachedGraph) {
+        if (shouldReEnumerate || !cachedGraph) {
         bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
         if (shouldFullRebuild || !cachedGraph) {
           cachedGraph = deps.buildGraph(pools, stateCache);
@@ -697,7 +706,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           ctx.executionService.tracker.getWinRate(key),
         );
         const enumElapsed = Date.now() - enumStartTime;
-
         lastRefreshTime = now;
         ctx.logger.info(
           {
@@ -708,67 +716,73 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           },
           "Graph and cycles re-enumerated",
         );
-      }
+        }
 
-      const currentCycles = cachedCycles;
+        const currentCycles = cachedCycles;
 
-      if (currentCycles.length === 0) {
+        if (currentCycles.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
-      }
+        }
 
-      // High-frequency pre-fetch: Only for pools in current cycles
-      // Always fetch if we just re-enumerated to ensure we have state for new pools
-      preFetchCounter++;
-      if (shouldReEnumerate || preFetchCounter % 5 === 0) {
+        // High-frequency pre-fetch: Only for pools in current cycles
+        // Always fetch if we just re-enumerated to ensure we have state for new pools
+        preFetchCounter++;
+        if (shouldReEnumerate || preFetchCounter % 5 === 0) {
         await fetchMissingPoolState(ctx, pools, currentCycles);
         // Force rate recalculation after state fetch
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
-      }
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        });
+        }
 
-      const gasSnapshot = ctx.gasOracle.getSnapshot();
-      if (!gasSnapshot) {
+        const gasSnapshot = ctx.gasOracle.getSnapshot();
+        if (!gasSnapshot) {
         ctx.logger.debug({}, "Waiting for gas oracle snapshot");
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(100);
         continue;
-      }
+        }
 
-      if (!cachedRates) {
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger);
-      }
-      const tokenToMaticRates = cachedRates!;
+        if (!cachedRates) {
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        });
+        }
+        const tokenToMaticRates = cachedRates!;
 
-      // Filter out quarantined routes before simulation to avoid repetitive noise
-      const filteredCycles = currentCycles.filter((cycle) => {
+        // Filter out quarantined routes before simulation to avoid repetitive noise
+        const filteredCycles = currentCycles.filter((cycle) => {
         const routeKey = deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
         return !ctx.executionService.isQuarantined(routeKey);
-      });
+        });
 
-      if (filteredCycles.length === 0) {
+        if (filteredCycles.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
-      }
+        }
 
-  // Mempool-aware dry run: check pending state before submitting
-  if (ctx.dryRunner) {
-    await ctx.dryRunner.fetchPendingState();
-  }
+        // Mempool-aware dry run: check pending state before submitting
+        if (ctx.dryRunner) {
+        await ctx.dryRunner.fetchPendingState();
+        }
 
-  bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
+        bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
 
-  const options: PipelineOptions = {
-    minProfitMaticWei: ctx.config.execution.minProfitWei,
-    gasPriceWei: gasSnapshot.gasPrice,
-    tokenToMaticRates,
-    slippageBps: ctx.config.execution.slippageBps,
-    revertRiskBps: ctx.config.execution.revertRiskBps,
-    flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
-    ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
-    maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
-    onProgress: (current, total, profitable) => {
+        const options: PipelineOptions = {
+        minProfitMaticWei: ctx.config.execution.minProfitWei,
+        gasPriceWei: gasSnapshot.gasPrice,
+        tokenToMaticRates,
+        slippageBps: ctx.config.execution.slippageBps,
+        revertRiskBps: ctx.config.execution.revertRiskBps,
+        flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
+        ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
+        maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
+        concurrency: ctx.config.routing.concurrency,
+        roiSafetyCap: ctx.config.execution.roiSafetyCap,
+        onProgress: (current, total, profitable) => {
       if (current % 10 === 0 || current === total) {
         bus?.emit({ type: "simulation_progress", current, total, profitable });
       }

@@ -19,6 +19,8 @@ export interface PipelineOptions {
   flashLoanSource?: FlashLoanSource;
   ternarySearchIterations?: number;
   maxPriceImpactThreshold?: number;
+  concurrency?: number;
+  roiSafetyCap?: number;
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 
@@ -119,6 +121,7 @@ function evaluateAmount(
       slippageBps: options.slippageBps,
       revertRiskBps: options.revertRiskBps,
       flashLoanSource: options.flashLoanSource ?? FlashLoanSource.BALANCER,
+      roiSafetyCap: options.roiSafetyCap,
     });
 
     const grossMatic = (result.profit * rate) / 1000000000000000000n;
@@ -140,7 +143,7 @@ export async function evaluatePipeline(
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
 
-  const CONCURRENCY = 50;
+  const CONCURRENCY = options.concurrency ?? 50;
   const batches: FoundCycle[][] = [];
   for (let i = 0; i < cycles.length; i += CONCURRENCY) {
     batches.push(cycles.slice(i, i + CONCURRENCY));

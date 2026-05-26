@@ -66,6 +66,8 @@ export interface ComputeProfitOptions {
   flashLoanSource?: FlashLoanSource;
   /** Override flash loan fee bps */
   flashLoanFeeBps?: bigint;
+  /** Max ROI multiplier before rejection (defends against poisoned data) */
+  roiSafetyCap?: number;
 }
 
 /**
@@ -92,6 +94,7 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
     revertRiskBps: baseRiskBps = 500n,
     flashLoanSource = FlashLoanSource.BALANCER,
     flashLoanFeeBps,
+    roiSafetyCap = 10.0,
   } = opts;
 
   if (tokenToMaticRate <= 0n) {
@@ -124,10 +127,10 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   let shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
   let rejectReason: string | undefined;
 
-  // ROI Sanity Check: If ROI > 10.0 (1000%), it's almost certainly poisoned data
-  if (roi > 10_000_000) {
+  // ROI Sanity Check: Defend against poisoned data/simulation anomalies
+  if (roi > (roiSafetyCap * 1_000_000)) {
     shouldExecute = false;
-    rejectReason = `ROI outlier detected: ${roi / 1_000_000}x exceeds safety cap (10.0x)`;
+    rejectReason = `ROI outlier detected: ${roi / 1_000_000}x exceeds safety cap (${roiSafetyCap}x)`;
   }
 
   const result: ProfitAssessment = {

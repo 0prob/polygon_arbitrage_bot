@@ -42,6 +42,7 @@ export const DEFAULTS = {
     evalWorkerThreshold: 20,
     enumerationMaxPaths: 5_000,
     enumerationMax4HopPaths: 2_000,
+    concurrency: 50,
     ternarySearchIterations: 15,
     maxPriceImpactThreshold: 0.05,
     graphFullRebuildInterval: 100,
@@ -60,6 +61,8 @@ export const DEFAULTS = {
     maxConcurrentExecutions: 2,
     quarantineBaseMs: 2_000,
     quarantineMaxMs: 600_000,
+    roiSafetyCap: 10.0,
+    minLiquidityV3Rate: 10000000000000000000n,
   },
   discovery: {
     refreshIntervalMs: 300_000,

@@ -38,6 +38,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   EVAL_WORKER_THRESHOLD: ["routing", "evalWorkerThreshold"],
   ROUTING_ENUMERATION_MAX_PATHS: ["routing", "enumerationMaxPaths"],
   ROUTING_ENUMERATION_MAX_4HOP_PATHS: ["routing", "enumerationMax4HopPaths"],
+  ROUTING_CONCURRENCY: ["routing", "concurrency"],
   TERNARY_SEARCH_ITERATIONS: ["routing", "ternarySearchIterations"],
   MAX_PRICE_IMPACT_THRESHOLD: ["routing", "maxPriceImpactThreshold"],
   GRAPH_FULL_REBUILD_INTERVAL: ["routing", "graphFullRebuildInterval"],
@@ -58,6 +59,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   EXECUTOR_ADDRESS: ["execution", "executorAddress"],
   PRIVATE_KEY: ["execution", "privateKey"],
   CHAIN_ID: ["execution", "chainId"],
+  ROI_SAFETY_CAP: ["execution", "roiSafetyCap"],
+  MIN_LIQUIDITY_V3_RATE: ["execution", "minLiquidityV3Rate"],
 
   DISCOVERY_REFRESH_INTERVAL_MS: ["discovery", "refreshIntervalMs"],
   DISCOVERY_CONCURRENCY: ["discovery", "concurrency"],

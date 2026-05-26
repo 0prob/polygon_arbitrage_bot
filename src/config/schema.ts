@@ -65,6 +65,7 @@ export const RoutingConfigSchema = z.object({
   evalWorkerThreshold: numberFromString.int().positive(),
   enumerationMaxPaths: numberFromString.int().positive(),
   enumerationMax4HopPaths: numberFromString.int().positive(),
+  concurrency: numberFromString.int().positive().default(50),
   ternarySearchIterations: numberFromString.int().min(5).max(50).default(15),
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.15),
   graphFullRebuildInterval: numberFromString.int().positive().default(100),
@@ -92,6 +93,8 @@ export const ExecutionConfigSchema = z.object({
   executorAddress: z.string().min(1, "EXECUTOR_ADDRESS is required"),
   privateKey: z.string().regex(/^0x[0-9a-fA-F]{64}$/, "PRIVATE_KEY must be 0x + 64 hex chars"),
   chainId: numberFromString.int().positive().default(137),
+  roiSafetyCap: numberFromString.min(1.0).max(100.0).default(10.0),
+  minLiquidityV3Rate: bigintFromString.default(10000000000000000000n),
 });
 export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 
