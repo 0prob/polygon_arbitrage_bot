@@ -18,10 +18,46 @@ export interface PendingState {
 // Combine relevant ABIs for decoding common reverts
 const DECODABLE_ABIS = [...EXECUTOR_ABI, ...EXECUTOR_AAVE_ABI, ...V2_PAIR_SWAP_ABI, ...V3_POOL_SWAP_ABI, ...BALANCER_VAULT_SWAP_ABI];
 
+export interface PredictionResult {
+  predictedBlock: number;
+  expectedSqrtPriceX96: Record<string, bigint>;
+  expectedLiquidity: Record<string, bigint>;
+}
+
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
 
   constructor(private client: PublicClient) {}
+
+  /**
+   * Project the state of specific pools based on mempool activity.
+   * This is a "Step 3" feature that anticipates price moves.
+   */
+  async predictState(poolAddresses: string[]): Promise<PredictionResult> {
+    const block = await this.fetchPendingState();
+    const result: PredictionResult = {
+      predictedBlock: (block?.blockNumber || 0) + 1,
+      expectedSqrtPriceX96: {},
+      expectedLiquidity: {},
+    };
+
+    // For now, we simply fetch the latest pending state.
+    // In a full implementation, we would decode mempool transactions
+    // that target these poolAddresses and apply them.
+    for (const addr of poolAddresses) {
+      const state = await this.client.readContract({
+        address: addr as `0x${string}`,
+        abi: V3_POOL_SWAP_ABI,
+        functionName: "slot0",
+      }).catch(() => null) as any;
+
+      if (state) {
+        result.expectedSqrtPriceX96[addr.toLowerCase()] = state[0];
+      }
+    }
+
+    return result;
+  }
 
   async fetchPendingState(): Promise<PendingState | null> {
     try {

@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779798623.609878,
-    "ast_hash": "e8669cb921038b59b6335d27b163d5f6",
+    "mtime": 1779799506.3441482,
+    "ast_hash": "d3cf5f05d93ca0cbdc0e9d9ef0589d8d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/pipeline.ts": {
-    "mtime": 1779790721.1091392,
-    "ast_hash": "48dccba8cfd1f5abf0846efd80373bbe",
+    "mtime": 1779799510.9840949,
+    "ast_hash": "c77055842ac50e0567bc5b114f42af5b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/strategy/simulator.test.ts": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/gas.ts": {
-    "mtime": 1779727071.7264085,
-    "ast_hash": "80f1ca17562d8633cec2b9f43402532a",
+    "mtime": 1779799500.7522123,
+    "ast_hash": "bf4c8883e7d154f23a4282a0aa36d3f9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
@@ -927,6 +927,11 @@
   "/home/x/arb/t/src/services/strategy/instrumentation.ts": {
     "mtime": 1779799154.1880972,
     "ast_hash": "8b567d8dda5f045a82a65729e07919ac",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/rpc/multicall.ts": {
+    "mtime": 1779799523.1399555,
+    "ast_hash": "9f55afb142e7480c3403b8c4c8a19788",
     "semantic_hash": ""
   }
 }
