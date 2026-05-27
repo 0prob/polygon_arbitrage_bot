@@ -4,7 +4,6 @@ import { loadConfig } from "./loader.ts";
 const REQUIRED_ENV = {
   ENVIO_API_TOKEN: "test-token",
   EXECUTION_RPC: "https://example.com/rpc",
-  GAS_ESTIMATION_RPC: "https://example.com/rpc",
   EXECUTOR_ADDRESS: "0x" + "11".repeat(20),
   PRIVATE_KEY: "0x" + "ab".repeat(32),
 };
