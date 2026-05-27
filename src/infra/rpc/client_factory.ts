@@ -76,13 +76,3 @@ export function createExecutionClient(rpcUrl: string, privateKey?: string, chain
   });
 }
 
-export function createGasEstimationClient(rpcUrl: string, chainId: number = 137): PublicClient {
-  const chain = getChain(chainId);
-  return createPublicClient({
-    chain,
-    transport: createOptimizedTransport(rpcUrl, { timeoutMs: 5_000 }),
-    batch: {
-      multicall: { wait: 10, batchSize: 100 },
-    },
-  });
-}
