@@ -29,7 +29,6 @@ const stringArrayFromCsv = z
 export const RpcConfigSchema = z.object({
   polygonRpcUrls: stringArrayFromCsv,
   executionRpcUrl: z.string().min(1, "EXECUTION_RPC is required"),
-  gasEstimationRpcUrl: z.string().min(1, "GAS_ESTIMATION_RPC is required"),
   requestTimeoutMs: numberFromString.int().positive(),
   batchWaitMs: numberFromString.int().nonnegative(),
   batchSize: numberFromString.int().positive(),
@@ -38,14 +37,9 @@ export type RpcConfig = z.infer<typeof RpcConfigSchema>;
 
 export const GasConfigSchema = z.object({
   pollIntervalMs: numberFromString.int().positive(),
-  bufferBps: numberFromString.int().nonnegative(),
-  multiplier: numberFromString.int().positive(),
   priorityFeeFloorGwei: numberFromString.positive(),
   priorityFeeCeilingGwei: numberFromString.positive(),
   maxBidMultiplier: numberFromString.positive(),
-  cacheTtlMs: numberFromString.int().nonnegative(),
-  cacheSize: numberFromString.int().positive(),
-  defaultGasBufferBps: numberFromString.int().nonnegative(),
   eip1559Enabled: z.coerce.boolean().default(true),
   feeHistoryPercentile: numberFromString.int().min(0).max(100).default(50),
   emaAlpha: numberFromString.min(0).max(1).default(0.3),
@@ -57,14 +51,9 @@ export type GasConfig = z.infer<typeof GasConfigSchema>;
 
 export const RoutingConfigSchema = z.object({
   maxHops: numberFromString.int().min(2).max(8),
-  maxTotalPaths: numberFromString.int().positive(),
-  maxPathsToOptimize: numberFromString.int().positive(),
   cycleRefreshIntervalMs: numberFromString.int().positive(),
   liquidityFloorUsd: numberFromString.nonnegative(),
-  workerCount: numberFromString.int().positive(),
-  evalWorkerThreshold: numberFromString.int().positive(),
   enumerationMaxPaths: numberFromString.int().positive(),
-  enumerationMax4HopPaths: numberFromString.int().positive(),
   concurrency: numberFromString.int().positive().default(50),
   ternarySearchIterations: numberFromString.int().min(5).max(50).default(15),
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.15),
@@ -84,10 +73,8 @@ export const ExecutionConfigSchema = z.object({
   flashLoanSource: z.enum(["BALANCER", "AAVE_V3"]).default("BALANCER"),
   privateRelayUrls: stringArrayFromCsv,
   submissionStrategy: SubmissionStrategySchema,
-  dryRunBeforeSubmit: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
   receiptTimeoutMs: numberFromString.int().positive(),
   receiptPollMs: numberFromString.int().positive().default(500),
-  maxConcurrentExecutions: numberFromString.int().positive(),
   quarantineBaseMs: numberFromString.int().positive().default(2000),
   quarantineMaxMs: numberFromString.int().positive().default(600_000),
   executorAddress: z.string().min(1, "EXECUTOR_ADDRESS is required"),
@@ -97,27 +84,6 @@ export const ExecutionConfigSchema = z.object({
   minLiquidityV3Rate: bigintFromString.default(10000000000000000000n),
 });
 export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
-
-export const DiscoveryConfigSchema = z.object({
-  refreshIntervalMs: numberFromString.int().positive(),
-  concurrency: numberFromString.int().positive(),
-});
-export type DiscoveryConfig = z.infer<typeof DiscoveryConfigSchema>;
-
-export const WatcherConfigSchema = z.object({
-  idleSleepMs: numberFromString.int().nonnegative(),
-  enrichmentBackfillLookbackBlocks: numberFromString.int().positive(),
-  enrichmentMaxPools: numberFromString.int().positive(),
-});
-export type WatcherConfig = z.infer<typeof WatcherConfigSchema>;
-
-export const PredictiveCacheConfigSchema = z.object({
-  enabled: z.coerce.boolean(),
-  maxPaths: numberFromString.int().positive(),
-  precomputeCount: numberFromString.int().nonnegative(),
-  refreshIntervalMs: numberFromString.int().positive(),
-});
-export type PredictiveCacheConfig = z.infer<typeof PredictiveCacheConfigSchema>;
 
 export const MempoolConfigSchema = z.object({
   enabled: z.coerce.boolean(),
@@ -152,9 +118,6 @@ export const AppConfigSchema = z.object({
   gas: GasConfigSchema,
   routing: RoutingConfigSchema,
   execution: ExecutionConfigSchema,
-  discovery: DiscoveryConfigSchema,
-  watcher: WatcherConfigSchema,
-  predictiveCache: PredictiveCacheConfigSchema,
   mempool: MempoolConfigSchema,
   fastlane: FastLaneConfigSchema,
   observability: ObservabilityConfigSchema,
