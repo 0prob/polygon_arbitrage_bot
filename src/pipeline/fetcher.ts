@@ -1,0 +1,241 @@
+import { parseAbi } from "viem";
+import type { PublicClient } from "viem";
+import { INVALID_POOL_STATE } from "../core/types/pool.ts";
+import type { PoolMeta } from "../core/types/pool.ts";
+import type { FoundCycle } from "./types.ts";
+import { STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
+
+const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
+const V3_ABI = parseAbi([
+  "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
+  "function liquidity() external view returns (uint128)",
+]);
+const V4_ABI = parseAbi([
+  "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
+  "function liquidity() external view returns (uint128)",
+  "function fee() external view returns (uint24)",
+  "function tickSpacing() external view returns (int24)",
+  "function hooks() external view returns (address)",
+]);
+const WOOFI_PAIR_ABI = parseAbi([
+  "function price() external view returns (uint256)",
+  "function fee() external view returns (uint256)",
+]);
+
+const _failedPools = new Map<string, { count: number; lastTry: number }>();
+
+export function getFailedPools(): Map<string, { count: number; lastTry: number }> {
+  return _failedPools;
+}
+
+export async function fetchMissingPoolState(
+  publicClient: PublicClient,
+  stateCache: Map<string, Record<string, unknown>>,
+  pools: PoolMeta[],
+  currentCycles: FoundCycle[],
+  forceRefresh: boolean = false,
+): Promise<void> {
+  const missingAddresses = new Set<string>();
+  const now = Date.now();
+
+  if (forceRefresh) {
+    for (const cycle of currentCycles) {
+      for (const edge of cycle.edges) {
+        missingAddresses.add(edge.poolAddress.toLowerCase());
+      }
+    }
+    for (const anchor of STATIC_ANCHORS) {
+      missingAddresses.add(anchor.address.toLowerCase());
+    }
+  } else {
+    for (const anchor of STATIC_ANCHORS) {
+      const addr = anchor.address.toLowerCase();
+      if (!stateCache.has(addr)) {
+        missingAddresses.add(addr);
+      }
+    }
+
+    for (const cycle of currentCycles) {
+      for (const edge of cycle.edges) {
+        const addr = edge.poolAddress.toLowerCase();
+        if (!stateCache.has(addr)) {
+          const fail = _failedPools.get(addr);
+          if (fail && fail.count > 3 && now - fail.lastTry < 300_000) continue;
+          missingAddresses.add(addr);
+        }
+      }
+    }
+  }
+
+  if (missingAddresses.size === 0) return;
+
+  const toFetch = Array.from(missingAddresses);
+
+  const BATCH_SIZE = 500;
+  const batches: string[][] = [];
+  for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+    batches.push(toFetch.slice(i, i + BATCH_SIZE));
+  }
+
+  const poolLookup = new Map<string, PoolMeta>();
+  for (const p of pools) {
+    poolLookup.set(p.address.toLowerCase(), p);
+  }
+
+  await Promise.all(
+    batches.map(async (batch) => {
+      const calls: any[] = [];
+      for (const addr of batch) {
+        const meta = poolLookup.get(addr);
+        if (!meta) continue;
+        const proto = meta.protocol.toLowerCase();
+        if (proto.includes("v2") || proto.includes("dodo")) {
+          calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
+        } else if (proto.includes("v3") || proto.includes("elastic")) {
+          calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
+          calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
+        } else if (proto.includes("v4")) {
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "slot0" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "liquidity" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "fee" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "tickSpacing" });
+          calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "hooks" });
+        } else if (proto.includes("woofi")) {
+          calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "price" });
+          calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "fee" });
+        }
+      }
+
+      if (calls.length === 0) return;
+
+      try {
+        const results = await publicClient.multicall({
+          contracts: calls,
+          allowFailure: true,
+        });
+
+        let resultIdx = 0;
+        for (const addr of batch) {
+          const meta = poolLookup.get(addr);
+          if (!meta) continue;
+          const proto = meta.protocol.toLowerCase();
+
+          if (proto.includes("v2") || proto.includes("dodo")) {
+            const res = results[resultIdx++];
+            if (res?.status === "success" && res.result) {
+              const r = res.result as any;
+              const r0 = r[0] !== undefined ? r[0] : r.reserve0;
+              const r1 = r[1] !== undefined ? r[1] : r.reserve1;
+
+              if (r0 !== undefined && r1 !== undefined) {
+                stateCache.set(addr, {
+                  reserve0: BigInt(r0),
+                  reserve1: BigInt(r1),
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 1) {
+                  stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
+          } else if (proto.includes("v3") || proto.includes("elastic")) {
+            const slot0Res = results[resultIdx++];
+            const liqRes = results[resultIdx++];
+            if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              const s = slot0Res.result as any;
+              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
+              const tick = s[1] !== undefined ? s[1] : s.tick;
+
+              if (sqrtPriceX96 !== undefined && tick !== undefined) {
+                stateCache.set(addr, {
+                  sqrtPriceX96: BigInt(sqrtPriceX96),
+                  tick: Number(tick),
+                  liquidity: BigInt(liqRes.result as any),
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 1) {
+                  stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
+          } else if (proto.includes("v4")) {
+            const slot0Res = results[resultIdx++];
+            const liqRes = results[resultIdx++];
+            const feeRes = results[resultIdx++];
+            const tsRes = results[resultIdx++];
+            const hooksRes = results[resultIdx++];
+            if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              const s = slot0Res.result as any;
+              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
+              const tick = s[1] !== undefined ? s[1] : s.tick;
+
+              if (sqrtPriceX96 !== undefined && tick !== undefined) {
+                stateCache.set(addr, {
+                  sqrtPriceX96: BigInt(sqrtPriceX96),
+                  liquidity: BigInt(liqRes.result as any),
+                  tick: Number(tick),
+                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                  tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
+                  hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
+                  initialized: true,
+                });
+                _failedPools.delete(addr);
+              } else {
+                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+                if (fail.count >= 1) {
+                  stateCache.set(addr, INVALID_POOL_STATE);
+                }
+              }
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
+          } else if (proto.includes("woofi")) {
+            const priceRes = results[resultIdx++];
+            const feeRes = results[resultIdx++];
+            if (priceRes?.status === "success" && priceRes.result) {
+              stateCache.set(addr, {
+                price: BigInt(priceRes.result as any),
+                fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                initialized: true,
+              });
+              _failedPools.delete(addr);
+            } else {
+              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+              if (fail.count >= 1) {
+                stateCache.set(addr, INVALID_POOL_STATE);
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignore individual batch failures
+      }
+    }),
+  );
+}
