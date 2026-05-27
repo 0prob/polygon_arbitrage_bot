@@ -1,5 +1,4 @@
-import { type PublicClient, createWalletClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { type PublicClient } from "viem";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -10,18 +9,17 @@ import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
 import { CrossChainScanner } from "../services/crosschain/scanner.ts";
 import { SolverBot } from "../services/crosschain/solver.ts";
-import { createReadClient, createExecutionClient } from "../infra/rpc/client_factory.ts";
+import { createExecutionClient } from "../infra/rpc/client_factory.ts";
 import { ServiceRegistry } from "../infra/di/service_registry.ts";
 import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
-import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
-import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
-import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
 import { IncrementalGraphUpdater } from "../services/strategy/graph_incremental.ts";
-import { getChain } from "../infra/rpc/chains.ts";
 import { type Metrics } from "../core/types/metrics.ts";
+import { RpcManager } from "../rpc/manager.ts";
+import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
+import type { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -31,6 +29,7 @@ export interface RuntimeContext {
   mempoolService: MempoolService;
   getPools: () => PoolMeta[];
   publicClient: PublicClient;
+  rpc: RpcManager;
   isRunning: boolean;
   gasOracle: GasOracle;
   crossChainScanner?: CrossChainScanner;
@@ -72,12 +71,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     currentCyclesPerMinute: 0,
   };
 
-  const publicClient = createReadClient(config.rpc.polygonRpcUrls, {
-    chainId: 137,
-    timeoutMs: config.rpc.requestTimeoutMs,
-    batchSize: config.rpc.batchSize,
-    batchWaitMs: config.rpc.batchWaitMs,
-  });
+  const rpc = new RpcManager(config.rpc);
+  const publicClient = rpc.getReadClient();
 
   const stateCache: RouteStateCache = new Map();
 
@@ -139,8 +134,8 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
 
   const walletClients =
     config.execution.privateRelayUrls.length > 0
-      ? config.execution.privateRelayUrls.map((url) => createExecutionClient(url, config.execution.privateKey, 137))
-      : [createExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey, 137)];
+      ? config.execution.privateRelayUrls.map((url) => rpc.addExecutionClient(url, config.execution.privateKey))
+      : [rpc.addExecutionClient(config.rpc.executionRpcUrl, config.execution.privateKey)];
 
   walletClients.forEach((wc) => {
     if (!wc.account) {
@@ -186,24 +181,13 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   }
 
   // FastLane submitter
-  let fastLaneSubmitter: FastLaneSubmitter | undefined;
-  if (config.fastlane.enabled) {
-    const fastLaneClient = createWalletClient({
-      account: privateKeyToAccount(config.execution.privateKey as `0x${string}`),
-      chain: getChain(137),
-      transport: http(config.fastlane.rpcUrl),
-    });
-    fastLaneSubmitter = new FastLaneSubmitter(
-      {
-        enabled: config.fastlane.enabled,
-        rpcUrl: config.fastlane.rpcUrl,
-        conditional: {
-          blockNumberWindow: config.fastlane.blockNumberWindow,
-          timestampWindowS: config.fastlane.timestampWindowS,
-        },
-      },
-      fastLaneClient,
-    );
+  const fastLaneSubmitter = rpc.addFastLane({
+    enabled: config.fastlane.enabled,
+    rpcUrl: config.fastlane.rpcUrl,
+    blockNumberWindow: config.fastlane.blockNumberWindow,
+    timestampWindowS: config.fastlane.timestampWindowS,
+  });
+  if (fastLaneSubmitter) {
     logger.info({ rpcUrl: config.fastlane.rpcUrl }, "FastLane submitter initialized");
   }
 
@@ -328,18 +312,12 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
   services.register("tierManager", tierManager);
 
   // Reorg detector
-  const reorgDetector = new ReorgDetector(publicClient, 10);
+  const reorgDetector = rpc.getReorgDetector();
 
   // WebSocket subscriber
-  let wsSubscriber: WebSocketSubscriber | undefined;
-  if (config.mempool.websocketUrl) {
-    wsSubscriber = new WebSocketSubscriber({
-      url: config.mempool.websocketUrl,
-      maxPendingTxsPerTick: 10,
-      reconnectDelayMs: 5_000,
-      pingIntervalMs: 15_000,
-    });
-  }
+  const wsSubscriber = config.mempool.websocketUrl
+    ? rpc.addWebSocketSubscriber(config.mempool.websocketUrl)
+    : undefined;
 
   // Mempool-aware dry runner
   const dryRunner = new MempoolAwareDryRunner(publicClient);
@@ -369,6 +347,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     mempoolService,
     getPools,
     publicClient,
+    rpc,
     isRunning: true,
     gasOracle,
     crossChainScanner,
