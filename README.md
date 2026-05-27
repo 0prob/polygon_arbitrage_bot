@@ -1,49 +1,59 @@
 # Polygon Arb Bot
 
-High-frequency arbitrage bot for Polygon (chain 137) with cross-chain support for Katana. Uses flash loans (Balancer V2 / Aave V3) to execute triangular and multi-hop arbitrage across 12+ DEX protocols.
+High-frequency arbitrage bot for Polygon (chain 137). Uses flash loans (Balancer V2 / Aave V3) to execute triangular and multi-hop arbitrage across 12+ DEX protocols.
 
 ## Features
 
 - **Multi-protocol**: Uni V2/V3, Sushi V2/V3, QuickSwap V2/V3, Curve, Balancer, DODO, WooFi, KyberSwap, Uni V4
 - **Flash loans**: Balancer V2 (BalancerPoolFlashRecipient) and Aave V3
 - **Real-time state**: HyperIndex/Envio event indexer → Hasura → GraphQL pool state
-- **Cross-chain arb**: Intent-based arbitrage between Polygon and Katana via AggLayer
 - **TUI dashboard**: Terminal UI with live metrics, logs, and keybindings
-- **Predictive cache**: Pre-computes profitable paths for faster pass-loop iterations
+- **Multi-frequency loop**: Fast (200ms) cycles for simulation/execution, slow (1s) cycles for state refresh, discovery (60s) for new pools
 
 ## Architecture
 
 ```
 src/
-├── cli/               Entry point (main.ts)
-├── config/            Zod-validated env config loader, addresses, defaults
-├── core/
-│   ├── math/          AMM simulators: V2, V3, Curve, Balancer, DODO, WooFi
-│   ├── assessment/    Profit & risk calculation
-│   ├── types/         Pool, route, execution type definitions
-│   └── utils/         BigInt helpers, error formatting
-├── infra/
-│   ├── hypersync/     HyperIndex GraphQL client + subprocess manager
-│   ├── rpc/           Viem client factory with fallback, retry
-│   └── observability/ Pino logger
-├── orchestrator/      Boot, main pass loop, graceful shutdown
+├── cli/                  Entry point (main.ts) — config → boot → runner → TUI
+├── config/               Zod-validated env config loader, addresses, defaults
+├── rpc/manager.ts        RpcManager — single class for all RPC access (read, execution, FastLane, WebSocket)
+├── pipeline/             9 files — explicit pipeline stages (graph, finder, simulator, fetcher, rates, pipeline, instrumenter)
+├── orchestrator/
+│   ├── boot.ts           ~300L — wires RuntimeContext, starts HyperIndex, RPC, services
+│   ├── pass_loop.ts      ~600L — main loop with multi-frequency timing + metrics wrapper
+│   ├── loop.ts           Pipeline type definitions + runPipeline orchestrator
+│   ├── runner.ts          PassRunner wrapper
+│   └── shutdown.ts       Cleanup
 ├── services/
-│   ├── strategy/      Routing graph, cycle finder, simulation pipeline
-│   ├── execution/     Calldata builder, gas oracle, nonce manager, submitter
-│   ├── mempool/       Pending tx decoder, coalescing, signal emission
-│   └── crosschain/    Price scanner, solver bot, order encoding
-└── tui/               Terminal UI (event bus, layout, renderer, state)
+│   ├── execution/        ExecutionService (thin facade), SubmissionStrategy, ReceiptPoller, GasOracle, NonceManager, QuarantineManager, ExecutionTracker, DryRunner, Calldata builders
+│   └── mempool/          Pending tx watching (coalescing, signal emission)
+├── infra/
+│   ├── hypersync/        HyperIndex/Envio subprocess manager + GraphQL queries
+│   ├── rpc/              Client factory, WebSocket subscriptions
+│   ├── resilience/       Circuit breakers, reorg detector, hyperindex monitor
+│   └── observability/    Logger (Pino), health server
+├── core/
+│   ├── math/             AMM simulators: V2, V3, Curve, Balancer, DODO, WooFi
+│   ├── assessment/       Profit & risk calculation
+│   ├── types/            Pool, route, execution type definitions
+│   └── utils/            BigInt helpers, error formatting
+└── tui/                  Terminal UI (event bus, layout, renderer, state)
 ```
 
-### Main loop
+### Pipeline Flow (5 stages)
 
 ```
-Pool discovery → State refresh (GraphQL) → Graph rebuild (on pool change)
-  → Cycle enumeration (2/3/4-hop) → Simulation + profit assessment
-  → Candidate build → Gas estimation → Submission
+Discovery       →   GraphQL: new pools + state refresh
+Enumeration     →   Build graph → Find cycles (2/3/4-hop)
+Simulation      →   Ternary search → Evaluate amount → Profit assessment
+Candidate Build →   Calldata → Dry-run → Gas estimation
+Execution       →   Group compatible → Submit → Track confirmations
 ```
 
-Cross-chain scanner runs in parallel when enabled.
+Multi-frequency timing:
+- **HF (200ms)**: Simulation + execution for current cycle set
+- **LF (1s)**: State refresh via RPC, rate recalculation, graph rebuild
+- **Discovery (60s)**: Poll HyperIndex for new pools
 
 ## Supported Protocols
 
@@ -90,7 +100,7 @@ Set `DRY_RUN_BEFORE_SUBMIT=true` (default) to simulate without submitting.
 ## Scripts
 
 ```bash
-bun run test              # Vitest
+bun run test              # Vitest (285+ tests)
 bun run typecheck         # tsc --noEmit
 bun run lint              # ESLint
 bun run fmt               # Prettier check
@@ -106,20 +116,14 @@ Foundry project in `sol/`:
 | Contract | Purpose |
 |----------|---------|
 | `ArbExecutor.sol` | On-chain execution: flash loan → swap path → repay → profit |
-| `KatanaExecutor.sol` | Cross-chain execution on Katana |
-| `CrossChainIntentOrigin.sol` | UUPS escrow for cross-chain intents |
 
 ## HyperIndex
 
-The `hyperindex/` directory contains an Envio indexer that ingests events from Polygon (and Katana) factories, tracking pool state in a Hasura-backed PostgreSQL instance served over GraphQL. The bot queries it for pool discovery and state refreshes.
-
-## Cross-Chain Arbitrage (Polygon ↔ Katana)
-
-When enabled, the bot scans for price discrepancies between Polygon and Katana pools. A solver posts escrow on Polygon (via `CrossChainIntentOrigin`), executes the arb on Katana, and claims the escrow via AggLayer proof.
+The `hyperindex/` directory contains an Envio indexer that ingests events from Polygon factories, tracking pool state in a Hasura-backed PostgreSQL instance served over GraphQL. The bot queries it for pool discovery and state refreshes.
 
 ## Tests
 
 - Unit tests live next to source files (`src/**/*.test.ts`)
-- Integration tests in `tests/` (TUI, orchestrator)
+- Integration tests in `tests/` (TUI, hypersync)
 - Solidity tests in `sol/test/` (Foundry)
 - Property-based testing via `fast-check`

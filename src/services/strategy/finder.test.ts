@@ -65,9 +65,9 @@ describe("findCycles", () => {
     const adjacency = new Map<string, SwapEdge[]>();
     const numCycles = 30000;
     for (let i = 0; i < numCycles; i++) {
-      const tA = `tokenA_${i}` as Address;
-      const tB = `tokenB_${i}` as Address;
-      const tC = `tokenC_${i}` as Address;
+      const tA = `tokena_${i}` as Address;
+      const tB = `tokenb_${i}` as Address;
+      const tC = `tokenc_${i}` as Address;
 
       const e1: SwapEdge = {
         poolAddress: "pool1" as Address,

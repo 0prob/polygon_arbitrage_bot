@@ -161,17 +161,14 @@ export async function evaluatePipeline(
           const hasAllRates = tokens.every(t => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
           if (!hasAllRates) return { type: "noRate" as const };
 
-          const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase())!;
           const baseAmount = getTestAmount(cycle.startToken, options.tokenMetas);
           const low = baseAmount / 5000n;
           if (low === 0n) return { type: "pruned" as const };
           const high = baseAmount;
           const ternaryIters = options.ternarySearchIterations ?? 15;
-          const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-
           const evalLow = evaluateAmount(cycle, low, stateCache, options);
           if (!evalLow.result || evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
-            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as const };
+            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned" };
           }
 
           let left = low;

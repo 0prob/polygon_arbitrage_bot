@@ -7,6 +7,18 @@ export interface HasuraPoolMeta {
   fee: number;
 }
 
+export function parseBigIntArray(arr: unknown): bigint[] {
+  if (typeof arr === "string") {
+    try {
+      return JSON.parse(arr).map((s: string) => BigInt(s));
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr.map((s: unknown) => BigInt(s as string));
+}
+
 export const STATIC_ANCHORS: HasuraPoolMeta[] = poolsJson.map((p: any) => ({
   address: p.address,
   protocol: p.protocol,

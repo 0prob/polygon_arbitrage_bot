@@ -26,6 +26,7 @@ export interface RoutingGraph {
 }
 
 export interface FoundCycle {
+  id?: string;
   startToken: Address;
   edges: SwapEdge[];
   hopCount: number;

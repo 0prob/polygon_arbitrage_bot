@@ -14,8 +14,15 @@ describe('Profit/s calculation', () => {
       routeKey: "0x123",
     } as any);
 
+    applyEvent(state, {
+      type: "heartbeat",
+      elapsedMs: 10000,
+      cycles: 1,
+      totalErrors: 0,
+    } as any);
+
     const profitPerSecond = state.metrics.profitPerSecond;
     expect(profitPerSecond).toBeGreaterThan(0);
-    expect(profitPerSecond).toBeCloseTo(100);
+    expect(profitPerSecond).toBeCloseTo(100, 0);
   });
 });

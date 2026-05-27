@@ -100,7 +100,7 @@ describe("GasOracle", () => {
 describe("scalePriorityFeeByProfitMargin", () => {
   it("returns scaled priority fee based on profit margin", () => {
     const fee = 30n * 10n ** 9n;
-    const scaled = scalePriorityFeeByProfitMargin(fee, 500n, 5);
+    const scaled = scalePriorityFeeByProfitMargin(fee, 60n * 10n ** 18n, 5);
     expect(scaled).toBe(fee * 5n);
   });
 
@@ -112,7 +112,7 @@ describe("scalePriorityFeeByProfitMargin", () => {
 
   it("caps at maxMultiplier", () => {
     const fee = 30n * 10n ** 9n;
-    const scaled = scalePriorityFeeByProfitMargin(fee, 2000n, 3);
+    const scaled = scalePriorityFeeByProfitMargin(fee, 60n * 10n ** 18n, 3);
     expect(scaled).toBe(fee * 3n);
   });
 });

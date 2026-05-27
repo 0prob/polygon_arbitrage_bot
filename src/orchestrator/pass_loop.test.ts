@@ -65,7 +65,7 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
-        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
+        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, privateKey: `0x${"1".repeat(64)}`, slippageBps: 50, revertRiskBps: 10 },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
@@ -104,7 +104,17 @@ describe("runPassLoop", () => {
       isRunning: true,
       stateCache: stateWithPool,
       mempoolService: { start: vi.fn(), onSignal: vi.fn() },
-      executionService: { start: vi.fn(), execute: mockExecute, tracker: mockTracker() },
+      executionService: {
+        start: vi.fn(),
+        execute: mockExecute,
+        batchExecute: vi.fn().mockImplementation(async (group) => {
+          mockContext.isRunning = false;
+          return group.map(() => ({ success: true, txHash: "0x1" }));
+        }),
+        tracker: mockTracker(),
+        isQuarantined: vi.fn().mockReturnValue(false),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+      },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
       publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
       services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
@@ -165,12 +175,13 @@ describe("runPassLoop", () => {
             },
             result: {
               amountIn: 1000000n,
-              amountOut: 1000000n,
+              amountOut: 2000000n,
               hopAmounts: [1000000n, 2000000n],
               tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
               poolPath: [VALID_ADDR_B],
+              profitable: true,
             },
-            assessment: { netProfitAfterGas: 0n, roi: 0 },
+            assessment: { netProfitAfterGas: 1000n, roi: 1000000 },
           },
           {
             cycle: {
@@ -190,24 +201,28 @@ describe("runPassLoop", () => {
             },
             result: {
               amountIn: 1000000n,
-              amountOut: 1000000n,
+              amountOut: 2000000n,
               hopAmounts: [1000000n, 2000000n],
               tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
               poolPath: [VALID_ADDR_B],
+              profitable: true,
             },
-            assessment: { netProfitAfterGas: 0n, roi: 0 },
+            assessment: { netProfitAfterGas: 1000n, roi: 1000000 },
           },
         ],
         attempted: 2,
         profitableCount: 2,
       }),
-      discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn()
         .mockReturnValueOnce("mocked-route-key-1")
         .mockReturnValueOnce("mocked-route-key-2"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
+      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
+      discoverPoolsFromHasura: vi.fn().mockResolvedValue([
+        { address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 },
+      ]),
     };
 
     await runPassLoop(mockContext, deps);
@@ -224,7 +239,7 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
-        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, slippageBps: 50, revertRiskBps: 10 },
+        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, privateKey: `0x${"1".repeat(64)}`, slippageBps: 50, revertRiskBps: 10 },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
@@ -263,7 +278,13 @@ describe("runPassLoop", () => {
       isRunning: true,
       stateCache: new Map(),
       mempoolService: { start: vi.fn(), onSignal: vi.fn() },
-      executionService: { start: vi.fn(), execute: vi.fn(), tracker: mockTracker() },
+      executionService: {
+        start: vi.fn(),
+        execute: vi.fn(),
+        tracker: mockTracker(),
+        isQuarantined: vi.fn().mockReturnValue(false),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+      },
       getPools: vi.fn().mockReturnValue([{ address: "0xPool", protocol: "test", token0: "", token1: "", tokens: [] }]),
       services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
       rpcCircuit: mockCircuitBreaker(),
@@ -285,11 +306,14 @@ describe("runPassLoop", () => {
       findCycles: vi.fn().mockReturnValue([]),
       enumerateCycles: enumerateCyclesSpy,
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
-      discoverPoolsFromHasura: vi.fn().mockResolvedValue([]),
       buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
+      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
+      discoverPoolsFromHasura: vi.fn().mockResolvedValue([
+        { address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 },
+      ]),
     };
 
     await runPassLoop(mockContext, deps);

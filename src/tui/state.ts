@@ -115,7 +115,7 @@ function updateOpportunity(state: TuiState, routeKey: string, update: Partial<Op
   }
 
   // Sort by profit descending and keep top 10
-  state.system.activeOpportunities.sort((a, b) => Number(b.profit - a.profit));
+  state.system.activeOpportunities.sort((a, b) => a.profit < b.profit ? 1 : a.profit > b.profit ? -1 : 0);
   if (state.system.activeOpportunities.length > 10) {
     state.system.activeOpportunities.length = 10;
   }
@@ -143,6 +143,7 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "opportunity_found":
       state.metrics.opportunitiesFound++;
+      state.metrics.totalProfitWei += event.profitWei ?? 0n;
       updateOpportunity(state, event.routeKey, {
         profit: event.profitWei,
         path: event.path,

@@ -122,6 +122,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       cycleWindowStart = now;
     }
 
+    let blockForCycle: { number: bigint; hash: `0x${string}` } | null = null;
+
     try {
       ctx.metrics.cycles++;
 
@@ -149,6 +151,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           // Force re-enumeration on reorg
           lastRefreshTime = 0;
           ctx.reorgDetector.clearReorged();
+        }
+      }
+
+      // Pre-fetch latest block once per cycle for downstream consumers
+      if (ctx.publicClient && !blockForCycle) {
+        try {
+          const b = await ctx.publicClient.getBlock({ blockTag: "latest" });
+          if (b.number && b.hash) blockForCycle = { number: b.number, hash: b.hash };
+        } catch {
+          /* best effort */
         }
       }
 
@@ -225,7 +237,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL;
-      const shouldFullRebuild = ctx.graphUpdater?.shouldFullRebuild() ?? true;
 
       // Low-frequency maintenance: Refresh all state and re-calculate rates
       if (shouldReEnumerate && pools.length > 0) {
@@ -562,7 +573,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Track current block for reorg safety
       if (ctx.reorgDetector && ctx.publicClient) {
         try {
-          const latest = await ctx.publicClient.getBlock({ blockTag: "latest" });
+          const latest = blockForCycle ?? await ctx.publicClient.getBlock({ blockTag: "latest" });
           if (latest.number && latest.hash) {
             await ctx.reorgDetector.trackBlock(Number(latest.number), latest.hash);
             lastSimulationBlock = Number(latest.number);
