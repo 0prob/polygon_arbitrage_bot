@@ -1,5 +1,3 @@
-import os from "os";
-
 /** Default values for all configuration. These are the values used when no env var or override is provided. */
 export const DEFAULTS = {
   rpc: {
@@ -10,21 +8,15 @@ export const DEFAULTS = {
       "https://rpc.ankr.com/polygon",
     ],
     executionRpcUrl: "" as string, // required, no default
-    gasEstimationRpcUrl: "" as string, // required, no default
     requestTimeoutMs: 8_000,
     batchWaitMs: 16,
     batchSize: 100,
   },
   gas: {
     pollIntervalMs: 2_000,
-    bufferBps: 105,
-    multiplier: 110,
     priorityFeeFloorGwei: 30,
     priorityFeeCeilingGwei: 500,
     maxBidMultiplier: 5,
-    cacheTtlMs: 120_000,
-    cacheSize: 2_048,
-    defaultGasBufferBps: 105,
     eip1559Enabled: true,
     feeHistoryPercentile: 50,
     emaAlpha: 0.3,
@@ -34,14 +26,9 @@ export const DEFAULTS = {
   },
   routing: {
     maxHops: 4,
-    maxTotalPaths: 50_000,
-    maxPathsToOptimize: 40,
     cycleRefreshIntervalMs: 1_000,
     liquidityFloorUsd: 100,
-    workerCount: Math.max(1, os.cpus().length - 1),
-    evalWorkerThreshold: 20,
     enumerationMaxPaths: 1_000,
-    enumerationMax4HopPaths: 500,
     concurrency: 50,
     ternarySearchIterations: 15,
     maxPriceImpactThreshold: 0.05,
@@ -56,28 +43,11 @@ export const DEFAULTS = {
     flashLoanSource: "BALANCER" as const,
     privateRelayUrls: [] as string[],
     submissionStrategy: "hybrid" as const,
-    dryRunBeforeSubmit: true,
     receiptTimeoutMs: 30_000,
-    maxConcurrentExecutions: 2,
     quarantineBaseMs: 2_000,
     quarantineMaxMs: 600_000,
     roiSafetyCap: 10.0,
     minLiquidityV3Rate: 100_000_000_000_000_000n,
-  },
-  discovery: {
-    refreshIntervalMs: 300_000,
-    concurrency: 4,
-  },
-  watcher: {
-    idleSleepMs: 1_000,
-    enrichmentBackfillLookbackBlocks: 1_000,
-    enrichmentMaxPools: 500,
-  },
-  predictiveCache: {
-    enabled: false,
-    maxPaths: 500,
-    precomputeCount: 50,
-    refreshIntervalMs: 100,
   },
   mempool: {
     enabled: true,

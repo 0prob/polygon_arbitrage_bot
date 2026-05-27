@@ -45,10 +45,10 @@ describe("loadConfig", () => {
   });
 
   it("coerces boolean env vars", () => {
-    const cfg = loadConfig({ ...REQUIRED_ENV, DRY_RUN_BEFORE_SUBMIT: "false" });
+    const cfg = loadConfig({ ...REQUIRED_ENV, EIP1559_ENABLED: "false" });
     // Zod coerce.boolean treats "false" as truthy! Use explicit string check instead.
     // For now, just verify the field exists:
-    expect(typeof cfg.execution.dryRunBeforeSubmit).toBe("boolean");
+    expect(typeof cfg.gas.eip1559Enabled).toBe("boolean");
   });
 
   it("falls back to defaults for unset values", () => {
