@@ -1,11 +1,10 @@
 import type { FoundCycle } from "./finder.ts";
 import type { RouteSimulationResult, RouteStateCache } from "../../core/types/route.ts";
-import { simulateRoute, simulateHop, getEffectivePriceImpact } from "./simulator.ts";
+import { simulateRoute, simulateHop, getEffectivePriceImpact, getTestAmount } from "./simulator.ts";
 import type { SimulationEdge } from "./simulator.ts";
 import { computeProfit } from "../../core/assessment/profit.ts";
 import { FlashLoanSource } from "../../core/types/execution.ts";
 import type { ProfitAssessment } from "../../core/types/execution.ts";
-import { USDC, USDC_NATIVE, USDT, WBTC } from "../../config/addresses.ts";
 import type { PoolState } from "../../core/types/pool.ts";
 
 const CONVERGENCE_DIVISOR = 10000n;
@@ -24,28 +23,6 @@ export interface PipelineOptions {
   roiSafetyCap?: number;
   logger?: any;
   onProgress?: (current: number, total: number, profitable: number) => void;
-}
-
-export function getTestAmount(tokenAddress: string, metas?: Map<string, { decimals: number }>): bigint {
-  const addr = tokenAddress.toLowerCase();
-  
-  // High-value token overrides
-  if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
-    return 500n * 10n ** 6n;
-  }
-  if (addr === WBTC.toLowerCase()) {
-    return 700_000n; // 0.007 WBTC
-  }
-  if (addr === "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619") { // WETH
-    return 160_000_000_000_000_000n; // 0.16 WETH
-  }
-  if (addr === "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270") { // WMATIC
-    return 800n * 10n ** 18n;
-  }
-
-  // Default: ~500 MATIC worth of the token if we can't find specific override
-  const decimals = metas?.get(addr)?.decimals ?? 18;
-  return 500n * 10n ** BigInt(decimals);
 }
 
 export interface PipelineResult {
