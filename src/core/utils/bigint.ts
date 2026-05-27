@@ -15,7 +15,7 @@ export function toBigInt(value: unknown, fallback = 0n): bigint {
   if (!isBigIntConvertible(value)) return fallback;
   try {
     return BigInt(value);
-  } catch {
+  } catch (_err: unknown) {
     return fallback;
   }
 }
@@ -28,7 +28,7 @@ export function toBigIntOrNull(value: unknown): bigint | null {
   if (!isBigIntConvertible(value)) return null;
   try {
     return BigInt(value);
-  } catch {
+  } catch (_err: unknown) {
     return null;
   }
 }

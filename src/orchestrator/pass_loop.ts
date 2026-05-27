@@ -3,25 +3,12 @@ import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type R
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
-import type { PolygonPoolState } from "../services/crosschain/types.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
 import { privateKeyToAccount } from "viem/accounts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
-
-export interface PassLoopDeps {
-  buildGraph: typeof buildGraph;
-  findCycles: typeof findCycles;
-  enumerateCycles: typeof enumerateCycles;
-  evaluatePipeline: typeof evaluatePipeline;
-  discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
-  buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
-  fetchTokenMetasFromHasura: typeof fetchTokenMetasFromHasura;
-  routeKeyFromEdges: (edges: any[], startToken: `0x${string}`) => string;
-  buildExecutionCandidate: typeof buildExecutionCandidate;
-  instrumenter: ArbInstrumenter;
-}
+import type { PassLoopDeps } from "./loop.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -120,36 +107,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   });
 
   let cycleWindowStart = Date.now();
-
-  // Start cross-chain scanner in a dedicated background loop if enabled
-  if (ctx.config.crossChainArb?.enabled) {
-    void (async () => {
-      ctx.logger.info({}, "Cross-chain scanner background loop started");
-      while (ctx.isRunning) {
-        try {
-          const pools = hasuraPoolsCache ?? ctx.getPools();
-          if (pools.length > 0) {
-            const polygonPoolStates: PolygonPoolState[] = pools.map((p) => ({
-              address: p.address,
-              protocol: p.protocol,
-              token0: p.token0,
-              token1: p.token1,
-            }));
-            const crossChainRoutes = await ctx.crossChainScanner!.findProfitableRoutes(polygonPoolStates, ctx.stateCache, []);
-            for (const route of crossChainRoutes) {
-              if (!ctx.isRunning) break;
-              ctx.logger.info({ route }, "Cross-chain arb opportunity found");
-              const success = await ctx.solverBot!.executeCrossChainArb(route);
-              ctx.logger.info({ routeKey: route.flashPool, success }, "Cross-chain arb executed");
-            }
-          }
-        } catch (err) {
-          ctx.logger.error({ err }, "Cross-chain arb loop error");
-        }
-        await sleep(LF_INTERVAL);
-      }
-    })();
-  }
 
   while (ctx.isRunning) {
     const now = Date.now();
@@ -610,7 +567,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             await ctx.reorgDetector.trackBlock(Number(latest.number), latest.hash);
             lastSimulationBlock = Number(latest.number);
           }
-        } catch {
+        } catch (_err: unknown) {
           /* best effort */
         }
       }

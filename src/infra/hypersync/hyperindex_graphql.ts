@@ -214,7 +214,7 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
         if (typeof pm.tokens === "string") {
           try {
             tokens = JSON.parse(pm.tokens) as string[];
-          } catch {
+          } catch (_err: unknown) {
             tokens = [];
           }
         } else if (Array.isArray(pm.tokens)) {

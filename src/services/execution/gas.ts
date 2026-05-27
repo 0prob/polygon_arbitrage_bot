@@ -113,7 +113,7 @@ export class GasOracle {
         gasPrice: predictedBase + clampedPriority,
         timestamp: Date.now(),
       };
-    } catch {
+    } catch (_err: unknown) {
       // Keep last known values on fetch failure
     }
   }

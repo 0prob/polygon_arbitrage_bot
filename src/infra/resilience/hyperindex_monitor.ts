@@ -52,7 +52,7 @@ export class HyperIndexMonitor implements Lifecycle {
     }
     try {
       await this.proc.stop();
-    } catch {
+    } catch (_err: unknown) {
       // best effort
     }
   }
@@ -112,7 +112,7 @@ export class HyperIndexMonitor implements Lifecycle {
     this._isHealthy = false;
     try {
       await this.proc.stop();
-    } catch {
+    } catch (_err: unknown) {
       // best effort
     }
     this.restartAttempts++;

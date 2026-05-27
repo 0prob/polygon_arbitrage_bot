@@ -79,7 +79,7 @@ export class NonceManager {
       await this.onStuckTx(oldest, boostedFee);
       this.staleNonces.delete(oldest);
       return true;
-    } catch {
+    } catch (_err: unknown) {
       return false;
     }
   }

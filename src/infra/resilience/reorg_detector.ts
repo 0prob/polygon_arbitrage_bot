@@ -28,7 +28,7 @@ export class ReorgDetector {
       try {
         const block = await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
         parentHash = block.hash ?? "";
-      } catch {
+      } catch (_err: unknown) {
         /* ignore */
       }
     }

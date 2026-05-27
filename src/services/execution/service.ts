@@ -1,13 +1,11 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { GasOracle } from "./gas.ts";
-import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { NonceManager } from "./nonce.ts";
 import { ExecutionTracker } from "./tracker.ts";
 import { QuarantineManager } from "./quarantine.ts";
-import { createPublicClient, http, getAddress, type PublicClient, decodeEventLog } from "viem";
-import { getChain } from "../../infra/rpc/chains.ts";
-import { SubmissionStrategy } from "../../config/schema.ts";
-import type { FastLaneSubmitter } from "../../infra/rpc/fastlane.ts";
+import { getAddress, decodeEventLog } from "viem";
+import { SubmissionStrategy, type SubmitTxFn } from "./submit.ts";
+import { ReceiptPoller } from "./receipt.ts";
 
 const ERC20_TRANSFER_EVENT = {
   anonymous: false,
@@ -32,7 +30,7 @@ function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, exec
       if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
         netProfit += parsed.args.value ?? 0n;
       }
-    } catch {
+    } catch (_err: unknown) {
       /* skip unmatched logs */
     }
   }
@@ -53,19 +51,6 @@ export interface ExecutionResult {
   txHash?: string;
   error?: string;
   gasUsed?: bigint;
-}
-
-export type SubmitTxFn = (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }) => Promise<string>;
-
-export interface ExecutionServiceOptions {
-  submissionStrategy?: SubmissionStrategy;
-  privateSubmitter?: SubmitTxFn;
-  fastLaneSubmitter?: FastLaneSubmitter;
-  chainId?: number;
-  receiptTimeoutMs?: number;
-  receiptPollMs?: number;
-  quarantineBaseMs?: number;
-  quarantineMaxMs?: number;
 }
 
 function poolsFromRouteKey(routeKey: string): string[] {
@@ -107,16 +92,10 @@ export function groupCompatibleCandidates(candidates: CandidateExecution[]): Can
 export class ExecutionService {
   private quarantine: QuarantineManager;
   readonly tracker = new ExecutionTracker();
-  private receiptClient: PublicClient | null = null;
-  private readonly receiptTimeoutMs: number;
-  private readonly receiptPollMs: number;
-  private readonly submissionStrategy: SubmissionStrategy;
-  private readonly privateSubmitter: SubmitTxFn | null;
-  private readonly fastLaneSubmitter: FastLaneSubmitter | null;
   private inFlightRouteHashes = new Map<string, number>();
 
   private cleanInFlight(): void {
-    const cutoff = Date.now() - this.receiptTimeoutMs - 5_000;
+    const cutoff = Date.now() - 35_000;
     for (const [key, ts] of this.inFlightRouteHashes) {
       if (ts < cutoff) this.inFlightRouteHashes.delete(key);
     }
@@ -134,94 +113,25 @@ export class ExecutionService {
 
   constructor(
     private logger: Logger,
+    private submissionStrategy: SubmissionStrategy,
+    private receiptPoller: ReceiptPoller,
     private gasOracle: GasOracle,
     private nonceManager: NonceManager,
-    private submitters: SubmitTxFn[],
-    options: ExecutionServiceOptions = {},
+    quarantineBaseMs: number = 2000,
+    quarantineMaxMs: number = 600_000,
   ) {
-    this.quarantine = new QuarantineManager(options.quarantineBaseMs, options.quarantineMaxMs);
-    this.receiptTimeoutMs = options.receiptTimeoutMs ?? 30_000;
-    this.receiptPollMs = (options as any).receiptPollMs ?? 500;
-    this.submissionStrategy = options.submissionStrategy ?? "hybrid";
-    this.privateSubmitter = options.privateSubmitter ?? null;
-    this.fastLaneSubmitter = options.fastLaneSubmitter ?? null;
-
-    if (options.chainId) {
-      this.receiptClient = createPublicClient({
-        chain: getChain(options.chainId),
-        transport: http(),
-      });
-    }
-  }
-
-  getSubmissionStrategy(): SubmissionStrategy {
-    return this.submissionStrategy;
+    this.quarantine = new QuarantineManager(quarantineBaseMs, quarantineMaxMs);
   }
 
   async start(): Promise<void> {
     await this.gasOracle.start();
     await this.nonceManager.initialize();
-    this.logger.info(
-      { submissionStrategy: this.submissionStrategy, fastLaneEnabled: this.fastLaneSubmitter?.isEnabled() },
-      "ExecutionService started",
-    );
+    this.logger.info({}, "ExecutionService started");
   }
 
   stop(): void {
     this.gasOracle.stop();
     this.logger.info({}, "ExecutionService stopped");
-  }
-
-  private async submitTx(
-    tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint },
-    expectedProfit?: bigint,
-  ): Promise<{ txHash: string; endpoint: string }> {
-    const snapshot = this.gasOracle.getSnapshot();
-    let adjustedFee = tx.maxFee;
-    let priorityFee = snapshot?.priorityFee ?? 1n * 10n ** 9n;
-    if (expectedProfit && expectedProfit > 0n && snapshot) {
-      const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, this.gasOracle.config?.maxBidMultiplier ?? 3);
-      adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
-      priorityFee = scaled;
-    }
-
-    const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee });
-
-    if (this.fastLaneSubmitter?.isEnabled()) {
-      try {
-        const txHash = await this.fastLaneSubmitter.submitTransaction({
-          to: tx.to,
-          data: tx.data,
-          value: tx.value,
-          nonce: tx.nonce,
-          maxFee: adjustedFee,
-          priorityFee,
-        });
-        return { txHash, endpoint: "fastlane" };
-      } catch (err) {
-        this.logger.warn({ err }, "FastLane submission failed, falling back");
-      }
-    }
-
-    if (this.submissionStrategy === "private" && this.privateSubmitter) {
-      const txHash = await submit(this.privateSubmitter);
-      return { txHash, endpoint: "private" };
-    }
-
-    if (this.submissionStrategy === "hybrid" && this.privateSubmitter) {
-      try {
-        const txHash = await Promise.race([
-          submit(this.privateSubmitter).then((h) => ({ txHash: h, endpoint: "private" as const })),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("private timeout")), 2_000)),
-        ]);
-        if (txHash) return txHash;
-      } catch {
-        this.logger.debug({}, "Private submission failed, falling back to public");
-      }
-    }
-
-    const txHash = await Promise.any(this.submitters.map((fn) => submit(fn)));
-    return { txHash, endpoint: "public" };
   }
 
   async execute(candidate: CandidateExecution): Promise<ExecutionResult> {
@@ -244,7 +154,7 @@ export class ExecutionService {
       this.markInFlight(candidate.routeKey);
       const nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
-      const { txHash, endpoint } = await this.submitTx(
+      const { txHash, endpoint } = await this.submissionStrategy.submit(
         {
           to: candidate.targetAddress,
           data: candidate.calldata,
@@ -258,14 +168,14 @@ export class ExecutionService {
       this.nonceManager.confirmNonce(nonce);
       this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Transaction submitted");
 
-      const receipt = await this._waitForReceipt(txHash);
+      const receipt = await this.receiptPoller.wait(txHash);
       const success = !!receipt?.status;
       const gasUsed = receipt?.gasUsed ?? 0n;
 
       let profit = 0n;
       if (success && receipt && candidate.profitToken) {
         const execAddr = getAddress(candidate.targetAddress);
-        const logs = (receipt as any).logs ?? [];
+        const logs = receipt.logs;
         profit = parseTransferLogs(logs, execAddr);
       }
 
@@ -335,7 +245,7 @@ export class ExecutionService {
       this.nonceManager.markInFlight(nonce);
 
       try {
-        const { txHash, endpoint } = await this.submitTx(
+        const { txHash, endpoint } = await this.submissionStrategy.submit(
           {
             to: candidate.targetAddress,
             data: candidate.calldata,
@@ -362,7 +272,7 @@ export class ExecutionService {
     await Promise.all(
       receiptPromises.map(async ({ index, txHash, nonce, candidate }) => {
         try {
-          const receipt = await this._waitForReceipt(txHash);
+          const receipt = await this.receiptPoller.wait(txHash);
           if (!receipt) {
             this.inFlightRouteHashes.delete(candidate.routeKey);
             this.nonceManager.markStale(nonce);
@@ -410,31 +320,12 @@ export class ExecutionService {
       }),
     );
 
-    // Fill in any remaining gaps (though there shouldn't be any)
+    // Fill in any remaining gaps
     for (let i = 0; i < results.length; i++) {
       if (!results[i]) results[i] = { success: false, error: "unknown error" };
     }
 
     return results;
-  }
-
-  private async _waitForReceipt(
-    txHash: string,
-  ): Promise<{ status: boolean; gasUsed: bigint; logs: Array<{ topics: string[]; data: string }> } | null> {
-    if (!this.receiptClient) return null;
-    const deadline = Date.now() + this.receiptTimeoutMs;
-    while (Date.now() < deadline) {
-      try {
-        const receipt = await this.receiptClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
-        if (receipt) {
-          return { status: receipt.status === "success", gasUsed: receipt.gasUsed, logs: (receipt as any).logs ?? [] };
-        }
-      } catch {
-        // Receipt not yet available
-      }
-      await new Promise((r) => setTimeout(r, this.receiptPollMs));
-    }
-    return null;
   }
 
   isQuarantined(routeKey: string): boolean {
@@ -445,3 +336,5 @@ export class ExecutionService {
     return this.quarantine;
   }
 }
+
+export type { SubmitTxFn };

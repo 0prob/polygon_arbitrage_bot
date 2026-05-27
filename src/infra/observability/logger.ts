@@ -37,7 +37,7 @@ function createLogSinkStream(sink: string[], max: number): DestinationStream {
           const msg = parsed.msg ?? "";
           sink.unshift(`[${label}] ${msg}`);
           if (sink.length > max) sink.length = max;
-        } catch {
+        } catch (_err: unknown) {
           sink.unshift(raw);
           if (sink.length > max) sink.length = max;
         }

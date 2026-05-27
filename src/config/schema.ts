@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { crossChainArbSchema } from "./crosschain_schema.ts";
 
 /** Coerce a string env var to bigint */
 const bigintFromString = z.union([
@@ -125,6 +124,5 @@ export const AppConfigSchema = z.object({
   envioApiToken: z.string().min(1, "ENVIO_API_TOKEN is required"),
   hasuraUrl: z.string().url().default("http://localhost:8080/v1/graphql"),
   hasuraSecret: z.string().default("testing"),
-  crossChainArb: crossChainArbSchema.optional(),
 });
 export type AppConfig = z.infer<typeof AppConfigSchema>;

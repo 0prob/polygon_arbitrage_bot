@@ -68,7 +68,8 @@ describe("bootApplication", () => {
     } as AppConfig;
 
     const context = await bootApplication(config);
-    // @ts-expect-error - Checking private member for test
-    expect(context.executionService.submitters).toHaveLength(2);
+
+    expect(context.executionService).toBeDefined();
+    expect(context.executionService.isQuarantined("test")).toBe(false);
   });
 });

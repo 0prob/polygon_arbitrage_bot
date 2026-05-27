@@ -74,7 +74,7 @@ export async function performMulticall(
         functionName: requests[i].functionName,
         data: res.returnData,
       });
-    } catch {
+    } catch (_err: unknown) {
       return null;
     }
   });

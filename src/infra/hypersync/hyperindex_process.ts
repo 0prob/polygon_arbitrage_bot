@@ -61,11 +61,11 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       if (pid) {
         try {
           process.kill(Number(pid), "SIGKILL");
-        } catch {
+        } catch (_err: unknown) {
           // process already gone
         }
       }
-    } catch {
+    } catch (_err: unknown) {
       // port is free
     }
   }
@@ -248,7 +248,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       // Still try to stop envio just in case containers are orphans
       try {
         execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
-      } catch {
+      } catch (_err: unknown) {
         // ignore errors if nothing to stop
       }
       return;
@@ -267,7 +267,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       const timeout = setTimeout(() => {
         try {
           if (p.pid) process.kill(-p.pid, "SIGKILL");
-        } catch {
+        } catch (_err: unknown) {
           // ignore
         }
         cleanup();

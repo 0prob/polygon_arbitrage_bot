@@ -3,14 +3,13 @@ import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
-import { ExecutionService, type SubmitTxFn } from "../services/execution/service.ts";
+import { ExecutionService } from "../services/execution/service.ts";
+import { SubmissionStrategy, type SubmitTxFn } from "../services/execution/submit.ts";
+import { ReceiptPoller } from "../services/execution/receipt.ts";
 import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
-import { CrossChainScanner } from "../services/crosschain/scanner.ts";
-import { SolverBot } from "../services/crosschain/solver.ts";
 import { createExecutionClient } from "../infra/rpc/client_factory.ts";
-import { ServiceRegistry } from "../infra/di/service_registry.ts";
 import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
@@ -32,10 +31,7 @@ export interface RuntimeContext {
   rpc: RpcManager;
   isRunning: boolean;
   gasOracle: GasOracle;
-  crossChainScanner?: CrossChainScanner;
-  solverBot?: SolverBot;
   metrics: Metrics;
-  services: ServiceRegistry;
   rpcCircuit: CircuitBreaker;
   hasuraCircuit: CircuitBreaker;
   tierManager: TierManager;
@@ -101,7 +97,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
       ]);
       const baseFee = block.baseFeePerGas ?? 30n * 10n ** 9n;
       return { baseFee, priorityFee };
-    } catch {
+    } catch (_err: unknown) {
       return { baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n };
     }
   };
@@ -191,16 +187,15 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     logger.info({ rpcUrl: config.fastlane.rpcUrl }, "FastLane submitter initialized");
   }
 
-  const executionService = new ExecutionService(logger, gasOracle, nonceManager, submitters, {
+  const submissionStrategy = new SubmissionStrategy(logger, gasOracle, submitters, {
     submissionStrategy: config.execution.submissionStrategy,
     privateSubmitter,
     fastLaneSubmitter,
-    chainId: config.execution.chainId,
-    receiptTimeoutMs: config.execution.receiptTimeoutMs,
-    receiptPollMs: config.execution.receiptPollMs,
-    quarantineBaseMs: config.execution.quarantineBaseMs,
-    quarantineMaxMs: config.execution.quarantineMaxMs,
   });
+
+  const receiptPoller = new ReceiptPoller(rpc, config.execution.receiptTimeoutMs, config.execution.receiptPollMs);
+
+  const executionService = new ExecutionService(logger, submissionStrategy, receiptPoller, gasOracle, nonceManager, config.execution.quarantineBaseMs, config.execution.quarantineMaxMs);
 
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
@@ -229,7 +224,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
                   value: tx.value?.toString() ?? "0",
                 });
               }
-            } catch {
+            } catch (_err: unknown) {
               /* tx may have been mined before we fetch it */
             }
           }
@@ -240,59 +235,6 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
       logger.warn({ err }, "Failed to start mempool WebSocket watcher");
     }
   }
-
-  let crossChainScanner: CrossChainScanner | undefined;
-  let solverBot: SolverBot | undefined;
-
-  if (config.crossChainArb?.enabled) {
-    crossChainScanner = new CrossChainScanner({
-      katanaRpcUrl: config.crossChainArb.katanaRpcUrl,
-      escrowToken: config.crossChainArb.escrowToken as `0x${string}`,
-      escrowAmount: config.crossChainArb.escrowAmount,
-      minProfitBps: config.crossChainArb.minProfitBps,
-      maxSwapHops: config.crossChainArb.maxSwapHops,
-    });
-    solverBot = new SolverBot({
-      polygonSolverKey: config.crossChainArb.polygonSolverPrivateKey as `0x${string}`,
-      katanaSolverKey: config.crossChainArb.katanaSolverPrivateKey as `0x${string}`,
-      crossChainIntentOrigin: config.crossChainArb.originSettlerAddress as `0x${string}`,
-      katanaExecutor: config.crossChainArb.katanaExecutorAddress as `0x${string}`,
-      escrowToken: config.crossChainArb.escrowToken as `0x${string}`,
-      escrowAmount: config.crossChainArb.escrowAmount,
-      polygonRpcUrl: config.rpc.polygonRpcUrls[0],
-      katanaRpcUrl: config.crossChainArb.katanaRpcUrl,
-    });
-  }
-
-  const services = new ServiceRegistry();
-  services.register("logger", logger);
-  services.register("execution", executionService, {
-    prepare: async () => {},
-    start: async () => {
-      await executionService.start();
-    },
-    stop: async () => {
-      executionService.stop();
-    },
-  });
-  services.register("mempool", mempoolService, {
-    prepare: async () => {},
-    start: async () => {
-      await mempoolService.start();
-    },
-    stop: async () => {
-      mempoolService.stop();
-    },
-  });
-  services.register("gasOracle", gasOracle, {
-    prepare: async () => {},
-    start: async () => {
-      await gasOracle.start();
-    },
-    stop: async () => {
-      gasOracle.stop();
-    },
-  });
 
   const rpcCircuit = new CircuitBreaker("polygon-rpc", {
     failureThreshold: 3,
@@ -306,10 +248,6 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     isHealthy: () => true,
     isRunning: () => true,
   } as any);
-
-  services.register("rpcCircuit", rpcCircuit);
-  services.register("hasuraCircuit", hasuraCircuit);
-  services.register("tierManager", tierManager);
 
   // Reorg detector
   const reorgDetector = rpc.getReorgDetector();
@@ -350,10 +288,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     rpc,
     isRunning: true,
     gasOracle,
-    crossChainScanner,
-    solverBot,
     metrics,
-    services,
     rpcCircuit,
     hasuraCircuit,
     tierManager,

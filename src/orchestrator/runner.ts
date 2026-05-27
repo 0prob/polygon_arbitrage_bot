@@ -1,5 +1,6 @@
 import type { RuntimeContext } from "./boot.ts";
-import { runPassLoop, type PassLoopDeps, DEFAULT_DEPS } from "./pass_loop.ts";
+import { runPassLoop, DEFAULT_DEPS } from "./pass_loop.ts";
+import type { PassLoopDeps } from "./loop.ts";
 import type { EventBus } from "../tui/events.ts";
 
 export class PassRunner {

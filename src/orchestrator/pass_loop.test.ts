@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { runPassLoop, type PassLoopDeps } from "./pass_loop.ts";
+import { runPassLoop } from "./pass_loop.ts";
+import type { PassLoopDeps } from "./loop.ts";
 import type { RuntimeContext } from "./boot.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
 

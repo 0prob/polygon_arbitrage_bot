@@ -233,7 +233,7 @@ export async function fetchMissingPoolState(
             }
           }
         }
-      } catch {
+      } catch (_err: unknown) {
         // Ignore individual batch failures
       }
     }),

@@ -131,7 +131,7 @@ export class WebSocketSubscriber {
         }
         this.scheduleReconnect();
       };
-    } catch {
+    } catch (_err: unknown) {
       this.scheduleReconnect();
     }
   }
@@ -147,7 +147,7 @@ export class WebSocketSubscriber {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: this.requestId++ }));
       }
-    } catch {
+    } catch (_err: unknown) {
       /* ignore */
     }
   }
@@ -184,7 +184,7 @@ export class WebSocketSubscriber {
           }),
         );
       }
-    } catch {
+    } catch (_err: unknown) {
       /* ignore */
     }
   }
@@ -205,7 +205,7 @@ export class WebSocketSubscriber {
             onResult(subResult as Record<string, string>);
           }
         }
-      } catch {
+      } catch (_err: unknown) {
         /* skip */
       }
       if (origOnMessage) {
@@ -264,7 +264,7 @@ export class WebSocketSubscriber {
     for (const handler of this.eventHandlers) {
       try {
         handler(event);
-      } catch {
+      } catch (_err: unknown) {
         /* handler error */
       }
     }

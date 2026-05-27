@@ -1,12 +1,15 @@
 import { describe, it, expect, vi } from "vitest";
 import { ExecutionService } from "./service.ts";
+import { SubmissionStrategy } from "./submit.ts";
+import { ReceiptPoller } from "./receipt.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { GasOracle } from "./gas.ts";
 import type { NonceManager } from "./nonce.ts";
+import type { RpcManager } from "../../rpc/manager.ts";
 
 describe("ExecutionService", () => {
-  const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() } as unknown as Logger;
-  const mockGasOracle = { start: vi.fn(), stop: vi.fn(), getSnapshot: vi.fn() } as unknown as GasOracle;
+  const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() } as unknown as Logger;
+  const mockGasOracle = { start: vi.fn(), stop: vi.fn(), getSnapshot: vi.fn(), config: undefined, getPredictedBaseFee: vi.fn() } as unknown as GasOracle;
   const mockNonceManager = {
     initialize: vi.fn(),
     getNextNonce: vi.fn(),
@@ -15,9 +18,16 @@ describe("ExecutionService", () => {
     markStale: vi.fn(),
   } as unknown as NonceManager;
   const mockSubmitTx = vi.fn();
+  const mockRpc = { read: { getTransactionReceipt: vi.fn() } } as unknown as RpcManager;
+
+  const makeService = () => {
+    const strategy = new SubmissionStrategy(mockLogger, mockGasOracle, [mockSubmitTx], {});
+    const poller = new ReceiptPoller(mockRpc, 30_000, 500);
+    return new ExecutionService(mockLogger, strategy, poller, mockGasOracle, mockNonceManager);
+  };
 
   it("quarantines route on gas data failure", async () => {
-    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, [mockSubmitTx]);
+    const service = makeService();
 
     vi.spyOn(mockGasOracle, "getSnapshot").mockReturnValue(null);
 
@@ -36,7 +46,7 @@ describe("ExecutionService", () => {
   });
 
   it("quarantines route on execution failure", async () => {
-    const service = new ExecutionService(mockLogger, mockGasOracle, mockNonceManager, [mockSubmitTx]);
+    const service = makeService();
 
     vi.spyOn(mockGasOracle, "getSnapshot").mockReturnValue({
       baseFee: 100n,

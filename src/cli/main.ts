@@ -43,7 +43,6 @@ async function main() {
     processOptions: {
       dataDir: config.paths.dataDir,
       polygonRpcUrl: config.rpc.polygonRpcUrls[0],
-      katanaRpcUrl: config.crossChainArb?.katanaRpcUrl,
       envioApiToken: config.envioApiToken,
       logger,
       eventBus: useTui ? bus : undefined,
