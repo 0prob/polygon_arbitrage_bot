@@ -8,20 +8,14 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   POLYGON_RPC_URL: ["rpc", "polygonRpcUrls"], // alias
   POLYGON_RPC: ["rpc", "polygonRpcUrls"], // alias
   EXECUTION_RPC: ["rpc", "executionRpcUrl"],
-  GAS_ESTIMATION_RPC: ["rpc", "gasEstimationRpcUrl"],
   CONFIG_JSON_RPC_TIMEOUT_MS: ["rpc", "requestTimeoutMs"],
   RPC_BATCH_WAIT_MS: ["rpc", "batchWaitMs"],
   RPC_BATCH_SIZE: ["rpc", "batchSize"],
 
   GAS_POLL_INTERVAL_MS: ["gas", "pollIntervalMs"],
-  GAS_BUFFER_BPS: ["gas", "bufferBps"],
-  GAS_MULTIPLIER: ["gas", "multiplier"],
   POLYGON_PRIORITY_FEE_FLOOR_GWEI: ["gas", "priorityFeeFloorGwei"],
   POLYGON_PRIORITY_FEE_CEILING_GWEI: ["gas", "priorityFeeCeilingGwei"],
   POLYGON_MAX_BID_MULTIPLIER: ["gas", "maxBidMultiplier"],
-  GAS_CACHE_TTL_MS: ["gas", "cacheTtlMs"],
-  GAS_CACHE_SIZE: ["gas", "cacheSize"],
-  GAS_DEFAULT_BUFFER_BPS: ["gas", "defaultGasBufferBps"],
   EIP1559_ENABLED: ["gas", "eip1559Enabled"],
   GAS_FEE_HISTORY_PERCENTILE: ["gas", "feeHistoryPercentile"],
   GAS_EMA_ALPHA: ["gas", "emaAlpha"],
@@ -30,14 +24,9 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   GAS_HISTORY_SIZE: ["gas", "historySize"],
 
   ROUTING_MAX_HOPS: ["routing", "maxHops"],
-  MAX_TOTAL_PATHS: ["routing", "maxTotalPaths"],
-  MAX_PATHS_TO_OPTIMIZE: ["routing", "maxPathsToOptimize"],
   CYCLE_REFRESH_INTERVAL_MS: ["routing", "cycleRefreshIntervalMs"],
   LIQUIDITY_FLOOR_USD: ["routing", "liquidityFloorUsd"],
-  WORKER_COUNT: ["routing", "workerCount"],
-  EVAL_WORKER_THRESHOLD: ["routing", "evalWorkerThreshold"],
   ROUTING_ENUMERATION_MAX_PATHS: ["routing", "enumerationMaxPaths"],
-  ROUTING_ENUMERATION_MAX_4HOP_PATHS: ["routing", "enumerationMax4HopPaths"],
   ROUTING_CONCURRENCY: ["routing", "concurrency"],
   TERNARY_SEARCH_ITERATIONS: ["routing", "ternarySearchIterations"],
   MAX_PRICE_IMPACT_THRESHOLD: ["routing", "maxPriceImpactThreshold"],
@@ -51,9 +40,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   FLASH_LOAN_SOURCE: ["execution", "flashLoanSource"],
   PRIVATE_RELAY_URLS: ["execution", "privateRelayUrls"],
   SUBMISSION_STRATEGY: ["execution", "submissionStrategy"],
-  DRY_RUN_BEFORE_SUBMIT: ["execution", "dryRunBeforeSubmit"],
   RECEIPT_TIMEOUT_MS: ["execution", "receiptTimeoutMs"],
-  MAX_CONCURRENT_EXECUTIONS: ["execution", "maxConcurrentExecutions"],
   QUARANTINE_BASE_MS: ["execution", "quarantineBaseMs"],
   QUARANTINE_MAX_MS: ["execution", "quarantineMaxMs"],
   EXECUTOR_ADDRESS: ["execution", "executorAddress"],
@@ -61,18 +48,6 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   CHAIN_ID: ["execution", "chainId"],
   ROI_SAFETY_CAP: ["execution", "roiSafetyCap"],
   MIN_LIQUIDITY_V3_RATE: ["execution", "minLiquidityV3Rate"],
-
-  DISCOVERY_REFRESH_INTERVAL_MS: ["discovery", "refreshIntervalMs"],
-  DISCOVERY_CONCURRENCY: ["discovery", "concurrency"],
-
-  WATCHER_IDLE_SLEEP_MS: ["watcher", "idleSleepMs"],
-  WATCHER_ENRICHMENT_BACKFILL_LOOKBACK: ["watcher", "enrichmentBackfillLookbackBlocks"],
-  WATCHER_ENRICHMENT_MAX_POOLS: ["watcher", "enrichmentMaxPools"],
-
-  PREDICTIVE_CACHE_ENABLED: ["predictiveCache", "enabled"],
-  PREDICTIVE_CACHE_MAX_PATHS: ["predictiveCache", "maxPaths"],
-  PREDICTIVE_CACHE_PRECOMPUTE_COUNT: ["predictiveCache", "precomputeCount"],
-  PREDICTIVE_CACHE_REFRESH_INTERVAL_MS: ["predictiveCache", "refreshIntervalMs"],
 
   MEMPOOL_ENABLED: ["mempool", "enabled"],
   MEMPOOL_WEBSOCKET_URL: ["mempool", "websocketUrl"],
@@ -132,9 +107,8 @@ function envToOverrides(env: NodeJS.ProcessEnv): Record<string, Record<string, u
     const value = env[envKey];
     if (value == null || value === "") continue;
     const [section, field] = mapping;
-    if (section === ("envioApiToken" as keyof AppConfig)) {
-      // Top-level field
-      (overrides as Record<string, unknown>).envioApiToken = value;
+    if (section === ("envioApiToken" as keyof AppConfig) || section === ("hasuraUrl" as keyof AppConfig) || section === ("hasuraSecret" as keyof AppConfig)) {
+      (overrides as Record<string, unknown>)[section as string] = value;
       continue;
     }
     const sectionStr = section as string;
