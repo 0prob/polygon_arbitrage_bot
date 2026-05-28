@@ -130,7 +130,6 @@ contract ArbExecutor is IFlashLoanRecipient {
     error ApproveFailed(address token, address spender);
     error ZeroAddress();
 
-    event OperatorSet(address indexed operator, bool allowed);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event PreApproved(address indexed token, address indexed spender);
     event ArbitrageExecuted(
@@ -151,7 +150,6 @@ contract ArbExecutor is IFlashLoanRecipient {
     );
 
     address public owner;
-    mapping(address => bool) public operators;
 
     address public immutable balancerVault;
     address public immutable uniswapV3Factory;
@@ -175,7 +173,7 @@ contract ArbExecutor is IFlashLoanRecipient {
     }
 
     modifier onlyAuthorized() {
-        if (msg.sender != owner && !operators[msg.sender]) revert Unauthorized();
+        if (msg.sender != owner) revert Unauthorized();
         _;
     }
 
@@ -220,11 +218,6 @@ contract ArbExecutor is IFlashLoanRecipient {
 
     receive() external payable {}
 
-    function setOperator(address operator, bool allowed) external onlyOwner {
-        operators[operator] = allowed;
-        emit OperatorSet(operator, allowed);
-    }
-
     function transferOwnership(address newOwner) external onlyOwner {
         if (newOwner == address(0)) revert ZeroAddress();
         address previousOwner = owner;
@@ -238,7 +231,7 @@ contract ArbExecutor is IFlashLoanRecipient {
     }
 
     function approveIfNeeded(address token, address spender, uint256 amount) external nonReentrant {
-        if (msg.sender != address(this) && msg.sender != owner && !operators[msg.sender]) {
+        if (msg.sender != address(this) && msg.sender != owner) {
             revert Unauthorized();
         }
         _safeApproveMaxIfNeeded(token, spender, amount);

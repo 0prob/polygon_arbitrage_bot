@@ -91,8 +91,17 @@ function deepMerge<T>(base: T, override: Partial<T>): T {
 function envToOverrides(env: NodeJS.ProcessEnv): Record<string, Record<string, unknown>> {
   const overrides: Record<string, Record<string, unknown>> = {};
   for (const [envKey, mapping] of Object.entries(ENV_TO_PATH)) {
-    const value = env[envKey];
+    let value = env[envKey];
     if (value == null || value === "") continue;
+
+    // Deduplicate if it looks like a doubled/quadrupled address or key
+    if (typeof value === "string" && value.startsWith("0x")) {
+      const parts = value.split("0x").filter((p) => p.length > 0);
+      if (parts.length > 1 && parts.every((p) => p === parts[0])) {
+        value = "0x" + parts[0];
+      }
+    }
+
     const [section, field] = mapping;
     if (section === ("envioApiToken" as keyof AppConfig) || section === ("hasuraUrl" as keyof AppConfig) || section === ("hasuraSecret" as keyof AppConfig)) {
       (overrides as Record<string, unknown>)[section as string] = value;
