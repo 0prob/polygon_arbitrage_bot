@@ -13,13 +13,10 @@ full_batch_size: 6000
 #
 # Single-chain Polygon configuration (Katana removed).
 #
-# Effects (token metadata, Balancer/Curve/DODO reads) use a centralized batched RPC client.
-# For best free-tier experience, set POLYGON_RPC_URL to one of:
-#   - Alchemy (free tier, best batching)   → https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY
-#   - LlamaRPC (excellent free, no key)    → https://polygon.llamarpc.com
-#   - PublicNode (free, no key)            → https://polygon-bor-rpc.publicnode.com
-#
-# If POLYGON_RPC_URL is not set, the indexer defaults to LlamaRPC.
+# Effects (token metadata, Balancer/Curve/DODO reads) use a centralized batched RPC client with fallback.
+# The host process probes + filters for archival support and prefers endpoints from POLYGON_RPC_URLS
+# (set in root .env) before falling back to free public RPCs (after removing any that fail historical calls).
+# Set POLYGON_RPC_URLS (comma-separated) in your .env for custom/paid providers with archive.
 chains:
   - id: 137
     # With HyperSync, start_block: 0 is safe and lets it auto-detect contract deployment.

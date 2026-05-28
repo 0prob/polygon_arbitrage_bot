@@ -14,7 +14,10 @@ type EventBusLike = { emit(event: HyperIndexStatusEvent): void };
 
 export interface HyperIndexProcessOptions {
   dataDir: string;
-  polygonRpcUrl: string;
+  /** Vetted list of RPC URLs (from .env filtered for support, or free public fallbacks).
+   *  Passed as POLYGON_RPC_URLS (comma-joined) so the effect client can use viem fallback.
+   */
+  polygonRpcUrls: string[];
   katanaRpcUrl?: string;
   envioApiToken?: string;
   logger: Logger;
@@ -144,12 +147,19 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     freePort(8080);
     _stderrBuffer = [];
 
+    const rpcList = (opts.polygonRpcUrls && opts.polygonRpcUrls.length > 0) ? opts.polygonRpcUrls : [];
     const env: Record<string, string> = {
       ...process.env,
       PATH: process.env.PATH ?? "",
       HOME: process.env.HOME ?? "",
-      POLYGON_RPC_URL: opts.polygonRpcUrl,
     } as Record<string, string>;
+
+    if (rpcList.length > 0) {
+      // Provide plural for fallback support inside effects + singular for any legacy
+      env.POLYGON_RPC_URLS = rpcList.join(",");
+      env.POLYGON_RPC_URL = rpcList[0];
+    }
+    // If empty list, let the hyperindex rpc_client fall back to its internal default free public
     
     if (opts.katanaRpcUrl) {
       env.KATANA_RPC_URL = opts.katanaRpcUrl;

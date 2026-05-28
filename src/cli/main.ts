@@ -10,6 +10,8 @@ import { join } from "path";
 import { execSync } from "child_process";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { HealthServer } from "../infra/observability/health_server.ts";
+import { filterArchivalRpcUrls } from "../infra/rpc/client_factory.ts";
+import { DEFAULTS } from "../config/defaults.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -30,6 +32,27 @@ async function main() {
     logger = createRootLogger({ level: config.observability.logLevel });
   }
 
+  // Resolve RPC list for HyperIndex: prefer .env-provided endpoints (after removing any
+  // that do not support required historical calls), only fall back to free public RPCs
+  // (similarly filtered) if no usable .env ones.
+  const rawRpcs = config.rpc.polygonRpcUrls;
+  const hasUserEnvRpcs = !!(process.env.POLYGON_RPC_URLS || process.env.POLYGON_RPC_URL || process.env.POLYGON_RPC);
+  let indexerRpcs: string[];
+  if (hasUserEnvRpcs && rawRpcs.length > 0) {
+    const good = await filterArchivalRpcUrls(rawRpcs);
+    if (good.length > 0) {
+      indexerRpcs = good;
+      logger.info({ count: good.length, rpcs: good }, "HyperIndex using filtered endpoints from .env (archival support verified)");
+    } else {
+      const freeGood = await filterArchivalRpcUrls(DEFAULTS.rpc.polygonRpcUrls);
+      indexerRpcs = freeGood.length > 0 ? freeGood : rawRpcs;
+      logger.warn({ using: indexerRpcs }, "No .env RPCs passed archival probe — falling back to filtered public RPCs for HyperIndex");
+    }
+  } else {
+    const good = await filterArchivalRpcUrls(rawRpcs.length ? rawRpcs : DEFAULTS.rpc.polygonRpcUrls);
+    indexerRpcs = good.length > 0 ? good : rawRpcs;
+  }
+
   if (useCleanup) {
     logger.info("Running pre-flight cleanup");
     try {
@@ -42,7 +65,7 @@ async function main() {
   const hyperIndexMonitor = new HyperIndexMonitor({
     processOptions: {
       dataDir: config.paths.dataDir,
-      polygonRpcUrl: config.rpc.polygonRpcUrls[0],
+      polygonRpcUrls: indexerRpcs,
       envioApiToken: config.envioApiToken,
       logger,
       eventBus: useTui ? bus : undefined,
