@@ -25,6 +25,7 @@
     "cgen": "cd hyperindex && bunx envio codegen"
   },
   "dependencies": {
+    "@envio-dev/hypersync-client": "^1.3.0",
     "envio": "^3.0.2",
     "pino": "^10.3.1",
     "viem": "^2.51.3",

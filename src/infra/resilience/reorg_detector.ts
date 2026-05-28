@@ -1,5 +1,6 @@
 import type { PublicClient } from "viem";
 import type { HyperRpcClient } from "../rpc/hyperrpc.ts";
+import type { HyperSyncService } from "../hypersync/hypersync_service.ts";
 
 export interface BlockInfo {
   number: number;
@@ -18,8 +19,10 @@ export class ReorgDetector {
   constructor(
     private client: PublicClient,
     private checkDepth: number = 10,
-    /** Read-only HyperRPC client (optional, for faster block queries) */
+    /** Read-only HyperRPC client (optional, for JSON-RPC compatibility) */
     private hyperRpc?: HyperRpcClient,
+    /** Preferred: Official high-performance HyperSync client */
+    private hyperSync?: HyperSyncService,
   ) {}
 
   async trackBlock(blockNumber: number, blockHash: string): Promise<void> {
@@ -29,9 +32,11 @@ export class ReorgDetector {
       parentHash = parent.hash;
     } else {
       try {
-        const block = this.hyperRpc
-          ? await this.hyperRpc.getBlockByNumber(BigInt(blockNumber - 1))
-          : await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
+        const block = this.hyperSync
+          ? await this.hyperSync.getBlockByNumber(BigInt(blockNumber - 1))
+          : this.hyperRpc
+            ? await this.hyperRpc.getBlockByNumber(BigInt(blockNumber - 1))
+            : await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
         parentHash = (block?.hash as string) ?? "";
       } catch (_err: unknown) {
         /* ignore */
@@ -62,9 +67,11 @@ export class ReorgDetector {
       if (!tracked) continue;
 
       try {
-        const block = this.hyperRpc
-          ? await this.hyperRpc.getBlockByNumber(BigInt(blockNum))
-          : await this.client.getBlock({ blockNumber: BigInt(blockNum) });
+        const block = this.hyperSync
+          ? await this.hyperSync.getBlockByNumber(BigInt(blockNum))
+          : this.hyperRpc
+            ? await this.hyperRpc.getBlockByNumber(BigInt(blockNum))
+            : await this.client.getBlock({ blockNumber: BigInt(blockNum) });
         const blockHash = (block?.hash as string | undefined)?.toLowerCase();
         if (blockHash && blockHash !== tracked.hash.toLowerCase()) {
           // Reorg detected at this height

@@ -237,7 +237,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // stale (from an older indexed block) and is now only used for pools
         // without existing state. RPC gives us current on-chain prices.
         const poolCycles = pools.map((p) => ({ edges: [{ poolAddress: p.address }] }) as any);
-        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, poolCycles, true);
+        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, poolCycles, true, ctx.hyperSync);
         // (return value ignored on full refresh; we still want full rate recompute)
 
         // Re-calculate MATIC rates for all tokens (full refresh path — start fresh)
@@ -306,7 +306,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // Skip if we just did a full refresh in the same pass
         preFetchCounter++;
         if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
-          const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles);
+          const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false, ctx.hyperSync);
 
           // Build focus tokens from the pools we actually refreshed this round.
           const focusTokens = new Set<string>();
@@ -570,7 +570,19 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       ctx.metrics.executionReverts = trackerSummary.totalReverts;
       ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
       bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
-      const payload = buildStatusPayload(ctx.metrics, gasSnapshot.gasPrice, pools.length);
+      const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
+      const payload = buildStatusPayload(
+        ctx.metrics, 
+        gasSnapshot.gasPrice, 
+        pools.length,
+        hiStatus ? { 
+          synced: hiStatus.synced, 
+          remote: hiStatus.remote, 
+          lag: hiStatus.lag, 
+          syncRate: hiStatus.syncRate, 
+          healthy: ctx.hyperIndexMonitor!.isHealthy() 
+        } : undefined
+      );
       await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
 
       // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
@@ -587,9 +599,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             detector.clearReorged();
           }
 
-          const latest = ctx.hyperRpc
-            ? await ctx.hyperRpc.getBlockByNumber("latest")
-            : await ctx.publicClient.getBlock({ blockTag: "latest" });
+          const latest = ctx.hyperSync
+            ? await ctx.hyperSync.getBlockByNumber("latest")
+            : ctx.hyperRpc
+              ? await ctx.hyperRpc.getBlockByNumber("latest")
+              : await ctx.publicClient.getBlock({ blockTag: "latest" });
           if (latest?.number && latest?.hash) {
             await detector.trackBlock(Number(latest.number), latest.hash as `0x${string}`);
           }

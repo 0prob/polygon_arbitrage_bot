@@ -1,13 +1,20 @@
 name: arb_bot_ingestion
 description: "High-performance DEX indexing for arbitrage opportunities"
-rollback_on_reorg: false
+# Best practice (2026 docs): Keep reorg support enabled in production for safety.
+# HyperIndex handles rollbacks automatically when enabled.
+rollback_on_reorg: true
 raw_events: false
-full_batch_size: 5000
+full_batch_size: 5000   # Tune based on workload; higher for faster historical sync on low-volume chains
+
+# HyperSync is the recommended high-performance data source (2000x faster than RPC).
+# Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).
 chains:
   - id: 137
-    start_block: ${POLYGON_START_BLOCK:-5484533}
+    # With HyperSync, start_block: 0 is safe and lets it auto-detect contract deployment.
+    start_block: ${POLYGON_START_BLOCK:-0}
     hypersync_config:
       url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
+      # api_token can also be set here, but ENVIO_API_TOKEN env var is the standard approach.
     contracts:
       # Consolidated V2 Factories
       - name: V2Factory

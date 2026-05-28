@@ -30,6 +30,7 @@ export interface HyperRpcConfig {
   url?: string;
   apiToken?: string;
   timeoutMs?: number;
+  chainId?: number; // For constructing per-chain endpoints like https://137.rpc.hypersync.xyz
 }
 
 export interface HyperRpcBlock {
@@ -70,16 +71,22 @@ export class HyperRpcClient {
   private requestId = 0;
 
   constructor(config: HyperRpcConfig = {}) {
-    const base = config.url || "https://polygon.rpc.hypersync.xyz";
     const token = config.apiToken?.trim();
+    const chainId = config.chainId ?? 137; // Default Polygon
 
-    if (token) {
-      // Paid / high-tier endpoint format used by Envio HyperRPC
-      this.endpoint = base.includes("rpc.hypersync.xyz")
-        ? `https://rpc.hypersync.xyz/${token}`
-        : `${base.replace(/\/$/, "")}/${token}`;
+    if (config.url) {
+      // User-provided override (advanced)
+      this.endpoint = token && !config.url.includes(token)
+        ? `${config.url.replace(/\/$/, "")}/${token}`
+        : config.url;
+    } else if (token) {
+      // Recommended per docs (2026): per-chain or unified with token appended
+      // Unified high-performance: https://rpc.hypersync.xyz/<token>
+      // Or per-chain: https://137.rpc.hypersync.xyz/<token>
+      this.endpoint = `https://rpc.hypersync.xyz/${token}`;
     } else {
-      this.endpoint = base;
+      // Public (rate-limited) default for Polygon
+      this.endpoint = `https://${chainId}.rpc.hypersync.xyz`;
     }
 
     this.timeoutMs = config.timeoutMs ?? 10_000;

@@ -84,6 +84,62 @@ async function main() {
     hyperIndexMonitor.setChainHeadFetcher(headFetcher);
   }
 
+  if (ctx.hyperSync) {
+    hyperIndexMonitor.setHyperSyncService(ctx.hyperSync);
+  }
+
+  // Provide a real indexed height from Hasura (major improvement over log scraping only)
+  // Queries a representative table for the latest processed block.
+  const hasuraUrl = config.hasuraUrl;
+  const hasuraSecret = config.hasuraSecret;
+  if (hasuraUrl) {
+    // Optimized hybrid query: takes the global max lastUpdatedBlock across *all* pool state tables
+    // + createdBlock from PoolMeta. This gives the most accurate "how far the indexer has processed
+    // data the bot actually cares about" with a single cheap GraphQL roundtrip.
+    const getIndexedHeight = async (): Promise<number> => {
+      try {
+        const query = `{
+          v2: V2PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          v3: V3PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          v4: V4PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          curve: CurvePoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          balancer: BalancerPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          dodo: DodoPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          woofi: WoofiPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
+          meta: PoolMeta(limit: 1, order_by: {createdBlock: desc}) { createdBlock }
+        }`;
+
+        const resp = await fetch(hasuraUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(hasuraSecret ? { "x-hasura-admin-secret": hasuraSecret } : {}),
+          },
+          body: JSON.stringify({ query }),
+        });
+
+        const json = await resp.json() as any;
+        const d = json?.data || {};
+
+        const candidates = [
+          d.v2?.[0]?.lastUpdatedBlock,
+          d.v3?.[0]?.lastUpdatedBlock,
+          d.v4?.[0]?.lastUpdatedBlock,
+          d.curve?.[0]?.lastUpdatedBlock,
+          d.balancer?.[0]?.lastUpdatedBlock,
+          d.dodo?.[0]?.lastUpdatedBlock,
+          d.woofi?.[0]?.lastUpdatedBlock,
+          d.meta?.[0]?.createdBlock,
+        ].filter((x): x is number => typeof x === 'number' && x > 0);
+
+        return candidates.length > 0 ? Math.max(...candidates) : 0;
+      } catch {
+        return 0;
+      }
+    };
+    hyperIndexMonitor.setIndexedHeightProvider?.(getIndexedHeight);
+  }
+
   const healthServer = new HealthServer(9090, {
     metrics: ctx.metrics,
     rpcCircuit: ctx.rpcCircuit,

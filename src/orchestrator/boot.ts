@@ -20,6 +20,7 @@ import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import type { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import type { HyperRpcClient } from "../infra/rpc/hyperrpc.ts";
+import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -48,6 +49,9 @@ export interface RuntimeContext {
    * Use exclusively for the read methods it supports.
    */
   hyperRpc?: HyperRpcClient;
+
+  /** Official high-performance HyperSync client wrapper (recommended for most reads) */
+  hyperSync?: HyperSyncService;
 }
 
 export async function bootApplication(
@@ -310,6 +314,7 @@ export async function bootApplication(
     dryRunner,
     graphUpdater,
     hyperRpc: rpc.hyperRpc,
+    hyperSync: rpc.hyperSync,
     hyperIndexMonitor,
   };
 }

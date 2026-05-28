@@ -2,6 +2,7 @@ import type { Lifecycle } from "../../orchestrator/lifecycle.ts";
 import type { HyperIndexProcessOptions } from "../hypersync/hyperindex_process.ts";
 import { createHyperIndexProcess, type HyperIndexProcess } from "../hypersync/hyperindex_process.ts";
 import type { Logger } from "../observability/logger.ts";
+import type { HyperSyncService } from "../hypersync/hypersync_service.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -15,6 +16,8 @@ export interface HyperIndexMonitorOptions {
   logger: Logger;
   /** Optional function to fetch current chain head. Enables real lag calculation. */
   getChainHead?: () => Promise<number>;
+  /** Preferred: Official HyperSync client for reliable height + future queries (replaces log scraping reliance) */
+  hyperSync?: HyperSyncService;
 }
 
 export class HyperIndexMonitor implements Lifecycle {
@@ -81,6 +84,37 @@ export class HyperIndexMonitor implements Lifecycle {
     this.opts.getChainHead = fn;
   }
 
+  /** Inject the official HyperSync service for reliable progress/height (preferred over log scraping) */
+  setHyperSyncService(service: HyperSyncService): void {
+    this.opts.hyperSync = service;
+  }
+
+  /**
+   * Optional provider for the actual height the indexer has processed (e.g. from Hasura max(lastUpdatedBlock)).
+   * This is the key improvement over pure log scraping for accurate "how far behind" reporting.
+   */
+  setIndexedHeightProvider(fn: () => Promise<number>): void {
+    this._getIndexedHeight = fn;
+  }
+
+  private _getIndexedHeight?: () => Promise<number>;
+
+  private async getIndexedHeight(): Promise<number> {
+    if (this._getIndexedHeight) {
+      try {
+        const height = await this._getIndexedHeight();
+        if (height > 0) return height;
+      } catch {}
+    }
+    // Fallback to HyperSync height if we have the service (better than pure log scraping)
+    if (this.opts.hyperSync) {
+      try {
+        return await this.opts.hyperSync.getHeight();
+      } catch {}
+    }
+    return this.lastSyncedBlock;
+  }
+
   updateSyncedBlock(block: number, remote?: number): void {
     if (block > this.lastSyncedBlock) {
       this.lastSyncedBlock = block;
@@ -99,8 +133,16 @@ export class HyperIndexMonitor implements Lifecycle {
       return;
     }
 
-    // Try to get real chain head for accurate lag
-    if (this.opts.getChainHead) {
+    // Try to get real chain head for accurate lag (prefer official HyperSync client)
+    if (this.opts.hyperSync) {
+      try {
+        await this.opts.hyperSync.waitForRateLimit();
+        const head = await this.opts.hyperSync.getHeight();
+        if (head > this.lastChainHead) this.lastChainHead = head;
+      } catch (err) {
+        this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
+      }
+    } else if (this.opts.getChainHead) {
       try {
         const head = await this.opts.getChainHead();
         if (head > this.lastChainHead) this.lastChainHead = head;
@@ -109,7 +151,7 @@ export class HyperIndexMonitor implements Lifecycle {
       }
     }
 
-    const current = this.getLastSyncedBlock();
+    const current = await this.getIndexedHeight();
     const lag = this.getCurrentLag();
 
     if (current > 0) {
@@ -155,7 +197,9 @@ export class HyperIndexMonitor implements Lifecycle {
     }
   }
 
-  private getLastSyncedBlock(): number {
+  // kept for potential internal use / backward compat
+  // @ts-ignore - intentionally unused for now
+  private _getLastSyncedBlock(): number {
     return this.lastSyncedBlock;
   }
 

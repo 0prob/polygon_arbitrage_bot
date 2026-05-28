@@ -13,6 +13,7 @@ import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
 import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import { HyperRpcClient, createHyperRpcClient } from "../infra/rpc/hyperrpc.ts";
+import { HyperSyncService, createHyperSyncService } from "../infra/hypersync/hypersync_service.ts";
 
 const DEFAULT_BATCH_SIZE = 100;
 const DEFAULT_BATCH_WAIT_MS = 16;
@@ -43,6 +44,7 @@ export class RpcManager {
   private _ws: WebSocketSubscriber | undefined;
   private _reorgDetector: ReorgDetector | undefined;
   private _hyperRpc: HyperRpcClient | undefined;
+  private _hyperSync: HyperSyncService | undefined;
 
   constructor(config: RpcConfig, opts?: RpcManagerOptions) {
     this.chainId = opts?.chainId ?? 137;
@@ -66,15 +68,26 @@ export class RpcManager {
       },
     });
 
-    this._reorgDetector = new ReorgDetector(this._readClient, 10, this._hyperRpc);
+    this._reorgDetector = new ReorgDetector(this._readClient, 10, this._hyperRpc, this._hyperSync);
 
-    // HyperRPC — optional read-only high-performance provider.
-    // Only instantiated when a paid token or custom URL is supplied.
+    // HyperRPC — optional read-only high-performance provider (per 2026 Envio docs).
+    // Use for the specific read methods only. Prefer HyperSync client for advanced needs.
     this._hyperRpc = createHyperRpcClient({
       url: config.hyperRpcUrl,
       apiToken: config.hyperRpcApiToken,
       timeoutMs: config.requestTimeoutMs,
+      chainId: this.chainId,
     });
+
+    // Official high-performance HyperSync client (preferred for most new read paths)
+    // Gracefully degrades if the native package isn't installed yet.
+    if (config.hyperRpcApiToken || config.hyperRpcUrl) {
+      this._hyperSync = createHyperSyncService({
+        url: config.hyperRpcUrl || `https://${this.chainId}.rpc.hypersync.xyz`,
+        apiToken: config.hyperRpcApiToken,
+        timeoutMs: config.requestTimeoutMs,
+      });
+    }
   }
 
   /** The read PublicClient (used by existing consumers for backward compat) */
@@ -96,6 +109,11 @@ export class RpcManager {
    */
   get hyperRpc(): HyperRpcClient | undefined {
     return this._hyperRpc;
+  }
+
+  /** Official @envio-dev/hypersync-client wrapper (faster native protocol for blocks/logs/height) */
+  get hyperSync(): HyperSyncService | undefined {
+    return this._hyperSync;
   }
 
   // === Read operations ===

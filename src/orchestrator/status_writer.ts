@@ -36,7 +36,12 @@ export function formatGwei(gasPrice: bigint | undefined): number {
   return Number(gasPrice) / 1e9;
 }
 
-export function buildStatusPayload(metrics: Metrics, gasPrice: bigint | undefined, poolCount: number): StatusPayload {
+export function buildStatusPayload(
+  metrics: Metrics, 
+  gasPrice: bigint | undefined, 
+  poolCount: number,
+  hyperindexStatus?: { synced: number; remote: number; lag: number; syncRate: number; healthy: boolean }
+): StatusPayload {
   const uptimeSec = Math.floor((Date.now() - metrics.startTime) / 1000);
   return {
     status: "running",
@@ -57,6 +62,7 @@ export function buildStatusPayload(metrics: Metrics, gasPrice: bigint | undefine
     pools: poolCount,
     cyclesPerMin: metrics.currentCyclesPerMinute,
     peakCpm: metrics.peakCyclesPerMinute,
+    ...(hyperindexStatus ? { hyperindex: hyperindexStatus } : {}),
     timestamp: new Date().toISOString(),
   };
 }

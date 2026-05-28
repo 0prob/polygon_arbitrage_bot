@@ -156,6 +156,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
     if (opts.envioApiToken) {
       env.ENVIO_API_TOKEN = opts.envioApiToken;
+    } else {
+      opts.logger.warn("No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be rate-limited (per 2026 Envio requirements). Generate one at https://envio.dev/app/api-tokens");
     }
 
     opts.logger.info({ hyperindexDir: hiDir }, "Starting HyperIndex ingestion");

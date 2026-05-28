@@ -1,5 +1,6 @@
 import type { RpcManager } from "../../rpc/manager.ts";
 import type { HyperRpcClient } from "../../infra/rpc/hyperrpc.ts";
+import type { HyperSyncService } from "../../infra/hypersync/hypersync_service.ts";
 
 export interface ReceiptData {
   status: boolean;
@@ -18,10 +19,20 @@ export class ReceiptPoller {
     const deadline = Date.now() + this.timeoutMs;
     while (Date.now() < deadline) {
       try {
-        const hyper = this.rpc.hyperRpc as HyperRpcClient | undefined;
-        const receipt = hyper
-          ? await hyper.getTransactionReceipt(txHash as `0x${string}`)
-          : await this.rpc.read.getTransactionReceipt({ hash: txHash as `0x${string}` });
+        const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
+        const hyperRpc = this.rpc.hyperRpc as HyperRpcClient | undefined;
+
+        let receipt: any = null;
+
+        if (hyperSync) {
+          receipt = await hyperSync.getTransactionReceipt(txHash);
+        }
+        if (!receipt && hyperRpc) {
+          receipt = await hyperRpc.getTransactionReceipt(txHash as `0x${string}`);
+        }
+        if (!receipt) {
+          receipt = await this.rpc.read.getTransactionReceipt({ hash: txHash as `0x${string}` });
+        }
 
         if (receipt) {
           return {
