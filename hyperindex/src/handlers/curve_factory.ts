@@ -42,12 +42,17 @@ indexer.onEvent(
       rates: meta.rates,
     });
 
-    for (const coin of meta.coins) {
-      const coinMeta = await context.effect(fetchTokenMeta, {
-        address: coin,
-        blockNumber: BigInt(event.block.number),
-      });
-      context.TokenMeta.set({ id: coin, address: coin, decimals: coinMeta.decimals });
-    }
+    // Parallelize token metadata fetches (critical for backfill speed per Envio preload guidance)
+    const coinMetas = await Promise.all(
+      meta.coins.map((coin) =>
+        context.effect(fetchTokenMeta, {
+          address: coin,
+          blockNumber: BigInt(event.block.number),
+        })
+      )
+    );
+    meta.coins.forEach((coin, i) => {
+      context.TokenMeta.set({ id: coin, address: coin, decimals: coinMetas[i].decimals });
+    });
   },
 );

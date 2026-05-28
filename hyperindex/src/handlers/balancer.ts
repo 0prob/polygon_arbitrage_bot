@@ -44,13 +44,18 @@ indexer.onEvent(
       scalingFactors: meta.scalingFactors,
     });
 
-    for (const token of meta.tokens) {
-      const tMeta = await context.effect(fetchTokenMeta, {
-        address: token,
-        blockNumber: BigInt(event.block.number),
-      });
-      context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
-    }
+    // Parallelize token metadata fetches (critical for backfill speed)
+    const tokenMetas = await Promise.all(
+      meta.tokens.map((token) =>
+        context.effect(fetchTokenMeta, {
+          address: token,
+          blockNumber: BigInt(event.block.number),
+        })
+      )
+    );
+    meta.tokens.forEach((token, i) => {
+      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
+    });
   },
 );
 
@@ -84,13 +89,18 @@ indexer.onEvent(
       poolId: poolId,
     });
 
-    for (const token of tokens) {
-      const tMeta = await context.effect(fetchTokenMeta, {
-        address: token,
-        blockNumber: BigInt(event.block.number),
-      });
-      context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
-    }
+    // Parallelize token metadata fetches (critical for backfill speed)
+    const tokenMetas = await Promise.all(
+      tokens.map((token) =>
+        context.effect(fetchTokenMeta, {
+          address: token,
+          blockNumber: BigInt(event.block.number),
+        })
+      )
+    );
+    tokens.forEach((token, i) => {
+      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
+    });
   },
 );
 

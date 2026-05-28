@@ -22,6 +22,17 @@ export interface HyperIndexProcessOptions {
   envioApiToken?: string;
   logger: Logger;
   eventBus?: EventBusLike;
+
+  /** Optional Hasura connection info (used for both reactive error handling and explicit clears). */
+  hasuraUrl?: string;
+  hasuraSecret?: string;
+
+  /**
+   * If true, the process will clear Hasura metadata before starting the indexer.
+   * Only use this for explicit reset flows. Normal starts should leave this false
+   * to avoid unnecessary schema disruption and faster startup.
+   */
+  clearHasuraMetadataOnStart?: boolean;
 }
 
 export interface HyperIndexProcess {
@@ -40,6 +51,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _lastEmitTime = 0;
   let _statusTimer: ReturnType<typeof setInterval> | null = null;
   let _stderrBuffer: string[] = [];
+  let _hasDoneReactiveHasuraClear = false;
 
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
@@ -70,6 +82,43 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       }
     } catch {
       // port is free
+    }
+  }
+
+  /**
+   * Best-effort clear of Hasura metadata.
+   * Safe to call even if Hasura is not reachable.
+   */
+  async function clearHasuraMetadata(url: string, secret: string | undefined, logger: Logger): Promise<void> {
+    const endpoint = `${url.replace(/\/$/, "")}/v1/metadata`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (secret) {
+      headers["x-hasura-admin-secret"] = secret;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ type: "clear_metadata", args: {} }),
+        signal: controller.signal,
+      });
+
+      if (res.ok) {
+        logger.debug("Hasura metadata cleared successfully before starting HyperIndex");
+      } else {
+        logger.debug({ status: res.status }, "Hasura metadata clear returned non-OK (may be harmless)");
+      }
+    } catch (err) {
+      // Non-fatal — many dev setups don't have Hasura running at this exact moment
+      logger.debug({ err }, "Hasura metadata clear skipped (not reachable or timed out)");
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
@@ -142,6 +191,21 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     if (trimmed.includes("error") || trimmed.includes("fail")) {
       emitStatus("error", _lastParsedBlock, _lastRemoteBlock, chain);
     }
+
+    // Reactive Hasura metadata clear: if Envio complains about "metadata-warnings"
+    // (usually on effect tables), try to clear once so the next restart is clean.
+    // This is a safety net without the cost of clearing on every normal start.
+    if (
+      ! _hasDoneReactiveHasuraClear &&
+      opts.hasuraUrl &&
+      trimmed.includes("metadata-warnings")
+    ) {
+      _hasDoneReactiveHasuraClear = true;
+      opts.logger.warn("Detected Envio metadata-warnings error — attempting one-time Hasura metadata clear...");
+      clearHasuraMetadata(opts.hasuraUrl, opts.hasuraSecret, opts.logger).catch((err) => {
+        opts.logger.warn({ err }, "Reactive Hasura clear failed");
+      });
+    }
   }
 
   async function start(): Promise<void> {
@@ -163,6 +227,18 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     freePort(9898);
     freePort(8080);
     _stderrBuffer = [];
+
+    // Explicit clear only when requested (e.g. during a deliberate reset).
+    // We no longer clear on every normal start because it causes temporary
+    // GraphQL disruption and slows down restarts for no benefit in most cases.
+    if (opts.clearHasuraMetadataOnStart && opts.hasuraUrl) {
+      try {
+        opts.logger.info("Clearing Hasura metadata (explicit reset requested)...");
+        await clearHasuraMetadata(opts.hasuraUrl, opts.hasuraSecret, opts.logger);
+      } catch (err) {
+        opts.logger.warn({ err }, "Failed to clear Hasura metadata (continuing anyway)");
+      }
+    }
 
     const rpcList = opts.polygonRpcUrls && opts.polygonRpcUrls.length > 0 ? opts.polygonRpcUrls : [];
     const env: Record<string, string> = {

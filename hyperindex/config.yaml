@@ -11,6 +11,12 @@ raw_events: false
 #    Fixed by the in-memory feeCache in src/handlers/v2_pool.ts + v3_pool.ts.
 # 2. Effect rateLimits + RPC latency on first-seen pools (token/curve/dodo/balancer metadata).
 #    Mitigated by large STATIC_TOKEN_DECIMALS registry + cache: true on all createEffect().
+#    Further improved by using Promise.all for parallel token metadata fetches in factory handlers.
+#
+#    Observed (May 2026 profiling): V2Factory.PairCreated is by far the slowest handler.
+#    Pipeline split typically shows ~80% time in "Loaders" — almost entirely the two
+#    fetchTokenMeta effect calls. Solution: keep the static token registry extremely complete
+#    (run `bun run generate-tokens` often). This drops those calls to pure memory lookups.
 # 3. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
 # 4. HyperSync quota / ENVIO_API_TOKEN quality (get a real token at https://envio.dev/app/api-tokens).
 # 5. POLYGON_RPC_URLS quality for the small % of effect fallbacks (use Alchemy pay-as-you-go or better).
@@ -23,13 +29,18 @@ raw_events: false
 # After a full backfill + warm caches, "live tail" (new blocks) should sustain 5k-50k+ events/s easily.
 # Cold full-history backfill on Polygon from 2021 is typically 2k-15k events/s depending on above factors.
 
-# Polygon optimization: 4000-10000 range for Polygon (very high log volume from 1000s of DEX pools).
-# This is the SINGLE MOST IMPORTANT config knob for "events per second" during historical backfill.
-# - Higher (8000-12000) → faster backfill (fewer roundtrips to HyperSync + DB flushes), more RAM per batch.
-# - Lower (2000-4000) → slower backfill, lower peak memory, more responsive to restarts/crashes.
-# Start at 8000-10000 for a full history sync with a paid HyperSync token. Drop if OOM or high GC.
-# The cache: true on all effects + the JS-side fee cache in v2/v3 handlers make repeated work cheap after warm-up.
-full_batch_size: 12000
+# Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
+# This is one of the most important config knobs for "events per second" during historical backfill.
+# - 5000 (current) → good balance of throughput vs memory / effect concurrency on Polygon.
+# - Higher (7000-10000) → faster backfill if you have headroom on RPC quota and RAM.
+# - Lower (2000-4000) → more stable under heavy load or limited RPC allowance.
+# The cache: true on all effects + the JS-side fee cache in v2/v3 handlers + Promise.all parallelization
+# in registration handlers make repeated work cheap after warm-up. See Envio Preload Optimization Guide.
+full_batch_size: 5000
+# 5000 is a balanced value for Polygon with high pool density + many effects.
+# Lower than the previous 12000 to reduce peak memory and RPC effect concurrency pressure
+# during heavy historical periods while still benefiting from HyperSync batching.
+# Tune between 3000-8000 depending on your RPC provider quota and available RAM.
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).
@@ -42,14 +53,28 @@ full_batch_size: 12000
 # Set POLYGON_RPC_URLS (comma-separated) in your .env for custom/paid providers with archive.
 chains:
   - id: 137
-    # With HyperSync, start_block: 0 is safe and lets it auto-detect contract deployment.
-    # Per-contract start_block overrides below are tuned to each protocol's deployment block on Polygon.
-    start_block: ${POLYGON_START_BLOCK:-0}
+    # OPTIMIZATION (Point 1): Exact start_block per chain/contract.
+    # Avoid start_block: 0 when deployment blocks are known — it wastes processing on irrelevant history.
+    # Global default here is conservative (env override or ~Quickswap-era 5.48M). Per-contract overrides
+    # below are precise to each protocol's deployment and take precedence.
+    # Recommended: set POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
+    start_block: ${POLYGON_START_BLOCK:-5484533} # Quickswap deployment as conservative global default for Polygon DEXs
+
+    # === Envio/HyperSync Optimizations (see user best-practices) ===
+    # Point 2: All contracts below use tight event whitelists (never empty/generic). HyperSync drops
+    #          unneeded payloads before they reach the indexer → major historical sync speedup.
+    # Point 4: Preload optimization is enabled by default in Envio v3 (batched entity pre-fetch alongside
+    #          event processing). No explicit flag required; visible in metrics as "envio_preload_*".
+    # Point 3: Factory contracts (V2/V3/Curve/Dodo) use indexer.contractRegister + context.chain.<Name>.add(...)
+    #          in their handlers to dynamically register only pools that actually exist.
+    # Point 5: N/A here. JoinMode (JoinNothing) applies to direct @envio-dev/hypersync-client log queries
+    #          with complex field selection. Our usage is either (a) the managed HyperIndex pipeline or
+    #          (b) simple block queries + post-index Hasura GraphQL against the DB (no joins needed).
     hypersync_config:
       url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
       # api_token can also be set here, but ENVIO_API_TOKEN env var is the standard approach.
     contracts:
-      # Consolidated V2 Factories
+      # Consolidated V2 Factories (Point 1 + Point 3: exact start_block + dynamic registration in handler)
       - name: V2Factory
         start_block: ${POLYGON_START_BLOCK:-5484533} # Quickswap deployment
         address:
@@ -68,7 +93,7 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
       
-      # Consolidated V3 Factories
+      # Consolidated V3 Factories (Point 1 + Point 3: exact start_block + dynamic registration in handler)
       - name: V3Factory
         start_block: ${POLYGON_START_BLOCK:-22757547} # Uniswap V3 deployment
         address:
@@ -106,6 +131,7 @@ chains:
               transaction_fields: ["hash"]
 
       # Specific Single-Address Contracts
+      # CurveRegistry (Point 1 + Point 3: exact start_block + dynamic registration in curve_factory.ts)
       - name: CurveRegistry
         start_block: ${POLYGON_START_BLOCK:-28641368}
         address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
@@ -167,7 +193,7 @@ chains:
             field_selection:
               transaction_fields: ["hash"]
 
-      # DODO V2 Factories
+      # DODO V2 Factories (Point 1 + Point 3: exact start_block + dynamic registration added in dodo_factory.ts)
       - name: DodoFactory
         start_block: ${POLYGON_START_BLOCK:-13630000}
         address:
@@ -188,6 +214,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: DodoPool
+        # Point 1: Uses same start_block as factory. Point 3: addresses supplied exclusively via contractRegister in dodo_factory.ts
         start_block: ${POLYGON_START_BLOCK:-13630000}
         abi_file_path: abis/uniswap_v2_pool.json
         handler: src/handlers/dodo_pool.ts

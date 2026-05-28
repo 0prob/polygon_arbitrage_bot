@@ -22,8 +22,15 @@ function safeDecimals(d: number): number {
  * 1. Large static registry (fastest — 1400+ Polygon tokens, 0 RPC)
  * 2. Batched RPC (last resort, at the historical block when needed)
  *
- * Expand the registry aggressively with: bun run scripts/generate-polygon-tokens.ts
+ * This is the #1 lever for V2Factory.PairCreated performance.
+ * When tokens miss here, they appear as expensive "Loaders" time in Envio profiling.
+ *
+ * Expand the registry aggressively with: bun run generate-tokens
  */
+// Used to deduplicate warnings when we repeatedly fail to fetch decimals for
+// the same broken/malformed token (e.g. factory address emitted as a token).
+const failedDecimalsTokens = new Set<string>();
+
 export const fetchTokenMeta = createEffect(
   {
     name: "fetchTokenMeta",
@@ -74,7 +81,11 @@ export const fetchTokenMeta = createEffect(
       const errStr = String(err);
       const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
 
-      if (context.log) {
+      const addr = input.address.toLowerCase();
+
+      if (context.log && !failedDecimalsTokens.has(addr)) {
+        failedDecimalsTokens.add(addr);
+
         if (isQuota) {
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +

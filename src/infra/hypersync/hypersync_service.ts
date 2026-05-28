@@ -107,6 +107,10 @@ export class HyperSyncService {
 
   /**
    * High-performance eth_getLogs equivalent using HyperSync.
+   *
+   * OPTIMIZATION (Point 5): No joinMode is set. By default (and by explicit narrow fieldSelection)
+   * we request only the exact log fields needed. This is equivalent to JoinNothing — no automatic
+   * pulling of related blocks/transactions/receipts. Matches the "strictly enforce query filters" advice.
    */
   async getLogs(params: {
     fromBlock?: number | bigint;

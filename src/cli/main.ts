@@ -9,6 +9,7 @@ import { mkdir } from "fs/promises";
 import { join } from "path";
 import { execSync } from "child_process";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
+import "../infra/garbage/garbage-tracker.ts"; // Ensure garbage list starts loading early
 import { HealthServer } from "../infra/observability/health_server.ts";
 import { filterArchivalRpcUrls } from "../infra/rpc/client_factory.ts";
 import { DEFAULTS } from "../config/defaults.ts";
@@ -16,6 +17,7 @@ import { DEFAULTS } from "../config/defaults.ts";
 async function main() {
   const useTui = process.argv.includes("--tui");
   const useCleanup = process.argv.includes("--cleanup");
+  const resetHasura = process.argv.includes("--reset-hasura");
   const config = loadConfig(process.env);
 
   const bus = new EventBus();
@@ -69,6 +71,11 @@ async function main() {
       envioApiToken: config.envioApiToken,
       logger,
       eventBus: useTui ? bus : undefined,
+      hasuraUrl: config.hasuraUrl || undefined,
+      hasuraSecret: config.hasuraSecret || undefined,
+      // Only clear Hasura metadata on explicit request (e.g. after a full reset).
+      // Clearing on every start causes unnecessary GraphQL disruption.
+      clearHasuraMetadataOnStart: resetHasura,
     },
     logger,
     checkIntervalMs: 10_000,

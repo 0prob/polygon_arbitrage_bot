@@ -1,3 +1,17 @@
+import { isGarbagePool } from "../../core/constants.ts";
+import { markAsGarbage } from "../garbage/garbage-tracker.ts";
+
+// Factories we actively index. If one of these addresses appears as a "token"
+// in a pool, it is almost certainly garbage data from a broken PairCreated event.
+const KNOWN_FACTORIES = new Set([
+  "0x5757371414417b8c6caad45baef941abc7d3ab32", // Quickswap V2
+  "0xc35dadb65012ec5796536bd9864ed8773abc74c4", // Sushiswap V2
+  "0x9e5a52f57b3038f1b8eee45f28b3c1967e22799c", // Uniswap V2
+  "0x1f98431c8ad98523631ae4a59f267346ea31f984", // Uniswap V3
+  "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2", // Sushi V3
+  "0x411b0facc3489691f28ad58c47006af5e3ab3a28", // Quickswap V3
+]);
+
 export interface HasuraPoolMeta {
   address: string;
   protocol: string;
@@ -36,6 +50,20 @@ try {
   }
 } catch {
   // silent fallback - bot will rely entirely on Hasura discovery
+}
+
+// Remove any garbage pools from static anchors (defensive)
+_staticAnchors = _staticAnchors.filter((p) => !isGarbagePool(p));
+
+// Auto-mark any factories that appear as tokens in our static anchors
+for (const p of _staticAnchors) {
+  for (const token of p.tokens) {
+    if (KNOWN_FACTORIES.has(token)) {
+      markAsGarbage(token)
+        .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token}`))
+        .catch(() => {});
+    }
+  }
 }
 
 export const STATIC_ANCHORS: HasuraPoolMeta[] = _staticAnchors;
@@ -262,16 +290,29 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
           fee: pm.fee ?? 30,
         };
       })
-      .filter((p) => p.address.startsWith("0x") && p.tokens.length >= 2);
+      .filter((p) => p.address.startsWith("0x") && p.tokens.length >= 2 && !isGarbagePool(p));
 
-    const combined = [...anchors];
-    const seen = new Set(anchors.map((a) => a.address.toLowerCase()));
+    const combined = [...anchors].filter((p) => !isGarbagePool(p));
+    const seen = new Set(combined.map((a) => a.address.toLowerCase()));
     for (const p of discovered) {
       if (!seen.has(p.address.toLowerCase())) {
         combined.push(p);
         seen.add(p.address.toLowerCase());
       }
     }
+
+    // Auto-discover garbage during sync: if any token in a pool is a factory
+    // we actively index, it almost certainly came from a broken PairCreated event.
+    for (const p of combined) {
+      for (const token of p.tokens) {
+        if (KNOWN_FACTORIES.has(token)) {
+          markAsGarbage(token)
+            .then(() => console.warn(`[garbage] Auto-discovered and persisted garbage address: ${token}`))
+            .catch(() => {});
+        }
+      }
+    }
+
     return combined;
   } catch (err) {
     console.error(`[discoverPoolsFromHasura] Error parsing results:`, err);

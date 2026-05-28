@@ -26,6 +26,15 @@ indexer.onEvent(
     const t1 = event.params.token1.toLowerCase();
 
     const factoryAddr = event.srcAddress.toLowerCase();
+
+    // Some broken V2 factories (especially older Quickswap forks on Polygon)
+    // emit PairCreated events where one of the "token" parameters is the factory
+    // address itself. These are invalid and will cause fetchTokenMeta to fail.
+    // We skip them early to protect the index and avoid log spam.
+    if (t0 === factoryAddr || t1 === factoryAddr) {
+      return;
+    }
+
     const info = FACTORY_PROTOCOLS[factoryAddr] ?? { protocol: "unknown_v2", feeBps: 30 };
 
     context.PoolMeta.set({
@@ -40,6 +49,12 @@ indexer.onEvent(
       poolId: undefined,
     });
 
+    // === PERFORMANCE CRITICAL ===
+    // These two effect calls dominate "Loaders" time for V2Factory.PairCreated
+    // (often 70-85% of handler time during historical sync per Envio pipeline split).
+    // They only become cheap when both tokens exist in STATIC_TOKEN_DECIMALS.
+    // → Keep the static registry in token_registry.ts aggressively up to date
+    //   by running `bun run generate-tokens` periodically.
     const [t0meta, t1meta] = await Promise.all([
       context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
       context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),

@@ -5,7 +5,10 @@
   "scripts": {
     "codegen": "envio codegen",
     "dev": "envio dev",
-    "run": "envio run"
+    "run": "envio run",
+    "generate-tokens": "bun scripts/generate-polygon-tokens.ts",
+    "clear-hasura": "bun scripts/clear-hasura-metadata.ts",
+    "dev:reset": "bun run clear-hasura && bunx envio dev -r"
   },
   "dependencies": {
     "envio": "^3.0.2",

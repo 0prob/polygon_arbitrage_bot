@@ -47,6 +47,29 @@ async function handleDodoPool(
   context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
 }
 
+// Dynamic contract registration (best practice for factory-spawned pools).
+// Without this, DodoPool Sync events are never captured by the DodoPool handler.
+indexer.contractRegister(
+  { contract: "DodoFactory", event: "DVMDeployed" },
+  async ({ event, context }) => {
+    context.chain.DodoPool.add(event.params.dvm);
+  },
+);
+
+indexer.contractRegister(
+  { contract: "DodoFactory", event: "DPPDeployed" },
+  async ({ event, context }) => {
+    context.chain.DodoPool.add(event.params.dpp);
+  },
+);
+
+indexer.contractRegister(
+  { contract: "DodoFactory", event: "DSPDeployed" },
+  async ({ event, context }) => {
+    context.chain.DodoPool.add(event.params.dsp);
+  },
+);
+
 indexer.onEvent(
   { contract: "DodoFactory", event: "DVMDeployed" },
   async ({ event, context }) => {

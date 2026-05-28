@@ -22,7 +22,10 @@
     "fmt": "bunx prettier --write src/",
     "compile": "cd hyperindex && npx tsc --outDir src/handlers_mjs --skipLibCheck --moduleResolution bundler; true",
     "dev": "cd hyperindex && bunx envio dev",
-    "cgen": "cd hyperindex && bunx envio codegen"
+    "cgen": "cd hyperindex && bunx envio codegen",
+    "gentok": "cd hyperindex && bun run generate-tokens",
+    "clear-hasura": "cd hyperindex && bun run clear-hasura",
+    "dev:reset": "cd hyperindex && bun run dev:reset"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "^1.3.0",

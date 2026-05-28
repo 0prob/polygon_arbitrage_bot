@@ -22,6 +22,13 @@ indexer.onEvent(
     const t1 = event.params.token1.toLowerCase();
 
     const factoryAddr = event.srcAddress.toLowerCase();
+
+    // Some broken V3 factories occasionally emit PoolCreated events where one
+    // of the token parameters is the factory address itself. Skip these early.
+    if (t0 === factoryAddr || t1 === factoryAddr) {
+      return;
+    }
+
     const protocol = FACTORY_PROTOCOLS[factoryAddr] ?? "unknown_v3";
     context.PoolMeta.set({
       id: event.params.pool.toLowerCase(),
