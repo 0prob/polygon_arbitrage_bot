@@ -111,8 +111,5 @@ export async function filterArchivalRpcUrls(urls: readonly string[]): Promise<st
   });
 
   const settled = await Promise.allSettled(checks);
-  return settled
-    .map((s) => (s.status === "fulfilled" ? s.value : null))
-    .filter((u): u is string => !!u);
+  return settled.map((s) => (s.status === "fulfilled" ? s.value : null)).filter((u): u is string => !!u);
 }
-

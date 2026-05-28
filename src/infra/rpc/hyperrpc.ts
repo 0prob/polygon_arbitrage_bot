@@ -76,9 +76,7 @@ export class HyperRpcClient {
 
     if (config.url) {
       // User-provided override (advanced)
-      this.endpoint = token && !config.url.includes(token)
-        ? `${config.url.replace(/\/$/, "")}/${token}`
-        : config.url;
+      this.endpoint = token && !config.url.includes(token) ? `${config.url.replace(/\/$/, "")}/${token}` : config.url;
     } else if (token) {
       // Recommended per docs (2026): per-chain or unified with token appended
       // Unified high-performance: https://rpc.hypersync.xyz/<token>
@@ -157,18 +155,12 @@ export class HyperRpcClient {
     return this.rpc("eth_getTransactionByHash", [hash]);
   }
 
-  async getTransactionByBlockHashAndIndex(
-    blockHash: `0x${string}`,
-    index: number | bigint,
-  ): Promise<HyperRpcTransaction | null> {
+  async getTransactionByBlockHashAndIndex(blockHash: `0x${string}`, index: number | bigint): Promise<HyperRpcTransaction | null> {
     const idx = typeof index === "number" ? `0x${index.toString(16)}` : `0x${index.toString(16)}`;
     return this.rpc("eth_getTransactionByBlockHashAndIndex", [blockHash, idx]);
   }
 
-  async getTransactionByBlockNumberAndIndex(
-    block: bigint | `0x${string}`,
-    index: number | bigint,
-  ): Promise<HyperRpcTransaction | null> {
+  async getTransactionByBlockNumberAndIndex(block: bigint | `0x${string}`, index: number | bigint): Promise<HyperRpcTransaction | null> {
     const tag = typeof block === "bigint" ? `0x${block.toString(16)}` : block;
     const idx = typeof index === "number" ? `0x${index.toString(16)}` : `0x${index.toString(16)}`;
     return this.rpc("eth_getTransactionByBlockNumberAndIndex", [tag, idx]);
@@ -187,14 +179,10 @@ export class HyperRpcClient {
     const rpcParams: Record<string, unknown> = {};
 
     if (params.fromBlock !== undefined) {
-      rpcParams.fromBlock = typeof params.fromBlock === "bigint"
-        ? `0x${params.fromBlock.toString(16)}`
-        : params.fromBlock;
+      rpcParams.fromBlock = typeof params.fromBlock === "bigint" ? `0x${params.fromBlock.toString(16)}` : params.fromBlock;
     }
     if (params.toBlock !== undefined) {
-      rpcParams.toBlock = typeof params.toBlock === "bigint"
-        ? `0x${params.toBlock.toString(16)}`
-        : params.toBlock;
+      rpcParams.toBlock = typeof params.toBlock === "bigint" ? `0x${params.toBlock.toString(16)}` : params.toBlock;
     }
     if (params.address) rpcParams.address = params.address;
     if (params.topics) rpcParams.topics = params.topics;

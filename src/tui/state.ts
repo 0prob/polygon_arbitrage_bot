@@ -85,7 +85,7 @@ export function createInitialState(): TuiState {
       pipelineStage: "IDLE",
       simProgress: { current: 0, total: 0, profitable: 0 },
       activeOpportunities: [],
-      maticPriceUsd: 0.70,
+      maticPriceUsd: 0.7,
     },
     log: [],
     isRunning: false,
@@ -119,7 +119,7 @@ function updateOpportunity(state: TuiState, routeKey: string, update: Partial<Op
   }
 
   // Sort by profit descending and keep top 10
-  state.system.activeOpportunities.sort((a, b) => a.profit < b.profit ? 1 : a.profit > b.profit ? -1 : 0);
+  state.system.activeOpportunities.sort((a, b) => (a.profit < b.profit ? 1 : a.profit > b.profit ? -1 : 0));
   if (state.system.activeOpportunities.length > 10) {
     state.system.activeOpportunities.length = 10;
   }

@@ -55,8 +55,8 @@ export interface RuntimeContext {
 }
 
 export async function bootApplication(
-  config: AppConfig, 
-  logBuffer?: string[], 
+  config: AppConfig,
+  logBuffer?: string[],
   passedLogger?: Logger,
   hyperIndexMonitor?: HyperIndexMonitor,
 ): Promise<RuntimeContext> {
@@ -212,7 +212,15 @@ export async function bootApplication(
 
   const receiptPoller = new ReceiptPoller(rpc, config.execution.receiptTimeoutMs, config.execution.receiptPollMs);
 
-  const executionService = new ExecutionService(logger, submissionStrategy, receiptPoller, gasOracle, nonceManager, config.execution.quarantineBaseMs, config.execution.quarantineMaxMs);
+  const executionService = new ExecutionService(
+    logger,
+    submissionStrategy,
+    receiptPoller,
+    gasOracle,
+    nonceManager,
+    config.execution.quarantineBaseMs,
+    config.execution.quarantineMaxMs,
+  );
 
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
@@ -261,18 +269,21 @@ export async function bootApplication(
     failureThreshold: 5,
     cooldownMs: 60_000,
   });
-  const tierManager = new TierManager(rpcCircuit, hasuraCircuit, hyperIndexMonitor ?? {
-    isHealthy: () => true,
-    isRunning: () => true,
-  } as any);
+  const tierManager = new TierManager(
+    rpcCircuit,
+    hasuraCircuit,
+    hyperIndexMonitor ??
+      ({
+        isHealthy: () => true,
+        isRunning: () => true,
+      } as any),
+  );
 
   // Reorg detector
   const reorgDetector = rpc.getReorgDetector();
 
   // WebSocket subscriber
-  const wsSubscriber = config.mempool.websocketUrl
-    ? rpc.addWebSocketSubscriber(config.mempool.websocketUrl)
-    : undefined;
+  const wsSubscriber = config.mempool.websocketUrl ? rpc.addWebSocketSubscriber(config.mempool.websocketUrl) : undefined;
 
   // Mempool-aware dry runner
   const dryRunner = new MempoolAwareDryRunner(publicClient);

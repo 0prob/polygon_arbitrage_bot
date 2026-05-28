@@ -1,5 +1,6 @@
 import type { Address } from "../core/types/common.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
+import * as os from "os";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
   const parts = edges.map((e) => e.poolAddress.toLowerCase()).sort();
@@ -22,16 +23,16 @@ function feeLogWeight(feeBps: bigint): number {
 
 /**
  * Obscurity / low-competition bonus for edges.
- * 
+ *
  * With minimal infra (public RPCs, standard latency), the bot cannot win
  * pure speed races on hot mainstream V3 pairs against specialized bots.
- * 
+ *
  * Strategy: heavily favor paths through less-watched protocols and factories
  * where:
  *   - Pricing models are more complex (DODO PMM, Curve stables, Balancer weighted)
  *   - Fewer arbers are running full multi-AMM simulation
  *   - Opportunities persist longer (thinner liquidity rebalances slowly)
- * 
+ *
  * These are exactly the areas where this bot's strengths (rich math coverage
  * + HyperIndex historical state + broad V2 factory coverage) give it an edge.
  */
@@ -39,8 +40,7 @@ export function getObscurityBonus(protocol: string): number {
   const p = (protocol || "").toLowerCase();
 
   // Highest priority long-tail / low-competition
-  if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || 
-      p.includes("jet") || p.includes("cometh")) {
+  if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) {
     return 1.4; // very obscure V2 factories
   }
   if (p.includes("dodo")) return 1.25;
@@ -86,7 +86,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
   const ENUM_START = Date.now();
   const TIME_BUDGET_MS = 1400; // ~1.4s hard stop — safe on most dev/laptop hardware during LF pass
   try {
-    const load = require('os').loadavg()[0];
+    const load = os.loadavg()[0];
     if (load > 7.5) {
       // High load — be conservative, fall back toward 4 hops behavior
       // (the if guards below will still allow 5 if user explicitly set high maxHops, but we won't push as hard)
@@ -112,9 +112,9 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
     if (overBudget()) break;
     if (cycles.length >= maxCycles) break;
 
-    // BFS/DFS with hop tracking is more flexible, but for performance 
+    // BFS/DFS with hop tracking is more flexible, but for performance
     // we keep unrolled loops for common cases (2, 3 hops)
-    
+
     // ── 2-hop: A → B → A ─────────────────────────────────────────
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
@@ -124,7 +124,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
       for (const e2 of second) {
         if (e2.tokenOut !== startToken) continue;
         if (e2.poolAddress === e1.poolAddress) continue;
-        
+
         const obs = cycleObscurityBonus([e1, e2]);
         // Long-tail boost: subtract from logWeight so obscure cycles sort as "better" (lower logWeight first)
         cycles.push({
@@ -235,8 +235,13 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
             for (const e5 of fifth) {
               if (e5.tokenOut !== startToken) continue;
-              if (e5.poolAddress === e1.poolAddress || e5.poolAddress === e2.poolAddress ||
-                  e5.poolAddress === e3.poolAddress || e5.poolAddress === e4.poolAddress) continue;
+              if (
+                e5.poolAddress === e1.poolAddress ||
+                e5.poolAddress === e2.poolAddress ||
+                e5.poolAddress === e3.poolAddress ||
+                e5.poolAddress === e4.poolAddress
+              )
+                continue;
 
               const obs = cycleObscurityBonus([e1, e2, e3, e4, e5]);
               // Even stronger long-tail preference for 5-hop obscure paths
@@ -244,7 +249,13 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
                 startToken: startToken as Address,
                 edges: [e1, e2, e3, e4, e5],
                 hopCount: 5,
-                logWeight: feeLogWeight(e1.feeBps) + feeLogWeight(e2.feeBps) + feeLogWeight(e3.feeBps) + feeLogWeight(e4.feeBps) + feeLogWeight(e5.feeBps) - obs * 1.7,
+                logWeight:
+                  feeLogWeight(e1.feeBps) +
+                  feeLogWeight(e2.feeBps) +
+                  feeLogWeight(e3.feeBps) +
+                  feeLogWeight(e4.feeBps) +
+                  feeLogWeight(e5.feeBps) -
+                  obs * 1.7,
                 cumulativeFeeBps: e1.feeBps + e2.feeBps + e3.feeBps + e4.feeBps + e5.feeBps,
               });
             }
@@ -268,10 +279,10 @@ export function enumerateCycles(
   getWinRate?: (key: string) => number,
 ): FoundCycle[] {
   const allCycles = findCycles(graph, maxHops, maxCycles);
-  
+
   if (getWinRate) {
     // Pre-compute scores to avoid O(N log N) string manipulation in sort
-    const scored = allCycles.map(cycle => {
+    const scored = allCycles.map((cycle) => {
       const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
       const score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
       return { cycle, score };
@@ -280,7 +291,7 @@ export function enumerateCycles(
     return scored
       .sort((a, b) => a.score - b.score)
       .slice(0, maxCycles)
-      .map(s => s.cycle);
+      .map((s) => s.cycle);
   }
 
   return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);

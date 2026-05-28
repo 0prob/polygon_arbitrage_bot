@@ -64,11 +64,11 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       if (pid) {
         try {
           process.kill(Number(pid), "SIGKILL");
-        } catch (_err: unknown) {
+        } catch {
           // process already gone
         }
       }
-    } catch (_err: unknown) {
+    } catch {
       // port is free
     }
   }
@@ -135,11 +135,12 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     try {
       opts.logger.info("Ensuring previous HyperIndex instances are stopped...");
       execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 5000 });
-    } catch (e: any) {
-      if (e.code === 'ETIMEDOUT') {
+    } catch (e: unknown) {
+      const error = e as { code?: string; message?: string };
+      if (error.code === "ETIMEDOUT") {
         opts.logger.warn("envio stop timed out, continuing anyway...");
       } else {
-        opts.logger.debug({ err: e.message }, "envio stop failed, likely nothing to stop");
+        opts.logger.debug({ err: error.message }, "envio stop failed, likely nothing to stop");
       }
     }
 
@@ -147,7 +148,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     freePort(8080);
     _stderrBuffer = [];
 
-    const rpcList = (opts.polygonRpcUrls && opts.polygonRpcUrls.length > 0) ? opts.polygonRpcUrls : [];
+    const rpcList = opts.polygonRpcUrls && opts.polygonRpcUrls.length > 0 ? opts.polygonRpcUrls : [];
     const env: Record<string, string> = {
       ...process.env,
       PATH: process.env.PATH ?? "",
@@ -160,14 +161,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       env.POLYGON_RPC_URL = rpcList[0];
     }
     // If empty list, let the hyperindex rpc_client fall back to its internal default free public
-    
+
     if (opts.katanaRpcUrl) {
       env.KATANA_RPC_URL = opts.katanaRpcUrl;
     }
     if (opts.envioApiToken) {
       env.ENVIO_API_TOKEN = opts.envioApiToken;
     } else {
-      opts.logger.warn("No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be rate-limited (per 2026 Envio requirements). Generate one at https://envio.dev/app/api-tokens");
+      opts.logger.warn(
+        "No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be rate-limited (per 2026 Envio requirements). Generate one at https://envio.dev/app/api-tokens",
+      );
     }
 
     opts.logger.info({ hyperindexDir: hiDir }, "Starting HyperIndex ingestion");
@@ -260,7 +263,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       // Still try to stop envio just in case containers are orphans
       try {
         execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
-      } catch (_err: unknown) {
+      } catch {
         // ignore errors if nothing to stop
       }
       return;
@@ -279,7 +282,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       const timeout = setTimeout(() => {
         try {
           if (p.pid) process.kill(-p.pid, "SIGKILL");
-        } catch (_err: unknown) {
+        } catch {
           // ignore
         }
         cleanup();

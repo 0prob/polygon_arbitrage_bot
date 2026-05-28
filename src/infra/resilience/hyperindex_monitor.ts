@@ -12,7 +12,7 @@ export interface HyperIndexMonitorOptions {
   processOptions: HyperIndexProcessOptions;
   checkIntervalMs?: number;
   maxStallMs?: number;
-  maxLagBlocks?: number;           // If lag > this, consider unhealthy (e.g. 200)
+  maxLagBlocks?: number; // If lag > this, consider unhealthy (e.g. 200)
   logger: Logger;
   /** Optional function to fetch current chain head. Enables real lag calculation. */
   getChainHead?: () => Promise<number>;
@@ -198,7 +198,7 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   // kept for potential internal use / backward compat
-  // @ts-ignore - intentionally unused for now
+  // @ts-expect-error - intentionally unused for now
   private _getLastSyncedBlock(): number {
     return this.lastSyncedBlock;
   }

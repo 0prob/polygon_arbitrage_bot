@@ -201,7 +201,8 @@ export class Renderer {
 
     let hiLabel: string;
     let hiColor: number;
-    const hiLag = s.hiLag > 0 ? ` lag:${s.hiLag}` : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? ` lag:${s.hiRemoteBlock - s.hiSyncedBlock}` : "");
+    const hiLag =
+      s.hiLag > 0 ? ` lag:${s.hiLag}` : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? ` lag:${s.hiRemoteBlock - s.hiSyncedBlock}` : "";
     const hiRate = s.hiSyncRate > 0 ? ` @${s.hiSyncRate.toFixed(1)}blk/s` : "";
 
     if (s.hiSyncedBlock > 0) {

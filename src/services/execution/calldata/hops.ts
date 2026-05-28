@@ -87,9 +87,7 @@ function deriveTightV3PriceLimit(
   // and sqrtAfter * sqrt(1 + s) ≈ sqrtAfter * (1 + s/2) for !zeroForOne.
   const SLIPPAGE_BPS = BigInt(slippageBps);
   const DENOM = 20_000n; // half-BPS denominator for sqrt-space adjustment
-  return hop.zeroForOne
-    ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM
-    : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
+  return hop.zeroForOne ? (sqrtAfter * (DENOM - SLIPPAGE_BPS)) / DENOM : (sqrtAfter * (DENOM + SLIPPAGE_BPS)) / DENOM;
 }
 
 function encodeDynamicApprovalCall(executor: string, token: string, spender: string, amount: bigint): ExecutorCall {

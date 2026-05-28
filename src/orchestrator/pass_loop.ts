@@ -1,5 +1,19 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type RoutingGraph, buildGraph, evaluatePipeline, type PipelineOptions, ArbInstrumenter, fetchMissingPoolState, computeMaticRates, pruneFailedPools, averageObscurity } from "../pipeline/index.ts";
+import {
+  type FoundCycle,
+  findCycles,
+  enumerateCycles,
+  routeKeyFromEdges,
+  type RoutingGraph,
+  buildGraph,
+  evaluatePipeline,
+  type PipelineOptions,
+  ArbInstrumenter,
+  fetchMissingPoolState,
+  computeMaticRates,
+  pruneFailedPools,
+  averageObscurity,
+} from "../pipeline/index.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
@@ -17,29 +31,29 @@ function sleep(ms: number): Promise<void> {
 
 /**
  * LONG-TAIL / LOW-COMPETITION ARBITRAGE STRATEGY
- * 
+ *
  * Given minimal infrastructure (no custom nodes, no ultra-low-latency private relays
  * on every path, standard public mempool visibility), the bot is structurally
  * disadvantaged in head-to-head races on the hottest, most liquid pairs.
- * 
+ *
  * Core thesis:
  * - Hot V3 2-hops on major pairs (Uni/Quick main pools) → extremely competitive,
  *   narrow windows, dominated by latency + private orderflow bots.
  * - Obscure V2 factories, DODO PMM pools, Balancer weighted/stable, many Curve pools,
  *   and complex 3-4 hop cross-protocol paths → much lower bot density.
- * 
+ *
  * These areas reward:
  *   - Correct multi-AMM modeling (this bot's strength)
  *   - Good historical state (HyperIndex advantage)
  *   - Willingness to take smaller but more reliable edges in thin markets
- * 
+ *
  * Implementation:
  * - finder.ts applies strong negative adjustments to logWeight for cycles containing
  *   high-obscurity protocols (dfyn/ape/mesh/jet/cometh V2s, DODO, Balancer, Curve, Woofi).
  * - This naturally promotes long-tail cycles into the top candidates that get
  *   deep ternary search + execution attempts.
  * - The effect is amplified for 3/4-hop cycles.
- * 
+ *
  * Result: the limited simulation and execution budget is preferentially spent where
  * this specific bot has a comparative advantage instead of being wasted losing
  * latency wars on saturated paths.
@@ -279,124 +293,130 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
         // Track that we just did a full refresh to avoid redundant pre-fetch below
         lastFullRefreshTime = now;
-        }
+      }
 
-        if (shouldReEnumerate || !cachedGraph) {
-          bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
-          const filteredPools = pools.filter((p) => {
-            const protocol = p.protocol.toLowerCase();
-            const addr = p.address.toLowerCase();
-            if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-              const state = stateCache.get(addr);
-              if (!state) return false; // Exclude if no state
-              const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
-              const liq = toBigInt(rawLiq, 0n);
-              if (liq < ctx.config.execution.minLiquidityV3Rate) {
-                if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
-                  ctx.logger.debug({ addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() }, "Specifically filtered 0x56ff");
-                }
-                return false;
+      if (shouldReEnumerate || !cachedGraph) {
+        bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+        const filteredPools = pools.filter((p) => {
+          const protocol = p.protocol.toLowerCase();
+          const addr = p.address.toLowerCase();
+          if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+            const state = stateCache.get(addr);
+            if (!state) return false; // Exclude if no state
+            const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
+            const liq = toBigInt(rawLiq, 0n);
+            if (liq < ctx.config.execution.minLiquidityV3Rate) {
+              if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
+                ctx.logger.debug(
+                  { addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() },
+                  "Specifically filtered 0x56ff",
+                );
               }
+              return false;
             }
-            return true;
-          });
+          }
+          return true;
+        });
 
-          ctx.logger.info({ 
-            total: pools.length, 
-            filtered: filteredPools.length, 
-            removed: pools.length - filteredPools.length 
-          }, "Pools filtered for graph building");
+        ctx.logger.info(
+          {
+            total: pools.length,
+            filtered: filteredPools.length,
+            removed: pools.length - filteredPools.length,
+          },
+          "Pools filtered for graph building",
+        );
 
-          // Rebuild graph every time we re-enumerate to ensure filters are applied
-          cachedGraph = deps.buildGraph(filteredPools, stateCache);
-          
-          const enumStartTime = Date.now();
-          cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
-            ctx.executionService.tracker.getWinRate(key),
-          );
-          const enumElapsed = Date.now() - enumStartTime;
-          lastRefreshTime = now;
-          ctx.logger.info(
-            {
-              pools: pools.length,
-              filtered: filteredPools.length,
-              cycles: cachedCycles.length,
-              durationMs: enumElapsed,
-            },
-            "Graph and cycles re-enumerated",
-          );
-        }
+        // Rebuild graph every time we re-enumerate to ensure filters are applied
+        cachedGraph = deps.buildGraph(filteredPools, stateCache);
 
-        const currentCycles = cachedCycles;
+        const enumStartTime = Date.now();
+        cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
+          ctx.executionService.tracker.getWinRate(key),
+        );
+        const enumElapsed = Date.now() - enumStartTime;
+        lastRefreshTime = now;
+        ctx.logger.info(
+          {
+            pools: pools.length,
+            filtered: filteredPools.length,
+            cycles: cachedCycles.length,
+            durationMs: enumElapsed,
+          },
+          "Graph and cycles re-enumerated",
+        );
+      }
 
-        if (currentCycles.length === 0) {
+      const currentCycles = cachedCycles;
+
+      if (currentCycles.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
-        }
+      }
 
-        // High-frequency pre-fetch: Only for pools in current cycles
-        // Skip if we just did a full refresh in the same pass
-        preFetchCounter++;
-        if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
-          const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false, ctx.hyperSync);
+      // High-frequency pre-fetch: Only for pools in current cycles
+      // Skip if we just did a full refresh in the same pass
+      preFetchCounter++;
+      if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
+        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false, ctx.hyperSync);
 
-          // Build focus tokens from the pools we actually refreshed this round.
-          const focusTokens = new Set<string>();
-          for (const addr of justUpdated) {
-            const meta = pools.find((p) => p.address.toLowerCase() === addr);
-            if (meta?.tokens) {
-              for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
-            }
-          }
-
-          // True incremental rate update: seed from previous + focus the propagation on tokens
-          // that were just touched by fresh on-chain state. This is the key P3 optimization.
-          cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-            seedRates: cachedRates ?? undefined,
-            focusTokens: focusTokens.size > 0 ? focusTokens : undefined,
-          });
-          if (!cachedMetas) {
-            cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+        // Build focus tokens from the pools we actually refreshed this round.
+        const focusTokens = new Set<string>();
+        for (const addr of justUpdated) {
+          const meta = pools.find((p) => p.address.toLowerCase() === addr);
+          if (meta?.tokens) {
+            for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
           }
         }
 
-        const gasSnapshot = ctx.gasOracle.getSnapshot();
-        if (!gasSnapshot) {
+        // True incremental rate update: seed from previous + focus the propagation on tokens
+        // that were just touched by fresh on-chain state. This is the key P3 optimization.
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+          seedRates: cachedRates ?? undefined,
+          focusTokens: focusTokens.size > 0 ? focusTokens : undefined,
+        });
+        if (!cachedMetas) {
+          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+        }
+      }
+
+      const gasSnapshot = ctx.gasOracle.getSnapshot();
+      if (!gasSnapshot) {
         ctx.logger.debug({}, "Waiting for gas oracle snapshot");
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(100);
         continue;
-        }
+      }
 
-        if (!cachedRates) {
-          cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-          });
-        }
-        const tokenToMaticRates = cachedRates!;
+      if (!cachedRates) {
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        });
+      }
+      const tokenToMaticRates = cachedRates!;
 
-        // Filter out quarantined routes before simulation to avoid repetitive noise
-        const filteredCycles = currentCycles.filter((cycle) => {
+      // Filter out quarantined routes before simulation to avoid repetitive noise
+      const filteredCycles = currentCycles.filter((cycle) => {
         const routeKey = deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
         return !ctx.executionService.isQuarantined(routeKey);
-        });
+      });
 
-        if (filteredCycles.length === 0) {
+      if (filteredCycles.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
-        }
+      }
 
-        // Mempool-aware dry run: check pending state before submitting
-        if (ctx.dryRunner) {
+      // Mempool-aware dry run: check pending state before submitting
+      if (ctx.dryRunner) {
         await ctx.dryRunner.fetchPendingState();
-        }
+      }
 
-        bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
+      bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
 
-        const options: PipelineOptions = {
+      const options: PipelineOptions = {
         minProfitMaticWei: ctx.config.execution.minProfitWei,
         gasPriceWei: gasSnapshot.gasPrice,
         tokenToMaticRates,
@@ -409,14 +429,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         concurrency: ctx.config.routing.concurrency,
         roiSafetyCap: ctx.config.execution.roiSafetyCap,
         logger: ctx.logger,
-        onProgress: (current, total, profitable) => {      if (current % 10 === 0 || current === total) {
-        bus?.emit({ type: "simulation_progress", current, total, profitable });
-      }
-    },
-  };
+        onProgress: (current, total, profitable) => {
+          if (current % 10 === 0 || current === total) {
+            bus?.emit({ type: "simulation_progress", current, total, profitable });
+          }
+        },
+      };
 
-  const simStartTime = Date.now();
-  const result = await deps.evaluatePipeline(filteredCycles, stateCache, options);
+      const simStartTime = Date.now();
+      const result = await deps.evaluatePipeline(filteredCycles, stateCache, options);
       const simElapsed = Date.now() - simStartTime;
 
       ctx.metrics.opportunitiesFound += result.profitableCount;
@@ -518,15 +539,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                       profitable: {
                         roi: profitable.assessment.roi,
                         profit: profitable.assessment.netProfitAfterGas.toString(),
-                        pools: profitable.cycle.edges.map(e => e.poolAddress),
-                        protocols: profitable.cycle.edges.map(e => e.protocol)
-                      }
+                        pools: profitable.cycle.edges.map((e) => e.poolAddress),
+                        protocols: profitable.cycle.edges.map((e) => e.protocol),
+                      },
                     },
                     "Dry-run against pending state failed, skipping",
                   );
                   ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
                   continue;
-                }              }
+                }
+              }
 
               candidates.push({ candidate, profitable, routeKey });
             } catch (err) {
@@ -566,10 +588,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 if (execResult.success) {
                   ctx.metrics.executionsSuccessful++;
                   ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
-                  
+
                   // Try to get actual profit from tracker if available
-                  const tracked = ctx.executionService.tracker.getRecentRecords(10).find(e => e.txHash === execResult.txHash);
-                  const profitWei = tracked ? tracked.profit : candidates.find(c => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
+                  const tracked = ctx.executionService.tracker.getRecentRecords(10).find((e) => e.txHash === execResult.txHash);
+                  const profitWei = tracked
+                    ? tracked.profit
+                    : candidates.find((c) => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
 
                   bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash, profitWei });
                 } else if (execResult.error === "reverted") {
@@ -600,7 +624,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       if (elapsed > HF_BUDGET_MS) {
         ctx.logger.warn(
           { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles },
-          "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)"
+          "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)",
         );
       }
       if (!ctx.metrics.maxHotPathDurationMs || elapsed > ctx.metrics.maxHotPathDurationMs) {
@@ -612,22 +636,24 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
       const payload = buildStatusPayload(
-        ctx.metrics, 
-        gasSnapshot.gasPrice, 
+        ctx.metrics,
+        gasSnapshot.gasPrice,
         pools.length,
-        hiStatus ? { 
-          synced: hiStatus.synced, 
-          remote: hiStatus.remote, 
-          lag: hiStatus.lag, 
-          syncRate: hiStatus.syncRate, 
-          healthy: ctx.hyperIndexMonitor!.isHealthy() 
-        } : undefined
+        hiStatus
+          ? {
+              synced: hiStatus.synced,
+              remote: hiStatus.remote,
+              lag: hiStatus.lag,
+              syncRate: hiStatus.syncRate,
+              healthy: ctx.hyperIndexMonitor!.isHealthy(),
+            }
+          : undefined,
       );
       await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
 
       // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
       // Previously this (plus checkReorg's serial getBlocks) ran every 200ms — major hot-path violation.
-      if (ctx.reorgDetector && ctx.publicClient && (now - lastReorgCheck > LF_INTERVAL)) {
+      if (ctx.reorgDetector && ctx.publicClient && now - lastReorgCheck > LF_INTERVAL) {
         lastReorgCheck = now;
         const detector = ctx.reorgDetector; // narrow for the block
         try {

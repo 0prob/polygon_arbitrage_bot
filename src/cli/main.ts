@@ -141,7 +141,7 @@ async function main() {
           body: JSON.stringify({ query }),
         });
 
-        const json = await resp.json() as any;
+        const json = (await resp.json()) as any;
         const d = json?.data || {};
 
         const candidates = [
@@ -153,7 +153,7 @@ async function main() {
           d.dodo?.[0]?.lastUpdatedBlock,
           d.woofi?.[0]?.lastUpdatedBlock,
           d.meta?.[0]?.createdBlock,
-        ].filter((x): x is number => typeof x === 'number' && x > 0);
+        ].filter((x): x is number => typeof x === "number" && x > 0);
 
         return candidates.length > 0 ? Math.max(...candidates) : 0;
       } catch {

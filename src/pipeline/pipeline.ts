@@ -1,6 +1,13 @@
 import type { FoundCycle, PipelineOptions } from "./types.ts";
 import type { RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
-import { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop, getEffectivePriceImpact, getTestAmount } from "./simulator.ts";
+import {
+  simulateRoute,
+  simulateRouteMinimal,
+  buildSimulationEdges,
+  simulateHop,
+  getEffectivePriceImpact,
+  getTestAmount,
+} from "./simulator.ts";
 import type { SimulationEdge } from "./types.ts";
 import { computeProfit, computeProfitCore } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
@@ -80,7 +87,7 @@ function evaluateAmount(
   skipImpactCheck: boolean = false,
   minimalForSearch: boolean = false,
   prebuiltSimEdges?: SimulationEdge[],
-  outHolder?: MinimalEvalHolder
+  outHolder?: MinimalEvalHolder,
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
   if (!skipImpactCheck) {
     const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
@@ -120,15 +127,15 @@ function evaluateAmount(
         const edge = cycle.edges[i];
         const rateIn = options.tokenToMaticRates.get(edge.tokenIn.toLowerCase()) ?? 0n;
         const rateOut = options.tokenToMaticRates.get(edge.tokenOut.toLowerCase()) ?? 0n;
-        
+
         if (rateIn > 0n && rateOut > 0n) {
-          const valIn = (fullResult.hopAmounts[i] * rateIn) / 10n**18n;
-          const valOut = (fullResult.hopAmounts[i+1] * rateOut) / 10n**18n;
-          
+          const valIn = (fullResult.hopAmounts[i] * rateIn) / 10n ** 18n;
+          const valOut = (fullResult.hopAmounts[i + 1] * rateOut) / 10n ** 18n;
+
           const isExtremeLoss = valOut < valIn / 2n;
           const isExtremeGain = valOut > valIn * 5n;
 
-          if ((isExtremeLoss || isExtremeGain) && valIn > 10n**15n) { 
+          if ((isExtremeLoss || isExtremeGain) && valIn > 10n ** 15n) {
             return { result: null, assessment: null, grossProfitMatic: null };
           }
         }
@@ -222,8 +229,8 @@ export async function evaluatePipeline(
       batch.map(async (cycle) => {
         attempted++;
         try {
-          const tokens = [cycle.startToken, ...cycle.edges.map(e => e.tokenOut)];
-          const hasAllRates = tokens.every(t => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
+          const tokens = [cycle.startToken, ...cycle.edges.map((e) => e.tokenOut)];
+          const hasAllRates = tokens.every((t) => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
           if (!hasAllRates) return { type: "noRate" as const };
 
           // Pre-build SimulationEdge templates once per cycle.
@@ -257,8 +264,16 @@ export async function evaluatePipeline(
             const range = right - left;
             if (range <= baseAmount / CONVERGENCE_DIVISOR) {
               const mid = left + range / 2n;
-              const { result, assessment, grossProfitMatic } = evaluateAmount(cycle, mid, stateCache, options, false, true, prebuiltSimEdges); // minimal on convergence too
-              
+              const { result, assessment, grossProfitMatic } = evaluateAmount(
+                cycle,
+                mid,
+                stateCache,
+                options,
+                false,
+                true,
+                prebuiltSimEdges,
+              ); // minimal on convergence too
+
               if (grossProfitMatic && grossProfitMatic > bestGrossMatic) {
                 bestGrossMatic = grossProfitMatic;
               }
@@ -304,7 +319,8 @@ export async function evaluatePipeline(
               if (eval1.result === null && eval2.result === null) {
                 right = m1;
               } else {
-                if (profit1 > profit2) right = m2; else left = m1;
+                if (profit1 > profit2) right = m2;
+                else left = m1;
               }
             } else if (profit1 > profit2) {
               right = m2;
@@ -328,10 +344,10 @@ export async function evaluatePipeline(
         } catch (_err: unknown) {
           return { type: "error" as const };
         }
-      })
+      }),
     );
 
-    type EvalSuccess = { type: 'success'; bestResult: any; bestAssessment: any; bestGrossMatic: bigint };
+    type EvalSuccess = { type: "success"; bestResult: any; bestAssessment: any; bestGrossMatic: bigint };
     const sortedResults = results
       .filter((r): r is EvalSuccess => r.type === "success")
       .sort((a, b) => Number(b.bestGrossMatic - a.bestGrossMatic));
@@ -343,12 +359,15 @@ export async function evaluatePipeline(
           const path = top.bestResult.poolPath.join(" -> ");
           const roi = top.bestAssessment.roi / 1_000_000;
           if (options.logger) {
-            options.logger.debug({ 
-              grossMatic: (top.bestGrossMatic / 10n**15n).toString() + "mMATIC",
-              roi,
-              path,
-              reason: top.bestAssessment.rejectReason 
-            }, "Top outlier detected in pass");
+            options.logger.debug(
+              {
+                grossMatic: (top.bestGrossMatic / 10n ** 15n).toString() + "mMATIC",
+                roi,
+                path,
+                reason: top.bestAssessment.rejectReason,
+              },
+              "Top outlier detected in pass",
+            );
           }
         }
       }
@@ -364,12 +383,15 @@ export async function evaluatePipeline(
         }
         if (res.bestResult && res.bestAssessment && res.bestAssessment.shouldExecute) {
           if (options.logger) {
-            options.logger.info({
-              routeKey: batch[results.indexOf(res)].id,
-              profit: res.bestAssessment.netProfitAfterGasMaticWei.toString(),
-              roi: res.bestAssessment.roi / 1_000_000,
-              path: res.bestResult.poolPath.join(" -> ")
-            }, "Evaluating profitable candidate");
+            options.logger.info(
+              {
+                routeKey: batch[results.indexOf(res)].id,
+                profit: res.bestAssessment.netProfitAfterGasMaticWei.toString(),
+                roi: res.bestAssessment.roi / 1_000_000,
+                path: res.bestResult.poolPath.join(" -> "),
+              },
+              "Evaluating profitable candidate",
+            );
           }
           profitable.push({ cycle: batch[results.indexOf(res)], result: res.bestResult, assessment: res.bestAssessment });
         }

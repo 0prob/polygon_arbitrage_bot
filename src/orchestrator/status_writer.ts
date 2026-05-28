@@ -37,10 +37,10 @@ export function formatGwei(gasPrice: bigint | undefined): number {
 }
 
 export function buildStatusPayload(
-  metrics: Metrics, 
-  gasPrice: bigint | undefined, 
+  metrics: Metrics,
+  gasPrice: bigint | undefined,
   poolCount: number,
-  hyperindexStatus?: { synced: number; remote: number; lag: number; syncRate: number; healthy: boolean }
+  hyperindexStatus?: { synced: number; remote: number; lag: number; syncRate: number; healthy: boolean },
 ): StatusPayload {
   const uptimeSec = Math.floor((Date.now() - metrics.startTime) / 1000);
   return {

@@ -65,7 +65,13 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
-        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, privateKey: `0x${"1".repeat(64)}`, slippageBps: 50, revertRiskBps: 10 },
+        execution: {
+          minProfitWei: 0n,
+          executorAddress: VALID_ADDR_A,
+          privateKey: `0x${"1".repeat(64)}`,
+          slippageBps: 50,
+          revertRiskBps: 10,
+        },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
@@ -218,9 +224,9 @@ describe("runPassLoop", () => {
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
       fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
-      discoverPoolsFromHasura: vi.fn().mockResolvedValue([
-        { address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 },
-      ]),
+      discoverPoolsFromHasura: vi
+        .fn()
+        .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),
     };
 
     await runPassLoop(mockContext, deps);
@@ -237,7 +243,13 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
-        execution: { minProfitWei: 0n, executorAddress: VALID_ADDR_A, privateKey: `0x${"1".repeat(64)}`, slippageBps: 50, revertRiskBps: 10 },
+        execution: {
+          minProfitWei: 0n,
+          executorAddress: VALID_ADDR_A,
+          privateKey: `0x${"1".repeat(64)}`,
+          slippageBps: 50,
+          revertRiskBps: 10,
+        },
         gas: { pollIntervalMs: 1000, priorityFeeFloorGwei: 1, priorityFeeCeilingGwei: 100, maxBidMultiplier: 2 },
         rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
         mempool: { coalesceTtlMs: 100 },
@@ -309,9 +321,9 @@ describe("runPassLoop", () => {
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
       fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
-      discoverPoolsFromHasura: vi.fn().mockResolvedValue([
-        { address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 },
-      ]),
+      discoverPoolsFromHasura: vi
+        .fn()
+        .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),
     };
 
     await runPassLoop(mockContext, deps);

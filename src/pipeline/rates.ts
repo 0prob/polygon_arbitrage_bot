@@ -60,9 +60,7 @@ export function computeMaticRates(
     let changed = false;
 
     // Optional: stable partition so focus-touching pools are considered early
-    const orderedPools = focus && focus.size > 0
-      ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0))
-      : pools;
+    const orderedPools = focus && focus.size > 0 ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0)) : pools;
 
     for (const pool of orderedPools) {
       const addr = pool.address.toLowerCase();
@@ -114,13 +112,13 @@ export function computeMaticRates(
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
             const sq = toBigInt(state.sqrtPriceX96, 0n);
             const liq = toBigInt(state.liquidity, 0n);
-            
+
             // Require some liquidity for rate propagation
             if (liq < minLiquidityV3) {
               skippedLowLiquidity++;
               continue;
             }
-            
+
             if (sq > 0n) {
               const p192 = sq * sq;
               if (knownIdx === 0 && unknownIdx === 1) {
@@ -164,7 +162,7 @@ export function computeMaticRates(
               if (balances && balances[knownIdx] > 0n) {
                 knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;
               } else {
-                knownValueMatic = 10n * RATE_PRECISION; 
+                knownValueMatic = 10n * RATE_PRECISION;
               }
 
               if (knownIdx === 0) {
@@ -197,7 +195,7 @@ export function computeMaticRates(
               const ratio = r0 > r1 ? r0 / r1 : r1 / r0;
               if (ratio > 10n ** 12n) {
                 skippedExtremeRatio++;
-                continue; 
+                continue;
               }
             }
           }
@@ -207,7 +205,6 @@ export function computeMaticRates(
             changed = true;
             if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${pool.address} [${protocol}])`);
           }
-
         } catch {
           continue;
         }
@@ -252,9 +249,7 @@ export function computeMaticRates(
             const knownRate = rates.get(known)!;
             const kIdx = tokens.indexOf(known);
             const p192 = sq * sq;
-            const newRate = kIdx === 0
-              ? (knownRate * (1n << 192n)) / p192
-              : (knownRate * p192) / (1n << 192n);
+            const newRate = kIdx === 0 ? (knownRate * (1n << 192n)) / p192 : (knownRate * p192) / (1n << 192n);
             if (newRate > 0n && newRate < 10n ** 36n) rates.set(unknown, newRate);
           }
         }
@@ -267,13 +262,16 @@ export function computeMaticRates(
   if (logger && rates.size > 1) {
     logger.debug?.({ rates: rates.size, propagation: logs }, "Rate propagation complete");
   } else if (logger) {
-    logger.debug?.({ 
-      pools: pools.length, 
-      withState: stateCache.size,
-      skippedNoState,
-      skippedLowLiquidity,
-      skippedExtremeRatio 
-    }, "Rate propagation failed to find any rates beyond WMATIC");
+    logger.debug?.(
+      {
+        pools: pools.length,
+        withState: stateCache.size,
+        skippedNoState,
+        skippedLowLiquidity,
+        skippedExtremeRatio,
+      },
+      "Rate propagation failed to find any rates beyond WMATIC",
+    );
   }
   return rates;
 }

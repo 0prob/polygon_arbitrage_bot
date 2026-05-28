@@ -1,11 +1,4 @@
-import {
-  createPublicClient,
-  createWalletClient,
-  http,
-  fallback,
-  type PublicClient,
-  type WalletClient,
-} from "viem";
+import { createPublicClient, createWalletClient, http, fallback, type PublicClient, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { RpcConfig } from "../config/schema.ts";
 import { getChain } from "../infra/rpc/chains.ts";
@@ -149,10 +142,15 @@ export class RpcManager {
   }
 
   // === FastLane ===
-  addFastLane(fastLaneConfig: { enabled: boolean; rpcUrl: string; blockNumberWindow: number; timestampWindowS: number }): FastLaneSubmitter | undefined {
+  addFastLane(fastLaneConfig: {
+    enabled: boolean;
+    rpcUrl: string;
+    blockNumberWindow: number;
+    timestampWindowS: number;
+  }): FastLaneSubmitter | undefined {
     if (!fastLaneConfig.enabled) return undefined;
     const client = createWalletClient({
-      account: this._executionClients[0]?.account!,
+      account: this._executionClients[0]!.account,
       chain: getChain(this.chainId),
       transport: http(fastLaneConfig.rpcUrl),
     });

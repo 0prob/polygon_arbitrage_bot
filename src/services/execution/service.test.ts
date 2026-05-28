@@ -9,7 +9,13 @@ import type { RpcManager } from "../../rpc/manager.ts";
 
 describe("ExecutionService", () => {
   const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() } as unknown as Logger;
-  const mockGasOracle = { start: vi.fn(), stop: vi.fn(), getSnapshot: vi.fn(), config: undefined, getPredictedBaseFee: vi.fn() } as unknown as GasOracle;
+  const mockGasOracle = {
+    start: vi.fn(),
+    stop: vi.fn(),
+    getSnapshot: vi.fn(),
+    config: undefined,
+    getPredictedBaseFee: vi.fn(),
+  } as unknown as GasOracle;
   const mockNonceManager = {
     initialize: vi.fn(),
     getNextNonce: vi.fn(),

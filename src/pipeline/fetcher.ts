@@ -19,10 +19,7 @@ const V4_ABI = parseAbi([
   "function tickSpacing() external view returns (int24)",
   "function hooks() external view returns (address)",
 ]);
-const WOOFI_PAIR_ABI = parseAbi([
-  "function price() external view returns (uint256)",
-  "function fee() external view returns (uint256)",
-]);
+const WOOFI_PAIR_ABI = parseAbi(["function price() external view returns (uint256)", "function fee() external view returns (uint256)"]);
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
 const FAILED_POOLS_MAX_SIZE = 10_000;
@@ -108,7 +105,7 @@ export async function fetchMissingPoolState(
       });
       // Process recent Sync/Swap logs to hydrate stateCache (simplified - production version would decode properly)
       for (const log of recentLogs) {
-        const addr = (log.address || '').toLowerCase();
+        const addr = (log.address || "").toLowerCase();
         if (missingAddresses.has(addr) && log.data) {
           // Best-effort: many Sync events have reserve data in topics or data
           // For real production, decode the event using the known ABI

@@ -24,10 +24,10 @@ export function parseBigIntArray(arr: unknown): bigint[] {
 let _staticAnchors: HasuraPoolMeta[] = [];
 try {
   // @ts-expect-error - dynamic JSON import for optional pools.json (falls back gracefully)
-  const mod = await import("../../../scripts/pools.json", { with: { type: "json" } } as any);
-  const poolsJson = (mod.default ?? mod) as any[];
+  const mod = await import("../../../scripts/pools.json", { with: { type: "json" } } as unknown as { default?: unknown });
+  const poolsJson = (mod.default ?? mod) as unknown[];
   if (Array.isArray(poolsJson)) {
-    _staticAnchors = poolsJson.map((p: any) => ({
+    _staticAnchors = poolsJson.map((p: unknown) => ({
       address: p.address,
       protocol: p.protocol,
       tokens: p.tokens,
@@ -42,7 +42,7 @@ export const STATIC_ANCHORS: HasuraPoolMeta[] = _staticAnchors;
 
 const GRAPHQL_TIMEOUT = 10_000;
 
-export async function graphQLQuery(url: string, adminSecret: string, query: string): Promise<any> {
+export async function graphQLQuery(url: string, adminSecret: string, query: string): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), GRAPHQL_TIMEOUT);
 
@@ -61,7 +61,7 @@ export async function graphQLQuery(url: string, adminSecret: string, query: stri
       throw new Error(`GraphQL query failed: ${resp.statusText}`);
     }
 
-    const json = (await resp.json()) as any;
+    const json = (await resp.json()) as Record<string, unknown>;
     if (json.errors) {
       throw new Error(`GraphQL error: ${JSON.stringify(json.errors)}`);
     }
@@ -124,6 +124,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
     const dodoResult = results[5].status === "fulfilled" ? results[5].value : null;
     const woofiResult = results[6].status === "fulfilled" ? results[6].value : null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const v2States = (v2Result?.V2PoolState || []) as any[];
     for (const s of v2States) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -132,6 +133,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const v3States = (v3Result?.V3PoolState || []) as any[];
     for (const s of v3States) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -141,6 +143,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const v4States = (v4Result?.V4PoolState || []) as any[];
     for (const s of v4States) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -153,6 +156,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const balancerStates = (balancerResult?.BalancerPoolState || []) as any[];
     for (const s of balancerStates) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -165,6 +169,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const curveStates = (curveResult?.CurvePoolState || []) as any[];
     for (const s of curveStates) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -175,6 +180,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dodoStates = (dodoResult?.DodoPoolState || []) as any[];
     for (const s of dodoStates) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -191,6 +197,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const woofiStates = (woofiResult?.WoofiPoolState || []) as any[];
     for (const s of woofiStates) {
       _cachedState.set(s.id.toLowerCase(), {
@@ -211,8 +218,8 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
 export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string): Promise<HasuraPoolMeta[]> {
   const anchors = STATIC_ANCHORS;
 
-  let result: any = null;
-  let lastErr: any = null;
+  let result: unknown = null;
+  let lastErr: unknown = null;
 
   for (let i = 0; i < 5; i++) {
     try {

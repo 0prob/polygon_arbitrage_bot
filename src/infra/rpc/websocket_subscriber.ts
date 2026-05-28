@@ -95,7 +95,7 @@ export class WebSocketSubscriber {
         try {
           if (typeof msg.data !== "string") return;
           const data = JSON.parse(msg.data) as Record<string, unknown>;
-          
+
           if (data.error) {
             this.emit({ type: "error", message: JSON.stringify(data.error) } as any);
             return;

@@ -105,7 +105,11 @@ function envToOverrides(env: NodeJS.ProcessEnv): Record<string, Record<string, u
     }
 
     const [section, field] = mapping;
-    if (section === ("envioApiToken" as keyof AppConfig) || section === ("hasuraUrl" as keyof AppConfig) || section === ("hasuraSecret" as keyof AppConfig)) {
+    if (
+      section === ("envioApiToken" as keyof AppConfig) ||
+      section === ("hasuraUrl" as keyof AppConfig) ||
+      section === ("hasuraSecret" as keyof AppConfig)
+    ) {
       (overrides as Record<string, unknown>)[section as string] = value;
       continue;
     }

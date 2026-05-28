@@ -91,19 +91,24 @@ export interface ComputeProfitOptions {
 export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   const core = computeProfitCore(opts);
 
-  const {
-    grossProfitInTokens,
-    amountInTokens: _amountInTokensUnusedInPublicWrapper,
-    minProfitMaticWei,
-    roiSafetyCap = 10.0,
-  } = opts;
+  const { grossProfitInTokens, amountInTokens: _amountInTokensUnusedInPublicWrapper, minProfitMaticWei, roiSafetyCap = 10.0 } = opts;
 
-  const { netProfitInTokens, gasCostWei, netProfitAfterGasMaticWei, gasCostInTokens, netProfitAfterGasInTokens, roi, flashFee, slippage, revert } = core;
+  const {
+    netProfitInTokens,
+    gasCostWei,
+    netProfitAfterGasMaticWei,
+    gasCostInTokens,
+    netProfitAfterGasInTokens,
+    roi,
+    flashFee,
+    slippage,
+    revert,
+  } = core;
 
   let shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
   let rejectReason: string | undefined;
 
-  if (roi > (roiSafetyCap * 1_000_000)) {
+  if (roi > roiSafetyCap * 1_000_000) {
     shouldExecute = false;
     rejectReason = `ROI outlier detected: ${roi / 1_000_000}x exceeds safety cap (${roiSafetyCap}x)`;
   }

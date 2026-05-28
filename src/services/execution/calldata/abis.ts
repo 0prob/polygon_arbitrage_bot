@@ -223,11 +223,48 @@ export const EXECUTOR_ABI = [
   { name: "CallbackOnly", type: "error", inputs: [] },
   { name: "InvalidCallbackSource", type: "error", inputs: [] },
   { name: "UnsupportedProtocol", type: "error", inputs: [{ name: "protocolId", type: "uint8" }] },
-  { name: "InvalidPoolCaller", type: "error", inputs: [{ name: "expected", type: "address" }, { name: "actual", type: "address" }] },
-  { name: "ExternalCallFailed", type: "error", inputs: [{ name: "index", type: "uint256" }, { name: "target", type: "address" }, { name: "reason", type: "bytes" }] },
-  { name: "InsufficientProfit", type: "error", inputs: [{ name: "finalBalance", type: "uint256" }, { name: "requiredBalance", type: "uint256" }] },
-  { name: "TransferFailed", type: "error", inputs: [{ name: "token", type: "address" }, { name: "to", type: "address" }, { name: "amount", type: "uint256" }] },
-  { name: "ApproveFailed", type: "error", inputs: [{ name: "token", type: "address" }, { name: "spender", type: "address" }] },
+  {
+    name: "InvalidPoolCaller",
+    type: "error",
+    inputs: [
+      { name: "expected", type: "address" },
+      { name: "actual", type: "address" },
+    ],
+  },
+  {
+    name: "ExternalCallFailed",
+    type: "error",
+    inputs: [
+      { name: "index", type: "uint256" },
+      { name: "target", type: "address" },
+      { name: "reason", type: "bytes" },
+    ],
+  },
+  {
+    name: "InsufficientProfit",
+    type: "error",
+    inputs: [
+      { name: "finalBalance", type: "uint256" },
+      { name: "requiredBalance", type: "uint256" },
+    ],
+  },
+  {
+    name: "TransferFailed",
+    type: "error",
+    inputs: [
+      { name: "token", type: "address" },
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+  },
+  {
+    name: "ApproveFailed",
+    type: "error",
+    inputs: [
+      { name: "token", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+  },
   { name: "ZeroAddress", type: "error", inputs: [] },
 ];
 

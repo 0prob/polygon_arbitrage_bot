@@ -3,7 +3,7 @@ import type { Logger } from "../observability/logger.ts";
 // Dynamic import so the rest of the app doesn't break if the native package isn't installed yet.
 let HypersyncClient: any;
 try {
-  // @ts-ignore - optional native dependency
+  // @ts-expect-error - optional native dependency
   HypersyncClient = (await import("@envio-dev/hypersync-client")).HypersyncClient;
 } catch {
   // Will be handled at runtime when trying to create the service
@@ -64,20 +64,20 @@ export class HyperSyncService {
   /**
    * Get a recent block with useful fields. Faster than traditional RPC for historical data.
    */
-  async getBlock(numberOrTag: number | 'latest' | bigint): Promise<any | null> {
-    const from = typeof numberOrTag === 'string' ? 0 : Number(numberOrTag);
+  async getBlock(numberOrTag: number | "latest" | bigint): Promise<any | null> {
+    const from = typeof numberOrTag === "string" ? 0 : Number(numberOrTag);
     const query: any = {
       fromBlock: from,
-      toBlock: typeof numberOrTag === 'string' ? undefined : from + 1,
+      toBlock: typeof numberOrTag === "string" ? undefined : from + 1,
       fieldSelection: {
-        block: ['Number', 'Hash', 'Timestamp', 'BaseFeePerGas'],
+        block: ["Number", "Hash", "Timestamp", "BaseFeePerGas"],
       },
     };
     try {
       const res = await this.client.get(query);
       return res.data.blocks?.[0] ?? null;
     } catch (err) {
-      this.logger?.warn({ err, block: numberOrTag }, 'HyperSync getBlock failed');
+      this.logger?.warn({ err, block: numberOrTag }, "HyperSync getBlock failed");
       return null;
     }
   }
@@ -117,10 +117,15 @@ export class HyperSyncService {
     const query: any = {
       fromBlock: params.fromBlock ? Number(params.fromBlock) : 0,
       toBlock: params.toBlock ? Number(params.toBlock) : undefined,
-      logs: params.address || params.topics ? [{
-        address: Array.isArray(params.address) ? params.address : params.address ? [params.address] : undefined,
-        topics: params.topics,
-      }] : undefined,
+      logs:
+        params.address || params.topics
+          ? [
+              {
+                address: Array.isArray(params.address) ? params.address : params.address ? [params.address] : undefined,
+                topics: params.topics,
+              },
+            ]
+          : undefined,
       fieldSelection: {
         log: ["Address", "Topic0", "Topic1", "Topic2", "Topic3", "Data", "BlockNumber", "TransactionHash"],
       },
@@ -145,8 +150,8 @@ export class HyperSyncService {
       const query: any = {
         fromBlock: Math.max(0, height - lookbackBlocks),
         fieldSelection: {
-          log: ['BlockNumber', 'TransactionHash', 'Topics', 'Data', 'Address'],
-          transaction: ['Hash', 'Status', 'GasUsed'],
+          log: ["BlockNumber", "TransactionHash", "Topics", "Data", "Address"],
+          transaction: ["Hash", "Status", "GasUsed"],
         },
         transactions: [{ hash: [txHash] }],
       };
@@ -155,24 +160,27 @@ export class HyperSyncService {
       if (tx) {
         return {
           transactionHash: tx.hash,
-          status: tx.status === 1 ? '0x1' : '0x0',
+          status: tx.status === 1 ? "0x1" : "0x0",
           gasUsed: tx.gasUsed,
           logs: res.data.logs?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase()) ?? [],
         };
       }
     } catch (err) {
-      this.logger?.debug({ err, txHash }, 'HyperSync receipt reconstruction failed');
+      this.logger?.debug({ err, txHash }, "HyperSync receipt reconstruction failed");
     }
     return null;
   }
 }
 
 // Factory, similar to createHyperRpcClient
-export function createHyperSyncService(config: {
-  url: string;
-  apiToken?: string;
-  timeoutMs?: number;
-}, logger?: Logger): HyperSyncService | undefined {
+export function createHyperSyncService(
+  config: {
+    url: string;
+    apiToken?: string;
+    timeoutMs?: number;
+  },
+  logger?: Logger,
+): HyperSyncService | undefined {
   if (!config.url) return undefined;
   if (!HypersyncClient) {
     logger?.warn("@envio-dev/hypersync-client not available yet (install may still be running). Falling back to legacy HyperRPC paths.");

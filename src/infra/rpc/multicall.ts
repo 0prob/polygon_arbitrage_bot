@@ -43,10 +43,7 @@ export interface MulticallRequest {
  * Batch many read-only contract calls into a single RPC request.
  * Crucial for state consistency and reducing RPC overhead.
  */
-export async function performMulticall(
-  client: PublicClient,
-  requests: MulticallRequest[]
-): Promise<any[]> {
+export async function performMulticall(client: PublicClient, requests: MulticallRequest[]): Promise<any[]> {
   if (requests.length === 0) return [];
 
   const calls = requests.map((req) => ({

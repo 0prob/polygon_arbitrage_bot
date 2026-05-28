@@ -38,15 +38,11 @@ export class ArbInstrumenter {
   private traces = new Map<string, SimulationTrace>();
 
   /** Capture the exact state used during simulation */
-  captureTrace(
-    routeKey: string,
-    result: RouteSimulationResult,
-    stateCache: RouteStateCache
-  ): void {
+  captureTrace(routeKey: string, result: RouteSimulationResult, stateCache: RouteStateCache): void {
     const states: Record<string, PoolState> = {};
     for (const pool of result.poolPath) {
       const s = stateCache.get(pool.toLowerCase());
-      if (s) states[pool.toLowerCase()] = { ...s as any };
+      if (s) states[pool.toLowerCase()] = { ...(s as any) };
     }
 
     const hops = result.protocols.map((protocol, i) => ({
@@ -80,7 +76,7 @@ export class ArbInstrumenter {
     candidate: CandidateExecution,
     result: ExecutionResult,
     actualProfit: bigint,
-    gasCostMatic: bigint
+    gasCostMatic: bigint,
   ): ExecutionComparison | null {
     const trace = this.traces.get(candidate.routeKey);
     if (!trace) return null;

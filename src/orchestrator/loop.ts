@@ -8,14 +8,7 @@
  * Only the PassLoopDeps contract remains, because it is the public API used by
  * tests and the thin runner wrapper for overriding real dependencies.
  */
-import type {
-  buildGraph,
-  findCycles,
-  enumerateCycles,
-  evaluatePipeline,
-  SwapEdge,
-  ArbInstrumenter,
-} from "../pipeline/index.ts";
+import type { buildGraph, findCycles, enumerateCycles, evaluatePipeline, SwapEdge, ArbInstrumenter } from "../pipeline/index.ts";
 import type { Address } from "../core/types/common.ts";
 
 // buildExecutionCandidate lives in services/execution — import its type only (no runtime cost)

@@ -38,9 +38,15 @@ export function simulateHop(
 
   switch (normalizeProtocol(edge.protocol)) {
     case "V2":
-      const feeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : 
-                    (edge.fee != null ? (BigInt(edge.fee) < 1000n ? BigInt(edge.fee) : (10000n - BigInt(edge.fee))) : 30n);
-      
+      const feeBps =
+        edge.swapFeeBps != null
+          ? BigInt(edge.swapFeeBps)
+          : edge.fee != null
+            ? BigInt(edge.fee) < 1000n
+              ? BigInt(edge.fee)
+              : 10000n - BigInt(edge.fee)
+            : 30n;
+
       result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, 10000n - feeBps, 10000n);
       break;
     case "V3":
@@ -168,10 +174,7 @@ export function simulateRouteMinimal(
  * This eliminates repeated object allocation inside every simulateRouteMinimal / simulateRoute call
  * during ternary search (the dominant hot-path allocation source).
  */
-export function buildSimulationEdges(
-  edges: SwapEdge[],
-  stateCache: RouteStateCache
-): SimulationEdge[] {
+export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCache): SimulationEdge[] {
   const simEdges: SimulationEdge[] = new Array(edges.length);
 
   for (let i = 0; i < edges.length; i++) {
@@ -276,7 +279,7 @@ export function getEffectivePriceImpact(
 
 export function getTestAmount(tokenAddress: string, metas?: Map<string, { decimals: number }>): bigint {
   const addr = tokenAddress.toLowerCase();
-  
+
   if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
     return 500n * 10n ** 6n;
   }

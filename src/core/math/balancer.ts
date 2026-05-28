@@ -491,7 +491,7 @@ export function simulateBalancerSwap(
       pool.isStable === true || pool.amp != null
         ? getBalancerStableAmountOut(amountIn, poolState, inIdx, outIdx)
         : getBalancerAmountOut(amountIn, poolState, inIdx, outIdx);
-  } catch (_err: unknown) {
+  } catch {
     amountOut = 0n;
   }
 

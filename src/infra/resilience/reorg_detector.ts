@@ -38,7 +38,7 @@ export class ReorgDetector {
             ? await this.hyperRpc.getBlockByNumber(BigInt(blockNumber - 1))
             : await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
         parentHash = (block?.hash as string) ?? "";
-      } catch (_err: unknown) {
+      } catch {
         /* ignore */
       }
     }
@@ -88,7 +88,7 @@ export class ReorgDetector {
           }
           break; // Found the fork point
         }
-      } catch (err) {
+      } catch {
         /* skip this depth if RPC fails */
       }
     }

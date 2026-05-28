@@ -45,11 +45,13 @@ export class MempoolAwareDryRunner {
     // In a full implementation, we would decode mempool transactions
     // that target these poolAddresses and apply them.
     for (const addr of poolAddresses) {
-      const state = await this.client.readContract({
-        address: addr as `0x${string}`,
-        abi: V3_POOL_SWAP_ABI,
-        functionName: "slot0",
-      }).catch(() => null) as any;
+      const state = (await this.client
+        .readContract({
+          address: addr as `0x${string}`,
+          abi: V3_POOL_SWAP_ABI,
+          functionName: "slot0",
+        })
+        .catch(() => null)) as any;
 
       if (state) {
         result.expectedSqrtPriceX96[addr.toLowerCase()] = state[0];
@@ -114,11 +116,11 @@ export class MempoolAwareDryRunner {
           const revertError = err.walk((e) => (e as any).data !== undefined) as any;
           if (revertError?.data) {
             revertData = revertError.data;
-            
+
             // Uniswap V3 'LOK' (Locked) - often a string revert "LOK"
             const isLockError = revertData?.includes("4c4f4b"); // "LOK" in hex
             if (isLockError && attempt < MAX_RETRIES - 1) {
-              await new Promise(r => setTimeout(r, 50));
+              await new Promise((r) => setTimeout(r, 50));
               continue;
             }
 
@@ -144,7 +146,7 @@ export class MempoolAwareDryRunner {
           revertReason: reason,
           revertData,
         };
-        
+
         // Only retry on lock errors
         const isLockError = revertData?.includes("4c4f4b");
         if (!isLockError) break;
