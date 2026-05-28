@@ -10,6 +10,7 @@ import { join } from "path";
 import { execSync } from "child_process";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import "../infra/garbage/garbage-tracker.ts"; // Ensure garbage list starts loading early
+import { performOneTimeGarbageCleanup } from "../infra/garbage/garbage-tracker.ts";
 import { HealthServer } from "../infra/observability/health_server.ts";
 import { filterArchivalRpcUrls } from "../infra/rpc/client_factory.ts";
 import { DEFAULTS } from "../config/defaults.ts";
@@ -85,6 +86,21 @@ async function main() {
     await hyperIndexMonitor.prepare();
   } catch (err) {
     logger.warn({ err }, "Failed to start HyperIndex, continuing without it");
+  }
+
+  // One-time historical garbage cleanup (scans existing PoolMeta in Hasura)
+  if (config.hasuraUrl) {
+    try {
+      const cleaned = await performOneTimeGarbageCleanup(
+        config.hasuraUrl,
+        config.hasuraSecret || ""
+      );
+      if (cleaned > 0) {
+        logger.info(`One-time garbage cleanup marked ${cleaned} new bad addresses from historical data`);
+      }
+    } catch (err) {
+      logger.warn({ err }, "One-time garbage cleanup scan failed (non-fatal)");
+    }
   }
 
   const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);

@@ -60,7 +60,7 @@ for (const p of _staticAnchors) {
   for (const token of p.tokens) {
     if (KNOWN_FACTORIES.has(token)) {
       markAsGarbage(token)
-        .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token}`))
+        .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token} (persisted)`))
         .catch(() => {});
     }
   }
@@ -307,7 +307,7 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
       for (const token of p.tokens) {
         if (KNOWN_FACTORIES.has(token)) {
           markAsGarbage(token)
-            .then(() => console.warn(`[garbage] Auto-discovered and persisted garbage address: ${token}`))
+            .then(() => console.warn(`[garbage] Auto-discovered during pool sync: ${token} (will be filtered from graph)`))
             .catch(() => {});
         }
       }

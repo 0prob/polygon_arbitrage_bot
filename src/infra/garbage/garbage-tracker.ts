@@ -76,3 +76,59 @@ export function getAllGarbageAddresses(): string[] {
 loadGarbageAddresses().catch(() => {
   // Already handled inside the function
 });
+
+/**
+ * One-time cleanup pass.
+ * Scans all current pools from Hasura and auto-marks any tokens that match known factories
+ * as garbage. This cleans up historical bad data from before the indexer-side filters existed.
+ */
+export async function performOneTimeGarbageCleanup(
+  graphqlUrl: string,
+  adminSecret: string
+): Promise<number> {
+  if (!graphqlUrl) return 0;
+
+  // Hardcoded list of factories we index (to detect historical garbage)
+  const knownFactories = new Set([
+    "0x5757371414417b8c6caad45baef941abc7d3ab32", // Quickswap V2
+    "0xc35dadb65012ec5796536bd9864ed8773abc74c4", // Sushiswap V2
+    "0x9e5a52f57b3038f1b8eee45f28b3c1967e22799c", // Uniswap V2
+    "0x1f98431c8ad98523631ae4a59f267346ea31f984", // Uniswap V3
+    "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2", // Sushi V3
+    "0x411b0facc3489691f28ad58c47006af5e3ab3a28", // Quickswap V3
+  ]);
+
+  try {
+    const { graphQLQuery } = await import("../hypersync/hyperindex_graphql.ts");
+    const result = await graphQLQuery(
+      graphqlUrl,
+      adminSecret,
+      `{ PoolMeta(limit: 5000) { id tokens } }`
+    );
+
+    if (!result?.PoolMeta) return 0;
+
+    let newlyMarked = 0;
+    for (const pool of result.PoolMeta) {
+      let tokens: string[] = [];
+      if (typeof pool.tokens === "string") {
+        try { tokens = JSON.parse(pool.tokens); } catch {}
+      } else if (Array.isArray(pool.tokens)) {
+        tokens = pool.tokens.map(String);
+      }
+
+      for (const token of tokens) {
+        const lower = token.toLowerCase();
+        if (knownFactories.has(lower) && !isGarbageAddress(lower)) {
+          await markAsGarbage(lower);
+          console.warn(`[garbage] One-time historical cleanup discovered new garbage address: ${lower}`);
+          newlyMarked++;
+        }
+      }
+    }
+    return newlyMarked;
+  } catch (err) {
+    console.warn("[garbage-cleanup] One-time scan failed (non-fatal):", err);
+    return 0;
+  }
+}

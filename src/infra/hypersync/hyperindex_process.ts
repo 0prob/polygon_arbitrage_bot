@@ -225,7 +225,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     freePort(9898);
-    freePort(8080);
+    // Only free 8080 if we're not explicitly using an external Hasura (user's custom setup on 5433/8080)
+    if (!opts.hasuraUrl) {
+      freePort(8080);
+    }
     _stderrBuffer = [];
 
     // Explicit clear only when requested (e.g. during a deliberate reset).
@@ -289,7 +292,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       opts.logger.debug({ source: "hyperindex", line }, "");
 
       _stderrBuffer.push(line);
-      if (_stderrBuffer.length > 10) _stderrBuffer.shift();
+      if (_stderrBuffer.length > 30) _stderrBuffer.shift();  // Increased for better crash diagnostics
 
       parseEnvioLine(line);
     };
@@ -297,7 +300,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     _exitHandler = (code, signal) => {
       if (code !== 0 && code !== null) {
-        opts.logger.error({ code, signal, lastStderr: _stderrBuffer.join("\n") }, "HyperIndex process crashed");
+        opts.logger.error(
+          { code, signal, lastStderr: _stderrBuffer.slice(-30).join("\n") },
+          "HyperIndex process crashed — recent stderr below"
+        );
       } else {
         opts.logger.warn({ code, signal }, "HyperIndex process exited");
       }
