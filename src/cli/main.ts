@@ -57,17 +57,32 @@ async function main() {
     logger.warn({ err }, "Failed to start HyperIndex, continuing without it");
   }
 
-  const ctx = await bootApplication(config, undefined, logger);
-  ctx.hyperIndexMonitor = hyperIndexMonitor;
+  const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);
 
   // Wire event bus to monitor for stall detection
   bus.on((ev) => {
     if (ev.type === "hyperindex_status" && (ev.status === "syncing" || ev.status === "synced")) {
-      hyperIndexMonitor.updateSyncedBlock(ev.syncedBlock);
+      hyperIndexMonitor.updateSyncedBlock(ev.syncedBlock, ev.remoteBlock);
     }
   });
 
   await hyperIndexMonitor.start();
+
+  // Wire real chain head fetcher for accurate lag calculation (prefers HyperRPC) - implements item 1
+  if (ctx.publicClient) {
+    const headFetcher = async () => {
+      try {
+        if (ctx.hyperRpc) {
+          return Number(await ctx.hyperRpc.blockNumber());
+        }
+        const block = await ctx.publicClient.getBlock({ blockTag: "latest" });
+        return Number(block.number);
+      } catch {
+        return 0;
+      }
+    };
+    hyperIndexMonitor.setChainHeadFetcher(headFetcher);
+  }
 
   const healthServer = new HealthServer(9090, {
     metrics: ctx.metrics,
@@ -92,6 +107,7 @@ async function main() {
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
+    clearInterval(syncStatusTimer);
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();
@@ -103,6 +119,22 @@ async function main() {
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
+
+  // Periodically surface rich sync metrics (lag + rate from real chain head) to TUI + logs - item 2
+  const syncStatusTimer = setInterval(() => {
+    if (!hyperIndexMonitor.isRunning()) return;
+    try {
+      const status = hyperIndexMonitor.getLastStatus();
+      bus.emit({
+        type: "hyperindex_status",
+        status: status.status,
+        syncedBlock: status.synced,
+        remoteBlock: status.remote,
+        lag: status.lag,
+        syncRate: status.syncRate,
+      });
+    } catch {}
+  }, 5000);
 
   const runner = new PassRunner(ctx, undefined, tui?.bus);
   await runner.run();

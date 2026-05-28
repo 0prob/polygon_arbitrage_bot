@@ -11,6 +11,10 @@ export const DEFAULTS = {
     requestTimeoutMs: 8_000,
     batchWaitMs: 16,
     batchSize: 100,
+    // HyperRPC - when HYPERRPC_API_TOKEN is set, we prefer it for the 10 listed read methods
+    // (eth_chainId, eth_blockNumber, eth_getBlock*, eth_getTransaction*, eth_getLogs, eth_getBlockReceipts)
+    hyperRpcUrl: "https://polygon.rpc.hypersync.xyz",
+    hyperRpcApiToken: "" as string,
   },
   gas: {
     pollIntervalMs: 2_000,

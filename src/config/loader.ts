@@ -11,6 +11,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   CONFIG_JSON_RPC_TIMEOUT_MS: ["rpc", "requestTimeoutMs"],
   RPC_BATCH_WAIT_MS: ["rpc", "batchWaitMs"],
   RPC_BATCH_SIZE: ["rpc", "batchSize"],
+  HYPERRPC_URL: ["rpc", "hyperRpcUrl"],
+  HYPERRPC_API_TOKEN: ["rpc", "hyperRpcApiToken"],
 
   GAS_POLL_INTERVAL_MS: ["gas", "pollIntervalMs"],
   POLYGON_PRIORITY_FEE_FLOOR_GWEI: ["gas", "priorityFeeFloorGwei"],

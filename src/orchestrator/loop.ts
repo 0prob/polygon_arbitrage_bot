@@ -40,7 +40,7 @@ export async function runPipeline(
 ): Promise<StageResult> {
   const stateCache = ctx.stateCache;
   let cycles = cachedCycles;
-  let result: StageResult = { cyclesFound: 0, cyclesSimulated: 0, candidatesBuilt: 0, groupsExecuted: 0 };
+  const result: StageResult = { cyclesFound: 0, cyclesSimulated: 0, candidatesBuilt: 0, groupsExecuted: 0 };
 
   if (shouldReEnumerate) {
     bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });

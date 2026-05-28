@@ -9,7 +9,7 @@ export type ArbEvent =
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
   | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number }
-  | { type: "hyperindex_status"; status: string; syncedBlock: number; remoteBlock: number; chain?: string }
+  | { type: "hyperindex_status"; status: string; syncedBlock: number; remoteBlock: number; chain?: string; lag?: number; syncRate?: number }
   | { type: "pipeline_stage"; stage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING" }
   | { type: "simulation_progress"; current: number; total: number; profitable: number };
 

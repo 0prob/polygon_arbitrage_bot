@@ -23,9 +23,29 @@ const WOOFI_PAIR_ABI = parseAbi([
 ]);
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
+const FAILED_POOLS_MAX_SIZE = 10_000;
+const FAILED_POOLS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
 
 export function getFailedPools(): Map<string, { count: number; lastTry: number }> {
   return _failedPools;
+}
+
+export function pruneFailedPools(now: number = Date.now()): void {
+  if (_failedPools.size <= FAILED_POOLS_MAX_SIZE) {
+    // Age-based eviction for old entries even if under cap
+    for (const [addr, entry] of _failedPools) {
+      if (now - entry.lastTry > FAILED_POOLS_MAX_AGE_MS) {
+        _failedPools.delete(addr);
+      }
+    }
+    return;
+  }
+  // Over cap: evict oldest first (simple, no extra structures)
+  const entries = Array.from(_failedPools.entries()).sort((a, b) => a[1].lastTry - b[1].lastTry);
+  const toEvict = entries.length - Math.floor(FAILED_POOLS_MAX_SIZE * 0.9);
+  for (let i = 0; i < toEvict && i < entries.length; i++) {
+    _failedPools.delete(entries[i][0]);
+  }
 }
 
 export async function fetchMissingPoolState(
@@ -34,9 +54,16 @@ export async function fetchMissingPoolState(
   pools: PoolMeta[],
   currentCycles: FoundCycle[],
   forceRefresh: boolean = false,
-): Promise<void> {
+): Promise<Set<string>> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
+
+  // Periodic bounded pruning prevents unbounded growth on flaky RPC/indexer (was a memory leak)
+  if (Math.random() < 0.05 || _failedPools.size > 1000) {
+    pruneFailedPools(now);
+  }
+
+  const updated = new Set<string>();
 
   if (forceRefresh) {
     for (const cycle of currentCycles) {
@@ -67,7 +94,7 @@ export async function fetchMissingPoolState(
     }
   }
 
-  if (missingAddresses.size === 0) return;
+  if (missingAddresses.size === 0) return updated;
 
   const toFetch = Array.from(missingAddresses);
 
@@ -133,6 +160,7 @@ export async function fetchMissingPoolState(
                   reserve1: BigInt(r1),
                   initialized: true,
                 });
+                updated.add(addr);
                 _failedPools.delete(addr);
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
@@ -163,6 +191,7 @@ export async function fetchMissingPoolState(
                   liquidity: BigInt(liqRes.result as any),
                   initialized: true,
                 });
+                updated.add(addr);
                 _failedPools.delete(addr);
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
@@ -199,6 +228,7 @@ export async function fetchMissingPoolState(
                   hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
                   initialized: true,
                 });
+                updated.add(addr);
                 _failedPools.delete(addr);
               } else {
                 const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
@@ -223,6 +253,7 @@ export async function fetchMissingPoolState(
                 fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
                 initialized: true,
               });
+              updated.add(addr);
               _failedPools.delete(addr);
             } else {
               const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
@@ -233,9 +264,11 @@ export async function fetchMissingPoolState(
             }
           }
         }
-      } catch (_err: unknown) {
+      } catch {
         // Ignore individual batch failures
       }
     }),
   );
+
+  return updated;
 }

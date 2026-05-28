@@ -122,7 +122,7 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);
   const netProfitAfterGasInTokens = netProfitInTokens - gasCostInTokens;
 
-  let roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
+  const roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
   
   let shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
   let rejectReason: string | undefined;

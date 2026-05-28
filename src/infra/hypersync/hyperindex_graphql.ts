@@ -1,5 +1,3 @@
-import poolsJson from "../../../scripts/pools.json";
-
 export interface HasuraPoolMeta {
   address: string;
   protocol: string;
@@ -19,12 +17,28 @@ export function parseBigIntArray(arr: unknown): bigint[] {
   return arr.map((s: unknown) => BigInt(s as string));
 }
 
-export const STATIC_ANCHORS: HasuraPoolMeta[] = poolsJson.map((p: any) => ({
-  address: p.address,
-  protocol: p.protocol,
-  tokens: p.tokens,
-  fee: p.fee,
-}));
+// Resilient anchor pools loader: the scripts/pools.json (82 Uniswap V3 anchors) may be
+// missing in some environments (gitignored, generated, or minimal checkout).
+// We fall back to empty; discoverPoolsFromHasura and fetcher already treat anchors as
+// best-effort pre-fetch / fallback list.
+let _staticAnchors: HasuraPoolMeta[] = [];
+try {
+  // @ts-expect-error - dynamic JSON import for optional pools.json (falls back gracefully)
+  const mod = await import("../../../scripts/pools.json", { with: { type: "json" } } as any);
+  const poolsJson = (mod.default ?? mod) as any[];
+  if (Array.isArray(poolsJson)) {
+    _staticAnchors = poolsJson.map((p: any) => ({
+      address: p.address,
+      protocol: p.protocol,
+      tokens: p.tokens,
+      fee: p.fee ?? 30,
+    }));
+  }
+} catch {
+  // silent fallback - bot will rely entirely on Hasura discovery
+}
+
+export const STATIC_ANCHORS: HasuraPoolMeta[] = _staticAnchors;
 
 const GRAPHQL_TIMEOUT = 10_000;
 
@@ -226,7 +240,7 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
         if (typeof pm.tokens === "string") {
           try {
             tokens = JSON.parse(pm.tokens) as string[];
-          } catch (_err: unknown) {
+          } catch {
             tokens = [];
           }
         } else if (Array.isArray(pm.tokens)) {

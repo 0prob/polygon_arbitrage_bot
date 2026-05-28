@@ -8,10 +8,10 @@
     "run": "envio run"
   },
   "dependencies": {
-    "envio": "^3.0.1",
-    "viem": "^2.0.0"
+    "envio": "^3.0.2",
+    "viem": "^2.51.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.3"
   }
 }

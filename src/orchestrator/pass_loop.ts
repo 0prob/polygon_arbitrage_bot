@@ -1,5 +1,5 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type RoutingGraph, buildGraph, evaluatePipeline, type PipelineOptions, ArbInstrumenter, fetchMissingPoolState, computeMaticRates } from "../pipeline/index.ts";
+import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type RoutingGraph, buildGraph, evaluatePipeline, type PipelineOptions, ArbInstrumenter, fetchMissingPoolState, computeMaticRates, pruneFailedPools } from "../pipeline/index.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
@@ -86,9 +86,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   // ... rest of the setup ...
 
-  // Track simulation block for reorg safety
-  let lastSimulationBlock = 0;
-
   const recentRouteTimestamps = new Map<string, number>();
   const ROUTE_COOLDOWN_MS = 5000;
 
@@ -107,6 +104,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   });
 
   let cycleWindowStart = Date.now();
+  let lastReorgCheck = 0;
 
   while (ctx.isRunning) {
     const now = Date.now();
@@ -122,8 +120,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       cycleWindowStart = now;
     }
 
-    let blockForCycle: { number: bigint; hash: `0x${string}` } | null = null;
-
     try {
       ctx.metrics.cycles++;
 
@@ -135,34 +131,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         for (const [key, ts] of recentRouteTimestamps) {
           if (now - ts > ROUTE_COOLDOWN_MS * 2) recentRouteTimestamps.delete(key);
         }
+        // Also prune the fetcher failed-pool tracker (prevents slow memory growth)
+        pruneFailedPools(now);
       }
 
-      // Reorg safety check on every cycle
-      if (ctx.reorgDetector && lastSimulationBlock > 0) {
-        const reorged = await ctx.reorgDetector.checkReorg();
-        if (reorged.size > 0) {
-          ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
-          const affectedPools = new Set<string>();
-          for (const cycle of cachedCycles) {
-            for (const edge of cycle.edges) {
-              affectedPools.add(edge.poolAddress.toLowerCase());
-            }
-          }
-          // Force re-enumeration on reorg
-          lastRefreshTime = 0;
-          ctx.reorgDetector.clearReorged();
-        }
-      }
-
-      // Pre-fetch latest block once per cycle for downstream consumers
-      if (ctx.publicClient && !blockForCycle) {
-        try {
-          const b = await ctx.publicClient.getBlock({ blockTag: "latest" });
-          if (b.number && b.hash) blockForCycle = { number: b.number, hash: b.hash };
-        } catch {
-          /* best effort */
-        }
-      }
+      // Reorg safety + block tracking moved out of HF (200ms) hot path.
+      // Per AGENTS.md: getBlock sparingly in HF. WS newHead + LF (1s) are the triggers.
+      // Heavy serial getBlock calls inside checkReorg were killing HF latency/RPC budget.
 
       let pools = hasuraPoolsCache ?? ctx.getPools();
 
@@ -263,8 +238,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // without existing state. RPC gives us current on-chain prices.
         const poolCycles = pools.map((p) => ({ edges: [{ poolAddress: p.address }] }) as any);
         await fetchMissingPoolState(ctx.publicClient, stateCache, pools, poolCycles, true);
+        // (return value ignored on full refresh; we still want full rate recompute)
 
-        // Re-calculate MATIC rates for all tokens
+        // Re-calculate MATIC rates for all tokens (full refresh path — start fresh)
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
@@ -330,10 +306,23 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // Skip if we just did a full refresh in the same pass
         preFetchCounter++;
         if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
-          await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles);
-          // Force rate recalculation after state fetch
+          const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles);
+
+          // Build focus tokens from the pools we actually refreshed this round.
+          const focusTokens = new Set<string>();
+          for (const addr of justUpdated) {
+            const meta = pools.find((p) => p.address.toLowerCase() === addr);
+            if (meta?.tokens) {
+              for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
+            }
+          }
+
+          // True incremental rate update: seed from previous + focus the propagation on tokens
+          // that were just touched by fresh on-chain state. This is the key P3 optimization.
           cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
             minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+            seedRates: cachedRates ?? undefined,
+            focusTokens: focusTokens.size > 0 ? focusTokens : undefined,
           });
           if (!cachedMetas) {
             cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
@@ -349,9 +338,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
 
         if (!cachedRates) {
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-        });
+          cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+          });
         }
         const tokenToMaticRates = cachedRates!;
 
@@ -563,6 +552,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const elapsed = Date.now() - startTime;
       ctx.metrics.lastCycleDurationMs = elapsed;
+
+      // Minimal HF budget instrumentation (P2 item from debug pass).
+      // After previous purges (reorg/getBlock moved out), the loop should comfortably stay < 160 ms.
+      // If we ever regress and start doing heavy work in the 200 ms path, this will scream.
+      const HF_BUDGET_MS = 160;
+      if (elapsed > HF_BUDGET_MS) {
+        ctx.logger.warn(
+          { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles },
+          "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)"
+        );
+      }
+      if (!ctx.metrics.maxHotPathDurationMs || elapsed > ctx.metrics.maxHotPathDurationMs) {
+        ctx.metrics.maxHotPathDurationMs = elapsed;
+      }
       const trackerSummary = ctx.executionService.tracker.summary;
       ctx.metrics.executionReverts = trackerSummary.totalReverts;
       ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
@@ -570,15 +573,27 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const payload = buildStatusPayload(ctx.metrics, gasSnapshot.gasPrice, pools.length);
       await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
 
-      // Track current block for reorg safety
-      if (ctx.reorgDetector && ctx.publicClient) {
+      // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
+      // Previously this (plus checkReorg's serial getBlocks) ran every 200ms — major hot-path violation.
+      if (ctx.reorgDetector && ctx.publicClient && (now - lastReorgCheck > LF_INTERVAL)) {
+        lastReorgCheck = now;
+        const detector = ctx.reorgDetector; // narrow for the block
         try {
-          const latest = blockForCycle ?? await ctx.publicClient.getBlock({ blockTag: "latest" });
-          if (latest.number && latest.hash) {
-            await ctx.reorgDetector.trackBlock(Number(latest.number), latest.hash);
-            lastSimulationBlock = Number(latest.number);
+          // Only check on slow cadence
+          const reorged = await detector.checkReorg();
+          if (reorged.size > 0) {
+            ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
+            lastRefreshTime = 0;
+            detector.clearReorged();
           }
-        } catch (_err: unknown) {
+
+          const latest = ctx.hyperRpc
+            ? await ctx.hyperRpc.getBlockByNumber("latest")
+            : await ctx.publicClient.getBlock({ blockTag: "latest" });
+          if (latest?.number && latest?.hash) {
+            await detector.trackBlock(Number(latest.number), latest.hash as `0x${string}`);
+          }
+        } catch {
           /* best effort */
         }
       }

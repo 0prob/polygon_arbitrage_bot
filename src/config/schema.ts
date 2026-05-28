@@ -31,6 +31,9 @@ export const RpcConfigSchema = z.object({
   requestTimeoutMs: numberFromString.int().positive(),
   batchWaitMs: numberFromString.int().nonnegative(),
   batchSize: numberFromString.int().positive(),
+  // HyperRPC (high-performance provider for the listed read methods)
+  hyperRpcUrl: z.string().optional(),
+  hyperRpcApiToken: z.string().optional(),
 });
 export type RpcConfig = z.infer<typeof RpcConfigSchema>;
 

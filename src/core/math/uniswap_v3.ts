@@ -28,8 +28,8 @@ const sortedTicksCache = new Map<
     sortedTicks: number[];
   }
 >();
-const sortedTicksAccessOrder: string[] = [];
-const sortedTicksAccessPos = new Map<string, number>();
+// Pure size-capped cache (FIFO-ish via insertion order). No O(n) arrays or renumbering
+// ever in the hot path. Eviction only happens on new inserts when full.
 
 function asPoolState(value: unknown): V3PoolStateLike {
   return value != null && typeof value === "object" ? (value as V3PoolStateLike) : {};
@@ -105,18 +105,14 @@ function getSortedTicks(state: V3PoolStateLike) {
     .filter((tick): tick is number => Number.isInteger(tick))
     .sort((a, b) => a - b);
   if (key) {
-    if (sortedTicksCache.has(key)) {
-      const pos = sortedTicksAccessPos.get(key)!;
-      sortedTicksAccessOrder.splice(pos, 1);
-      for (let i = pos; i < sortedTicksAccessOrder.length; i++) {
-        sortedTicksAccessPos.set(sortedTicksAccessOrder[i], i);
-      }
-      sortedTicksAccessPos.delete(key);
-    } else if (sortedTicksCache.size >= SORTED_TICKS_CACHE_MAX) {
-      const oldest = sortedTicksAccessOrder.shift();
-      if (oldest) {
-        sortedTicksCache.delete(oldest);
-        sortedTicksAccessPos.delete(oldest);
+    // Pure size-capped eviction (O(1) on the Map using insertion order).
+    // No auxiliary arrays, no renumbering, no work on cache hits.
+    // This is the final form for the hot path (thousands of V3 simulateHop calls per 200 ms).
+    if (!sortedTicksCache.has(key) && sortedTicksCache.size >= SORTED_TICKS_CACHE_MAX) {
+      // Delete the oldest inserted entry (Map preserves insertion order)
+      const it = sortedTicksCache.keys().next();
+      if (!it.done) {
+        sortedTicksCache.delete(it.value);
       }
     }
     sortedTicksCache.set(key, {
@@ -124,8 +120,6 @@ function getSortedTicks(state: V3PoolStateLike) {
       ticksRef: ticks,
       sortedTicks,
     });
-    sortedTicksAccessOrder.push(key);
-    sortedTicksAccessPos.set(key, sortedTicksAccessOrder.length - 1);
   }
   return sortedTicks;
 }

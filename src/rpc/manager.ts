@@ -12,6 +12,7 @@ import { getChain } from "../infra/rpc/chains.ts";
 import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
 import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
+import { HyperRpcClient, createHyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 
 const DEFAULT_BATCH_SIZE = 100;
 const DEFAULT_BATCH_WAIT_MS = 16;
@@ -41,6 +42,7 @@ export class RpcManager {
   private _fastLane: FastLaneSubmitter | undefined;
   private _ws: WebSocketSubscriber | undefined;
   private _reorgDetector: ReorgDetector | undefined;
+  private _hyperRpc: HyperRpcClient | undefined;
 
   constructor(config: RpcConfig, opts?: RpcManagerOptions) {
     this.chainId = opts?.chainId ?? 137;
@@ -64,7 +66,15 @@ export class RpcManager {
       },
     });
 
-    this._reorgDetector = new ReorgDetector(this._readClient, 10);
+    this._reorgDetector = new ReorgDetector(this._readClient, 10, this._hyperRpc);
+
+    // HyperRPC — optional read-only high-performance provider.
+    // Only instantiated when a paid token or custom URL is supplied.
+    this._hyperRpc = createHyperRpcClient({
+      url: config.hyperRpcUrl,
+      apiToken: config.hyperRpcApiToken,
+      timeoutMs: config.requestTimeoutMs,
+    });
   }
 
   /** The read PublicClient (used by existing consumers for backward compat) */
@@ -75,6 +85,17 @@ export class RpcManager {
   /** The reorg detector (wraps the read client internally) */
   getReorgDetector(): ReorgDetector {
     return this._reorgDetector!;
+  }
+
+  /**
+   * HyperRPC client — READ-ONLY high-performance provider.
+   *
+   * Only populated when HYPERRPC_API_TOKEN (or a custom HYPERRPC_URL) is configured.
+   * This client must only be used for the 10 read-only methods it supports.
+   * Never use it for sending transactions or gas estimation.
+   */
+  get hyperRpc(): HyperRpcClient | undefined {
+    return this._hyperRpc;
   }
 
   // === Read operations ===

@@ -7,6 +7,7 @@ export interface StatusPayload {
   uptimeSec: number;
   cycle: number;
   lastCycleMs: number;
+  maxHotPathMs: number | null;
   errors: number;
   lastError: string | null;
   lastErrorMsg: string | null;
@@ -20,6 +21,13 @@ export interface StatusPayload {
   pools: number;
   cyclesPerMin: number;
   peakCpm: number;
+  hyperindex?: {
+    synced: number;
+    remote: number;
+    lag: number;
+    syncRate: number;
+    healthy: boolean;
+  };
   timestamp: string;
 }
 
@@ -35,6 +43,7 @@ export function buildStatusPayload(metrics: Metrics, gasPrice: bigint | undefine
     uptimeSec,
     cycle: metrics.cycles,
     lastCycleMs: metrics.lastCycleDurationMs,
+    maxHotPathMs: metrics.maxHotPathDurationMs ?? null,
     errors: metrics.totalErrors,
     lastError: metrics.lastErrorTime ? new Date(metrics.lastErrorTime).toISOString() : null,
     lastErrorMsg: metrics.lastErrorMessage,

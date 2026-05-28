@@ -23,6 +23,10 @@ export interface HealthPayload {
   hyperindex: {
     running: boolean;
     healthy: boolean;
+    status: string;
+    synced: number;
+    remote: number;
+    lag: number;
   };
   rpc: {
     healthy: boolean;
@@ -113,6 +117,7 @@ export class HealthServer implements Lifecycle {
       hyperindex: {
         running: this.deps.hyperIndexMonitor.isRunning(),
         healthy: this.deps.hyperIndexMonitor.isHealthy(),
+        ...this.deps.hyperIndexMonitor.getLastStatus(),
       },
       rpc: { healthy: this.deps.rpcCircuit.isHealthy() },
       hasura: { healthy: this.deps.hasuraCircuit.isHealthy() },

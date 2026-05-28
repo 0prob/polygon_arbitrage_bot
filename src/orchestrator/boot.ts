@@ -19,6 +19,7 @@ import { type Metrics } from "../core/types/metrics.ts";
 import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import type { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
+import type { HyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -40,9 +41,21 @@ export interface RuntimeContext {
   wsSubscriber?: WebSocketSubscriber;
   dryRunner?: MempoolAwareDryRunner;
   graphUpdater?: IncrementalGraphUpdater;
+
+  /**
+   * Optional HyperRPC client (read-only, high performance).
+   * Only present when HYPERRPC_API_TOKEN is configured.
+   * Use exclusively for the read methods it supports.
+   */
+  hyperRpc?: HyperRpcClient;
 }
 
-export async function bootApplication(config: AppConfig, logBuffer?: string[], passedLogger?: Logger): Promise<RuntimeContext> {
+export async function bootApplication(
+  config: AppConfig, 
+  logBuffer?: string[], 
+  passedLogger?: Logger,
+  hyperIndexMonitor?: HyperIndexMonitor,
+): Promise<RuntimeContext> {
   const logger =
     passedLogger ??
     createRootLogger({
@@ -244,7 +257,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     failureThreshold: 5,
     cooldownMs: 60_000,
   });
-  const tierManager = new TierManager(rpcCircuit, hasuraCircuit, {
+  const tierManager = new TierManager(rpcCircuit, hasuraCircuit, hyperIndexMonitor ?? {
     isHealthy: () => true,
     isRunning: () => true,
   } as any);
@@ -296,5 +309,7 @@ export async function bootApplication(config: AppConfig, logBuffer?: string[], p
     wsSubscriber,
     dryRunner,
     graphUpdater,
+    hyperRpc: rpc.hyperRpc,
+    hyperIndexMonitor,
   };
 }

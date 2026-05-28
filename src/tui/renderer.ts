@@ -201,9 +201,12 @@ export class Renderer {
 
     let hiLabel: string;
     let hiColor: number;
+    const hiLag = s.hiLag > 0 ? ` lag:${s.hiLag}` : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? ` lag:${s.hiRemoteBlock - s.hiSyncedBlock}` : "");
+    const hiRate = s.hiSyncRate > 0 ? ` @${s.hiSyncRate.toFixed(1)}blk/s` : "";
+
     if (s.hiSyncedBlock > 0) {
       hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
-      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}`;
+      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${dim(hiLag + hiRate)}`;
     } else if (s.hiStatus === "running") {
       hiColor = CYAN;
       hiLabel = color("running", hiColor);

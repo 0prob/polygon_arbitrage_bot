@@ -1,4 +1,5 @@
 import type { PublicClient } from "viem";
+import type { HyperRpcClient } from "../rpc/hyperrpc.ts";
 
 export interface BlockInfo {
   number: number;
@@ -17,6 +18,8 @@ export class ReorgDetector {
   constructor(
     private client: PublicClient,
     private checkDepth: number = 10,
+    /** Read-only HyperRPC client (optional, for faster block queries) */
+    private hyperRpc?: HyperRpcClient,
   ) {}
 
   async trackBlock(blockNumber: number, blockHash: string): Promise<void> {
@@ -26,8 +29,10 @@ export class ReorgDetector {
       parentHash = parent.hash;
     } else {
       try {
-        const block = await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
-        parentHash = block.hash ?? "";
+        const block = this.hyperRpc
+          ? await this.hyperRpc.getBlockByNumber(BigInt(blockNumber - 1))
+          : await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
+        parentHash = (block?.hash as string) ?? "";
       } catch (_err: unknown) {
         /* ignore */
       }
@@ -57,8 +62,11 @@ export class ReorgDetector {
       if (!tracked) continue;
 
       try {
-        const block = await this.client.getBlock({ blockNumber: BigInt(blockNum) });
-        if (block.hash && block.hash.toLowerCase() !== tracked.hash.toLowerCase()) {
+        const block = this.hyperRpc
+          ? await this.hyperRpc.getBlockByNumber(BigInt(blockNum))
+          : await this.client.getBlock({ blockNumber: BigInt(blockNum) });
+        const blockHash = (block?.hash as string | undefined)?.toLowerCase();
+        if (blockHash && blockHash !== tracked.hash.toLowerCase()) {
           // Reorg detected at this height
           reorged.add(blockNum);
           this.reorgedBlocks.add(blockNum);

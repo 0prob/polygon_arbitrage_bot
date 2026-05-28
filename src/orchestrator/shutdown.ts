@@ -24,6 +24,7 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
     uptimeSec: Math.floor((Date.now() - ctx.metrics.startTime) / 1000),
     cycle: ctx.metrics.cycles,
     lastCycleMs: ctx.metrics.lastCycleDurationMs,
+    maxHotPathMs: ctx.metrics.maxHotPathDurationMs ?? null,
     errors: ctx.metrics.totalErrors,
     lastError: ctx.metrics.lastErrorTime ? new Date(ctx.metrics.lastErrorTime).toISOString() : null,
     lastErrorMsg: ctx.metrics.lastErrorMessage,

@@ -28,6 +28,8 @@ export interface SystemState {
   hiStatus: string;
   hiSyncedBlock: number;
   hiRemoteBlock: number;
+  hiLag: number;
+  hiSyncRate: number;
   hiChain?: string;
   hiLastSeen: number;
   poolsPerProtocol: Record<string, number>;
@@ -75,6 +77,8 @@ export function createInitialState(): TuiState {
       hiStatus: "starting",
       hiSyncedBlock: 0,
       hiRemoteBlock: 0,
+      hiLag: 0,
+      hiSyncRate: 0,
       hiLastSeen: 0,
       poolsPerProtocol: {},
       maxHops: 0,
@@ -200,6 +204,8 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.system.hiLastSeen = Date.now();
       if (event.syncedBlock > 0) state.system.hiSyncedBlock = event.syncedBlock;
       if (event.remoteBlock > 0) state.system.hiRemoteBlock = event.remoteBlock;
+      if (event.lag !== undefined) state.system.hiLag = event.lag;
+      if (event.syncRate !== undefined) state.system.hiSyncRate = event.syncRate;
       if (event.chain) {
         state.system.hiChain = event.chain;
       }

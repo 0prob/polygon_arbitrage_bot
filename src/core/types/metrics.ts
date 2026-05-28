@@ -19,4 +19,6 @@ export interface Metrics {
   startTime: number;
   peakCyclesPerMinute: number;
   currentCyclesPerMinute: number;
+  /** Best-effort max observed duration of a single HF (200 ms) pass loop iteration */
+  maxHotPathDurationMs?: number;
 }

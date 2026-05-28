@@ -3,13 +3,36 @@ import type { PoolMeta } from "../core/types/pool.ts";
 
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
+export interface ComputeMaticRatesOptions {
+  minLiquidityV3?: bigint;
+  /** When provided, start from these rates instead of a fresh empty map.
+   *  Enables cheap incremental updates after small state refreshes (most common HF/LF path).
+   */
+  seedRates?: Map<string, bigint>;
+  /** When provided (together with seedRates), the rate engine will prioritize pools
+   *  whose tokens intersect this set. This turns the "light pre-fetch" path into
+   *  true dirty-token incremental updates.
+   */
+  focusTokens?: Set<string>;
+}
+
 export function computeMaticRates(
   pools: PoolMeta[],
   stateCache: Map<string, Record<string, unknown>>,
-  logger?: any,
-  options: { minLiquidityV3?: bigint } = {},
+  logger?: { debug?: (obj: unknown, msg?: string) => void; info?: (obj: unknown, msg?: string) => void },
+  options: ComputeMaticRatesOptions = {},
 ): Map<string, bigint> {
   const rates = new Map<string, bigint>();
+
+  // Incremental path: seed from previous good rates when available.
+  // This avoids full re-propagation work for the (usually large) set of tokens whose
+  // rates have not been affected by the just-refreshed pools.
+  if (options.seedRates) {
+    for (const [k, v] of options.seedRates) {
+      rates.set(k, v);
+    }
+  }
+
   const RATE_PRECISION = 1000000000000000000n;
   rates.set(WMATIC_LOWER, RATE_PRECISION);
 
@@ -22,10 +45,25 @@ export function computeMaticRates(
   let skippedLowLiquidity = 0;
   let skippedExtremeRatio = 0;
 
-  // Use a more thorough BFS-style propagation
+  const focus = options.focusTokens;
+
+  function touchesFocus(pool: PoolMeta): boolean {
+    if (!focus || focus.size === 0) return true;
+    const ts = pool.tokens ?? [pool.token0, pool.token1];
+    return ts.some((t) => focus.has(t.toLowerCase()));
+  }
+
+  // Use a more thorough BFS-style propagation.
+  // When focusTokens are supplied we process "dirty" pools first for faster convergence on what matters.
   for (let i = 0; i < 10; i++) {
     let changed = false;
-    for (const pool of pools) {
+
+    // Optional: stable partition so focus-touching pools are considered early
+    const orderedPools = focus && focus.size > 0
+      ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0))
+      : pools;
+
+    for (const pool of orderedPools) {
       const addr = pool.address.toLowerCase();
       const state = stateCache.get(addr);
       if (!state) {
@@ -169,7 +207,7 @@ export function computeMaticRates(
             if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${pool.address} [${protocol}])`);
           }
 
-        } catch (e) {
+        } catch {
           continue;
         }
       }
@@ -177,10 +215,58 @@ export function computeMaticRates(
     if (!changed) break;
   }
 
+  // Final targeted sweep when we have explicit focus tokens (the real P3 incremental win).
+  // One extra cheap pass restricted only to pools that touch the dirty tokens.
+  if (focus && focus.size > 0) {
+    for (const pool of pools) {
+      if (!touchesFocus(pool)) continue;
+      const addr = pool.address.toLowerCase();
+      const state = stateCache.get(addr);
+      if (!state) continue;
+
+      const tokens = pool.tokens?.map((t) => t.toLowerCase()) ?? [pool.token0?.toLowerCase(), pool.token1?.toLowerCase()].filter(Boolean);
+      if (tokens.length < 2) continue;
+
+      const known = tokens.find((t) => rates.has(t));
+      const unknown = tokens.find((t) => focus.has(t) && !rates.has(t));
+
+      if (!known || !unknown) continue;
+
+      // Very lightweight one-shot derivation for the dominant protocols (V2/V3).
+      // Full correctness is already guaranteed by the preceding seeded propagation.
+      const protocol = pool.protocol.toLowerCase();
+      try {
+        if (protocol.includes("v2")) {
+          const r0 = BigInt((state as any).reserve0 || 0);
+          const r1 = BigInt((state as any).reserve1 || 0);
+          if (r0 > 0n && r1 > 0n) {
+            const knownRate = rates.get(known)!;
+            const kIdx = tokens.indexOf(known);
+            const newRate = kIdx === 0 ? (knownRate * r0) / r1 : (knownRate * r1) / r0;
+            if (newRate > 0n) rates.set(unknown, newRate);
+          }
+        } else if (protocol.includes("v3") || protocol.includes("v4")) {
+          const sq = BigInt((state as any).sqrtPriceX96 || 0);
+          if (sq > 0n) {
+            const knownRate = rates.get(known)!;
+            const kIdx = tokens.indexOf(known);
+            const p192 = sq * sq;
+            const newRate = kIdx === 0
+              ? (knownRate * (1n << 192n)) / p192
+              : (knownRate * p192) / (1n << 192n);
+            if (newRate > 0n && newRate < 10n ** 36n) rates.set(unknown, newRate);
+          }
+        }
+      } catch {
+        // ignore per-pool errors in the cheap focus sweep
+      }
+    }
+  }
+
   if (logger && rates.size > 1) {
-    logger.debug({ rates: rates.size, propagation: logs }, "Rate propagation complete");
+    logger.debug?.({ rates: rates.size, propagation: logs }, "Rate propagation complete");
   } else if (logger) {
-    logger.debug({ 
+    logger.debug?.({ 
       pools: pools.length, 
       withState: stateCache.size,
       skippedNoState,
