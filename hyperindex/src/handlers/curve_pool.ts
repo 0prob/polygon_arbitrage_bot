@@ -1,5 +1,11 @@
 import { indexer } from "envio";
 
+const curveMetaCache = new Map<string, {
+  A: bigint;
+  fee: bigint;
+  rates: bigint[] | undefined;
+}>();
+
 indexer.onEvent(
   { contract: "CurvePool", event: "TokenExchange" },
   async ({ event, context }) => {
@@ -13,6 +19,20 @@ indexer.onEvent(
 
     if (soldId < balances.length) balances[soldId] = BigInt(balances[soldId]) + BigInt(event.params.tokens_sold);
     if (boughtId < balances.length) balances[boughtId] = BigInt(balances[boughtId]) - BigInt(event.params.tokens_bought);
+
+    const cached = curveMetaCache.get(pool);
+    if (cached) {
+      context.CurvePoolState.set({
+        id: pool,
+        address: pool,
+        lastUpdatedBlock: Number(event.block.number),
+        balances,
+        ...cached,
+      });
+      return;
+    }
+
+    curveMetaCache.set(pool, { A: state.A, fee: state.fee, rates: state.rates ? [...state.rates] : undefined });
 
     context.CurvePoolState.set({
       ...state,
@@ -36,6 +56,20 @@ indexer.onEvent(
       balances[i] = BigInt(balances[i]) + BigInt(added[i]);
     }
 
+    const cached = curveMetaCache.get(pool);
+    if (cached) {
+      context.CurvePoolState.set({
+        id: pool,
+        address: pool,
+        lastUpdatedBlock: Number(event.block.number),
+        balances,
+        ...cached,
+      });
+      return;
+    }
+
+    curveMetaCache.set(pool, { A: state.A, fee: state.fee, rates: state.rates ? [...state.rates] : undefined });
+
     context.CurvePoolState.set({
       ...state,
       lastUpdatedBlock: Number(event.block.number),
@@ -58,6 +92,20 @@ indexer.onEvent(
       balances[i] = BigInt(balances[i]) - BigInt(removed[i]);
     }
 
+    const cached = curveMetaCache.get(pool);
+    if (cached) {
+      context.CurvePoolState.set({
+        id: pool,
+        address: pool,
+        lastUpdatedBlock: Number(event.block.number),
+        balances,
+        ...cached,
+      });
+      return;
+    }
+
+    curveMetaCache.set(pool, { A: state.A, fee: state.fee, rates: state.rates ? [...state.rates] : undefined });
+
     context.CurvePoolState.set({
       ...state,
       lastUpdatedBlock: Number(event.block.number),
@@ -78,6 +126,20 @@ indexer.onEvent(
     if (coinIndex < balances.length) {
       balances[coinIndex] = BigInt(balances[coinIndex]) - BigInt(event.params.coin_amount);
     }
+
+    const cached = curveMetaCache.get(pool);
+    if (cached) {
+      context.CurvePoolState.set({
+        id: pool,
+        address: pool,
+        lastUpdatedBlock: Number(event.block.number),
+        balances,
+        ...cached,
+      });
+      return;
+    }
+
+    curveMetaCache.set(pool, { A: state.A, fee: state.fee, rates: state.rates ? [...state.rates] : undefined });
 
     context.CurvePoolState.set({
       ...state,

@@ -38,7 +38,7 @@ export const fetchBalancerMetadata = createEffect(
       amp: S.optional(S.bigint),
       scalingFactors: S.optional(S.array(S.bigint)),
     },
-    rateLimit: { calls: 60, per: "second" }, // Pay-as-you-go Alchemy. Multiple vault + pool reads per effect at historical blocks.
+    rateLimit: { calls: 100, per: "second" }, // Pay-as-you-go Alchemy. Multiple vault + pool reads per effect at historical blocks.
     cache: true,
   },
   async ({ input, context }) => {

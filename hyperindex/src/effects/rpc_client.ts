@@ -31,8 +31,15 @@ function getRpcUrls(): string[] {
       .filter((u) => u.length > 0);
     if (list.length > 0) return list;
   }
-  // Only after no .env endpoints: last-resort public free endpoint
-  return ["https://polygon-mainnet.g.alchemy.com/v2/kBkVBn4UiYwt-XNksk-AV"];
+  // Robust set of fallbacks including common public endpoints
+  return [
+    "https://polygon-mainnet.g.alchemy.com/v2/kBkVBn4UiYwt-XNksk-AV",
+    "https://polygon-rpc.com",
+    "https://polygon-mainnet.public.blastapi.io",
+    "https://1rpc.io/matic",
+    "https://rpc.ankr.com/polygon",
+    "https://polygon.llamarpc.com"
+  ];
 }
 
 const BATCH_SIZE = 128;             // Higher with pay-as-you-go Alchemy

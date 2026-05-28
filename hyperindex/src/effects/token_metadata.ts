@@ -33,7 +33,7 @@ export const fetchTokenMeta = createEffect(
       blockNumber: S.optional(S.bigint),
     },
     output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 300, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
+    rateLimit: { calls: 500, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
     cache: true, // Critical for performance on restarts / re-runs
   },
   async ({ input, context }) => {

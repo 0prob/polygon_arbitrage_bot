@@ -37,7 +37,7 @@ export const fetchDodoMetadata = createEffect(
       lpFeeRate: S.bigint,
       mtFeeRate: S.bigint,
     },
-    rateLimit: { calls: 80, per: "second" }, // Pay-as-you-go Alchemy. ~10 reads per effect; batching in the shared client keeps HTTP volume reasonable.
+    rateLimit: { calls: 150, per: "second" }, // Pay-as-you-go Alchemy. ~10 reads per effect; batching in the shared client keeps HTTP volume reasonable.
     cache: true,
   },
   async ({ input, context }) => {

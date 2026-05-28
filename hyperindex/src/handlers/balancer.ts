@@ -2,6 +2,9 @@ import { indexer } from "envio";
 import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 
+const balancerMetaCache = new Map<string, { tokens: string[]; fee: number }>();
+const balancerIdToAddrCache = new Map<string, string>();
+
 indexer.onEvent(
   { contract: "BalancerVault", event: "PoolRegistered" },
   async ({ event, context }) => {
@@ -9,13 +12,18 @@ indexer.onEvent(
     const poolId = event.params.poolId.toLowerCase();
 
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(event.block.number) });
+    const fee = meta.swapFee > 0n ? Number(meta.swapFee / 10n ** 14n) : 0;
+    const tokens = meta.tokens;
+
+    balancerMetaCache.set(pool, { tokens, fee });
+    balancerIdToAddrCache.set(poolId, pool);
 
     context.PoolMeta.set({
       id: pool,
       address: pool,
       protocol: "balancer_v2",
-      tokens: meta.tokens,
-      fee: meta.swapFee > 0n ? Number(meta.swapFee / 10n ** 14n) : undefined,
+      tokens,
+      fee: fee > 0 ? fee : undefined,
       tickSpacing: undefined,
       createdBlock: Number(event.block.number),
       createdTx: event.transaction.hash,
@@ -50,20 +58,26 @@ indexer.onEvent(
   { contract: "BalancerVault", event: "TokensRegistered" },
   async ({ event, context }) => {
     const tokens = event.params.tokens.map((t: string) => t.toLowerCase());
-
     const poolId = event.params.poolId.toLowerCase();
-    const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-    if (!mapping) return;
 
-    const poolAddr = mapping.address;
+    let poolAddr = balancerIdToAddrCache.get(poolId);
+    if (!poolAddr) {
+      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
+      if (!mapping) return;
+      poolAddr = mapping.address;
+      balancerIdToAddrCache.set(poolId, poolAddr);
+    }
+
     const existing = await context.PoolMeta.get(poolAddr);
+    const fee = existing?.fee ?? 0;
+    balancerMetaCache.set(poolAddr, { tokens, fee });
 
     context.PoolMeta.set({
       id: poolAddr,
       address: poolAddr,
       protocol: "balancer_v2",
       tokens: tokens,
-      fee: existing?.fee ?? 0,
+      fee,
       tickSpacing: undefined,
       createdBlock: Number(event.block.number),
       createdTx: event.transaction.hash,
@@ -84,33 +98,46 @@ indexer.onEvent(
   { contract: "BalancerVault", event: "Swap" },
   async ({ event, context }) => {
     const poolId = event.params.poolId.toLowerCase();
-    const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-    if (!mapping) return;
 
-    const poolAddr = mapping.address;
-    const [state, meta] = await Promise.all([
-      context.BalancerPoolState.get(poolAddr),
-      context.PoolMeta.get(poolAddr),
-    ]);
+    let poolAddr = balancerIdToAddrCache.get(poolId);
+    if (!poolAddr) {
+      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
+      if (!mapping) return;
+      poolAddr = mapping.address;
+      balancerIdToAddrCache.set(poolId, poolAddr);
+    }
+
+    let meta = balancerMetaCache.get(poolAddr);
+    const state = await context.BalancerPoolState.get(poolAddr);
 
     if (!state || !meta) {
-      const metaEffect = await context.effect(fetchBalancerMetadata, {
-        pool: poolAddr,
-        poolId,
-        blockNumber: BigInt(event.block.number),
-      });
-      context.BalancerPoolState.set({
-        id: poolAddr,
-        address: poolAddr,
-        lastUpdatedBlock: Number(event.block.number),
-        poolId: poolId,
-        balances: metaEffect.balances,
-        weights: metaEffect.weights,
-        amp: metaEffect.amp,
-        swapFee: metaEffect.swapFee,
-        scalingFactors: metaEffect.scalingFactors,
-      });
-      return;
+      const dbMeta = await context.PoolMeta.get(poolAddr);
+      if (state && dbMeta) {
+        meta = { tokens: dbMeta.tokens as string[], fee: dbMeta.fee ?? 0 };
+        balancerMetaCache.set(poolAddr, meta);
+      } else {
+        const metaEffect = await context.effect(fetchBalancerMetadata, {
+          pool: poolAddr,
+          poolId,
+          blockNumber: BigInt(event.block.number),
+        });
+        const fee = metaEffect.swapFee > 0n ? Number(metaEffect.swapFee / 10n ** 14n) : 0;
+        meta = { tokens: metaEffect.tokens, fee };
+        balancerMetaCache.set(poolAddr, meta);
+
+        context.BalancerPoolState.set({
+          id: poolAddr,
+          address: poolAddr,
+          lastUpdatedBlock: Number(event.block.number),
+          poolId: poolId,
+          balances: metaEffect.balances,
+          weights: metaEffect.weights,
+          amp: metaEffect.amp,
+          swapFee: metaEffect.swapFee,
+          scalingFactors: metaEffect.scalingFactors,
+        });
+        return;
+      }
     }
 
     const tIn = event.params.tokenIn.toLowerCase();
@@ -118,7 +145,7 @@ indexer.onEvent(
     const aIn = event.params.amountIn;
     const aOut = event.params.amountOut;
 
-    const tokens = meta.tokens as string[];
+    const tokens = meta.tokens;
     const balances = [...state.balances];
 
     const idxIn = tokens.indexOf(tIn);
@@ -139,20 +166,29 @@ indexer.onEvent(
   { contract: "BalancerVault", event: "PoolBalanceChanged" },
   async ({ event, context }) => {
     const poolId = event.params.poolId.toLowerCase();
-    const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-    if (!mapping) return;
 
-    const poolAddr = mapping.address;
-    const [state, meta] = await Promise.all([
-      context.BalancerPoolState.get(poolAddr),
-      context.PoolMeta.get(poolAddr),
-    ]);
+    let poolAddr = balancerIdToAddrCache.get(poolId);
+    if (!poolAddr) {
+      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
+      if (!mapping) return;
+      poolAddr = mapping.address;
+      balancerIdToAddrCache.set(poolId, poolAddr);
+    }
 
-    if (!state || !meta) return;
+    let meta = balancerMetaCache.get(poolAddr);
+    const state = await context.BalancerPoolState.get(poolAddr);
+
+    if (!state) return;
+    if (!meta) {
+      const dbMeta = await context.PoolMeta.get(poolAddr);
+      if (!dbMeta) return;
+      meta = { tokens: dbMeta.tokens as string[], fee: dbMeta.fee ?? 0 };
+      balancerMetaCache.set(poolAddr, meta);
+    }
 
     const eventTokens = event.params.tokens.map((t: string) => t.toLowerCase());
     const amounts = event.params.amounts;
-    const metaTokens = meta.tokens as string[];
+    const metaTokens = meta.tokens;
     const balances = [...state.balances];
 
     for (let i = 0; i < eventTokens.length; i++) {
