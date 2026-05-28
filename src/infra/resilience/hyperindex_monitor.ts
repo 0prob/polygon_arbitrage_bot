@@ -188,6 +188,9 @@ export class HyperIndexMonitor implements Lifecycle {
     this.restartAttempts = 0;
 
     // Periodic visibility into sync rate (every ~30s)
+    // Note: "events per second" (the internal HyperIndex processing rate) is typically 10-100x higher than blk/s.
+    // The dominant limiter on Polygon backfill EPS has historically been per-event DB reads in pool handlers +
+    // effect rate limits on first-seen contracts. See hyperindex/config.yaml for the full debugging guide.
     if (Math.random() < 0.15) {
       const rate = this.getSyncRate();
       const lag = this.getCurrentLag();

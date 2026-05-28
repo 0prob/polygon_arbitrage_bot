@@ -4,9 +4,32 @@ description: "High-performance DEX indexing for arbitrage opportunities (Polygon
 # HyperIndex handles rollbacks automatically when enabled.
 rollback_on_reorg: true
 raw_events: false
-# Polygon optimization: 4000-8000 is a good range for Polygon (high log volume from many DEXes).
-# Higher values speed up historical backfills but increase per-batch memory/CPU usage.
-full_batch_size: 6000
+
+# === Backfill performance debugging (events per second) ===
+# The observed "events/sec" during `envio dev` historical sync is dominated by:
+# 1. Per-event DB work in handlers (the v2/v3 Sync/Swap handlers previously did 2x PoolMeta.get per event).
+#    Fixed by the in-memory feeCache in src/handlers/v2_pool.ts + v3_pool.ts.
+# 2. Effect rateLimits + RPC latency on first-seen pools (token/curve/dodo/balancer metadata).
+#    Mitigated by large STATIC_TOKEN_DECIMALS registry + cache: true on all createEffect().
+# 3. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
+# 4. HyperSync quota / ENVIO_API_TOKEN quality (get a real token at https://envio.dev/app/api-tokens).
+# 5. POLYGON_RPC_URLS quality for the small % of effect fallbacks (use Alchemy pay-as-you-go or better).
+#
+# To observe real-time:
+#   - Run `bun run dev` (or the bot) and watch envio stdout for "events", "processed", block arrows.
+#   - The bot's HyperIndexMonitor logs blk/s every ~30s (proxy for overall throughput).
+#   - For raw eps, grep the hyperindex stdout logs or add pino pretty on the envio side.
+#
+# After a full backfill + warm caches, "live tail" (new blocks) should sustain 5k-50k+ events/s easily.
+# Cold full-history backfill on Polygon from 2021 is typically 2k-15k events/s depending on above factors.
+
+# Polygon optimization: 4000-10000 range for Polygon (very high log volume from 1000s of DEX pools).
+# This is the SINGLE MOST IMPORTANT config knob for "events per second" during historical backfill.
+# - Higher (8000-12000) → faster backfill (fewer roundtrips to HyperSync + DB flushes), more RAM per batch.
+# - Lower (2000-4000) → slower backfill, lower peak memory, more responsive to restarts/crashes.
+# Start at 8000-10000 for a full history sync with a paid HyperSync token. Drop if OOM or high GC.
+# The cache: true on all effects + the JS-side fee cache in v2/v3 handlers make repeated work cheap after warm-up.
+full_batch_size: 8000
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).

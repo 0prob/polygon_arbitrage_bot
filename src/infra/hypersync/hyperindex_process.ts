@@ -82,6 +82,22 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     const trimmed = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
 
+    // HyperIndex / Envio often prints event throughput during backfill, e.g.:
+    // "processed 123456 events", "backfill  2345 events/s", "X events @ Y eps"
+    // Capture any such numbers for diagnostics (we surface via debug logs + can extend status later).
+    const eventRateMatch = trimmed.match(/(\d{3,})\s*(?:events?|evts?)\s*(?:\/\s*s|per\s*s|\/s|s\b|@\s*(\d+)|eps|\/sec)/i);
+    if (eventRateMatch) {
+      // Just log at debug level; the TUI/monitor already has blk/s. This helps raw debugging of "events per second".
+      opts.logger.debug({ line, parsedEps: eventRateMatch[1] }, "HyperIndex event throughput hint from stdout");
+    }
+    // Also catch bare "N events" near large numbers in progress lines
+    if (trimmed.includes("event")) {
+      const evMatch = trimmed.match(/(\d{4,})\s*events?/);
+      if (evMatch) {
+        opts.logger.debug({ line, eventCount: evMatch[1] }, "HyperIndex event count from stdout");
+      }
+    }
+
     const blockMatch = trimmed.match(/(\d{5,})\s*->\s*(\d{5,})/);
     if (blockMatch) {
       const synced = Math.max(_lastParsedBlock, parseInt(blockMatch[1], 10));
