@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780000995.5943742,
-    "ast_hash": "fb49a2ae8097ef42de88da573caa92da",
+    "mtime": 1780001752.4336004,
+    "ast_hash": "c1777fbdc84726cfdc8d01814a732e25",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_pool.ts": {
-    "mtime": 1779830041.7003374,
-    "ast_hash": "29d772ef97c9cb9598c4bf2cd8130508",
+    "mtime": 1780001571.3196516,
+    "ast_hash": "1548381b877118f99724978cf85f19f6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_factory.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/balancer.ts": {
-    "mtime": 1779979610.2864463,
-    "ast_hash": "c7257d54d2c964956ce31b8b3585ee15",
+    "mtime": 1780001472.1447837,
+    "ast_hash": "c5e0e75d2721872bfe09776c5a61f5da",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_pool.ts": {
-    "mtime": 1779830041.7003374,
-    "ast_hash": "d4d19bf74fd52a5ca334f34dff69f302",
+    "mtime": 1780001591.7034197,
+    "ast_hash": "d68c600fb6d5a4cb173096e4e44d7703",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_pool.ts": {
@@ -145,13 +145,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/dodo_metadata.ts": {
-    "mtime": 1779975820.0406015,
-    "ast_hash": "817e98bb953d06e7946a84d1a36dee5a",
+    "mtime": 1780001535.5640588,
+    "ast_hash": "400010494d01390161cf64959219ae4f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/balancer_metadata.ts": {
-    "mtime": 1779975804.928777,
-    "ast_hash": "fb85e72f913aea943d4c1190c6a8ee80",
+    "mtime": 1780001563.0757453,
+    "ast_hash": "def13f173a6f4bbae06187539f36a9f2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/env.ts": {
@@ -855,8 +855,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1779978972.808729,
-    "ast_hash": "360af02c04d604d0b88ae015f29c9f82",
+    "mtime": 1780001502.3124385,
+    "ast_hash": "6f4e3d304158762ebcd1713cbdd5451c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {

@@ -4,166 +4,535 @@
   "graph": {},
   "nodes": [
     {
+      "label": "balancer_metadata.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_balancer_metadata_ts",
+      "community": 27,
+      "norm_label": "balancer_metadata.ts"
+    },
+    {
+      "label": "BALANCER_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L5",
+      "id": "effects_balancer_metadata_balancer_abi",
+      "community": 27,
+      "norm_label": "balancer_abi"
+    },
+    {
+      "label": "VAULT_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L13",
+      "id": "effects_balancer_metadata_vault_abi",
+      "community": 27,
+      "norm_label": "vault_abi"
+    },
+    {
+      "label": "BALANCER_VAULT",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L17",
+      "id": "effects_balancer_metadata_balancer_vault",
+      "community": 27,
+      "norm_label": "balancer_vault"
+    },
+    {
+      "label": "fetchBalancerMetadata",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L23",
+      "id": "effects_balancer_metadata_fetchbalancermetadata",
+      "community": 27,
+      "norm_label": "fetchbalancermetadata"
+    },
+    {
+      "label": "dodo_metadata.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_dodo_metadata_ts",
+      "community": 27,
+      "norm_label": "dodo_metadata.ts"
+    },
+    {
+      "label": "DODO_ABI",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L5",
+      "id": "effects_dodo_metadata_dodo_abi",
+      "community": 27,
+      "norm_label": "dodo_abi"
+    },
+    {
+      "label": "fetchDodoMetadata",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L21",
+      "id": "effects_dodo_metadata_fetchdodometadata",
+      "community": 27,
+      "norm_label": "fetchdodometadata"
+    },
+    {
+      "label": "rpc_client.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_rpc_client_ts",
+      "community": 27,
+      "norm_label": "rpc_client.ts"
+    },
+    {
+      "label": "getRpcUrls()",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L21",
+      "id": "effects_rpc_client_getrpcurls",
+      "community": 27,
+      "norm_label": "getrpcurls()"
+    },
+    {
+      "label": "rpcUrls",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L49",
+      "id": "effects_rpc_client_rpcurls",
+      "community": 27,
+      "norm_label": "rpcurls"
+    },
+    {
+      "label": "transports",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L51",
+      "id": "effects_rpc_client_transports",
+      "community": 27,
+      "norm_label": "transports"
+    },
+    {
+      "label": "publicClient",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L64",
+      "id": "effects_rpc_client_publicclient",
+      "community": 27,
+      "norm_label": "publicclient"
+    },
+    {
+      "label": "balancer.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_balancer_ts",
+      "community": 27,
+      "norm_label": "balancer.ts"
+    },
+    {
+      "label": "balancerMetaCache",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L5",
+      "id": "handlers_balancer_balancermetacache",
+      "community": 27,
+      "norm_label": "balancermetacache"
+    },
+    {
+      "label": "balancerIdToAddrCache",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L6",
+      "id": "handlers_balancer_balanceridtoaddrcache",
+      "community": 27,
+      "norm_label": "balanceridtoaddrcache"
+    },
+    {
+      "label": "pool",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L11",
+      "id": "handlers_balancer_pool",
+      "community": 27,
+      "norm_label": "pool"
+    },
+    {
+      "label": "poolId",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L12",
+      "id": "handlers_balancer_poolid",
+      "community": 27,
+      "norm_label": "poolid"
+    },
+    {
+      "label": "tokens",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L60",
+      "id": "handlers_balancer_tokens",
+      "community": 27,
+      "norm_label": "tokens"
+    },
+    {
+      "label": "poolAddr",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L63",
+      "id": "handlers_balancer_pooladdr",
+      "community": 27,
+      "norm_label": "pooladdr"
+    },
+    {
+      "label": "meta",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L110",
+      "id": "handlers_balancer_meta",
+      "community": 27,
+      "norm_label": "meta"
+    },
+    {
+      "label": "tIn",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L143",
+      "id": "handlers_balancer_tin",
+      "community": 27,
+      "norm_label": "tin"
+    },
+    {
+      "label": "tOut",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L144",
+      "id": "handlers_balancer_tout",
+      "community": 27,
+      "norm_label": "tout"
+    },
+    {
+      "label": "balances",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L149",
+      "id": "handlers_balancer_balances",
+      "community": 27,
+      "norm_label": "balances"
+    },
+    {
+      "label": "idxIn",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L151",
+      "id": "handlers_balancer_idxin",
+      "community": 27,
+      "norm_label": "idxin"
+    },
+    {
+      "label": "idxOut",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L152",
+      "id": "handlers_balancer_idxout",
+      "community": 27,
+      "norm_label": "idxout"
+    },
+    {
+      "label": "eventTokens",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L189",
+      "id": "handlers_balancer_eventtokens",
+      "community": 27,
+      "norm_label": "eventtokens"
+    },
+    {
+      "label": "idx",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L195",
+      "id": "handlers_balancer_idx",
+      "community": 27,
+      "norm_label": "idx"
+    },
+    {
+      "label": "curve_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_curve_pool_ts",
+      "community": 55,
+      "norm_label": "curve_pool.ts"
+    },
+    {
+      "label": "curveMetaCache",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L3",
+      "id": "handlers_curve_pool_curvemetacache",
+      "community": 55,
+      "norm_label": "curvemetacache"
+    },
+    {
+      "label": "pool",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L12",
+      "id": "handlers_curve_pool_pool",
+      "community": 55,
+      "norm_label": "pool"
+    },
+    {
+      "label": "balances",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L16",
+      "id": "handlers_curve_pool_balances",
+      "community": 55,
+      "norm_label": "balances"
+    },
+    {
+      "label": "soldId",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L17",
+      "id": "handlers_curve_pool_soldid",
+      "community": 55,
+      "norm_label": "soldid"
+    },
+    {
+      "label": "boughtId",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L18",
+      "id": "handlers_curve_pool_boughtid",
+      "community": 55,
+      "norm_label": "boughtid"
+    },
+    {
+      "label": "cached",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L23",
+      "id": "handlers_curve_pool_cached",
+      "community": 55,
+      "norm_label": "cached"
+    },
+    {
+      "label": "coinIndex",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L125",
+      "id": "handlers_curve_pool_coinindex",
+      "community": 55,
+      "norm_label": "coinindex"
+    },
+    {
+      "label": "dodo_pool.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_handlers_dodo_pool_ts",
+      "community": 66,
+      "norm_label": "dodo_pool.ts"
+    },
+    {
+      "label": "dodoMetaCache",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L3",
+      "id": "handlers_dodo_pool_dodometacache",
+      "community": 66,
+      "norm_label": "dodometacache"
+    },
+    {
+      "label": "addr",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L17",
+      "id": "handlers_dodo_pool_addr",
+      "community": 66,
+      "norm_label": "addr"
+    },
+    {
+      "label": "cached",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L19",
+      "id": "handlers_dodo_pool_cached",
+      "community": 66,
+      "norm_label": "cached"
+    },
+    {
+      "label": "meta",
+      "file_type": "code",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L35",
+      "id": "handlers_dodo_pool_meta",
+      "community": 66,
+      "norm_label": "meta"
+    },
+    {
       "label": "v2_pool.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_pool.ts",
       "source_location": "L1",
-      "id": "hyperindex_src_handlers_v2_pool_ts",
       "community": 81,
-      "norm_label": "v2_pool.ts"
+      "norm_label": "v2_pool.ts",
+      "id": "hyperindex_src_handlers_v2_pool_ts"
     },
     {
       "label": "poolFeeCache",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_pool.ts",
       "source_location": "L10",
-      "id": "handlers_v2_pool_poolfeecache",
       "community": 81,
-      "norm_label": "poolfeecache"
+      "norm_label": "poolfeecache",
+      "id": "handlers_v2_pool_poolfeecache"
     },
     {
       "label": "poolId",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_pool.ts",
       "source_location": "L15",
-      "id": "handlers_v2_pool_poolid",
       "community": 81,
-      "norm_label": "poolid"
+      "norm_label": "poolid",
+      "id": "handlers_v2_pool_poolid"
     },
     {
       "label": "fee",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v2_pool.ts",
       "source_location": "L17",
-      "id": "handlers_v2_pool_fee",
       "community": 81,
-      "norm_label": "fee"
+      "norm_label": "fee",
+      "id": "handlers_v2_pool_fee"
     },
     {
       "label": "v3_pool.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L1",
-      "id": "hyperindex_src_handlers_v3_pool_ts",
       "community": 82,
-      "norm_label": "v3_pool.ts"
+      "norm_label": "v3_pool.ts",
+      "id": "hyperindex_src_handlers_v3_pool_ts"
     },
     {
       "label": "poolFeeCache",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L8",
-      "id": "handlers_v3_pool_poolfeecache",
       "community": 82,
-      "norm_label": "poolfeecache"
+      "norm_label": "poolfeecache",
+      "id": "handlers_v3_pool_poolfeecache"
     },
     {
       "label": "getCachedMeta()",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L10",
-      "id": "handlers_v3_pool_getcachedmeta",
       "community": 82,
-      "norm_label": "getcachedmeta()"
+      "norm_label": "getcachedmeta()",
+      "id": "handlers_v3_pool_getcachedmeta"
     },
     {
       "label": "setCachedMeta()",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L14",
-      "id": "handlers_v3_pool_setcachedmeta",
       "community": 82,
-      "norm_label": "setcachedmeta()"
+      "norm_label": "setcachedmeta()",
+      "id": "handlers_v3_pool_setcachedmeta"
     },
     {
       "label": "poolId",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L25",
-      "id": "handlers_v3_pool_poolid",
       "community": 82,
-      "norm_label": "poolid"
+      "norm_label": "poolid",
+      "id": "handlers_v3_pool_poolid"
     },
     {
       "label": "cached",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v3_pool.ts",
       "source_location": "L27",
-      "id": "handlers_v3_pool_cached",
       "community": 82,
-      "norm_label": "cached"
+      "norm_label": "cached",
+      "id": "handlers_v3_pool_cached"
     },
     {
       "label": "v4.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L1",
-      "id": "hyperindex_src_handlers_v4_ts",
       "community": 59,
-      "norm_label": "v4.ts"
+      "norm_label": "v4.ts",
+      "id": "hyperindex_src_handlers_v4_ts"
     },
     {
       "label": "v4MetaCache",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L4",
-      "id": "handlers_v4_v4metacache",
       "community": 59,
-      "norm_label": "v4metacache"
+      "norm_label": "v4metacache",
+      "id": "handlers_v4_v4metacache"
     },
     {
       "label": "poolId",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L9",
-      "id": "handlers_v4_poolid",
       "community": 59,
-      "norm_label": "poolid"
+      "norm_label": "poolid",
+      "id": "handlers_v4_poolid"
     },
     {
       "label": "currency0",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L10",
-      "id": "handlers_v4_currency0",
       "community": 59,
-      "norm_label": "currency0"
+      "norm_label": "currency0",
+      "id": "handlers_v4_currency0"
     },
     {
       "label": "currency1",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L11",
-      "id": "handlers_v4_currency1",
       "community": 59,
-      "norm_label": "currency1"
+      "norm_label": "currency1",
+      "id": "handlers_v4_currency1"
     },
     {
       "label": "tickSpacing",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L12",
-      "id": "handlers_v4_tickspacing",
       "community": 59,
-      "norm_label": "tickspacing"
+      "norm_label": "tickspacing",
+      "id": "handlers_v4_tickspacing"
     },
     {
       "label": "hooks",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L13",
-      "id": "handlers_v4_hooks",
       "community": 59,
-      "norm_label": "hooks"
+      "norm_label": "hooks",
+      "id": "handlers_v4_hooks"
     },
     {
       "label": "cached",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L55",
-      "id": "handlers_v4_cached",
       "community": 59,
-      "norm_label": "cached"
+      "norm_label": "cached",
+      "id": "handlers_v4_cached"
     },
     {
       "label": "hyperindex_process.ts",
@@ -638,7 +1007,7 @@
       "file_type": "code",
       "source_file": "src/cli/main.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 42,
       "norm_label": "main.ts",
       "id": "src_cli_main_ts"
     },
@@ -647,7 +1016,7 @@
       "file_type": "code",
       "source_file": "src/cli/main.ts",
       "source_location": "L16",
-      "community": 20,
+      "community": 42,
       "norm_label": "main()",
       "id": "cli_main_main"
     },
@@ -1196,7 +1565,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L1",
-      "community": 38,
+      "community": 32,
       "norm_label": "hyperindex_graphql.ts",
       "id": "src_infra_hypersync_hyperindex_graphql_ts"
     },
@@ -1205,7 +1574,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L1",
-      "community": 38,
+      "community": 32,
       "norm_label": "hasurapoolmeta",
       "id": "hypersync_hyperindex_graphql_hasurapoolmeta"
     },
@@ -1214,7 +1583,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L8",
-      "community": 38,
+      "community": 32,
       "norm_label": "parsebigintarray()",
       "id": "hypersync_hyperindex_graphql_parsebigintarray"
     },
@@ -1223,7 +1592,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L24",
-      "community": 38,
+      "community": 32,
       "norm_label": "_staticanchors",
       "id": "hypersync_hyperindex_graphql_staticanchors"
     },
@@ -1232,7 +1601,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L28",
-      "community": 38,
+      "community": 32,
       "norm_label": "poolsjson",
       "id": "hypersync_hyperindex_graphql_poolsjson"
     },
@@ -1250,7 +1619,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L75",
-      "community": 38,
+      "community": 32,
       "norm_label": "hasurapoolstate",
       "id": "hypersync_hyperindex_graphql_hasurapoolstate"
     },
@@ -1259,7 +1628,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L85",
-      "community": 38,
+      "community": 32,
       "norm_label": "_cachedstate",
       "id": "hypersync_hyperindex_graphql_cachedstate"
     },
@@ -1295,7 +1664,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hypersync_service.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 50,
       "norm_label": "hypersync_service.ts",
       "id": "src_infra_hypersync_hypersync_service_ts"
     },
@@ -1448,7 +1817,7 @@
       "file_type": "code",
       "source_file": "src/infra/observability/logger.ts",
       "source_location": "L52",
-      "community": 20,
+      "community": 42,
       "norm_label": "createrootlogger()",
       "id": "observability_logger_createrootlogger"
     },
@@ -1466,7 +1835,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/reorg_detector.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 31,
       "norm_label": "reorg_detector.ts",
       "id": "src_infra_resilience_reorg_detector_ts"
     },
@@ -1475,7 +1844,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/reorg_detector.ts",
       "source_location": "L5",
-      "community": 2,
+      "community": 31,
       "norm_label": "blockinfo",
       "id": "resilience_reorg_detector_blockinfo"
     },
@@ -1637,7 +2006,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L90",
-      "community": 20,
+      "community": 42,
       "norm_label": "filterarchivalrpcurls()",
       "id": "rpc_client_factory_filterarchivalrpcurls"
     },
@@ -2078,7 +2447,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L1",
-      "community": 37,
+      "community": 42,
       "norm_label": "boot.ts",
       "id": "src_orchestrator_boot_ts"
     },
@@ -2087,7 +2456,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L25",
-      "community": 32,
+      "community": 42,
       "norm_label": "runtimecontext",
       "id": "orchestrator_boot_runtimecontext"
     },
@@ -2096,7 +2465,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L57",
-      "community": 20,
+      "community": 42,
       "norm_label": "bootapplication()",
       "id": "orchestrator_boot_bootapplication"
     },
@@ -2123,7 +2492,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L1",
-      "community": 56,
+      "community": 86,
       "norm_label": "pass_loop.test.ts",
       "id": "src_orchestrator_pass_loop_test_ts"
     },
@@ -2132,7 +2501,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L7",
-      "community": 56,
+      "community": 86,
       "norm_label": "mock_candidate_execution",
       "id": "orchestrator_pass_loop_test_mock_candidate_execution"
     },
@@ -2141,7 +2510,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L14",
-      "community": 56,
+      "community": 86,
       "norm_label": "mocktracker()",
       "id": "orchestrator_pass_loop_test_mocktracker"
     },
@@ -2150,7 +2519,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L25",
-      "community": 56,
+      "community": 86,
       "norm_label": "mocktiermanager()",
       "id": "orchestrator_pass_loop_test_mocktiermanager"
     },
@@ -2159,7 +2528,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L39",
-      "community": 56,
+      "community": 86,
       "norm_label": "mockcircuitbreaker()",
       "id": "orchestrator_pass_loop_test_mockcircuitbreaker"
     },
@@ -2168,7 +2537,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L53",
-      "community": 56,
+      "community": 86,
       "norm_label": "statewithpool",
       "id": "orchestrator_pass_loop_test_statewithpool"
     },
@@ -2177,7 +2546,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L58",
-      "community": 56,
+      "community": 86,
       "norm_label": "mockexecute",
       "id": "orchestrator_pass_loop_test_mockexecute"
     },
@@ -2186,7 +2555,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L60",
-      "community": 56,
+      "community": 86,
       "norm_label": "mockcontext",
       "id": "orchestrator_pass_loop_test_mockcontext"
     },
@@ -2195,7 +2564,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L139",
-      "community": 56,
+      "community": 86,
       "norm_label": "deps",
       "id": "orchestrator_pass_loop_test_deps"
     },
@@ -2204,7 +2573,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L305",
-      "community": 56,
+      "community": 86,
       "norm_label": "enumeratecyclesspy",
       "id": "orchestrator_pass_loop_test_enumeratecyclesspy"
     },
@@ -2213,7 +2582,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 84,
       "norm_label": "pass_loop.ts",
       "id": "src_orchestrator_pass_loop_ts"
     },
@@ -2222,7 +2591,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L28",
-      "community": 32,
+      "community": 84,
       "norm_label": "sleep()",
       "id": "orchestrator_pass_loop_sleep"
     },
@@ -2231,7 +2600,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L62",
-      "community": 32,
+      "community": 84,
       "norm_label": "instrumenter",
       "id": "orchestrator_pass_loop_instrumenter"
     },
@@ -2240,7 +2609,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L64",
-      "community": 32,
+      "community": 42,
       "norm_label": "default_deps",
       "id": "orchestrator_pass_loop_default_deps"
     },
@@ -2249,7 +2618,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L78",
-      "community": 32,
+      "community": 84,
       "norm_label": "runpassloop()",
       "id": "orchestrator_pass_loop_runpassloop"
     },
@@ -2258,7 +2627,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 84,
       "norm_label": "status_writer.ts",
       "id": "src_orchestrator_status_writer_ts"
     },
@@ -2267,7 +2636,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L5",
-      "community": 20,
+      "community": 84,
       "norm_label": "statuspayload",
       "id": "orchestrator_status_writer_statuspayload"
     },
@@ -2276,7 +2645,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L34",
-      "community": 20,
+      "community": 84,
       "norm_label": "formatgwei()",
       "id": "orchestrator_status_writer_formatgwei"
     },
@@ -2285,7 +2654,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L39",
-      "community": 20,
+      "community": 84,
       "norm_label": "buildstatuspayload()",
       "id": "orchestrator_status_writer_buildstatuspayload"
     },
@@ -2294,7 +2663,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/status_writer.ts",
       "source_location": "L70",
-      "community": 20,
+      "community": 84,
       "norm_label": "writestatusfile()",
       "id": "orchestrator_status_writer_writestatusfile"
     },
@@ -2366,7 +2735,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L32",
-      "community": 32,
+      "community": 84,
       "norm_label": "prunefailedpools()",
       "id": "pipeline_fetcher_prunefailedpools"
     },
@@ -2375,7 +2744,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L50",
-      "community": 32,
+      "community": 84,
       "norm_label": "fetchmissingpoolstate()",
       "id": "pipeline_fetcher_fetchmissingpoolstate"
     },
@@ -2384,7 +2753,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 90,
       "norm_label": "finder.ts",
       "id": "src_pipeline_finder_ts"
     },
@@ -2393,7 +2762,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L5",
-      "community": 32,
+      "community": 90,
       "norm_label": "routekeyfromedges()",
       "id": "pipeline_finder_routekeyfromedges"
     },
@@ -2402,7 +2771,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L11",
-      "community": 32,
+      "community": 90,
       "norm_label": "averageobscurity()",
       "id": "pipeline_finder_averageobscurity"
     },
@@ -2420,7 +2789,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L39",
-      "community": 32,
+      "community": 90,
       "norm_label": "getobscuritybonus()",
       "id": "pipeline_finder_getobscuritybonus"
     },
@@ -2429,7 +2798,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L62",
-      "community": 32,
+      "community": 90,
       "norm_label": "cycleobscuritybonus()",
       "id": "pipeline_finder_cycleobscuritybonus"
     },
@@ -2465,7 +2834,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/index.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 12,
       "norm_label": "index.ts",
       "id": "src_pipeline_index_ts"
     },
@@ -2474,7 +2843,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/instrumenter.ts",
       "source_location": "L1",
-      "community": 56,
+      "community": 54,
       "norm_label": "instrumenter.ts",
       "id": "src_pipeline_instrumenter_ts"
     },
@@ -2483,7 +2852,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/instrumenter.ts",
       "source_location": "L5",
-      "community": 56,
+      "community": 54,
       "norm_label": "simulationtrace",
       "id": "pipeline_instrumenter_simulationtrace"
     },
@@ -2492,7 +2861,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/instrumenter.ts",
       "source_location": "L22",
-      "community": 56,
+      "community": 54,
       "norm_label": "executioncomparison",
       "id": "pipeline_instrumenter_executioncomparison"
     },
@@ -2501,7 +2870,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/instrumenter.ts",
       "source_location": "L37",
-      "community": 32,
+      "community": 56,
       "norm_label": "arbinstrumenter",
       "id": "pipeline_instrumenter_arbinstrumenter"
     },
@@ -2528,7 +2897,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/instrumenter.ts",
       "source_location": "L99",
-      "community": 32,
+      "community": 56,
       "norm_label": ".gettrace()",
       "id": "pipeline_instrumenter_arbinstrumenter_gettrace"
     },
@@ -2546,7 +2915,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L25",
-      "community": 12,
+      "community": 83,
       "norm_label": "pipelineresult",
       "id": "pipeline_pipeline_pipelineresult"
     },
@@ -2564,7 +2933,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L76",
-      "community": 12,
+      "community": 83,
       "norm_label": "minimalevalholder",
       "id": "pipeline_pipeline_minimalevalholder"
     },
@@ -2618,7 +2987,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L20",
-      "community": 32,
+      "community": 36,
       "norm_label": "computematicrates()",
       "id": "pipeline_rates_computematicrates"
     },
@@ -2834,7 +3203,7 @@
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L176",
-      "community": 24,
+      "community": 14,
       "norm_label": ".addwebsocketsubscriber()",
       "id": "rpc_manager_rpcmanager_addwebsocketsubscriber"
     },
@@ -2843,7 +3212,7 @@
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L186",
-      "community": 14,
+      "community": 24,
       "norm_label": ".getwebsocketsubscriber()",
       "id": "rpc_manager_rpcmanager_getwebsocketsubscriber"
     },
@@ -3248,7 +3617,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L16",
-      "community": 42,
+      "community": 37,
       "norm_label": "default_gas_config",
       "id": "execution_gas_default_gas_config"
     },
@@ -3824,54 +4193,9 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L41",
-      "community": 38,
+      "community": 32,
       "norm_label": "static_anchors",
       "id": "hypersync_hyperindex_graphql_static_anchors"
-    },
-    {
-      "label": "balancer_metadata.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "balancer_metadata.ts",
-      "id": "hyperindex_src_effects_balancer_metadata_ts"
-    },
-    {
-      "label": "BALANCER_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L5",
-      "community": 27,
-      "norm_label": "balancer_abi",
-      "id": "effects_balancer_metadata_balancer_abi"
-    },
-    {
-      "label": "VAULT_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L13",
-      "community": 27,
-      "norm_label": "vault_abi",
-      "id": "effects_balancer_metadata_vault_abi"
-    },
-    {
-      "label": "BALANCER_VAULT",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L17",
-      "community": 27,
-      "norm_label": "balancer_vault",
-      "id": "effects_balancer_metadata_balancer_vault"
-    },
-    {
-      "label": "fetchBalancerMetadata",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L23",
-      "community": 27,
-      "norm_label": "fetchbalancermetadata",
-      "id": "effects_balancer_metadata_fetchbalancermetadata"
     },
     {
       "label": "curve_metadata.ts",
@@ -3899,78 +4223,6 @@
       "community": 27,
       "norm_label": "fetchcurvemetadata",
       "id": "effects_curve_metadata_fetchcurvemetadata"
-    },
-    {
-      "label": "dodo_metadata.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "dodo_metadata.ts",
-      "id": "hyperindex_src_effects_dodo_metadata_ts"
-    },
-    {
-      "label": "DODO_ABI",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L5",
-      "community": 27,
-      "norm_label": "dodo_abi",
-      "id": "effects_dodo_metadata_dodo_abi"
-    },
-    {
-      "label": "fetchDodoMetadata",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L21",
-      "community": 27,
-      "norm_label": "fetchdodometadata",
-      "id": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "label": "rpc_client.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "rpc_client.ts",
-      "id": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "label": "getRpcUrls()",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L21",
-      "community": 27,
-      "norm_label": "getrpcurls()",
-      "id": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "label": "rpcUrls",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L42",
-      "community": 27,
-      "norm_label": "rpcurls",
-      "id": "effects_rpc_client_rpcurls"
-    },
-    {
-      "label": "transports",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L44",
-      "community": 27,
-      "norm_label": "transports",
-      "id": "effects_rpc_client_transports"
-    },
-    {
-      "label": "publicClient",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L57",
-      "community": 27,
-      "norm_label": "publicclient",
-      "id": "effects_rpc_client_publicclient"
     },
     {
       "label": "defaults.ts",
@@ -4171,114 +4423,6 @@
       "id": "t_readme_tests"
     },
     {
-      "label": "balancer.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "balancer.ts",
-      "id": "hyperindex_src_handlers_balancer_ts"
-    },
-    {
-      "label": "pool",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L8",
-      "community": 27,
-      "norm_label": "pool",
-      "id": "handlers_balancer_pool"
-    },
-    {
-      "label": "poolId",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L9",
-      "community": 27,
-      "norm_label": "poolid",
-      "id": "handlers_balancer_poolid"
-    },
-    {
-      "label": "tokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L52",
-      "community": 27,
-      "norm_label": "tokens",
-      "id": "handlers_balancer_tokens"
-    },
-    {
-      "label": "tIn",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L116",
-      "community": 27,
-      "norm_label": "tin",
-      "id": "handlers_balancer_tin"
-    },
-    {
-      "label": "tOut",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L117",
-      "community": 27,
-      "norm_label": "tout",
-      "id": "handlers_balancer_tout"
-    },
-    {
-      "label": "balances",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L122",
-      "community": 27,
-      "norm_label": "balances",
-      "id": "handlers_balancer_balances"
-    },
-    {
-      "label": "idxIn",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L124",
-      "community": 27,
-      "norm_label": "idxin",
-      "id": "handlers_balancer_idxin"
-    },
-    {
-      "label": "idxOut",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L125",
-      "community": 27,
-      "norm_label": "idxout",
-      "id": "handlers_balancer_idxout"
-    },
-    {
-      "label": "eventTokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L153",
-      "community": 27,
-      "norm_label": "eventtokens",
-      "id": "handlers_balancer_eventtokens"
-    },
-    {
-      "label": "metaTokens",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L155",
-      "community": 27,
-      "norm_label": "metatokens",
-      "id": "handlers_balancer_metatokens"
-    },
-    {
-      "label": "idx",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L159",
-      "community": 27,
-      "norm_label": "idx",
-      "id": "handlers_balancer_idx"
-    },
-    {
       "label": "curve_factory.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/handlers/curve_factory.ts",
@@ -4454,7 +4598,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L1",
-      "community": 36,
+      "community": 83,
       "norm_label": "execution.ts",
       "id": "src_core_types_execution_ts"
     },
@@ -4472,7 +4616,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L14",
-      "community": 12,
+      "community": 83,
       "norm_label": "profitassessment",
       "id": "types_execution_profitassessment"
     },
@@ -4481,7 +4625,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L30",
-      "community": 36,
+      "community": 83,
       "norm_label": "candidateentry",
       "id": "types_execution_candidateentry"
     },
@@ -4490,7 +4634,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L36",
-      "community": 36,
+      "community": 83,
       "norm_label": "executablecandidate",
       "id": "types_execution_executablecandidate"
     },
@@ -4499,7 +4643,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L40",
-      "community": 36,
+      "community": 83,
       "norm_label": "transactionparams",
       "id": "types_execution_transactionparams"
     },
@@ -4508,7 +4652,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L51",
-      "community": 36,
+      "community": 83,
       "norm_label": "dryrunresult",
       "id": "types_execution_dryrunresult"
     },
@@ -4517,7 +4661,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L58",
-      "community": 36,
+      "community": 83,
       "norm_label": "submissionresult",
       "id": "types_execution_submissionresult"
     },
@@ -4526,7 +4670,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L69",
-      "community": 36,
+      "community": 83,
       "norm_label": "executionoutcome",
       "id": "types_execution_executionoutcome"
     },
@@ -4535,7 +4679,7 @@
       "file_type": "code",
       "source_file": "src/core/types/execution.ts",
       "source_location": "L76",
-      "community": 36,
+      "community": 83,
       "norm_label": "candidatepipelineresult",
       "id": "types_execution_candidatepipelineresult"
     },
@@ -4814,7 +4958,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L1",
-      "community": 8,
+      "community": 83,
       "norm_label": "types.ts",
       "id": "src_pipeline_types_ts"
     },
@@ -4841,7 +4985,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L28",
-      "community": 32,
+      "community": 83,
       "norm_label": "foundcycle",
       "id": "pipeline_types_foundcycle"
     },
@@ -4850,7 +4994,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L37",
-      "community": 32,
+      "community": 84,
       "norm_label": "pipelineoptions",
       "id": "pipeline_types_pipelineoptions"
     },
@@ -4859,7 +5003,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L54",
-      "community": 12,
+      "community": 83,
       "norm_label": "pipelineresult",
       "id": "pipeline_types_pipelineresult"
     },
@@ -4877,7 +5021,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L81",
-      "community": 8,
+      "community": 83,
       "norm_label": "statesnapshot",
       "id": "pipeline_types_statesnapshot"
     },
@@ -6106,78 +6250,6 @@
       "id": "envio_types_d_woofipoolstate"
     },
     {
-      "label": "dodo_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
-      "source_location": "L1",
-      "community": 66,
-      "norm_label": "dodo_pool.ts",
-      "id": "hyperindex_src_handlers_dodo_pool_ts"
-    },
-    {
-      "label": "addr",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
-      "source_location": "L6",
-      "community": 66,
-      "norm_label": "addr",
-      "id": "handlers_dodo_pool_addr"
-    },
-    {
-      "label": "curve_pool.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L1",
-      "community": 55,
-      "norm_label": "curve_pool.ts",
-      "id": "hyperindex_src_handlers_curve_pool_ts"
-    },
-    {
-      "label": "pool",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L6",
-      "community": 55,
-      "norm_label": "pool",
-      "id": "handlers_curve_pool_pool"
-    },
-    {
-      "label": "balances",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L10",
-      "community": 55,
-      "norm_label": "balances",
-      "id": "handlers_curve_pool_balances"
-    },
-    {
-      "label": "soldId",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L11",
-      "community": 55,
-      "norm_label": "soldid",
-      "id": "handlers_curve_pool_soldid"
-    },
-    {
-      "label": "boughtId",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L12",
-      "community": 55,
-      "norm_label": "boughtid",
-      "id": "handlers_curve_pool_boughtid"
-    },
-    {
-      "label": "coinIndex",
-      "file_type": "code",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L77",
-      "community": 55,
-      "norm_label": "coinindex",
-      "id": "handlers_curve_pool_coinindex"
-    },
-    {
       "label": "env.ts",
       "file_type": "code",
       "source_file": "hyperindex/src/effects/env.ts",
@@ -6362,7 +6434,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 42,
       "norm_label": "events.ts",
       "id": "src_tui_events_ts"
     },
@@ -6380,7 +6452,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L16",
-      "community": 32,
+      "community": 42,
       "norm_label": "eventhandler",
       "id": "tui_events_eventhandler"
     },
@@ -6389,7 +6461,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L18",
-      "community": 32,
+      "community": 42,
       "norm_label": "eventbus",
       "id": "tui_events_eventbus"
     },
@@ -6398,7 +6470,7 @@
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L21",
-      "community": 32,
+      "community": 42,
       "norm_label": ".on()",
       "id": "tui_events_eventbus_on"
     },
@@ -7577,7 +7649,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L1",
-      "community": 36,
+      "community": 54,
       "norm_label": "route.ts",
       "id": "src_core_types_route_ts"
     },
@@ -7586,7 +7658,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L4",
-      "community": 36,
+      "community": 54,
       "norm_label": "routeedge",
       "id": "types_route_routeedge"
     },
@@ -7595,7 +7667,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L17",
-      "community": 36,
+      "community": 83,
       "norm_label": "arbpath",
       "id": "types_route_arbpath"
     },
@@ -7604,7 +7676,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L25",
-      "community": 36,
+      "community": 54,
       "norm_label": "simulatedhopresult",
       "id": "types_route_simulatedhopresult"
     },
@@ -7613,7 +7685,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L30",
-      "community": 12,
+      "community": 83,
       "norm_label": "routesimulationresult",
       "id": "types_route_routesimulationresult"
     },
@@ -7622,7 +7694,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L43",
-      "community": 36,
+      "community": 54,
       "norm_label": "routeresultcore",
       "id": "types_route_routeresultcore"
     },
@@ -7631,7 +7703,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L45",
-      "community": 36,
+      "community": 54,
       "norm_label": "routeresulttrace",
       "id": "types_route_routeresulttrace"
     },
@@ -7640,7 +7712,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L50",
-      "community": 36,
+      "community": 54,
       "norm_label": "evaluatedroute",
       "id": "types_route_evaluatedroute"
     },
@@ -7658,7 +7730,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L57",
-      "community": 36,
+      "community": 54,
       "norm_label": "cycleenumerationoptions",
       "id": "types_route_cycleenumerationoptions"
     },
@@ -7667,7 +7739,7 @@
       "file_type": "code",
       "source_file": "src/core/types/route.ts",
       "source_location": "L64",
-      "community": 36,
+      "community": 54,
       "norm_label": "routeidentityedge",
       "id": "types_route_routeidentityedge"
     },
@@ -7874,7 +7946,7 @@
       "file_type": "code",
       "source_file": "src/core/types/pool.ts",
       "source_location": "L76",
-      "community": 12,
+      "community": 54,
       "norm_label": "poolstate",
       "id": "types_pool_poolstate"
     },
@@ -8279,7 +8351,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/receipt.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 34,
       "norm_label": "receipt.ts",
       "id": "src_services_execution_receipt_ts"
     },
@@ -8288,7 +8360,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/receipt.ts",
       "source_location": "L5",
-      "community": 2,
+      "community": 34,
       "norm_label": "receiptdata",
       "id": "execution_receipt_receiptdata"
     },
@@ -8297,7 +8369,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/receipt.ts",
       "source_location": "L11",
-      "community": 37,
+      "community": 34,
       "norm_label": "receiptpoller",
       "id": "execution_receipt_receiptpoller"
     },
@@ -8306,7 +8378,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/receipt.ts",
       "source_location": "L12",
-      "community": 37,
+      "community": 34,
       "norm_label": ".constructor()",
       "id": "execution_receipt_receiptpoller_constructor"
     },
@@ -8315,7 +8387,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/receipt.ts",
       "source_location": "L18",
-      "community": 37,
+      "community": 34,
       "norm_label": ".wait()",
       "id": "execution_receipt_receiptpoller_wait"
     },
@@ -8324,7 +8396,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L1",
-      "community": 37,
+      "community": 56,
       "norm_label": "service.ts",
       "id": "src_services_execution_service_ts"
     },
@@ -8333,7 +8405,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L10",
-      "community": 37,
+      "community": 56,
       "norm_label": "erc20_transfer_event",
       "id": "execution_service_erc20_transfer_event"
     },
@@ -8369,7 +8441,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L56",
-      "community": 37,
+      "community": 56,
       "norm_label": "poolsfromroutekey()",
       "id": "execution_service_poolsfromroutekey"
     },
@@ -8378,7 +8450,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L60",
-      "community": 37,
+      "community": 56,
       "norm_label": "arecandidatescompatible()",
       "id": "execution_service_arecandidatescompatible"
     },
@@ -8387,7 +8459,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L66",
-      "community": 37,
+      "community": 56,
       "norm_label": "groupcompatiblecandidates()",
       "id": "execution_service_groupcompatiblecandidates"
     },
@@ -8432,7 +8504,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/service.ts",
       "source_location": "L114",
-      "community": 37,
+      "community": 34,
       "norm_label": ".constructor()",
       "id": "execution_service_executionservice_constructor"
     },
@@ -8810,7 +8882,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L1",
-      "community": 42,
+      "community": 37,
       "norm_label": "gas.test.ts",
       "id": "src_services_execution_gas_test_ts"
     },
@@ -8819,7 +8891,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L14",
-      "community": 42,
+      "community": 37,
       "norm_label": "oracle",
       "id": "execution_gas_test_oracle"
     },
@@ -8828,7 +8900,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L19",
-      "community": 42,
+      "community": 37,
       "norm_label": "fetchgas",
       "id": "execution_gas_test_fetchgas"
     },
@@ -8837,7 +8909,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L22",
-      "community": 42,
+      "community": 37,
       "norm_label": "snap",
       "id": "execution_gas_test_snap"
     },
@@ -8846,7 +8918,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L61",
-      "community": 42,
+      "community": 37,
       "norm_label": "first",
       "id": "execution_gas_test_first"
     },
@@ -8855,7 +8927,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L67",
-      "community": 42,
+      "community": 37,
       "norm_label": "second",
       "id": "execution_gas_test_second"
     },
@@ -8864,7 +8936,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L93",
-      "community": 42,
+      "community": 37,
       "norm_label": "hints",
       "id": "execution_gas_test_hints"
     },
@@ -8873,7 +8945,7 @@
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L103",
-      "community": 42,
+      "community": 37,
       "norm_label": "scaled",
       "id": "execution_gas_test_scaled"
     },
@@ -9422,7 +9494,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 54,
       "norm_label": "subscriber.ts",
       "id": "src_services_mempool_subscriber_ts"
     },
@@ -9431,7 +9503,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L4",
-      "community": 12,
+      "community": 54,
       "norm_label": "subscriberoptions",
       "id": "mempool_subscriber_subscriberoptions"
     },
@@ -9440,7 +9512,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L9",
-      "community": 12,
+      "community": 54,
       "norm_label": "poolstatesubscriber",
       "id": "mempool_subscriber_poolstatesubscriber"
     },
@@ -9449,7 +9521,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L13",
-      "community": 12,
+      "community": 54,
       "norm_label": ".constructor()",
       "id": "mempool_subscriber_poolstatesubscriber_constructor"
     },
@@ -9458,7 +9530,7 @@
       "file_type": "code",
       "source_file": "src/services/mempool/subscriber.ts",
       "source_location": "L18",
-      "community": 12,
+      "community": 54,
       "norm_label": ".subscribe()",
       "id": "mempool_subscriber_poolstatesubscriber_subscribe"
     },
@@ -9467,7 +9539,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/runner.ts",
       "source_location": "L1",
-      "community": 32,
+      "community": 42,
       "norm_label": "runner.ts",
       "id": "src_orchestrator_runner_ts"
     },
@@ -9476,7 +9548,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/runner.ts",
       "source_location": "L6",
-      "community": 32,
+      "community": 42,
       "norm_label": "passrunner",
       "id": "orchestrator_runner_passrunner"
     },
@@ -9485,7 +9557,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/runner.ts",
       "source_location": "L10",
-      "community": 32,
+      "community": 42,
       "norm_label": ".constructor()",
       "id": "orchestrator_runner_passrunner_constructor"
     },
@@ -9494,7 +9566,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/runner.ts",
       "source_location": "L19",
-      "community": 32,
+      "community": 42,
       "norm_label": ".run()",
       "id": "orchestrator_runner_passrunner_run"
     },
@@ -9521,7 +9593,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 42,
       "norm_label": "boot.test.ts",
       "id": "src_orchestrator_boot_test_ts"
     },
@@ -9530,7 +9602,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L7",
-      "community": 20,
+      "community": 42,
       "norm_label": "config",
       "id": "orchestrator_boot_test_config"
     },
@@ -9539,7 +9611,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 84,
       "norm_label": "shutdown.ts",
       "id": "src_orchestrator_shutdown_ts"
     },
@@ -9548,7 +9620,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L4",
-      "community": 20,
+      "community": 84,
       "norm_label": "stopservice()",
       "id": "orchestrator_shutdown_stopservice"
     },
@@ -9557,7 +9629,7 @@
       "file_type": "code",
       "source_file": "src/orchestrator/shutdown.ts",
       "source_location": "L13",
-      "community": 20,
+      "community": 84,
       "norm_label": "shutdownapplication()",
       "id": "orchestrator_shutdown_shutdownapplication"
     },
@@ -9575,7 +9647,7 @@
       "file_type": "code",
       "source_file": "src/pipeline/graph.ts",
       "source_location": "L6",
-      "community": 32,
+      "community": 8,
       "norm_label": "buildgraph()",
       "id": "pipeline_graph_buildgraph"
     },
@@ -9980,7 +10052,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.ts",
       "source_location": "L9",
-      "community": 48,
+      "community": 45,
       "norm_label": ".constructor()",
       "id": "resilience_tier_manager_tiermanager_constructor"
     },
@@ -10070,7 +10142,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L1",
-      "community": 54,
+      "community": 47,
       "norm_label": "tier_manager.test.ts",
       "id": "src_infra_resilience_tier_manager_test_ts"
     },
@@ -10079,7 +10151,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L6",
-      "community": 54,
+      "community": 47,
       "norm_label": "healthycb()",
       "id": "resilience_tier_manager_test_healthycb"
     },
@@ -10088,7 +10160,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L10",
-      "community": 54,
+      "community": 47,
       "norm_label": "unhealthycb()",
       "id": "resilience_tier_manager_test_unhealthycb"
     },
@@ -10097,7 +10169,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L14",
-      "community": 54,
+      "community": 47,
       "norm_label": "healthyhi()",
       "id": "resilience_tier_manager_test_healthyhi"
     },
@@ -10106,7 +10178,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L18",
-      "community": 54,
+      "community": 47,
       "norm_label": "unhealthyhi()",
       "id": "resilience_tier_manager_test_unhealthyhi"
     },
@@ -10115,7 +10187,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/tier_manager.test.ts",
       "source_location": "L24",
-      "community": 54,
+      "community": 47,
       "norm_label": "tm",
       "id": "resilience_tier_manager_test_tm"
     },
@@ -10403,7 +10475,7 @@
       "file_type": "code",
       "source_file": "src/config/schema.ts",
       "source_location": "L131",
-      "community": 20,
+      "community": 42,
       "norm_label": "appconfig",
       "id": "config_schema_appconfig"
     },
@@ -12617,6 +12689,466 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_balancer_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_balancer_vault"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_fetchbalancermetadata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_balancer_metadata_vault_abi"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "hyperindex_src_effects_balancer_metadata_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "effects_balancer_metadata_fetchbalancermetadata"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_dodo_metadata_dodo_abi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_dodo_metadata_fetchdodometadata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_factory_ts",
+      "target": "hyperindex_src_effects_dodo_metadata_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_factory_ts",
+      "target": "effects_dodo_metadata_fetchdodometadata"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_getrpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_rpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_transports"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_balanceridtoaddrcache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_balancermetacache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_balances"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L143",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_eventtokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L149",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idxin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L115",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_idxout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L178",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_meta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_pool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L170",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_pooladdr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L131",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_poolid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tin"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tokens"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/balancer.ts",
+      "source_location": "L107",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_balancer_ts",
+      "target": "handlers_balancer_tout"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_balances"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_boughtid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_cached",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_coinindex"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_curvemetacache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_pool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/curve_pool.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_curve_pool_ts",
+      "target": "handlers_curve_pool_soldid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_handlers_dodo_pool_ts",
+      "target": "handlers_dodo_pool_addr"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_dodo_pool_ts",
+      "target": "handlers_dodo_pool_cached",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_dodo_pool_ts",
+      "target": "handlers_dodo_pool_dodometacache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "hyperindex_src_handlers_dodo_pool_ts",
+      "target": "handlers_dodo_pool_meta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "hyperindex/src/handlers/v2_pool.ts",
       "source_location": "L17",
       "weight": 1.0,
@@ -12700,9 +13232,9 @@
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v4_ts",
-      "target": "handlers_v4_cached",
-      "confidence_score": 1.0
+      "target": "handlers_v4_cached"
     },
     {
       "relation": "contains",
@@ -12730,9 +13262,9 @@
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v4_ts",
-      "target": "handlers_v4_hooks",
-      "confidence_score": 1.0
+      "target": "handlers_v4_hooks"
     },
     {
       "relation": "contains",
@@ -12750,9 +13282,9 @@
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v4_ts",
-      "target": "handlers_v4_tickspacing",
-      "confidence_score": 1.0
+      "target": "handlers_v4_tickspacing"
     },
     {
       "relation": "contains",
@@ -12760,9 +13292,9 @@
       "source_file": "hyperindex/src/handlers/v4.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_v4_ts",
-      "target": "handlers_v4_v4metacache",
-      "confidence_score": 1.0
+      "target": "handlers_v4_v4metacache"
     },
     {
       "relation": "contains",
@@ -25576,90 +26108,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_balancer_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_balancer_vault"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_fetchbalancermetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_balancer_metadata_vault_abi"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "hyperindex_src_effects_balancer_metadata_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "effects_balancer_metadata_fetchbalancermetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "hyperindex/src/effects/curve_metadata.ts",
       "source_location": "L16",
       "weight": 1.0,
@@ -25676,28 +26124,6 @@
       "confidence_score": 1.0,
       "source": "hyperindex_src_effects_curve_metadata_ts",
       "target": "effects_curve_metadata_fetchcurvemetadata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
     },
     {
       "relation": "imports_from",
@@ -25720,110 +26146,6 @@
       "confidence_score": 1.0,
       "source": "hyperindex_src_handlers_curve_factory_ts",
       "target": "effects_curve_metadata_fetchcurvemetadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L16",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_dodo_metadata_dodo_abi"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_factory_ts",
-      "target": "hyperindex_src_effects_dodo_metadata_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_factory.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_factory_ts",
-      "target": "effects_dodo_metadata_fetchdodometadata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_rpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_transports"
     },
     {
       "relation": "contains",
@@ -26014,116 +26336,6 @@
       "confidence_score": 1.0,
       "source": "t_readme_scripts",
       "target": "t_readme_codeblock_4"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L146",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_balances"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L143",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_eventtokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L149",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idx"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L114",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idxin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L115",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_idxout"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_metatokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_pool"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L131",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_poolid"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L106",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tin"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L111",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tokens"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/balancer.ts",
-      "source_location": "L107",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_balancer_ts",
-      "target": "handlers_balancer_tout"
     },
     {
       "relation": "contains",
@@ -29132,66 +29344,6 @@
       "confidence_score": 1.0,
       "source": "hyperindex_envio_types_d_ts",
       "target": "envio_types_d_woofipoolstate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/dodo_pool.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_dodo_pool_ts",
-      "target": "handlers_dodo_pool_addr"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L76",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_pool_ts",
-      "target": "handlers_curve_pool_balances"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_pool_ts",
-      "target": "handlers_curve_pool_boughtid"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L77",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_pool_ts",
-      "target": "handlers_curve_pool_coinindex"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L72",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_pool_ts",
-      "target": "handlers_curve_pool_pool"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/handlers/curve_pool.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_handlers_curve_pool_ts",
-      "target": "handlers_curve_pool_soldid"
     },
     {
       "relation": "contains",
@@ -38843,5 +38995,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "38d22819c9f686d0aea4f7ce0b95e2026e1c6d85"
+  "built_at_commit": "dbf6ff76ab58ce2f55a92bd9e9f4a08cadb94eec"
 }
