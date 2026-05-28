@@ -22,7 +22,7 @@ async function handleDodoPool(
     poolId: undefined,
   });
 
-  const meta = await context.effect(fetchDodoMetadata, { pool });
+  const meta = await context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) });
   context.DodoPoolState.set({
     id: pool,
     address: pool,
@@ -40,8 +40,8 @@ async function handleDodoPool(
   });
 
   const [baseMeta, quoteMeta] = await Promise.all([
-    context.effect(fetchTokenMeta, { address: base }),
-    context.effect(fetchTokenMeta, { address: quote }),
+    context.effect(fetchTokenMeta, { address: base, blockNumber: BigInt(blockNumber) }),
+    context.effect(fetchTokenMeta, { address: quote, blockNumber: BigInt(blockNumber) }),
   ]);
   context.TokenMeta.set({ id: base, address: base, decimals: baseMeta.decimals });
   context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });

@@ -17,6 +17,10 @@ export const DODO_PROTOCOLS = new Set(["DODO_V2"]);
 
 export const WOOFI_PROTOCOLS = new Set(["WOOFI"]);
 
+import { BPS_DENOMINATOR } from "../../../core/constants.ts";
+
+export { BPS_DENOMINATOR }; // centralized (see core/constants.ts)
+
 export const BALANCER_PROTOCOLS = new Set(["BALANCER", "BALANCER_V2"]);
 
 export const BALANCER_VAULT = "0xBA12222222228d8Ba445958a75a0704d566BF2C8";
@@ -28,6 +32,5 @@ export const CALLBACK_PROTOCOL_SUSHISWAP_V3 = 2;
 export const CALLBACK_PROTOCOL_QUICKSWAP_V3 = 3;
 export const CALLBACK_PROTOCOL_KYBER_ELASTIC = 4;
 
-export const BPS_DENOMINATOR = 10_000;
 export const MAX_UINT24 = 16_777_215n;
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

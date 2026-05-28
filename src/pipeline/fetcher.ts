@@ -1,5 +1,6 @@
 import { parseAbi } from "viem";
 import type { PublicClient } from "viem";
+import { toBigInt } from "../core/utils/bigint.ts";
 import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
@@ -68,10 +69,9 @@ export async function fetchMissingPoolState(
   const updated = new Set<string>();
 
   if (forceRefresh) {
-    for (const cycle of currentCycles) {
-      for (const edge of cycle.edges) {
-        missingAddresses.add(edge.poolAddress.toLowerCase());
-      }
+    // Full refresh path: use the authoritative pools list (no need for dummy cycles anymore)
+    for (const p of pools) {
+      missingAddresses.add(p.address.toLowerCase());
     }
     for (const anchor of STATIC_ANCHORS) {
       missingAddresses.add(anchor.address.toLowerCase());
@@ -179,14 +179,14 @@ export async function fetchMissingPoolState(
           if (proto.includes("v2") || proto.includes("dodo")) {
             const res = results[resultIdx++];
             if (res?.status === "success" && res.result) {
-              const r = res.result as any;
-              const r0 = r[0] !== undefined ? r[0] : r.reserve0;
-              const r1 = r[1] !== undefined ? r[1] : r.reserve1;
+              const r = res.result as Record<string, unknown> | unknown[];
+              const r0 = Array.isArray(r) ? r[0] : (r as any).reserve0;
+              const r1 = Array.isArray(r) ? r[1] : (r as any).reserve1;
 
               if (r0 !== undefined && r1 !== undefined) {
                 stateCache.set(addr, {
-                  reserve0: BigInt(r0),
-                  reserve1: BigInt(r1),
+                  reserve0: toBigInt(r0, 0n),
+                  reserve1: toBigInt(r1, 0n),
                   initialized: true,
                 });
                 updated.add(addr);

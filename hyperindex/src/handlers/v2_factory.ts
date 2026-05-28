@@ -41,8 +41,8 @@ indexer.onEvent(
     });
 
     const [t0meta, t1meta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: t0 }),
-      context.effect(fetchTokenMeta, { address: t1 }),
+      context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
+      context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
     ]);
     context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
     context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });

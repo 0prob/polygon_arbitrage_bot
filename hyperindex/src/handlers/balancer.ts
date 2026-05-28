@@ -8,7 +8,7 @@ indexer.onEvent(
     const pool = event.params.poolAddress.toLowerCase();
     const poolId = event.params.poolId.toLowerCase();
 
-    const meta = await context.effect(fetchBalancerMetadata, { pool, poolId });
+    const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(event.block.number) });
 
     context.PoolMeta.set({
       id: pool,
@@ -37,7 +37,10 @@ indexer.onEvent(
     });
 
     for (const token of meta.tokens) {
-      const tMeta = await context.effect(fetchTokenMeta, { address: token });
+      const tMeta = await context.effect(fetchTokenMeta, {
+        address: token,
+        blockNumber: BigInt(event.block.number),
+      });
       context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
     }
   },
@@ -68,7 +71,10 @@ indexer.onEvent(
     });
 
     for (const token of tokens) {
-      const tMeta = await context.effect(fetchTokenMeta, { address: token });
+      const tMeta = await context.effect(fetchTokenMeta, {
+        address: token,
+        blockNumber: BigInt(event.block.number),
+      });
       context.TokenMeta.set({ id: token, address: token, decimals: tMeta.decimals });
     }
   },
@@ -88,7 +94,11 @@ indexer.onEvent(
     ]);
 
     if (!state || !meta) {
-      const metaEffect = await context.effect(fetchBalancerMetadata, { pool: poolAddr, poolId });
+      const metaEffect = await context.effect(fetchBalancerMetadata, {
+        pool: poolAddr,
+        poolId,
+        blockNumber: BigInt(event.block.number),
+      });
       context.BalancerPoolState.set({
         id: poolAddr,
         address: poolAddr,

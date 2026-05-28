@@ -14,7 +14,7 @@ import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
-import { IncrementalGraphUpdater } from "../services/strategy/graph_incremental.ts";
+import { IncrementalGraphUpdater } from "../pipeline/graph_incremental.ts";
 import { type Metrics } from "../core/types/metrics.ts";
 import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";

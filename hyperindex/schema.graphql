@@ -32,6 +32,7 @@ type V3PoolState {
   liquidity: BigInt!
   tick: Int!
   fee: Int
+  tickSpacing: Int # Added for arbitrage math parity with V4PoolState
 }
 
 type V4PoolState {

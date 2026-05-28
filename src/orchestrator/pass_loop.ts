@@ -8,7 +8,8 @@ import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
 import { privateKeyToAccount } from "viem/accounts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
-import type { PassLoopDeps } from "./loop.ts";
+import type { PassLoopDeps } from "./loop.ts"; // see loop.ts for history of the (now-removed) duplicated runPipeline extraction
+import { toBigInt } from "../core/utils/bigint.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -236,8 +237,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // Force-refresh state via RPC for ALL pools — HyperIndex data may be
         // stale (from an older indexed block) and is now only used for pools
         // without existing state. RPC gives us current on-chain prices.
-        const poolCycles = pools.map((p) => ({ edges: [{ poolAddress: p.address }] }) as any);
-        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, poolCycles, true, ctx.hyperSync);
+        // (currentCycles is ignored on forceRefresh; we use the real `pools` list directly)
+        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true, ctx.hyperSync);
         // (return value ignored on full refresh; we still want full rate recompute)
 
         // Re-calculate MATIC rates for all tokens (full refresh path — start fresh)
@@ -257,7 +258,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
               const state = stateCache.get(addr);
               if (!state) return false; // Exclude if no state
-              const liq = BigInt(state.liquidity as any || 0n);
+              const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
+              const liq = toBigInt(rawLiq, 0n);
               if (liq < ctx.config.execution.minLiquidityV3Rate) {
                 if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
                   ctx.logger.debug({ addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() }, "Specifically filtered 0x56ff");

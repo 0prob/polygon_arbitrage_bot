@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { IncrementalGraphUpdater } from "./graph_incremental.ts";
-import { buildGraph, type RoutingGraph } from "./graph.ts";
-import type { PoolMeta } from "../../core/types/pool.ts";
-import type { Address } from "../../core/types/common.ts";
+import { buildGraph } from "./graph.ts";
+import type { RoutingGraph } from "./types.ts";
+import type { PoolMeta } from "../core/types/pool.ts";
+import type { Address } from "../core/types/common.ts";
 
 function makePool(addr: string, protocol: string, tokens: string[], fee?: number): PoolMeta {
   return {

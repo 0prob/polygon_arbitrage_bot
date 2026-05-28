@@ -1,16 +1,29 @@
 name: arb_bot_ingestion
-description: "High-performance DEX indexing for arbitrage opportunities"
+description: "High-performance DEX indexing for arbitrage opportunities (Polygon-optimized)"
 # Best practice (2026 docs): Keep reorg support enabled in production for safety.
 # HyperIndex handles rollbacks automatically when enabled.
 rollback_on_reorg: true
 raw_events: false
-full_batch_size: 5000   # Tune based on workload; higher for faster historical sync on low-volume chains
+# Polygon optimization: 4000-8000 is a good range for Polygon (high log volume from many DEXes).
+# Higher values speed up historical backfills but increase per-batch memory/CPU usage.
+full_batch_size: 6000
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).
+#
+# Single-chain Polygon configuration (Katana removed).
+#
+# Effects (token metadata, Balancer/Curve/DODO reads) use a centralized batched RPC client.
+# For best free-tier experience, set POLYGON_RPC_URL to one of:
+#   - Alchemy (free tier, best batching)   → https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY
+#   - LlamaRPC (excellent free, no key)    → https://polygon.llamarpc.com
+#   - PublicNode (free, no key)            → https://polygon-bor-rpc.publicnode.com
+#
+# If POLYGON_RPC_URL is not set, the indexer defaults to LlamaRPC.
 chains:
   - id: 137
     # With HyperSync, start_block: 0 is safe and lets it auto-detect contract deployment.
+    # Per-contract start_block overrides below are tuned to each protocol's deployment block on Polygon.
     start_block: ${POLYGON_START_BLOCK:-0}
     hypersync_config:
       url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
@@ -160,44 +173,5 @@ chains:
         handler: src/handlers/dodo_pool.ts
         events:
           - event: Sync
-            field_selection:
-              transaction_fields: ["hash"]
-
-  - id: 747474
-    start_block: ${KATANA_START_BLOCK:-0}
-    hypersync_config:
-      url: ${KATANA_HYPERSYNC_URL:-https://katana.hypersync.xyz}
-    contracts:
-      - name: SushiV2Factory
-        address: "0x72d111b4d6f31b38919ae39779f570b747d6acd9"
-        abi_file_path: abis/uniswap_v2_factory.json
-        handler: src/handlers/katana/v2_factory.ts
-        events:
-          - event: PairCreated
-            field_selection:
-              transaction_fields: ["hash"]
-      - name: KatanaV2Pool
-        abi_file_path: abis/uniswap_v2_pool.json
-        handler: src/handlers/katana/v2_pool.ts
-        events:
-          - event: Sync
-            field_selection:
-              transaction_fields: ["hash"]
-      - name: SushiV3Factory
-        address: "0x203e8740894c8955cB8950759876d7E7E45E04c1"
-        abi_file_path: abis/uniswap_v3_factory.json
-        handler: src/handlers/katana/v3_factory.ts
-        events:
-          - event: PoolCreated
-            field_selection:
-              transaction_fields: ["hash"]
-      - name: KatanaV3Pool
-        abi_file_path: abis/uniswap_v3_pool.json
-        handler: src/handlers/katana/v3_pool.ts
-        events:
-          - event: Swap
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: Initialize
             field_selection:
               transaction_fields: ["hash"]

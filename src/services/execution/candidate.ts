@@ -1,13 +1,18 @@
 import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "./builder.ts";
 import type { CandidateExecution } from "./service.ts";
-import type { PipelineResult } from "../strategy/pipeline.ts";
+import type { PipelineResult } from "../../pipeline/index.ts";
 import type { RouteStateCache } from "../../core/types/route.ts";
 
 export type ProfitableResult = PipelineResult["profitable"][number];
 
 export interface CandidateBuilderOptions {
   slippageBps: number;
-  flashLoanSource?: "BALANCER" | "AAVE_V3";
+  /**
+   * Flash loan source — required. The bot executes 100% of arbs via flash loans (Balancer/Aave).
+   * This value flows from config -> orchestrator -> candidate builder -> calldata.
+   * amountIn = exact flash borrow size for the entire route.
+   */
+  flashLoanSource: "BALANCER" | "AAVE_V3";
   stateCache?: RouteStateCache;
 }
 

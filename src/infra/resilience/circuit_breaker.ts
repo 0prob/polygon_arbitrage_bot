@@ -38,7 +38,10 @@ export class CircuitBreaker {
   async execute<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
     if (this.state === "open") {
       if (!this.isCooldownExpired()) {
-        return this.reject(fallback);
+        // Circuit is open and still cooling — use fallback if provided, otherwise throw.
+        // (Avoiding a `never` return here prevents nasty control-flow type pollution downstream.)
+        if (fallback) return await fallback();
+        throw new Error(`Circuit breaker '${this.name}' is open (cooldown ${this.msUntilCooldown()}ms remaining)`);
       }
       this.state = "half-open";
       this.consecutiveSuccesses = 0;
@@ -50,14 +53,9 @@ export class CircuitBreaker {
       return result;
     } catch (err) {
       this.onFailure();
-      if (fallback) return fallback();
+      if (fallback) return await fallback();
       throw err;
     }
-  }
-
-  private reject<T>(fallback?: () => Promise<T>): never {
-    if (fallback) return fallback() as never;
-    throw new Error(`Circuit breaker '${this.name}' is open (cooldown ${this.msUntilCooldown()}ms remaining)`);
   }
 
   private onSuccess(): void {

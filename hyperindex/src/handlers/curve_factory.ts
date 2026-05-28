@@ -16,7 +16,7 @@ indexer.onEvent(
     const existing = await context.PoolMeta.get(pool);
     if (existing) return;
 
-    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4 });
+    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4, blockNumber: BigInt(event.block.number) });
 
     const feeBps = meta.fee > 0n ? Number(meta.fee / 10n ** 16n) : 1;
 
@@ -43,7 +43,10 @@ indexer.onEvent(
     });
 
     for (const coin of meta.coins) {
-      const coinMeta = await context.effect(fetchTokenMeta, { address: coin });
+      const coinMeta = await context.effect(fetchTokenMeta, {
+        address: coin,
+        blockNumber: BigInt(event.block.number),
+      });
       context.TokenMeta.set({ id: coin, address: coin, decimals: coinMeta.decimals });
     }
   },

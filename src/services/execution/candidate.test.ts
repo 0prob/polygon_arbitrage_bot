@@ -30,7 +30,7 @@ describe("CandidateBuilder", () => {
       fromAddress: "0x5555555555555555555555555555555555555555",
     };
 
-    const candidate = buildExecutionCandidate(profitable, config, { slippageBps: 50 });
+    const candidate = buildExecutionCandidate(profitable, config, { slippageBps: 50, flashLoanSource: "BALANCER" });
     expect(candidate.targetAddress).toBeDefined();
     expect(candidate.calldata).toBeDefined();
     expect(candidate.routeKey).toBeDefined();
@@ -67,7 +67,7 @@ describe("CandidateBuilder", () => {
       fromAddress: "0x5555555555555555555555555555555555555555",
     };
 
-    const candidate = buildExecutionCandidate(profitable, config, { slippageBps: 50 });
+    const candidate = buildExecutionCandidate(profitable, config, { slippageBps: 50, flashLoanSource: "BALANCER" });
     // tokenInIdx: 2 -> 0x...02
     // tokenOutIdx: 0 -> 0x...00
     expect(candidate.calldata).toContain("0000000000000000000000000000000000000000000000000000000000000002");

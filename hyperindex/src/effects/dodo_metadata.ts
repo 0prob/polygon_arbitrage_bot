@@ -1,17 +1,6 @@
 import { createEffect, S } from "envio";
-import { createPublicClient, http, parseAbi } from "viem";
-import { polygon } from "viem/chains";
-
-const client = createPublicClient({
-  chain: polygon,
-  transport: http(process.env.POLYGON_RPC_URL!, {
-    batch: { batchSize: 100 },
-    timeout: 10_000,
-  }),
-  batch: {
-    multicall: { wait: 16, batchSize: 100 },
-  },
-});
+import { parseAbi } from "viem";
+import { publicClient } from "./rpc_client";
 
 const DODO_ABI = parseAbi([
   "function _I_() view returns (uint256)",
@@ -25,10 +14,16 @@ const DODO_ABI = parseAbi([
   "function _MT_FEE_RATE_() view returns (uint256)",
 ]);
 
+/**
+ * DODO V2 pool metadata. DODO has many small pools — keep rate limits low.
+ */
 export const fetchDodoMetadata = createEffect(
   {
     name: "fetchDodoMetadata",
-    input: { pool: S.string },
+    input: {
+      pool: S.string,
+      blockNumber: S.optional(S.bigint),
+    },
     output: {
       i: S.bigint,
       k: S.bigint,
@@ -41,30 +36,62 @@ export const fetchDodoMetadata = createEffect(
       lpFeeRate: S.bigint,
       mtFeeRate: S.bigint,
     },
-    rateLimit: { calls: 100, per: "second" },
+    rateLimit: { calls: 10, per: "second" }, // Many small pools — protect free providers
     cache: true,
   },
-  async ({ input }) => {
+  async ({ input, context }) => {
     try {
       const address = input.pool as `0x${string}`;
+      const opts = input.blockNumber ? { blockNumber: input.blockNumber } : undefined;
+
       const [i, k, b, q, b0, q0, r, lp, mt] = await Promise.all([
-        client.readContract({ address, abi: DODO_ABI, functionName: "_I_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_K_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_BASE_RESERVE_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_QUOTE_RESERVE_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_BASE_TARGET_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_QUOTE_TARGET_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_R_STATUS_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_LP_FEE_RATE_" }),
-        client.readContract({ address, abi: DODO_ABI, functionName: "_MT_FEE_RATE_" }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_I_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_K_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_BASE_RESERVE_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_QUOTE_RESERVE_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_BASE_TARGET_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_QUOTE_TARGET_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_R_STATUS_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_LP_FEE_RATE_", ...opts }),
+        publicClient.readContract({ address, abi: DODO_ABI, functionName: "_MT_FEE_RATE_", ...opts }),
       ]);
-      return { 
-        i, k, baseReserve: b, quoteReserve: q, baseTarget: b0, quoteTarget: q0, 
-        rStatus: Number(r), fee: (lp as bigint) + (mt as bigint),
-        lpFeeRate: lp as bigint, mtFeeRate: mt as bigint,
+
+      if (context.log) {
+        context.log.info("Fetched DODO pool metadata", { pool: input.pool });
+      }
+
+      return {
+        i,
+        k,
+        baseReserve: b,
+        quoteReserve: q,
+        baseTarget: b0,
+        quoteTarget: q0,
+        rStatus: Number(r),
+        fee: (lp as bigint) + (mt as bigint),
+        lpFeeRate: lp as bigint,
+        mtFeeRate: mt as bigint,
       };
-    } catch {
-      return { i: 0n, k: 0n, baseReserve: 0n, quoteReserve: 0n, baseTarget: 0n, quoteTarget: 0n, rStatus: 0, fee: 0n, lpFeeRate: 0n, mtFeeRate: 0n };
+    } catch (err) {
+      if (context.log) {
+        context.log.warn("Failed to fetch DODO metadata", {
+          pool: input.pool,
+          error: String(err),
+        });
+      }
+      context.cache = false;
+      return {
+        i: 0n,
+        k: 0n,
+        baseReserve: 0n,
+        quoteReserve: 0n,
+        baseTarget: 0n,
+        quoteTarget: 0n,
+        rStatus: 0,
+        fee: 0n,
+        lpFeeRate: 0n,
+        mtFeeRate: 0n,
+      };
     }
   },
 );

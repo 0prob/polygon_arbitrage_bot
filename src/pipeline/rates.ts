@@ -1,5 +1,6 @@
 import { WMATIC } from "../config/addresses.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
+import { toBigInt } from "../core/utils/bigint.ts";
 
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
@@ -102,8 +103,8 @@ export function computeMaticRates(
           let knownValueMatic = 0n;
 
           if (protocol.includes("v2")) {
-            const r0 = BigInt(state.reserve0 as any || 0n);
-            const r1 = BigInt(state.reserve1 as any || 0n);
+            const r0 = toBigInt(state.reserve0, 0n);
+            const r1 = toBigInt(state.reserve1, 0n);
             const rKnown = knownIdx === 0 ? r0 : r1;
             const rUnknown = unknownIdx === 0 ? r0 : r1;
             knownValueMatic = (knownRate * rKnown) / RATE_PRECISION;
@@ -111,8 +112,8 @@ export function computeMaticRates(
               newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-            const sq = BigInt(state.sqrtPriceX96 as any || 0n);
-            const liq = BigInt(state.liquidity as any || 0n);
+            const sq = toBigInt(state.sqrtPriceX96, 0n);
+            const liq = toBigInt(state.liquidity, 0n);
             
             // Require some liquidity for rate propagation
             if (liq < minLiquidityV3) {
@@ -148,8 +149,8 @@ export function computeMaticRates(
               newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
             }
           } else if (protocol.includes("dodo")) {
-            const b = BigInt(state.baseReserve as any || state.reserve0 as any || 0n);
-            const q = BigInt(state.quoteReserve as any || state.reserve1 as any || 0n);
+            const b = toBigInt(state.baseReserve ?? state.reserve0, 0n);
+            const q = toBigInt(state.quoteReserve ?? state.reserve1, 0n);
             if (b > 0n && q > 0n) {
               const rKnown = knownIdx === 0 ? b : q;
               const rUnknown = unknownIdx === 0 ? b : q;
@@ -157,7 +158,7 @@ export function computeMaticRates(
               newRate = (knownRate * rKnown) / rUnknown;
             }
           } else if (protocol.includes("woofi")) {
-            const rawPrice = BigInt(state.price as any || 0n);
+            const rawPrice = toBigInt(state.price, 0n);
             if (rawPrice > 0n) {
               const balances = state.balances as bigint[] | undefined;
               if (balances && balances[knownIdx] > 0n) {
@@ -190,8 +191,8 @@ export function computeMaticRates(
 
           // DEPTH CHECK: If the pool price ratio is extreme, it's likely a dead/broken pool.
           if (protocol.includes("v2")) {
-            const r0 = BigInt(state.reserve0 as any || 0n);
-            const r1 = BigInt(state.reserve1 as any || 0n);
+            const r0 = toBigInt(state.reserve0, 0n);
+            const r1 = toBigInt(state.reserve1, 0n);
             if (r0 > 0n && r1 > 0n) {
               const ratio = r0 > r1 ? r0 / r1 : r1 / r0;
               if (ratio > 10n ** 12n) {
@@ -237,8 +238,8 @@ export function computeMaticRates(
       const protocol = pool.protocol.toLowerCase();
       try {
         if (protocol.includes("v2")) {
-          const r0 = BigInt((state as any).reserve0 || 0);
-          const r1 = BigInt((state as any).reserve1 || 0);
+          const r0 = toBigInt((state as Record<string, unknown>).reserve0, 0n);
+          const r1 = toBigInt((state as Record<string, unknown>).reserve1, 0n);
           if (r0 > 0n && r1 > 0n) {
             const knownRate = rates.get(known)!;
             const kIdx = tokens.indexOf(known);
@@ -246,7 +247,7 @@ export function computeMaticRates(
             if (newRate > 0n) rates.set(unknown, newRate);
           }
         } else if (protocol.includes("v3") || protocol.includes("v4")) {
-          const sq = BigInt((state as any).sqrtPriceX96 || 0);
+          const sq = toBigInt((state as Record<string, unknown>).sqrtPriceX96, 0n);
           if (sq > 0n) {
             const knownRate = rates.get(known)!;
             const kIdx = tokens.indexOf(known);

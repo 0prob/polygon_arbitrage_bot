@@ -1,6 +1,11 @@
 import type { Address } from "./common.ts";
 import type { ArbPath, RouteSimulationResult } from "./route.ts";
 
+/**
+ * Execution is exclusively flash-loan based.
+ * FlashLoanSource selects the provider + fee model used in profit assessment and calldata.
+ * No other funding mechanisms are implemented or supported.
+ */
 export enum FlashLoanSource {
   BALANCER = "BALANCER",
   AAVE_V3 = "AAVE_V3",
@@ -11,6 +16,7 @@ export interface ProfitAssessment {
   grossProfit: bigint;
   gasCostWei: bigint;
   gasCostInTokens: bigint;
+  /** Flash loan fee in token units (always computed; architecture has no non-flash path) */
   flashLoanFee: bigint;
   slippageDeduction: bigint;
   revertPenalty: bigint;

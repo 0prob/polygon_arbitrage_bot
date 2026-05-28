@@ -30,7 +30,7 @@ describe("builder", () => {
   };
 
   it("should build a simple arb transaction", () => {
-    const tx = buildArbTx(route, config);
+    const tx = buildArbTx(route, config, { flashLoanSource: "BALANCER" });
     expect(tx).toBeDefined();
     expect(tx.to).toBe(config.executorAddress);
     expect(tx.data).toBeDefined();

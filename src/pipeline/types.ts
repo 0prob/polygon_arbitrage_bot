@@ -41,7 +41,8 @@ export interface PipelineOptions {
   tokenMetas?: Map<string, { decimals: number }>;
   slippageBps?: bigint;
   revertRiskBps?: bigint;
-  flashLoanSource?: FlashLoanSource;
+  /** Flash loan source — required because the entire arbitrage architecture is flash-loan dependent (no capital-backed paths exist). amountIn in simulations is the flash principal. */
+  flashLoanSource: FlashLoanSource;
   ternarySearchIterations?: number;
   maxPriceImpactThreshold?: number;
   concurrency?: number;

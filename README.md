@@ -1,6 +1,10 @@
 # Polygon Arb Bot
 
-High-frequency arbitrage bot for Polygon (chain 137). Uses flash loans (Balancer V2 / Aave V3) to execute triangular and multi-hop arbitrage across 12+ DEX protocols.
+High-frequency arbitrage bot for Polygon (chain 137). **Strictly flash-loan dependent** for all arbitrage: the `ArbExecutor` contract (Balancer V2 + Aave V3 flash paths) performs atomic borrow → multi-hop swaps → repay + profit extraction. No capital-backed or wallet-funded execution paths exist in the architecture or contracts.
+
+- Simulation `amountIn` values are the precise flash principal sizes.
+- Profit math always deducts the configured flash fee (0 bps Balancer, 5 bps Aave on Polygon).
+- On-chain: `executeArb` / `executeArbWithAave` both require `flashAmount > 0` and enforce flash-only callbacks (`FlashLoanRequired`, `FlashLoanOnly` errors).
 
 ## Features
 

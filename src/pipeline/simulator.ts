@@ -8,7 +8,7 @@ import { simulateBalancerSwap } from "../core/math/balancer.ts";
 import { simulateDodoSwap } from "../core/math/dodo.ts";
 import { simulateWoofiSwap } from "../core/math/woofi.ts";
 import type { SwapEdge, SimulationEdge } from "./types.ts";
-import { TokenRegistry } from "../services/strategy/token_registry.ts";
+import { TokenRegistry } from "./token_registry.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 
 function normalizeProtocol(raw: string): string {
@@ -78,6 +78,7 @@ export function simulateRoute(
   amountIn: bigint,
   stateCache: RouteStateCache,
   tokenRegistry?: TokenRegistry,
+  prebuiltSimEdges?: SimulationEdge[],
 ): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
@@ -85,30 +86,23 @@ export function simulateRoute(
   const tokenPath: string[] = [];
   const protocols: string[] = [];
 
-  for (let i = 0; i < edges.length; i++) {
-    const edge = edges[i];
-    const poolAddr = edge.poolAddress.toLowerCase();
-    const state = stateCache.get(poolAddr) ?? edge.stateRef;
-    if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
 
-    const simEdge: SimulationEdge = {
-      poolAddress: poolAddr,
-      tokenIn: edge.tokenIn,
-      tokenOut: edge.tokenOut,
-      protocol: edge.protocol,
-      zeroForOne: edge.zeroForOne,
-      tokenInIdx: edge.tokenInIdx,
-      tokenOutIdx: edge.tokenOutIdx,
-      fee: edge.feeBps,
-      stateRef: state as PoolState,
-    };
+  for (let i = 0; i < simEdges.length; i++) {
+    const simEdge = simEdges[i];
+    if (!prebuiltSimEdges) {
+      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      if (!state || isInvalidState(state)) {
+        throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
+      }
+    }
 
     const hop = simulateHop(simEdge, hopAmounts[i], stateCache, tokenRegistry);
     hopAmounts.push(hop.amountOut);
     totalGas += hop.gasEstimate;
-    poolPath.push(edge.poolAddress);
-    tokenPath.push(edge.tokenIn);
-    protocols.push(edge.protocol);
+    poolPath.push(edges[i].poolAddress); // use original edges for original casing if needed
+    tokenPath.push(edges[i].tokenIn);
+    protocols.push(edges[i].protocol);
   }
 
   const amountOut = hopAmounts[hopAmounts.length - 1];
@@ -128,6 +122,77 @@ export function simulateRoute(
     protocols,
     hopCount: edges.length,
   };
+}
+
+/**
+ * Minimal simulation used during ternary search / amount probing.
+ * Avoids allocating hopAmounts, poolPath, tokenPath, protocols arrays.
+ * Only returns the numeric values needed for profit/grossMatic comparison.
+ * This is a major allocation reduction in the hot path (called 20-40x per cycle during search).
+ */
+export function simulateRouteMinimal(
+  edges: SwapEdge[],
+  amountIn: bigint,
+  stateCache: RouteStateCache,
+  tokenRegistry?: TokenRegistry,
+  prebuiltSimEdges?: SimulationEdge[],
+): { profit: bigint; totalGas: number; amountOut: bigint } {
+  let currentAmount = amountIn;
+  let totalGas = 0;
+
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+
+  for (let i = 0; i < simEdges.length; i++) {
+    const simEdge = simEdges[i];
+    // Basic validity check only if we built them ourselves (prebuilt are assumed valid)
+    if (!prebuiltSimEdges) {
+      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      if (!state || isInvalidState(state)) {
+        throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
+      }
+    }
+
+    const hop = simulateHop(simEdge, currentAmount, stateCache, tokenRegistry);
+    currentAmount = hop.amountOut;
+    totalGas += hop.gasEstimate;
+  }
+
+  const amountOut = currentAmount;
+  const profit = amountOut - amountIn;
+
+  return { profit, totalGas, amountOut };
+}
+
+/**
+ * Pre-builds SimulationEdge objects for a cycle once.
+ * This eliminates repeated object allocation inside every simulateRouteMinimal / simulateRoute call
+ * during ternary search (the dominant hot-path allocation source).
+ */
+export function buildSimulationEdges(
+  edges: SwapEdge[],
+  stateCache: RouteStateCache
+): SimulationEdge[] {
+  const simEdges: SimulationEdge[] = new Array(edges.length);
+
+  for (let i = 0; i < edges.length; i++) {
+    const edge = edges[i];
+    const poolAddr = edge.poolAddress.toLowerCase();
+    const state = stateCache.get(poolAddr) ?? edge.stateRef;
+
+    simEdges[i] = {
+      poolAddress: poolAddr,
+      tokenIn: edge.tokenIn,
+      tokenOut: edge.tokenOut,
+      protocol: edge.protocol,
+      zeroForOne: edge.zeroForOne,
+      tokenInIdx: edge.tokenInIdx,
+      tokenOutIdx: edge.tokenOutIdx,
+      fee: edge.feeBps,
+      stateRef: state as PoolState,
+    };
+  }
+
+  return simEdges;
 }
 
 export function getEffectivePriceImpact(

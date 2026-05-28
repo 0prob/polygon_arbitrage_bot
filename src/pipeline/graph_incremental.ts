@@ -1,6 +1,6 @@
-import type { RoutingGraph, SwapEdge } from "./graph.ts";
-import type { PoolMeta } from "../../core/types/pool.ts";
-import type { Address } from "../../core/types/common.ts";
+import type { RoutingGraph, SwapEdge } from "./types.ts";
+import type { PoolMeta } from "../core/types/pool.ts";
+import type { Address } from "../core/types/common.ts";
 
 const DEFAULT_FEE_BPS = 30n;
 

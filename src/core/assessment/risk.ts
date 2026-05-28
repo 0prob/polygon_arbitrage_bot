@@ -1,6 +1,7 @@
 import { FlashLoanSource } from "../types/execution.ts";
+import { BPS_DENOM } from "../constants.ts";
 
-export const BPS_DENOM = 10_000n;
+export { BPS_DENOM }; // re-export for consumers that imported it directly from here
 
 /** Revert risk in basis points, scaling with hop count. */
 export function revertRiskBps(hopCount: number, baseBps: bigint = 500n): bigint {

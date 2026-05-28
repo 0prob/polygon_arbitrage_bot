@@ -1,6 +1,13 @@
 import { getAddress } from "viem";
 import { encodeRoute, encodeExecuteArb, encodeExecuteArbWithAave, computeRouteHash, type ExecutorCall } from "./calldata/index.ts";
 
+/**
+ * Builds calldata for the flash-loan-only ArbExecutor.
+ * Every arb tx starts with a Balancer or Aave flash loan of exactly `route.result.amountIn`.
+ * There are no "fund from wallet" or "use contract balance" execution modes.
+ * The contract will reject flashAmount==0 with FlashLoanRequired().
+ */
+
 export interface BuilderEdgeInput {
   poolAddress: string;
   tokenIn: string;
@@ -41,6 +48,13 @@ export interface BuilderOptions {
   deadlineOffsetS?: number;
   slippageBps?: number;
   maxCalls?: number;
+  /**
+   * Flash loan provider for the calldata (encodeExecuteArb vs encodeExecuteArbWithAave).
+   * THE ARCHITECTURE IS STRICTLY FLASH-LOAN DEPENDENT: there are no capital-backed execution paths.
+   * The executor contract reverts with FlashLoanRequired / FlashLoanOnly if misused.
+   * amountIn in the input route/result is the exact flash principal size.
+   * Production callers must supply this; default exists only for tests.
+   */
   flashLoanSource?: "BALANCER" | "AAVE_V3";
 }
 

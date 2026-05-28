@@ -1,17 +1,6 @@
 import { createEffect, S } from "envio";
-import { createPublicClient, http, parseAbi } from "viem";
-import { polygon } from "viem/chains";
-
-const client = createPublicClient({
-  chain: polygon,
-  transport: http(process.env.POLYGON_RPC_URL!, {
-    batch: { batchSize: 100 },
-    timeout: 10_000,
-  }),
-  batch: {
-    multicall: { wait: 16, batchSize: 100 },
-  },
-});
+import { parseAbi } from "viem";
+import { publicClient } from "./rpc_client";
 
 const CURVE_ABI = parseAbi([
   "function A() view returns (uint256)",
@@ -21,20 +10,40 @@ const CURVE_ABI = parseAbi([
   "function rates(uint256 i) view returns (uint256)",
 ]);
 
+/**
+ * Curve pool metadata. These calls are relatively heavy (multiple reads per pool).
+ * Rate limit is intentionally low to stay within free tier limits.
+ */
 export const fetchCurveMetadata = createEffect(
   {
     name: "fetchCurveMetadata",
-    input: { pool: S.string, nCoins: S.number },
-    output: { A: S.bigint, fee: S.bigint, balances: S.array(S.bigint), coins: S.array(S.string), rates: S.array(S.bigint) },
-    rateLimit: { calls: 100, per: "second" },
+    input: {
+      pool: S.string,
+      nCoins: S.number,
+      blockNumber: S.optional(S.bigint),
+    },
+    output: {
+      A: S.bigint,
+      fee: S.bigint,
+      balances: S.array(S.bigint),
+      coins: S.array(S.string),
+      rates: S.array(S.bigint),
+    },
+    rateLimit: { calls: 6, per: "second" }, // Curve is expensive — protect free RPCs
     cache: true,
   },
-  async ({ input }) => {
+  async ({ input, context }) => {
     try {
       const pool = input.pool as `0x${string}`;
+      const opts = input.blockNumber ? { blockNumber: input.blockNumber } : undefined;
+
       const [A, fee, ...all] = await Promise.all([
-        client.readContract({ address: pool, abi: CURVE_ABI, functionName: "A" }).catch(() => 0n),
-        client.readContract({ address: pool, abi: CURVE_ABI, functionName: "fee" }).catch(() => 0n),
+        publicClient
+          .readContract({ address: pool, abi: CURVE_ABI, functionName: "A", ...opts })
+          .catch(() => 0n),
+        publicClient
+          .readContract({ address: pool, abi: CURVE_ABI, functionName: "fee", ...opts })
+          .catch(() => 0n),
         ...Array.from({ length: input.nCoins * 3 }, (_, i) => {
           let fn: "balances" | "coins" | "rates";
           let arg: bigint;
@@ -48,7 +57,9 @@ export const fetchCurveMetadata = createEffect(
             fn = "rates";
             arg = BigInt(i - input.nCoins * 2);
           }
-          return client.readContract({ address: pool, abi: CURVE_ABI, functionName: fn, args: [arg] }).catch(() => 10n ** 18n);
+          return publicClient
+            .readContract({ address: pool, abi: CURVE_ABI, functionName: fn, args: [arg], ...opts })
+            .catch(() => 10n ** 18n);
         }),
       ]);
 
@@ -61,8 +72,19 @@ export const fetchCurveMetadata = createEffect(
         rates.push(BigInt(all[i + input.nCoins * 2] as bigint));
       }
 
+      if (context.log) {
+        context.log.info("Fetched Curve pool metadata", { pool: input.pool, nCoins: input.nCoins });
+      }
+
       return { A: A as bigint, fee: fee as bigint, balances, coins, rates };
-    } catch {
+    } catch (err) {
+      if (context.log) {
+        context.log.warn("Failed to fetch Curve metadata", {
+          pool: input.pool,
+          error: String(err),
+        });
+      }
+      context.cache = false;
       return { A: 100n, fee: 0n, balances: [], coins: [], rates: [] };
     }
   },

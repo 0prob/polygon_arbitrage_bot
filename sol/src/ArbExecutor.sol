@@ -1,6 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.34;
 
+/**
+ * @title ArbExecutor
+ * @notice Flash-loan-only arbitrage executor.
+ *         All arbitrage is performed using atomic Balancer V2 or Aave V3 flash loans.
+ *         There is no support for pre-funded capital, contract balance usage as principal,
+ *         or non-flash execution. Both entrypoints (executeArb / executeArbWithAave) require
+ *         flashAmount > 0 and will revert with FlashLoanRequired otherwise.
+ *         Callbacks enforce that repayment happens inside the flash context (FlashLoanOnly).
+ *
+ *         The bot TS architecture mirrors this: amountIn from cycle simulation == flash principal.
+ */
+
 interface IERC20Minimal {
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);

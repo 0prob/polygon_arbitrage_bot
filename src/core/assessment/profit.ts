@@ -5,6 +5,13 @@ import { FlashLoanSource } from "../types/execution.ts";
 import type { ProfitAssessment } from "../types/execution.ts";
 
 /**
+ * Profit & risk assessment for flash-loan-only arbitrage.
+ * The bot has no capital-backed execution mode. Every profitable cycle is funded 100%
+ * by a flash loan (Balancer or Aave). The `amountIn` passed here is the flash principal,
+ * and `flashLoanFee` is *always* subtracted before gas-adjusted profitability is decided.
+ */
+
+/**
  * Convert a token-denominated amount to MATIC wei using an oracle rate.
  *
  * `tokenToMaticRate` is the number of MATIC wei equivalent to 1 unit (smallest denomination)
@@ -62,8 +69,8 @@ export interface ComputeProfitOptions {
   slippageBps?: bigint;
   /** Base revert risk in basis points */
   revertRiskBps?: bigint;
-  /** Flash loan source for fee calculation */
-  flashLoanSource?: FlashLoanSource;
+  /** Flash loan source for fee calculation (required). Architecture is strictly flash-loan-only for all arbitrage; amountIn == flash principal borrowed. */
+  flashLoanSource: FlashLoanSource;
   /** Override flash loan fee bps */
   flashLoanFeeBps?: bigint;
   /** Max ROI multiplier before rejection (defends against poisoned data) */
@@ -82,52 +89,20 @@ export interface ComputeProfitOptions {
  * for diagnostic purposes.
  */
 export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
+  const core = computeProfitCore(opts);
+
   const {
     grossProfitInTokens,
-    amountInTokens,
-    gasUnits,
-    gasPriceWei,
-    tokenToMaticRate,
-    hopCount,
+    amountInTokens: _amountInTokensUnusedInPublicWrapper,
     minProfitMaticWei,
-    slippageBps = 50n,
-    revertRiskBps: baseRiskBps = 500n,
-    flashLoanSource = FlashLoanSource.BALANCER,
-    flashLoanFeeBps,
     roiSafetyCap = 10.0,
   } = opts;
 
-  if (tokenToMaticRate <= 0n) {
-    return invalidAssessment(grossProfitInTokens, "tokenToMaticRate must be > 0 (oracle cold?)");
-  }
+  const { netProfitInTokens, gasCostWei, netProfitAfterGasMaticWei, gasCostInTokens, netProfitAfterGasInTokens, roi, flashFee, slippage, revert } = core;
 
-  // Compute deductions in token units (consistent with grossProfit)
-  const slippage = slippageDeduction(grossProfitInTokens, slippageBps);
-  const revert = revertPenalty(grossProfitInTokens, hopCount, baseRiskBps);
-  const flashFee = flashLoanFee(amountInTokens, flashLoanSource, flashLoanFeeBps);
-
-  // Net profit in token units, before gas
-  const netProfitInTokens = grossProfitInTokens - slippage - revert - flashFee;
-
-  // Gas cost in MATIC wei (the native chain unit)
-  const gasCostWei = gasCostMaticWei(gasUnits, gasPriceWei);
-
-  // Convert net profit (in tokens) to MATIC wei using oracle rate
-  const netProfitMaticWei = tokensToMaticWei(netProfitInTokens > 0n ? netProfitInTokens : 0n, tokenToMaticRate);
-
-  // Net profit after gas, in MATIC wei -- THIS is the canonical profitability metric
-  const netProfitAfterGasMaticWei = netProfitMaticWei - gasCostWei;
-
-  // For backward compatibility with consumers expecting token-unit values
-  const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);
-  const netProfitAfterGasInTokens = netProfitInTokens - gasCostInTokens;
-
-  const roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
-  
   let shouldExecute = netProfitAfterGasMaticWei >= minProfitMaticWei;
   let rejectReason: string | undefined;
 
-  // ROI Sanity Check: Defend against poisoned data/simulation anomalies
   if (roi > (roiSafetyCap * 1_000_000)) {
     shouldExecute = false;
     rejectReason = `ROI outlier detected: ${roi / 1_000_000}x exceeds safety cap (${roiSafetyCap}x)`;
@@ -159,19 +134,80 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   return result;
 }
 
-function invalidAssessment(grossProfit: bigint, reason: string): ProfitAssessment {
+/**
+ * Numeric-only core of profit calculation.
+ * Used by hot-path ternary search probes to avoid allocating a full ProfitAssessment
+ * on every single evaluation (major allocation win during amount optimization).
+ */
+export interface ProfitCoreNumbers {
+  netProfitInTokens: bigint;
+  gasCostWei: bigint;
+  netProfitMaticWei: bigint;
+  netProfitAfterGasMaticWei: bigint;
+  gasCostInTokens: bigint;
+  netProfitAfterGasInTokens: bigint;
+  roi: number;
+  flashFee: bigint;
+  slippage: bigint;
+  revert: bigint;
+}
+
+export function computeProfitCore(opts: ComputeProfitOptions): ProfitCoreNumbers {
+  const {
+    grossProfitInTokens,
+    amountInTokens: _amountInTokens, // only needed for flash fee in full path
+    gasUnits,
+    gasPriceWei,
+    tokenToMaticRate,
+    hopCount,
+    slippageBps = 50n,
+    revertRiskBps: baseRiskBps = 500n,
+    flashLoanSource,
+    flashLoanFeeBps,
+  } = opts;
+
+  if (tokenToMaticRate <= 0n) {
+    // Return zeros for search safety (search will treat this as unprofitable)
+    return {
+      netProfitInTokens: 0n,
+      gasCostWei: 0n,
+      netProfitMaticWei: 0n,
+      netProfitAfterGasMaticWei: -1n,
+      gasCostInTokens: 0n,
+      netProfitAfterGasInTokens: 0n,
+      roi: 0,
+      flashFee: 0n,
+      slippage: 0n,
+      revert: 0n,
+    };
+  }
+
+  const slippage = slippageDeduction(grossProfitInTokens, slippageBps);
+  const revert = revertPenalty(grossProfitInTokens, hopCount, baseRiskBps);
+  const flashFee = flashLoanFee(_amountInTokens, flashLoanSource, flashLoanFeeBps);
+
+  const netProfitInTokens = grossProfitInTokens - slippage - revert - flashFee;
+  const gasCostWei = gasCostMaticWei(gasUnits, gasPriceWei);
+  const netProfitMaticWei = tokensToMaticWei(netProfitInTokens > 0n ? netProfitInTokens : 0n, tokenToMaticRate);
+  const netProfitAfterGasMaticWei = netProfitMaticWei - gasCostWei;
+
+  const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);
+  const netProfitAfterGasInTokens = netProfitInTokens - gasCostInTokens;
+
+  const roi = roiMicroUnits(netProfitAfterGasInTokens, _amountInTokens);
+
   return {
-    shouldExecute: false,
-    grossProfit,
-    gasCostWei: 0n,
-    gasCostInTokens: 0n,
-    flashLoanFee: 0n,
-    slippageDeduction: 0n,
-    revertPenalty: 0n,
-    netProfit: 0n,
-    netProfitAfterGas: 0n,
-    netProfitAfterGasMaticWei: 0n,
-    roi: 0,
-    rejectReason: reason,
+    netProfitInTokens,
+    gasCostWei,
+    netProfitMaticWei,
+    netProfitAfterGasMaticWei,
+    gasCostInTokens,
+    netProfitAfterGasInTokens,
+    roi,
+    flashFee,
+    slippage,
+    revert,
   };
 }
+
+// Note: invalidAssessment was removed after introducing computeProfitCore (no longer needed in hot path)
