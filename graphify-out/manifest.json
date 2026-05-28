@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
-    "mtime": 1779968484.5876055,
-    "ast_hash": "12e05d432ab7c8c941fdac617ce66e63",
+    "mtime": 1780000078.4497077,
+    "ast_hash": "ceb280507757334d8a886ab5a402f4d7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_pool.ts": {
@@ -135,8 +135,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_pool.ts": {
-    "mtime": 1779968498.35548,
-    "ast_hash": "2fc172e064802a426f4892698ff07fe4",
+    "mtime": 1780000084.9656396,
+    "ast_hash": "ddcca808d1d36178a74df170df9b9002",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_factory.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779982384.8025887,
-    "ast_hash": "bd6b21673cfb3fde748a2d5b5c9fe9a3",
+    "mtime": 1780000094.6975377,
+    "ast_hash": "9b72b8d1b5ff841c0d0ea7db1695d321",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -685,8 +685,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/hyperindex_monitor.ts": {
-    "mtime": 1779982167.268753,
-    "ast_hash": "357e669a9979d1e8e0b456c6fb104080",
+    "mtime": 1780000107.153407,
+    "ast_hash": "c4e5b861f9384b54f20e0a7ab71d728b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/tier_manager.test.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1779971655.2574854,
-    "ast_hash": "138c029ffdcb6ca2279cc0826fa597e1",
+    "mtime": 1780000103.05745,
+    "ast_hash": "51b93a952c078919cfddc608bfb3be4c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {

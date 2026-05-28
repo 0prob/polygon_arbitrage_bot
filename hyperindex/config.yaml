@@ -29,7 +29,7 @@ raw_events: false
 # - Lower (2000-4000) → slower backfill, lower peak memory, more responsive to restarts/crashes.
 # Start at 8000-10000 for a full history sync with a paid HyperSync token. Drop if OOM or high GC.
 # The cache: true on all effects + the JS-side fee cache in v2/v3 handlers make repeated work cheap after warm-up.
-full_batch_size: 8000
+full_batch_size: 12000
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).

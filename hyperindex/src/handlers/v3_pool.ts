@@ -46,7 +46,6 @@ indexer.onEvent(
       return;
     }
 
-    const existing = await context.V3PoolState.get(poolId);
     context.V3PoolState.set({
       id: poolId,
       address: poolId,
@@ -54,8 +53,8 @@ indexer.onEvent(
       sqrtPriceX96: event.params.sqrtPriceX96,
       liquidity: 0n,
       tick: Number(event.params.tick),
-      fee: existing?.fee ?? cached.fee,
-      tickSpacing: existing?.tickSpacing ?? cached.tickSpacing,
+      fee: cached.fee,
+      tickSpacing: cached.tickSpacing,
     });
   },
 );
@@ -67,7 +66,6 @@ indexer.onEvent(
 
     const cached = getCachedMeta(poolId);
     if (cached && cached.fee !== undefined && cached.tickSpacing !== undefined) {
-      const existing = await context.V3PoolState.get(poolId);
       context.V3PoolState.set({
         id: poolId,
         address: poolId,
@@ -75,8 +73,8 @@ indexer.onEvent(
         sqrtPriceX96: event.params.sqrtPriceX96,
         liquidity: event.params.liquidity,
         tick: Number(event.params.tick),
-        fee: existing?.fee ?? cached.fee,
-        tickSpacing: existing?.tickSpacing ?? cached.tickSpacing,
+        fee: cached.fee,
+        tickSpacing: cached.tickSpacing,
       });
       return;
     }

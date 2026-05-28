@@ -34,14 +34,13 @@ indexer.onEvent(
     }
 
     // Fast path: fee known from cache, only need the mutable state row (or create fresh)
-    const existing = await context.V2PoolState.get(poolId);
     context.V2PoolState.set({
       id: poolId,
       address: poolId,
       lastUpdatedBlock: Number(event.block.number),
       reserve0: event.params.reserve0,
       reserve1: event.params.reserve1,
-      fee: existing?.fee ?? fee,
+      fee,
     });
   },
 );
