@@ -2,17 +2,20 @@ import { createPublicClient, http, fallback, type PublicClient, type HttpTranspo
 import { polygon } from "viem/chains";
 
 /**
- * Centralized RPC client for all effects.
+ * Centralized RPC client for all effects (token decimals, Curve/Balancer/DODO metadata, etc.).
  *
- * Supports comma-separated POLYGON_RPC_URLS (or POLYGON_RPC_URL) from .env.
- * Endpoints from .env are used (with internal fallback) before falling back to
- * a default free public RPC. Non-supporting endpoints (e.g. lacking archival
- * historical eth_call for decimals() etc) should be removed upstream before
- * being passed here.
+ * Supports comma-separated POLYGON_RPC_URLS (preferred) or POLYGON_RPC_URL from .env.
+ * .env endpoints (after archival probe filtering upstream) are used with viem fallback().
+ * Only falls back to a default free public RPC when nothing usable was provided.
  *
- * Recommended (prioritize ones with good archival + batch support):
- *   1. Your paid Alchemy/QuickNode/etc (set in main .env as POLYGON_RPC_URLS)
- *   2. LlamaRPC, PublicNode, etc (free public last resort)
+ * The effect rateLimits (in the metadata effects) are now raised for pay-as-you-go
+ * Alchemy. The batch + multicall settings here keep the actual HTTP request rate
+ * much lower than the effect invocation rate.
+ *
+ * Recommended:
+ *   1. Alchemy pay-as-you-go (best for historical eth_call volume + multicall)
+ *   2. Other paid archival providers
+ *   3. Free public as last resort only
  */
 
 function getRpcUrls(): string[] {
@@ -28,13 +31,13 @@ function getRpcUrls(): string[] {
       .filter((u) => u.length > 0);
     if (list.length > 0) return list;
   }
-  // Only after no .env endpoints: default free public
-  return ["https://polygon.llamarpc.com"];
+  // Only after no .env endpoints: last-resort public free endpoint
+  return ["https://polygon-mainnet.g.alchemy.com/v2/kBkVBn4UiYwt-XNksk-AV"];
 }
 
-const BATCH_SIZE = 64;
-const MULTICALL_BATCH_SIZE = 64;
-const MULTICALL_WAIT_MS = 20;
+const BATCH_SIZE = 128;             // Higher with pay-as-you-go Alchemy
+const MULTICALL_BATCH_SIZE = 128;
+const MULTICALL_WAIT_MS = 10;         // Slightly more aggressive batching
 
 const rpcUrls = getRpcUrls();
 

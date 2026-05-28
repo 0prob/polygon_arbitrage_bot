@@ -228,12 +228,12 @@ describe("runPassLoop", () => {
     expect(mockExecute).toHaveBeenCalledTimes(2);
   });
 
-  it("calls findCycles with maxHops=4 on re-enumeration", async () => {
+  it("calls findCycles with configured maxHops (default 5) on re-enumeration", async () => {
     const mockContext = {
       config: {
         routing: {
           cycleRefreshIntervalMs: 0,
-          maxHops: 4,
+          maxHops: 5,
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },

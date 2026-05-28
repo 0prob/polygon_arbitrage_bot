@@ -1,5 +1,5 @@
 import type { RuntimeContext } from "./boot.ts";
-import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type RoutingGraph, buildGraph, evaluatePipeline, type PipelineOptions, ArbInstrumenter, fetchMissingPoolState, computeMaticRates, pruneFailedPools } from "../pipeline/index.ts";
+import { type FoundCycle, findCycles, enumerateCycles, routeKeyFromEdges, type RoutingGraph, buildGraph, evaluatePipeline, type PipelineOptions, ArbInstrumenter, fetchMissingPoolState, computeMaticRates, pruneFailedPools, averageObscurity } from "../pipeline/index.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
 import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
@@ -15,6 +15,36 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * LONG-TAIL / LOW-COMPETITION ARBITRAGE STRATEGY
+ * 
+ * Given minimal infrastructure (no custom nodes, no ultra-low-latency private relays
+ * on every path, standard public mempool visibility), the bot is structurally
+ * disadvantaged in head-to-head races on the hottest, most liquid pairs.
+ * 
+ * Core thesis:
+ * - Hot V3 2-hops on major pairs (Uni/Quick main pools) → extremely competitive,
+ *   narrow windows, dominated by latency + private orderflow bots.
+ * - Obscure V2 factories, DODO PMM pools, Balancer weighted/stable, many Curve pools,
+ *   and complex 3-4 hop cross-protocol paths → much lower bot density.
+ * 
+ * These areas reward:
+ *   - Correct multi-AMM modeling (this bot's strength)
+ *   - Good historical state (HyperIndex advantage)
+ *   - Willingness to take smaller but more reliable edges in thin markets
+ * 
+ * Implementation:
+ * - finder.ts applies strong negative adjustments to logWeight for cycles containing
+ *   high-obscurity protocols (dfyn/ape/mesh/jet/cometh V2s, DODO, Balancer, Curve, Woofi).
+ * - This naturally promotes long-tail cycles into the top candidates that get
+ *   deep ternary search + execution attempts.
+ * - The effect is amplified for 3/4-hop cycles.
+ * 
+ * Result: the limited simulation and execution budget is preferentially spent where
+ * this specific bot has a comparative advantage instead of being wasted losing
+ * latency wars on saturated paths.
+ */
+
 const instrumenter = new ArbInstrumenter();
 
 export const DEFAULT_DEPS: PassLoopDeps = {
@@ -28,6 +58,7 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   routeKeyFromEdges,
   buildExecutionCandidate,
   instrumenter,
+  averageObscurity: averageObscurity as any, // from finder (re-exported via pipeline)
 };
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
@@ -458,11 +489,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             });
 
             try {
+              // Low-competition relaxation:
+              // In obscure/long-tail paths the edge tends to persist longer and competition
+              // is lower, so we can afford slightly more slippage/revert risk to capture
+              // opportunities that stricter parameters would drop.
+              const avgObs = deps.averageObscurity ? deps.averageObscurity(profitable.cycle.edges) : 0;
+              const obscurityRelax = Math.min(1.0, Math.max(0, avgObs)) * 25; // up to +25 bps on high-obscurity
+
               const candidate = deps.buildExecutionCandidate(
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
                 {
-                  slippageBps: Number(options.slippageBps ?? 50n),
+                  slippageBps: Number(options.slippageBps ?? 50n) + Math.floor(obscurityRelax),
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
                   stateCache,
                 },

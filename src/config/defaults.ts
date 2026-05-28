@@ -29,7 +29,7 @@ export const DEFAULTS = {
     historySize: 20,
   },
   routing: {
-    maxHops: 4,
+    maxHops: 5, // Increased for more discovery potential in long-tail / obscure paths. Hardware/time guarded in finder.
     cycleRefreshIntervalMs: 1_000,
     liquidityFloorUsd: 100,
     enumerationMaxPaths: 1_000,

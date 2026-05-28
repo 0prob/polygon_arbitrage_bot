@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/env.d.ts": {
-    "mtime": 1779968104.1628556,
-    "ast_hash": "13c3cd6eb6bb48e54f2cbb2a79398321",
+    "mtime": 1779971652.6215162,
+    "ast_hash": "33641c1629d4561bfb05fdc37cfe0a47",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/package.json": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1779968506.2794075,
-    "ast_hash": "56009cf04a21d23126268a1b8ab8ce71",
+    "mtime": 1779971272.7619812,
+    "ast_hash": "e164d03910a6939d54cea8f4ed48f272",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -630,8 +630,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/client_factory.ts": {
-    "mtime": 1779879980.4021454,
-    "ast_hash": "199691592603ffc0aaa1548491c19f70",
+    "mtime": 1779971680.6691885,
+    "ast_hash": "c32fdc6da64e455c3724de5dfc48dbc4",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/websocket_subscriber.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1779962975.6139452,
-    "ast_hash": "ddbd294c16bc07d8ab229f3fd9dd8c04",
+    "mtime": 1779971631.5617626,
+    "ast_hash": "0af4d272838ae82f870a30901a423da3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1779965458.785077,
-    "ast_hash": "8160311f2793dcb92a536c9b3fb81830",
+    "mtime": 1779971647.097581,
+    "ast_hash": "a0e28a2e3f1f5b08a68d8d38445d5d3a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1779968108.3908224,
-    "ast_hash": "2b9e928f453a458868b386569598e2de",
+    "mtime": 1779971655.2574854,
+    "ast_hash": "138c029ffdcb6ca2279cc0826fa597e1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {
@@ -855,8 +855,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1779967974.9718251,
-    "ast_hash": "f9ad7113f0703d874f5cf641e14b0b4e",
+    "mtime": 1779971617.061932,
+    "ast_hash": "367a1ad18504050f690d80c3a233e279",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {

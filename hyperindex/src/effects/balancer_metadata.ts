@@ -17,8 +17,8 @@ const VAULT_ABI = parseAbi([
 const BALANCER_VAULT = "0xba12222222228d8ba445958a75a0704d566bf2c8" as const;
 
 /**
- * Balancer pool metadata via batched RPC (free-tier friendly).
- * Rate limit kept conservative because Balancer calls are heavier (multiple reads per pool).
+ * Balancer pool metadata via batched RPC.
+ * Tuned for pay-as-you-go Alchemy (multiple reads per pool at historical blocks).
  */
 export const fetchBalancerMetadata = createEffect(
   {
@@ -38,7 +38,7 @@ export const fetchBalancerMetadata = createEffect(
       amp: S.optional(S.bigint),
       scalingFactors: S.optional(S.array(S.bigint)),
     },
-    rateLimit: { calls: 8, per: "second" }, // Heavy calls — be nice to free tiers
+    rateLimit: { calls: 60, per: "second" }, // Pay-as-you-go Alchemy. Multiple vault + pool reads per effect at historical blocks.
     cache: true,
   },
   async ({ input, context }) => {
@@ -114,11 +114,21 @@ export const fetchBalancerMetadata = createEffect(
         scalingFactors: scalingFactors as bigint[] | undefined,
       };
     } catch (err) {
+      const errStr = String(err);
+      const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
+
       if (context.log) {
-        context.log.warn("Failed to fetch Balancer metadata", {
-          pool: input.pool,
-          error: String(err),
-        });
+        if (isQuota) {
+          context.log.warn(
+            `Alchemy quota / monthly capacity exceeded while fetching Balancer metadata. ` +
+            `Add more providers to POLYGON_RPC_URLS or reduce effect rateLimits.`
+          );
+        } else {
+          context.log.warn("Failed to fetch Balancer metadata", {
+            pool: input.pool,
+            error: errStr,
+          });
+        }
       }
       context.cache = false;
       return { poolId: "", tokens: [], balances: [], lastChangeBlock: 0n, swapFee: 0n };

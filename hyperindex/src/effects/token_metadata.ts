@@ -13,14 +13,16 @@ function safeDecimals(d: number): number {
 }
 
 /**
- * Fetches token decimals with a fast free-tier friendly strategy:
+ * Fetches token decimals — optimized to avoid RPC as much as possible.
  *
- * 1. Static registry (fastest — 200+ common Polygon tokens, 0 RPC)
- * 2. (Future) CoinGecko free API layer (optional fast path)
- * 3. Batched RPC + multicall via the centralized client (last resort)
+ * Only decimals are pre-generated/sourced here because that is the *only*
+ * token metadata the arbitrage engine actually uses (for amount scaling,
+ * price impact, profit math, etc.).
  *
- * This effect is heavily cached (`cache: true`) because decimals are immutable.
- * Recommended free RPCs: Alchemy (free tier) > LlamaRPC > PublicNode.
+ * 1. Large static registry (fastest — 1400+ Polygon tokens, 0 RPC)
+ * 2. Batched RPC (last resort, at the historical block when needed)
+ *
+ * Expand the registry aggressively with: bun run scripts/generate-polygon-tokens.ts
  */
 export const fetchTokenMeta = createEffect(
   {
@@ -31,20 +33,19 @@ export const fetchTokenMeta = createEffect(
       blockNumber: S.optional(S.bigint),
     },
     output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 20, per: "second" }, // Conservative for free tiers
+    rateLimit: { calls: 300, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
     cache: true, // Critical for performance on restarts / re-runs
   },
   async ({ input, context }) => {
     const addr = input.address.toLowerCase();
 
-    // Layer 1: Static registry (best possible performance)
+    // Layer 1: Static decimals registry (best possible performance)
+    // Strictly limited to decimals — the only token data the arbitrage engine
+    // needs for amount math, pricing, and profit calculation.
     const cached = STATIC_TOKEN_DECIMALS[addr];
     if (cached !== undefined) {
       return { address: input.address, decimals: cached };
     }
-
-    // Layer 2: Future hybrid — CoinGecko free API (can be added here easily)
-    // For now we go straight to reliable batched RPC (still very fast with good provider)
 
     try {
       const opts = input.blockNumber
@@ -70,11 +71,23 @@ export const fetchTokenMeta = createEffect(
       return result;
     } catch (err) {
       // Never fail the whole indexing run for one bad token
+      const errStr = String(err);
+      const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
+
       if (context.log) {
-        context.log.warn(`Failed to fetch decimals for token — defaulting to 18`, {
-          token: input.address,
-          error: String(err),
-        });
+        if (isQuota) {
+          context.log.warn(
+            `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +
+            `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
+            `Defaulting to 18 for this token.`,
+            { token: input.address }
+          );
+        } else {
+          context.log.warn(`Failed to fetch decimals for token — defaulting to 18`, {
+            token: input.address,
+            error: errStr,
+          });
+        }
       }
       // Do not cache obviously bad results forever
       context.cache = false;

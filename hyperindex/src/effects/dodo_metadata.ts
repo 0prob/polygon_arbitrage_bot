@@ -15,7 +15,8 @@ const DODO_ABI = parseAbi([
 ]);
 
 /**
- * DODO V2 pool metadata. DODO has many small pools — keep rate limits low.
+ * DODO V2 pool metadata. Many small pools, each requiring ~10 historical reads.
+ * Tuned for pay-as-you-go Alchemy + viem batching.
  */
 export const fetchDodoMetadata = createEffect(
   {
@@ -36,7 +37,7 @@ export const fetchDodoMetadata = createEffect(
       lpFeeRate: S.bigint,
       mtFeeRate: S.bigint,
     },
-    rateLimit: { calls: 10, per: "second" }, // Many small pools — protect free providers
+    rateLimit: { calls: 80, per: "second" }, // Pay-as-you-go Alchemy. ~10 reads per effect; batching in the shared client keeps HTTP volume reasonable.
     cache: true,
   },
   async ({ input, context }) => {
@@ -73,11 +74,18 @@ export const fetchDodoMetadata = createEffect(
         mtFeeRate: mt as bigint,
       };
     } catch (err) {
+      const errStr = String(err);
+      const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
+
       if (context.log) {
-        context.log.warn("Failed to fetch DODO metadata", {
-          pool: input.pool,
-          error: String(err),
-        });
+        if (isQuota) {
+          context.log.warn("Alchemy quota / monthly capacity exceeded while fetching DODO metadata. Add more RPC providers to POLYGON_RPC_URLS.");
+        } else {
+          context.log.warn("Failed to fetch DODO metadata", {
+            pool: input.pool,
+            error: errStr,
+          });
+        }
       }
       context.cache = false;
       return {
