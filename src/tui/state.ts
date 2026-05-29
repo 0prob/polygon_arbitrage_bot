@@ -27,6 +27,8 @@ export interface SystemState {
   lastCycleTimeMs: number;
   hiStatus: string;
   hiSyncedBlock: number;
+  /** Indexer discovery mode: 'broad' (long-tail friendly, default) or 'hot-bias' (conservative, major tokens only) */
+  hiDiscoveryMode?: 'broad' | 'hot-bias';
   hiRemoteBlock: number;
   hiLag: number;
   hiSyncRate: number;
@@ -76,6 +78,7 @@ export function createInitialState(): TuiState {
       lastCycleTimeMs: 0,
       hiStatus: "starting",
       hiSyncedBlock: 0,
+      hiDiscoveryMode: undefined,
       hiRemoteBlock: 0,
       hiLag: 0,
       hiSyncRate: 0,
@@ -172,6 +175,13 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         updateOpportunity(state, event.routeKey, { status: event.error?.includes("quarantine") ? "Quarantined" : "Failed" });
         appendLog(state, "Exec", `Failed: ${event.error ?? "unknown"}`);
       }
+
+      // Surface useful insights from the trace parser in the TUI log
+      if (event.traceMessages && event.traceMessages.length > 0) {
+        const msgStr = event.traceMessages.join(" | ");
+        const comp = event.success ? "Trace" : "TraceWarn";
+        appendLog(state, comp, `${event.routeKey.slice(0, 8)}: ${msgStr}`);
+      }
       break;
     case "gas_snapshot":
       state.system.gasPriceWei = event.gasPrice;
@@ -208,6 +218,9 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       if (event.syncRate !== undefined) state.system.hiSyncRate = event.syncRate;
       if (event.chain) {
         state.system.hiChain = event.chain;
+      }
+      if (event.discoveryMode) {
+        state.system.hiDiscoveryMode = event.discoveryMode;
       }
       break;
   }

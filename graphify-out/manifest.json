@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/package.json": {
-    "mtime": 1780003987.2791014,
-    "ast_hash": "8f86c34a6289aaee54c6ccec0b5023b5",
+    "mtime": 1780034046.2776892,
+    "ast_hash": "91fa3519cfa2edfdf4c64ce972207c85",
     "semantic_hash": ""
   },
   "/home/x/arb/t/sol/deploy": {
@@ -70,8 +70,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/uniswap_v2_pool.json": {
-    "mtime": 1779184848.9819567,
-    "ast_hash": "6dc2a2d8ce0f16a168aa80df6c010b7b",
+    "mtime": 1780032252.3364713,
+    "ast_hash": "0c7104a61c91a36f95c1973c9ebb4c33",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/balancer_vault.json": {
@@ -90,23 +90,23 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780007636.9124205,
-    "ast_hash": "f7b738e2078f0778135373265344097d",
+    "mtime": 1780035392.4230835,
+    "ast_hash": "da89ce2d1d0e76d1c6100c63c98b237c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
-    "mtime": 1780000942.8710155,
-    "ast_hash": "851b19a25384ee937a4e80974f9891d9",
+    "mtime": 1780033286.37163,
+    "ast_hash": "82bb2d460df68f6edaa7c2f19a6f6c1e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
-    "mtime": 1780000827.9124372,
-    "ast_hash": "4208bd56f350ece20aad5ab392f3698b",
+    "mtime": 1780033251.4601276,
+    "ast_hash": "222e705ffab9f9c118e9d5f28743735e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_pool.ts": {
-    "mtime": 1780001571.3196516,
-    "ast_hash": "1548381b877118f99724978cf85f19f6",
+    "mtime": 1780033283.479671,
+    "ast_hash": "7b6bc88e80300a62ffa6c861092863ae",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_factory.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/balancer.ts": {
-    "mtime": 1780003683.6102345,
-    "ast_hash": "80006b0e7026980d860ab834b2139977",
+    "mtime": 1780033280.3357155,
+    "ast_hash": "8782f50700af2bfe6998537ed71ae392",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
@@ -130,13 +130,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_pool.ts": {
-    "mtime": 1780001591.7034197,
-    "ast_hash": "d68c600fb6d5a4cb173096e4e44d7703",
+    "mtime": 1780033265.2879298,
+    "ast_hash": "77c76f0dad68439cd15ca67bc3f396ec",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_pool.ts": {
-    "mtime": 1780000838.1203096,
-    "ast_hash": "448766b8a1751736293a57d731198e70",
+    "mtime": 1780033257.708038,
+    "ast_hash": "28120cd0f22323a68e7fcaf592bc23aa",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_factory.ts": {
@@ -670,8 +670,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1780007621.056596,
-    "ast_hash": "1d4f7074a3c8011be73b8e03f1e5b2df",
+    "mtime": 1780035341.0273514,
+    "ast_hash": "e803d0600031413fd2f343ec5ec9b923",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1780007415.4588912,
-    "ast_hash": "d240e300ba2f2b90a9a605cdae8d6c7a",
+    "mtime": 1780035340.4793541,
+    "ast_hash": "2e636acd2a88852277fe69d92fd4c1b2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1780004773.671384,
-    "ast_hash": "fa4a1fac267c2196785cd5b218c01d0c",
+    "mtime": 1780033304.0313804,
+    "ast_hash": "60999a381e3207e1c9959dfa6f331e6e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/DEBUG_OPTIMIZATIONS.md": {
-    "mtime": 1780003733.2657244,
-    "ast_hash": "f92e656ce042b73d10960a945dc45248",
+    "mtime": 1780034050.1336415,
+    "ast_hash": "0f47c25e539dee884b7e574e95b2d055",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/hyperrpc.ts": {
@@ -850,8 +850,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hypersync_service.ts": {
-    "mtime": 1780002858.0224152,
-    "ast_hash": "de88401536d7f586e7a0ce3f2ddaa1c1",
+    "mtime": 1780035589.525838,
+    "ast_hash": "675c3030d43443855150af24de684861",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
@@ -885,8 +885,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/garbage/garbage-tracker.ts": {
-    "mtime": 1780007443.2425785,
-    "ast_hash": "292828e0291c5003c87e8a1a24dc4976",
+    "mtime": 1780035340.951352,
+    "ast_hash": "d1f3eed3ec8e366bbb8e071b56db2b29",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/abis/dodo_pool.json": {
+    "mtime": 1780032283.920074,
+    "ast_hash": "4b348ee6d978071a5c79091dbf72157a",
     "semantic_hash": ""
   }
 }

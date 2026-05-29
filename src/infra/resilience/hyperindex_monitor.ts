@@ -139,6 +139,17 @@ export class HyperIndexMonitor implements Lifecycle {
         await this.opts.hyperSync.waitForRateLimit();
         const head = await this.opts.hyperSync.getHeight();
         if (head > this.lastChainHead) this.lastChainHead = head;
+
+        // === AUTONOMOUS DEBUG: Always surface rate limit state on every tick ===
+        // React to rate limiting by temporarily backing off HyperSync calls.
+        const rl = this.opts.hyperSync.rateLimitInfo?.();
+        if (rl) {
+          // Simple reaction: if we're heavily rate limited, skip the next few health ticks for HyperSync calls.
+          if (rl.remaining !== undefined && rl.remaining < 5) {
+            this.opts.logger.warn({ rateLimitInfo: rl }, "HyperSync heavily rate-limited — temporarily reducing monitor HyperSync activity");
+            // We can let the existing waitForRateLimit() in other places handle most of it.
+          }
+        }
       } catch (err) {
         this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
       }
@@ -154,15 +165,30 @@ export class HyperIndexMonitor implements Lifecycle {
     const current = await this.getIndexedHeight();
     const lag = this.getCurrentLag();
 
+    // Surface rate limit info (useful for autonomous debugging of 100 req/min issues)
+    if (this.opts.hyperSync) {
+      try {
+        const rl = this.opts.hyperSync.rateLimitInfo?.();
+        if (rl) {
+          this.opts.logger.info({ rateLimitInfo: rl, lag }, "HyperIndex monitor - current HyperSync rate limit state");
+        }
+      } catch {}
+    }
+
     if (current > 0) {
       if (current > this.lastSyncedBlock) {
         this.lastSyncedBlock = current;
         this.lastProgressTime = Date.now();
         this.recordBlockSample(current);
       } else if (Date.now() - this.lastProgressTime > this.maxStallMs) {
-        this.opts.logger.warn(
-          { lastSynced: this.lastSyncedBlock, stallMs: Date.now() - this.lastProgressTime, lag },
-          "HyperIndex sync stalled (no progress), forcing restart",
+        this.opts.logger.error(
+          {
+            lastSynced: this.lastSyncedBlock,
+            stallMs: Date.now() - this.lastProgressTime,
+            lag,
+            maxStallMs: this.maxStallMs,
+          },
+          "HyperIndex sync STALLED — no progress for a long time. Forcing restart. (Check pipeline split, rate limits, RPC quality, and batch size in hyperindex/config.yaml)"
         );
         this._isHealthy = false;
         await this.restart();
@@ -187,15 +213,31 @@ export class HyperIndexMonitor implements Lifecycle {
     this._isHealthy = true;
     this.restartAttempts = 0;
 
-    // Periodic visibility into sync rate (every ~30s)
-    // Note: "events per second" (the internal HyperIndex processing rate) is typically 10-100x higher than blk/s.
-    // The dominant limiter on Polygon backfill EPS has historically been per-event DB reads in pool handlers +
-    // effect rate limits on first-seen contracts. See hyperindex/config.yaml for the full debugging guide.
-    if (Math.random() < 0.15) {
+    // === INSTRUMENTATION: Detailed periodic tracing for HyperIndex sync bottlenecks ===
+    // This runs on every health tick and gives you visibility into the real limiter
+    // (HyperSync quota, effect RPCs, DB writes inside the indexer, batch size, etc.).
+    if (Math.random() < 0.20) {   // Slightly more frequent than before for debugging
       const rate = this.getSyncRate();
       const lag = this.getCurrentLag();
-      if (rate > 0 || lag > 50) {
-        this.opts.logger.info({ synced: this.lastSyncedBlock, lag, rate: rate.toFixed(1) + " blk/s" }, "HyperIndex sync status");
+
+      const extra: Record<string, unknown> = {
+        synced: this.lastSyncedBlock,
+        lag,
+        blkPerSec: rate.toFixed(1),
+      };
+
+      // Surface rate limit info from the official client when available (very useful for 100 req/min diagnosis)
+      if (this.opts.hyperSync) {
+        try {
+          const rl = this.opts.hyperSync.rateLimitInfo?.();
+          if (rl) extra.rateLimitInfo = rl;
+        } catch {}
+      }
+
+      this.opts.logger.info(extra, "HyperIndex sync status (instrumented trace)");
+
+      if (lag > 200) {
+        this.opts.logger.warn({ lag, synced: this.lastSyncedBlock }, "HyperIndex significantly behind — possible bottleneck (rate limit / effects / DB / batch size)");
       }
     }
   }

@@ -57,6 +57,12 @@ function sleep(ms: number): Promise<void> {
  * Result: the limited simulation and execution budget is preferentially spent where
  * this specific bot has a comparative advantage instead of being wasted losing
  * latency wars on saturated paths.
+ *
+ * Indexer Interaction:
+ * The Envio indexer (hyperindex/) should default to broad discovery.
+ * See hyperindex/src/utils/hot_tokens.ts and `INDEXER_HOT_BIAS` env var.
+ * Enabling hot-bias in the indexer reduces long-tail pool discovery and should
+ * be considered a conservative deviation from this strategy.
  */
 
 const instrumenter = new ArbInstrumenter();
@@ -595,18 +601,25 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     ? tracked.profit
                     : candidates.find((c) => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
 
-                  bus?.emit({ type: "execution_result", routeKey, success: true, txHash: execResult.txHash, profitWei });
+                  bus?.emit({ 
+                    type: "execution_result", 
+                    routeKey, 
+                    success: true, 
+                    txHash: execResult.txHash, 
+                    profitWei,
+                    traceMessages: execResult.traceMessages 
+                  });
                 } else if (execResult.error === "reverted") {
                   ctx.metrics.executionReverts++;
                   ctx.logger.warn({ routeKey }, "Transaction reverted on chain");
-                  bus?.emit({ type: "execution_result", routeKey, success: false, error: "reverted" });
+                  bus?.emit({ type: "execution_result", routeKey, success: false, error: "reverted", traceMessages: execResult.traceMessages });
                 } else {
                   ctx.metrics.executionsFailed++;
                   ctx.logger.warn({ error: execResult.error, routeKey }, "Execution failed");
                   ctx.metrics.totalErrors++;
                   ctx.metrics.lastErrorTime = Date.now();
                   ctx.metrics.lastErrorMessage = "Execution failed: " + (execResult.error ?? "");
-                  bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error });
+                  bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error, traceMessages: execResult.traceMessages });
                 }
               }
             }
@@ -635,6 +648,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
       bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
+
+      // Hot-bias mode comes from the same env var the hyperindex sees.
+      // When true, the indexer limits pool discovery to "hot" major tokens (conservative mode).
+      // Default (false) = broad long-tail discovery (primary strategy).
+      const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
+      const discoveryMode: 'broad' | 'hot-bias' = indexerHotBias ? 'hot-bias' : 'broad';
+
       const payload = buildStatusPayload(
         ctx.metrics,
         gasSnapshot.gasPrice,
@@ -646,6 +666,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               lag: hiStatus.lag,
               syncRate: hiStatus.syncRate,
               healthy: ctx.hyperIndexMonitor!.isHealthy(),
+              discoveryMode,
             }
           : undefined,
       );

@@ -40,6 +40,9 @@ export function getObscurityBonus(protocol: string): number {
   const p = (protocol || "").toLowerCase();
 
   // Highest priority long-tail / low-competition
+  // Note: This logic assumes the indexer is running in broad discovery mode
+  // (INDEXER_HOT_BIAS=false). Hot-bias mode in the indexer will starve this logic
+  // of the obscure pools it is designed to favor.
   if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) {
     return 1.4; // very obscure V2 factories
   }

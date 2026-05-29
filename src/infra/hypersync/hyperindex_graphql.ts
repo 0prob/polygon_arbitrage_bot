@@ -19,6 +19,27 @@ export interface HasuraPoolMeta {
   fee: number;
 }
 
+// Narrow response shapes for the specific GraphQL queries we issue (reduces `any` + tsc noise on data)
+interface PoolMetaRow { id: string; protocol: string; tokens: unknown; fee: number | null }
+interface V2StateRow { id: string; reserve0: string; reserve1: string }
+interface V3StateRow { id: string; sqrtPriceX96: string; tick: string; liquidity: string }
+interface V4StateRow { id: string; sqrtPriceX96: string; liquidity: string; tick: string; fee: string; tickSpacing: string; hooks: string }
+interface BalancerStateRow { id: string; poolId: string; balances: unknown; weights: unknown; amp?: string | null; swapFee: string; scalingFactors: unknown }
+interface CurveStateRow { id: string; balances: unknown; A: string; fee: string; rates?: unknown }
+interface DodoStateRow { id: string; baseReserve: string; quoteReserve: string; rStatus: number; k: string; fee: string; i: string; targetBase: string; targetQuote: string; lpFeeRate: string; mtFeeRate: string }
+interface TokenMetaRow { id?: string; address?: string; decimals?: number | null }
+
+interface GraphQLData {
+  PoolMeta?: PoolMetaRow[];
+  V2PoolState?: V2StateRow[];
+  V3PoolState?: V3StateRow[];
+  V4PoolState?: V4StateRow[];
+  BalancerPoolState?: BalancerStateRow[];
+  CurvePoolState?: CurveStateRow[];
+  DodoPoolState?: DodoStateRow[];
+  TokenMeta?: TokenMetaRow[];
+}
+
 export function parseBigIntArray(arr: unknown): bigint[] {
   if (typeof arr === "string") {
     try {
@@ -41,11 +62,11 @@ try {
   const mod = await import("../../../scripts/pools.json", { with: { type: "json" } } as unknown as { default?: unknown });
   const poolsJson = (mod.default ?? mod) as unknown[];
   if (Array.isArray(poolsJson)) {
-    _staticAnchors = poolsJson.map((p: unknown) => ({
-      address: p.address,
-      protocol: p.protocol,
-      tokens: p.tokens,
-      fee: p.fee ?? 30,
+    _staticAnchors = poolsJson.map((p: any) => ({
+      address: p?.address ?? "",
+      protocol: p?.protocol ?? "unknown",
+      tokens: Array.isArray(p?.tokens) ? p.tokens : [],
+      fee: p?.fee ?? 30,
     }));
   }
 } catch {
@@ -126,10 +147,9 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
         adminSecret,
         `{ DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate } }`,
       ),
-      graphQLQuery(graphqlUrl, adminSecret, `{ WoofiPoolState(limit: 5000) { id price coefficient spread fee } }`),
     ]);
 
-    const queries = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState", "WoofiPoolState"];
+    const queries = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState"];
 
     let anyFulfilled = false;
     for (let i = 0; i < results.length; i++) {
@@ -144,16 +164,14 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       throw new Error("All GraphQL state queries failed — HyperIndex endpoint unreachable");
     }
 
-    const v2Result = results[0].status === "fulfilled" ? results[0].value : null;
-    const v3Result = results[1].status === "fulfilled" ? results[1].value : null;
-    const v4Result = results[2].status === "fulfilled" ? results[2].value : null;
-    const balancerResult = results[3].status === "fulfilled" ? results[3].value : null;
-    const curveResult = results[4].status === "fulfilled" ? results[4].value : null;
-    const dodoResult = results[5].status === "fulfilled" ? results[5].value : null;
-    const woofiResult = results[6].status === "fulfilled" ? results[6].value : null;
+    const data0 = (results[0].status === "fulfilled" ? (results[0].value as { data?: GraphQLData })?.data : null) ?? {};
+    const data1 = (results[1].status === "fulfilled" ? (results[1].value as { data?: GraphQLData })?.data : null) ?? {};
+    const data2 = (results[2].status === "fulfilled" ? (results[2].value as { data?: GraphQLData })?.data : null) ?? {};
+    const data3 = (results[3].status === "fulfilled" ? (results[3].value as { data?: GraphQLData })?.data : null) ?? {};
+    const data4 = (results[4].status === "fulfilled" ? (results[4].value as { data?: GraphQLData })?.data : null) ?? {};
+    const data5 = (results[5].status === "fulfilled" ? (results[5].value as { data?: GraphQLData })?.data : null) ?? {};
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const v2States = (v2Result?.V2PoolState || []) as any[];
+    const v2States = data0.V2PoolState ?? [];
     for (const s of v2States) {
       _cachedState.set(s.id.toLowerCase(), {
         reserve0: BigInt(s.reserve0),
@@ -161,8 +179,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const v3States = (v3Result?.V3PoolState || []) as any[];
+    const v3States = data1.V3PoolState ?? [];
     for (const s of v3States) {
       _cachedState.set(s.id.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
@@ -171,8 +188,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const v4States = (v4Result?.V4PoolState || []) as any[];
+    const v4States = data2.V4PoolState ?? [];
     for (const s of v4States) {
       _cachedState.set(s.id.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
@@ -184,8 +200,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const balancerStates = (balancerResult?.BalancerPoolState || []) as any[];
+    const balancerStates = data3.BalancerPoolState ?? [];
     for (const s of balancerStates) {
       _cachedState.set(s.id.toLowerCase(), {
         poolId: s.poolId,
@@ -197,8 +212,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const curveStates = (curveResult?.CurvePoolState || []) as any[];
+    const curveStates = data4.CurvePoolState ?? [];
     for (const s of curveStates) {
       _cachedState.set(s.id.toLowerCase(), {
         balances: parseBigIntArray(s.balances),
@@ -208,8 +222,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dodoStates = (dodoResult?.DodoPoolState || []) as any[];
+    const dodoStates = data5.DodoPoolState ?? [];
     for (const s of dodoStates) {
       _cachedState.set(s.id.toLowerCase(), {
         baseReserve: BigInt(s.baseReserve),
@@ -224,17 +237,6 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
         mtFeeRate: BigInt(s.mtFeeRate),
       });
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const woofiStates = (woofiResult?.WoofiPoolState || []) as any[];
-    for (const s of woofiStates) {
-      _cachedState.set(s.id.toLowerCase(), {
-        price: BigInt(s.price),
-        coefficient: BigInt(s.coefficient),
-        spread: BigInt(s.spread),
-        fee: BigInt(s.fee),
-      });
-    }
   } catch (err) {
     console.warn("buildStateCacheFromGraphQL unexpected error", err);
     throw err;
@@ -245,30 +247,43 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
 
 export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string): Promise<HasuraPoolMeta[]> {
   const anchors = STATIC_ANCHORS;
+  const PAGE = 2500;
+  const allRows: PoolMetaRow[] = [];
 
-  let result: unknown = null;
-  let lastErr: unknown = null;
-
-  for (let i = 0; i < 5; i++) {
-    try {
-      result = await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 2500) { id protocol tokens fee } }`);
-      if (result && result.PoolMeta) break;
-    } catch (err) {
-      lastErr = err;
-      await new Promise((r) => setTimeout(r, 2000));
+  // Paginate with offset to avoid silent truncation when >PAGE pools exist in Hasura
+  for (let offset = 0; offset < 50000; offset += PAGE) {  // hard safety cap (~20 pages)
+    let pageResult: unknown = null;
+    let ok = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        pageResult = await graphQLQuery(
+          graphqlUrl,
+          adminSecret,
+          `{ PoolMeta(limit: ${PAGE}, offset: ${offset}) { id protocol tokens fee } }`,
+        );
+        const d = (pageResult as { data?: GraphQLData } | null)?.data;
+        if (d?.PoolMeta) {
+          allRows.push(...d.PoolMeta);
+          ok = true;
+          if (d.PoolMeta.length < PAGE) {
+            // last page
+            offset = 1e9;
+          }
+          break;
+        }
+      } catch {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
     }
+    if (!ok) break; // give up on persistent errors for this page
   }
 
-  if (!result || !result.PoolMeta) {
-    if (lastErr) {
-      // Just fallback to anchors silently if connection refused
-    }
+  if (allRows.length === 0) {
     return anchors;
   }
 
   try {
-    const metaArr = result.PoolMeta as { id: string; protocol: string; tokens: unknown; fee: number | null }[];
-    const discovered = metaArr
+    const discovered = allRows
       .filter((pm) => pm && pm.id && pm.protocol)
       .map((pm) => {
         let tokens: string[];
@@ -324,11 +339,10 @@ export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret:
   const metas = new Map<string, { decimals: number }>();
   try {
     const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
-    if (result && result.TokenMeta) {
-      for (const m of result.TokenMeta) {
-        if (m.address && m.decimals != null) {
-          metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
-        }
+    const rows = ((result as { data?: GraphQLData } | null)?.data?.TokenMeta) ?? [];
+    for (const m of rows) {
+      if (m.address && m.decimals != null) {
+        metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
       }
     }
   } catch (err) {

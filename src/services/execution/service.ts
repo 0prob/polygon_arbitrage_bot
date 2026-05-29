@@ -6,6 +6,7 @@ import { QuarantineManager } from "./quarantine.ts";
 import { getAddress, decodeEventLog } from "viem";
 import { SubmissionStrategy, type SubmitTxFn } from "./submit.ts";
 import { ReceiptPoller } from "./receipt.ts";
+import { getTraceMessages } from "../../infra/hypersync/trace_parser.ts";
 
 const ERC20_TRANSFER_EVENT = {
   anonymous: false,
@@ -51,6 +52,8 @@ export interface ExecutionResult {
   txHash?: string;
   error?: string;
   gasUsed?: bigint;
+  /** Useful human-readable insights derived from the trace parser (for TUI/logs) */
+  traceMessages?: string[];
 }
 
 function poolsFromRouteKey(routeKey: string): string[] {
@@ -172,6 +175,9 @@ export class ExecutionService {
       const success = !!receipt?.status;
       const gasUsed = receipt?.gasUsed ?? 0n;
 
+      // Capture useful trace insights for TUI and logging
+      const traceMessages = receipt?.traceSummary ? getTraceMessages(receipt.traceSummary) : undefined;
+
       let profit = 0n;
       if (success && receipt && candidate.profitToken) {
         const execAddr = getAddress(candidate.targetAddress);
@@ -199,7 +205,7 @@ export class ExecutionService {
         this.quarantine.recordSuccess(candidate.routeKey);
       }
 
-      return { success, txHash, gasUsed };
+      return { success, txHash, gasUsed, traceMessages };
     } catch (err: any) {
       this.inFlightRouteHashes.delete(candidate.routeKey);
       if (err instanceof AggregateError) {
@@ -284,6 +290,8 @@ export class ExecutionService {
           const success = !!receipt.status;
           const gasUsed = receipt.gasUsed;
 
+          const traceMessages = receipt.traceSummary ? getTraceMessages(receipt.traceSummary) : undefined;
+
           let profit = 0n;
           if (success && candidate.profitToken) {
             const execAddr = getAddress(candidate.targetAddress);
@@ -310,7 +318,7 @@ export class ExecutionService {
             this.quarantine.recordSuccess(candidate.routeKey);
           }
 
-          results[index] = { success, txHash, gasUsed };
+          results[index] = { success, txHash, gasUsed, traceMessages };
         } catch (err: any) {
           this.inFlightRouteHashes.delete(candidate.routeKey);
           const msg = err?.message || String(err);

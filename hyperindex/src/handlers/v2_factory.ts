@@ -1,5 +1,9 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
+import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+
+// Envio v3 best practice: Use the global `indexer` object (or context.chain inside handlers)
+// to access live configuration and dynamically registered addresses (persisted across restarts).
 
 const FACTORY_PROTOCOLS: Record<string, { protocol: string; feeBps: number }> = {
   "0x5757371414417b8c6caad45baef941abc7d3ab32": { protocol: "quickswap_v2", feeBps: 30 },
@@ -12,26 +16,35 @@ const FACTORY_PROTOCOLS: Record<string, { protocol: string; feeBps: number }> = 
   "0x800b052609c355ca8103e06f022aa30647ead60a": { protocol: "comethswap_v2", feeBps: 30 },
 };
 
+// Envio v3 pattern: contractRegister can take a `where` filter for early topic-level rejection.
+// This is the highest-ROI optimization for high-volume factory events on Polygon.
 indexer.contractRegister(
-  { contract: "V2Factory", event: "PairCreated" },
+  {
+    contract: "V2Factory",
+    event: "PairCreated",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS),
+  },
   async ({ event, context }) => {
+    // Use context.chain for the modern v3 way to register dynamic contracts.
     context.chain.UniswapV2Pool.add(event.params.pair);
   },
 );
 
 indexer.onEvent(
-  { contract: "V2Factory", event: "PairCreated" },
+  {
+    contract: "V2Factory",
+    event: "PairCreated",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS),
+  },
   async ({ event, context }) => {
     const t0 = event.params.token0.toLowerCase();
     const t1 = event.params.token1.toLowerCase();
 
     const factoryAddr = event.srcAddress.toLowerCase();
 
-    // Some broken V2 factories (especially older Quickswap forks on Polygon)
-    // emit PairCreated events where one of the "token" parameters is the factory
-    // address itself. These are invalid and will cause fetchTokenMeta to fail.
-    // We skip them early to protect the index and avoid log spam.
-    if (t0 === factoryAddr || t1 === factoryAddr) {
+    // JS-level defensive filter using shared hot_tokens (kept in sync with root bot).
+    // This complements any where topic filtering.
+    if (t0 === factoryAddr || t1 === factoryAddr || isLikelyGarbagePair(t0, t1)) {
       return;
     }
 
@@ -49,16 +62,19 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    // === PERFORMANCE CRITICAL ===
-    // These two effect calls dominate "Loaders" time for V2Factory.PairCreated
-    // (often 70-85% of handler time during historical sync per Envio pipeline split).
-    // They only become cheap when both tokens exist in STATIC_TOKEN_DECIMALS.
-    // → Keep the static registry in token_registry.ts aggressively up to date
-    //   by running `bun run generate-tokens` periodically.
+    // Envio v3 Preload + Effect API best practice.
     const [t0meta, t1meta] = await Promise.all([
       context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
       context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
     ]);
+
+    // Aggressive isPreload: after effects (which preload batches), exit early in preload phase.
+    // Sets below will only execute (and persist) in the real processing phase.
+    // This avoids any unnecessary work during the optimistic preload pass.
+    if (context.isPreload) {
+      return;
+    }
+
     context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
     context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
   },

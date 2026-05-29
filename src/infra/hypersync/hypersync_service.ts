@@ -195,6 +195,49 @@ export class HyperSyncService {
     }
     return null;
   }
+
+  /**
+   * Fetch traces for a transaction using HyperSync (very useful for complex arb simulation,
+   * sandwich detection, or detailed call tracing without full RPC trace).
+   *
+   * Inspired by enviodev/hypersync-traces-examples.
+   * Supports the native HyperSync trace format.
+   */
+  async getTransactionTraces(txHash: string, lookbackBlocks = 200): Promise<any[]> {
+    await this.waitForRateLimitInternal();
+    try {
+      const height = await this.getHeight();
+      const query: any = {
+        fromBlock: Math.max(0, height - lookbackBlocks),
+        fieldSelection: {
+          trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error"],
+          transaction: ["Hash"],
+        },
+        transactions: [{ hash: [txHash] }],
+        traces: [{}], // Request traces for matching txs
+      };
+      const res = await this.client.get(query);
+      return res.data.traces ?? [];
+    } catch (err) {
+      this.logger?.debug({ err, txHash }, "HyperSync traces fetch failed");
+      return [];
+    }
+  }
+
+  /**
+   * Advanced logs query with full control (for custom topic-heavy discovery or monitoring).
+   * Uses narrow fieldSelection by default (no joins).
+   */
+  async queryLogsAdvanced(query: any): Promise<any> {
+    await this.waitForRateLimitInternal();
+    try {
+      const res = await this.client.get(query);
+      return res.data;
+    } catch (err) {
+      this.logger?.warn({ err }, "HyperSync advanced query failed");
+      return { logs: [], blocks: [], transactions: [] };
+    }
+  }
 }
 
 // Factory, similar to createHyperRpcClient

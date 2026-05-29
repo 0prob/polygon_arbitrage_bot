@@ -1,17 +1,28 @@
 import { indexer } from "envio";
 import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
+import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 
 const balancerMetaCache = new Map<string, { tokens: string[]; fee: number }>();
 const balancerIdToAddrCache = new Map<string, string>();
 
 indexer.onEvent(
-  { contract: "BalancerVault", event: "PoolRegistered" },
+  {
+    contract: "BalancerVault",
+    event: "PoolRegistered",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["poolAddress", "poolAddress"]),
+  },
   async ({ event, context }) => {
     const pool = event.params.poolAddress.toLowerCase();
     const poolId = event.params.poolId.toLowerCase();
 
+    // All effects scheduled early → participate in Envio v3 preload batching + dedup.
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(event.block.number) });
+
+    if (context.isPreload) {
+      return;
+    }
+
     const fee = meta.swapFee > 0n ? Number(meta.swapFee / 10n ** 14n) : 0;
     const tokens = meta.tokens;
 

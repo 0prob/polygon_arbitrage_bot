@@ -6,7 +6,7 @@ import { polygon } from "viem/chains";
  *
  * Supports comma-separated POLYGON_RPC_URLS (preferred) or POLYGON_RPC_URL from .env.
  * .env endpoints (after archival probe filtering upstream) are used with viem fallback().
- * Only falls back to a default free public RPC when nothing usable was provided.
+ * Only falls back to public RPCs (no embedded keys) when nothing usable was provided.
  *
  * The effect rateLimits (in the metadata effects) are now raised for pay-as-you-go
  * Alchemy. The batch + multicall settings here keep the actual HTTP request rate
@@ -31,9 +31,9 @@ function getRpcUrls(): string[] {
       .filter((u) => u.length > 0);
     if (list.length > 0) return list;
   }
-  // Robust set of fallbacks including common public endpoints
+  // Public fallbacks only (no paid/demo keys). For production use POLYGON_RPC_URLS (comma sep) with archival providers.
+  // HyperIndex effects will probe/filter for archive support upstream in the bot boot path.
   return [
-    "https://polygon-mainnet.g.alchemy.com/v2/kBkVBn4UiYwt-XNksk-AV",
     "https://polygon-rpc.com",
     "https://polygon-mainnet.public.blastapi.io",
     "https://1rpc.io/matic",

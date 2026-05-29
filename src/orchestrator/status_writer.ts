@@ -27,6 +27,8 @@ export interface StatusPayload {
     lag: number;
     syncRate: number;
     healthy: boolean;
+    /** Whether the indexer is running in hot-bias mode (limits discovery to major tokens) or broad long-tail mode */
+    discoveryMode?: 'broad' | 'hot-bias';
   };
   timestamp: string;
 }
@@ -40,7 +42,7 @@ export function buildStatusPayload(
   metrics: Metrics,
   gasPrice: bigint | undefined,
   poolCount: number,
-  hyperindexStatus?: { synced: number; remote: number; lag: number; syncRate: number; healthy: boolean },
+  hyperindexStatus?: { synced: number; remote: number; lag: number; syncRate: number; healthy: boolean; discoveryMode?: 'broad' | 'hot-bias' },
 ): StatusPayload {
   const uptimeSec = Math.floor((Date.now() - metrics.startTime) / 1000);
   return {

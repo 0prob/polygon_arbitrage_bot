@@ -85,16 +85,6 @@ type DodoPoolState {
   mtFeeRate: BigInt!
 }
 
-type WoofiPoolState {
-  id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
-  price: BigInt!
-  coefficient: BigInt!
-  spread: BigInt!
-  fee: BigInt!
-}
-
 type TokenMeta {
   id: ID!
   address: String!

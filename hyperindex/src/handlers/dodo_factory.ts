@@ -1,6 +1,7 @@
 import { indexer } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
+import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 
 async function handleDodoPool(
   context: any,
@@ -22,7 +23,17 @@ async function handleDodoPool(
     poolId: undefined,
   });
 
-  const meta = await context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) });
+  // Fire DODO metadata + both token metas concurrently (critical for backfill throughput)
+  const [meta, baseMeta, quoteMeta] = await Promise.all([
+    context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) }),
+    context.effect(fetchTokenMeta, { address: base, blockNumber: BigInt(blockNumber) }),
+    context.effect(fetchTokenMeta, { address: quote, blockNumber: BigInt(blockNumber) }),
+  ]);
+
+  if (context.isPreload) {
+    return; // Aggressive preload exit: effects done (batched), skip writes (ignored anyway) and any future work.
+  }
+
   context.DodoPoolState.set({
     id: pool,
     address: pool,
@@ -39,16 +50,13 @@ async function handleDodoPool(
     mtFeeRate: meta.mtFeeRate,
   });
 
-  const [baseMeta, quoteMeta] = await Promise.all([
-    context.effect(fetchTokenMeta, { address: base, blockNumber: BigInt(blockNumber) }),
-    context.effect(fetchTokenMeta, { address: quote, blockNumber: BigInt(blockNumber) }),
-  ]);
   context.TokenMeta.set({ id: base, address: base, decimals: baseMeta.decimals });
   context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
 }
 
-// Dynamic contract registration (best practice for factory-spawned pools).
-// Without this, DodoPool Sync events are never captured by the DodoPool handler.
+// Dynamic contract registration using Envio v3 patterns.
+// See https://docs.envio.dev/docs/HyperIndex/dynamic-contracts
+// We use the modern object form. `where` can be added for topic filtering on indexed params.
 indexer.contractRegister(
   { contract: "DodoFactory", event: "DVMDeployed" },
   async ({ event, context }) => {
@@ -70,8 +78,13 @@ indexer.contractRegister(
   },
 );
 
+// DVM
 indexer.onEvent(
-  { contract: "DodoFactory", event: "DVMDeployed" },
+  {
+    contract: "DodoFactory",
+    event: "DVMDeployed",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
+  },
   async ({ event, context }) => {
     await handleDodoPool(
       context,
@@ -81,11 +94,17 @@ indexer.onEvent(
       Number(event.block.number),
       event.transaction.hash,
     );
+    if (context.isPreload) return;
   },
 );
 
+// DPP
 indexer.onEvent(
-  { contract: "DodoFactory", event: "DPPDeployed" },
+  {
+    contract: "DodoFactory",
+    event: "DPPDeployed",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
+  },
   async ({ event, context }) => {
     await handleDodoPool(
       context,
@@ -95,11 +114,17 @@ indexer.onEvent(
       Number(event.block.number),
       event.transaction.hash,
     );
+    if (context.isPreload) return;
   },
 );
 
+// DSP
 indexer.onEvent(
-  { contract: "DodoFactory", event: "DSPDeployed" },
+  {
+    contract: "DodoFactory",
+    event: "DSPDeployed",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
+  },
   async ({ event, context }) => {
     await handleDodoPool(
       context,
@@ -109,5 +134,6 @@ indexer.onEvent(
       Number(event.block.number),
       event.transaction.hash,
     );
+    if (context.isPreload) return;
   },
 );

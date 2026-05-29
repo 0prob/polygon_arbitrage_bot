@@ -1,5 +1,9 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
+import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+
+// Envio v3: context.chain and the global `indexer` object give typed access to
+// both static config and dynamically registered addresses (survives restarts).
 
 const FACTORY_PROTOCOLS: Record<string, string> = {
   "0x1f98431c8ad98523631ae4a59f267346ea31f984": "uniswap_v3",
@@ -9,22 +13,28 @@ const FACTORY_PROTOCOLS: Record<string, string> = {
 };
 
 indexer.contractRegister(
-  { contract: "V3Factory", event: "PoolCreated" },
+  {
+    contract: "V3Factory",
+    event: "PoolCreated",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS),
+  },
   async ({ event, context }) => {
     context.chain.UniswapV3Pool.add(event.params.pool);
   },
 );
 
 indexer.onEvent(
-  { contract: "V3Factory", event: "PoolCreated" },
+  {
+    contract: "V3Factory",
+    event: "PoolCreated",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS),
+  },
   async ({ event, context }) => {
     const t0 = event.params.token0.toLowerCase();
     const t1 = event.params.token1.toLowerCase();
 
     const factoryAddr = event.srcAddress.toLowerCase();
 
-    // Some broken V3 factories occasionally emit PoolCreated events where one
-    // of the token parameters is the factory address itself. Skip these early.
     if (t0 === factoryAddr || t1 === factoryAddr) {
       return;
     }
@@ -46,6 +56,11 @@ indexer.onEvent(
       context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
       context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
     ]);
+
+    if (context.isPreload) {
+      return;
+    }
+
     context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
     context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
   },

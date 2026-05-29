@@ -1,11 +1,14 @@
 import type { RpcManager } from "../../rpc/manager.ts";
 import type { HyperRpcClient } from "../../infra/rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../../infra/hypersync/hypersync_service.ts";
+import { safeParseTraces, type ParsedTraceSummary } from "../../infra/hypersync/trace_parser.ts";
 
 export interface ReceiptData {
   status: boolean;
   gasUsed: bigint;
   logs: Array<{ topics: string[]; data: string }>;
+  traces?: any[];
+  traceSummary?: ParsedTraceSummary; // Parsed high-signal summary (see trace_parser.ts)
 }
 
 export class ReceiptPoller {
@@ -26,6 +29,10 @@ export class ReceiptPoller {
 
         if (hyperSync) {
           receipt = await hyperSync.getTransactionReceipt(txHash);
+          // Improvement from enviodev audit: also pull traces for complex tx analysis (sandwiches, internal calls).
+          if (receipt) {
+            (receipt as any).traces = await hyperSync.getTransactionTraces(txHash).catch(() => []);
+          }
         }
         if (!receipt && hyperRpc) {
           receipt = await hyperRpc.getTransactionReceipt(txHash as `0x${string}`);
@@ -35,10 +42,17 @@ export class ReceiptPoller {
         }
 
         if (receipt) {
+          const rawTraces = (receipt as any).traces ?? [];
+          const traceSummary = rawTraces.length > 0
+            ? safeParseTraces(txHash, rawTraces)
+            : undefined;
+
           return {
             status: (receipt as any).status === "0x1" || (receipt as any).status === true || (receipt as any).status === "success",
             gasUsed: BigInt((receipt as any).gasUsed ?? 0),
             logs: (receipt as any).logs ?? [],
+            traces: rawTraces,
+            traceSummary,
           };
         }
       } catch (_err: unknown) {

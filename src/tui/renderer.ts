@@ -207,7 +207,9 @@ export class Renderer {
 
     if (s.hiSyncedBlock > 0) {
       hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
-      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${dim(hiLag + hiRate)}`;
+      const mode = s.hiDiscoveryMode ? (s.hiDiscoveryMode === 'broad' ? color('broad', GREEN) : color('hot-bias', YELLOW)) : '';
+      const modeStr = mode ? ` ${dim('(')}${mode}${dim(')')}` : '';
+      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${modeStr}${dim(hiLag + hiRate)}`;
     } else if (s.hiStatus === "running") {
       hiColor = CYAN;
       hiLabel = color("running", hiColor);
@@ -252,6 +254,12 @@ export class Renderer {
       let component = color(entry.component.padEnd(10).slice(0, 10), CYAN);
       if (entry.component === "ERROR" || entry.component === "Failed") {
         component = color(entry.component.padEnd(10).slice(0, 10), RED);
+      }
+      if (entry.component === "TraceWarn") {
+        component = color(entry.component.padEnd(10).slice(0, 10), YELLOW);
+      }
+      if (entry.component === "Trace") {
+        component = color(entry.component.padEnd(10).slice(0, 10), CYAN);
       }
       lines.push(`  ${dim(time)}  ${component} ${entry.message}`);
     }

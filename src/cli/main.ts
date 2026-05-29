@@ -19,6 +19,7 @@ async function main() {
   const useTui = process.argv.includes("--tui");
   const useCleanup = process.argv.includes("--cleanup");
   const resetHasura = process.argv.includes("--reset-hasura");
+  const hyperindexReset = process.argv.includes("--hyperindex-reset") || process.argv.includes("--force-full-reset");
   const config = loadConfig(process.env);
 
   const bus = new EventBus();
@@ -76,7 +77,9 @@ async function main() {
       hasuraSecret: config.hasuraSecret || undefined,
       // Only clear Hasura metadata on explicit request (e.g. after a full reset).
       // Clearing on every start causes unnecessary GraphQL disruption.
-      clearHasuraMetadataOnStart: resetHasura,
+      clearHasuraMetadataOnStart: resetHasura || hyperindexReset,
+      // Nuclear reset: force-remove all Docker containers + volumes for 409 recovery + full table recreation.
+      forceFullReset: hyperindexReset,
     },
     logger,
     checkIntervalMs: 10_000,
@@ -148,7 +151,6 @@ async function main() {
           curve: CurvePoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
           balancer: BalancerPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
           dodo: DodoPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          woofi: WoofiPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
           meta: PoolMeta(limit: 1, order_by: {createdBlock: desc}) { createdBlock }
         }`;
 
@@ -171,7 +173,6 @@ async function main() {
           d.curve?.[0]?.lastUpdatedBlock,
           d.balancer?.[0]?.lastUpdatedBlock,
           d.dodo?.[0]?.lastUpdatedBlock,
-          d.woofi?.[0]?.lastUpdatedBlock,
           d.meta?.[0]?.createdBlock,
         ].filter((x): x is number => typeof x === "number" && x > 0);
 
@@ -220,6 +221,9 @@ async function main() {
   process.on("SIGTERM", shutdown);
 
   // Periodically surface rich sync metrics (lag + rate from real chain head) to TUI + logs - item 2
+  const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
+  const discoveryMode: 'broad' | 'hot-bias' = indexerHotBias ? 'hot-bias' : 'broad';
+
   const syncStatusTimer = setInterval(() => {
     if (!hyperIndexMonitor.isRunning()) return;
     try {
@@ -231,6 +235,7 @@ async function main() {
         remoteBlock: status.remote,
         lag: status.lag,
         syncRate: status.syncRate,
+        discoveryMode,
       });
     } catch {}
   }, 5000);

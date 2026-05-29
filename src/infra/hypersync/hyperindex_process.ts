@@ -48,7 +48,6 @@ export interface HyperIndexProcessOptions {
    *  Passed as POLYGON_RPC_URLS (comma-joined) so the effect client can use viem fallback.
    */
   polygonRpcUrls: string[];
-  katanaRpcUrl?: string;
   envioApiToken?: string;
   logger: Logger;
   eventBus?: EventBusLike;
@@ -63,6 +62,15 @@ export interface HyperIndexProcessOptions {
    * to avoid unnecessary schema disruption and faster startup.
    */
   clearHasuraMetadataOnStart?: boolean;
+
+  /**
+   * Nuclear reset mode for debugging / recovery from stuck Docker state (e.g. 409 "marked for removal").
+   * When true:
+   *   - Aggressively force-removes all envio-* containers AND volumes
+   *   - Forces a full environment reset (equivalent to `envio dev -r` + metadata clear)
+   *   - Intended for the autonomous debug loop and manual `--hyperindex-reset` flows.
+   */
+  forceFullReset?: boolean;
 }
 
 export interface HyperIndexProcess {
@@ -71,6 +79,19 @@ export interface HyperIndexProcess {
   isRunning: () => boolean;
 }
 
+/**
+ * Thin, opinionated wrapper around `envio dev` for the arbitrage bot.
+ *
+ * V3 Philosophy (post-2026-05):
+ * - Prefer `envio stop`, `envio dev -r`, and `forceFullReset` over heavy custom Docker logic.
+ * - The main value we add is:
+ *     1. Reliable root .env injection
+ *     2. Excellent structured logging + bottleneck tracing (our custom parseEnvioLine)
+ *     3. Graceful restart + monitoring integration
+ *     4. Nuclear reset support via --hyperindex-reset
+ *
+ * We deliberately try to stay as close as possible to stock `envio` behavior.
+ */
 export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIndexProcess {
   let proc: ChildProcess | null = null;
   let _stdoutHandler: ((data: Buffer) => void) | null = null;
@@ -152,82 +173,118 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
   }
 
+  /**
+   * INSTRUMENTATION POINT: Rich parser for tracing EVERY activity from the HyperIndex (Envio) process.
+   * This is the primary tool for diagnosing bottlenecks during syncing (historical backfill vs live tail).
+   *
+   * Captures:
+   *   - Throughput (events/s) — primary speed signal
+   *   - Pipeline split signals (Loaders/Handlers/DB Writes) — major recent focus
+   *   - Slow handlers/effects
+   *   - Lifecycle, errors, rate limit pressure, stalls
+   *   - Block progress
+   *
+   * EVERY line is now emitted as structured info log for full traceability.
+   */
   function parseEnvioLine(line: string): void {
-    const bus = opts.eventBus;
-    if (!bus) return;
 
     const chainMatch = line.match(/^\[([^\]]+)\]/);
     const chain = chainMatch && !chainMatch[1].includes(":") ? chainMatch[1].toLowerCase() : undefined;
 
-    const trimmed = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
+    const trimmedLower = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
+    const originalTrimmed = line.replace(/^\[.*?\]\s*/, "");
 
-    // HyperIndex / Envio often prints event throughput during backfill, e.g.:
-    // "processed 123456 events", "backfill  2345 events/s", "X events @ Y eps"
-    // Capture any such numbers for diagnostics (we surface via debug logs + can extend status later).
-    const eventRateMatch = trimmed.match(/(\d{3,})\s*(?:events?|evts?)\s*(?:\/\s*s|per\s*s|\/s|s\b|@\s*(\d+)|eps|\/sec)/i);
-    if (eventRateMatch) {
-      // Just log at debug level; the TUI/monitor already has blk/s. This helps raw debugging of "events per second".
-      opts.logger.debug({ line, parsedEps: eventRateMatch[1] }, "HyperIndex event throughput hint from stdout");
-    }
-    // Also catch bare "N events" near large numbers in progress lines
-    if (trimmed.includes("event")) {
-      const evMatch = trimmed.match(/(\d{4,})\s*events?/);
-      if (evMatch) {
-        opts.logger.debug({ line, eventCount: evMatch[1] }, "HyperIndex event count from stdout");
-      }
+    // === CRITICAL: Log every single line from Envio for complete activity tracing ===
+    opts.logger.info({ source: "hyperindex", raw: line, chain }, "HyperIndex stdout/stderr");
+
+    // 1. High-value throughput (events per second)
+    const epsMatch = originalTrimmed.match(/(\d{2,})\s*(?:events?|evts?)\s*(?:\/\s*s|per\s*s|\/s|@\s*(\d+)|eps|\/sec)/i);
+    if (epsMatch) {
+      const eps = parseInt(epsMatch[1], 10);
+      opts.logger.info({ source: "hyperindex", eventsPerSec: eps, raw: originalTrimmed }, "HyperIndex throughput");
     }
 
-    const blockMatch = trimmed.match(/(\d{5,})\s*->\s*(\d{5,})/);
-    if (blockMatch) {
-      const synced = Math.max(_lastParsedBlock, parseInt(blockMatch[1], 10));
-      const remote = Math.max(_lastRemoteBlock, parseInt(blockMatch[2], 10));
+    const bareEvents = originalTrimmed.match(/(\d{4,})\s*events?/i);
+    if (bareEvents) {
+      opts.logger.debug({ source: "hyperindex", eventCount: bareEvents[1] }, "HyperIndex event count");
+    }
+
+    // 2. PIPELINE SPLIT & BOTTLENECK DETECTION (Loaders / Handlers / DB Writes)
+    if (/pipeline\s*split|loaders|handlers|db\s*(?:write|writes)/i.test(originalTrimmed)) {
+      opts.logger.warn(
+        { source: "hyperindex", raw: originalTrimmed },
+        "HyperIndex PIPELINE SPLIT / bottleneck indicator (Loaders/Handlers/DB Writes)"
+      );
+    }
+
+    // Slow handler / effect (very common source of backfill pain)
+    if (/(V2Factory|V3Factory|PairCreated|PoolCreated|token.*meta|effect|fetchTokenMeta|slow|took\s+\d+ms)/i.test(originalTrimmed)) {
+      opts.logger.info({ source: "hyperindex", raw: originalTrimmed }, "HyperIndex possible slow handler or effect");
+    }
+
+    // 3. Block progress (primary sync progress signal)
+    const blockArrow = trimmedLower.match(/(\d{5,})\s*->\s*(\d{5,})/);
+    if (blockArrow) {
+      const synced = Math.max(_lastParsedBlock, parseInt(blockArrow[1], 10));
+      const remote = Math.max(_lastRemoteBlock, parseInt(blockArrow[2], 10));
       emitStatus("syncing", synced, remote, chain);
       return;
     }
 
-    const progressMatch = trimmed.match(/(\d{5,})\s*\/\s*(\d{5,})/);
-    if (progressMatch) {
-      const synced = Math.max(_lastParsedBlock, parseInt(progressMatch[1], 10));
-      const remote = Math.max(_lastRemoteBlock, parseInt(progressMatch[2], 10));
+    const progressSlash = trimmedLower.match(/(\d{5,})\s*\/\s*(\d{5,})/);
+    if (progressSlash) {
+      const synced = Math.max(_lastParsedBlock, parseInt(progressSlash[1], 10));
+      const remote = Math.max(_lastRemoteBlock, parseInt(progressSlash[2], 10));
       emitStatus("syncing", synced, remote, chain);
       return;
     }
 
-    if (trimmed.includes("indexed") || trimmed.includes("synced") || trimmed.includes("caught")) {
-      const nums = trimmed.match(/\d{5,}/g);
+    // 4. Lifecycle / readiness states
+    if (/(indexed|synced|caught up|caught-up|live tail|following head)/i.test(originalTrimmed)) {
+      const nums = originalTrimmed.match(/\d{5,}/g);
       if (nums) {
         const block = Math.max(_lastParsedBlock, parseInt(nums[nums.length - 1], 10));
         emitStatus("synced", block, block, chain);
+      } else {
+        emitStatus("synced", _lastParsedBlock, _lastRemoteBlock, chain);
       }
       return;
     }
 
-    // Detect "connected" or "listening" or "ready" indicators from envio
-    if (trimmed.includes("connected") || trimmed.includes("listening") || trimmed.includes("ready") || trimmed.includes("running")) {
-      if (_lastParsedBlock === 0) {
-        emitStatus("running", 0, 0, chain);
-      }
+    // Major milestone for autonomous debug loop: indexer has finished setup and is now consuming events
+    if (/Starting indexing!/i.test(originalTrimmed)) {
+      opts.logger.warn({ source: "hyperindex", milestone: "indexer_ready" }, "HyperIndex reached 'Starting indexing!' — real event processing should begin. Watch for pipeline split, throughput, and handler timing in following lines.");
+      emitStatus("indexer_ready", _lastParsedBlock, _lastRemoteBlock, chain);
+    }
+
+    if (/connected|listening|ready|running|started|backfill (started|complete)/i.test(originalTrimmed)) {
+      if (_lastParsedBlock === 0) emitStatus("running", 0, 0, chain);
       return;
     }
 
-    // Detect graphql or hasura startup
-    if (trimmed.includes("graphql") || trimmed.includes("hasura") || trimmed.includes("docker")) {
-      if (_lastParsedBlock === 0) {
-        emitStatus("running", 0, 0, chain);
-      }
+    if (/graphql|hasura|docker|container/i.test(originalTrimmed) && _lastParsedBlock === 0) {
+      emitStatus("running", 0, 0, chain);
       return;
     }
 
-    if (trimmed.includes("error") || trimmed.includes("fail")) {
-      emitStatus("error", _lastParsedBlock, _lastRemoteBlock, chain);
+    // 5. Error / warning surface (critical for bottlenecks)
+    if (/error|fail|exception|panic|rate limit|quota|429|throttl|slow|stall|metadata-warning/i.test(originalTrimmed)) {
+      const level = /error|fail|panic|429/i.test(originalTrimmed) ? "error" : "warn";
+      opts.logger[level as "error" | "warn"]({ source: "hyperindex", raw: originalTrimmed }, "HyperIndex error/warning");
+
+      if (/error|fail|panic/i.test(originalTrimmed)) {
+        emitStatus("error", _lastParsedBlock, _lastRemoteBlock, chain);
+      }
     }
 
-    // Reactive Hasura metadata clear: if Envio complains about "metadata-warnings"
-    // (usually on effect tables), try to clear once so the next restart is clean.
-    // This is a safety net without the cost of clearing on every normal start.
-    if (!_hasDoneReactiveHasuraClear && opts.hasuraUrl && trimmed.includes("metadata-warnings")) {
+    // 6. Reactive safety (Hasura metadata)
+    if (
+      !_hasDoneReactiveHasuraClear &&
+      opts.hasuraUrl &&
+      /metadata-warning/i.test(originalTrimmed)
+    ) {
       _hasDoneReactiveHasuraClear = true;
-      opts.logger.warn("Detected Envio metadata-warnings error — attempting one-time Hasura metadata clear...");
+      opts.logger.warn({ source: "hyperindex" }, "Detected Envio metadata-warnings — triggering one-time Hasura metadata clear");
       clearHasuraMetadata(opts.hasuraUrl, opts.hasuraSecret, opts.logger).catch((err) => {
         opts.logger.warn({ err }, "Reactive Hasura clear failed");
       });
@@ -237,10 +294,12 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   async function start(): Promise<void> {
     if (proc) return;
 
-    // Explicitly stop any existing envio instances to clear Docker containers/ports
+    // === INSTRUMENTED CLEANUP: Aggressive Docker hygiene to prevent "container marked for removal" (409) crashes ===
+    // Observed in Pass 1: First start often fails with 409 on envio-hasura, causing restart delay.
+    // This is a major startup bottleneck for the "hyperindex sync" debug loop.
     try {
-      opts.logger.info("Ensuring previous HyperIndex instances are stopped...");
-      execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 5000 });
+      opts.logger.info("Ensuring previous HyperIndex instances are stopped (aggressive Docker cleanup)...");
+      execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 8000 });
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };
       if (error.code === "ETIMEDOUT") {
@@ -250,8 +309,40 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       }
     }
 
+    // Docker cleanup strategy (V3-aware)
+    // - Normal starts: rely primarily on `envio stop` + bulk rm (fast path)
+    // - forceFullReset or repeated failures: do the full "find + per-container rm -f + volumes" (the exact steps recommended in Envio docs for 409 errors)
+    try {
+      opts.logger.info("Cleaning previous HyperIndex Docker state...");
+
+      // Always try the official stop first
+      try {
+        execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 8000 });
+      } catch {}
+
+      const bulkRm = "docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true";
+      execSync(bulkRm, { stdio: "ignore", timeout: 5000 });
+
+      // Full forensic cleanup only when we really need it (debugging or explicit reset)
+      if (opts.forceFullReset) {
+        opts.logger.warn("forceFullReset active — performing deep Docker cleanup (containers + volumes)");
+        try {
+          const listCmd = `docker ps -a --filter name=envio- --format "{{.ID}} {{.Names}} {{.Status}}" 2>/dev/null || true`;
+          const raw = execSync(listCmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 4000 }).trim();
+          if (raw) {
+            raw.split('\n').forEach(line => {
+              const id = line.split(' ')[0];
+              if (id) execSync(`docker rm -f ${id}`, { stdio: 'ignore', timeout: 5000 });
+            });
+          }
+          execSync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", { stdio: "ignore", timeout: 5000 });
+        } catch {}
+      }
+    } catch (e) {
+      opts.logger.debug({ err: e }, "Docker cleanup encountered non-fatal error");
+    }
+
     freePort(9898);
-    // Only free 8080 if we're not explicitly using an external Hasura (user's custom setup on 5433/8080)
     if (!opts.hasuraUrl) {
       freePort(8080);
     }
@@ -299,9 +390,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
     // If empty list, let the hyperindex rpc_client fall back to its internal default free public
 
-    if (opts.katanaRpcUrl) {
-      env.KATANA_RPC_URL = opts.katanaRpcUrl;
-    }
     if (opts.envioApiToken) {
       env.ENVIO_API_TOKEN = opts.envioApiToken;
     } else {
@@ -310,9 +398,39 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       );
     }
 
-    opts.logger.info({ hyperindexDir: hiDir }, "Starting HyperIndex ingestion");
+    // === AUTONOMOUS DEBUG LOOP SUPPORT ===
+    // Force richer logs from the Envio side (hypersync client rate limiting, handler timing, etc.)
+    // so our new instrumentation in parseEnvioLine catches even more bottleneck detail.
+    env.RUST_LOG = env.RUST_LOG || "info,hypersync_client=debug,envio=debug";
+    env.ENVIO_LOG_LEVEL = env.ENVIO_LOG_LEVEL || "debug";
 
-    proc = spawn("bunx", ["envio", "dev"], {
+    // === INSTRUMENTATION: Full startup trace for bottleneck diagnosis ===
+    const sanitizedEnvKeys = Object.keys(env).filter(k =>
+      /^(POLYGON_|ENVIO_|HYPERSYNC_|HASURA_)/i.test(k) || k === 'RUST_LOG' || k === 'ENVIO_LOG_LEVEL'
+    );
+    const rpcCount = (env.POLYGON_RPC_URLS || env.POLYGON_RPC_URL || '').split(',').filter(Boolean).length;
+    const hasToken = !!env.ENVIO_API_TOKEN;
+    const startBlock = env.POLYGON_START_BLOCK || env.POLYGON_START_BLOCK || 'default (config.yaml)';
+
+    opts.logger.info({
+      hyperindexDir: hiDir,
+      rpcEndpoints: rpcCount,
+      hasEnvioToken: hasToken,
+      startBlock,
+      importantEnv: sanitizedEnvKeys,
+      forceFullReset: opts.forceFullReset,
+      note: hasToken
+        ? 'Using authenticated HyperSync (recommended for speed)'
+        : 'NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Backfill will be slow. Get token at https://envio.dev/app/api-tokens'
+    }, opts.forceFullReset 
+      ? 'Starting HyperIndex with FULL RESET (-r) + volume nuke (409 recovery + table recreation)'
+      : 'Starting HyperIndex ingestion (instrumented for bottleneck tracing)');
+
+    // Also surface the exact command for full reproducibility
+    opts.logger.debug({ cmd: 'bunx envio dev', cwd: hiDir }, 'HyperIndex spawn command');
+
+    const envioArgs = opts.forceFullReset ? ["envio", "dev", "-r"] : ["envio", "dev"];
+    proc = spawn("bunx", envioArgs, {
       cwd: hiDir,
       env,
       stdio: ["ignore", "pipe", "pipe"],
@@ -436,13 +554,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         p!.stdout?.off("data", _stdoutHandler!);
         p!.stderr?.off("data", _stderrHandler!);
 
-        // Final explicit envio stop to clean up Docker containers
+        // Final explicit cleanup — also apply the 409 "marked for removal" force-remove logic on shutdown
         try {
-          opts.logger.info("Running explicit envio stop to clean up containers");
+          opts.logger.info("Running explicit envio stop + force container cleanup (409 workaround)");
           execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
         } catch (err) {
           opts.logger.warn({ err }, "envio stop failed during cleanup");
         }
+
+        try {
+          execSync("docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true", { stdio: "ignore", timeout: 5000 });
+        } catch {}
       }
 
       p.on("exit", cleanup);

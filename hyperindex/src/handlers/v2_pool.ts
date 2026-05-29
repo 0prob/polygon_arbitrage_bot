@@ -1,22 +1,30 @@
 import { indexer } from "envio";
 
 /**
- * Live debug indexer: per-event V2PoolState writes removed.
+ * Live debug / discovery-only indexer profile (Envio v3 recommended pattern).
  *
- * Previously this handler wrote V2PoolState on every Sync (highest volume event on Polygon).
- * That drove DB Writes to ~60% of pipeline split time during live tail.
+ * High-volume events (Sync, Swap, etc.) are intentionally no-op at the handler level.
+ * This keeps DB writes near zero during live tail (see pipeline split metrics).
  *
- * For the arb bot's "live debug indexer" use case:
- * - Pool discovery happens via V2Factory.PairCreated (writes PoolMeta + TokenMeta only).
- * - Live state for simulation comes from the bot's RPC fetcher (fetchMissingPoolState).
- * - buildStateCacheFromGraphQL is best-effort bootstrap; missing state is tolerated.
+ * Discovery of new pools still flows through the factory events (PairCreated / PoolCreated)
+ * which write only PoolMeta + TokenMeta.
  *
- * Result: DB writes are now minimal (creation-time metadata only). Loaders + handlers dominate.
+ * The arbitrage bot relies on:
+ *   - Its own RPC fetcher (`fetchMissingPoolState`) for hot state
+ *   - 60s `discoverPoolsFromHasura` for new pools
+ *
+ * References:
+ *   - https://docs.envio.dev/docs/HyperIndex/preload-optimization
+ *   - https://docs.envio.dev/docs/HyperIndex/event-handlers#performance-considerations
  */
 indexer.onEvent(
-  { contract: "UniswapV2Pool", event: "Sync" },
+  {
+    contract: "UniswapV2Pool",
+    event: "Sync",
+    // No `where` needed here — contractRegister from the factory already limits
+    // this wildcard to only addresses we actually care about.
+  },
   async () => {
-    // No-op for live debug indexer.
-    // No entity writes — eliminates the dominant source of DB write time in pipeline split.
+    // Deliberate no-op. This is the key optimization for the bot's live-debug use case.
   },
 );

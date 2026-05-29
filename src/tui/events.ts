@@ -3,13 +3,13 @@ export type ArbEvent =
   | { type: "graph_built"; poolCount: number; cycleCount: number; poolsPerProtocol?: Record<string, number>; maxHops: number }
   | { type: "opportunity_found"; routeKey: string; profitWei: bigint; path: string; roi: number }
   | { type: "execution_submitted"; routeKey: string; txHash?: string }
-  | { type: "execution_result"; routeKey: string; success: boolean; txHash?: string; error?: string; profitWei?: bigint }
+  | { type: "execution_result"; routeKey: string; success: boolean; txHash?: string; error?: string; profitWei?: bigint; traceMessages?: string[] }
   | { type: "gas_snapshot"; gasPrice: bigint }
   | { type: "pool_discovery"; count: number }
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
   | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number }
-  | { type: "hyperindex_status"; status: string; syncedBlock: number; remoteBlock: number; chain?: string; lag?: number; syncRate?: number }
+  | { type: "hyperindex_status"; status: string; syncedBlock: number; remoteBlock: number; chain?: string; lag?: number; syncRate?: number; discoveryMode?: 'broad' | 'hot-bias' }
   | { type: "pipeline_stage"; stage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING" }
   | { type: "simulation_progress"; current: number; total: number; profitable: number };
 
