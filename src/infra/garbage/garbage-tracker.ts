@@ -82,10 +82,7 @@ loadGarbageAddresses().catch(() => {
  * Scans all current pools from Hasura and auto-marks any tokens that match known factories
  * as garbage. This cleans up historical bad data from before the indexer-side filters existed.
  */
-export async function performOneTimeGarbageCleanup(
-  graphqlUrl: string,
-  adminSecret: string
-): Promise<number> {
+export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecret: string): Promise<number> {
   if (!graphqlUrl) return 0;
 
   // Hardcoded list of factories we index (to detect historical garbage)
@@ -100,11 +97,7 @@ export async function performOneTimeGarbageCleanup(
 
   try {
     const { graphQLQuery } = await import("../hypersync/hyperindex_graphql.ts");
-    const result = await graphQLQuery(
-      graphqlUrl,
-      adminSecret,
-      `{ PoolMeta(limit: 5000) { id tokens } }`
-    );
+    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 5000) { id tokens } }`);
 
     if (!result?.PoolMeta) return 0;
 
@@ -112,7 +105,9 @@ export async function performOneTimeGarbageCleanup(
     for (const pool of result.PoolMeta) {
       let tokens: string[] = [];
       if (typeof pool.tokens === "string") {
-        try { tokens = JSON.parse(pool.tokens); } catch {}
+        try {
+          tokens = JSON.parse(pool.tokens);
+        } catch {}
       } else if (Array.isArray(pool.tokens)) {
         tokens = pool.tokens.map(String);
       }

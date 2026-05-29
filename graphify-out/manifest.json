@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/package.json": {
-    "mtime": 1780003981.9671564,
-    "ast_hash": "b76d24616c0bce82c6609b965c98edc2",
+    "mtime": 1780007387.5832055,
+    "ast_hash": "da8369dd59a1a26582d7ff5e17e951ee",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/erc20.json": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780005857.1126852,
-    "ast_hash": "58196e18e7b8ebe6e5fbd0895456a67f",
+    "mtime": 1780007636.9124205,
+    "ast_hash": "f7b738e2078f0778135373265344097d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -665,13 +665,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1780006823.2698588,
-    "ast_hash": "d9df7afb31f5c24ccada32b8a81593a2",
+    "mtime": 1780007473.2302423,
+    "ast_hash": "c161f17c01231c9ec46684a36fec1198",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1780005774.2975256,
-    "ast_hash": "fee3c1841de8c4ffa9efbd9beba75631",
+    "mtime": 1780007621.056596,
+    "ast_hash": "1d4f7074a3c8011be73b8e03f1e5b2df",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1780006851.3895085,
-    "ast_hash": "4823fab80fd87669d10f10f042fb269b",
+    "mtime": 1780007415.4588912,
+    "ast_hash": "d240e300ba2f2b90a9a605cdae8d6c7a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -880,13 +880,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/scripts/clear-hasura-metadata.ts": {
-    "mtime": 1780004037.334582,
-    "ast_hash": "d812425eac39d9ca8ef173ca24c06f13",
+    "mtime": 1780007187.949487,
+    "ast_hash": "b5f5b1938da158a113f37d9748d8ebbe",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/garbage/garbage-tracker.ts": {
-    "mtime": 1780006794.6342182,
-    "ast_hash": "6c527cbef18279dd4c502a56eac41892",
+    "mtime": 1780007443.2425785,
+    "ast_hash": "292828e0291c5003c87e8a1a24dc4976",
     "semantic_hash": ""
   }
 }

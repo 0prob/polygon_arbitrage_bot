@@ -1,46 +1,22 @@
 import { indexer } from "envio";
 
 /**
- * In-memory cache for immutable pool fees.
- * Eliminates repeated DB reads of PoolMeta on every Sync during historical backfill.
- * Fees are set once at PairCreated time and never change for V2 pools.
- * First event per pool pays 1x PoolMeta.get; all subsequent events are pure memory + DB write.
- * This is the highest-leverage change for improving "events per second" backfill rate.
+ * Live debug indexer: per-event V2PoolState writes removed.
+ *
+ * Previously this handler wrote V2PoolState on every Sync (highest volume event on Polygon).
+ * That drove DB Writes to ~60% of pipeline split time during live tail.
+ *
+ * For the arb bot's "live debug indexer" use case:
+ * - Pool discovery happens via V2Factory.PairCreated (writes PoolMeta + TokenMeta only).
+ * - Live state for simulation comes from the bot's RPC fetcher (fetchMissingPoolState).
+ * - buildStateCacheFromGraphQL is best-effort bootstrap; missing state is tolerated.
+ *
+ * Result: DB writes are now minimal (creation-time metadata only). Loaders + handlers dominate.
  */
-const poolFeeCache = new Map<string, number>();
-
 indexer.onEvent(
   { contract: "UniswapV2Pool", event: "Sync" },
-  async ({ event, context }) => {
-    const poolId = event.srcAddress.toLowerCase();
-
-    let fee = poolFeeCache.get(poolId);
-    if (fee === undefined) {
-      const [existing, meta] = await Promise.all([
-        context.V2PoolState.get(poolId),
-        context.PoolMeta.get(poolId),
-      ]);
-      fee = existing?.fee ?? meta?.fee;
-      if (fee !== undefined) poolFeeCache.set(poolId, fee);
-      context.V2PoolState.set({
-        id: poolId,
-        address: poolId,
-        lastUpdatedBlock: Number(event.block.number),
-        reserve0: event.params.reserve0,
-        reserve1: event.params.reserve1,
-        fee,
-      });
-      return;
-    }
-
-    // Fast path: fee known from cache, only need the mutable state row (or create fresh)
-    context.V2PoolState.set({
-      id: poolId,
-      address: poolId,
-      lastUpdatedBlock: Number(event.block.number),
-      reserve0: event.params.reserve0,
-      reserve1: event.params.reserve1,
-      fee,
-    });
+  async () => {
+    // No-op for live debug indexer.
+    // No entity writes — eliminates the dominant source of DB write time in pipeline split.
   },
 );

@@ -35,11 +35,30 @@ export class HyperSyncService {
     this.logger = logger;
   }
 
+  /**
+   * Internal helper: always respect the HyperSync client's rate limit (including the
+   * free tier 100 requests/min unauthenticated limit on hypersync.xyz).
+   * This ensures all HyperIndex monitoring, reorg detection, receipt polling, and
+   * state fetching automatically comply without callers needing to remember to wait.
+   */
+  private async waitForRateLimitInternal(): Promise<void> {
+    if (this.client?.waitForRateLimit) {
+      try {
+        await this.client.waitForRateLimit();
+      } catch (err) {
+        // Non-fatal — the underlying client may throw if the limit info is temporarily unavailable.
+        this.logger?.debug({ err }, "HyperSync waitForRateLimit threw (continuing)");
+      }
+    }
+  }
+
   async getHeight(): Promise<number> {
+    await this.waitForRateLimitInternal();
     return this.client.getHeight();
   }
 
   async getChainId(): Promise<number> {
+    await this.waitForRateLimitInternal();
     return this.client.getChainId();
   }
 
@@ -56,15 +75,14 @@ export class HyperSyncService {
    * Use this for backpressure in the monitor, fetcher, and reorg detector.
    */
   async waitForRateLimit(): Promise<void> {
-    if (this.client.waitForRateLimit) {
-      await this.client.waitForRateLimit();
-    }
+    await this.waitForRateLimitInternal();
   }
 
   /**
    * Get a recent block with useful fields. Faster than traditional RPC for historical data.
    */
   async getBlock(numberOrTag: number | "latest" | bigint): Promise<any | null> {
+    await this.waitForRateLimitInternal();
     const from = typeof numberOrTag === "string" ? 0 : Number(numberOrTag);
     const query: any = {
       fromBlock: from,
@@ -87,6 +105,7 @@ export class HyperSyncService {
    * For full fidelity, the legacy HyperRpcClient (JSON-RPC) can still be used alongside.
    */
   async getBlockByNumber(blockNumber: bigint | number | "latest"): Promise<any | null> {
+    await this.waitForRateLimitInternal();
     const fromBlock = typeof blockNumber === "string" ? undefined : Number(blockNumber);
     const query: any = {
       fromBlock: fromBlock ?? 0,
@@ -118,6 +137,7 @@ export class HyperSyncService {
     address?: string | string[];
     topics?: (string | string[] | null)[];
   }): Promise<any[]> {
+    await this.waitForRateLimitInternal();
     const query: any = {
       fromBlock: params.fromBlock ? Number(params.fromBlock) : 0,
       toBlock: params.toBlock ? Number(params.toBlock) : undefined,
@@ -149,6 +169,7 @@ export class HyperSyncService {
    * This is often faster than RPC for recent transactions. Falls back to null if not found quickly.
    */
   async getTransactionReceipt(txHash: string, lookbackBlocks = 100): Promise<any | null> {
+    await this.waitForRateLimitInternal();
     try {
       const height = await this.getHeight();
       const query: any = {

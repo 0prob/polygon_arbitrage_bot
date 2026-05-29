@@ -181,7 +181,7 @@ Implemented in the immediate follow-up session:
 - Converted sequential `await` loops over token metadata effects into `Promise.all`:
   - `curve_factory.ts` (PoolAdded → n-coin Curve pools)
   - `balancer.ts` (PoolRegistered and TokensRegistered)
-  - Updated both `.ts` sources and the `handlers_mjs/` compiled copies.
+  - (Note: at the time a `handlers_mjs/` compiled copy existed for legacy reasons; it has since been removed as Envio v3 loads `.ts` handlers directly via tsx.)
 
 - Updated performance comments in config.yaml to reference the Envio Preload Optimization Guide and the new parallelization work.
 

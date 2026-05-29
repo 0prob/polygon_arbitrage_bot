@@ -91,10 +91,7 @@ async function main() {
   // One-time historical garbage cleanup (scans existing PoolMeta in Hasura)
   if (config.hasuraUrl) {
     try {
-      const cleaned = await performOneTimeGarbageCleanup(
-        config.hasuraUrl,
-        config.hasuraSecret || ""
-      );
+      const cleaned = await performOneTimeGarbageCleanup(config.hasuraUrl, config.hasuraSecret || "");
       if (cleaned > 0) {
         logger.info(`One-time garbage cleanup marked ${cleaned} new bad addresses from historical data`);
       }

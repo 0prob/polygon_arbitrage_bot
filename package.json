@@ -20,7 +20,6 @@
     "test:coverage": "bun --bun run vitest run --coverage",
     "lint": "bunx eslint src/ --fix",
     "fmt": "bunx prettier --write src/",
-    "compile": "cd hyperindex && npx tsc --outDir src/handlers_mjs --skipLibCheck --moduleResolution bundler; true",
     "dev": "cd hyperindex && bunx envio dev",
     "cgen": "cd hyperindex && bunx envio codegen",
     "gentok": "cd hyperindex && bun run generate-tokens",

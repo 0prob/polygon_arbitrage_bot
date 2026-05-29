@@ -1,5 +1,6 @@
 import { spawn, execSync, type ChildProcess } from "child_process";
 import path from "path";
+import { readFile } from "fs/promises";
 import type { Logger } from "../observability/logger.ts";
 
 interface HyperIndexStatusEvent {
@@ -11,6 +12,35 @@ interface HyperIndexStatusEvent {
 }
 
 type EventBusLike = { emit(event: HyperIndexStatusEvent): void };
+
+/**
+ * Minimal .env file loader.
+ * Ensures the HyperIndex (envio dev + its Docker containers) always sees variables
+ * from the project root .env, regardless of cwd or how the parent process was invoked.
+ */
+async function loadEnvFile(filePath: string): Promise<Record<string, string>> {
+  try {
+    const content = await readFile(filePath, "utf8");
+    const result: Record<string, string> = {};
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#") || line.startsWith("//")) continue;
+      const eq = line.indexOf("=");
+      if (eq === -1) continue;
+      const key = line.slice(0, eq).trim();
+      let value = line.slice(eq + 1).trim();
+      // Strip matching quotes
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (key) result[key] = value;
+    }
+    return result;
+  } catch {
+    // File missing or unreadable — not fatal
+    return {};
+  }
+}
 
 export interface HyperIndexProcessOptions {
   dataDir: string;
@@ -195,11 +225,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // Reactive Hasura metadata clear: if Envio complains about "metadata-warnings"
     // (usually on effect tables), try to clear once so the next restart is clean.
     // This is a safety net without the cost of clearing on every normal start.
-    if (
-      ! _hasDoneReactiveHasuraClear &&
-      opts.hasuraUrl &&
-      trimmed.includes("metadata-warnings")
-    ) {
+    if (!_hasDoneReactiveHasuraClear && opts.hasuraUrl && trimmed.includes("metadata-warnings")) {
       _hasDoneReactiveHasuraClear = true;
       opts.logger.warn("Detected Envio metadata-warnings error — attempting one-time Hasura metadata clear...");
       clearHasuraMetadata(opts.hasuraUrl, opts.hasuraSecret, opts.logger).catch((err) => {
@@ -244,8 +270,24 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     const rpcList = opts.polygonRpcUrls && opts.polygonRpcUrls.length > 0 ? opts.polygonRpcUrls : [];
+
+    // Explicitly load the project root .env so that `envio dev` (and the Docker
+    // containers it manages) reliably see variables like POLYGON_RPC_URLS,
+    // ENVIO_API_TOKEN, POLYGON_HYPERSYNC_URL, POLYGON_START_BLOCK, etc.
+    // This works even if the parent process was not started with `bun --env-file=.env`.
+    const rootEnvPath = path.join(hiDir, "..", ".env");
+    const rootEnvVars = await loadEnvFile(rootEnvPath);
+
+    if (Object.keys(rootEnvVars).length > 0) {
+      opts.logger.debug(
+        { path: rootEnvPath, loadedKeys: Object.keys(rootEnvVars).length },
+        "Loaded project root .env for HyperIndex (ensures envio dev + Docker containers see root variables)",
+      );
+    }
+
     const env: Record<string, string> = {
-      ...process.env,
+      ...rootEnvVars,
+      ...process.env, // Shell / parent process values take precedence
       PATH: process.env.PATH ?? "",
       HOME: process.env.HOME ?? "",
     } as Record<string, string>;
@@ -292,7 +334,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       opts.logger.debug({ source: "hyperindex", line }, "");
 
       _stderrBuffer.push(line);
-      if (_stderrBuffer.length > 30) _stderrBuffer.shift();  // Increased for better crash diagnostics
+      if (_stderrBuffer.length > 30) _stderrBuffer.shift(); // Increased for better crash diagnostics
 
       parseEnvioLine(line);
     };
@@ -302,7 +344,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       if (code !== 0 && code !== null) {
         opts.logger.error(
           { code, signal, lastStderr: _stderrBuffer.slice(-30).join("\n") },
-          "HyperIndex process crashed — recent stderr below"
+          "HyperIndex process crashed — recent stderr below",
         );
       } else {
         opts.logger.warn({ code, signal }, "HyperIndex process exited");

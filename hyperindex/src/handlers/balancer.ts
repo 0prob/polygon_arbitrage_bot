@@ -106,113 +106,16 @@ indexer.onEvent(
 
 indexer.onEvent(
   { contract: "BalancerVault", event: "Swap" },
-  async ({ event, context }) => {
-    const poolId = event.params.poolId.toLowerCase();
-
-    let poolAddr = balancerIdToAddrCache.get(poolId);
-    if (!poolAddr) {
-      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-      if (!mapping) return;
-      poolAddr = mapping.address;
-      balancerIdToAddrCache.set(poolId, poolAddr);
-    }
-
-    let meta = balancerMetaCache.get(poolAddr);
-    const state = await context.BalancerPoolState.get(poolAddr);
-
-    if (!state || !meta) {
-      const dbMeta = await context.PoolMeta.get(poolAddr);
-      if (state && dbMeta) {
-        meta = { tokens: dbMeta.tokens as string[], fee: dbMeta.fee ?? 0 };
-        balancerMetaCache.set(poolAddr, meta);
-      } else {
-        const metaEffect = await context.effect(fetchBalancerMetadata, {
-          pool: poolAddr,
-          poolId,
-          blockNumber: BigInt(event.block.number),
-        });
-        const fee = metaEffect.swapFee > 0n ? Number(metaEffect.swapFee / 10n ** 14n) : 0;
-        meta = { tokens: metaEffect.tokens, fee };
-        balancerMetaCache.set(poolAddr, meta);
-
-        context.BalancerPoolState.set({
-          id: poolAddr,
-          address: poolAddr,
-          lastUpdatedBlock: Number(event.block.number),
-          poolId: poolId,
-          balances: metaEffect.balances,
-          weights: metaEffect.weights,
-          amp: metaEffect.amp,
-          swapFee: metaEffect.swapFee,
-          scalingFactors: metaEffect.scalingFactors,
-        });
-        return;
-      }
-    }
-
-    const tIn = event.params.tokenIn.toLowerCase();
-    const tOut = event.params.tokenOut.toLowerCase();
-    const aIn = event.params.amountIn;
-    const aOut = event.params.amountOut;
-
-    const tokens = meta.tokens;
-    const balances = [...state.balances];
-
-    const idxIn = tokens.indexOf(tIn);
-    const idxOut = tokens.indexOf(tOut);
-
-    if (idxIn >= 0 && balances[idxIn] != null) balances[idxIn] = BigInt(balances[idxIn]) + BigInt(aIn);
-    if (idxOut >= 0 && balances[idxOut] != null) balances[idxOut] = BigInt(balances[idxOut]) - BigInt(aOut);
-
-    context.BalancerPoolState.set({
-      ...state,
-      lastUpdatedBlock: Number(event.block.number),
-      balances,
-    });
+  async () => {
+    // No-op for live debug indexer.
+    // Per-event BalancerPoolState writes removed (was contributing to DB write %).
+    // Discovery writes (PoolRegistered/TokensRegistered) remain above.
   },
 );
 
 indexer.onEvent(
   { contract: "BalancerVault", event: "PoolBalanceChanged" },
-  async ({ event, context }) => {
-    const poolId = event.params.poolId.toLowerCase();
-
-    let poolAddr = balancerIdToAddrCache.get(poolId);
-    if (!poolAddr) {
-      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-      if (!mapping) return;
-      poolAddr = mapping.address;
-      balancerIdToAddrCache.set(poolId, poolAddr);
-    }
-
-    let meta = balancerMetaCache.get(poolAddr);
-    const state = await context.BalancerPoolState.get(poolAddr);
-
-    if (!state) return;
-    if (!meta) {
-      const dbMeta = await context.PoolMeta.get(poolAddr);
-      if (!dbMeta) return;
-      meta = { tokens: dbMeta.tokens as string[], fee: dbMeta.fee ?? 0 };
-      balancerMetaCache.set(poolAddr, meta);
-    }
-
-    const eventTokens = event.params.tokens.map((t: string) => t.toLowerCase());
-    const amounts = event.params.amounts;
-    const metaTokens = meta.tokens;
-    const balances = [...state.balances];
-
-    for (let i = 0; i < eventTokens.length; i++) {
-      const idx = metaTokens.indexOf(eventTokens[i]);
-      const delta = amounts[i];
-      if (idx >= 0 && delta != null) {
-        balances[idx] = (balances[idx] != null ? BigInt(balances[idx]) : 0n) + BigInt(delta);
-      }
-    }
-
-    context.BalancerPoolState.set({
-      ...state,
-      lastUpdatedBlock: Number(event.block.number),
-      balances,
-    });
+  async () => {
+    // No-op for live debug indexer.
   },
 );

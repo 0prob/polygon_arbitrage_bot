@@ -49,40 +49,9 @@ indexer.onEvent(
 
 indexer.onEvent(
   { contract: "PoolManager", event: "Swap" },
-  async ({ event, context }) => {
-    const poolId = event.params.id.toLowerCase();
-
-    const cached = v4MetaCache.get(poolId);
-    if (cached) {
-      context.V4PoolState.set({
-        id: poolId,
-        address: poolId,
-        lastUpdatedBlock: Number(event.block.number),
-        sqrtPriceX96: event.params.sqrtPriceX96,
-        liquidity: event.params.liquidity,
-        tick: Number(event.params.tick),
-        fee: event.params.fee,
-        tickSpacing: cached.tickSpacing,
-        hooks: cached.hooks,
-      });
-      return;
-    }
-
-    const existing = await context.V4PoolState.get(poolId);
-    if (!existing) return;
-
-    v4MetaCache.set(poolId, { tickSpacing: existing.tickSpacing, hooks: existing.hooks });
-
-    context.V4PoolState.set({
-      id: poolId,
-      address: poolId,
-      lastUpdatedBlock: Number(event.block.number),
-      sqrtPriceX96: event.params.sqrtPriceX96,
-      liquidity: event.params.liquidity,
-      tick: Number(event.params.tick),
-      fee: event.params.fee,
-      tickSpacing: existing.tickSpacing,
-      hooks: existing.hooks,
-    });
+  async () => {
+    // No-op for live debug indexer.
+    // V4 Swap events no longer write V4PoolState (removes repeated DB writes).
+    // Initialize (above) still writes creation-time state — acceptable volume.
   },
 );

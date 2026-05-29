@@ -5,37 +5,56 @@ description: "High-performance DEX indexing for arbitrage opportunities (Polygon
 rollback_on_reorg: true
 raw_events: false
 
-# === Backfill performance debugging (events per second) ===
-# The observed "events/sec" during `envio dev` historical sync is dominated by:
-# 1. Per-event DB work in handlers (the v2/v3 Sync/Swap handlers previously did 2x PoolMeta.get per event).
-#    Fixed by the in-memory feeCache in src/handlers/v2_pool.ts + v3_pool.ts.
-# 2. Effect rateLimits + RPC latency on first-seen pools (token/curve/dodo/balancer metadata).
-#    Mitigated by large STATIC_TOKEN_DECIMALS registry + cache: true on all createEffect().
-#    Further improved by using Promise.all for parallel token metadata fetches in factory handlers.
+# === Backfill / Live performance debugging (Pipeline Split) ===
+# Envio "Pipeline split" (visible in envio dev / metrics) shows time distribution:
+#   Loaders | Handlers | DB Writes
 #
-#    Observed (May 2026 profiling): V2Factory.PairCreated is by far the slowest handler.
-#    Pipeline split typically shows ~80% time in "Loaders" — almost entirely the two
-#    fetchTokenMeta effect calls. Solution: keep the static token registry extremely complete
-#    (run `bun run generate-tokens` often). This drops those calls to pure memory lookups.
-# 3. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
-# 4. HyperSync quota / ENVIO_API_TOKEN quality (get a real token at https://envio.dev/app/api-tokens).
-# 5. POLYGON_RPC_URLS quality for the small % of effect fallbacks (use Alchemy pay-as-you-go or better).
+# Ideal for a live debug indexer: Loaders + Handlers dominate, DB Writes near zero.
+# Previously (pre-2026-05 fix): DB Writes often 50-60%+ due to unconditional
+#   *PoolState.set() on every Sync/Swap/TokenExchange/etc. in the per-pool handlers.
+#
+# Fix applied: Removed all per-event mutable state writes from high-volume handlers:
+#   - v2_pool.ts, v3_pool.ts, curve_pool.ts, dodo_pool.ts, v4.ts (Swap), balancer.ts (Swap/PoolBalanceChanged)
+#   - Only creation-time writes remain (factory/registry events + V4 Initialize + DODO factory handlers).
+#
+# Result for "live debug indexer" (`envio dev` while bot runs):
+#   - DB Writes → minimal (pool discovery metadata only)
+#   - Loaders → token metadata effects on first-seen pools (dominated by STATIC_TOKEN_DECIMALS hit rate)
+#   - Handlers → tiny (mostly contractRegister + PoolMeta/TokenMeta sets on creation)
+#
+# The arb bot tolerates this because:
+#   - Primary live state source is its own RPC fetcher (fetchMissingPoolState in LF path).
+#   - buildStateCacheFromGraphQL is best-effort bootstrap at startup + periodic refresh.
+#   - Pool discovery (new PairCreated/PoolCreated/...) still flows through Hasura → bot.
+#
+# Historical full backfill still works (no schema change), but live tail is now cheap on DB.
+#
+# Observed (May 2026): V2Factory.PairCreated remains the heaviest single handler due to
+# two fetchTokenMeta effects. Keep scripts/generate-polygon-tokens.ts output complete.
+#
+# Remaining throughput factors (after DB write elimination):
+# 1. Effect latency on first-seen pools (token/curve/dodo/balancer metadata).
+#    Mitigated by STATIC_TOKEN_DECIMALS registry + cache: true + Promise.all parallelization.
+# 2. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
+# 3. HyperSync quota / ENVIO_API_TOKEN quality.
+# 4. POLYGON_RPC_URLS quality for effect fallbacks.
 #
 # To observe real-time:
 #   - Run `bun run dev` (or the bot) and watch envio stdout for "events", "processed", block arrows.
 #   - The bot's HyperIndexMonitor logs blk/s every ~30s (proxy for overall throughput).
-#   - For raw eps, grep the hyperindex stdout logs or add pino pretty on the envio side.
+#   - For raw eps + pipeline split, use `envio dev` TUI/metrics or grep logs.
 #
-# After a full backfill + warm caches, "live tail" (new blocks) should sustain 5k-50k+ events/s easily.
-# Cold full-history backfill on Polygon from 2021 is typically 2k-15k events/s depending on above factors.
+# After a full backfill + warm caches, "live tail" (new blocks) now sustains very high event/s
+# with near-zero DB write cost (the previous 50-60% DB Writes tax is gone).
+# Cold full-history backfill on Polygon from 2021 is still gated by effect loaders on first-seen pools + batch size.
 
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
 # - 5000 (current) → good balance of throughput vs memory / effect concurrency on Polygon.
 # - Higher (7000-10000) → faster backfill if you have headroom on RPC quota and RAM.
 # - Lower (2000-4000) → more stable under heavy load or limited RPC allowance.
-# The cache: true on all effects + the JS-side fee cache in v2/v3 handlers + Promise.all parallelization
-# in registration handlers make repeated work cheap after warm-up. See Envio Preload Optimization Guide.
+# The cache: true on all effects + Promise.all parallelization in registration handlers
+# make repeated work cheap after warm-up. Per-event state writes removed for live debug profile.
 full_batch_size: 5000
 # 5000 is a balanced value for Polygon with high pool density + many effects.
 # Lower than the previous 12000 to reduce peak memory and RPC effect concurrency pressure
@@ -216,7 +235,7 @@ chains:
       - name: DodoPool
         # Point 1: Uses same start_block as factory. Point 3: addresses supplied exclusively via contractRegister in dodo_factory.ts
         start_block: ${POLYGON_START_BLOCK:-13630000}
-        abi_file_path: abis/uniswap_v2_pool.json
+        abi_file_path: abis/dodo_pool.json
         handler: src/handlers/dodo_pool.ts
         events:
           - event: Sync

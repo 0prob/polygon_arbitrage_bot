@@ -1,101 +1,30 @@
 import { indexer } from "envio";
 
 /**
- * In-memory cache for immutable pool fees + tickSpacing (V3).
- * Eliminates repeated DB reads of PoolMeta on every Swap/Initialize during historical backfill.
- * This is the highest-leverage change for improving "events per second" backfill rate on Polygon.
+ * Live debug indexer: per-event V3PoolState writes removed.
+ *
+ * Swap is the highest-frequency event for V3 pools. Initialize is rarer (pool creation).
+ * Previous implementation cached fee/tickSpacing in memory solely to avoid DB reads
+ * before every V3PoolState.set() — that pattern existed only because of the write load.
+ *
+ * For live debug:
+ * - V3Factory.PoolCreated handles discovery (PoolMeta + TokenMeta).
+ * - No per-Swap or per-Initialize state writes.
+ * - Bot relies on RPC fetcher for live V3 state (sqrtPrice, liquidity, tick).
+ *
+ * This drops DB write time dramatically in pipeline split for live tail.
  */
-const poolFeeCache = new Map<string, { fee?: number; tickSpacing?: number }>();
-
-function getCachedMeta(poolId: string) {
-  return poolFeeCache.get(poolId);
-}
-
-function setCachedMeta(poolId: string, fee?: number, tickSpacing?: number) {
-  const prev = poolFeeCache.get(poolId) ?? {};
-  poolFeeCache.set(poolId, {
-    fee: fee ?? prev.fee,
-    tickSpacing: tickSpacing ?? prev.tickSpacing,
-  });
-}
-
 indexer.onEvent(
   { contract: "UniswapV3Pool", event: "Initialize" },
-  async ({ event, context }) => {
-    const poolId = event.srcAddress.toLowerCase();
-
-    let cached = getCachedMeta(poolId);
-    if (!cached || cached.fee === undefined || cached.tickSpacing === undefined) {
-      const [existing, meta] = await Promise.all([
-        context.V3PoolState.get(poolId),
-        context.PoolMeta.get(poolId),
-      ]);
-      const fee = existing?.fee ?? meta?.fee;
-      const tickSpacing = existing?.tickSpacing ?? meta?.tickSpacing;
-      if (fee !== undefined || tickSpacing !== undefined) setCachedMeta(poolId, fee, tickSpacing);
-      context.V3PoolState.set({
-        id: poolId,
-        address: poolId,
-        lastUpdatedBlock: Number(event.block.number),
-        sqrtPriceX96: event.params.sqrtPriceX96,
-        liquidity: 0n,
-        tick: Number(event.params.tick),
-        fee,
-        tickSpacing,
-      });
-      return;
-    }
-
-    context.V3PoolState.set({
-      id: poolId,
-      address: poolId,
-      lastUpdatedBlock: Number(event.block.number),
-      sqrtPriceX96: event.params.sqrtPriceX96,
-      liquidity: 0n,
-      tick: Number(event.params.tick),
-      fee: cached.fee,
-      tickSpacing: cached.tickSpacing,
-    });
+  async () => {
+    // No-op. Creation-time metadata already written by V3Factory.PoolCreated.
   },
 );
 
 indexer.onEvent(
   { contract: "UniswapV3Pool", event: "Swap" },
-  async ({ event, context }) => {
-    const poolId = event.srcAddress.toLowerCase();
-
-    const cached = getCachedMeta(poolId);
-    if (cached && cached.fee !== undefined && cached.tickSpacing !== undefined) {
-      context.V3PoolState.set({
-        id: poolId,
-        address: poolId,
-        lastUpdatedBlock: Number(event.block.number),
-        sqrtPriceX96: event.params.sqrtPriceX96,
-        liquidity: event.params.liquidity,
-        tick: Number(event.params.tick),
-        fee: cached.fee,
-        tickSpacing: cached.tickSpacing,
-      });
-      return;
-    }
-
-    // Cold path (first event for this pool in the process)
-    const [existing, meta] = await Promise.all([
-      context.V3PoolState.get(poolId),
-      context.PoolMeta.get(poolId),
-    ]);
-    const fee = existing?.fee ?? meta?.fee;
-    const tickSpacing = existing?.tickSpacing ?? meta?.tickSpacing;
-    if (fee !== undefined || tickSpacing !== undefined) setCachedMeta(poolId, fee, tickSpacing);
-    context.V3PoolState.set({
-      id: poolId,
-      address: poolId,
-      lastUpdatedBlock: Number(event.block.number),
-      sqrtPriceX96: event.params.sqrtPriceX96,
-      liquidity: event.params.liquidity,
-      tick: Number(event.params.tick),
-      fee,
-      tickSpacing,
-    });
+  async () => {
+    // No-op for live debug indexer.
+    // Eliminates the dominant DB write source for V3 (Swap events).
   },
 );
