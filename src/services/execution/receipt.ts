@@ -43,9 +43,7 @@ export class ReceiptPoller {
 
         if (receipt) {
           const rawTraces = (receipt as any).traces ?? [];
-          const traceSummary = rawTraces.length > 0
-            ? safeParseTraces(txHash, rawTraces)
-            : undefined;
+          const traceSummary = rawTraces.length > 0 ? safeParseTraces(txHash, rawTraces) : undefined;
 
           return {
             status: (receipt as any).status === "0x1" || (receipt as any).status === true || (receipt as any).status === "success",

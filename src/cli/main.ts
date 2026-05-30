@@ -222,7 +222,7 @@ async function main() {
 
   // Periodically surface rich sync metrics (lag + rate from real chain head) to TUI + logs - item 2
   const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
-  const discoveryMode: 'broad' | 'hot-bias' = indexerHotBias ? 'hot-bias' : 'broad';
+  const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
 
   const syncStatusTimer = setInterval(() => {
     if (!hyperIndexMonitor.isRunning()) return;

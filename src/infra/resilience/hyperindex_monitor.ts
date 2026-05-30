@@ -146,7 +146,10 @@ export class HyperIndexMonitor implements Lifecycle {
         if (rl) {
           // Simple reaction: if we're heavily rate limited, skip the next few health ticks for HyperSync calls.
           if (rl.remaining !== undefined && rl.remaining < 5) {
-            this.opts.logger.warn({ rateLimitInfo: rl }, "HyperSync heavily rate-limited — temporarily reducing monitor HyperSync activity");
+            this.opts.logger.warn(
+              { rateLimitInfo: rl },
+              "HyperSync heavily rate-limited — temporarily reducing monitor HyperSync activity",
+            );
             // We can let the existing waitForRateLimit() in other places handle most of it.
           }
         }
@@ -188,7 +191,7 @@ export class HyperIndexMonitor implements Lifecycle {
             lag,
             maxStallMs: this.maxStallMs,
           },
-          "HyperIndex sync STALLED — no progress for a long time. Forcing restart. (Check pipeline split, rate limits, RPC quality, and batch size in hyperindex/config.yaml)"
+          "HyperIndex sync STALLED — no progress for a long time. Forcing restart. (Check pipeline split, rate limits, RPC quality, and batch size in hyperindex/config.yaml)",
         );
         this._isHealthy = false;
         await this.restart();
@@ -216,7 +219,8 @@ export class HyperIndexMonitor implements Lifecycle {
     // === INSTRUMENTATION: Detailed periodic tracing for HyperIndex sync bottlenecks ===
     // This runs on every health tick and gives you visibility into the real limiter
     // (HyperSync quota, effect RPCs, DB writes inside the indexer, batch size, etc.).
-    if (Math.random() < 0.20) {   // Slightly more frequent than before for debugging
+    if (Math.random() < 0.2) {
+      // Slightly more frequent than before for debugging
       const rate = this.getSyncRate();
       const lag = this.getCurrentLag();
 
@@ -237,7 +241,10 @@ export class HyperIndexMonitor implements Lifecycle {
       this.opts.logger.info(extra, "HyperIndex sync status (instrumented trace)");
 
       if (lag > 200) {
-        this.opts.logger.warn({ lag, synced: this.lastSyncedBlock }, "HyperIndex significantly behind — possible bottleneck (rate limit / effects / DB / batch size)");
+        this.opts.logger.warn(
+          { lag, synced: this.lastSyncedBlock },
+          "HyperIndex significantly behind — possible bottleneck (rate limit / effects / DB / batch size)",
+        );
       }
     }
   }

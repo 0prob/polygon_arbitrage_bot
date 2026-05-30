@@ -8,11 +8,11 @@ export interface ParsedTraceSummary {
   txHash: string;
   callCount: number;
   maxDepth: number;
-  touchedProtocols: string[];          // e.g. ["UNISWAP_V3", "BALANCER", "AAVE"]
+  touchedProtocols: string[]; // e.g. ["UNISWAP_V3", "BALANCER", "AAVE"]
   usedFlashloan: boolean;
   flashloanProvider?: "BALANCER" | "AAVE" | "OTHER";
   hasInternalReverts: boolean;
-  suspiciousPatterns: string[];        // e.g. ["possible_sandwich", "jit_liquidity", "multiple_large_swaps"]
+  suspiciousPatterns: string[]; // e.g. ["possible_sandwich", "jit_liquidity", "multiple_large_swaps"]
   rawTraceCount: number;
 }
 
@@ -27,11 +27,7 @@ export interface ParsedTraceSummary {
  *   - Risk / quarantine decisions
  *   - Better simulation / dry-run context
  */
-export function parseTransactionTraces(
-  txHash: string,
-  traces: any[],
-  logger?: Logger
-): ParsedTraceSummary {
+export function parseTransactionTraces(txHash: string, traces: any[], logger?: Logger): ParsedTraceSummary {
   if (!Array.isArray(traces) || traces.length === 0) {
     return createEmptySummary(txHash);
   }
@@ -67,13 +63,15 @@ export function parseTransactionTraces(
     const to = (action.to || "").toLowerCase();
     const inputData = (action.input || "").toLowerCase();
 
-    if (to.includes("ba12222222228d8ba445958a75a0704d566bf2c8")) { // Balancer Vault
+    if (to.includes("ba12222222228d8ba445958a75a0704d566bf2c8")) {
+      // Balancer Vault
       if (inputData.includes("23b872dd") || inputData.includes("flashloan")) {
         sawBalancerFlash = true;
       }
     }
 
-    if (to.includes("794a61358d6845594f94dc1db02a252b5b4814ad")) { // Aave V3 Pool
+    if (to.includes("794a61358d6845594f94dc1db02a252b5b4814ad")) {
+      // Aave V3 Pool
       if (inputData.includes("flashloan")) {
         sawAaveFlash = true;
       }

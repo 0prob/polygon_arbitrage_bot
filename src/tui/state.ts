@@ -28,7 +28,7 @@ export interface SystemState {
   hiStatus: string;
   hiSyncedBlock: number;
   /** Indexer discovery mode: 'broad' (long-tail friendly, default) or 'hot-bias' (conservative, major tokens only) */
-  hiDiscoveryMode?: 'broad' | 'hot-bias';
+  hiDiscoveryMode?: "broad" | "hot-bias";
   hiRemoteBlock: number;
   hiLag: number;
   hiSyncRate: number;

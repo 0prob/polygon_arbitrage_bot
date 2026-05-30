@@ -187,7 +187,6 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
    * EVERY line is now emitted as structured info log for full traceability.
    */
   function parseEnvioLine(line: string): void {
-
     const chainMatch = line.match(/^\[([^\]]+)\]/);
     const chain = chainMatch && !chainMatch[1].includes(":") ? chainMatch[1].toLowerCase() : undefined;
 
@@ -213,7 +212,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     if (/pipeline\s*split|loaders|handlers|db\s*(?:write|writes)/i.test(originalTrimmed)) {
       opts.logger.warn(
         { source: "hyperindex", raw: originalTrimmed },
-        "HyperIndex PIPELINE SPLIT / bottleneck indicator (Loaders/Handlers/DB Writes)"
+        "HyperIndex PIPELINE SPLIT / bottleneck indicator (Loaders/Handlers/DB Writes)",
       );
     }
 
@@ -253,7 +252,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     // Major milestone for autonomous debug loop: indexer has finished setup and is now consuming events
     if (/Starting indexing!/i.test(originalTrimmed)) {
-      opts.logger.warn({ source: "hyperindex", milestone: "indexer_ready" }, "HyperIndex reached 'Starting indexing!' — real event processing should begin. Watch for pipeline split, throughput, and handler timing in following lines.");
+      opts.logger.warn(
+        { source: "hyperindex", milestone: "indexer_ready" },
+        "HyperIndex reached 'Starting indexing!' — real event processing should begin. Watch for pipeline split, throughput, and handler timing in following lines.",
+      );
       emitStatus("indexer_ready", _lastParsedBlock, _lastRemoteBlock, chain);
     }
 
@@ -278,11 +280,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     // 6. Reactive safety (Hasura metadata)
-    if (
-      !_hasDoneReactiveHasuraClear &&
-      opts.hasuraUrl &&
-      /metadata-warning/i.test(originalTrimmed)
-    ) {
+    if (!_hasDoneReactiveHasuraClear && opts.hasuraUrl && /metadata-warning/i.test(originalTrimmed)) {
       _hasDoneReactiveHasuraClear = true;
       opts.logger.warn({ source: "hyperindex" }, "Detected Envio metadata-warnings — triggering one-time Hasura metadata clear");
       clearHasuraMetadata(opts.hasuraUrl, opts.hasuraSecret, opts.logger).catch((err) => {
@@ -328,14 +326,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         opts.logger.warn("forceFullReset active — performing deep Docker cleanup (containers + volumes)");
         try {
           const listCmd = `docker ps -a --filter name=envio- --format "{{.ID}} {{.Names}} {{.Status}}" 2>/dev/null || true`;
-          const raw = execSync(listCmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 4000 }).trim();
+          const raw = execSync(listCmd, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 4000 }).trim();
           if (raw) {
-            raw.split('\n').forEach(line => {
-              const id = line.split(' ')[0];
-              if (id) execSync(`docker rm -f ${id}`, { stdio: 'ignore', timeout: 5000 });
+            raw.split("\n").forEach((line) => {
+              const id = line.split(" ")[0];
+              if (id) execSync(`docker rm -f ${id}`, { stdio: "ignore", timeout: 5000 });
             });
           }
-          execSync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", { stdio: "ignore", timeout: 5000 });
+          execSync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", {
+            stdio: "ignore",
+            timeout: 5000,
+          });
         } catch {}
       }
     } catch (e) {
@@ -405,29 +406,32 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     env.ENVIO_LOG_LEVEL = env.ENVIO_LOG_LEVEL || "debug";
 
     // === INSTRUMENTATION: Full startup trace for bottleneck diagnosis ===
-    const sanitizedEnvKeys = Object.keys(env).filter(k =>
-      /^(POLYGON_|ENVIO_|HYPERSYNC_|HASURA_)/i.test(k) || k === 'RUST_LOG' || k === 'ENVIO_LOG_LEVEL'
+    const sanitizedEnvKeys = Object.keys(env).filter(
+      (k) => /^(POLYGON_|ENVIO_|HYPERSYNC_|HASURA_)/i.test(k) || k === "RUST_LOG" || k === "ENVIO_LOG_LEVEL",
     );
-    const rpcCount = (env.POLYGON_RPC_URLS || env.POLYGON_RPC_URL || '').split(',').filter(Boolean).length;
+    const rpcCount = (env.POLYGON_RPC_URLS || env.POLYGON_RPC_URL || "").split(",").filter(Boolean).length;
     const hasToken = !!env.ENVIO_API_TOKEN;
-    const startBlock = env.POLYGON_START_BLOCK || env.POLYGON_START_BLOCK || 'default (config.yaml)';
+    const startBlock = env.POLYGON_START_BLOCK || env.POLYGON_START_BLOCK || "default (config.yaml)";
 
-    opts.logger.info({
-      hyperindexDir: hiDir,
-      rpcEndpoints: rpcCount,
-      hasEnvioToken: hasToken,
-      startBlock,
-      importantEnv: sanitizedEnvKeys,
-      forceFullReset: opts.forceFullReset,
-      note: hasToken
-        ? 'Using authenticated HyperSync (recommended for speed)'
-        : 'NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Backfill will be slow. Get token at https://envio.dev/app/api-tokens'
-    }, opts.forceFullReset 
-      ? 'Starting HyperIndex with FULL RESET (-r) + volume nuke (409 recovery + table recreation)'
-      : 'Starting HyperIndex ingestion (instrumented for bottleneck tracing)');
+    opts.logger.info(
+      {
+        hyperindexDir: hiDir,
+        rpcEndpoints: rpcCount,
+        hasEnvioToken: hasToken,
+        startBlock,
+        importantEnv: sanitizedEnvKeys,
+        forceFullReset: opts.forceFullReset,
+        note: hasToken
+          ? "Using authenticated HyperSync (recommended for speed)"
+          : "NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Backfill will be slow. Get token at https://envio.dev/app/api-tokens",
+      },
+      opts.forceFullReset
+        ? "Starting HyperIndex with FULL RESET (-r) + volume nuke (409 recovery + table recreation)"
+        : "Starting HyperIndex ingestion (instrumented for bottleneck tracing)",
+    );
 
     // Also surface the exact command for full reproducibility
-    opts.logger.debug({ cmd: 'bunx envio dev', cwd: hiDir }, 'HyperIndex spawn command');
+    opts.logger.debug({ cmd: "bunx envio dev", cwd: hiDir }, "HyperIndex spawn command");
 
     const envioArgs = opts.forceFullReset ? ["envio", "dev", "-r"] : ["envio", "dev"];
     proc = spawn("bunx", envioArgs, {
@@ -563,7 +567,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         }
 
         try {
-          execSync("docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true", { stdio: "ignore", timeout: 5000 });
+          execSync("docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true", {
+            stdio: "ignore",
+            timeout: 5000,
+          });
         } catch {}
       }
 

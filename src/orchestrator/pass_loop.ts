@@ -636,25 +636,37 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     ? tracked.profit
                     : candidates.find((c) => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
 
-                  bus?.emit({ 
-                    type: "execution_result", 
-                    routeKey, 
-                    success: true, 
-                    txHash: execResult.txHash, 
+                  bus?.emit({
+                    type: "execution_result",
+                    routeKey,
+                    success: true,
+                    txHash: execResult.txHash,
                     profitWei,
-                    traceMessages: execResult.traceMessages 
+                    traceMessages: execResult.traceMessages,
                   });
                 } else if (execResult.error === "reverted") {
                   ctx.metrics.executionReverts++;
                   ctx.logger.warn({ routeKey }, "Transaction reverted on chain");
-                  bus?.emit({ type: "execution_result", routeKey, success: false, error: "reverted", traceMessages: execResult.traceMessages });
+                  bus?.emit({
+                    type: "execution_result",
+                    routeKey,
+                    success: false,
+                    error: "reverted",
+                    traceMessages: execResult.traceMessages,
+                  });
                 } else {
                   ctx.metrics.executionsFailed++;
                   ctx.logger.warn({ error: execResult.error, routeKey }, "Execution failed");
                   ctx.metrics.totalErrors++;
                   ctx.metrics.lastErrorTime = Date.now();
                   ctx.metrics.lastErrorMessage = "Execution failed: " + (execResult.error ?? "");
-                  bus?.emit({ type: "execution_result", routeKey, success: false, error: execResult.error, traceMessages: execResult.traceMessages });
+                  bus?.emit({
+                    type: "execution_result",
+                    routeKey,
+                    success: false,
+                    error: execResult.error,
+                    traceMessages: execResult.traceMessages,
+                  });
                 }
               }
             }
@@ -688,7 +700,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // When true, the indexer limits pool discovery to "hot" major tokens (conservative mode).
       // Default (false) = broad long-tail discovery (primary strategy).
       const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
-      const discoveryMode: 'broad' | 'hot-bias' = indexerHotBias ? 'hot-bias' : 'broad';
+      const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
 
       const payload = buildStatusPayload(
         ctx.metrics,

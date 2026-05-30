@@ -20,14 +20,66 @@ export interface HasuraPoolMeta {
 }
 
 // Narrow response shapes for the specific GraphQL queries we issue (reduces `any` + tsc noise on data)
-interface PoolMetaRow { id: string; protocol: string; tokens: unknown; fee: number | null }
-interface V2StateRow { id: string; reserve0: string; reserve1: string }
-interface V3StateRow { id: string; sqrtPriceX96: string; tick: string; liquidity: string }
-interface V4StateRow { id: string; sqrtPriceX96: string; liquidity: string; tick: string; fee: string; tickSpacing: string; hooks: string }
-interface BalancerStateRow { id: string; poolId: string; balances: unknown; weights: unknown; amp?: string | null; swapFee: string; scalingFactors: unknown }
-interface CurveStateRow { id: string; balances: unknown; A: string; fee: string; rates?: unknown }
-interface DodoStateRow { id: string; baseReserve: string; quoteReserve: string; rStatus: number; k: string; fee: string; i: string; targetBase: string; targetQuote: string; lpFeeRate: string; mtFeeRate: string }
-interface TokenMetaRow { id?: string; address?: string; decimals?: number | null }
+interface PoolMetaRow {
+  id: string;
+  protocol: string;
+  tokens: unknown;
+  fee: number | null;
+}
+interface V2StateRow {
+  id: string;
+  reserve0: string;
+  reserve1: string;
+}
+interface V3StateRow {
+  id: string;
+  sqrtPriceX96: string;
+  tick: string;
+  liquidity: string;
+}
+interface V4StateRow {
+  id: string;
+  sqrtPriceX96: string;
+  liquidity: string;
+  tick: string;
+  fee: string;
+  tickSpacing: string;
+  hooks: string;
+}
+interface BalancerStateRow {
+  id: string;
+  poolId: string;
+  balances: unknown;
+  weights: unknown;
+  amp?: string | null;
+  swapFee: string;
+  scalingFactors: unknown;
+}
+interface CurveStateRow {
+  id: string;
+  balances: unknown;
+  A: string;
+  fee: string;
+  rates?: unknown;
+}
+interface DodoStateRow {
+  id: string;
+  baseReserve: string;
+  quoteReserve: string;
+  rStatus: number;
+  k: string;
+  fee: string;
+  i: string;
+  targetBase: string;
+  targetQuote: string;
+  lpFeeRate: string;
+  mtFeeRate: string;
+}
+interface TokenMetaRow {
+  id?: string;
+  address?: string;
+  decimals?: number | null;
+}
 
 interface GraphQLData {
   PoolMeta?: PoolMetaRow[];
@@ -251,7 +303,8 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
   const allRows: PoolMetaRow[] = [];
 
   // Paginate with offset to avoid silent truncation when >PAGE pools exist in Hasura
-  for (let offset = 0; offset < 50000; offset += PAGE) {  // hard safety cap (~20 pages)
+  for (let offset = 0; offset < 50000; offset += PAGE) {
+    // hard safety cap (~20 pages)
     let pageResult: unknown = null;
     let ok = false;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -339,7 +392,7 @@ export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret:
   const metas = new Map<string, { decimals: number }>();
   try {
     const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
-    const rows = ((result as { data?: GraphQLData } | null)?.data?.TokenMeta) ?? [];
+    const rows = (result as { data?: GraphQLData } | null)?.data?.TokenMeta ?? [];
     for (const m of rows) {
       if (m.address && m.decimals != null) {
         metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });

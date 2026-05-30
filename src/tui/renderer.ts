@@ -207,8 +207,8 @@ export class Renderer {
 
     if (s.hiSyncedBlock > 0) {
       hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
-      const mode = s.hiDiscoveryMode ? (s.hiDiscoveryMode === 'broad' ? color('broad', GREEN) : color('hot-bias', YELLOW)) : '';
-      const modeStr = mode ? ` ${dim('(')}${mode}${dim(')')}` : '';
+      const mode = s.hiDiscoveryMode ? (s.hiDiscoveryMode === "broad" ? color("broad", GREEN) : color("hot-bias", YELLOW)) : "";
+      const modeStr = mode ? ` ${dim("(")}${mode}${dim(")")}` : "";
       hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${modeStr}${dim(hiLag + hiRate)}`;
     } else if (s.hiStatus === "running") {
       hiColor = CYAN;

@@ -3,7 +3,6 @@ import type { Logger } from "../observability/logger.ts";
 // Dynamic import so the rest of the app doesn't break if the native package isn't installed yet.
 let HypersyncClient: any;
 try {
-  // @ts-expect-error - optional native dependency
   HypersyncClient = (await import("@envio-dev/hypersync-client")).HypersyncClient;
 } catch {
   // Will be handled at runtime when trying to create the service
