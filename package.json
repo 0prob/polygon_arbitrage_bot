@@ -20,11 +20,11 @@
     "test:coverage": "bun --bun run vitest run --coverage",
     "lint": "bunx eslint src/ --fix",
     "fmt": "bunx prettier --write src/",
-    "dev": "cd hyperindex && bunx envio dev",
+    "dev": "bun --env-file=.env --env-file=hyperindex/.env -e 'const raw=process.env.ENVIO_API_TOKEN||process.env.ENVIO_API_TOKENS||\"\";const t=raw.split(\",\")[0]?.trim();if(t)process.env.ENVIO_API_TOKEN=t;require(\"child_process\").spawnSync(\"bunx\",[\"envio\",\"dev\"],{cwd:\"hyperindex\",stdio:\"inherit\",env:process.env,shell:false})'",
     "cgen": "cd hyperindex && bunx envio codegen",
     "gentok": "cd hyperindex && bun run generate-tokens",
     "clear-hasura": "cd hyperindex && bun run clear-hasura",
-    "dev:reset": "cd hyperindex && bun run dev:reset"
+    "dev:reset": "bun --env-file=.env --env-file=hyperindex/.env -e 'const raw=process.env.ENVIO_API_TOKEN||process.env.ENVIO_API_TOKENS||\"\";const t=raw.split(\",\")[0]?.trim();if(t)process.env.ENVIO_API_TOKEN=t;require(\"child_process\").spawnSync(\"bunx\",[\"envio\",\"dev\",\"-r\"],{cwd:\"hyperindex\",stdio:\"inherit\",env:process.env,shell:false})'"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "^1.3.0",
