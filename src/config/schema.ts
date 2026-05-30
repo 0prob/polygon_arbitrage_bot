@@ -56,8 +56,8 @@ export const RoutingConfigSchema = z.object({
   cycleRefreshIntervalMs: numberFromString.int().positive(),
   liquidityFloorUsd: numberFromString.nonnegative(),
   enumerationMaxPaths: numberFromString.int().positive(),
-  concurrency: numberFromString.int().positive().default(50),
-  ternarySearchIterations: numberFromString.int().min(5).max(50).default(15),
+  concurrency: numberFromString.int().positive().default(75),
+  ternarySearchIterations: numberFromString.int().min(5).max(50).default(12),
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.15),
   graphFullRebuildInterval: numberFromString.int().positive().default(100),
 });

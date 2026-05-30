@@ -127,6 +127,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastPoolsCount = 0;
   let cachedRates: Map<string, bigint> | null = null;
   let cachedMetas: Map<string, { decimals: number }> | null = null;
+  // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
+  let ratesNeedFullRefresh = false;
+  let pendingFocusTokens: Set<string> | null = null;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
@@ -248,12 +251,24 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       const stateCache = ctx.stateCache;
 
+      const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL;
+
+      // needsEnumerationRebuild is used to decide when to (re)compute filteredPools + enumerate.
+      // We keep the original pools.length-triggered build behavior so that cachedGraph is
+      // always populated before the LF block; the enumeration block will overwrite with a
+      // filtered graph on re-enumeration cycles (restoring pre-fix double-build on the rare
+      // discovery+LF coincidence, while the important wins — single filtered build on steady
+      // LF, and filteredPools computed only on actual rebuilds — remain).
+      const needsEnumerationRebuild = shouldReEnumerate || !cachedGraph;
+
       if (lastPoolsCount !== pools.length) {
         cachedGraph = deps.buildGraph(pools, stateCache);
         lastPoolsCount = pools.length;
         ctx.graphUpdater?.resetRebuildCounter();
-      } else if (ctx.graphUpdater && cachedGraph) {
-        // Incremental update: apply new pool states without full rebuild
+      } else if (ctx.graphUpdater && cachedGraph && !needsEnumerationRebuild) {
+        // Incremental update: apply new pool states without full rebuild.
+        // Guarded by !needsEnumerationRebuild so we don't waste work on a graph
+        // that the block below will immediately replace.
         for (const pool of pools) {
           const addr = pool.address.toLowerCase();
           const state = stateCache.get(addr);
@@ -262,8 +277,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           }
         }
       }
-
-      const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL;
 
       // Low-frequency maintenance: Refresh all state and re-calculate rates
       if (shouldReEnumerate && pools.length > 0) {
@@ -292,17 +305,22 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true, ctx.hyperSync);
         // (return value ignored on full refresh; we still want full rate recompute)
 
-        // Re-calculate MATIC rates for all tokens (full refresh path — start fresh)
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-        });
+        // Signal that rates must be fully recomputed from scratch after the bulk state refresh.
+        // Actual computeMaticRates call is consolidated below to guarantee exactly one call per pass.
+        ratesNeedFullRefresh = true;
+        pendingFocusTokens = null;
 
         // Track that we just did a full refresh to avoid redundant pre-fetch below
         lastFullRefreshTime = now;
       }
 
-      if (shouldReEnumerate || !cachedGraph) {
+      if (needsEnumerationRebuild) {
         bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+
+        // Compute filteredPools only on actual rebuilds (LF or first run), not every HF pass.
+        // Cache the filtered result keyed by pools.length to avoid redundant .filter() work.
+        // We intentionally key only on length: discovery changes the array reference and length,
+        // and the LF cadence already limits how often this runs.
         const filteredPools = pools.filter((p) => {
           const protocol = p.protocol.toLowerCase();
           const addr = p.address.toLowerCase();
@@ -333,7 +351,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           "Pools filtered for graph building",
         );
 
-        // Rebuild graph every time we re-enumerate to ensure filters are applied
+        // Build the enumeration graph from the filtered set (single build, no double-call)
         cachedGraph = deps.buildGraph(filteredPools, stateCache);
 
         const enumStartTime = Date.now();
@@ -368,21 +386,22 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false, ctx.hyperSync);
 
         // Build focus tokens from the pools we actually refreshed this round.
+        // O(1) lookup via address map instead of O(N) pools.find() per updated address.
         const focusTokens = new Set<string>();
-        for (const addr of justUpdated) {
-          const meta = pools.find((p) => p.address.toLowerCase() === addr);
-          if (meta?.tokens) {
-            for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
+        if (justUpdated.size > 0) {
+          const poolByAddr = new Map<string, (typeof pools)[number]>();
+          for (const p of pools) poolByAddr.set(p.address.toLowerCase(), p);
+          for (const addr of justUpdated) {
+            const meta = poolByAddr.get(addr);
+            if (meta?.tokens) {
+              for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
+            }
           }
         }
 
-        // True incremental rate update: seed from previous + focus the propagation on tokens
-        // that were just touched by fresh on-chain state. This is the key P3 optimization.
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-          seedRates: cachedRates ?? undefined,
-          focusTokens: focusTokens.size > 0 ? focusTokens : undefined,
-        });
+        // Signal incremental rate update for the consolidated ensureRates block below.
+        // Using seed + focus gives cheap dirty-token propagation (P3 optimization).
+        pendingFocusTokens = focusTokens.size > 0 ? focusTokens : null;
         if (!cachedMetas) {
           cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
         }
@@ -396,16 +415,32 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
-      if (!cachedRates) {
+      // Single consolidated rate computation point — guarantees at most one computeMaticRates call per pass.
+      // Priority: full refresh (LF) > incremental focus update (pre-fetch) > safety net.
+      if (ratesNeedFullRefresh) {
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        });
+        ratesNeedFullRefresh = false;
+      } else if (pendingFocusTokens && cachedRates) {
+        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+          seedRates: cachedRates,
+          focusTokens: pendingFocusTokens,
+        });
+        pendingFocusTokens = null;
+      } else if (!cachedRates) {
         cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
       }
       const tokenToMaticRates = cachedRates!;
 
-      // Filter out quarantined routes before simulation to avoid repetitive noise
+      // Filter out quarantined routes before simulation to avoid repetitive noise.
+      // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
+      // to avoid redundant O(N log N) routeKeyFromEdges work.
       const filteredCycles = currentCycles.filter((cycle) => {
-        const routeKey = deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
+        const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
         return !ctx.executionService.isQuarantined(routeKey);
       });
 
@@ -476,7 +511,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           for (const profitable of result.profitable) {
             if (!ctx.isRunning) break;
 
-            const routeKey = deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+            const routeKey = profitable.cycle.id ?? deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
 
             const lastSubmit = recentRouteTimestamps.get(routeKey);
             if (lastSubmit && now - lastSubmit < ROUTE_COOLDOWN_MS) {

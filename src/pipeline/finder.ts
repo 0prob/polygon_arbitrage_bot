@@ -284,9 +284,12 @@ export function enumerateCycles(
   const allCycles = findCycles(graph, maxHops, maxCycles);
 
   if (getWinRate) {
-    // Pre-compute scores to avoid O(N log N) string manipulation in sort
+    // Pre-compute scores to avoid O(N log N) string manipulation in sort.
+    // Stash the computed routeKey on cycle.id so callers (quarantine checks, execution tracking)
+    // can reuse it instead of calling routeKeyFromEdges again.
     const scored = allCycles.map((cycle) => {
       const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
+      cycle.id = key;
       const score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
       return { cycle, score };
     });

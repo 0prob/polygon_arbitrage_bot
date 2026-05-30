@@ -25,21 +25,21 @@ export class IncrementalGraphUpdater {
   applyPoolStateUpdate(graph: RoutingGraph, poolAddress: string, newState: Record<string, unknown>): void {
     const addr = poolAddress.toLowerCase();
     graph.stateRefs.set(addr, newState);
-    graph.poolMeta.forEach((meta, key) => {
-      if (key.toLowerCase() === addr) {
-        const t = meta.tokens ?? [];
-        for (const token of t) {
-          const edges = graph.adjacency.get(token.toLowerCase());
-          if (edges) {
-            for (const edge of edges) {
-              if (edge.poolAddress.toLowerCase() === addr) {
-                edge.stateRef = newState;
-              }
+    // O(1) Map lookup instead of O(N) forEach scan — poolMeta keys are already lowercased
+    const meta = graph.poolMeta.get(addr);
+    if (meta) {
+      const t = meta.tokens ?? [];
+      for (const token of t) {
+        const edges = graph.adjacency.get(token.toLowerCase());
+        if (edges) {
+          for (const edge of edges) {
+            if (edge.poolAddress.toLowerCase() === addr) {
+              edge.stateRef = newState;
             }
           }
         }
       }
-    });
+    }
   }
 
   addNewPool(graph: RoutingGraph, pool: PoolMeta, state: Record<string, unknown>): void {

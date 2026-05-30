@@ -54,13 +54,13 @@ export function computeMaticRates(
     return ts.some((t) => focus.has(t.toLowerCase()));
   }
 
-  // Use a more thorough BFS-style propagation.
+  // Pre-compute focus-ordered list once; re-sorting on every BFS iteration is wasted work.
   // When focusTokens are supplied we process "dirty" pools first for faster convergence on what matters.
+  const orderedPools = focus && focus.size > 0 ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0)) : pools;
+
+  // Use a more thorough BFS-style propagation.
   for (let i = 0; i < 10; i++) {
     let changed = false;
-
-    // Optional: stable partition so focus-touching pools are considered early
-    const orderedPools = focus && focus.size > 0 ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0)) : pools;
 
     for (const pool of orderedPools) {
       const addr = pool.address.toLowerCase();

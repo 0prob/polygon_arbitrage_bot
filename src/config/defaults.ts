@@ -32,9 +32,9 @@ export const DEFAULTS = {
     maxHops: 5, // Increased for more discovery potential in long-tail / obscure paths. Hardware/time guarded in finder.
     cycleRefreshIntervalMs: 1_000,
     liquidityFloorUsd: 100,
-    enumerationMaxPaths: 1_000,
-    concurrency: 50,
-    ternarySearchIterations: 15,
+    enumerationMaxPaths: 5_000, // Raised for long-tail strategy: findCycles can emit 250k; 1k was too restrictive
+    concurrency: 75,
+    ternarySearchIterations: 12, // Slightly fewer iterations, more cycles (pairs with higher enumerationMaxPaths)
     maxPriceImpactThreshold: 0.05,
     graphFullRebuildInterval: 100,
   },

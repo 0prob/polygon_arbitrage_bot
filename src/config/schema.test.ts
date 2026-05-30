@@ -53,7 +53,7 @@ describe("loadConfig", () => {
   it("falls back to defaults for unset values", () => {
     const cfg = loadConfig(REQUIRED_ENV);
     expect(cfg.gas.priorityFeeFloorGwei).toBe(30);
-    expect(cfg.routing.maxHops).toBe(4);
+    expect(cfg.routing.maxHops).toBe(5);
   });
 
   it("rejects negative numeric values", () => {

@@ -328,6 +328,6 @@ describe("runPassLoop", () => {
 
     await runPassLoop(mockContext, deps);
 
-    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 4, 5000, expect.any(Function));
+    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 5, 5000, expect.any(Function));
   });
 });
