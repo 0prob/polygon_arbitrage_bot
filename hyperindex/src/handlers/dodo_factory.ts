@@ -2,6 +2,7 @@ import { indexer } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
 
 async function handleDodoPool(
   context: any,
@@ -24,11 +25,13 @@ async function handleDodoPool(
   });
 
   // Fire DODO metadata + both token metas concurrently (critical for backfill throughput)
+  const tEffDodo = Date.now();
   const [meta, baseMeta, quoteMeta] = await Promise.all([
     context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) }),
     context.effect(fetchTokenMeta, { address: base, blockNumber: BigInt(blockNumber) }),
     context.effect(fetchTokenMeta, { address: quote, blockNumber: BigInt(blockNumber) }),
   ]);
+  logEffectTime("fetchDodoMetadata+tokens", Date.now() - tEffDodo, blockNumber);
 
   if (context.isPreload) {
     return; // Aggressive preload exit: effects done (batched), skip writes (ignored anyway) and any future work.

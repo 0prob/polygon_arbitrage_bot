@@ -1,6 +1,7 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
 
 // Envio v3 best practice: Use the global `indexer` object (or context.chain inside handlers)
 // to access live configuration and dynamically registered addresses (persisted across restarts).
@@ -63,10 +64,14 @@ indexer.onEvent(
     });
 
     // Envio v3 Preload + Effect API best practice.
+    // Effects are the dominant cost (Loaders % in pipeline split).
+    // We time them explicitly so slow cache misses are visible in logs.
+    const tEff0 = Date.now();
     const [t0meta, t1meta] = await Promise.all([
       context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
       context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
     ]);
+    logEffectTime("fetchTokenMeta:pair", Date.now() - tEff0, Number(event.block.number));
 
     // Aggressive isPreload: after effects (which preload batches), exit early in preload phase.
     // Sets below will only execute (and persist) in the real processing phase.

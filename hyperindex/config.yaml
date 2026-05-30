@@ -67,6 +67,8 @@ raw_events: false
 #   - Run `bun run dev` (or the bot) and watch envio stdout for "events", "processed", block arrows.
 #   - The bot's HyperIndexMonitor logs blk/s every ~30s (proxy for overall throughput).
 #   - For raw eps + pipeline split, use `envio dev` TUI/metrics or grep logs.
+#   - Slow effect warnings (SLOW_EFFECT) are emitted by instrumentation in src/utils/instrumentation.ts
+#     for any effect >50ms — these are the direct cause of high "Loaders" % in the pipeline split.
 #
 # After a full backfill + warm caches, "live tail" (new blocks) now sustains very high event/s
 # with near-zero DB write cost (the previous 50-60% DB Writes tax is gone).

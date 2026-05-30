@@ -2,6 +2,7 @@ import { indexer } from "envio";
 import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
 
 const balancerMetaCache = new Map<string, { tokens: string[]; fee: number }>();
 const balancerIdToAddrCache = new Map<string, string>();
@@ -17,7 +18,9 @@ indexer.onEvent(
     const poolId = event.params.poolId.toLowerCase();
 
     // All effects scheduled early → participate in Envio v3 preload batching + dedup.
+    const tEffBal = Date.now();
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(event.block.number) });
+    logEffectTime("fetchBalancerMetadata", Date.now() - tEffBal, Number(event.block.number));
 
     if (context.isPreload) {
       return;
@@ -56,6 +59,7 @@ indexer.onEvent(
     });
 
     // Parallelize token metadata fetches (critical for backfill speed)
+    const tEffBalTokens = Date.now();
     const tokenMetas = await Promise.all(
       meta.tokens.map((token) =>
         context.effect(fetchTokenMeta, {
@@ -64,6 +68,7 @@ indexer.onEvent(
         })
       )
     );
+    logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, Number(event.block.number));
     meta.tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     });

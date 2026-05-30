@@ -33,9 +33,11 @@ function getRpcUrls(): string[] {
   }
   // Public fallbacks only (no paid/demo keys). For production use POLYGON_RPC_URLS (comma sep) with archival providers.
   // HyperIndex effects will probe/filter for archive support upstream in the bot boot path.
+  // WARNING: Any slow/broken endpoint here directly inflates "Loaders" % in pipeline split metrics.
   return [
-    "https://polygon-mainnet.g.alchemy.com/v2/kBkVBn4UiYwt-XNksk-AV",
-    "https://polygon-mainnet.infura.io/v3/7e35644c86fc4a39b558c4e33ed071eb",
+    // NOTE: No paid/demo keys here. Broken keys cause RPC timeouts/failures on every cache miss,
+    // which appear as "Loaders: 99%" in Envio pipeline split (effects are Loaders time).
+    // Always prefer POLYGON_RPC_URLS (comma-separated) from .env for real archival work.
     "https://polygon-rpc.com",
     "https://polygon-mainnet.public.blastapi.io",
     "https://1rpc.io/matic",

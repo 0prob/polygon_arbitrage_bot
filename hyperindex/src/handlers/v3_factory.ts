@@ -1,6 +1,7 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
 
 // Envio v3: context.chain and the global `indexer` object give typed access to
 // both static config and dynamically registered addresses (survives restarts).
@@ -52,10 +53,12 @@ indexer.onEvent(
       poolId: undefined,
     });
 
+    const tEff0 = Date.now();
     const [t0meta, t1meta] = await Promise.all([
       context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
       context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
     ]);
+    logEffectTime("fetchTokenMeta:pool", Date.now() - tEff0, Number(event.block.number));
 
     if (context.isPreload) {
       return;

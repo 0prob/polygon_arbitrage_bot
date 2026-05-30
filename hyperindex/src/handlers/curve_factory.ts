@@ -2,6 +2,7 @@ import { indexer } from "envio";
 import { fetchCurveMetadata } from "../effects/curve_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
 
 // Modern v3 contractRegister form (supports `where` for early filtering on indexed params).
 indexer.contractRegister(
@@ -24,7 +25,9 @@ indexer.onEvent(
     const existing = await context.PoolMeta.get(pool);
     if (existing) return;
 
+    const tEffCurve = Date.now();
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4, blockNumber: BigInt(event.block.number) });
+    logEffectTime("fetchCurveMetadata", Date.now() - tEffCurve, Number(event.block.number));
 
     if (context.isPreload) {
       return;
@@ -55,6 +58,7 @@ indexer.onEvent(
     });
 
     // Parallelize token metadata fetches (critical for backfill speed per Envio preload guidance)
+    const tEffCoins = Date.now();
     const coinMetas = await Promise.all(
       meta.coins.map((coin) =>
         context.effect(fetchTokenMeta, {
@@ -63,6 +67,7 @@ indexer.onEvent(
         })
       )
     );
+    logEffectTime("fetchTokenMeta:curveCoins", Date.now() - tEffCoins, Number(event.block.number));
     meta.coins.forEach((coin, i) => {
       context.TokenMeta.set({ id: coin, address: coin, decimals: coinMetas[i].decimals });
     });
