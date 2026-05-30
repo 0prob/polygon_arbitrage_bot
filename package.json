@@ -20,11 +20,11 @@
     "test:coverage": "bun --bun run vitest run --coverage",
     "lint": "bunx eslint src/ --fix",
     "fmt": "bunx prettier --write src/",
-    "dev": "cd hyperindex && bunx envio dev",
-    "cgen": "cd hyperindex && bunx envio codegen",
-    "gentok": "cd hyperindex && bun run generate-tokens",
-    "clear-hasura": "cd hyperindex && bun run clear-hasura",
-    "dev:reset": "cd hyperindex && bun run dev:reset"
+    "dev": "bun --env-file=.env --cwd hyperindex bunx envio dev",
+    "cgen": "bun --env-file=.env --cwd hyperindex bunx envio codegen",
+    "gentok": "bun --env-file=.env --cwd hyperindex bun run generate-tokens",
+    "clear-hasura": "bun --env-file=.env --cwd hyperindex bun run clear-hasura",
+    "dev:reset": "bun --env-file=.env --cwd hyperindex bun run dev:reset"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "^1.3.0",
