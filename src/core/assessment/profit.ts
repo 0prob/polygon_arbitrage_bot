@@ -129,7 +129,9 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
   };
 
   if (!shouldExecute && !rejectReason) {
-    if (netProfitAfterGasMaticWei < 0n) {
+    if (opts.tokenToMaticRate <= 0n) {
+      result.rejectReason = "oracle rate is cold (0)";
+    } else if (netProfitAfterGasMaticWei < 0n) {
       result.rejectReason = `unprofitable after gas: ${netProfitAfterGasMaticWei} wei`;
     } else {
       result.rejectReason = `below minProfit: ${netProfitAfterGasMaticWei} < ${minProfitMaticWei}`;

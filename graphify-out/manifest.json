@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780035392.4230835,
-    "ast_hash": "da89ce2d1d0e76d1c6100c63c98b237c",
+    "mtime": 1780061844.399133,
+    "ast_hash": "542f934e6affd75089427d6b5c141da6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
-    "mtime": 1780033251.4601276,
-    "ast_hash": "222e705ffab9f9c118e9d5f28743735e",
+    "mtime": 1780062786.2080905,
+    "ast_hash": "adee4bd8351f2c4261354335d36ed8d6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_pool.ts": {
@@ -110,23 +110,23 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_factory.ts": {
-    "mtime": 1780002821.1227572,
-    "ast_hash": "7898de383d82e047d1a1ebf62972bcbb",
+    "mtime": 1780064262.0249002,
+    "ast_hash": "c87879b4cc162eb49d6f2e778fd37669",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/balancer.ts": {
-    "mtime": 1780033280.3357155,
-    "ast_hash": "8782f50700af2bfe6998537ed71ae392",
+    "mtime": 1780064271.4088242,
+    "ast_hash": "1e15916e1fd54dfe44e2e1d0f62e41aa",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
-    "mtime": 1780006376.3993888,
-    "ast_hash": "419a0cff2bf42b024bf6397c6e54710c",
+    "mtime": 1780064248.1690116,
+    "ast_hash": "78c4a1e1384d52e1b46b2d2b09a2d20b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_factory.ts": {
-    "mtime": 1780003677.2183,
-    "ast_hash": "2b262da176c2d85c04a47d2bc8c16ff5",
+    "mtime": 1780064266.5208638,
+    "ast_hash": "3985e1a1adfceb82c32bb01e1b030db1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_pool.ts": {
@@ -135,13 +135,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_pool.ts": {
-    "mtime": 1780033257.708038,
-    "ast_hash": "28120cd0f22323a68e7fcaf592bc23aa",
+    "mtime": 1780062789.5560513,
+    "ast_hash": "026cb2d7a9d5380facd7fc205b589c4e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_factory.ts": {
-    "mtime": 1780006373.5834177,
-    "ast_hash": "79c9437def04d2b62c9f51160d158684",
+    "mtime": 1780064240.7930703,
+    "ast_hash": "cbf9f494416b6a45b063473d9f52a725",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/dodo_metadata.ts": {
@@ -185,18 +185,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1779982140.3970153,
-    "ast_hash": "058ef35e593a3f4676d39409fb76709c",
+    "mtime": 1780065178.900184,
+    "ast_hash": "458e7a1559b4970485ef1beb0e5b344c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1779959097.2526631,
-    "ast_hash": "01dcc19fb0c0555af79e554a2f7b76c7",
+    "mtime": 1780065132.4526618,
+    "ast_hash": "60a7b6fcc1026cd8684c7cbcac76cb2a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1779982140.4090154,
-    "ast_hash": "d85e575144801c5f3414fb84b84197e1",
+    "mtime": 1780065149.3044887,
+    "ast_hash": "f6af06791c2ce083cb1c59e55dc92e51",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/main.ts": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/receipt.ts": {
-    "mtime": 1779966085.9264421,
-    "ast_hash": "85ff921c0343fc6dc5a4299a0199f04b",
+    "mtime": 1780064287.5046928,
+    "ast_hash": "8eb222be87f2143e4aeda30ff5617d35",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/builder.ts": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/service.ts": {
-    "mtime": 1779885810.9237132,
-    "ast_hash": "e2c5a0f13ce2f198bf5208d3821b9ae1",
+    "mtime": 1780065164.71233,
+    "ast_hash": "f9d0b555a0d195c20c3ffdce0f3bf6e8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/quarantine.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1779982139.8930204,
-    "ast_hash": "4cadd67b5bdc8c4b3ffb4c57414b1421",
+    "mtime": 1780065140.0805833,
+    "ast_hash": "3887828358de8585ed5f3f0015f9d2ec",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/status_writer.ts": {
-    "mtime": 1779982139.9130201,
-    "ast_hash": "05eb2eef73703ba5d04ca8eebb86f63d",
+    "mtime": 1780064883.215185,
+    "ast_hash": "0d0f1321830c22ca9f7f6fdcc0a63ce2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/shutdown.ts": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/finder.ts": {
-    "mtime": 1779982498.637434,
-    "ast_hash": "ee2dc9cb328496817248c0e7ce8dc3f7",
+    "mtime": 1780064675.9492104,
+    "ast_hash": "f8030fb5e08eb11a8ee5a442a35dff99",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/pipeline.ts": {
@@ -620,8 +620,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/chains.ts": {
-    "mtime": 1779235514.0619276,
-    "ast_hash": "ddd713d550ce6acb71e20ce00f62c64c",
+    "mtime": 1780065467.0451834,
+    "ast_hash": "ded12ab86477bc81585e090bdc966beb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/retry.test.ts": {
@@ -660,18 +660,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/observability/health_server.ts": {
-    "mtime": 1779950352.9147832,
-    "ast_hash": "774b8fabea73365057a9e579acc0c08b",
+    "mtime": 1780064933.1226861,
+    "ast_hash": "447ee800d86434ccffb9f2c8519d6426",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1780007473.2302423,
-    "ast_hash": "c161f17c01231c9ec46684a36fec1198",
+    "mtime": 1780061163.2552118,
+    "ast_hash": "092879047f4806aa44a4fd2084628693",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1780035341.0273514,
-    "ast_hash": "e803d0600031413fd2f343ec5ec9b923",
+    "mtime": 1780065477.2650762,
+    "ast_hash": "bf21b0bc8dfdd3472135d1d977f725e0",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -685,8 +685,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/hyperindex_monitor.ts": {
-    "mtime": 1780000107.153407,
-    "ast_hash": "c4e5b861f9384b54f20e0a7ab71d728b",
+    "mtime": 1780054781.409067,
+    "ast_hash": "9b84ef0a5bc872d9e590b7fed3ad8e4e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/tier_manager.test.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1780035340.4793541,
-    "ast_hash": "2e636acd2a88852277fe69d92fd4c1b2",
+    "mtime": 1780064915.4308634,
+    "ast_hash": "8d56b2cbc4c17860d0eb905111a3e131",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1780033304.0313804,
-    "ast_hash": "60999a381e3207e1c9959dfa6f331e6e",
+    "mtime": 1780063235.5188355,
+    "ast_hash": "75ddb261301132dfb22ddde7b1aa88bc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {
@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-27-phase1-rpc-layer-config-cleanup.md": {
-    "mtime": 1779878982.961517,
-    "ast_hash": "f2f813ce6c0420239c58f7d15dc896b8",
+    "mtime": 1780065493.5009055,
+    "ast_hash": "f255debcee8b26be960763dd75d7fa26",
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/plans/2026-05-27-phase3-execution-consolidation.md": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/docs/superpowers/specs/2026-05-27-ideal-architecture.md": {
-    "mtime": 1779878605.159094,
-    "ast_hash": "419fe8f4e06f4e4dd8a35a9321bc0b73",
+    "mtime": 1780065489.4889476,
+    "ast_hash": "1b8af4a66b23db62e5157262d599d7f9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.superpowers/brainstorm/47831-1779183660/content/recommendation.html": {
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/DEBUG_OPTIMIZATIONS.md": {
-    "mtime": 1780034050.1336415,
-    "ast_hash": "0f47c25e539dee884b7e574e95b2d055",
+    "mtime": 1780063317.1018817,
+    "ast_hash": "563c4101ec55428d2cbe4514011428e6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/hyperrpc.ts": {
@@ -850,13 +850,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hypersync_service.ts": {
-    "mtime": 1780035589.525838,
-    "ast_hash": "675c3030d43443855150af24de684861",
+    "mtime": 1780063219.6670208,
+    "ast_hash": "1f887513d12b844995e91412d50cc1c2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1780001502.3124385,
-    "ast_hash": "6f4e3d304158762ebcd1713cbdd5451c",
+    "mtime": 1780061106.5038939,
+    "ast_hash": "83b4292c8366cd287e670b07cee3c3d1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
@@ -885,13 +885,203 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/garbage/garbage-tracker.ts": {
-    "mtime": 1780035340.951352,
-    "ast_hash": "d1f3eed3ec8e366bbb8e071b56db2b29",
+    "mtime": 1780061142.2714636,
+    "ast_hash": "5a44c51549826a164281764f9cfbb806",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/dodo_pool.json": {
     "mtime": 1780032283.920074,
     "ast_hash": "4b348ee6d978071a5c79091dbf72157a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/infra/hypersync/trace_parser.ts": {
+    "mtime": 1780065111.9048724,
+    "ast_hash": "4d22f6bde324a24cd7ada291c2bd1b04",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-filters/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "fc0c06829467c2fa544bf6d3f632f96d",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-multichain/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "9d5969644b93e8a8f3e47a3cadd69d7c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/migrate-from-subgraph/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "73772b2b25c40c77c6ce032661a84f25",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/migrate-from-subgraph/references/migration-checklist.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "5470c41caf600362b107ea688185a043",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/migrate-from-subgraph/references/step-by-step.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "f67e16658544471d20da5eb82abf8aea",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/migrate-from-subgraph/references/migration-patterns.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "89e3a3c620ba295d4dc0cde618d62310",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/migrate-from-subgraph/references/quality-checks.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "c8d745c3099a164079b2823f6dd9884e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-blocks/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "35b4d820933c083799c760729c723712",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-external-calls/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "62f95b38c6ed7f27ea5d708ac6f0b038",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-traces/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "d1a14c8308674c26f003a80368600556",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-wildcard/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "8bcd55860ae3b4ea8423f72630a797d6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-schema/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "85329cc2365d400d1dcf3c8aebd2795a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-performance/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "e58278ab98ee60a617b55aeec261a3de",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-configuration/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "dd6fc21aad8f6faace9419f56b9e7512",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-transactions/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "a5061d733b8de7a4d09d234fd4c56918",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-handlers/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "6624d3c1778cb5057543cd8fffdf0324",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-testing/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "f163e423746596aca64b43c94a72b839",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/.claude/skills/indexer-factory/SKILL.md": {
+    "mtime": 1780055460.0737772,
+    "ast_hash": "32b0ef90a08c2246fe3249a1219d2d13",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-filters/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "fc0c06829467c2fa544bf6d3f632f96d",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-multichain/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "9d5969644b93e8a8f3e47a3cadd69d7c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/migrate-from-subgraph/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "73772b2b25c40c77c6ce032661a84f25",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/migrate-from-subgraph/references/migration-checklist.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "5470c41caf600362b107ea688185a043",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/migrate-from-subgraph/references/step-by-step.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "f67e16658544471d20da5eb82abf8aea",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/migrate-from-subgraph/references/migration-patterns.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "89e3a3c620ba295d4dc0cde618d62310",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/migrate-from-subgraph/references/quality-checks.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "c8d745c3099a164079b2823f6dd9884e",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-blocks/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "35b4d820933c083799c760729c723712",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-external-calls/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "62f95b38c6ed7f27ea5d708ac6f0b038",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-traces/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "d1a14c8308674c26f003a80368600556",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-wildcard/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "8bcd55860ae3b4ea8423f72630a797d6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-schema/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "85329cc2365d400d1dcf3c8aebd2795a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-performance/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "e58278ab98ee60a617b55aeec261a3de",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-configuration/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "dd6fc21aad8f6faace9419f56b9e7512",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-transactions/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "a5061d733b8de7a4d09d234fd4c56918",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-handlers/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "6624d3c1778cb5057543cd8fffdf0324",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-testing/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "f163e423746596aca64b43c94a72b839",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/.claude/skills/indexer-factory/SKILL.md": {
+    "mtime": 1780060716.9846513,
+    "ast_hash": "32b0ef90a08c2246fe3249a1219d2d13",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/ENVIO_WHERE_TRACES_QUERYBUILDER_RECOMMENDATIONS.md": {
+    "mtime": 1780064670.3732636,
+    "ast_hash": "24d2f7e123b787db1d166e1b903438f6",
     "semantic_hash": ""
   }
 }

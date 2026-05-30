@@ -87,8 +87,10 @@ git clone <repo> && cd polygon-arb-bot
 cp .env.example .env
 # Edit .env — all required vars must be set
 bun install
-bun start                  # CLI mode
-bun start:tui              # TUI dashboard
+
+# Run the bot
+bun run start              # Headless
+bun run tui                # With Terminal UI
 ```
 
 ## Configuration
@@ -104,14 +106,62 @@ Set `DRY_RUN_BEFORE_SUBMIT=true` (default) to simulate without submitting.
 ## Scripts
 
 ```bash
-bun run test              # Vitest (285+ tests)
-bun run typecheck         # tsc --noEmit
-bun run lint              # ESLint
-bun run fmt               # Prettier check
-bun run fmt:fix           # Prettier write
-bun run start             # Production run
-bun run start:tui         # TUI mode
+# Main bot
+bun run start             # Run the bot (headless)
+bun run tui               # Run the bot with Terminal UI
+
+# Development & testing
+bun run test              # Run all tests
+bun run typecheck         # TypeScript type checking
+bun run lint              # Lint + auto-fix
+bun run fmt               # Format code
+
+# HyperIndex (Envio) development
+bun run dev               # Start the indexer (development mode)
+bun run dev:reset         # Kills port (respects ENVIO_INDEXER_PORT) + full reset (recommended for schema/start_block/handler changes)
+bun run dev:kill          # Kill any process holding the default Envio indexer port (9898)
+bun run cgen              # Regenerate Envio types after schema/config changes
+bun run gentok            # Regenerate the static token decimals registry
+bun run clear-hasura      # Clear Hasura metadata
 ```
+
+### Working with the Indexer
+
+The `hyperindex/` folder contains an Envio indexer.
+
+**Common workflow:**
+
+```bash
+# When actively changing config.yaml, schema, handlers, or start_block:
+bun run dev:reset
+
+# For quick restarts (when nothing structural changed):
+bun run dev
+```
+
+`bun run dev:reset` now automatically:
+1. Runs `dev:kill` (respects `ENVIO_INDEXER_PORT` if set)
+2. Performs a full reset (`envio dev -r` + Hasura metadata clear)
+
+This is currently the safest and most reliable command when actively developing the indexer.
+
+**Port conflicts (very common)**
+
+If you see `Port 9898 is already in use`, you can still run:
+
+```bash
+bun run dev:kill
+# or manually:
+lsof -ti :9898 | xargs kill -9
+```
+
+You can also run the indexer on a different port:
+
+```bash
+ENVIO_INDEXER_PORT=9899 bun run dev
+```
+
+The `dev:reset` command is strongly recommended whenever you change `start_block`, the GraphQL schema, or handler logic. It performs a clean reset of both the indexer storage and Hasura metadata.
 
 ## Solidity Contracts
 
@@ -123,7 +173,9 @@ Foundry project in `sol/`:
 
 ## HyperIndex
 
-The `hyperindex/` directory contains an Envio indexer that ingests events from Polygon factories, tracking pool state in a Hasura-backed PostgreSQL instance served over GraphQL. The bot queries it for pool discovery and state refreshes.
+The `hyperindex/` directory contains an Envio indexer that ingests events from Polygon factories, tracking pool discovery (and optionally state) in a Hasura-backed PostgreSQL instance.
+
+See the **"Working with the Indexer"** section above for the recommended development workflow (`dev` vs `dev:reset`).
 
 ## Tests
 
