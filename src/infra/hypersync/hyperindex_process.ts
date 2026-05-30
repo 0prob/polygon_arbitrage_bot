@@ -302,8 +302,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     // Slow handler / effect (very common source of backfill pain)
+    // Extraction: also pull current block from our own SLOW_EFFECT instrumentation
+    // to keep TUI sync indicator moving even when Envio's own progress lines are suppressed.
     if (/(V2Factory|V3Factory|PairCreated|PoolCreated|token.*meta|effect|fetchTokenMeta|slow|took\s+\d+ms)/i.test(originalTrimmed)) {
       opts.logger.info({ source: "hyperindex", raw: originalTrimmed }, "HyperIndex possible slow handler or effect");
+
+      const slowEffectBlock = originalTrimmed.match(/"block":\s*(\d{5,})/);
+      if (slowEffectBlock) {
+        const synced = parseInt(slowEffectBlock[1], 10);
+        _lastParsedBlock = Math.max(_lastParsedBlock, synced);
+        emitStatus("syncing", _lastParsedBlock, _lastRemoteBlock, chain);
+      }
     }
 
     // 3. Block progress (primary sync progress signal)
@@ -347,7 +356,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       emitStatus("indexer_ready", _lastParsedBlock, _lastRemoteBlock, chain);
     }
 
-    if (/connected|listening|ready|running|started|backfill (started|complete)/i.test(originalTrimmed)) {
+    if (/connected|listening|ready|running|started|backfill (started|complete)|Using Postgres|Using Hasura/i.test(originalTrimmed)) {
       if (_lastParsedBlock === 0) emitStatus("running", 0, 0, chain);
       return;
     }

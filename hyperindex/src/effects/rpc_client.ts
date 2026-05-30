@@ -38,10 +38,9 @@ function getRpcUrls(): string[] {
     // NOTE: No paid/demo keys here. Broken keys cause RPC timeouts/failures on every cache miss,
     // which appear as "Loaders: 99%" in Envio pipeline split (effects are Loaders time).
     // Always prefer POLYGON_RPC_URLS (comma-separated) from .env for real archival work.
-    "https://polygon-rpc.com",
+    "https://polygon.drpc.org",
     "https://polygon-mainnet.public.blastapi.io",
-    "https://1rpc.io/matic",
-    "https://rpc.ankr.com/polygon",
+    "https://polygon.api.onfinality.io/public",
   ];
 }
 
@@ -54,8 +53,8 @@ const rpcUrls = getRpcUrls();
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
     batch: { batchSize: BATCH_SIZE },
-    timeout: 15_000,
-    retryCount: 2,
+    timeout: 10_000,
+    retryCount: 1,
     retryDelay: 150,
   })
 );
