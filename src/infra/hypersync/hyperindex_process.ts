@@ -2,6 +2,7 @@ import { spawn, execSync, type ChildProcess } from "child_process";
 import path from "path";
 import { readFile } from "fs/promises";
 import type { Logger } from "../observability/logger.ts";
+import { ApiTokenPool } from "./api_token_pool.ts";
 
 interface HyperIndexStatusEvent {
   type: "hyperindex_status";
@@ -9,6 +10,8 @@ interface HyperIndexStatusEvent {
   syncedBlock: number;
   remoteBlock: number;
   chain?: string;
+  /** Short prefix of active ENVIO key (for TUI) */
+  envioKeyPrefix?: string;
 }
 
 type EventBusLike = { emit(event: HyperIndexStatusEvent): void };
@@ -49,6 +52,10 @@ export interface HyperIndexProcessOptions {
    */
   polygonRpcUrls: string[];
   envioApiToken?: string;
+  /** Multiple tokens — we will pick one (round-robin) on each start() for hyperindex.
+   *  This is the main lever for multiplying free-tier HyperSync budget across keys.
+   */
+  envioApiTokens?: string[];
   logger: Logger;
   eventBus?: EventBusLike;
 
@@ -77,6 +84,8 @@ export interface HyperIndexProcess {
   start: () => Promise<void>;
   stop: () => Promise<void>;
   isRunning: () => boolean;
+  /** Short prefix of the ENVIO key currently active for this HyperIndex child (for TUI "ENVIO Key:" indicator) */
+  getCurrentEnvioKeyPrefix?: () => string | undefined;
 }
 
 /**
@@ -104,6 +113,9 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _stderrBuffer: string[] = [];
   let _hasDoneReactiveHasuraClear = false;
 
+  /** Short prefix of the ENVIO_API_TOKEN chosen for the current hyperindex child process run (for TUI) */
+  let _currentEnvioKeyPrefix: string | undefined;
+
   const hiDir = path.resolve(opts.dataDir, "../hyperindex");
 
   function emitStatus(status: string, synced: number, remote: number, chain?: string): void {
@@ -118,6 +130,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       syncedBlock: synced,
       remoteBlock: remote,
       chain,
+      envioKeyPrefix: _currentEnvioKeyPrefix,
     });
   }
 
@@ -391,11 +404,38 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
     // If empty list, let the hyperindex rpc_client fall back to its internal default free public
 
-    if (opts.envioApiToken) {
-      env.ENVIO_API_TOKEN = opts.envioApiToken;
+    // === MULTI-TOKEN SUPPORT FOR FREE TIER ROTATION ===
+    // Build a pool from (in priority order):
+    //   explicit opts + ENVIO_API_TOKENS + single token + files (root + hyperindex/.env)
+    const tokenPool = new ApiTokenPool({
+      tokens: [
+        ...(opts.envioApiTokens ?? []),
+        ...(opts.envioApiToken ? [opts.envioApiToken] : []),
+      ],
+      scanEnvFiles: true,
+      rootDir: path.join(hiDir, ".."),
+    });
+
+    const chosenToken = tokenPool.next();
+    if (chosenToken) {
+      env.ENVIO_API_TOKEN = chosenToken;
+      _currentEnvioKeyPrefix = chosenToken.slice(0, 8) + "…";
+      const status = tokenPool.getStatus();
+      opts.logger.info(
+        {
+          chosenTokenPrefix: _currentEnvioKeyPrefix,
+          totalKeysInPool: status.totalKeys,
+          localPacingMs: status.localPacingMs,
+        },
+        "HyperIndex starting with rotated ENVIO_API_TOKEN from pool (multi-key free tier strategy)",
+      );
+    } else if (env.ENVIO_API_TOKEN) {
+      _currentEnvioKeyPrefix = env.ENVIO_API_TOKEN.slice(0, 8) + "…";
+      opts.logger.debug("Using ENVIO_API_TOKEN already present in environment for HyperIndex");
     } else {
+      _currentEnvioKeyPrefix = undefined;
       opts.logger.warn(
-        "No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be rate-limited (per 2026 Envio requirements). Generate one at https://envio.dev/app/api-tokens",
+        "No ENVIO_API_TOKEN provided (checked opts + ENVIO_API_TOKENS + .env files). HyperSync/HyperIndex will be heavily rate-limited. Add multiple keys to hyperindex/.env or set ENVIO_API_TOKENS.",
       );
     }
 
@@ -412,18 +452,20 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     const rpcCount = (env.POLYGON_RPC_URLS || env.POLYGON_RPC_URL || "").split(",").filter(Boolean).length;
     const hasToken = !!env.ENVIO_API_TOKEN;
     const startBlock = env.POLYGON_START_BLOCK || env.POLYGON_START_BLOCK || "default (config.yaml)";
+    const poolStatus = tokenPool.getStatus();
 
     opts.logger.info(
       {
         hyperindexDir: hiDir,
         rpcEndpoints: rpcCount,
         hasEnvioToken: hasToken,
+        envioTokenPoolSize: poolStatus.totalKeys,
         startBlock,
         importantEnv: sanitizedEnvKeys,
         forceFullReset: opts.forceFullReset,
         note: hasToken
-          ? "Using authenticated HyperSync (recommended for speed)"
-          : "NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Backfill will be slow. Get token at https://envio.dev/app/api-tokens",
+          ? `Using authenticated HyperSync with ${poolStatus.totalKeys} key(s) in rotation pool`
+          : "NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Add keys to hyperindex/.env or ENVIO_API_TOKENS.",
       },
       opts.forceFullReset
         ? "Starting HyperIndex with FULL RESET (-r) + volume nuke (409 recovery + table recreation)"
@@ -578,11 +620,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     });
 
     proc = null;
+    _currentEnvioKeyPrefix = undefined;
   }
 
   function isRunning(): boolean {
     return proc !== null && proc.exitCode === null;
   }
 
-  return { start, stop, isRunning };
+  function getCurrentEnvioKeyPrefix(): string | undefined {
+    return _currentEnvioKeyPrefix;
+  }
+
+  return { start, stop, isRunning, getCurrentEnvioKeyPrefix };
 }

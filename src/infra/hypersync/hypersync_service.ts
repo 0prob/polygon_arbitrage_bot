@@ -1,4 +1,5 @@
 import type { Logger } from "../observability/logger.ts";
+import { ApiTokenPool, createDefaultApiTokenPool } from "./api_token_pool.ts";
 
 // Dynamic import so the rest of the app doesn't break if the native package isn't installed yet.
 let HypersyncClient: any;
@@ -15,50 +16,125 @@ try {
  * read paths (blocks, logs, height). The official client uses the native HyperSync
  * protocol and is significantly faster.
  *
+ * Multi-token support:
+ *   - Pass multiple tokens (or rely on ENVIO_API_TOKENS / multiple keys in .env files).
+ *   - We maintain one native client per token and rotate between them.
+ *   - Local pacing (maxRpmPerToken) prevents hammering any single free-tier key up to
+ *     the hard wall (which triggers long server backoffs).
+ *
+ * This directly addresses the "exceeding rate limit blocks everything for a long time"
+ * problem: we pace conservatively per key and can spread load across several free keys.
+ *
  * See: https://docs.envio.dev/docs/HyperSync/overview (2026 docs)
  */
 export class HyperSyncService {
-  private client: any;
+  private clients: Array<{ token: string; client: any }> = [];
+  private pool: ApiTokenPool;
   private logger?: Logger;
+  private rotationCounter = 0;
 
-  constructor(config: { url: string; apiToken?: string; timeoutMs?: number }, logger?: Logger) {
+  constructor(
+    config: {
+      url: string;
+      /** Single token (legacy) */
+      apiToken?: string;
+      /** Multiple tokens — enables rotation + multiplied free-tier budget */
+      apiTokens?: string[];
+      timeoutMs?: number;
+      /** Client-side cap: never exceed this many requests per minute *per token*. */
+      maxRpmPerToken?: number;
+    },
+    logger?: Logger,
+  ) {
     if (!HypersyncClient) {
       throw new Error("@envio-dev/hypersync-client is not installed. Run `bun install` to get the native modules.");
     }
-    const clientConfig = {
-      url: config.url,
-      apiToken: config.apiToken || "",
-      httpReqTimeoutMillis: config.timeoutMs ?? 30000,
-    };
-    this.client = new HypersyncClient(clientConfig);
+
+    const tokens = config.apiTokens?.length
+      ? config.apiTokens
+      : config.apiToken
+        ? [config.apiToken]
+        : [];
+
+    this.pool = tokens.length > 0
+      ? new ApiTokenPool({ tokens, maxRpmPerToken: config.maxRpmPerToken })
+      : createDefaultApiTokenPool(config.maxRpmPerToken);
+
+    if (!this.pool.hasTokens()) {
+      // Still create a single unauthenticated client (free public tier)
+      const clientConfig = {
+        url: config.url,
+        apiToken: "",
+        httpReqTimeoutMillis: config.timeoutMs ?? 30000,
+      };
+      this.clients.push({ token: "", client: new HypersyncClient(clientConfig) });
+      this.logger?.warn("No HyperSync API tokens found — using unauthenticated public endpoint (very low rate limit)");
+    } else {
+      const baseCfg = {
+        url: config.url,
+        httpReqTimeoutMillis: config.timeoutMs ?? 30000,
+      };
+      for (const tok of this.pool["tokens"] ?? []) {
+        // Access private for construction only; pool already holds the list
+        this.clients.push({
+          token: tok,
+          client: new HypersyncClient({ ...baseCfg, apiToken: tok }),
+        });
+      }
+    }
+
     this.logger = logger;
   }
 
+  /** Returns the pool for external inspection (TUI, logging, etc.) */
+  getTokenPool(): ApiTokenPool {
+    return this.pool;
+  }
+
   /**
-   * Internal helper: always respect the HyperSync client's rate limit (including the
-   * free tier 100 requests/min unauthenticated limit on hypersync.xyz).
-   * This ensures all HyperIndex monitoring, reorg detection, receipt polling, and
-   * state fetching automatically comply without callers needing to remember to wait.
+   * Pick a client from the pool, respecting both:
+   *  - the native client's waitForRateLimit (server-reported windows per token)
+   *  - our local ApiTokenPool pacing (maxRpmPerToken)
    */
-  private async waitForRateLimitInternal(): Promise<void> {
-    if (this.client?.waitForRateLimit) {
+  private async pickClient(): Promise<{ token: string; client: any }> {
+    // Prefer a token the pool says is safe from our local pacing
+    const preferredToken = this.pool.next();
+    let chosen = this.clients.find((c) => c.token === preferredToken) ?? this.clients[0];
+
+    // If we have multiple clients, also rotate occasionally so load spreads even under light usage
+    if (this.clients.length > 1) {
+      this.rotationCounter = (this.rotationCounter + 1) % this.clients.length;
+      // Bias toward the pool's suggestion but still rotate
+      const rotated = this.clients[this.rotationCounter];
+      if (rotated) chosen = rotated;
+    }
+
+    // Always wait on the *chosen* client's native rate limiter
+    const c = chosen.client;
+    if (c?.waitForRateLimit) {
       try {
-        await this.client.waitForRateLimit();
+        await c.waitForRateLimit();
       } catch (err) {
-        // Non-fatal — the underlying client may throw if the limit info is temporarily unavailable.
-        this.logger?.debug({ err }, "HyperSync waitForRateLimit threw (continuing)");
+        this.logger?.debug({ err, tokenPrefix: chosen.token?.slice(0, 8) }, "HyperSync waitForRateLimit threw (continuing)");
       }
     }
+    return chosen;
+  }
+
+  private async withClient<T>(fn: (client: any, token: string) => Promise<T>): Promise<T> {
+    const { client, token } = await this.pickClient();
+    const result = await fn(client, token);
+    // Record the use for local pacing even if the native client did the wait
+    this.pool.recordUse(token);
+    return result;
   }
 
   async getHeight(): Promise<number> {
-    await this.waitForRateLimitInternal();
-    return this.client.getHeight();
+    return this.withClient((c) => c.getHeight());
   }
 
   async getChainId(): Promise<number> {
-    await this.waitForRateLimitInternal();
-    return this.client.getChainId();
+    return this.withClient((c) => c.getChainId());
   }
 
   /**
@@ -66,22 +142,26 @@ export class HyperSyncService {
    * Call this before expensive operations in hot paths.
    */
   rateLimitInfo(): any | null {
-    return this.client.rateLimitInfo?.() ?? null;
+    // Return info from the "current" client in the pool (good enough for observability)
+    const active = this.clients[0]?.client ?? this.clients[0];
+    return active?.rateLimitInfo?.() ?? null;
   }
 
   /**
    * Wait until the current rate limit window allows more requests.
-   * Use this for backpressure in the monitor, fetcher, and reorg detector.
+   * When using a token pool this waits on one of the clients (the pool already did local pacing selection).
    */
   async waitForRateLimit(): Promise<void> {
-    await this.waitForRateLimitInternal();
+    const { client } = await this.pickClient();
+    try {
+      await client.waitForRateLimit?.();
+    } catch {}
   }
 
   /**
    * Get a recent block with useful fields. Faster than traditional RPC for historical data.
    */
   async getBlock(numberOrTag: number | "latest" | bigint): Promise<any | null> {
-    await this.waitForRateLimitInternal();
     const from = typeof numberOrTag === "string" ? 0 : Number(numberOrTag);
     const query: any = {
       fromBlock: from,
@@ -91,8 +171,10 @@ export class HyperSyncService {
       },
     };
     try {
-      const res = await this.client.get(query);
-      return res.data.blocks?.[0] ?? null;
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        return res.data.blocks?.[0] ?? null;
+      });
     } catch (err) {
       this.logger?.warn({ err, block: numberOrTag }, "HyperSync getBlock failed");
       return null;
@@ -104,7 +186,6 @@ export class HyperSyncService {
    * For full fidelity, the legacy HyperRpcClient (JSON-RPC) can still be used alongside.
    */
   async getBlockByNumber(blockNumber: bigint | number | "latest"): Promise<any | null> {
-    await this.waitForRateLimitInternal();
     const fromBlock = typeof blockNumber === "string" ? undefined : Number(blockNumber);
     const query: any = {
       fromBlock: fromBlock ?? 0,
@@ -115,8 +196,10 @@ export class HyperSyncService {
     };
 
     try {
-      const res = await this.client.get(query);
-      return res.data.blocks?.[0] ?? null;
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        return res.data.blocks?.[0] ?? null;
+      });
     } catch (err) {
       this.logger?.warn({ err, blockNumber }, "HyperSync getBlockByNumber failed");
       return null;
@@ -136,7 +219,6 @@ export class HyperSyncService {
     address?: string | string[];
     topics?: (string | string[] | null)[];
   }): Promise<any[]> {
-    await this.waitForRateLimitInternal();
     const query: any = {
       fromBlock: params.fromBlock ? Number(params.fromBlock) : 0,
       toBlock: params.toBlock ? Number(params.toBlock) : undefined,
@@ -155,8 +237,10 @@ export class HyperSyncService {
     };
 
     try {
-      const res = await this.client.get(query);
-      return res.data.logs ?? [];
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        return res.data.logs ?? [];
+      });
     } catch (err) {
       this.logger?.warn({ err }, "HyperSync getLogs failed");
       return [];
@@ -168,7 +252,6 @@ export class HyperSyncService {
    * This is often faster than RPC for recent transactions. Falls back to null if not found quickly.
    */
   async getTransactionReceipt(txHash: string, lookbackBlocks = 100): Promise<any | null> {
-    await this.waitForRateLimitInternal();
     try {
       const height = await this.getHeight();
       const query: any = {
@@ -179,16 +262,19 @@ export class HyperSyncService {
         },
         transactions: [{ hash: [txHash] }],
       };
-      const res = await this.client.get(query);
-      const tx = res.data.transactions?.[0];
-      if (tx) {
-        return {
-          transactionHash: tx.hash,
-          status: tx.status === 1 ? "0x1" : "0x0",
-          gasUsed: tx.gasUsed,
-          logs: res.data.logs?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase()) ?? [],
-        };
-      }
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        const tx = res.data.transactions?.[0];
+        if (tx) {
+          return {
+            transactionHash: tx.hash,
+            status: tx.status === 1 ? "0x1" : "0x0",
+            gasUsed: tx.gasUsed,
+            logs: res.data.logs?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase()) ?? [],
+          };
+        }
+        return null;
+      });
     } catch (err) {
       this.logger?.debug({ err, txHash }, "HyperSync receipt reconstruction failed");
     }
@@ -203,7 +289,6 @@ export class HyperSyncService {
    * Supports the native HyperSync trace format.
    */
   async getTransactionTraces(txHash: string, lookbackBlocks = 200): Promise<any[]> {
-    await this.waitForRateLimitInternal();
     try {
       const height = await this.getHeight();
       const query: any = {
@@ -215,8 +300,10 @@ export class HyperSyncService {
         transactions: [{ hash: [txHash] }],
         traces: [{}], // Request traces for matching txs
       };
-      const res = await this.client.get(query);
-      return res.data.traces ?? [];
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        return res.data.traces ?? [];
+      });
     } catch (err) {
       this.logger?.debug({ err, txHash }, "HyperSync traces fetch failed");
       return [];
@@ -228,10 +315,11 @@ export class HyperSyncService {
    * Uses narrow fieldSelection by default (no joins).
    */
   async queryLogsAdvanced(query: any): Promise<any> {
-    await this.waitForRateLimitInternal();
     try {
-      const res = await this.client.get(query);
-      return res.data;
+      return await this.withClient(async (c) => {
+        const res = await c.get(query);
+        return res.data;
+      });
     } catch (err) {
       this.logger?.warn({ err }, "HyperSync advanced query failed");
       return { logs: [], blocks: [], transactions: [] };
@@ -244,7 +332,11 @@ export function createHyperSyncService(
   config: {
     url: string;
     apiToken?: string;
+    /** Multiple tokens for rotation + multiplied free tier capacity */
+    apiTokens?: string[];
     timeoutMs?: number;
+    /** Client-side pacing: max requests per minute per token (prevents hard rate limit explosions) */
+    maxRpmPerToken?: number;
   },
   logger?: Logger,
 ): HyperSyncService | undefined {

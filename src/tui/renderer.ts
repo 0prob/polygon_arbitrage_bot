@@ -231,6 +231,7 @@ export class Renderer {
       bold("⚡ System & Infra"),
       `  Gas Price:    ${color(gwei, YELLOW)}`,
       `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}`,
+      `  ENVIO Key:    ${color(s.hiEnvioKeyPrefix ?? "—", CYAN)}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
       `  Scan Speed:   ${color(String(scanSpeed), WHITE)} routes/s`,
       `  Throughput:   ${color(passesPerSec, WHITE)} passes/s`,

@@ -10,7 +10,7 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/package.json": {
-    "mtime": 1780114654.1149974,
+    "mtime": 1780114985.231395,
     "ast_hash": "be515705dcc29cfacbab437252166b04",
     "semantic_hash": ""
   },
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780113060.460132,
-    "ast_hash": "79cf62609c443ff3278eb5ad25390b9d",
+    "mtime": 1780116174.2320142,
+    "ast_hash": "d6d2b6016d1b33c422e7523136b132df",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1780063235.5188355,
-    "ast_hash": "75ddb261301132dfb22ddde7b1aa88bc",
+    "mtime": 1780115597.5750856,
+    "ast_hash": "a10d35172673093692f3ac04a2def3eb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {

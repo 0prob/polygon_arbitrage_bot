@@ -58,6 +58,9 @@ raw_events: false
 #    Mitigated by STATIC_TOKEN_DECIMALS registry + cache: true + Promise.all parallelization.
 # 2. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
 # 3. HyperSync quota / ENVIO_API_TOKEN quality.
+#    Multiple free keys are now auto-rotated (see root .env.example section 6 and src/infra/hypersync/api_token_pool.ts).
+#    Put several keys in hyperindex/.env (commented lines are parsed) or set ENVIO_API_TOKENS in the root .env.
+#    On rate-limit pain the HyperIndexMonitor forces a restart, which picks the next key from the pool.
 # 4. POLYGON_RPC_URLS quality for effect fallbacks.
 #
 # To observe real-time:
@@ -205,7 +208,7 @@ chains:
               transaction_fields: ["hash"]
 
       - name: PoolManager
-        start_block: ${POLYGON_START_BLOCK:-66980384} # Uniswap V4 deployment
+        start_block: ${POLYGON_START_BLOCK:-77000000} # Uniswap V4 deployment
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
         abi_file_path: abis/uniswap_v4_pool_manager.json
         # handler removed - automatic registration from src/handlers/ (V3)

@@ -236,6 +236,7 @@ async function main() {
         lag: status.lag,
         syncRate: status.syncRate,
         discoveryMode,
+        envioKeyPrefix: status.envioKeyPrefix,
       });
     } catch {}
   }, 5000);

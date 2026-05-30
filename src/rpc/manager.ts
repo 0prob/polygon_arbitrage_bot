@@ -79,6 +79,7 @@ export class RpcManager {
         url: config.hyperRpcUrl || `https://${this.chainId}.rpc.hypersync.xyz`,
         apiToken: config.hyperRpcApiToken,
         timeoutMs: config.requestTimeoutMs,
+        maxRpmPerToken: config.hypersyncMaxRpmPerToken,
       });
     }
   }

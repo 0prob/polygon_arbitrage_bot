@@ -64,6 +64,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   FASTLANE_BLOCK_WINDOW: ["fastlane", "blockNumberWindow"],
   FASTLANE_TIMESTAMP_WINDOW_S: ["fastlane", "timestampWindowS"],
 
+  HYPERSYNC_MAX_RPM_PER_TOKEN: ["rpc", "hypersyncMaxRpmPerToken"],
+
   LOG_LEVEL: ["observability", "logLevel"],
   TUI: ["observability", "tuiEnabled"],
 

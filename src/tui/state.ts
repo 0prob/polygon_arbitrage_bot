@@ -34,6 +34,8 @@ export interface SystemState {
   hiSyncRate: number;
   hiChain?: string;
   hiLastSeen: number;
+  /** Short prefix of currently active ENVIO_API_TOKEN for the HyperIndex process (multi-key rotation) */
+  hiEnvioKeyPrefix?: string;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
   pipelineStage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING";
@@ -83,6 +85,7 @@ export function createInitialState(): TuiState {
       hiLag: 0,
       hiSyncRate: 0,
       hiLastSeen: 0,
+      hiEnvioKeyPrefix: undefined,
       poolsPerProtocol: {},
       maxHops: 0,
       pipelineStage: "IDLE",
@@ -221,6 +224,9 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       }
       if (event.discoveryMode) {
         state.system.hiDiscoveryMode = event.discoveryMode;
+      }
+      if (event.envioKeyPrefix) {
+        state.system.hiEnvioKeyPrefix = event.envioKeyPrefix;
       }
       break;
   }

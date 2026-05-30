@@ -33,6 +33,11 @@ export class HyperIndexMonitor implements Lifecycle {
   private lastRemoteBlock = 0;
   private lastChainHead = 0;
 
+  // Rate limit pain detector — when we see a lot of quota pain, we want to cycle
+  // to the next ENVIO_API_TOKEN in the pool (via restart) faster than a full stall.
+  private rateLimitPainCount = 0;
+  private lastRateLimitPain = 0;
+
   // Simple rate tracking (blocks per second over recent samples)
   private readonly blockSamples: { time: number; block: number }[] = [];
   private readonly MAX_SAMPLES = 20;
@@ -152,6 +157,27 @@ export class HyperIndexMonitor implements Lifecycle {
             );
             // We can let the existing waitForRateLimit() in other places handle most of it.
           }
+
+          // If remaining is critically low for a while, treat as "rate limit pain" and
+          // force a HyperIndex restart (which will now pick the *next* token from the pool).
+          if (rl.remaining !== undefined && rl.remaining <= 2) {
+            this.rateLimitPainCount++;
+            this.lastRateLimitPain = Date.now();
+            if (this.rateLimitPainCount >= 3) {
+              this.opts.logger.warn(
+                { rateLimitInfo: rl, painCount: this.rateLimitPainCount },
+                "Persistent HyperSync rate limit pain — forcing HyperIndex restart to rotate to next ENVIO_API_TOKEN in pool",
+              );
+              this.rateLimitPainCount = 0;
+              await this.restart();
+              return;
+            }
+          } else {
+            // Decay the pain counter when we're healthy again
+            if (this.rateLimitPainCount > 0 && Date.now() - this.lastRateLimitPain > 60_000) {
+              this.rateLimitPainCount = Math.max(0, this.rateLimitPainCount - 1);
+            }
+          }
         }
       } catch (err) {
         this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
@@ -255,14 +281,17 @@ export class HyperIndexMonitor implements Lifecycle {
     return this.lastSyncedBlock;
   }
 
-  getLastStatus(): { status: string; synced: number; remote: number; lag: number; syncRate: number } {
+  getLastStatus(): { status: string; synced: number; remote: number; lag: number; syncRate: number; rateLimitPain?: number; envioKeyPrefix?: string } {
     const lag = this.getCurrentLag();
+    const keyPrefix = (this.proc as any).getCurrentEnvioKeyPrefix?.();
     return {
       status: this._isHealthy ? "running" : "error",
       synced: this.lastSyncedBlock,
       remote: this.lastRemoteBlock || this.lastChainHead,
       lag,
       syncRate: this.getSyncRate(),
+      rateLimitPain: this.rateLimitPainCount,
+      envioKeyPrefix: keyPrefix,
     };
   }
 
