@@ -59,7 +59,7 @@ raw_events: false
 # 2. full_batch_size (see below) and number of dynamic contracts (thousands of V2/V3 pools).
 # 3. HyperSync quota / ENVIO_API_TOKEN quality.
 #    Multiple free keys are now auto-rotated (see root .env.example section 6 and src/infra/hypersync/api_token_pool.ts).
-#    Put several keys in hyperindex/.env (commented lines are parsed) or set ENVIO_API_TOKENS in the root .env.
+#    Put several keys in hyperindex/.env (supports ENVIO_API_TOKEN=... lines or ENVIO_API_TOKENS=comma,sep) or set ENVIO_API_TOKENS in the root .env.
 #    On rate-limit pain the HyperIndexMonitor forces a restart, which picks the next key from the pool.
 # 4. POLYGON_RPC_URLS quality for effect fallbacks.
 #

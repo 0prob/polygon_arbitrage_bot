@@ -14,8 +14,8 @@ import path from "path";
  *   1. Explicit tokens passed in constructor
  *   2. ENVIO_API_TOKENS (comma-separated) from process.env
  *   3. ENVIO_API_TOKEN from process.env
- *   4. Tokens parsed from root .env (including commented lines)
- *   5. Tokens parsed from hyperindex/.env (the file the user keeps multiple keys in)
+ *   4. Tokens parsed from root .env (supports ENVIO_API_TOKEN or ENVIO_API_TOKENS=comma,sep, including commented lines)
+ *   5. Tokens parsed from hyperindex/.env (supports both singular and plural forms)
  */
 
 export interface ApiTokenPoolOptions {
@@ -140,7 +140,7 @@ export class ApiTokenPool {
   }
 }
 
-/** Parse a .env file (supports commented lines like #ENVIO_API_TOKEN=xxx) */
+/** Parse a .env file (supports commented lines like #ENVIO_API_TOKEN=xxx or ENVIO_API_TOKENS=comma,separated) */
 function parseEnvTokens(filePath: string): string[] {
   try {
     const content = readFileSync(filePath, "utf8");
@@ -148,10 +148,25 @@ function parseEnvTokens(filePath: string): string[] {
     for (const raw of content.split(/\r?\n/)) {
       const line = raw.trim();
       if (!line) continue;
-      // Match ENVIO_API_TOKEN=... even if the line starts with #
-      const m = line.match(/^#?\s*ENVIO_API_TOKEN\s*=\s*['"]?([A-Za-z0-9._-]+)['"]?\s*$/);
+
+      // Singular: ENVIO_API_TOKEN=xxx (or #ENVIO_API_TOKEN=xxx)
+      let m = line.match(/^#?\s*ENVIO_API_TOKEN\s*=\s*['"]?([A-Za-z0-9._-]+)['"]?\s*(?:#.*)?$/);
       if (m && m[1]) {
         out.push(m[1]);
+        continue;
+      }
+
+      // Plural: ENVIO_API_TOKENS=token1,token2,token3 (or commented)
+      // Supports optional quotes around individual tokens or the whole value
+      m = line.match(/^#?\s*ENVIO_API_TOKENS\s*=\s*(.+?)\s*(?:#.*)?$/);
+      if (m && m[1]) {
+        const rawValue = m[1].trim();
+        // Strip outer quotes if present on the entire value
+        const value = rawValue.replace(/^['"](.*)['"]$/, "$1");
+        for (const part of value.split(",")) {
+          const t = part.trim().replace(/^['"](.*)['"]$/, "$1").trim();
+          if (t) out.push(t);
+        }
       }
     }
     return out;
