@@ -13,6 +13,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   RPC_BATCH_SIZE: ["rpc", "batchSize"],
   HYPERRPC_URL: ["rpc", "hyperRpcUrl"],
   HYPERRPC_API_TOKEN: ["rpc", "hyperRpcApiToken"],
+  HYPER_SYNC_URL: ["rpc", "hyperSyncUrl"],
 
   GAS_POLL_INTERVAL_MS: ["gas", "pollIntervalMs"],
   POLYGON_PRIORITY_FEE_FLOOR_GWEI: ["gas", "priorityFeeFloorGwei"],
@@ -24,6 +25,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   GAS_BASE_FEE_BUFFER_MULTIPLIER: ["gas", "baseFeeBufferMultiplier"],
   GAS_MAX_PRIORITY_FEE_PERCENTILE: ["gas", "maxPriorityFeePercentile"],
   GAS_HISTORY_SIZE: ["gas", "historySize"],
+  GAS_SPIKE_PRIORITY_FEE_MULTIPLIER: ["gas", "spikePriorityFeeMultiplier"],
 
   ROUTING_MAX_HOPS: ["routing", "maxHops"],
   CYCLE_REFRESH_INTERVAL_MS: ["routing", "cycleRefreshIntervalMs"],

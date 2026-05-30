@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { loadConfig } from "./loader.ts";
 
 const REQUIRED_ENV = {
-  ENVIO_API_TOKEN: "test-token",
   EXECUTION_RPC: "https://example.com/rpc",
   EXECUTOR_ADDRESS: "0x" + "11".repeat(20),
   PRIVATE_KEY: "0x" + "ab".repeat(32),
@@ -11,14 +10,14 @@ const REQUIRED_ENV = {
 describe("loadConfig", () => {
   it("loads valid config with only required env vars", () => {
     const cfg = loadConfig(REQUIRED_ENV);
-    expect(cfg.envioApiToken).toBe("test-token");
+    expect(cfg.envioApiToken).toBe(""); // optional, defaults to empty when not provided
     expect(cfg.execution.executorAddress).toBe("0x" + "11".repeat(20));
     expect(cfg.rpc.polygonRpcUrls.length).toBeGreaterThan(0);
   });
 
   it("throws clearly when required env var is missing", () => {
-    const { ENVIO_API_TOKEN: _, ...incomplete } = REQUIRED_ENV;
-    expect(() => loadConfig(incomplete)).toThrow(/envioApiToken/);
+    const { EXECUTION_RPC: _, ...incomplete } = REQUIRED_ENV;
+    expect(() => loadConfig(incomplete)).toThrow(/executionRpcUrl|EXECUTION_RPC/);
   });
 
   it("throws when PRIVATE_KEY is malformed", () => {

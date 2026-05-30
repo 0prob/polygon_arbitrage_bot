@@ -16,7 +16,7 @@ export type ArbEvent =
   | { type: "pool_discovery"; count: number }
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
-  | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number }
+  | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number; indexerLag?: number }
   | {
       type: "hyperindex_status";
       status: string;

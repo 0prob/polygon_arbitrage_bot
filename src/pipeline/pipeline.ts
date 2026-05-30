@@ -231,7 +231,7 @@ export async function evaluatePipeline(
         try {
           const tokens = [cycle.startToken, ...cycle.edges.map((e) => e.tokenOut)];
           const hasAllRates = tokens.every((t) => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
-          if (!hasAllRates) return { type: "noRate" as const };
+          if (!hasAllRates) return { type: "noRate" as const, cycle };
 
           // Pre-build SimulationEdge templates once per cycle.
           // This is the key allocation reduction for the entire ternary search:
@@ -240,12 +240,12 @@ export async function evaluatePipeline(
 
           const baseAmount = getTestAmount(cycle.startToken, options.tokenMetas);
           const low = baseAmount / 5000n;
-          if (low === 0n) return { type: "pruned" as const };
+          if (low === 0n) return { type: "pruned" as const, cycle };
           const high = baseAmount;
           const ternaryIters = options.ternarySearchIterations ?? 15;
           const evalLow = evaluateAmount(cycle, low, stateCache, options, false, true, prebuiltSimEdges); // minimal for initial probe
           if (!evalLow.result || evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
-            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned" };
+            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", cycle };
           }
 
           let left = low;
@@ -340,14 +340,14 @@ export async function evaluatePipeline(
             }
           }
 
-          return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic };
+          return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic, cycle };
         } catch (_err: unknown) {
-          return { type: "error" as const };
+          return { type: "error" as const, cycle };
         }
       }),
     );
 
-    type EvalSuccess = { type: "success"; bestResult: any; bestAssessment: any; bestGrossMatic: bigint };
+    type EvalSuccess = { type: "success"; bestResult: RouteSimulationResult; bestAssessment: ProfitAssessment; bestGrossMatic: bigint; cycle: FoundCycle };
     const sortedResults = results
       .filter((r): r is EvalSuccess => r.type === "success")
       .sort((a, b) => Number(b.bestGrossMatic - a.bestGrossMatic));
@@ -359,7 +359,7 @@ export async function evaluatePipeline(
           const path = top.bestResult.poolPath.join(" -> ");
           const roi = top.bestAssessment.roi / 1_000_000;
           if (options.logger) {
-            options.logger.debug(
+            options.logger.debug?.(
               {
                 grossMatic: (top.bestGrossMatic / 10n ** 15n).toString() + "mMATIC",
                 roi,
@@ -376,16 +376,17 @@ export async function evaluatePipeline(
     for (const res of results) {
       if (res.type === "noRate") noRate++;
       else if (res.type === "pruned") pruned++;
-      else if (res.type === "success") {
+      else if (res.type === "success" && "cycle" in res) {
         simulated++;
+        const cycleForRes = res.cycle;
         if (res.bestGrossMatic > 0n && (maxGrossMatic === undefined || res.bestGrossMatic > maxGrossMatic)) {
           maxGrossMatic = res.bestGrossMatic;
         }
         if (res.bestResult && res.bestAssessment && res.bestAssessment.shouldExecute) {
           if (options.logger) {
-            options.logger.info(
+            options.logger.info?.(
               {
-                routeKey: batch[results.indexOf(res)].id,
+                routeKey: cycleForRes.id,
                 profit: res.bestAssessment.netProfitAfterGasMaticWei.toString(),
                 roi: res.bestAssessment.roi / 1_000_000,
                 path: res.bestResult.poolPath.join(" -> "),
@@ -393,7 +394,7 @@ export async function evaluatePipeline(
               "Evaluating profitable candidate",
             );
           }
-          profitable.push({ cycle: batch[results.indexOf(res)], result: res.bestResult, assessment: res.bestAssessment });
+          profitable.push({ cycle: cycleForRes, result: res.bestResult, assessment: res.bestAssessment });
         }
       }
     }

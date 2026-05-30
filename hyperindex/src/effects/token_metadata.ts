@@ -2,6 +2,49 @@ import { createEffect, S } from "envio";
 import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
 import { STATIC_TOKEN_DECIMALS } from "./token_registry";
+import { readFile, writeFile, mkdir } from "fs/promises";
+import path from "path";
+
+const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
+const FAILED_DECIMALS_RETRY_MS = 30 * 60 * 1000; // 30 minutes before retrying a failed token
+
+// Runtime discovered decimals (persisted across restarts for this indexer instance)
+const discoveredDecimals: Record<string, number> = {};
+let discoveredLoaded = false;
+let discoveredSavePending: Promise<void> | null = null;
+
+async function loadDiscoveredDecimals() {
+  if (discoveredLoaded) return;
+  try {
+    const raw = await readFile(DISCOVERED_DECIMALS_FILE, "utf8");
+    const data = JSON.parse(raw);
+    if (data && typeof data === "object") {
+      Object.assign(discoveredDecimals, data);
+    }
+  } catch {
+    // File may not exist yet — that's fine
+  }
+  discoveredLoaded = true;
+}
+
+async function saveDiscoveredDecimals() {
+  if (discoveredSavePending) return discoveredSavePending;
+  discoveredSavePending = (async () => {
+    try {
+      await mkdir(path.dirname(DISCOVERED_DECIMALS_FILE), { recursive: true });
+      await writeFile(DISCOVERED_DECIMALS_FILE, JSON.stringify(discoveredDecimals, null, 2), "utf8");
+    } catch (e) {
+      // Best effort
+      console.warn("[token_metadata] Failed to persist discovered decimals:", (e as Error).message);
+    } finally {
+      discoveredSavePending = null;
+    }
+  })();
+  return discoveredSavePending;
+}
+
+// Track failures with timestamps for retry
+const failedTokenAttempts: Map<string, number> = new Map();
 
 const ERC20_ABI = parseAbi([
   "function decimals() view returns (uint8)",
@@ -46,12 +89,22 @@ export const fetchTokenMeta = createEffect(
   async ({ input, context }) => {
     const addr = input.address.toLowerCase();
 
-    // Layer 1: Static decimals registry (best possible performance)
-    // Strictly limited to decimals — the only token data the arbitrage engine
-    // needs for amount math, pricing, and profit calculation.
-    const cached = STATIC_TOKEN_DECIMALS[addr];
-    if (cached !== undefined) {
-      return { address: input.address, decimals: cached };
+    // Layer 1: Static + discovered runtime cache (aggressive persistence)
+    const staticCached = STATIC_TOKEN_DECIMALS[addr];
+    if (staticCached !== undefined) {
+      return { address: input.address, decimals: staticCached };
+    }
+
+    await loadDiscoveredDecimals();
+    const discovered = discoveredDecimals[addr];
+    if (discovered !== undefined) {
+      return { address: input.address, decimals: discovered };
+    }
+
+    // Layer 2: Check recent failure with backoff (aggressive failure handling)
+    const lastFail = failedTokenAttempts.get(addr);
+    if (lastFail && Date.now() - lastFail < FAILED_DECIMALS_RETRY_MS) {
+      return { address: input.address, decimals: 18 };
     }
 
     try {
@@ -68,8 +121,12 @@ export const fetchTokenMeta = createEffect(
 
       const result = { address: input.address, decimals: safeDecimals(Number(decimals)) };
 
+      // Persist successful discovery aggressively
+      discoveredDecimals[addr] = result.decimals;
+      saveDiscoveredDecimals().catch(() => {});
+
       if (context.log) {
-        context.log.info(`Fetched decimals for new token via RPC`, {
+        context.log.info(`Fetched decimals for new token via RPC (persisted)`, {
           token: input.address,
           decimals: result.decimals,
         });
@@ -77,11 +134,12 @@ export const fetchTokenMeta = createEffect(
 
       return result;
     } catch (err) {
+      // Aggressive failure handling: remember the failure with timestamp
+      failedTokenAttempts.set(addr, Date.now());
+
       // Never fail the whole indexing run for one bad token
       const errStr = String(err);
       const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
-
-      const addr = input.address.toLowerCase();
 
       if (context.log && !failedDecimalsTokens.has(addr)) {
         failedDecimalsTokens.add(addr);
@@ -90,17 +148,18 @@ export const fetchTokenMeta = createEffect(
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +
             `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
-            `Defaulting to 18 for this token.`,
+            `Defaulting to 18 for this token (will retry in ~30min).`,
             { token: input.address }
           );
         } else {
-          context.log.warn(`Failed to fetch decimals for token — defaulting to 18`, {
+          context.log.warn(`Failed to fetch decimals for token — defaulting to 18 (backoff applied)`, {
             token: input.address,
             error: errStr,
           });
         }
       }
-      // Do not cache obviously bad results forever
+
+      // Do not cache obviously bad results forever in Envio effect cache
       context.cache = false;
       return { address: input.address, decimals: 18 };
     }

@@ -6,7 +6,7 @@ import type { PoolMeta } from "../core/types/pool.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { SubmissionStrategy, type SubmitTxFn } from "../services/execution/submit.ts";
 import { ReceiptPoller } from "../services/execution/receipt.ts";
-import { GasOracle, type GasOracleConfig } from "../services/execution/gas.ts";
+import { GasOracle, createGasFetcher, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
 import { createExecutionClient } from "../infra/rpc/client_factory.ts";
@@ -104,20 +104,13 @@ export async function bootApplication(
     baseFeeBufferMultiplier: config.gas.baseFeeBufferMultiplier,
     maxPriorityFeePercentile: config.gas.maxPriorityFeePercentile,
     historySize: config.gas.historySize,
+    spikePriorityFeeMultiplier: config.gas.spikePriorityFeeMultiplier ?? 1.6,
   };
 
-  const fetchGas = async () => {
-    try {
-      const [block, priorityFee] = await Promise.all([
-        publicClient.getBlock({ blockTag: "latest" }),
-        publicClient.estimateMaxPriorityFeePerGas().catch(() => 30n * 10n ** 9n),
-      ]);
-      const baseFee = block.baseFeePerGas ?? 30n * 10n ** 9n;
-      return { baseFee, priorityFee };
-    } catch (_err: unknown) {
-      return { baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n };
-    }
-  };
+  const fetchGas = createGasFetcher(publicClient, {
+    feeHistoryPercentile: config.gas.feeHistoryPercentile,
+    feeHistoryBlockCount: 2,
+  });
 
   const gasOracle = new GasOracle(gasOracleConfig, fetchGas);
 

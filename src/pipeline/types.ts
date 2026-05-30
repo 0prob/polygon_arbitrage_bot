@@ -47,7 +47,12 @@ export interface PipelineOptions {
   maxPriceImpactThreshold?: number;
   concurrency?: number;
   roiSafetyCap?: number;
-  logger?: any;
+  /** Minimal logger surface used for debug/info during evaluation. Accepts pino-style or compatible loggers. */
+  logger?: {
+    debug?: (obj: Record<string, unknown>, msg?: string) => void;
+    info?: (obj: Record<string, unknown>, msg?: string) => void;
+    warn?: (obj: Record<string, unknown>, msg?: string) => void;
+  };
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 

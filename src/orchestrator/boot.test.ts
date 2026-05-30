@@ -35,6 +35,7 @@ describe("bootApplication", () => {
         baseFeeBufferMultiplier: 1.0,
         maxPriorityFeePercentile: 75,
         historySize: 10,
+        spikePriorityFeeMultiplier: 1.6,
       },
       routing: {
         maxHops: 2,

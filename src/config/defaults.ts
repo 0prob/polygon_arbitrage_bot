@@ -15,6 +15,7 @@ export const DEFAULTS = {
     // (eth_chainId, eth_blockNumber, eth_getBlock*, eth_getTransaction*, eth_getLogs, eth_getBlockReceipts)
     hyperRpcUrl: "https://polygon.rpc.hypersync.xyz",
     hyperRpcApiToken: "" as string,
+    hyperSyncUrl: "https://polygon.hypersync.xyz",
     hypersyncMaxRpmPerToken: undefined as number | undefined,
   },
   gas: {
@@ -28,6 +29,7 @@ export const DEFAULTS = {
     baseFeeBufferMultiplier: 1.1,
     maxPriorityFeePercentile: 75,
     historySize: 20,
+    spikePriorityFeeMultiplier: 1.6,
   },
   routing: {
     maxHops: 5, // Increased for more discovery potential in long-tail / obscure paths. Hardware/time guarded in finder.
@@ -74,4 +76,7 @@ export const DEFAULTS = {
     dataDir: "data",
     perfJsonFile: "perf.json",
   },
+  envioApiToken: "",
+  hasuraUrl: "http://localhost:8080/v1/graphql",
+  hasuraSecret: "testing",
 } as const;

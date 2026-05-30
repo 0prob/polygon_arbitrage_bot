@@ -1,0 +1,6 @@
+# Global settings
+instance_timeout = 3600 # Keep alive for 1 hour after disconnect
+gc_interval = 10
+listen = "127.0.0.1:27631"
+connect = "127.0.0.1:27631"
+log_filters = "info"

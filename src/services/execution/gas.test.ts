@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { GasOracle, DEFAULT_GAS_CONFIG, scalePriorityFeeByProfitMargin } from "./gas.ts";
+import { GasOracle, DEFAULT_GAS_CONFIG, scalePriorityFeeByProfitMargin, createGasFetcher } from "./gas.ts";
 
 describe("GasOracle", () => {
   beforeEach(() => {
@@ -114,5 +114,88 @@ describe("scalePriorityFeeByProfitMargin", () => {
     const fee = 30n * 10n ** 9n;
     const scaled = scalePriorityFeeByProfitMargin(fee, 60n * 10n ** 18n, 3);
     expect(scaled).toBe(fee * 3n);
+  });
+});
+
+describe("GasOracle.getEffectiveMaxBidMultiplier", () => {
+  it("returns base multiplier when not spiking", async () => {
+    const fetchGas = vi.fn().mockResolvedValue({ baseFee: 30n * 10n ** 9n, priorityFee: 30n * 10n ** 9n });
+    const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, maxBidMultiplier: 4, spikePriorityFeeMultiplier: 1.6 }, fetchGas);
+    await oracle.start();
+    expect(oracle.getEffectiveMaxBidMultiplier()).toBe(4);
+    oracle.stop();
+  });
+
+  it("boosts multiplier when congestion spike is detected (base fee ratio > 1.5)", () => {
+    const fetchGas = vi.fn().mockResolvedValue({ baseFee: 20n * 10n ** 9n, priorityFee: 10n * 10n ** 9n });
+    const oracle = new GasOracle(
+      { ...DEFAULT_GAS_CONFIG, maxBidMultiplier: 3, spikePriorityFeeMultiplier: 1.6, historySize: 5 },
+      fetchGas,
+    );
+
+    // Directly seed internal state to simulate a spike without timer/async complexity
+    // (current baseFee is 3x the recent average → isSpiking becomes true)
+    (oracle as any).current = { baseFee: 60n * 10n ** 9n, priorityFee: 10n * 10n ** 9n, maxFee: 0n, gasPrice: 0n, timestamp: Date.now() };
+    (oracle as any).baseFeeHistory = [18n * 10n ** 9n, 19n * 10n ** 9n, 20n * 10n ** 9n, 21n * 10n ** 9n, 20n * 10n ** 9n];
+
+    const hints = oracle.estimateCongestion();
+    expect(hints.isSpiking).toBe(true);
+
+    const effective = oracle.getEffectiveMaxBidMultiplier();
+    expect(effective).toBeGreaterThan(3);
+    expect(Math.round(effective * 10) / 10).toBeCloseTo(3 * 1.6, 1);
+  });
+});
+
+describe("createGasFetcher (dual-source)", () => {
+  function makeMockClient(overrides: Partial<{
+    getBlock: ReturnType<typeof vi.fn>;
+    estimateMaxPriorityFeePerGas: ReturnType<typeof vi.fn>;
+    getFeeHistory: ReturnType<typeof vi.fn>;
+  }> = {}) {
+    return {
+      getBlock: overrides.getBlock ?? vi.fn().mockResolvedValue({ baseFeePerGas: 25n * 10n ** 9n }),
+      estimateMaxPriorityFeePerGas: overrides.estimateMaxPriorityFeePerGas ?? vi.fn().mockResolvedValue(12n * 10n ** 9n),
+      getFeeHistory: overrides.getFeeHistory ?? vi.fn().mockResolvedValue({
+        reward: [[15n * 10n ** 9n]],
+        baseFeePerGas: [],
+        gasUsedRatio: [],
+        oldestBlock: 0n,
+      }),
+    } as any;
+  }
+
+  it("uses feeHistory value when higher than estimateMaxPriorityFeePerGas (conservative max)", async () => {
+    const client = makeMockClient({
+      estimateMaxPriorityFeePerGas: vi.fn().mockResolvedValue(8n * 10n ** 9n),
+      getFeeHistory: vi.fn().mockResolvedValue({ reward: [[18n * 10n ** 9n]] }),
+    });
+    const fetcher = createGasFetcher(client, { feeHistoryPercentile: 50 });
+    const result = await fetcher();
+    expect(result.priorityFee).toBe(18n * 10n ** 9n); // took the higher (feeHistory)
+    expect(result.baseFee).toBe(25n * 10n ** 9n);
+  });
+
+  it("falls back gracefully when feeHistory fails", async () => {
+    const client = makeMockClient({
+      estimateMaxPriorityFeePerGas: vi.fn().mockResolvedValue(22n * 10n ** 9n),
+      getFeeHistory: vi.fn().mockRejectedValue(new Error("no history")),
+    });
+    const fetcher = createGasFetcher(client, { feeHistoryPercentile: 75 });
+    const result = await fetcher();
+    expect(result.priorityFee).toBe(22n * 10n ** 9n);
+  });
+
+  it("uses configured percentile in the feeHistory call", async () => {
+    const getFeeHistory = vi.fn().mockResolvedValue({ reward: [[9n * 10n ** 9n]] });
+    const client = makeMockClient({ getFeeHistory });
+    const fetcher = createGasFetcher(client, { feeHistoryPercentile: 90, feeHistoryBlockCount: 3 });
+    await fetcher();
+    expect(getFeeHistory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blockCount: 3,
+        rewardPercentiles: [90],
+      }),
+    );
   });
 });

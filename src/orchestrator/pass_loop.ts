@@ -407,6 +407,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
       }
 
+      // === INDEXER LAG DETECTION (early, for graceful degradation decisions) ===
+      const INDEXER_LAG_THRESHOLD_BLOCKS = 5000; // ~2+ hours on Polygon
+      let currentIndexerLag = 0;
+      const hiStatusForLag = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
+      if (hiStatusForLag && hiStatusForLag.remote > 0 && hiStatusForLag.synced > 0) {
+        currentIndexerLag = Math.max(0, hiStatusForLag.remote - hiStatusForLag.synced);
+        if (currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS) {
+          ctx.logger.warn(
+            { lag: currentIndexerLag, threshold: INDEXER_LAG_THRESHOLD_BLOCKS, synced: hiStatusForLag.synced, remote: hiStatusForLag.remote },
+            "High indexer lag detected — entering degraded mode (reduced concurrency, higher profit floor)"
+          );
+        }
+      }
+
       const gasSnapshot = ctx.gasOracle.getSnapshot();
       if (!gasSnapshot) {
         ctx.logger.debug({}, "Waiting for gas oracle snapshot");
@@ -457,8 +471,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
 
+      // Apply graceful degradation if indexer lag is high
+      const isDegraded = currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS;
+      const effectiveConcurrency = isDegraded
+        ? Math.max(10, Math.floor((ctx.config.routing.concurrency ?? 50) * 0.4))
+        : ctx.config.routing.concurrency;
+      const effectiveMinProfit = isDegraded
+        ? ctx.config.execution.minProfitWei * 2n // Be much more selective when data is stale
+        : ctx.config.execution.minProfitWei;
+
       const options: PipelineOptions = {
-        minProfitMaticWei: ctx.config.execution.minProfitWei,
+        minProfitMaticWei: effectiveMinProfit,
         gasPriceWei: gasSnapshot.gasPrice,
         tokenToMaticRates,
         tokenMetas: cachedMetas ?? undefined,
@@ -467,7 +490,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
         ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
         maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
-        concurrency: ctx.config.routing.concurrency,
+        concurrency: effectiveConcurrency,
         roiSafetyCap: ctx.config.execution.roiSafetyCap,
         logger: ctx.logger,
         onProgress: (current, total, profitable) => {
@@ -476,6 +499,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           }
         },
       };
+
+      if (isDegraded) {
+        ctx.logger.debug({ effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() }, "Running in indexer-lag degraded mode");
+      }
 
       const simStartTime = Date.now();
       const result = await deps.evaluatePipeline(filteredCycles, stateCache, options);
@@ -693,7 +720,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const trackerSummary = ctx.executionService.tracker.summary;
       ctx.metrics.executionReverts = trackerSummary.totalReverts;
       ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
-      bus?.emit({ type: "heartbeat", elapsedMs: elapsed, cycles: ctx.metrics.cycles, totalErrors: ctx.metrics.totalErrors });
+      bus?.emit({
+        type: "heartbeat",
+        elapsedMs: elapsed,
+        cycles: ctx.metrics.cycles,
+        totalErrors: ctx.metrics.totalErrors,
+        indexerLag: currentIndexerLag,
+      });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
       // Hot-bias mode comes from the same env var the hyperindex sees.

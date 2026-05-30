@@ -114,9 +114,12 @@ export async function fetchMissingPoolState(
     poolLookup.set(p.address.toLowerCase(), p);
   }
 
+  // Use a minimal shape compatible with viem multicall. The actual ABIs (from parseAbi) are precise.
+  type MulticallCall = { address: `0x${string}`; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] };
+
   await Promise.all(
     batches.map(async (batch) => {
-      const calls: any[] = [];
+      const calls: MulticallCall[] = [];
       for (const addr of batch) {
         const meta = poolLookup.get(addr);
         if (!meta) continue;
@@ -142,7 +145,9 @@ export async function fetchMissingPoolState(
 
       try {
         const results = await publicClient.multicall({
-          contracts: calls,
+          // The per-protocol ABIs + function selection above guarantee shape correctness;
+          // the cast is only to satisfy viem's precise Abi typing for heterogeneous batches.
+          contracts: calls as any,
           allowFailure: true,
         });
 

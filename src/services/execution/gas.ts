@@ -1,4 +1,5 @@
 import { FeeSnapshot } from "../../core/types/common.ts";
+import type { PublicClient } from "viem";
 
 export interface GasOracleConfig {
   pollIntervalMs: number;
@@ -11,6 +12,8 @@ export interface GasOracleConfig {
   baseFeeBufferMultiplier: number;
   maxPriorityFeePercentile: number;
   historySize: number;
+  /** Multiplier applied to maxBidMultiplier when congestion spike is detected */
+  spikePriorityFeeMultiplier: number;
 }
 
 export const DEFAULT_GAS_CONFIG: GasOracleConfig = {
@@ -24,6 +27,7 @@ export const DEFAULT_GAS_CONFIG: GasOracleConfig = {
   baseFeeBufferMultiplier: 1.1,
   maxPriorityFeePercentile: 75,
   historySize: 20,
+  spikePriorityFeeMultiplier: 1.6,
 };
 
 export interface PolygonGasHints {
@@ -129,6 +133,90 @@ export class GasOracle {
     const percentileFee = this.computePercentilePriorityFee();
     return clampPriorityFee(percentileFee, this.config);
   }
+
+  /**
+   * Returns the effective max bid multiplier.
+   * During detected congestion spikes (rapid base fee increase), this returns
+   * a boosted value so the bot bids more aggressively exactly when needed to win races.
+   */
+  getEffectiveMaxBidMultiplier(): number {
+    const base = this.config.maxBidMultiplier;
+    const hints = this.estimateCongestion();
+    if (hints.isSpiking && this.config.spikePriorityFeeMultiplier > 1) {
+      return base * this.config.spikePriorityFeeMultiplier;
+    }
+    return base;
+  }
+}
+
+/** Options for the dual-source gas fetcher */
+export interface GasFetcherOptions {
+  feeHistoryPercentile: number;
+  /** Number of recent blocks to query in eth_feeHistory (small window is sufficient) */
+  feeHistoryBlockCount?: number;
+}
+
+/**
+ * Creates a robust gas fetcher that combines two priority fee sources:
+ * 1. The client's native estimateMaxPriorityFeePerGas()
+ * 2. Explicit eth_feeHistory reward at the configured percentile
+ *
+ * Takes the higher of the two (conservative) when both succeed.
+ * This protects against individual RPCs returning stale or under-estimated priority fees,
+ * which is especially common on Polygon during volatility.
+ */
+export function createGasFetcher(
+  client: PublicClient,
+  opts: GasFetcherOptions,
+): () => Promise<{ baseFee: bigint; priorityFee: bigint }> {
+  const percentile = Math.max(0, Math.min(100, Math.floor(opts.feeHistoryPercentile)));
+  const blockCount = opts.feeHistoryBlockCount ?? 2;
+  const fallback = 30n * 10n ** 9n;
+
+  return async () => {
+    try {
+      const [block, priorityFromClient, feeHistory] = await Promise.all([
+        client.getBlock({ blockTag: "latest" }),
+        client.estimateMaxPriorityFeePerGas().catch(() => null),
+        client
+          .getFeeHistory({
+            blockCount,
+            blockTag: "latest",
+            rewardPercentiles: [percentile],
+          })
+          .catch(() => null),
+      ]);
+
+      const baseFee = block.baseFeePerGas ?? fallback;
+
+      let priorityFromHistory: bigint | null = null;
+      if (feeHistory?.reward && feeHistory.reward.length > 0) {
+        // Most recent block's reward array for the requested percentile(s)
+        const latestRewards = feeHistory.reward[0];
+        if (latestRewards && latestRewards.length > 0) {
+          const v = latestRewards[0];
+          if (typeof v === "bigint" && v > 0n) {
+            priorityFromHistory = v;
+          }
+        }
+      }
+
+      // Conservative policy: when both sources report, take the higher value.
+      // This biases toward landing the transaction during uncertain/volatile periods.
+      let priorityFee: bigint;
+      if (priorityFromClient && priorityFromHistory) {
+        priorityFee = priorityFromClient > priorityFromHistory ? priorityFromClient : priorityFromHistory;
+      } else {
+        priorityFee = priorityFromClient ?? priorityFromHistory ?? fallback;
+      }
+
+      if (priorityFee <= 0n) priorityFee = fallback;
+
+      return { baseFee, priorityFee };
+    } catch (_err: unknown) {
+      return { baseFee: fallback, priorityFee: fallback };
+    }
+  };
 }
 
 function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint {

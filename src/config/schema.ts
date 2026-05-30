@@ -34,6 +34,7 @@ export const RpcConfigSchema = z.object({
   // HyperRPC (high-performance provider for the listed read methods)
   hyperRpcUrl: z.string().optional(),
   hyperRpcApiToken: z.string().optional(),
+  hyperSyncUrl: z.string().optional(),
   // Client-side pacing for direct @envio-dev/hypersync-client usage (and passed to HyperSyncService).
   // Helps avoid hammering free-tier keys and triggering long server backoffs.
   // When using multiple keys via ENVIO_API_TOKENS / hyperindex/.env, this is applied per-key.
@@ -52,6 +53,7 @@ export const GasConfigSchema = z.object({
   baseFeeBufferMultiplier: numberFromString.min(1).max(5).default(1.1),
   maxPriorityFeePercentile: numberFromString.int().min(0).max(100).default(75),
   historySize: numberFromString.int().positive().default(20),
+  spikePriorityFeeMultiplier: numberFromString.min(1).max(5).default(1.6),
 });
 export type GasConfig = z.infer<typeof GasConfigSchema>;
 
@@ -128,7 +130,7 @@ export const AppConfigSchema = z.object({
   fastlane: FastLaneConfigSchema,
   observability: ObservabilityConfigSchema,
   paths: PathsConfigSchema,
-  envioApiToken: z.string().min(1, "ENVIO_API_TOKEN is required"),
+  envioApiToken: z.string().default(""),
   hasuraUrl: z.string().url().default("http://localhost:8080/v1/graphql"),
   hasuraSecret: z.string().default("testing"),
 });

@@ -113,6 +113,34 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _stderrBuffer: string[] = [];
   let _hasDoneReactiveHasuraClear = false;
 
+  // Rate-limited suppression for extremely spammy transient hypersync_client errors
+  // (e.g. repeated "failed to get height" 405, connection/DNS failures, arrow data timeouts).
+  // We still want the first occurrence + a summary count, but not 50 identical lines per minute.
+  let _hypersyncTransientErrorSuppression: {
+    signature: string;
+    count: number;
+    firstSeen: number;
+    lastSeen: number;
+  } | null = null;
+  const HYPERSYNC_SUPPRESS_WINDOW_MS = 30_000;
+
+  function flushHypersyncErrorSuppression(): void {
+    if (_hypersyncTransientErrorSuppression && _hypersyncTransientErrorSuppression.count > 0) {
+      const s = _hypersyncTransientErrorSuppression;
+      const now = Date.now();
+      opts.logger.warn(
+        {
+          source: "hyperindex",
+          signature: s.signature,
+          suppressedCount: s.count,
+          durationMs: now - s.firstSeen,
+        },
+        `Suppressed ${s.count} similar hypersync_client transient errors (final flush on shutdown)`
+      );
+      _hypersyncTransientErrorSuppression = null;
+    }
+  }
+
   /** Short prefix of the ENVIO_API_TOKEN chosen for the current hyperindex child process run (for TUI) */
   let _currentEnvioKeyPrefix: string | undefined;
 
@@ -209,6 +237,50 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // === CRITICAL: Log every single line from Envio for complete activity tracing ===
     opts.logger.info({ source: "hyperindex", raw: line, chain }, "HyperIndex stdout/stderr");
 
+    // === HYPERSYNC_CLIENT NOISE SUPPRESSION ===
+    // These transient errors (height probes returning 405, connection/DNS failures, arrow-ipc timeouts)
+    // can easily produce dozens of identical lines per minute on flaky networks or free-tier rate limits.
+    // We emit the first one at full severity, then count silently (at debug), and emit a summary on the next
+    // different event or after the suppression window.
+    const isHypersyncTransientError =
+      /hypersync_client.*(failed to get (height|arrow data) from server|error sending request for url.*hypersync|dns error|connection error|timed out)/i.test(originalTrimmed);
+
+    if (isHypersyncTransientError) {
+      const signature = "hypersync_client:transient_fetch_error";
+      const now = Date.now();
+
+      const current = _hypersyncTransientErrorSuppression;
+      const shouldFlush = !current ||
+        current.signature !== signature ||
+        (now - current.lastSeen > HYPERSYNC_SUPPRESS_WINDOW_MS);
+
+      if (shouldFlush) {
+        if (current && current.count > 0) {
+          opts.logger.warn(
+            {
+              source: "hyperindex",
+              signature,
+              suppressedCount: current.count,
+              durationMs: now - current.firstSeen,
+              windowMs: HYPERSYNC_SUPPRESS_WINDOW_MS,
+              firstRawSample: originalTrimmed.slice(0, 200),
+            },
+            `Suppressed ${current.count} similar hypersync_client transient errors in the last ${Math.round((now - current.firstSeen) / 1000)}s`
+          );
+        }
+        _hypersyncTransientErrorSuppression = { signature, count: 0, firstSeen: now, lastSeen: now };
+        // Let the normal error handling below promote the first occurrence
+      } else {
+        current.count++;
+        current.lastSeen = now;
+        opts.logger.debug(
+          { source: "hyperindex", raw: originalTrimmed, suppressed: true, runningCount: current.count },
+          "HyperIndex hypersync_client transient error (rate-limited)"
+        );
+        return; // skip normal error promotion + other processing for this noisy line
+      }
+    }
+
     // 1. High-value throughput (events per second)
     const epsMatch = originalTrimmed.match(/(\d{2,})\s*(?:events?|evts?)\s*(?:\/\s*s|per\s*s|\/s|@\s*(\d+)|eps|\/sec)/i);
     if (epsMatch) {
@@ -237,6 +309,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // 3. Block progress (primary sync progress signal)
     const blockArrow = trimmedLower.match(/(\d{5,})\s*->\s*(\d{5,})/);
     if (blockArrow) {
+      flushHypersyncErrorSuppression();
       const synced = Math.max(_lastParsedBlock, parseInt(blockArrow[1], 10));
       const remote = Math.max(_lastRemoteBlock, parseInt(blockArrow[2], 10));
       emitStatus("syncing", synced, remote, chain);
@@ -245,6 +318,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     const progressSlash = trimmedLower.match(/(\d{5,})\s*\/\s*(\d{5,})/);
     if (progressSlash) {
+      flushHypersyncErrorSuppression();
       const synced = Math.max(_lastParsedBlock, parseInt(progressSlash[1], 10));
       const remote = Math.max(_lastRemoteBlock, parseInt(progressSlash[2], 10));
       emitStatus("syncing", synced, remote, chain);
@@ -265,6 +339,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
     // Major milestone for autonomous debug loop: indexer has finished setup and is now consuming events
     if (/Starting indexing!/i.test(originalTrimmed)) {
+      flushHypersyncErrorSuppression();
       opts.logger.warn(
         { source: "hyperindex", milestone: "indexer_ready" },
         "HyperIndex reached 'Starting indexing!' — real event processing should begin. Watch for pipeline split, throughput, and handler timing in following lines.",
@@ -283,7 +358,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
 
     // 5. Error / warning surface (critical for bottlenecks)
+    // Flush any pending hypersync transient suppression summary when we see other real errors
     if (/error|fail|exception|panic|rate limit|quota|429|throttl|slow|stall|metadata-warning/i.test(originalTrimmed)) {
+      flushHypersyncErrorSuppression();
+
       const level = /error|fail|panic|429/i.test(originalTrimmed) ? "error" : "warn";
       opts.logger[level as "error" | "warn"]({ source: "hyperindex", raw: originalTrimmed }, "HyperIndex error/warning");
 
@@ -304,6 +382,9 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
   async function start(): Promise<void> {
     if (proc) return;
+
+    // Reset suppression state for a fresh HyperIndex child process
+    _hypersyncTransientErrorSuppression = null;
 
     // === INSTRUMENTED CLEANUP: Aggressive Docker hygiene to prevent "container marked for removal" (409) crashes ===
     // Observed in Pass 1: First start often fails with 409 on envio-hasura, causing restart delay.
@@ -505,6 +586,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     proc.stderr?.on("data", _stderrHandler);
 
     _exitHandler = (code, signal) => {
+      flushHypersyncErrorSuppression();
       if (code !== 0 && code !== null) {
         opts.logger.error(
           { code, signal, lastStderr: _stderrBuffer.slice(-30).join("\n") },
@@ -558,6 +640,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   }
 
   async function stop(): Promise<void> {
+    flushHypersyncErrorSuppression();
+
     if (_statusTimer) {
       clearInterval(_statusTimer);
       _statusTimer = null;

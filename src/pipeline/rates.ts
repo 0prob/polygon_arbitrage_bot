@@ -20,7 +20,11 @@ export interface ComputeMaticRatesOptions {
 export function computeMaticRates(
   pools: PoolMeta[],
   stateCache: Map<string, Record<string, unknown>>,
-  logger?: { debug?: (obj: unknown, msg?: string) => void; info?: (obj: unknown, msg?: string) => void },
+  /** Minimal pino-compatible logger (only debug/info used). */
+  logger?: {
+    debug?: (obj: Record<string, unknown>, msg?: string) => void;
+    info?: (obj: Record<string, unknown>, msg?: string) => void;
+  },
   options: ComputeMaticRatesOptions = {},
 ): Map<string, bigint> {
   const rates = new Map<string, bigint>();

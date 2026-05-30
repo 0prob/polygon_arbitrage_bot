@@ -204,6 +204,9 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.system.lastCycleTimeMs = event.elapsedMs;
       state.metrics.totalCycles = event.cycles;
       state.metrics.totalErrors = event.totalErrors;
+      if (event.indexerLag !== undefined) {
+        state.system.hiLag = event.indexerLag; // surface indexer lag in system state for TUI
+      }
       if (state._startTime > 0) {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
