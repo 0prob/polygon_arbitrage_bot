@@ -11,12 +11,14 @@ export type ArbEvent =
       error?: string;
       profitWei?: bigint;
       traceMessages?: string[];
+      protocolPath?: string;
+      hopCount?: number;
     }
   | { type: "gas_snapshot"; gasPrice: bigint }
-  | { type: "pool_discovery"; count: number }
+  | { type: "pool_discovery"; count: number; protocols?: Record<string, number> }
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
-  | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number; indexerLag?: number }
+  | { type: "heartbeat"; elapsedMs: number; cycles: number; totalErrors: number; indexerLag?: number; gasPrice?: bigint; rpcConnected?: boolean; hasuraConnected?: boolean; wsConnected?: boolean }
   | {
       type: "hyperindex_status";
       status: string;
@@ -31,8 +33,13 @@ export type ArbEvent =
       /** Rate limit pain counter — how many times HyperSync has hit critical quota pressure */
       rateLimitPain?: number;
     }
-  | { type: "pipeline_stage"; stage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING" }
-  | { type: "simulation_progress"; current: number; total: number; profitable: number };
+  | { type: "pipeline_stage"; stage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING" }
+  | { type: "simulation_progress"; current: number; total: number; profitable: number }
+  | { type: "mempool_pending_swap"; poolPath: string; value: bigint; txHash: string }
+  | { type: "cycles_enumerated"; total: number; cyclesByHop: Record<number, number>; elapsedMs: number }
+  | { type: "graph_stats"; poolCount: number; protocolBreakdown: Record<string, number>; edgeCount: number; cachedCount: number }
+  | { type: "execution_attempt"; protocolPath: string; hopCount: number; expectedProfit: bigint; txHash?: string }
+  | { type: "connection_status"; subsystem: string; status: "connected" | "disconnected" | "error" };
 
 type EventHandler = (event: ArbEvent) => void;
 
