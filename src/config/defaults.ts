@@ -11,7 +11,7 @@ export const DEFAULTS = {
     hyperRpcUrl: "",
     hyperRpcApiToken: "" as string,
     hyperSyncUrl: "",
-    hypersyncMaxRpmPerToken: undefined as number | undefined,
+    hypersyncMaxRpmPerToken: 200,
     chainstackRps: 250,
   },
   gas: {

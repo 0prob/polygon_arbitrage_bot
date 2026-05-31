@@ -245,7 +245,7 @@ export class HyperIndexMonitor implements Lifecycle {
       }
     }
 
-    // Surface rate limit info (useful for autonomous debugging of 100 req/min issues)
+    // Surface rate limit info (useful for autonomous debugging of 200 req/min issues)
     if (this.opts.hyperSync) {
       try {
         const rl = this.opts.hyperSync.rateLimitInfo?.();
@@ -306,7 +306,7 @@ export class HyperIndexMonitor implements Lifecycle {
         blkPerSec: rate.toFixed(1),
       };
 
-      // Surface rate limit info from the official client when available (very useful for 100 req/min diagnosis)
+      // Surface rate limit info from the official client when available (very useful for 200 req/min diagnosis)
       if (this.opts.hyperSync) {
         try {
           const rl = this.opts.hyperSync.rateLimitInfo?.();

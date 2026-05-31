@@ -69,9 +69,9 @@ export class ApiTokenPool {
       }
     }
 
-    const rpm = opts.maxRpmPerToken ?? 0;
+    const rpm = opts.maxRpmPerToken ?? 200;
     if (rpm > 0) {
-      // e.g. 50 rpm → one request no faster than every 1200ms on average per token
+      // e.g. 200 rpm → one request no faster than every 300ms on average per token
       this.minIntervalMs = Math.ceil(60_000 / rpm);
     }
   }

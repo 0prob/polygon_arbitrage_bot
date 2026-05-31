@@ -14,7 +14,7 @@ raw_events: false
 # - Hasura is used for: (a) 60s discovery of *new* pools, (b) best-effort bootstrap cache.
 #
 # CRITICAL OBSERVED BEHAVIOR (May 2026 debug run):
-# - Free / low-tier ENVIO_API_TOKEN (60 req/min HyperSync) + full Polygon history from 5M
+# - Free / low-tier ENVIO_API_TOKEN (60-200 req/min HyperSync, 200 on paid starter) + full Polygon history from 5M
 #   → massive rate-limit backoff + slow catch-up (many "rate limit exhausted" + partition retries).
 # - "Block not found in HyperSync" messages are benign (partition drift) and auto-retried.
 #

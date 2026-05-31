@@ -552,7 +552,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         forceFullReset: opts.forceFullReset,
         note: hasToken
           ? `Using authenticated HyperSync with ${poolStatus.totalKeys} key(s) in rotation pool`
-          : "NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~100 req/min free tier on HyperSync. Add keys to hyperindex/.env or ENVIO_API_TOKENS.",
+          : "NO ENVIO_API_TOKEN — HyperIndex will be constrained to ~200 req/min starter/free tier on HyperSync. Add keys to hyperindex/.env or ENVIO_API_TOKENS.",
       },
       opts.forceFullReset
         ? "Starting HyperIndex with FULL RESET (-r) + volume nuke (409 recovery + table recreation)"
