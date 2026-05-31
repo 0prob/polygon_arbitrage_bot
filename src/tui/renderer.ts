@@ -160,7 +160,10 @@ export class Renderer {
     const lines = [
       bold("🔄 Pipeline Monitor"),
       `  [${s.pipelineStage === "DISCOVERY" ? color("●", CYAN) : s.poolCount > 0 ? color("✔", GREEN) : " "}] Discovery:   ${s.poolCount} pools`,
-      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : s.cycleCount > 0 ? color("✔", GREEN) : " "}] Enumerate:   ${s.cycleCount} cycles found`,
+      `  [${s.pipelineStage === "LF_REFRESH" ? color("●", CYAN) : " "}] LF Refresh:  ${s.pipelineStage === "LF_REFRESH" ? "State + Rates..." : "Idle"}`,
+      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : s.cycleCount > 0 ? color("✔", GREEN) : " "}] Enumerate:   ${s.cycleCount} cycles`,
+      `  [${s.pipelineStage === "PRE_FETCH" ? color("●", CYAN) : " "}] Pre-Fetch:   ${s.pipelineStage === "PRE_FETCH" ? "RPC state..." : "Idle"}`,
+      `  [${s.pipelineStage === "RATES" ? color("●", CYAN) : s.pipelineStage === "SIMULATING" || s.pipelineStage === "EXECUTING" ? color("✔", GREEN) : " "}] Rates:       ${s.pipelineStage === "RATES" ? "Computing..." : "Ready"}`,
       `  [${s.pipelineStage === "SIMULATING" ? color("●", CYAN) : " "}] Simulation:  ${s.pipelineStage === "SIMULATING" ? "Running..." : "Idle"} ${simProgressStr}`,
       `  [${s.pipelineStage === "EXECUTING" ? color("●", YELLOW) : " "}] Execution:   ${s.pipelineStage === "EXECUTING" ? "Submitting TXs..." : "Idle"}`,
       ``,

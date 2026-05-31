@@ -81,6 +81,189 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   averageObscurity: averageObscurity as any, // from finder (re-exported via pipeline)
 };
 
+/**
+ * LF orchestration: poll Hasura for new pools (60s cadence).
+ * Returns updated pool cache or null if nothing changed.
+ */
+async function runPoolDiscovery(
+  ctx: RuntimeContext,
+  deps: PassLoopDeps,
+  bus: EventBus | undefined,
+  currentPools: PoolMeta[] | null,
+  lastDiscoveryTime: number,
+  onNewPools: (pools: PoolMeta[]) => void,
+): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number }> {
+  const now = Date.now();
+  const DISCOVERY_INTERVAL = 60000;
+  if (!(currentPools === null || currentPools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover()))) {
+    return { pools: currentPools, lastDiscoveryTime };
+  }
+
+  bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
+  const graphqlUrl = ctx.config.hasuraUrl;
+  const secret = ctx.config.hasuraSecret;
+  if (!currentPools || currentPools.length === 0) {
+    ctx.logger.info({}, "No pools — discovering from Hasura");
+  } else {
+    ctx.logger.info({}, "Polling Hasura for new pools");
+  }
+
+  const newLastDiscoveryTime = now;
+  try {
+    const discoveryStartTime = Date.now();
+    const hasuraPools = await ctx.rpcCircuit.execute(
+      () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
+      async () => {
+        ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
+        return [];
+      },
+    );
+    const discoveryElapsed = Date.now() - discoveryStartTime;
+
+    if (hasuraPools.length > 0) {
+      const poolLen = currentPools?.length ?? 0;
+      if (poolLen > 100 && hasuraPools.length < poolLen / 10) {
+        ctx.logger.warn(
+          { previous: poolLen, discovered: hasuraPools.length },
+          "Suspiciously low number of pools discovered, keeping previous list",
+        );
+        return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime };
+      }
+      const mapped: PoolMeta[] = hasuraPools.map((p) => ({
+        address: p.address as `0x${string}`,
+        protocol: p.protocol,
+        token0: (p.tokens[0] ?? "") as `0x${string}`,
+        token1: (p.tokens[1] ?? "") as `0x${string}`,
+        tokens: p.tokens as `0x${string}`[],
+        fee: p.fee,
+      }));
+      onNewPools(mapped);
+      ctx.logger.info({ discovered: mapped.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
+      return { pools: mapped, lastDiscoveryTime: newLastDiscoveryTime };
+    }
+    if (!currentPools) {
+      onNewPools([]);
+      return { pools: [], lastDiscoveryTime: newLastDiscoveryTime };
+    }
+  } catch (e) {
+    ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+    ctx.metrics.totalErrors++;
+    ctx.metrics.lastErrorTime = Date.now();
+    ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
+  }
+  return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime };
+}
+
+/**
+ * LF orchestration: refresh state from HyperIndex GraphQL (1s cadence),
+ * force-refresh all pools via RPC, and return fresh rates flag.
+ */
+async function runLfStateRefresh(
+  ctx: RuntimeContext,
+  deps: PassLoopDeps,
+  bus: EventBus | undefined,
+  pools: PoolMeta[],
+  lastRefreshTime: number,
+): Promise<{ lastRefreshTime: number; lastFullRefreshTime: number; ratesNeedFullRefresh: boolean }> {
+  const now = Date.now();
+  const LF_INTERVAL = 1000;
+  if (!(now - lastRefreshTime >= LF_INTERVAL && pools.length > 0)) {
+    return { lastRefreshTime, lastFullRefreshTime: 0, ratesNeedFullRefresh: false };
+  }
+
+  bus?.emit({ type: "pipeline_stage", stage: "LF_REFRESH" });
+  const stateCache = ctx.stateCache;
+
+  try {
+    const graphqlUrl = ctx.config.hasuraUrl;
+    const secret = ctx.config.hasuraSecret;
+    const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret));
+    let newEntries = 0;
+    for (const [addr, state] of gqlCache.entries()) {
+      if (!stateCache.has(addr)) {
+        stateCache.set(addr, state);
+        newEntries++;
+      }
+    }
+    const metas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret);
+    ctx.logger.info({ entries: gqlCache.size, metas: metas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
+  } catch (err) {
+    ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
+  }
+
+  // Force-refresh state via RPC for ALL pools
+  await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true);
+
+  return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true };
+}
+
+/**
+ * Filter pools for graph building, rebuild graph, enumerate cycles.
+ * Returns updated graph, cycle list, and whether enumeration actually ran.
+ */
+async function runEnumerationPhase(
+  ctx: RuntimeContext,
+  deps: PassLoopDeps,
+  bus: EventBus | undefined,
+  pools: PoolMeta[],
+  stateCache: Map<string, Record<string, unknown>>,
+  cachedGraph: RoutingGraph | null,
+  cachedCycles: FoundCycle[],
+  lastRefreshTime: number,
+): Promise<{ graph: RoutingGraph | null; cycles: FoundCycle[]; lastRefreshTime: number; didEnumerate: boolean }> {
+  const now = Date.now();
+  const MAX_HOPS = ctx.config.routing.maxHops;
+  const LF_INTERVAL = 1000;
+  const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL || !cachedGraph || cachedCycles.length === 0;
+
+  if (!shouldReEnumerate) {
+    return { graph: cachedGraph, cycles: cachedCycles, lastRefreshTime, didEnumerate: false };
+  }
+
+  bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+
+  const filteredPools = pools.filter((p) => {
+    const protocol = p.protocol.toLowerCase();
+    const addr = p.address.toLowerCase();
+    if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+      const state = stateCache.get(addr);
+      if (!state) return false;
+      const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
+      const liq = toBigInt(rawLiq, 0n);
+      if (liq < ctx.config.execution.minLiquidityV3Rate) {
+        if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
+          ctx.logger.debug(
+            { addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() },
+            "Specifically filtered 0x56ff",
+          );
+        }
+        return false;
+      }
+    }
+    return true;
+  });
+
+  ctx.logger.info(
+    { total: pools.length, filtered: filteredPools.length, removed: pools.length - filteredPools.length },
+    "Pools filtered for graph building",
+  );
+
+  const graph = deps.buildGraph(filteredPools, stateCache);
+
+  const enumStartTime = Date.now();
+  const cycles = deps.enumerateCycles(graph, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
+    ctx.executionService.tracker.getWinRate(key),
+  );
+  const enumElapsed = Date.now() - enumStartTime;
+
+  ctx.logger.info(
+    { pools: pools.length, filtered: filteredPools.length, cycles: cycles.length, durationMs: enumElapsed },
+    "Graph and cycles re-enumerated",
+  );
+
+  return { graph, cycles, lastRefreshTime: now, didEnumerate: true };
+}
+
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
   const executorAddress = ctx.config.execution.executorAddress;
   const operatorAccount = privateKeyToAccount(ctx.config.execution.privateKey as `0x${string}`);
@@ -124,17 +307,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastRefreshTime = 0;
   let lastFullRefreshTime = 0;
   let lastDiscoveryTime = 0;
-  let lastPoolsCount = 0;
   let cachedRates: Map<string, bigint> | null = null;
   let cachedMetas: Map<string, { decimals: number }> | null = null;
   // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
   let ratesNeedFullRefresh = false;
   let pendingFocusTokens: Set<string> | null = null;
+  let isLfPass = false;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
-  const DISCOVERY_INTERVAL = 60000;
-  const MAX_HOPS = ctx.config.routing.maxHops;
   const TIER_CHECK_INTERVAL = 5000;
   let preFetchCounter = 0;
   let lastTierCheck = 0;
@@ -171,6 +352,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   while (ctx.isRunning) {
     const now = Date.now();
     const startTime = now;
+    isLfPass = false;
 
     const cycleWindow = 60000;
     const elapsedCycleWindow = now - cycleWindowStart;
@@ -201,82 +383,33 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Per AGENTS.md: getBlock sparingly in HF. WS newHead + LF (1s) are the triggers.
       // Heavy serial getBlock calls inside checkReorg were killing HF latency/RPC budget.
 
-      let pools = hasuraPoolsCache ?? ctx.getPools();
+      const stateCache = ctx.stateCache;
 
-      if (pools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())) {
-        bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
-        const graphqlUrl = ctx.config.hasuraUrl;
-        const secret = ctx.config.hasuraSecret;
-        if (pools.length === 0) {
-          ctx.logger.info({}, "No pools — discovering from Hasura");
-        } else {
-          ctx.logger.info({}, "Polling Hasura for new pools");
-        }
+      // Stage 1: Pool discovery (60s cadence)
+      {
+        const result = await runPoolDiscovery(ctx, deps, bus, hasuraPoolsCache, lastDiscoveryTime, (newPools) => {
+          hasuraPoolsCache = newPools;
+          cachedGraph = deps.buildGraph(newPools, stateCache);
+          ctx.graphUpdater?.resetRebuildCounter();
+        });
+        hasuraPoolsCache = result.pools;
+        lastDiscoveryTime = result.lastDiscoveryTime;
+      }
 
-        lastDiscoveryTime = now; // Update even if we fail, to avoid infinite polling
-        try {
-          const discoveryStartTime = Date.now();
-          const hasuraPools = await ctx.rpcCircuit.execute(
-            () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
-            async () => {
-              ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
-              return [];
-            },
-          );
-          const discoveryElapsed = Date.now() - discoveryStartTime;
-
-          if (hasuraPools.length > 0) {
-            // Resilience: don't replace a large pool list with a tiny one (less than 10% of previous size)
-            // unless the previous list was very small or this is the first discovery.
-            if (pools.length > 100 && hasuraPools.length < pools.length / 10) {
-              ctx.logger.warn(
-                { previous: pools.length, discovered: hasuraPools.length },
-                "Suspiciously low number of pools discovered, keeping previous list",
-              );
-            } else {
-              hasuraPoolsCache = hasuraPools.map((p) => ({
-                address: p.address as `0x${string}`,
-                protocol: p.protocol,
-                token0: (p.tokens[0] ?? "") as `0x${string}`,
-                token1: (p.tokens[1] ?? "") as `0x${string}`,
-                tokens: p.tokens as `0x${string}`[],
-                fee: p.fee,
-              }));
-              pools = hasuraPoolsCache;
-              ctx.logger.info({ discovered: pools.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
-            }
-          } else if (hasuraPoolsCache === undefined) {
-            hasuraPoolsCache = []; // Mark as discovered even if empty
-          }
-        } catch (e) {
-          ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
-          ctx.metrics.totalErrors++;
-          ctx.metrics.lastErrorTime = Date.now();
-          ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
+      // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
+      {
+        const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime);
+        if (lfResult.ratesNeedFullRefresh) {
+          lastRefreshTime = lfResult.lastRefreshTime;
+          lastFullRefreshTime = lfResult.lastFullRefreshTime;
+          ratesNeedFullRefresh = true;
+          pendingFocusTokens = null;
         }
       }
 
-      const stateCache = ctx.stateCache;
-
-      const shouldReEnumerate = now - lastRefreshTime >= LF_INTERVAL;
-
-      // needsEnumerationRebuild is used to decide when to (re)compute filteredPools + enumerate.
-      // We keep the original pools.length-triggered build behavior so that cachedGraph is
-      // always populated before the LF block; the enumeration block will overwrite with a
-      // filtered graph on re-enumeration cycles (restoring pre-fix double-build on the rare
-      // discovery+LF coincidence, while the important wins — single filtered build on steady
-      // LF, and filteredPools computed only on actual rebuilds — remain).
-      const needsEnumerationRebuild = shouldReEnumerate || !cachedGraph;
-
-      if (lastPoolsCount !== pools.length) {
-        cachedGraph = deps.buildGraph(pools, stateCache);
-        lastPoolsCount = pools.length;
-        ctx.graphUpdater?.resetRebuildCounter();
-      } else if (ctx.graphUpdater && cachedGraph && !needsEnumerationRebuild) {
-        // Incremental update: apply new pool states without full rebuild.
-        // Guarded by !needsEnumerationRebuild so we don't waste work on a graph
-        // that the block below will immediately replace.
-        for (const pool of pools) {
+      // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
+      if (ctx.graphUpdater && cachedGraph && !ratesNeedFullRefresh) {
+        for (const pool of hasuraPoolsCache ?? []) {
           const addr = pool.address.toLowerCase();
           const state = stateCache.get(addr);
           if (state) {
@@ -285,97 +418,26 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
       }
 
-      // Low-frequency maintenance: Refresh all state and re-calculate rates
-      if (shouldReEnumerate && pools.length > 0) {
-        bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
-        try {
-          const graphqlUrl = ctx.config.hasuraUrl;
-          const secret = ctx.config.hasuraSecret;
-          const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret));
-          let newEntries = 0;
-          for (const [addr, state] of gqlCache.entries()) {
-            if (!ctx.stateCache.has(addr)) {
-              ctx.stateCache.set(addr, state);
-              newEntries++;
-            }
-          }
-          cachedMetas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret);
-          ctx.logger.info({ entries: gqlCache.size, metas: cachedMetas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
-        } catch (err) {
-          ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
-        }
-
-        // Force-refresh state via RPC for ALL pools — HyperIndex data may be
-        // stale (from an older indexed block) and is now only used for pools
-        // without existing state. RPC gives us current on-chain prices.
-        // (currentCycles is ignored on forceRefresh; we use the real `pools` list directly)
-        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true);
-        // (return value ignored on full refresh; we still want full rate recompute)
-
-        // Signal that rates must be fully recomputed from scratch after the bulk state refresh.
-        // Actual computeMaticRates call is consolidated below to guarantee exactly one call per pass.
-        ratesNeedFullRefresh = true;
-        pendingFocusTokens = null;
-
-        // Track that we just did a full refresh to avoid redundant pre-fetch below
-        lastFullRefreshTime = now;
+      // Stage 3: Filter pools, rebuild graph, enumerate cycles
+      {
+        const enumResult = await runEnumerationPhase(
+          ctx, deps, bus,
+          hasuraPoolsCache ?? [], stateCache,
+          cachedGraph, cachedCycles, lastRefreshTime,
+        );
+        cachedGraph = enumResult.graph;
+        cachedCycles = enumResult.cycles;
+        lastRefreshTime = enumResult.lastRefreshTime;
+        isLfPass = enumResult.didEnumerate;
       }
 
-      if (needsEnumerationRebuild) {
-        bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
-
-        // Compute filteredPools only on actual rebuilds (LF or first run), not every HF pass.
-        // Cache the filtered result keyed by pools.length to avoid redundant .filter() work.
-        // We intentionally key only on length: discovery changes the array reference and length,
-        // and the LF cadence already limits how often this runs.
-        const filteredPools = pools.filter((p) => {
-          const protocol = p.protocol.toLowerCase();
-          const addr = p.address.toLowerCase();
-          if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-            const state = stateCache.get(addr);
-            if (!state) return false; // Exclude if no state
-            const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
-            const liq = toBigInt(rawLiq, 0n);
-            if (liq < ctx.config.execution.minLiquidityV3Rate) {
-              if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
-                ctx.logger.debug(
-                  { addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() },
-                  "Specifically filtered 0x56ff",
-                );
-              }
-              return false;
-            }
-          }
-          return true;
-        });
-
-        ctx.logger.info(
-          {
-            total: pools.length,
-            filtered: filteredPools.length,
-            removed: pools.length - filteredPools.length,
-          },
-          "Pools filtered for graph building",
-        );
-
-        // Build the enumeration graph from the filtered set (single build, no double-call)
-        cachedGraph = deps.buildGraph(filteredPools, stateCache);
-
-        const enumStartTime = Date.now();
-        cachedCycles = deps.enumerateCycles(cachedGraph!, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
-          ctx.executionService.tracker.getWinRate(key),
-        );
-        const enumElapsed = Date.now() - enumStartTime;
-        lastRefreshTime = now;
-        ctx.logger.info(
-          {
-            pools: pools.length,
-            filtered: filteredPools.length,
-            cycles: cachedCycles.length,
-            durationMs: enumElapsed,
-          },
-          "Graph and cycles re-enumerated",
-        );
+      // Stage 4: Re-check whether cachedMetas should be refreshed (done inside LF, may be needed for HF)
+      if (!cachedMetas && (hasuraPoolsCache?.length ?? 0) > 0) {
+        try {
+          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+        } catch {
+          // Non-critical; will retry on next LF
+        }
       }
 
       const currentCycles = cachedCycles;
@@ -389,19 +451,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // High-frequency pre-fetch: Only for pools in current cycles
       // Skip if we just did a full refresh in the same pass
       preFetchCounter++;
-      if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
-        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
+      if (lastFullRefreshTime !== now && (preFetchCounter % 5 === 0)) {
+        bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
+        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
 
         // Build focus tokens from the pools we actually refreshed this round.
         // O(1) lookup via address map instead of O(N) pools.find() per updated address.
         const focusTokens = new Set<string>();
         if (justUpdated.size > 0) {
-          const poolByAddr = new Map<string, (typeof pools)[number]>();
-          for (const p of pools) poolByAddr.set(p.address.toLowerCase(), p);
+          const poolByAddr = new Map<string, `0x${string}`[] | undefined>();
+          for (const p of hasuraPoolsCache ?? []) poolByAddr.set(p.address.toLowerCase(), p.tokens);
           for (const addr of justUpdated) {
-            const meta = poolByAddr.get(addr);
-            if (meta?.tokens) {
-              for (const t of meta.tokens) focusTokens.add(t.toLowerCase());
+            const tokens = poolByAddr.get(addr);
+            if (tokens) {
+              for (const t of tokens) focusTokens.add(t.toLowerCase());
             }
           }
         }
@@ -441,22 +504,25 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
+      bus?.emit({ type: "gas_snapshot", gasPrice: gasSnapshot.gasPrice });
+
       // Single consolidated rate computation point — guarantees at most one computeMaticRates call per pass.
       // Priority: full refresh (LF) > incremental focus update (pre-fetch) > safety net.
+      bus?.emit({ type: "pipeline_stage", stage: "RATES" });
       if (ratesNeedFullRefresh) {
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
         ratesNeedFullRefresh = false;
       } else if (pendingFocusTokens && cachedRates) {
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
           seedRates: cachedRates,
           focusTokens: pendingFocusTokens,
         });
         pendingFocusTokens = null;
       } else if (!cachedRates) {
-        cachedRates = computeMaticRates(pools, stateCache, ctx.logger, {
+        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
       }
@@ -538,7 +604,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
             rates: tokenToMaticRates.size,
             cache: stateCache.size,
-            isLowFreq: shouldReEnumerate,
+            isLowFreq: isLfPass,
             durationMs: simElapsed,
             tier,
           },
@@ -741,6 +807,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cycles: ctx.metrics.cycles,
         totalErrors: ctx.metrics.totalErrors,
         indexerLag: currentIndexerLag,
+        gasPrice: gasSnapshot?.gasPrice,
       });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
@@ -753,7 +820,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const payload = buildStatusPayload(
         ctx.metrics,
         gasSnapshot.gasPrice,
-        pools.length,
+        hasuraPoolsCache?.length ?? 0,
         hiStatus
           ? {
               synced: hiStatus.synced,

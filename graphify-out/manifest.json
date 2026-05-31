@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/package.json": {
-    "mtime": 1780155827.772662,
-    "ast_hash": "f54c95e356861f9d93eb27cb1b80e4e2",
+    "mtime": 1780243767.0469809,
+    "ast_hash": "d2a0cfc12a912e651fab46437c46e50b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/sol/deploy": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780239478.4860077,
-    "ast_hash": "aabcf7d2a93237cde93061c46ae93275",
+    "mtime": 1780243690.2994595,
+    "ast_hash": "1d7a4ff0ffbf8aa6032f9d265ecd310b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -185,18 +185,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1780122595.5801394,
-    "ast_hash": "bb2ec459cdbf267eb653472866abfa39",
+    "mtime": 1780241117.5015492,
+    "ast_hash": "5e74c50f65209815e4a11edb082e009c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
-    "mtime": 1780154796.7637112,
-    "ast_hash": "be31346b79b8ef54bbcafb8c5bd48066",
+    "mtime": 1780247027.9081388,
+    "ast_hash": "de9d54cb642ae1c938067680e2c02d28",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1780154796.7637112,
-    "ast_hash": "56ea455313506b699348db9034997772",
+    "mtime": 1780247148.758777,
+    "ast_hash": "80e691710b91ad6293c1cbb15f341f56",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/main.ts": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {
-    "mtime": 1779727071.970406,
-    "ast_hash": "2d6d3b2cb5c0c46af86d92351c9b1837",
+    "mtime": 1780247239.361757,
+    "ast_hash": "ef5b6e12bb84ad44fb89925cbc0e8130",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/tick_math.test.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1780240007.1455364,
-    "ast_hash": "2dad36954e80250e7c03899615c12479",
+    "mtime": 1780241376.902088,
+    "ast_hash": "2d7a9d2c75e3e45867a59751b1464847",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -685,8 +685,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/hyperindex_monitor.ts": {
-    "mtime": 1780238840.527558,
-    "ast_hash": "41e96a2bad3035d9638e24af4fc6a6b6",
+    "mtime": 1780240578.9995558,
+    "ast_hash": "1705c1ed1cf87b9451d8ff677cae5ac7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/tier_manager.test.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/cli/main.ts": {
-    "mtime": 1780122590.3282018,
-    "ast_hash": "4b7da77fbc488e663e2860baa4589371",
+    "mtime": 1780240370.6058073,
+    "ast_hash": "0595bf03bd5af6e54f4eff6a425cdf28",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.ts": {
@@ -745,8 +745,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/AGENTS.md": {
-    "mtime": 1779969384.0548792,
-    "ast_hash": "40802712a378e2bf3dd9493bf595b3df",
+    "mtime": 1780243637.0557587,
+    "ast_hash": "8fd77b6de5e50186e68869303ad508ac",
     "semantic_hash": ""
   },
   "/home/x/arb/t/GEMINI.md": {
@@ -1157,6 +1157,21 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-31-chainstack-integration-design.md": {
     "mtime": 1780238356.7239785,
     "ast_hash": "8c40a282e25acb12c5608ddf8faf2928",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/src/cli/arb_only.ts": {
+    "mtime": 1780243603.87593,
+    "ast_hash": "ad05e2f95c46ea05d0d3e4ff9a2398fa",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/plans/2026-05-31-tui-dashboard-redesign.md": {
+    "mtime": 1780246411.0751426,
+    "ast_hash": "2b5f0f9acc0f1ed497a76836e5919225",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-05-31-tui-dashboard-redesign.md": {
+    "mtime": 1780246226.0212753,
+    "ast_hash": "ac40e5ad14f23705c72c127af849fb3a",
     "semantic_hash": ""
   }
 }

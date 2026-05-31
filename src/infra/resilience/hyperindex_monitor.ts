@@ -49,10 +49,32 @@ export class HyperIndexMonitor implements Lifecycle {
     this.maxLagBlocks = opts.maxLagBlocks ?? 200;
   }
 
+  /** Tracks whether we started the HyperIndex process ourselves. If false, an external envio is managing it. */
+  private _managingProcess = false;
+
   async prepare(): Promise<void> {
+    // Check if Hasura is already running before starting our own process.
+    // This allows users to run `bun dev` (envio) separately while the bot connects to it.
+    const hasuraUrl = this.opts.processOptions.hasuraUrl;
+    if (hasuraUrl) {
+      try {
+        const baseUrl = hasuraUrl.replace(/\/v1\/graphql\/?$/, "");
+        const res = await fetch(`${baseUrl}/healthz`, { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          this.opts.logger.info("Hasura already running — skipping HyperIndex process management (bot will connect to existing instance)");
+          this._isHealthy = true;
+          this._managingProcess = false;
+          return;
+        }
+      } catch {
+        // Hasura not reachable, proceed to start our own process
+      }
+    }
+
     try {
       await this.proc.start();
       this._isHealthy = true;
+      this._managingProcess = true;
       this.restartAttempts = 0;
     } catch (err) {
       this.opts.logger.warn({ err }, "HyperIndex initial start failed, will retry");
@@ -69,10 +91,13 @@ export class HyperIndexMonitor implements Lifecycle {
       clearInterval(this.healthTimer);
       this.healthTimer = null;
     }
-    try {
-      await this.proc.stop();
-    } catch (_err: unknown) {
-      // best effort
+    // Only stop the process if we started it (don't kill externally-managed envio)
+    if (this._managingProcess) {
+      try {
+        await this.proc.stop();
+      } catch (_err: unknown) {
+        // best effort
+      }
     }
   }
 
@@ -81,6 +106,8 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   isRunning(): boolean {
+    // When externally managed (user runs `bun dev` separately), always report as running
+    if (!this._managingProcess) return true;
     return this.proc.isRunning();
   }
 
@@ -131,11 +158,14 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   private async checkHealth(): Promise<void> {
-    if (!this.proc.isRunning()) {
-      this._isHealthy = false;
-      this.opts.logger.warn({ attempts: this.restartAttempts }, "HyperIndex not running, attempting restart");
-      await this.restart();
-      return;
+    // When externally managed (user runs `bun dev` separately), skip process management
+    if (this._managingProcess) {
+      if (!this.proc.isRunning()) {
+        this._isHealthy = false;
+        this.opts.logger.warn({ attempts: this.restartAttempts }, "HyperIndex not running, attempting restart");
+        await this.restart();
+        return;
+      }
     }
 
     // Try to get real chain head for accurate lag (prefer official HyperSync client)
@@ -160,7 +190,7 @@ export class HyperIndexMonitor implements Lifecycle {
 
           // If remaining is critically low for a while, treat as "rate limit pain" and
           // force a HyperIndex restart (which will now pick the *next* token from the pool).
-          if (rl.remaining !== undefined && rl.remaining <= 2) {
+          if (rl.remaining !== undefined && rl.remaining <= 2 && this._managingProcess) {
             this.rateLimitPainCount++;
             this.lastRateLimitPain = Date.now();
             if (this.rateLimitPainCount >= 3) {
@@ -195,7 +225,7 @@ export class HyperIndexMonitor implements Lifecycle {
     const lag = this.getCurrentLag();
 
     // Hasura health check: if we have a URL but can't reach it, it's a critical failure.
-    // This often happens when docker containers get stuck or fail to start properly.
+    // When externally managed, just warn instead of restarting.
     if (this.opts.processOptions.hasuraUrl) {
       try {
         const url = new URL(this.opts.processOptions.hasuraUrl);
@@ -203,9 +233,14 @@ export class HyperIndexMonitor implements Lifecycle {
         const res = await fetch(healthUrl, { signal: AbortSignal.timeout(5000) });
         if (!res.ok) throw new Error(`Hasura health check returned ${res.status}`);
       } catch (err) {
-        this.opts.logger.error({ err, url: this.opts.processOptions.hasuraUrl }, "Hasura unreachable — forcing HyperIndex restart");
+        if (this._managingProcess) {
+          this.opts.logger.error({ err, url: this.opts.processOptions.hasuraUrl }, "Hasura unreachable — forcing HyperIndex restart");
+          this._isHealthy = false;
+          await this.restart();
+          return;
+        }
+        this.opts.logger.warn({ err, url: this.opts.processOptions.hasuraUrl }, "Hasura unreachable (externally managed)");
         this._isHealthy = false;
-        await this.restart();
         return;
       }
     }
@@ -214,7 +249,7 @@ export class HyperIndexMonitor implements Lifecycle {
     if (this.opts.hyperSync) {
       try {
         const rl = this.opts.hyperSync.rateLimitInfo?.();
-        if (rl) {
+        if (rl && this._managingProcess) {
           this.opts.logger.info({ rateLimitInfo: rl, lag }, "HyperIndex monitor - current HyperSync rate limit state");
         }
       } catch {}
@@ -225,7 +260,7 @@ export class HyperIndexMonitor implements Lifecycle {
         this.lastSyncedBlock = current;
         this.lastProgressTime = Date.now();
         this.recordBlockSample(current);
-      } else if (Date.now() - this.lastProgressTime > this.maxStallMs) {
+      } else if (this._managingProcess && Date.now() - this.lastProgressTime > this.maxStallMs) {
         this.opts.logger.error(
           {
             lastSynced: this.lastSyncedBlock,
@@ -241,14 +276,13 @@ export class HyperIndexMonitor implements Lifecycle {
       }
     }
 
-    // New: lag-based health check (more reliable than pure time stall)
+    // Lag-based health check (only restart if we manage the process)
     if (lag > this.maxLagBlocks && this.lastSyncedBlock > 0) {
       this.opts.logger.warn(
         { lag, maxLag: this.maxLagBlocks, synced: this.lastSyncedBlock, head: this.lastChainHead },
         "HyperIndex significantly behind chain head",
       );
-      // We still mark unhealthy only on extreme lag or stall to avoid flapping
-      if (lag > this.maxLagBlocks * 2) {
+      if (this._managingProcess && lag > this.maxLagBlocks * 2) {
         this._isHealthy = false;
         await this.restart();
         return;

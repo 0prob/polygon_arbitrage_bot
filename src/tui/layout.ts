@@ -13,14 +13,17 @@ export interface TuiLayout {
 }
 
 const STATUS_HEIGHT = 1;
+const GUTTER = 1;
+const MIN_PANEL_ROWS = 6; // 2 rows of 3-row panels
 
 export function computeLayout(cols: number | undefined, rows: number | undefined): TuiLayout {
   const safeCols = Math.max(100, cols ?? 100);
   const safeRows = Math.max(25, rows ?? 25);
 
-  const logHeight = Math.min(15, safeRows - 9);  // leave room for header(1) + panels(6) + separators(2) + status(1)
+  const reservedForNonLog = STATUS_HEIGHT + MIN_PANEL_ROWS + GUTTER + STATUS_HEIGHT;
+  const logHeight = Math.min(15, safeRows - reservedForNonLog);
   const dataAreaStart = STATUS_HEIGHT;
-  const dataAreaHeight = safeRows - STATUS_HEIGHT - logHeight - 2 - STATUS_HEIGHT; // 2 = separators
+  const dataAreaHeight = safeRows - STATUS_HEIGHT - logHeight - GUTTER - STATUS_HEIGHT;
   const panelRowHeight = Math.min(3, Math.floor(dataAreaHeight / 2));
   const colGutter = 2;
   const colWidth = Math.floor((safeCols - colGutter * 2) / 3);
@@ -41,7 +44,7 @@ export function computeLayout(cols: number | undefined, rows: number | undefined
       { x: panelCol(1), y: dataAreaStart + panelRowHeight, width: colWidth, height: panelRowHeight },
       { x: panelCol(2), y: dataAreaStart + panelRowHeight, width: colWidth, height: panelRowHeight },
     ],
-    log: { x: 0, y: dataAreaStart + dataAreaHeight + 1, width: safeCols, height: logHeight },
+    log: { x: 0, y: dataAreaStart + dataAreaHeight + GUTTER, width: safeCols, height: logHeight },
     statusBar: { x: 0, y: safeRows - STATUS_HEIGHT, width: safeCols, height: STATUS_HEIGHT },
   };
 }
