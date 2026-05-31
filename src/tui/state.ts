@@ -44,7 +44,7 @@ export interface SystemState {
   simProgress: { current: number; total: number; profitable: number };
   activeOpportunities: OpportunityEntry[];
   maticPriceUsd: number;
-  mempoolFeedStatus: "connected" | "disconnected" | "unknown";
+  mempoolFeedStatus: "connected" | "disconnected" | "error" | "unknown";
   pendingSwaps: { path: string; value: string; txHash: string; timestamp: number }[];
   cyclesByHop: Record<number, number>;
   enumerationTimeMs: number;
@@ -274,7 +274,10 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
     case "connection_status":
       if (event.subsystem === "rpc") state.system.rpcConnected = event.status === "connected";
       if (event.subsystem === "hasura") state.system.hasuraConnected = event.status === "connected";
-      if (event.subsystem === "ws") state.system.wsConnected = event.status === "connected";
+      if (event.subsystem === "ws") {
+        state.system.wsConnected = event.status === "connected";
+        state.system.mempoolFeedStatus = event.status;
+      }
       if (event.status === "error") appendLog(state, "Status", `${event.subsystem.toUpperCase()} disconnected`);
       break;
     case "heartbeat":

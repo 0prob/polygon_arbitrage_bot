@@ -20,6 +20,13 @@ export function computeLayout(cols: number | undefined, rows: number | undefined
   const safeCols = Math.max(100, cols ?? 100);
   const safeRows = Math.max(25, rows ?? 25);
 
+  if (cols && cols < 100) {
+    console.warn(`TUI: terminal too narrow (${cols} cols, need ≥100)`);
+  }
+  if (rows && rows < 25) {
+    console.warn(`TUI: terminal too short (${rows} rows, need ≥25)`);
+  }
+
   const reservedForNonLog = STATUS_HEIGHT + MIN_PANEL_ROWS + GUTTER + STATUS_HEIGHT;
   const logHeight = Math.min(15, safeRows - reservedForNonLog);
   const dataAreaStart = STATUS_HEIGHT;
