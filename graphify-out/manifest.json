@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/renderer.ts": {
-    "mtime": 1780247405.0318944,
-    "ast_hash": "9ee18857a96dab7d9906a2481792235c",
+    "mtime": 1780247531.7867854,
+    "ast_hash": "29322700c0cc3ea1515054fb11208a87",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/events.ts": {
@@ -200,8 +200,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/main.ts": {
-    "mtime": 1779526612.2479029,
-    "ast_hash": "f5bb13d2521fd08b7843ac7023a24782",
+    "mtime": 1780247573.5144148,
+    "ast_hash": "5ae51f288c5d6198ba2ba260d262509d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {

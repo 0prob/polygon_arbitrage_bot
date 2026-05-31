@@ -65,7 +65,8 @@ export function createTui(bus?: EventBus): TuiInstance {
       focusedSection = parseInt(key) - 1;
     }
     if (key === "\t") {
-      if (focusedSection < 0 || focusedSection >= 5) focusedSection = 0;
+      if (focusedSection < 0) focusedSection = 0;
+      else if (focusedSection >= 5) focusedSection = -1;
       else focusedSection++;
     }
     if (key === "\x1b" || key === "\u001b") {
