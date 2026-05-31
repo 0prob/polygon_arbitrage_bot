@@ -6,36 +6,23 @@ import {console2} from "forge-std/console2.sol";
 import {ArbExecutor} from "../src/ArbExecutor.sol";
 
 contract ArbExecutorScript is Script {
-    address internal constant DEFAULT_BALANCER_VAULT =
-        0xBA12222222228d8Ba445958a75a0704d566BF2C8;
-    address internal constant DEFAULT_UNISWAP_V3_FACTORY =
-        0x1F98431c8aD98523631AE4a59f267346ea31F984;
-    address internal constant DEFAULT_SUSHISWAP_V3_FACTORY =
-        0x917933899c6a5F8E37F31E19f92CdBFF7e8FF0e2;
-    address internal constant DEFAULT_QUICKSWAP_V3_FACTORY =
-        0x411b0fAcC3489691f28ad58c47006AF5E3Ab3A28;
-    address internal constant DEFAULT_KYBER_ELASTIC_FACTORY =
-        0x5F1dddbf348aC2fbe22a163e30F99F9ECE3DD50a;
-    address internal constant DEFAULT_AAVE_POOL =
-        0x794a61358D6845594F94dc1DB02A252b5b4814aD;
-    address internal constant DEFAULT_POOL_MANAGER =
-        0x0000000000000000000000000000000000001006;
+    address internal constant DEFAULT_BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
+    address internal constant DEFAULT_UNISWAP_V3_FACTORY = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+    address internal constant DEFAULT_SUSHISWAP_V3_FACTORY = 0x917933899c6a5F8E37F31E19f92CdBFF7e8FF0e2;
+    address internal constant DEFAULT_QUICKSWAP_V3_FACTORY = 0x411b0fAcC3489691f28ad58c47006AF5E3Ab3A28;
+    address internal constant DEFAULT_KYBER_ELASTIC_FACTORY = 0x5F1dddbf348aC2fbe22a163e30F99F9ECE3DD50a;
+    address internal constant DEFAULT_AAVE_POOL = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
+    address internal constant DEFAULT_POOL_MANAGER = 0x0000000000000000000000000000000000001006;
 
     function run() external returns (ArbExecutor executor) {
         address owner = vm.envAddress("OWNER");
         address balancerVault = vm.envOr("BALANCER_VAULT", DEFAULT_BALANCER_VAULT);
-        address uniswapV3Factory =
-            vm.envOr("UNISWAP_V3_FACTORY", DEFAULT_UNISWAP_V3_FACTORY);
-        address sushiV3Factory =
-            vm.envOr("SUSHISWAP_V3_FACTORY", DEFAULT_SUSHISWAP_V3_FACTORY);
-        address quickswapV3Factory =
-            vm.envOr("QUICKSWAP_V3_FACTORY", DEFAULT_QUICKSWAP_V3_FACTORY);
-        address kyberElasticFactory =
-            vm.envOr("KYBER_ELASTIC_FACTORY", DEFAULT_KYBER_ELASTIC_FACTORY);
-        address aavePool =
-            vm.envOr("AAVE_POOL", DEFAULT_AAVE_POOL);
-        address poolManager =
-            vm.envOr("POOL_MANAGER", DEFAULT_POOL_MANAGER);
+        address uniswapV3Factory = vm.envOr("UNISWAP_V3_FACTORY", DEFAULT_UNISWAP_V3_FACTORY);
+        address sushiV3Factory = vm.envOr("SUSHISWAP_V3_FACTORY", DEFAULT_SUSHISWAP_V3_FACTORY);
+        address quickswapV3Factory = vm.envOr("QUICKSWAP_V3_FACTORY", DEFAULT_QUICKSWAP_V3_FACTORY);
+        address kyberElasticFactory = vm.envOr("KYBER_ELASTIC_FACTORY", DEFAULT_KYBER_ELASTIC_FACTORY);
+        address aavePool = vm.envOr("AAVE_POOL", DEFAULT_AAVE_POOL);
+        address poolManager = vm.envOr("POOL_MANAGER", DEFAULT_POOL_MANAGER);
 
         vm.startBroadcast();
 

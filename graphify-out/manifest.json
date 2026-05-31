@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {
-    "mtime": 1780249796.9340198,
-    "ast_hash": "cbeeed35035de83aa5713d18d48655d9",
+    "mtime": 1780249923.000346,
+    "ast_hash": "74a2e0d031f83dff57c7498a25d9998a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/tick_math.test.ts": {
@@ -1172,6 +1172,11 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-05-31-tui-dashboard-redesign.md": {
     "mtime": 1780246226.0212753,
     "ast_hash": "ac40e5ad14f23705c72c127af849fb3a",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/data/discovered-decimals.json": {
+    "mtime": 1780246443.1147754,
+    "ast_hash": "0eb1094958ff7a6b219ba81672d3a864",
     "semantic_hash": ""
   }
 }

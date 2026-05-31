@@ -69,6 +69,9 @@ indexer.onEvent(
       )
     );
     logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, Number(event.block.number));
+
+    if (context.isPreload) return;
+
     meta.tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     });
@@ -114,6 +117,9 @@ indexer.onEvent(
         })
       )
     );
+
+    if (context.isPreload) return;
+
     tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     });

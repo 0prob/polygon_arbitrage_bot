@@ -7,7 +7,7 @@ export interface PanelRect {
 
 export interface TuiLayout {
   header: PanelRect;
-  panels: PanelRect[];       // 6 panels in 3x2 grid: [index, mempool, opportunities, routing, graph, execution]
+  panels: PanelRect[]; // 6 panels in 3x2 grid: [index, mempool, opportunities, routing, graph, execution]
   log: PanelRect;
   statusBar: PanelRect;
 }

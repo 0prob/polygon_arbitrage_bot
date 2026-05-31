@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.34;
 
-import {ArbExecutor, IERC20Minimal} from "../src/ArbExecutor.sol";
+import {ArbExecutor} from "../src/ArbExecutor.sol";
 import {Test} from "forge-std/Test.sol";
 
 contract ArbExecutorAaveForkTest is Test {
@@ -40,9 +40,7 @@ contract ArbExecutorAaveForkTest is Test {
     function testAavePoolInterfaceGetReserveData() public {
         // Verify the Aave Pool address is a real contract with the expected interface
         // by calling getReserveData() via staticcall on USDC
-        (bool ok, bytes memory result) = AAVE_POOL.staticcall(
-            abi.encodeWithSignature("getReserveData(address)", USDC)
-        );
+        (bool ok, bytes memory result) = AAVE_POOL.staticcall(abi.encodeWithSignature("getReserveData(address)", USDC));
         assertTrue(ok, "getReserveData staticcall failed");
         // Return data for a reserve should be > 0 bytes (at least one uint256)
         assertGt(result.length, 32, "getReserveData returned too little data");

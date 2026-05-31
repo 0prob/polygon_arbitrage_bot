@@ -1,24 +1,24 @@
 type PoolMeta {
   id: ID!
-  address: String!
-  protocol: String!
+  address: String! @index
+  protocol: String! @index
   tokens: [String!]!
   fee: Int
   tickSpacing: Int
-  createdBlock: Int!
+  createdBlock: Int! @index
   createdTx: String
-  poolId: String # For Balancer
+  poolId: String @index # For Balancer
 }
 
 type BalancerPoolIdToAddress {
   id: ID! # poolId
-  address: String!
+  address: String! @index
 }
 
 type V2PoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
   reserve0: BigInt!
   reserve1: BigInt!
   fee: Int
@@ -26,8 +26,8 @@ type V2PoolState {
 
 type V3PoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
   sqrtPriceX96: BigInt!
   liquidity: BigInt!
   tick: Int!
@@ -37,8 +37,8 @@ type V3PoolState {
 
 type V4PoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
   sqrtPriceX96: BigInt!
   liquidity: BigInt!
   tick: Int!
@@ -49,8 +49,8 @@ type V4PoolState {
 
 type CurvePoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
   balances: [BigInt!]!
   A: BigInt!
   fee: BigInt!
@@ -59,9 +59,9 @@ type CurvePoolState {
 
 type BalancerPoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
-  poolId: String!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
+  poolId: String! @index
   balances: [BigInt!]!
   weights: [BigInt!]
   amp: BigInt
@@ -71,8 +71,8 @@ type BalancerPoolState {
 
 type DodoPoolState {
   id: ID!
-  address: String!
-  lastUpdatedBlock: Int!
+  address: String! @index
+  lastUpdatedBlock: Int! @index
   baseReserve: BigInt!
   quoteReserve: BigInt!
   targetBase: BigInt!
@@ -87,6 +87,6 @@ type DodoPoolState {
 
 type TokenMeta {
   id: ID!
-  address: String!
+  address: String! @index
   decimals: Int
 }

@@ -68,23 +68,16 @@ export interface HyperRpcLog {
 export class HyperRpcClient {
   private readonly endpoint: string;
   private readonly timeoutMs: number;
+  private readonly token: string | undefined;
   private requestId = 0;
 
   constructor(config: HyperRpcConfig = {}) {
-    const token = config.apiToken?.trim();
-    const chainId = config.chainId ?? 137; // Default Polygon
+    this.token = config.apiToken?.trim();
 
     if (config.url) {
-      // User-provided override (advanced)
-      this.endpoint = token && !config.url.includes(token) ? `${config.url.replace(/\/$/, "")}/${token}` : config.url;
-    } else if (token) {
-      // Recommended per docs (2026): per-chain or unified with token appended
-      // Unified high-performance: https://rpc.hypersync.xyz/<token>
-      // Or per-chain: https://137.rpc.hypersync.xyz/<token>
-      this.endpoint = `https://rpc.hypersync.xyz/${token}`;
+      this.endpoint = config.url;
     } else {
-      // Public (rate-limited) default for Polygon
-      this.endpoint = `https://${chainId}.rpc.hypersync.xyz`;
+      throw new Error("HyperRpcClient requires a URL");
     }
 
     this.timeoutMs = config.timeoutMs ?? 10_000;
@@ -95,11 +88,16 @@ export class HyperRpcClient {
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 
     const id = ++this.requestId;
+    
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
 
     try {
       const res = await fetch(this.endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           jsonrpc: "2.0",
           id,

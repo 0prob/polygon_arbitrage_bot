@@ -104,7 +104,7 @@ export type MempoolConfig = z.infer<typeof MempoolConfigSchema>;
 
 export const FastLaneConfigSchema = z.object({
   enabled: z.coerce.boolean().default(false),
-  rpcUrl: z.string().default("https://polygon-rpc.fastlane.xyz"),
+  rpcUrl: z.string().default(""),
   blockNumberWindow: z.coerce.number().int().positive().default(50),
   timestampWindowS: z.coerce.number().int().positive().default(60),
 });

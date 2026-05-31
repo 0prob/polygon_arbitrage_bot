@@ -1,21 +1,16 @@
 /** Default values for all configuration. These are the values used when no env var or override is provided. */
 export const DEFAULTS = {
   rpc: {
-    polygonRpcUrls: [
-      "https://polygon.drpc.org",
-      "https://polygon.api.onfinality.io/public",
-      "https://polygon-bor-rpc.publicnode.com",
-      "https://polygon.gateway.tenderly.co",
-    ],
+    polygonRpcUrls: [] as string[],
     executionRpcUrl: "" as string, // required, no default
     requestTimeoutMs: 8_000,
     batchWaitMs: 16,
     batchSize: 100,
     // HyperRPC - when HYPERRPC_API_TOKEN is set, we prefer it for the 10 listed read methods
     // (eth_chainId, eth_blockNumber, eth_getBlock*, eth_getTransaction*, eth_getLogs, eth_getBlockReceipts)
-    hyperRpcUrl: "https://polygon.rpc.hypersync.xyz",
+    hyperRpcUrl: "",
     hyperRpcApiToken: "" as string,
-    hyperSyncUrl: "https://polygon.hypersync.xyz",
+    hyperSyncUrl: "",
     hypersyncMaxRpmPerToken: undefined as number | undefined,
     chainstackRps: 250,
   },
@@ -65,7 +60,7 @@ export const DEFAULTS = {
   },
   fastlane: {
     enabled: false,
-    rpcUrl: "https://polygon-rpc.fastlane.xyz",
+    rpcUrl: "",
     blockNumberWindow: 50,
     timestampWindowS: 60,
   },

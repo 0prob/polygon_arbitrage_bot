@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "envio": "^3.0.2",
+    "ethers": "^6.16.0",
     "viem": "^2.51.0"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "typescript": "^6.0.3"
   }
 }

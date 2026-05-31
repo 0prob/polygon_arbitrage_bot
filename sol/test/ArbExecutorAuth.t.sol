@@ -25,11 +25,7 @@ contract ArbExecutorAuthTest is Test {
 
     function test_OnlyOwnerCanExecuteArb() public {
         ArbExecutor.Call[] memory calls = new ArbExecutor.Call[](1);
-        calls[0] = ArbExecutor.Call({
-            target: address(0xdead),
-            value: 0,
-            data: ""
-        });
+        calls[0] = ArbExecutor.Call({target: address(0xdead), value: 0, data: ""});
         ArbExecutor.FlashParams memory params = ArbExecutor.FlashParams({
             profitToken: address(0xbeef),
             minProfit: 0,
@@ -46,8 +42,9 @@ contract ArbExecutorAuthTest is Test {
         // Owner should NOT revert with Unauthorized (it might revert with something else due to mock addresses, but not Unauthorized)
         vm.prank(owner);
         try executor.executeArb(address(0xcafe), 100, params) {
-            // success or other revert
-        } catch (bytes memory reason) {
+        // success or other revert
+        }
+        catch (bytes memory reason) {
             // Check that it's NOT Unauthorized
             bytes4 unauthorizedSelector = ArbExecutor.Unauthorized.selector;
             bytes4 receivedSelector;
@@ -63,8 +60,8 @@ contract ArbExecutorAuthTest is Test {
     function test_ApproveIfNeeded_Auth() public {
         // Owner should be able to call it
         vm.prank(owner);
-        try executor.approveIfNeeded(address(0xcafe), address(0xface), 100) {
-        } catch (bytes memory reason) {
+        try executor.approveIfNeeded(address(0xcafe), address(0xface), 100) {}
+        catch (bytes memory reason) {
             bytes4 unauthorizedSelector = ArbExecutor.Unauthorized.selector;
             bytes4 receivedSelector;
             if (reason.length >= 4) {

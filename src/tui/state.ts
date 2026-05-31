@@ -191,7 +191,11 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "execution_attempt": {
       const profitStr = event.expectedProfit > 0n ? `+${event.expectedProfit.toString()} wei` : `${event.expectedProfit.toString()} wei`;
-      appendLog(state, "Exec", `Attempt ${event.protocolPath} (${event.hopCount}-hop)  ${event.txHash?.slice(0,10) ?? "..."}  ${profitStr}`);
+      appendLog(
+        state,
+        "Exec",
+        `Attempt ${event.protocolPath} (${event.hopCount}-hop)  ${event.txHash?.slice(0, 10) ?? "..."}  ${profitStr}`,
+      );
       break;
     }
     case "execution_submitted":

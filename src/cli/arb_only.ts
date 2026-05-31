@@ -42,10 +42,7 @@ async function main() {
   // bootApplication handles a missing hyperIndexMonitor gracefully:
   // tierManager will get a healthy stub, and pass_loop guards all
   // hyperIndexMonitor calls with optional chaining.
-  logger.info(
-    { hasuraUrl: config.hasuraUrl },
-    "Starting arb-only mode — assuming HyperIndex/Hasura is running externally",
-  );
+  logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only mode — assuming HyperIndex/Hasura is running externally");
 
   const ctx = await bootApplication(config, undefined, logger, undefined);
 

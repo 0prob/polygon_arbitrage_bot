@@ -55,9 +55,9 @@ export class RpcManager {
     // Official high-performance HyperSync client (preferred for most new read paths)
     // Gracefully degrades if the native package isn't installed yet.
     // IMPORTANT: Created BEFORE ReorgDetector so it receives the instance.
-    if (config.hyperRpcApiToken || config.hyperSyncUrl) {
+    if (config.hyperSyncUrl) {
       this._hyperSync = createHyperSyncService({
-        url: config.hyperSyncUrl || `https://${this.chainId}.hypersync.xyz`,
+        url: config.hyperSyncUrl,
         apiToken: config.hyperRpcApiToken,
         timeoutMs: config.requestTimeoutMs,
         maxRpmPerToken: config.hypersyncMaxRpmPerToken,
@@ -66,12 +66,14 @@ export class RpcManager {
 
     // HyperRPC — optional read-only high-performance provider (per 2026 Envio docs).
     // Use for the specific read methods only. Prefer HyperSync client for advanced needs.
-    this._hyperRpc = createHyperRpcClient({
-      url: config.hyperRpcUrl,
-      apiToken: config.hyperRpcApiToken,
-      timeoutMs: config.requestTimeoutMs,
-      chainId: this.chainId,
-    });
+    if (config.hyperRpcUrl) {
+      this._hyperRpc = createHyperRpcClient({
+        url: config.hyperRpcUrl,
+        apiToken: config.hyperRpcApiToken,
+        timeoutMs: config.requestTimeoutMs,
+        chainId: this.chainId,
+      });
+    }
 
     // ReorgDetector — created AFTER both HyperSync and HyperRPC so it receives the instances.
     this._reorgDetector = new ReorgDetector(this._readClient, 10, this._hyperRpc, this._hyperSync);

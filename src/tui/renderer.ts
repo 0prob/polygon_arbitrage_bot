@@ -79,8 +79,15 @@ const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 const SPINNER_MOD = 3;
 
 const SECTION_COLORS: Record<string, number> = {
-  Index: CYAN, Mempool: YELLOW, Routing: WHITE, Graph: CYAN, Opps: GREEN, Exec: GREEN,
-  System: WHITE, Stage: CYAN, Status: YELLOW,
+  Index: CYAN,
+  Mempool: YELLOW,
+  Routing: WHITE,
+  Graph: CYAN,
+  Opps: GREEN,
+  Exec: GREEN,
+  System: WHITE,
+  Stage: CYAN,
+  Status: YELLOW,
 };
 
 class Animator {
@@ -195,7 +202,7 @@ export class Renderer {
     const statusIcon = s.hiStatus === "syncing" ? "⠋" : s.hiStatus === "synced" ? "●" : "○";
     const blockStr = s.hiSyncedBlock > 0 ? formatBlock(s.hiSyncedBlock) : "—";
     const remoteStr = s.hiRemoteBlock > 0 ? formatBlock(s.hiRemoteBlock) : "—";
-    const lag = s.hiLag > 0 ? s.hiLag : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0);
+    const lag = s.hiLag > 0 ? s.hiLag : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0;
     const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
 
     let pct = 0;
@@ -216,12 +223,12 @@ export class Renderer {
 
   private renderMempoolPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
     const s = state.system;
-    const feedIcon = s.mempoolFeedStatus === "connected" ? color("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? color("⊗", RED) : "○";
+    const feedIcon =
+      s.mempoolFeedStatus === "connected" ? color("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? color("⊗", RED) : "○";
     const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
     const now = Date.now();
     const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 2000);
-    const swapLines = activeSwaps.slice(0, 2)
-      .map((sw) => ` +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
+    const swapLines = activeSwaps.slice(0, 2).map((sw) => ` +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
 
     return [
       ` ${animator.sectionLabel("🖄", "Mempool")}`,
@@ -234,37 +241,25 @@ export class Renderer {
     const s = state.system;
     const isSim = s.pipelineStage === "SIMULATING";
     const spin = animator.spinner(isSim);
-    const bar = isSim && s.simProgress.total > 0
-      ? animator.progressBar(s.simProgress.current, s.simProgress.total, 12)
-      : "";
+    const bar = isSim && s.simProgress.total > 0 ? animator.progressBar(s.simProgress.current, s.simProgress.total, 12) : "";
     const pct = s.simProgress.total > 0 ? ` ${Math.floor((s.simProgress.current / s.simProgress.total) * 100)}%` : "";
-    const simLine = isSim
-      ? ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}]${pct}`
-      : ` ● ${dim("Idle")}`;
+    const simLine = isSim ? ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}]${pct}` : ` ● ${dim("Idle")}`;
 
-    const best = state.metrics.opportunitiesFound > 0 && state.system.activeOpportunities.length > 0
-      ? state.system.activeOpportunities[0]
-      : null;
+    const best =
+      state.metrics.opportunitiesFound > 0 && state.system.activeOpportunities.length > 0 ? state.system.activeOpportunities[0] : null;
     const topPath = best ? ` ${best.path.padEnd(24)} ${color(formatWei(best.profit), GREEN)}` : dim(" Waiting for opportunities");
 
     const profitableCount = state.metrics.opportunitiesFound;
     const bestProfit = best ? ` Best: ${color(formatWei(best.profit), GREEN)}` : "";
 
-    return [
-      ` ${animator.sectionLabel("💰", "Opportunities")}`,
-      simLine,
-      ` ★ ${profitableCount} profitable${bestProfit}`,
-      topPath,
-    ];
+    return [` ${animator.sectionLabel("💰", "Opportunities")}`, simLine, ` ★ ${profitableCount} profitable${bestProfit}`, topPath];
   }
 
   private renderRoutingPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
     const s = state.system;
     const isEnum = s.pipelineStage === "ENUMERATING";
     const spin = animator.spinner(isEnum);
-    const cycleInfo = s.cycleCount > 0
-      ? `${s.cycleCount.toLocaleString()} cycles`
-      : dim("—");
+    const cycleInfo = s.cycleCount > 0 ? `${s.cycleCount.toLocaleString()} cycles` : dim("—");
     const enumTime = s.enumerationTimeMs > 0 ? dim(` (${s.enumerationTimeMs}ms)`) : "";
 
     const hopParts = Object.entries(s.cyclesByHop)
@@ -392,5 +387,3 @@ function formatUptime(ms: number): string {
   const s = totalSec % 60;
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
-
-

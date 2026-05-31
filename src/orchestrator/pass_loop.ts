@@ -95,7 +95,13 @@ async function runPoolDiscovery(
 ): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number }> {
   const now = Date.now();
   const DISCOVERY_INTERVAL = 60000;
-  if (!(currentPools === null || currentPools.length === 0 || (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover()))) {
+  if (
+    !(
+      currentPools === null ||
+      currentPools.length === 0 ||
+      (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())
+    )
+  ) {
     return { pools: currentPools, lastDiscoveryTime };
   }
 
@@ -253,11 +259,14 @@ async function runEnumerationPhase(
   bus?.emit({
     type: "graph_stats",
     poolCount: pools.length,
-    protocolBreakdown: pools.reduce((acc, p) => {
-      const proto = p.protocol.split("_")[0] ?? p.protocol;
-      acc[proto] = (acc[proto] ?? 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
+    protocolBreakdown: pools.reduce(
+      (acc, p) => {
+        const proto = p.protocol.split("_")[0] ?? p.protocol;
+        acc[proto] = (acc[proto] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
     edgeCount: graph.adjacency.size,
     cachedCount: stateCache.size,
   });
@@ -456,9 +465,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Stage 3: Filter pools, rebuild graph, enumerate cycles
       {
         const enumResult = await runEnumerationPhase(
-          ctx, deps, bus,
-          hasuraPoolsCache ?? [], stateCache,
-          cachedGraph, cachedCycles, lastRefreshTime,
+          ctx,
+          deps,
+          bus,
+          hasuraPoolsCache ?? [],
+          stateCache,
+          cachedGraph,
+          cachedCycles,
+          lastRefreshTime,
         );
         cachedGraph = enumResult.graph;
         cachedCycles = enumResult.cycles;
@@ -486,7 +500,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // High-frequency pre-fetch: Only for pools in current cycles
       // Skip if we just did a full refresh in the same pass
       preFetchCounter++;
-      if (lastFullRefreshTime !== now && (preFetchCounter % 5 === 0)) {
+      if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
         const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
 

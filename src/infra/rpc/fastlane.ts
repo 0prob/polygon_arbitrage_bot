@@ -11,7 +11,7 @@ export interface FastLaneConfig {
 
 export const DEFAULT_FASTLANE_CONFIG: FastLaneConfig = {
   enabled: false,
-  rpcUrl: "https://polygon-rpc.fastlane.xyz",
+  rpcUrl: "",
   conditional: {
     blockNumberWindow: 50,
     timestampWindowS: 60,

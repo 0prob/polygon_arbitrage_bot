@@ -43,12 +43,7 @@ contract CallbackVault {
 }
 
 contract NoCallbackVault {
-    function flashLoan(
-        IFlashLoanRecipient,
-        IERC20Minimal[] memory,
-        uint256[] memory,
-        bytes memory
-    ) external pure {
+    function flashLoan(IFlashLoanRecipient, IERC20Minimal[] memory, uint256[] memory, bytes memory) external pure {
         // Malformed vault for boundary testing: returns without invoking receiveFlashLoan.
     }
 }
@@ -88,15 +83,11 @@ contract ArbExecutorAtomicTest {
     function _baseCalls(uint256 count) internal view returns (ArbExecutor.Call[] memory calls) {
         calls = new ArbExecutor.Call[](count);
         calls[0] = ArbExecutor.Call({
-            target: address(recorder),
-            value: 0,
-            data: abi.encodeWithSelector(RecorderTarget.record.selector)
+            target: address(recorder), value: 0, data: abi.encodeWithSelector(RecorderTarget.record.selector)
         });
         if (count > 1) {
             calls[1] = ArbExecutor.Call({
-                target: address(reverter),
-                value: 0,
-                data: abi.encodeWithSelector(RevertingTarget.fail.selector)
+                target: address(reverter), value: 0, data: abi.encodeWithSelector(RevertingTarget.fail.selector)
             });
         }
     }
@@ -111,19 +102,12 @@ contract ArbExecutorAtomicTest {
         });
     }
 
-    function _callExecute(
-        ArbExecutor executor,
-        uint256 amount,
-        ArbExecutor.FlashParams memory params
-    ) internal returns (bool ok, bytes memory data) {
-        return address(executor).call(
-            abi.encodeWithSelector(
-                ArbExecutor.executeArb.selector,
-                address(token),
-                amount,
-                params
-            )
-        );
+    function _callExecute(ArbExecutor executor, uint256 amount, ArbExecutor.FlashParams memory params)
+        internal
+        returns (bool ok, bytes memory data)
+    {
+        return address(executor)
+            .call(abi.encodeWithSelector(ArbExecutor.executeArb.selector, address(token), amount, params));
     }
 
     function testExecuteArbRevertsIfFlashLoanCallbackNeverCompletes() public {

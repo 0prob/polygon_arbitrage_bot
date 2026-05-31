@@ -2,8 +2,8 @@ import { createEffect, S } from "envio";
 import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
 import { STATIC_TOKEN_DECIMALS } from "./token_registry";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
 const FAILED_DECIMALS_RETRY_MS = 30 * 60 * 1000; // 30 minutes before retrying a failed token
