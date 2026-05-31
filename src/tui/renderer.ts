@@ -75,6 +75,36 @@ const RED = 31;
 const CYAN = 36;
 const WHITE = 37;
 
+const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const SPINNER_MOD = 3;
+
+class Animator {
+  constructor(private _frame: number = 0) {}
+
+  spinner(active: boolean): string {
+    if (!active) return "●";
+    return SPINNER_FRAMES[Math.floor(this._frame / SPINNER_MOD) % SPINNER_FRAMES.length];
+  }
+
+  progressBar(current: number, total: number, width: number): string {
+    if (total <= 0) return "";
+    const filled = Math.round((current / total) * width);
+    return "█".repeat(filled) + "░".repeat(width - filled);
+  }
+
+  sparkline(values: number[], width: number): string {
+    if (values.length < 2) return "";
+    const chars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+    const recent = values.slice(-width);
+    const max = Math.max(...recent.map(Math.abs), 1);
+    return recent.map((v) => chars[Math.min(Math.floor((Math.abs(v) / max) * (chars.length - 1)), chars.length - 1)]).join("");
+  }
+
+  sectionLabel(emoji: string, label: string): string {
+    return bold(`${emoji} ${label}`);
+  }
+}
+
 interface RenderedPanel {
   y: number;
   content: string;
@@ -106,15 +136,25 @@ export class Renderer {
     this.initialized = false;
   }
 
-  render(layout: TuiLayout, state: TuiState): void {
-    const panels: RenderedPanel[] = [];
+  render(layout: TuiLayout, state: TuiState, frameCount: number = 0, focusedSection: number = -1): void {
+    const animator = new Animator(frameCount);
 
+    const panels: RenderedPanel[] = [];
     panels.push(this.renderHeader(layout, state));
-    panels.push(this.renderPipeline(layout, state));
-    panels.push(this.renderMainTable(layout, state));
-    panels.push(this.renderSidebar(layout, state));
-    panels.push(this.renderFooterLog(layout, state));
-    panels.push(this.renderKeymap(layout, state));
+    for (let i = 0; i < 6; i++) {
+      const renderFns = [
+        this.renderIndexPanel.bind(this),
+        this.renderMempoolPanel.bind(this),
+        this.renderOpportunitiesPanel.bind(this),
+        this.renderRoutingPanel.bind(this),
+        this.renderGraphPanel.bind(this),
+        this.renderExecutionPanel.bind(this),
+      ];
+      const lines = renderFns[i](layout.panels[i], state, animator);
+      panels.push(this.panelBox(lines, layout.panels[i], i === focusedSection));
+    }
+    panels.push(this.renderLog(layout, state));
+    panels.push(this.renderStatusBar(layout, state));
 
     let buf = "";
     for (const panel of panels) {
@@ -145,161 +185,179 @@ export class Renderer {
     };
   }
 
-  private renderPipeline(layout: TuiLayout, state: TuiState): RenderedPanel {
+  private renderIndexPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
     const s = state.system;
+    const statusIcon = s.hiStatus === "syncing" ? "⠋" : s.hiStatus === "synced" ? "●" : "○";
+    const blockStr = s.hiSyncedBlock > 0 ? formatBlock(s.hiSyncedBlock) : "—";
+    const remoteStr = s.hiRemoteBlock > 0 ? formatBlock(s.hiRemoteBlock) : "—";
+    const lag = s.hiLag > 0 ? s.hiLag : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0);
+    const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
 
-    let simProgressStr = "";
-    if (s.pipelineStage === "SIMULATING" && s.simProgress.total > 0) {
-      const pct = Math.floor((s.simProgress.current / s.simProgress.total) * 100);
-      const barLen = 15;
-      const filled = Math.floor((pct / 100) * barLen);
-      const bar = "=".repeat(filled) + (filled < barLen ? ">" : "") + " ".repeat(Math.max(0, barLen - filled - 1));
-      simProgressStr = ` [${bar}] ${pct}% (${s.simProgress.current}/${s.simProgress.total})`;
+    let pct = 0;
+    if (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0) {
+      pct = Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100));
     }
+    const bar = animator.progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 12);
+    const mode = s.hiDiscoveryMode ?? "broad";
+    const rlPain = (s.hiRateLimitPain ?? 0) > 0 ? `  RL:${s.hiRateLimitPain}` : "";
 
-    const lines = [
-      bold("🔄 Pipeline Monitor"),
-      `  [${s.pipelineStage === "DISCOVERY" ? color("●", CYAN) : s.poolCount > 0 ? color("✔", GREEN) : " "}] Discovery:   ${s.poolCount} pools`,
-      `  [${s.pipelineStage === "LF_REFRESH" ? color("●", CYAN) : " "}] LF Refresh:  ${s.pipelineStage === "LF_REFRESH" ? "State + Rates..." : "Idle"}`,
-      `  [${s.pipelineStage === "ENUMERATING" ? color("●", CYAN) : s.cycleCount > 0 ? color("✔", GREEN) : " "}] Enumerate:   ${s.cycleCount} cycles`,
-      `  [${s.pipelineStage === "PRE_FETCH" ? color("●", CYAN) : " "}] Pre-Fetch:   ${s.pipelineStage === "PRE_FETCH" ? "RPC state..." : "Idle"}`,
-      `  [${s.pipelineStage === "RATES" ? color("●", CYAN) : s.pipelineStage === "SIMULATING" || s.pipelineStage === "EXECUTING" ? color("✔", GREEN) : " "}] Rates:       ${s.pipelineStage === "RATES" ? "Computing..." : "Ready"}`,
-      `  [${s.pipelineStage === "SIMULATING" ? color("●", CYAN) : " "}] Simulation:  ${s.pipelineStage === "SIMULATING" ? "Running..." : "Idle"} ${simProgressStr}`,
-      `  [${s.pipelineStage === "EXECUTING" ? color("●", YELLOW) : " "}] Execution:   ${s.pipelineStage === "EXECUTING" ? "Submitting TXs..." : "Idle"}`,
-      ``,
-      `  ${dim(`Last Pass: ${s.lastCycleTimeMs}ms | ${state.metrics.opportunitiesFound} profitable overall`)}`,
-      s.hiLag > 0
-        ? `  ${color(`Indexer Lag: ${s.hiLag} blocks`, s.hiLag > 200 ? RED : YELLOW)}${s.hiSyncRate > 0 ? dim(` @ ${s.hiSyncRate.toFixed(1)} blk/s`) : ""}`
-        : "",
+    return [
+      ` ${animator.sectionLabel("📡", "Index")}`,
+      ` ${statusIcon} Block: ${color(blockStr, CYAN)} / ${remoteStr} ${dim(s.hiStatus)}`,
+      ` ${bar} ${color(`${pct}%`, GREEN)} ${dim("lag:")}${color(String(lag), lagColor)}${s.hiSyncRate > 0 ? dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
+      ` Mode: ${mode}${rlPain}`,
     ];
-    return this.panelBox(lines, layout.pipeline);
   }
 
-  private renderMainTable(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const lines = [
-      bold("⭐ Top Opportunities"),
-      `  ${dim("Path").padEnd(32)} ${dim("Profit").padEnd(16)} ${dim("USD").padEnd(10)} ${dim("Status")}`,
+  private renderMempoolPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+    const s = state.system;
+    const feedIcon = s.mempoolFeedStatus === "connected" ? color("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? color("⊗", RED) : "○";
+    const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
+    const now = Date.now();
+    const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 3000);
+    const swapLines = activeSwaps.slice(0, 2)
+      .map((sw) => ` +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
+
+    return [
+      ` ${animator.sectionLabel("🖄", "Mempool")}`,
+      ` ${feedIcon} Subscribed: 1 feed ${dim(feedLabel)}`,
+      ...(swapLines.length > 0 ? swapLines : [` ${dim("No pending activity")}`]),
     ];
-
-    if (state.system.activeOpportunities.length === 0) {
-      lines.push(`  ${dim("No active opportunities.")}`);
-    } else {
-      for (const opp of state.system.activeOpportunities) {
-        const profit = formatWei(opp.profit);
-        const usd = formatUsd(opp.profit, state.system.maticPriceUsd);
-        let statusColor = WHITE;
-        if (opp.status === "Confirmed") statusColor = GREEN;
-        if (opp.status === "Failed" || opp.status === "Quarantined") statusColor = RED;
-        if (opp.status === "Executing") statusColor = YELLOW;
-
-        lines.push(
-          `  ${opp.path.padEnd(30)} ${color(profit, CYAN).padEnd(16)} ${color(usd, GREEN).padEnd(10)} ${color(opp.status, statusColor)}`,
-        );
-      }
-    }
-
-    return this.panelBox(lines, layout.mainTable);
   }
 
-  private renderSidebar(layout: TuiLayout, state: TuiState): RenderedPanel {
+  private renderOpportunitiesPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
     const s = state.system;
-    const gwei = s.gasPriceWei > 0n ? formatGwei(s.gasPriceWei) : "—";
+    const isSim = s.pipelineStage === "SIMULATING";
+    const spin = animator.spinner(isSim);
+    const bar = isSim && s.simProgress.total > 0
+      ? animator.progressBar(s.simProgress.current, s.simProgress.total, 12)
+      : "";
+    const pct = s.simProgress.total > 0 ? ` ${Math.floor((s.simProgress.current / s.simProgress.total) * 100)}%` : "";
+    const simLine = isSim
+      ? ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}]${pct}`
+      : ` ● ${dim("Idle")}`;
 
-    // The hyperindex_status events now carry rateLimitPain in the ArbEvent,
-    // but we don't store it in SystemState. Pull it from the state if available.
-    // For now we just use hiLag/hiSyncRate which are stored.
-    let hiLabel: string;
-    let hiColor: number;
-    const hiLagStr =
-      s.hiLag > 0 ? ` lag:${s.hiLag}` : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? ` lag:${s.hiRemoteBlock - s.hiSyncedBlock}` : "";
-    const hiRate = s.hiSyncRate > 0 ? ` @${s.hiSyncRate.toFixed(1)}blk/s` : "";
+    const best = state.metrics.opportunitiesFound > 0 && state.system.activeOpportunities.length > 0
+      ? state.system.activeOpportunities[0]
+      : null;
+    const topPath = best ? ` ${best.path.padEnd(24)} ${color(formatWei(best.profit), GREEN)}` : dim(" Waiting for opportunities");
 
-    if (s.hiSyncedBlock > 0) {
-      hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
-      const mode = s.hiDiscoveryMode ? (s.hiDiscoveryMode === "broad" ? color("broad", GREEN) : color("hot-bias", YELLOW)) : "";
-      const modeStr = mode ? ` ${dim("(")}${mode}${dim(")")}` : "";
-      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${modeStr}${dim(hiLagStr + hiRate)}`;
-    } else if (s.hiStatus === "running") {
-      hiColor = CYAN;
-      hiLabel = color("running", hiColor);
-    } else if (s.hiStatus === "error") {
-      hiColor = RED;
-      hiLabel = color("error", hiColor);
-    } else {
-      hiColor = WHITE;
-      hiLabel = dim(s.hiStatus);
-    }
-    const hiRemote = s.hiRemoteBlock > 0 ? ` / ${formatBlock(s.hiRemoteBlock)}` : "";
-    const hiAge = s.hiLastSeen > 0 ? Date.now() - s.hiLastSeen : 0;
-    const hiAgeStr = hiAge > 0 ? dim(` ${formatDuration(hiAge)}`) : "";
+    const profitableCount = state.metrics.opportunitiesFound;
+    const bestProfit = best ? ` Best: ${color(formatWei(best.profit), GREEN)}` : "";
 
-    const scanSpeed = s.lastCycleTimeMs > 0 ? Math.floor((s.cycleCount * 1000) / s.lastCycleTimeMs) : 0;
-    const passesPerSec = s.lastCycleTimeMs > 0 ? (1000 / s.lastCycleTimeMs).toFixed(2) : "0.00";
+    return [
+      ` ${animator.sectionLabel("💰", "Opportunities")}`,
+      simLine,
+      ` ★ ${profitableCount} profitable${bestProfit}`,
+      topPath,
+    ];
+  }
 
-    const keyIndicator = s.hiEnvioKeyPrefix
-      ? color(s.hiEnvioKeyPrefix, s.hiStatus === "synced" || s.hiStatus === "syncing" ? GREEN : YELLOW)
+  private renderRoutingPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+    const s = state.system;
+    const isEnum = s.pipelineStage === "ENUMERATING";
+    const spin = animator.spinner(isEnum);
+    const cycleInfo = s.cycleCount > 0
+      ? `${s.cycleCount.toLocaleString()} cycles`
       : dim("—");
+    const enumTime = s.enumerationTimeMs > 0 ? dim(` (${s.enumerationTimeMs}ms)`) : "";
 
-    const rlPain =
-      s.hiRateLimitPain !== undefined && s.hiRateLimitPain > 0
-        ? ` ${color(`RL:${s.hiRateLimitPain}`, RED)}`
-        : "";
+    const hopParts = Object.entries(s.cyclesByHop)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([hop, count]) => `${count} ${hop}-hop`);
+    const hopLine = hopParts.length > 0 ? hopParts.join(" | ") : dim("No cycles yet");
 
-    const lines = [
-      bold("⚡ System & Infra"),
-      `  Gas Price:    ${color(gwei, YELLOW)}`,
-      `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}${rlPain}`,
-      `  ENVIO Key:    ${keyIndicator}`,
-      `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
-      `  Scan Speed:   ${color(String(scanSpeed), WHITE)} routes/s`,
-      `  Throughput:   ${color(passesPerSec, WHITE)} passes/s`,
-      ``,
-      bold("📊 Executions"),
-      `  Attempted:    ${color(String(state.metrics.executed), WHITE)}`,
-      `  Successful:   ${color(String(state.metrics.successful), GREEN)}`,
-      `  Failed:       ${color(String(state.metrics.failed), state.metrics.failed > 0 ? RED : WHITE)}`,
+    return [
+      ` ${animator.sectionLabel("🔀", "Routing")}`,
+      ` ${spin} ${cycleInfo}${enumTime}`,
+      ` ${hopLine}`,
+      ` ${s.cycleCount > 0 ? `${Object.keys(s.cyclesByHop).length} hop types` : dim("Waiting for enumeration")}`,
     ];
-    return this.panelBox(lines, layout.sidebar);
   }
 
-  private renderFooterLog(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const visibleCount = Math.max(0, layout.footerLog.height - 1);
+  private renderGraphPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+    const s = state.system;
+    const isBuild = s.pipelineStage === "LF_REFRESH" || s.pipelineStage === "DISCOVERY";
+    const spin = animator.spinner(isBuild);
+    const protoParts = Object.entries(s.protocolBreakdown)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([name, count]) => `${name}:${count}`);
+    const protoLine = protoParts.length > 0 ? protoParts.join(" ") : dim("—");
+
+    return [
+      ` ${animator.sectionLabel("🔗", "Graph")}`,
+      ` ${spin} ${color(String(s.poolCount), WHITE)} pools | ${s.edgeCount} edges`,
+      ` ${protoLine}`,
+      ` ${s.cachedStateCount > 0 ? `${s.cachedStateCount} state cached` : dim("No cached state")}`,
+    ];
+  }
+
+  private renderExecutionPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+    const m = state.metrics;
+    const s = state.system;
+    const isExec = s.pipelineStage === "EXECUTING";
+    const spin = animator.spinner(isExec);
+    const successRate = m.executed > 0 ? Math.round((m.successful / m.executed) * 100) : 0;
+
+    const lastExec = s.lastExecution;
+    const lastLine = lastExec
+      ? ` ${lastExec.path} ${color(lastExec.txHash.slice(0, 8), CYAN)} ${color(formatWei(lastExec.profit), lastExec.success ? GREEN : RED)}`
+      : dim(" No executions yet");
+
+    const pl = formatWei(m.totalProfitWei);
+    const spark = animator.sparkline(s.profitSparkline, 10);
+
+    return [
+      ` ${animator.sectionLabel("⚡", "Execution")}`,
+      ` ${spin} ${m.executed} att. ${color(`${m.successful} ✅`, GREEN)} ${m.failed > 0 ? color(`${m.failed} ❌`, RED) : "0 ❌"}`,
+      lastLine,
+      ` P/L: ${color(pl, m.totalProfitWei >= 0n ? GREEN : RED)} ${spark} win ${successRate}%`,
+    ];
+  }
+
+  private renderLog(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const visibleCount = Math.max(0, layout.log.height - 1);
     const startIdx = Math.max(0, state.log.length - visibleCount);
     const visible = state.log.slice(startIdx, startIdx + visibleCount);
-
-    const lines: string[] = [bold("📋 Event Log (Filtered)")];
+    const lines: string[] = [bold("📋 Event Log")];
+    const sectionColors: Record<string, number> = {
+      Index: CYAN, Mempool: YELLOW, Routing: WHITE, Graph: CYAN, Opps: GREEN, Exec: GREEN,
+      System: WHITE, Stage: CYAN, Status: YELLOW,
+    };
     for (const entry of visible) {
       const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
-      let component = color(entry.component.padEnd(10).slice(0, 10), CYAN);
-      if (entry.component === "ERROR" || entry.component === "Failed") {
-        component = color(entry.component.padEnd(10).slice(0, 10), RED);
-      }
-      if (entry.component === "TraceWarn") {
-        component = color(entry.component.padEnd(10).slice(0, 10), YELLOW);
-      }
-      if (entry.component === "Trace") {
-        component = color(entry.component.padEnd(10).slice(0, 10), CYAN);
-      }
-      lines.push(`  ${dim(time)}  ${component} ${entry.message}`);
+      const compColor = sectionColors[entry.component] ?? WHITE;
+      const comp = color(entry.component.padEnd(8).slice(0, 8), compColor);
+      lines.push(` ${dim(time)} ${comp} ${entry.message}`);
     }
-    while (lines.length < layout.footerLog.height) {
+    while (lines.length < layout.log.height) {
       lines.push("");
     }
-    return this.panelBox(lines, layout.footerLog);
+    return this.panelBox(lines, layout.log);
   }
 
-  private renderKeymap(layout: TuiLayout, _state: TuiState): RenderedPanel {
-    const hints = dim("Ctrl+Q quit  |  P pause  |  R reset stats");
+  private renderStatusBar(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const s = state.system;
+    const rpcIcon = s.rpcConnected ? color("●", GREEN) : color("○", RED);
+    const hasuraIcon = s.hasuraConnected ? color("●", GREEN) : color("○", RED);
+    const wsIcon = s.wsConnected ? color("●", GREEN) : color("○", RED);
+    const hiBlock = s.hiSyncedBlock > 0 ? formatBlock(s.hiSyncedBlock) : "—";
+
+    const left = ` RPC ${rpcIcon} Hasura ${hasuraIcon} WS ${wsIcon} Index:${hiBlock}`;
+    const right = ` ${dim("1-6:Tab Focus Q:Quit P:Pause R:Reset")}`;
+    const padding = Math.max(0, layout.statusBar.width - visibleLength(left) - visibleLength(right));
     return {
-      y: layout.keymap.y,
-      content: cursor(layout.keymap.y, layout.keymap.x) + padRight(hints, layout.keymap.width),
+      y: layout.statusBar.y,
+      content: cursor(layout.statusBar.y, layout.statusBar.x) + padRight(left + " ".repeat(padding) + right, layout.statusBar.width),
     };
   }
 
-  private panelBox(lines: string[], rect: PanelRect): RenderedPanel {
+  private panelBox(lines: string[], rect: PanelRect, focused: boolean = false): RenderedPanel {
     let content = "";
     for (let i = 0; i < rect.height; i++) {
-      const line = lines[i] ?? "";
+      const rawLine = lines[i] ?? "";
+      const line = focused ? color(rawLine, CYAN) : rawLine;
       content += cursor(rect.y + i, rect.x);
       content += padRight(line, rect.width);
     }
@@ -320,11 +378,6 @@ function formatUsd(wei: bigint, maticPriceUsd: number): string {
   return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatGwei(wei: bigint): string {
-  const gwei = Number(wei) / 1e9;
-  return `${gwei.toFixed(1)} gwei`;
-}
-
 function formatBlock(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
@@ -339,11 +392,4 @@ function formatUptime(ms: number): string {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-function formatDuration(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  if (totalSec < 5) return "";
-  if (totalSec < 60) return `${totalSec}s ago`;
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `${m}m${s}s ago`;
-}
+
