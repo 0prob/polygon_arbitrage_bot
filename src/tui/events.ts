@@ -28,6 +28,8 @@ export type ArbEvent =
       discoveryMode?: "broad" | "hot-bias";
       /** Short prefix of the active ENVIO_API_TOKEN currently in use by the HyperIndex child (for multi-key rotation visibility) */
       envioKeyPrefix?: string;
+      /** Rate limit pain counter — how many times HyperSync has hit critical quota pressure */
+      rateLimitPain?: number;
     }
   | { type: "pipeline_stage"; stage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING" }
   | { type: "simulation_progress"; current: number; total: number; profitable: number };

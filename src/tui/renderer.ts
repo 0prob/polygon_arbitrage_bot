@@ -165,6 +165,9 @@ export class Renderer {
       `  [${s.pipelineStage === "EXECUTING" ? color("●", YELLOW) : " "}] Execution:   ${s.pipelineStage === "EXECUTING" ? "Submitting TXs..." : "Idle"}`,
       ``,
       `  ${dim(`Last Pass: ${s.lastCycleTimeMs}ms | ${state.metrics.opportunitiesFound} profitable overall`)}`,
+      s.hiLag > 0
+        ? `  ${color(`Indexer Lag: ${s.hiLag} blocks`, s.hiLag > 200 ? RED : YELLOW)}${s.hiSyncRate > 0 ? dim(` @ ${s.hiSyncRate.toFixed(1)} blk/s`) : ""}`
+        : "",
     ];
     return this.panelBox(lines, layout.pipeline);
   }
@@ -199,9 +202,12 @@ export class Renderer {
     const s = state.system;
     const gwei = s.gasPriceWei > 0n ? formatGwei(s.gasPriceWei) : "—";
 
+    // The hyperindex_status events now carry rateLimitPain in the ArbEvent,
+    // but we don't store it in SystemState. Pull it from the state if available.
+    // For now we just use hiLag/hiSyncRate which are stored.
     let hiLabel: string;
     let hiColor: number;
-    const hiLag =
+    const hiLagStr =
       s.hiLag > 0 ? ` lag:${s.hiLag}` : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? ` lag:${s.hiRemoteBlock - s.hiSyncedBlock}` : "";
     const hiRate = s.hiSyncRate > 0 ? ` @${s.hiSyncRate.toFixed(1)}blk/s` : "";
 
@@ -209,7 +215,7 @@ export class Renderer {
       hiColor = s.hiStatus === "synced" ? GREEN : YELLOW;
       const mode = s.hiDiscoveryMode ? (s.hiDiscoveryMode === "broad" ? color("broad", GREEN) : color("hot-bias", YELLOW)) : "";
       const modeStr = mode ? ` ${dim("(")}${mode}${dim(")")}` : "";
-      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${modeStr}${dim(hiLag + hiRate)}`;
+      hiLabel = `${color(s.hiStatus, hiColor)} ${color(formatBlock(s.hiSyncedBlock), hiColor)}${modeStr}${dim(hiLagStr + hiRate)}`;
     } else if (s.hiStatus === "running") {
       hiColor = CYAN;
       hiLabel = color("running", hiColor);
@@ -227,11 +233,20 @@ export class Renderer {
     const scanSpeed = s.lastCycleTimeMs > 0 ? Math.floor((s.cycleCount * 1000) / s.lastCycleTimeMs) : 0;
     const passesPerSec = s.lastCycleTimeMs > 0 ? (1000 / s.lastCycleTimeMs).toFixed(2) : "0.00";
 
+    const keyIndicator = s.hiEnvioKeyPrefix
+      ? color(s.hiEnvioKeyPrefix, s.hiStatus === "synced" || s.hiStatus === "syncing" ? GREEN : YELLOW)
+      : dim("—");
+
+    const rlPain =
+      s.hiRateLimitPain !== undefined && s.hiRateLimitPain > 0
+        ? ` ${color(`RL:${s.hiRateLimitPain}`, RED)}`
+        : "";
+
     const lines = [
       bold("⚡ System & Infra"),
       `  Gas Price:    ${color(gwei, YELLOW)}`,
-      `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}`,
-      `  ENVIO Key:    ${color(s.hiEnvioKeyPrefix ?? "—", CYAN)}`,
+      `  Indexer:      ${hiLabel}${hiRemote}${hiAgeStr}${rlPain}`,
+      `  ENVIO Key:    ${keyIndicator}`,
       `  Cycle Time:   ${color(s.lastCycleTimeMs > 0 ? `${s.lastCycleTimeMs}ms` : "—", WHITE)}`,
       `  Scan Speed:   ${color(String(scanSpeed), WHITE)} routes/s`,
       `  Throughput:   ${color(passesPerSec, WHITE)} passes/s`,

@@ -17,7 +17,7 @@ export interface TuiLayout {
 const STATUS_HEIGHT = 1;
 const KEYMAP_HEIGHT = 1;
 const SIDEBAR_WIDTH = 40;
-const FOOTER_LOG_HEIGHT = 6;
+const FOOTER_LOG_HEIGHT = 10;
 
 export function computeLayout(cols: number | undefined, rows: number | undefined): TuiLayout {
   const safeCols = Math.max(80, cols ?? 80);

@@ -36,6 +36,8 @@ export interface SystemState {
   hiLastSeen: number;
   /** Short prefix of currently active ENVIO_API_TOKEN for the HyperIndex process (multi-key rotation) */
   hiEnvioKeyPrefix?: string;
+  /** HyperSync rate limit pain counter — how many times we've hit critical quota */
+  hiRateLimitPain?: number;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
   pipelineStage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING";
@@ -135,6 +137,7 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
   switch (event.type) {
     case "pipeline_stage":
       state.system.pipelineStage = event.stage;
+      appendLog(state, "Stage", event.stage);
       break;
     case "simulation_progress":
       state.system.simProgress = { current: event.current, total: event.total, profitable: event.profitable };
@@ -149,7 +152,7 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.system.cycleCount = event.cycleCount;
       state.system.poolsPerProtocol = event.poolsPerProtocol ?? {};
       state.system.maxHops = event.maxHops;
-      // Removed repetitive graph log
+      appendLog(state, "Graph", `${event.poolCount} pools, ${event.cycleCount} cycles (max ${event.maxHops} hops)`);
       break;
     case "opportunity_found":
       state.metrics.opportunitiesFound++;
@@ -205,17 +208,18 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.metrics.totalCycles = event.cycles;
       state.metrics.totalErrors = event.totalErrors;
       if (event.indexerLag !== undefined) {
-        state.system.hiLag = event.indexerLag; // surface indexer lag in system state for TUI
+        state.system.hiLag = event.indexerLag;
       }
       if (state._startTime > 0) {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
       }
       break;
-    case "hyperindex_status":
+    case "hyperindex_status": {
       // Don't downgrade from synced/syncing to running/starting if we already have block data
       if (event.status === "running" && state.system.hiSyncedBlock > 0) break;
       if (event.status === "starting" && state.system.hiSyncedBlock > 0) break;
+      const prevStatus = state.system.hiStatus;
       state.system.hiStatus = event.status;
       state.system.hiLastSeen = Date.now();
       if (event.syncedBlock > 0) state.system.hiSyncedBlock = event.syncedBlock;
@@ -231,6 +235,24 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       if (event.envioKeyPrefix) {
         state.system.hiEnvioKeyPrefix = event.envioKeyPrefix;
       }
+      if (event.rateLimitPain !== undefined) {
+        state.system.hiRateLimitPain = event.rateLimitPain;
+        if (event.rateLimitPain > 0 && event.rateLimitPain % 3 === 0) {
+          appendLog(state, "Indexer", `Rate limit pain: ${event.rateLimitPain} (rotating keys)`);
+        }
+      }
+
+      // Log important HyperIndex transitions and warnings
+      if (event.status === "error") {
+        appendLog(state, "Indexer", `ERROR — restarting`);
+      } else if (event.status === "synced") {
+        appendLog(state, "Indexer", `Synced at block ${event.syncedBlock}${event.lag !== undefined ? ` (lag: ${event.lag})` : ""}`);
+      } else if (event.status === "syncing" && prevStatus !== "syncing") {
+        appendLog(state, "Indexer", `Syncing — caught up to ${event.syncedBlock}/${event.remoteBlock}`);
+      } else if (event.status === "indexer_ready") {
+        appendLog(state, "Indexer", "Ready — starting event processing");
+      }
       break;
+    }
   }
 }
