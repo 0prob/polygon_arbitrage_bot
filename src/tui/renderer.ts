@@ -78,6 +78,11 @@ const WHITE = 37;
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 const SPINNER_MOD = 3;
 
+const SECTION_COLORS: Record<string, number> = {
+  Index: CYAN, Mempool: YELLOW, Routing: WHITE, Graph: CYAN, Opps: GREEN, Exec: GREEN,
+  System: WHITE, Stage: CYAN, Status: YELLOW,
+};
+
 class Animator {
   constructor(private _frame: number = 0) {}
 
@@ -138,18 +143,18 @@ export class Renderer {
 
   render(layout: TuiLayout, state: TuiState, frameCount: number = 0, focusedSection: number = -1): void {
     const animator = new Animator(frameCount);
+    const renderFns = [
+      this.renderIndexPanel.bind(this),
+      this.renderMempoolPanel.bind(this),
+      this.renderOpportunitiesPanel.bind(this),
+      this.renderRoutingPanel.bind(this),
+      this.renderGraphPanel.bind(this),
+      this.renderExecutionPanel.bind(this),
+    ];
 
     const panels: RenderedPanel[] = [];
     panels.push(this.renderHeader(layout, state));
     for (let i = 0; i < 6; i++) {
-      const renderFns = [
-        this.renderIndexPanel.bind(this),
-        this.renderMempoolPanel.bind(this),
-        this.renderOpportunitiesPanel.bind(this),
-        this.renderRoutingPanel.bind(this),
-        this.renderGraphPanel.bind(this),
-        this.renderExecutionPanel.bind(this),
-      ];
       const lines = renderFns[i](layout.panels[i], state, animator);
       panels.push(this.panelBox(lines, layout.panels[i], i === focusedSection));
     }
@@ -214,7 +219,7 @@ export class Renderer {
     const feedIcon = s.mempoolFeedStatus === "connected" ? color("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? color("⊗", RED) : "○";
     const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
     const now = Date.now();
-    const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 3000);
+    const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 2000);
     const swapLines = activeSwaps.slice(0, 2)
       .map((sw) => ` +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
 
@@ -321,13 +326,9 @@ export class Renderer {
     const startIdx = Math.max(0, state.log.length - visibleCount);
     const visible = state.log.slice(startIdx, startIdx + visibleCount);
     const lines: string[] = [bold("📋 Event Log")];
-    const sectionColors: Record<string, number> = {
-      Index: CYAN, Mempool: YELLOW, Routing: WHITE, Graph: CYAN, Opps: GREEN, Exec: GREEN,
-      System: WHITE, Stage: CYAN, Status: YELLOW,
-    };
     for (const entry of visible) {
       const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
-      const compColor = sectionColors[entry.component] ?? WHITE;
+      const compColor = SECTION_COLORS[entry.component] ?? WHITE;
       const comp = color(entry.component.padEnd(8).slice(0, 8), compColor);
       lines.push(` ${dim(time)} ${comp} ${entry.message}`);
     }
