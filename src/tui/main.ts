@@ -16,6 +16,8 @@ export function createTui(bus?: EventBus): TuiInstance {
   let layout = computeLayout(process.stdout.columns, process.stdout.rows);
   let timer: ReturnType<typeof setInterval> | null = null;
   let stdinHandler: ((data: Buffer) => void) | null = null;
+  let frameCount = 0;
+  let focusedSection = -1; // -1 = none, 0-5 = section index
   let started = false;
 
   function handleResize(): void {
@@ -23,7 +25,8 @@ export function createTui(bus?: EventBus): TuiInstance {
   }
 
   function renderFrame(): void {
-    renderer.render(layout, state);
+    frameCount++;
+    renderer.render(layout, state, frameCount, focusedSection);
   }
 
   function stopImpl(): void {
@@ -57,6 +60,16 @@ export function createTui(bus?: EventBus): TuiInstance {
     }
     if (key === "r" || key === "R") {
       Object.assign(state, createInitialState());
+    }
+    if (key >= "1" && key <= "6") {
+      focusedSection = parseInt(key) - 1;
+    }
+    if (key === "\t") {
+      if (focusedSection < 0 || focusedSection >= 5) focusedSection = 0;
+      else focusedSection++;
+    }
+    if (key === "\x1b" || key === "\u001b") {
+      focusedSection = -1;
     }
   }
 
