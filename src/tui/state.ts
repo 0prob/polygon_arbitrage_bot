@@ -40,10 +40,22 @@ export interface SystemState {
   hiRateLimitPain?: number;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
-  pipelineStage: "IDLE" | "DISCOVERY" | "ENUMERATING" | "SIMULATING" | "EXECUTING";
+  pipelineStage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING";
   simProgress: { current: number; total: number; profitable: number };
   activeOpportunities: OpportunityEntry[];
   maticPriceUsd: number;
+  mempoolFeedStatus: "connected" | "disconnected" | "unknown";
+  pendingSwaps: { path: string; value: string; txHash: string; timestamp: number }[];
+  cyclesByHop: Record<number, number>;
+  enumerationTimeMs: number;
+  protocolBreakdown: Record<string, number>;
+  edgeCount: number;
+  cachedStateCount: number;
+  lastExecution: { path: string; txHash: string; profit: bigint; success: boolean } | null;
+  profitSparkline: number[];
+  rpcConnected: boolean;
+  hasuraConnected: boolean;
+  wsConnected: boolean;
 }
 
 export interface LogEntry {
@@ -94,6 +106,18 @@ export function createInitialState(): TuiState {
       simProgress: { current: 0, total: 0, profitable: 0 },
       activeOpportunities: [],
       maticPriceUsd: 0.7,
+      mempoolFeedStatus: "unknown",
+      pendingSwaps: [],
+      cyclesByHop: {},
+      enumerationTimeMs: 0,
+      protocolBreakdown: {},
+      edgeCount: 0,
+      cachedStateCount: 0,
+      lastExecution: null,
+      profitSparkline: [],
+      rpcConnected: false,
+      hasuraConnected: false,
+      wsConnected: false,
     },
     log: [],
     isRunning: false,
@@ -165,6 +189,11 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       });
       appendLog(state, "Pipeline", `Profitable: ${event.profitWei} wei [${event.routeKey.slice(0, 10)}]`);
       break;
+    case "execution_attempt": {
+      const profitStr = event.expectedProfit > 0n ? `+${event.expectedProfit.toString()} wei` : `${event.expectedProfit.toString()} wei`;
+      appendLog(state, "Exec", `Attempt ${event.protocolPath} (${event.hopCount}-hop)  ${event.txHash?.slice(0,10) ?? "..."}  ${profitStr}`);
+      break;
+    }
     case "execution_submitted":
       updateOpportunity(state, event.routeKey, { status: "Executing" });
       appendLog(state, "Exec", `Submitted [${event.routeKey.slice(0, 10)}]`);
@@ -182,6 +211,22 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         appendLog(state, "Exec", `Failed: ${event.error ?? "unknown"}`);
       }
 
+      if (event.protocolPath) {
+        state.system.lastExecution = {
+          path: event.protocolPath,
+          txHash: event.txHash ?? "",
+          profit: event.profitWei ?? 0n,
+          success: event.success,
+        };
+      }
+      // Push profit into sparkline ring buffer (last 10 values)
+      if (event.profitWei !== undefined) {
+        state.system.profitSparkline.push(Number(event.profitWei));
+        if (state.system.profitSparkline.length > 10) {
+          state.system.profitSparkline.splice(0, state.system.profitSparkline.length - 10);
+        }
+      }
+
       // Surface useful insights from the trace parser in the TUI log
       if (event.traceMessages && event.traceMessages.length > 0) {
         const msgStr = event.traceMessages.join(" | ");
@@ -189,12 +234,35 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         appendLog(state, comp, `${event.routeKey.slice(0, 8)}: ${msgStr}`);
       }
       break;
+    case "mempool_pending_swap": {
+      state.system.pendingSwaps.unshift({
+        path: event.poolPath,
+        value: event.value.toString(),
+        txHash: event.txHash,
+        timestamp: Date.now(),
+      });
+      if (state.system.pendingSwaps.length > 3) state.system.pendingSwaps.length = 3;
+      appendLog(state, "Mempool", `Pending swap: ${event.poolPath}  ${event.value.toString()} wei`);
+      break;
+    }
     case "gas_snapshot":
       state.system.gasPriceWei = event.gasPrice;
       break;
     case "pool_discovery":
       state.system.poolCount = event.count;
       appendLog(state, "Discovery", `${event.count} pools discovered`);
+      break;
+    case "cycles_enumerated":
+      state.system.cycleCount = event.total;
+      state.system.cyclesByHop = event.cyclesByHop;
+      state.system.enumerationTimeMs = event.elapsedMs;
+      appendLog(state, "Routing", `${event.total} cycles enumerated (${event.elapsedMs}ms)`);
+      break;
+    case "graph_stats":
+      state.system.poolCount = event.poolCount;
+      state.system.protocolBreakdown = event.protocolBreakdown;
+      state.system.edgeCount = event.edgeCount;
+      state.system.cachedStateCount = event.cachedCount;
       break;
     case "error":
       appendLog(state, event.component, event.message);
@@ -203,6 +271,12 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       state.isRunning = false;
       appendLog(state, "System", "Shutting down");
       break;
+    case "connection_status":
+      if (event.subsystem === "rpc") state.system.rpcConnected = event.status === "connected";
+      if (event.subsystem === "hasura") state.system.hasuraConnected = event.status === "connected";
+      if (event.subsystem === "ws") state.system.wsConnected = event.status === "connected";
+      if (event.status === "error") appendLog(state, "Status", `${event.subsystem.toUpperCase()} disconnected`);
+      break;
     case "heartbeat":
       state.system.lastCycleTimeMs = event.elapsedMs;
       state.metrics.totalCycles = event.cycles;
@@ -210,6 +284,12 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       if (event.indexerLag !== undefined) {
         state.system.hiLag = event.indexerLag;
       }
+      if (event.gasPrice !== undefined && event.gasPrice > 0n) {
+        state.system.gasPriceWei = event.gasPrice;
+      }
+      if (event.rpcConnected !== undefined) state.system.rpcConnected = event.rpcConnected;
+      if (event.hasuraConnected !== undefined) state.system.hasuraConnected = event.hasuraConnected;
+      if (event.wsConnected !== undefined) state.system.wsConnected = event.wsConnected;
       if (state._startTime > 0) {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
@@ -251,6 +331,8 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         appendLog(state, "Indexer", `Syncing — caught up to ${event.syncedBlock}/${event.remoteBlock}`);
       } else if (event.status === "indexer_ready") {
         appendLog(state, "Indexer", "Ready — starting event processing");
+      } else if (event.status === "external" && prevStatus !== "external") {
+        appendLog(state, "Indexer", "External mode — no managed HyperIndex process");
       }
       break;
     }
