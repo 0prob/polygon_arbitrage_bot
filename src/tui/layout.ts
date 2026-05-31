@@ -14,24 +14,24 @@ export interface TuiLayout {
 
 const STATUS_HEIGHT = 1;
 const GUTTER = 1;
-const MIN_PANEL_ROWS = 6; // 2 rows of 3-row panels
+const MIN_PANEL_ROWS = 8; // 2 rows of 4-row panels
 
 export function computeLayout(cols: number | undefined, rows: number | undefined): TuiLayout {
   const safeCols = Math.max(100, cols ?? 100);
-  const safeRows = Math.max(25, rows ?? 25);
+  const safeRows = Math.max(26, rows ?? 26);
 
   if (cols && cols < 100) {
     console.warn(`TUI: terminal too narrow (${cols} cols, need ≥100)`);
   }
-  if (rows && rows < 25) {
-    console.warn(`TUI: terminal too short (${rows} rows, need ≥25)`);
+  if (rows && rows < 26) {
+    console.warn(`TUI: terminal too short (${rows} rows, need ≥26)`);
   }
 
   const reservedForNonLog = STATUS_HEIGHT + MIN_PANEL_ROWS + GUTTER + STATUS_HEIGHT;
   const logHeight = Math.min(15, safeRows - reservedForNonLog);
   const dataAreaStart = STATUS_HEIGHT;
   const dataAreaHeight = safeRows - STATUS_HEIGHT - logHeight - GUTTER - STATUS_HEIGHT;
-  const panelRowHeight = Math.min(3, Math.floor(dataAreaHeight / 2));
+  const panelRowHeight = Math.min(4, Math.floor(dataAreaHeight / 2));
   const colGutter = 2;
   const colWidth = Math.floor((safeCols - colGutter * 2) / 3);
 

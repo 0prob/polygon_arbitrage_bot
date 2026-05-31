@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/state.ts": {
-    "mtime": 1780247148.758777,
-    "ast_hash": "80e691710b91ad6293c1cbb15f341f56",
+    "mtime": 1780249802.405946,
+    "ast_hash": "c9da9a756367f788e9e4d894c547dc2c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/main.ts": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/tui/layout.ts": {
-    "mtime": 1780247301.705056,
-    "ast_hash": "ef178811a827db5b4c9cc111044bd830",
+    "mtime": 1780249796.9340198,
+    "ast_hash": "cbeeed35035de83aa5713d18d48655d9",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/tick_math.test.ts": {
