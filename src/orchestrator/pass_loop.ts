@@ -250,11 +250,34 @@ async function runEnumerationPhase(
 
   const graph = deps.buildGraph(filteredPools, stateCache);
 
+  bus?.emit({
+    type: "graph_stats",
+    poolCount: pools.length,
+    protocolBreakdown: pools.reduce((acc, p) => {
+      const proto = p.protocol.split("_")[0] ?? p.protocol;
+      acc[proto] = (acc[proto] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+    edgeCount: graph.adjacency.size,
+    cachedCount: stateCache.size,
+  });
+
   const enumStartTime = Date.now();
   const cycles = deps.enumerateCycles(graph, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
     ctx.executionService.tracker.getWinRate(key),
   );
   const enumElapsed = Date.now() - enumStartTime;
+
+  const cyclesByHop: Record<number, number> = {};
+  for (const cycle of cycles) {
+    cyclesByHop[cycle.hopCount] = (cyclesByHop[cycle.hopCount] ?? 0) + 1;
+  }
+  bus?.emit({
+    type: "cycles_enumerated",
+    total: cycles.length,
+    cyclesByHop,
+    elapsedMs: enumElapsed,
+  });
 
   ctx.logger.info(
     { pools: pools.length, filtered: filteredPools.length, cycles: cycles.length, durationMs: enumElapsed },
@@ -335,6 +358,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
       ctx.logger.info({ txHash: signal.data.txHash }, "New pool deployment detected in mempool! Scheduling rapid discovery.");
+      bus?.emit({
+        type: "mempool_pending_swap",
+        poolPath: signal.data.factoryAddress,
+        value: 0n,
+        txHash: signal.data.txHash,
+      });
       lastDiscoveryTime = 0;
     }
     if (signal.type === "large_swap") {
@@ -342,6 +371,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         { pool: signal.data.poolAddress, size: signal.data.estimatedSwapSize.toString(), txHash: signal.data.txHash },
         "Large swap detected in mempool — triggering fast re-simulation",
       );
+      bus?.emit({
+        type: "mempool_pending_swap",
+        poolPath: signal.data.poolAddress,
+        value: signal.data.estimatedSwapSize,
+        txHash: signal.data.txHash,
+      });
       lastRefreshTime = 0;
     }
   });
@@ -727,12 +762,25 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 bus?.emit({ type: "execution_submitted", routeKey });
               }
 
+              for (const c of candidates) {
+                bus?.emit({
+                  type: "execution_attempt",
+                  protocolPath: c.profitable.cycle.edges.map((e: any) => e.protocol).join("→"),
+                  hopCount: c.profitable.cycle.hopCount,
+                  expectedProfit: c.profitable.assessment.netProfitAfterGas,
+                  txHash: undefined,
+                });
+              }
+
               const results =
                 group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
 
               for (let i = 0; i < results.length; i++) {
                 const execResult = results[i];
                 const routeKey = groupRouteKeys[i];
+                const execDetails = candidates.find((c) => c.routeKey === routeKey);
+                const protocolPath = execDetails?.profitable.cycle.edges.map((e: any) => e.protocol).join("→");
+                const hopCount = execDetails?.profitable.cycle.hopCount;
 
                 if (execResult.success) {
                   ctx.metrics.executionsSuccessful++;
@@ -751,6 +799,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     txHash: execResult.txHash,
                     profitWei,
                     traceMessages: execResult.traceMessages,
+                    protocolPath,
+                    hopCount,
                   });
                 } else if (execResult.error === "reverted") {
                   ctx.metrics.executionReverts++;
@@ -761,6 +811,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     success: false,
                     error: "reverted",
                     traceMessages: execResult.traceMessages,
+                    protocolPath,
+                    hopCount,
                   });
                 } else {
                   ctx.metrics.executionsFailed++;
@@ -774,6 +826,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     success: false,
                     error: execResult.error,
                     traceMessages: execResult.traceMessages,
+                    protocolPath,
+                    hopCount,
                   });
                 }
               }
@@ -808,7 +862,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         totalErrors: ctx.metrics.totalErrors,
         indexerLag: currentIndexerLag,
         gasPrice: gasSnapshot?.gasPrice,
+        rpcConnected: !!ctx.publicClient,
+        hasuraConnected: !!ctx.config.hasuraUrl,
+        wsConnected: !!ctx.wsSubscriber,
       });
+      bus?.emit({ type: "connection_status", subsystem: "rpc", status: ctx.publicClient ? "connected" : "disconnected" });
+      bus?.emit({ type: "connection_status", subsystem: "hasura", status: ctx.config.hasuraUrl ? "connected" : "disconnected" });
+      bus?.emit({ type: "connection_status", subsystem: "ws", status: ctx.wsSubscriber ? "connected" : "disconnected" });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
       // Hot-bias mode comes from the same env var the hyperindex sees.
