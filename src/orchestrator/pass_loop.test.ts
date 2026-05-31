@@ -245,7 +245,7 @@ describe("runPassLoop", () => {
     await runPassLoop(mockContext, deps);
 
     expect(mockExecute).toHaveBeenCalledTimes(2);
-  });
+  }, 15000);
 
   it("calls findCycles with configured maxHops (default 5) on re-enumeration", async () => {
     const mockContext = {

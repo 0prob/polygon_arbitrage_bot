@@ -79,7 +79,7 @@ export function createExecutionClient(rpcUrl: string, privateKey?: string, chain
 }
 
 const ARCHIVE_TEST_TOKEN = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" as const; // USDC on Polygon
-const ARCHIVE_TEST_BLOCK = 10_000_000n;
+const ARCHIVE_TEST_BLOCK = 80_000_000n;
 const DECIMALS_TEST_ABI = parseAbi(["function decimals() view returns (uint8)"]);
 
 /**

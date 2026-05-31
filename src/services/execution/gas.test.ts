@@ -128,10 +128,7 @@ describe("GasOracle.getEffectiveMaxBidMultiplier", () => {
 
   it("boosts multiplier when congestion spike is detected (base fee ratio > 1.5)", () => {
     const fetchGas = vi.fn().mockResolvedValue({ baseFee: 20n * 10n ** 9n, priorityFee: 10n * 10n ** 9n });
-    const oracle = new GasOracle(
-      { ...DEFAULT_GAS_CONFIG, maxBidMultiplier: 3, spikePriorityFeeMultiplier: 1.6, historySize: 5 },
-      fetchGas,
-    );
+    const oracle = new GasOracle({ ...DEFAULT_GAS_CONFIG, maxBidMultiplier: 3, spikePriorityFeeMultiplier: 1.6, historySize: 5 }, fetchGas);
 
     // Directly seed internal state to simulate a spike without timer/async complexity
     // (current baseFee is 3x the recent average → isSpiking becomes true)
@@ -148,20 +145,24 @@ describe("GasOracle.getEffectiveMaxBidMultiplier", () => {
 });
 
 describe("createGasFetcher (dual-source)", () => {
-  function makeMockClient(overrides: Partial<{
-    getBlock: ReturnType<typeof vi.fn>;
-    estimateMaxPriorityFeePerGas: ReturnType<typeof vi.fn>;
-    getFeeHistory: ReturnType<typeof vi.fn>;
-  }> = {}) {
+  function makeMockClient(
+    overrides: Partial<{
+      getBlock: ReturnType<typeof vi.fn>;
+      estimateMaxPriorityFeePerGas: ReturnType<typeof vi.fn>;
+      getFeeHistory: ReturnType<typeof vi.fn>;
+    }> = {},
+  ) {
     return {
       getBlock: overrides.getBlock ?? vi.fn().mockResolvedValue({ baseFeePerGas: 25n * 10n ** 9n }),
       estimateMaxPriorityFeePerGas: overrides.estimateMaxPriorityFeePerGas ?? vi.fn().mockResolvedValue(12n * 10n ** 9n),
-      getFeeHistory: overrides.getFeeHistory ?? vi.fn().mockResolvedValue({
-        reward: [[15n * 10n ** 9n]],
-        baseFeePerGas: [],
-        gasUsedRatio: [],
-        oldestBlock: 0n,
-      }),
+      getFeeHistory:
+        overrides.getFeeHistory ??
+        vi.fn().mockResolvedValue({
+          reward: [[15n * 10n ** 9n]],
+          baseFeePerGas: [],
+          gasUsedRatio: [],
+          oldestBlock: 0n,
+        }),
     } as any;
   }
 

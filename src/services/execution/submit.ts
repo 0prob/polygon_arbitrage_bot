@@ -39,7 +39,7 @@ export class SubmissionStrategy {
       const multiplier =
         typeof (this.gasOracle as any).getEffectiveMaxBidMultiplier === "function"
           ? (this.gasOracle as any).getEffectiveMaxBidMultiplier()
-          : this.gasOracle.config?.maxBidMultiplier ?? 3;
+          : (this.gasOracle.config?.maxBidMultiplier ?? 3);
       const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, multiplier);
       adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
       priorityFee = scaled;

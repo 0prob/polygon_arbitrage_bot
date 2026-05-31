@@ -106,8 +106,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           });
         }
         if (event.type === "newHead") {
-          // Track new head for freshness — the existing LF_INTERVAL handles re-evaluation
-          ctx.metrics.currentCyclesPerMinute = ctx.metrics.currentCyclesPerMinute || 1;
+          headTriggered = true;
+          lastHeadTime = Date.now();
         }
       });
     } catch (err) {
@@ -143,6 +143,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   const recentRouteTimestamps = new Map<string, number>();
   const ROUTE_COOLDOWN_MS = 5000;
+
+  // Block-aligned HF timing: when newHead arrives from Chainstack WS,
+  // the sleep between cycles is shortened to ~50ms for immediate re-evaluation.
+  // Falls back to normal 200ms polling after HEAD_TIMEOUT_MS without a head.
+  let headTriggered = false;
+  let lastHeadTime = 0;
+  const HEAD_TIMEOUT_MS = 3000;
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
@@ -302,7 +309,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // stale (from an older indexed block) and is now only used for pools
         // without existing state. RPC gives us current on-chain prices.
         // (currentCycles is ignored on forceRefresh; we use the real `pools` list directly)
-        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true, ctx.hyperSync);
+        await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true);
         // (return value ignored on full refresh; we still want full rate recompute)
 
         // Signal that rates must be fully recomputed from scratch after the bulk state refresh.
@@ -383,7 +390,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Skip if we just did a full refresh in the same pass
       preFetchCounter++;
       if (lastFullRefreshTime !== now && (shouldReEnumerate || preFetchCounter % 5 === 0)) {
-        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false, ctx.hyperSync);
+        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
 
         // Build focus tokens from the pools we actually refreshed this round.
         // O(1) lookup via address map instead of O(N) pools.find() per updated address.
@@ -415,8 +422,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         currentIndexerLag = Math.max(0, hiStatusForLag.remote - hiStatusForLag.synced);
         if (currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS) {
           ctx.logger.warn(
-            { lag: currentIndexerLag, threshold: INDEXER_LAG_THRESHOLD_BLOCKS, synced: hiStatusForLag.synced, remote: hiStatusForLag.remote },
-            "High indexer lag detected — entering degraded mode (reduced concurrency, higher profit floor)"
+            {
+              lag: currentIndexerLag,
+              threshold: INDEXER_LAG_THRESHOLD_BLOCKS,
+              synced: hiStatusForLag.synced,
+              remote: hiStatusForLag.remote,
+            },
+            "High indexer lag detected — entering degraded mode (reduced concurrency, higher profit floor)",
           );
         }
       }
@@ -501,7 +513,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       };
 
       if (isDegraded) {
-        ctx.logger.debug({ effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() }, "Running in indexer-lag degraded mode");
+        ctx.logger.debug(
+          { effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() },
+          "Running in indexer-lag degraded mode",
+        );
       }
 
       const simStartTime = Date.now();
@@ -779,7 +794,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         }
       }
 
-      const waitMs = Math.max(50, HF_INTERVAL - elapsed);
+      // Block-aligned HF timing: skip to next cycle immediately on newHead,
+      // fall back to normal 200ms polling after HEAD_TIMEOUT_MS without a head.
+      const sinceLastHead = Date.now() - lastHeadTime;
+      const isHeadDriven = headTriggered && sinceLastHead < HEAD_TIMEOUT_MS;
+      const waitMs = isHeadDriven ? 50 : Math.max(50, HF_INTERVAL - elapsed);
+      headTriggered = false;
       bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
       await sleep(waitMs);
     } catch (err) {

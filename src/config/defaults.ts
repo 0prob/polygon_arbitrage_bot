@@ -2,10 +2,10 @@
 export const DEFAULTS = {
   rpc: {
     polygonRpcUrls: [
-      "https://polygon-rpc.com",
-      "https://polygon-mainnet.public.blastapi.io",
-      "https://1rpc.io/matic",
-      "https://rpc.ankr.com/polygon",
+      "https://polygon.drpc.org",
+      "https://polygon.api.onfinality.io/public",
+      "https://polygon-bor-rpc.publicnode.com",
+      "https://polygon.gateway.tenderly.co",
     ],
     executionRpcUrl: "" as string, // required, no default
     requestTimeoutMs: 8_000,
@@ -17,6 +17,7 @@ export const DEFAULTS = {
     hyperRpcApiToken: "" as string,
     hyperSyncUrl: "https://polygon.hypersync.xyz",
     hypersyncMaxRpmPerToken: undefined as number | undefined,
+    chainstackRps: 250,
   },
   gas: {
     pollIntervalMs: 2_000,

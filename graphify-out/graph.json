@@ -4,1111 +4,49 @@
   "graph": {},
   "nodes": [
     {
-      "label": "lsp.json",
+      "label": "rpc_client.ts",
       "file_type": "code",
-      "source_file": ".grok/lsp.json",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
       "source_location": "L1",
-      "id": "grok_lsp_json",
-      "community": 47,
-      "norm_label": "lsp.json"
+      "id": "hyperindex_src_effects_rpc_client_ts",
+      "community": 27,
+      "norm_label": "rpc_client.ts"
     },
     {
-      "label": "typescript",
+      "label": "getRpcUrls()",
       "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L2",
-      "id": "grok_lsp_typescript",
-      "community": 47,
-      "norm_label": "typescript"
-    },
-    {
-      "label": "command",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L3",
-      "id": "grok_lsp_typescript_command",
-      "community": 47,
-      "norm_label": "command"
-    },
-    {
-      "label": "args",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L4",
-      "id": "grok_lsp_typescript_args",
-      "community": 47,
-      "norm_label": "args"
-    },
-    {
-      "label": "extensionToLanguage",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L5",
-      "id": "grok_lsp_typescript_extensiontolanguage",
-      "community": 47,
-      "norm_label": "extensiontolanguage"
-    },
-    {
-      "label": ".ts",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L6",
-      "id": "grok_lsp_extensiontolanguage_ts",
-      "community": 47,
-      "norm_label": ".ts"
-    },
-    {
-      "label": ".tsx",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L7",
-      "id": "grok_lsp_extensiontolanguage_tsx",
-      "community": 47,
-      "norm_label": ".tsx"
-    },
-    {
-      "label": ".js",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L8",
-      "id": "grok_lsp_extensiontolanguage_js",
-      "community": 47,
-      "norm_label": ".js"
-    },
-    {
-      "label": ".jsx",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L9",
-      "id": "grok_lsp_extensiontolanguage_jsx",
-      "community": 47,
-      "norm_label": ".jsx"
-    },
-    {
-      "label": "startupTimeout",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L11",
-      "id": "grok_lsp_typescript_startuptimeout",
-      "community": 47,
-      "norm_label": "startuptimeout"
-    },
-    {
-      "label": "env",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L12",
-      "id": "grok_lsp_typescript_env",
-      "community": 47,
-      "norm_label": "env"
-    },
-    {
-      "label": "LSPMUX_SERVER",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L13",
-      "id": "grok_lsp_env_lspmux_server",
-      "community": 47,
-      "norm_label": "lspmux_server"
-    },
-    {
-      "label": "yaml",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L16",
-      "id": "grok_lsp_yaml",
-      "community": 47,
-      "norm_label": "yaml"
-    },
-    {
-      "label": "command",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L17",
-      "id": "grok_lsp_yaml_command",
-      "community": 47,
-      "norm_label": "command"
-    },
-    {
-      "label": "args",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L18",
-      "id": "grok_lsp_yaml_args",
-      "community": 47,
-      "norm_label": "args"
-    },
-    {
-      "label": "extensionToLanguage",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L19",
-      "id": "grok_lsp_yaml_extensiontolanguage",
-      "community": 47,
-      "norm_label": "extensiontolanguage"
-    },
-    {
-      "label": ".yaml",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L20",
-      "id": "grok_lsp_extensiontolanguage_yaml",
-      "community": 47,
-      "norm_label": ".yaml"
-    },
-    {
-      "label": ".yml",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
       "source_location": "L21",
-      "id": "grok_lsp_extensiontolanguage_yml",
-      "community": 47,
-      "norm_label": ".yml"
+      "id": "effects_rpc_client_getrpcurls",
+      "community": 27,
+      "norm_label": "getrpcurls()"
     },
     {
-      "label": "startupTimeout",
+      "label": "rpcUrls",
       "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L23",
-      "id": "grok_lsp_yaml_startuptimeout",
-      "community": 47,
-      "norm_label": "startuptimeout"
-    },
-    {
-      "label": "env",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L24",
-      "id": "grok_lsp_yaml_env",
-      "community": 47,
-      "norm_label": "env"
-    },
-    {
-      "label": "bash",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L28",
-      "id": "grok_lsp_bash",
-      "community": 47,
-      "norm_label": "bash"
-    },
-    {
-      "label": "command",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L29",
-      "id": "grok_lsp_bash_command",
-      "community": 47,
-      "norm_label": "command"
-    },
-    {
-      "label": "args",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L30",
-      "id": "grok_lsp_bash_args",
-      "community": 47,
-      "norm_label": "args"
-    },
-    {
-      "label": "extensionToLanguage",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L31",
-      "id": "grok_lsp_bash_extensiontolanguage",
-      "community": 47,
-      "norm_label": "extensiontolanguage"
-    },
-    {
-      "label": ".sh",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L32",
-      "id": "grok_lsp_extensiontolanguage_sh",
-      "community": 47,
-      "norm_label": ".sh"
-    },
-    {
-      "label": ".bash",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L33",
-      "id": "grok_lsp_extensiontolanguage_bash",
-      "community": 47,
-      "norm_label": ".bash"
-    },
-    {
-      "label": "startupTimeout",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L35",
-      "id": "grok_lsp_bash_startuptimeout",
-      "community": 47,
-      "norm_label": "startuptimeout"
-    },
-    {
-      "label": "env",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L36",
-      "id": "grok_lsp_bash_env",
-      "community": 47,
-      "norm_label": "env"
-    },
-    {
-      "label": "rescript",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L40",
-      "id": "grok_lsp_rescript",
-      "community": 47,
-      "norm_label": "rescript"
-    },
-    {
-      "label": "command",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L41",
-      "id": "grok_lsp_rescript_command",
-      "community": 47,
-      "norm_label": "command"
-    },
-    {
-      "label": "args",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L42",
-      "id": "grok_lsp_rescript_args",
-      "community": 47,
-      "norm_label": "args"
-    },
-    {
-      "label": "extensionToLanguage",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L43",
-      "id": "grok_lsp_rescript_extensiontolanguage",
-      "community": 47,
-      "norm_label": "extensiontolanguage"
-    },
-    {
-      "label": ".res",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L44",
-      "id": "grok_lsp_extensiontolanguage_res",
-      "community": 47,
-      "norm_label": ".res"
-    },
-    {
-      "label": ".resi",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L45",
-      "id": "grok_lsp_extensiontolanguage_resi",
-      "community": 47,
-      "norm_label": ".resi"
-    },
-    {
-      "label": "startupTimeout",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L47",
-      "id": "grok_lsp_rescript_startuptimeout",
-      "community": 47,
-      "norm_label": "startuptimeout"
-    },
-    {
-      "label": "env",
-      "file_type": "code",
-      "source_file": ".grok/lsp.json",
-      "source_location": "L48",
-      "id": "grok_lsp_rescript_env",
-      "community": 47,
-      "norm_label": "env"
-    },
-    {
-      "label": "package.json",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L1",
-      "id": "package_json",
-      "community": 6,
-      "norm_label": "package.json"
-    },
-    {
-      "label": "name",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L2",
-      "id": "t_package_name",
-      "community": 6,
-      "norm_label": "name"
-    },
-    {
-      "label": "version",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L3",
-      "id": "t_package_version",
-      "community": 6,
-      "norm_label": "version"
-    },
-    {
-      "label": "private",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L4",
-      "id": "t_package_private",
-      "community": 6,
-      "norm_label": "private"
-    },
-    {
-      "label": "type",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L5",
-      "id": "t_package_type",
-      "community": 6,
-      "norm_label": "type"
-    },
-    {
-      "label": "main",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L6",
-      "id": "t_package_main",
-      "community": 6,
-      "norm_label": "main"
-    },
-    {
-      "label": "packageManager",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L7",
-      "id": "t_package_packagemanager",
-      "community": 6,
-      "norm_label": "packagemanager"
-    },
-    {
-      "label": "workspaces",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L8",
-      "id": "t_package_workspaces",
-      "community": 6,
-      "norm_label": "workspaces"
-    },
-    {
-      "label": "engines",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L12",
-      "id": "t_package_engines",
-      "community": 6,
-      "norm_label": "engines"
-    },
-    {
-      "label": "bun",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L13",
-      "id": "t_package_engines_bun",
-      "community": 6,
-      "norm_label": "bun"
-    },
-    {
-      "label": "scripts",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L15",
-      "id": "t_package_scripts",
-      "community": 6,
-      "norm_label": "scripts"
-    },
-    {
-      "label": "start",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L16",
-      "id": "t_package_scripts_start",
-      "community": 6,
-      "norm_label": "start"
-    },
-    {
-      "label": "tui",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L17",
-      "id": "t_package_scripts_tui",
-      "community": 6,
-      "norm_label": "tui"
-    },
-    {
-      "label": "typecheck",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L18",
-      "id": "t_package_scripts_typecheck",
-      "community": 6,
-      "norm_label": "typecheck"
-    },
-    {
-      "label": "test",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L19",
-      "id": "t_package_scripts_test",
-      "community": 6,
-      "norm_label": "test"
-    },
-    {
-      "label": "test:coverage",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L20",
-      "id": "t_package_scripts_test_coverage",
-      "community": 6,
-      "norm_label": "test:coverage"
-    },
-    {
-      "label": "lint",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L21",
-      "id": "t_package_scripts_lint",
-      "community": 6,
-      "norm_label": "lint"
-    },
-    {
-      "label": "fmt",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L22",
-      "id": "t_package_scripts_fmt",
-      "community": 6,
-      "norm_label": "fmt"
-    },
-    {
-      "label": "dev",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L23",
-      "id": "t_package_scripts_dev",
-      "community": 6,
-      "norm_label": "dev"
-    },
-    {
-      "label": "cgen",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L24",
-      "id": "t_package_scripts_cgen",
-      "community": 6,
-      "norm_label": "cgen"
-    },
-    {
-      "label": "gentok",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L25",
-      "id": "t_package_scripts_gentok",
-      "community": 6,
-      "norm_label": "gentok"
-    },
-    {
-      "label": "clear-hasura",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L26",
-      "id": "t_package_scripts_clear_hasura",
-      "community": 6,
-      "norm_label": "clear-hasura"
-    },
-    {
-      "label": "dev:reset",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L27",
-      "id": "t_package_scripts_dev_reset",
-      "community": 6,
-      "norm_label": "dev:reset"
-    },
-    {
-      "label": "dependencies",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L29",
-      "id": "t_package_dependencies",
-      "community": 6,
-      "norm_label": "dependencies"
-    },
-    {
-      "label": "@envio-dev/hypersync-client",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L30",
-      "id": "t_package_dependencies_envio_dev_hypersync_client",
-      "community": 6,
-      "norm_label": "@envio-dev/hypersync-client"
-    },
-    {
-      "label": "envio",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L31",
-      "id": "t_package_dependencies_envio",
-      "community": 6,
-      "norm_label": "envio"
-    },
-    {
-      "label": "pino",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L32",
-      "id": "t_package_dependencies_pino",
-      "community": 6,
-      "norm_label": "pino"
-    },
-    {
-      "label": "viem",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L33",
-      "id": "t_package_dependencies_viem",
-      "community": 6,
-      "norm_label": "viem"
-    },
-    {
-      "label": "zod",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L34",
-      "id": "t_package_dependencies_zod",
-      "community": 6,
-      "norm_label": "zod"
-    },
-    {
-      "label": "devDependencies",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L36",
-      "id": "t_package_devdependencies",
-      "community": 6,
-      "norm_label": "devdependencies"
-    },
-    {
-      "label": "@nomicfoundation/solidity-language-server",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L37",
-      "id": "t_package_devdependencies_nomicfoundation_solidity_language_server",
-      "community": 6,
-      "norm_label": "@nomicfoundation/solidity-language-server"
-    },
-    {
-      "label": "@taplo/cli",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L38",
-      "id": "t_package_devdependencies_taplo_cli",
-      "community": 6,
-      "norm_label": "@taplo/cli"
-    },
-    {
-      "label": "@types/node",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L39",
-      "id": "t_package_devdependencies_types_node",
-      "community": 6,
-      "norm_label": "@types/node"
-    },
-    {
-      "label": "@vitest/coverage-istanbul",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L40",
-      "id": "t_package_devdependencies_vitest_coverage_istanbul",
-      "community": 6,
-      "norm_label": "@vitest/coverage-istanbul"
-    },
-    {
-      "label": "@vitest/coverage-v8",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L41",
-      "id": "t_package_devdependencies_vitest_coverage_v8",
-      "community": 6,
-      "norm_label": "@vitest/coverage-v8"
-    },
-    {
-      "label": "bash-language-server",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L42",
-      "id": "t_package_devdependencies_bash_language_server",
-      "community": 6,
-      "norm_label": "bash-language-server"
-    },
-    {
-      "label": "bun-types",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L43",
-      "id": "t_package_devdependencies_bun_types",
-      "community": 6,
-      "norm_label": "bun-types"
-    },
-    {
-      "label": "eslint",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L44",
-      "id": "t_package_devdependencies_eslint",
-      "community": 6,
-      "norm_label": "eslint"
-    },
-    {
-      "label": "eslint-config-prettier",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L45",
-      "id": "t_package_devdependencies_eslint_config_prettier",
-      "community": 6,
-      "norm_label": "eslint-config-prettier"
-    },
-    {
-      "label": "fast-check",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L46",
-      "id": "t_package_devdependencies_fast_check",
-      "community": 6,
-      "norm_label": "fast-check"
-    },
-    {
-      "label": "graphql-language-service-cli",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L47",
-      "id": "t_package_devdependencies_graphql_language_service_cli",
-      "community": 6,
-      "norm_label": "graphql-language-service-cli"
-    },
-    {
-      "label": "pino-pretty",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L48",
-      "id": "t_package_devdependencies_pino_pretty",
-      "community": 6,
-      "norm_label": "pino-pretty"
-    },
-    {
-      "label": "prettier",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L49",
-      "id": "t_package_devdependencies_prettier",
-      "community": 6,
-      "norm_label": "prettier"
-    },
-    {
-      "label": "typescript",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L50",
-      "id": "t_package_devdependencies_typescript",
-      "community": 6,
-      "norm_label": "typescript"
-    },
-    {
-      "label": "typescript-eslint",
-      "file_type": "code",
-      "source_file": "package.json",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
       "source_location": "L51",
-      "id": "t_package_devdependencies_typescript_eslint",
-      "community": 6,
-      "norm_label": "typescript-eslint"
+      "id": "effects_rpc_client_rpcurls",
+      "community": 27,
+      "norm_label": "rpcurls"
     },
     {
-      "label": "typescript-language-server",
+      "label": "transports",
       "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L52",
-      "id": "t_package_devdependencies_typescript_language_server",
-      "community": 6,
-      "norm_label": "typescript-language-server"
-    },
-    {
-      "label": "vitest",
-      "file_type": "code",
-      "source_file": "package.json",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
       "source_location": "L53",
-      "id": "t_package_devdependencies_vitest",
-      "community": 6,
-      "norm_label": "vitest"
+      "id": "effects_rpc_client_transports",
+      "community": 27,
+      "norm_label": "transports"
     },
     {
-      "label": "vscode-langservers-extracted",
+      "label": "publicClient",
       "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L54",
-      "id": "t_package_devdependencies_vscode_langservers_extracted",
-      "community": 6,
-      "norm_label": "vscode-langservers-extracted"
-    },
-    {
-      "label": "yaml-language-server",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L55",
-      "id": "t_package_devdependencies_yaml_language_server",
-      "community": 6,
-      "norm_label": "yaml-language-server"
-    },
-    {
-      "label": "defaults.ts",
-      "file_type": "code",
-      "source_file": "src/config/defaults.ts",
-      "source_location": "L1",
-      "id": "src_config_defaults_ts",
-      "community": 84,
-      "norm_label": "defaults.ts"
-    },
-    {
-      "label": "DEFAULTS",
-      "file_type": "code",
-      "source_file": "src/config/defaults.ts",
-      "source_location": "L2",
-      "id": "config_defaults_defaults",
-      "community": 84,
-      "norm_label": "defaults"
-    },
-    {
-      "label": "loader.test.ts",
-      "file_type": "code",
-      "source_file": "src/config/loader.test.ts",
-      "source_location": "L1",
-      "id": "src_config_loader_test_ts",
-      "community": 84,
-      "norm_label": "loader.test.ts"
-    },
-    {
-      "label": "env",
-      "file_type": "code",
-      "source_file": "src/config/loader.test.ts",
-      "source_location": "L5",
-      "id": "config_loader_test_env",
-      "community": 84,
-      "norm_label": "env"
-    },
-    {
-      "label": "config",
-      "file_type": "code",
-      "source_file": "src/config/loader.test.ts",
-      "source_location": "L11",
-      "id": "config_loader_test_config",
-      "community": 84,
-      "norm_label": "config"
-    },
-    {
-      "label": "loader.ts",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L1",
-      "id": "src_config_loader_ts",
-      "community": 84,
-      "norm_label": "loader.ts"
-    },
-    {
-      "label": "ENV_TO_PATH",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L6",
-      "id": "config_loader_env_to_path",
-      "community": 84,
-      "norm_label": "env_to_path"
-    },
-    {
-      "label": "deepMerge()",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L80",
-      "id": "config_loader_deepmerge",
-      "community": 84,
-      "norm_label": "deepmerge()"
-    },
-    {
-      "label": "envToOverrides()",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L97",
-      "id": "config_loader_envtooverrides",
-      "community": 84,
-      "norm_label": "envtooverrides()"
-    },
-    {
-      "label": "loadConfig()",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L128",
-      "id": "config_loader_loadconfig",
-      "community": 84,
-      "norm_label": "loadconfig()"
-    },
-    {
-      "label": "loadConfigOrDie()",
-      "file_type": "code",
-      "source_file": "src/config/loader.ts",
-      "source_location": "L143",
-      "id": "config_loader_loadconfigordie",
-      "community": 84,
-      "norm_label": "loadconfigordie()"
-    },
-    {
-      "label": "schema.test.ts",
-      "file_type": "code",
-      "source_file": "src/config/schema.test.ts",
-      "source_location": "L1",
-      "id": "src_config_schema_test_ts",
-      "community": 84,
-      "norm_label": "schema.test.ts"
-    },
-    {
-      "label": "REQUIRED_ENV",
-      "file_type": "code",
-      "source_file": "src/config/schema.test.ts",
-      "source_location": "L4",
-      "id": "config_schema_test_required_env",
-      "community": 84,
-      "norm_label": "required_env"
-    },
-    {
-      "label": "cfg",
-      "file_type": "code",
-      "source_file": "src/config/schema.test.ts",
-      "source_location": "L12",
-      "id": "config_schema_test_cfg",
-      "community": 84,
-      "norm_label": "cfg"
-    },
-    {
-      "label": "schema.ts",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L1",
-      "id": "src_config_schema_ts",
-      "community": 20,
-      "norm_label": "schema.ts"
-    },
-    {
-      "label": "bigintFromString",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L4",
-      "id": "config_schema_bigintfromstring",
-      "community": 20,
-      "norm_label": "bigintfromstring"
-    },
-    {
-      "label": "numberFromString",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L13",
-      "id": "config_schema_numberfromstring",
-      "community": 20,
-      "norm_label": "numberfromstring"
-    },
-    {
-      "label": "stringArrayFromCsv",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L16",
-      "id": "config_schema_stringarrayfromcsv",
-      "community": 20,
-      "norm_label": "stringarrayfromcsv"
-    },
-    {
-      "label": "RpcConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L28",
-      "id": "config_schema_rpcconfigschema",
-      "community": 20,
-      "norm_label": "rpcconfigschema"
-    },
-    {
-      "label": "RpcConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L43",
-      "id": "config_schema_rpcconfig",
-      "community": 90,
-      "norm_label": "rpcconfig"
-    },
-    {
-      "label": "GasConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L45",
-      "id": "config_schema_gasconfigschema",
-      "community": 20,
-      "norm_label": "gasconfigschema"
-    },
-    {
-      "label": "GasConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L58",
-      "id": "config_schema_gasconfig",
-      "community": 20,
-      "norm_label": "gasconfig"
-    },
-    {
-      "label": "RoutingConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L60",
-      "id": "config_schema_routingconfigschema",
-      "community": 20,
-      "norm_label": "routingconfigschema"
-    },
-    {
-      "label": "RoutingConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L70",
-      "id": "config_schema_routingconfig",
-      "community": 20,
-      "norm_label": "routingconfig"
-    },
-    {
-      "label": "SubmissionStrategySchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L72",
-      "id": "config_schema_submissionstrategyschema",
-      "community": 20,
-      "norm_label": "submissionstrategyschema"
-    },
-    {
-      "label": "SubmissionStrategy",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L73",
-      "id": "config_schema_submissionstrategy",
-      "community": 24,
-      "norm_label": "submissionstrategy"
-    },
-    {
-      "label": "ExecutionConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L75",
-      "id": "config_schema_executionconfigschema",
-      "community": 20,
-      "norm_label": "executionconfigschema"
-    },
-    {
-      "label": "ExecutionConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L94",
-      "id": "config_schema_executionconfig",
-      "community": 20,
-      "norm_label": "executionconfig"
-    },
-    {
-      "label": "MempoolConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L96",
-      "id": "config_schema_mempoolconfigschema",
-      "community": 20,
-      "norm_label": "mempoolconfigschema"
-    },
-    {
-      "label": "MempoolConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L102",
-      "id": "config_schema_mempoolconfig",
-      "community": 20,
-      "norm_label": "mempoolconfig"
-    },
-    {
-      "label": "FastLaneConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L104",
-      "id": "config_schema_fastlaneconfigschema",
-      "community": 20,
-      "norm_label": "fastlaneconfigschema"
-    },
-    {
-      "label": "FastLaneConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L110",
-      "id": "config_schema_fastlaneconfig",
-      "community": 20,
-      "norm_label": "fastlaneconfig"
-    },
-    {
-      "label": "ObservabilityConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L112",
-      "id": "config_schema_observabilityconfigschema",
-      "community": 20,
-      "norm_label": "observabilityconfigschema"
-    },
-    {
-      "label": "ObservabilityConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L116",
-      "id": "config_schema_observabilityconfig",
-      "community": 20,
-      "norm_label": "observabilityconfig"
-    },
-    {
-      "label": "PathsConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L118",
-      "id": "config_schema_pathsconfigschema",
-      "community": 20,
-      "norm_label": "pathsconfigschema"
-    },
-    {
-      "label": "PathsConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L122",
-      "id": "config_schema_pathsconfig",
-      "community": 20,
-      "norm_label": "pathsconfig"
-    },
-    {
-      "label": "AppConfigSchema",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L124",
-      "id": "config_schema_appconfigschema",
-      "community": 84,
-      "norm_label": "appconfigschema"
-    },
-    {
-      "label": "AppConfig",
-      "file_type": "code",
-      "source_file": "src/config/schema.ts",
-      "source_location": "L137",
-      "id": "config_schema_appconfig",
-      "community": 18,
-      "norm_label": "appconfig"
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L66",
+      "id": "effects_rpc_client_publicclient",
+      "community": 27,
+      "norm_label": "publicclient"
     },
     {
       "label": "hyperindex_process.ts",
@@ -1174,1201 +112,2263 @@
       "norm_label": "createhyperindexprocess()"
     },
     {
+      "label": "lsp.json",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L1",
+      "community": 47,
+      "norm_label": "lsp.json",
+      "id": "grok_lsp_json"
+    },
+    {
+      "label": "typescript",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L2",
+      "community": 47,
+      "norm_label": "typescript",
+      "id": "grok_lsp_typescript"
+    },
+    {
+      "label": "command",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L3",
+      "community": 47,
+      "norm_label": "command",
+      "id": "grok_lsp_typescript_command"
+    },
+    {
+      "label": "args",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L4",
+      "community": 47,
+      "norm_label": "args",
+      "id": "grok_lsp_typescript_args"
+    },
+    {
+      "label": "extensionToLanguage",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L5",
+      "community": 47,
+      "norm_label": "extensiontolanguage",
+      "id": "grok_lsp_typescript_extensiontolanguage"
+    },
+    {
+      "label": ".ts",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L6",
+      "community": 47,
+      "norm_label": ".ts",
+      "id": "grok_lsp_extensiontolanguage_ts"
+    },
+    {
+      "label": ".tsx",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L7",
+      "community": 47,
+      "norm_label": ".tsx",
+      "id": "grok_lsp_extensiontolanguage_tsx"
+    },
+    {
+      "label": ".js",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L8",
+      "community": 47,
+      "norm_label": ".js",
+      "id": "grok_lsp_extensiontolanguage_js"
+    },
+    {
+      "label": ".jsx",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L9",
+      "community": 47,
+      "norm_label": ".jsx",
+      "id": "grok_lsp_extensiontolanguage_jsx"
+    },
+    {
+      "label": "startupTimeout",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L11",
+      "community": 47,
+      "norm_label": "startuptimeout",
+      "id": "grok_lsp_typescript_startuptimeout"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L12",
+      "community": 47,
+      "norm_label": "env",
+      "id": "grok_lsp_typescript_env"
+    },
+    {
+      "label": "LSPMUX_SERVER",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L13",
+      "community": 47,
+      "norm_label": "lspmux_server",
+      "id": "grok_lsp_env_lspmux_server"
+    },
+    {
+      "label": "yaml",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L16",
+      "community": 47,
+      "norm_label": "yaml",
+      "id": "grok_lsp_yaml"
+    },
+    {
+      "label": "command",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L17",
+      "community": 47,
+      "norm_label": "command",
+      "id": "grok_lsp_yaml_command"
+    },
+    {
+      "label": "args",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L18",
+      "community": 47,
+      "norm_label": "args",
+      "id": "grok_lsp_yaml_args"
+    },
+    {
+      "label": "extensionToLanguage",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L19",
+      "community": 47,
+      "norm_label": "extensiontolanguage",
+      "id": "grok_lsp_yaml_extensiontolanguage"
+    },
+    {
+      "label": ".yaml",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L20",
+      "community": 47,
+      "norm_label": ".yaml",
+      "id": "grok_lsp_extensiontolanguage_yaml"
+    },
+    {
+      "label": ".yml",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L21",
+      "community": 47,
+      "norm_label": ".yml",
+      "id": "grok_lsp_extensiontolanguage_yml"
+    },
+    {
+      "label": "startupTimeout",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L23",
+      "community": 47,
+      "norm_label": "startuptimeout",
+      "id": "grok_lsp_yaml_startuptimeout"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L24",
+      "community": 47,
+      "norm_label": "env",
+      "id": "grok_lsp_yaml_env"
+    },
+    {
+      "label": "bash",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L28",
+      "community": 47,
+      "norm_label": "bash",
+      "id": "grok_lsp_bash"
+    },
+    {
+      "label": "command",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L29",
+      "community": 47,
+      "norm_label": "command",
+      "id": "grok_lsp_bash_command"
+    },
+    {
+      "label": "args",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L30",
+      "community": 47,
+      "norm_label": "args",
+      "id": "grok_lsp_bash_args"
+    },
+    {
+      "label": "extensionToLanguage",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L31",
+      "community": 47,
+      "norm_label": "extensiontolanguage",
+      "id": "grok_lsp_bash_extensiontolanguage"
+    },
+    {
+      "label": ".sh",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L32",
+      "community": 47,
+      "norm_label": ".sh",
+      "id": "grok_lsp_extensiontolanguage_sh"
+    },
+    {
+      "label": ".bash",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L33",
+      "community": 47,
+      "norm_label": ".bash",
+      "id": "grok_lsp_extensiontolanguage_bash"
+    },
+    {
+      "label": "startupTimeout",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L35",
+      "community": 47,
+      "norm_label": "startuptimeout",
+      "id": "grok_lsp_bash_startuptimeout"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L36",
+      "community": 47,
+      "norm_label": "env",
+      "id": "grok_lsp_bash_env"
+    },
+    {
+      "label": "rescript",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L40",
+      "community": 47,
+      "norm_label": "rescript",
+      "id": "grok_lsp_rescript"
+    },
+    {
+      "label": "command",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L41",
+      "community": 47,
+      "norm_label": "command",
+      "id": "grok_lsp_rescript_command"
+    },
+    {
+      "label": "args",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L42",
+      "community": 47,
+      "norm_label": "args",
+      "id": "grok_lsp_rescript_args"
+    },
+    {
+      "label": "extensionToLanguage",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L43",
+      "community": 47,
+      "norm_label": "extensiontolanguage",
+      "id": "grok_lsp_rescript_extensiontolanguage"
+    },
+    {
+      "label": ".res",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L44",
+      "community": 47,
+      "norm_label": ".res",
+      "id": "grok_lsp_extensiontolanguage_res"
+    },
+    {
+      "label": ".resi",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L45",
+      "community": 47,
+      "norm_label": ".resi",
+      "id": "grok_lsp_extensiontolanguage_resi"
+    },
+    {
+      "label": "startupTimeout",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L47",
+      "community": 47,
+      "norm_label": "startuptimeout",
+      "id": "grok_lsp_rescript_startuptimeout"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": ".grok/lsp.json",
+      "source_location": "L48",
+      "community": 47,
+      "norm_label": "env",
+      "id": "grok_lsp_rescript_env"
+    },
+    {
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L1",
+      "community": 6,
+      "norm_label": "package.json",
+      "id": "package_json"
+    },
+    {
+      "label": "name",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L2",
+      "community": 6,
+      "norm_label": "name",
+      "id": "t_package_name"
+    },
+    {
+      "label": "version",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L3",
+      "community": 6,
+      "norm_label": "version",
+      "id": "t_package_version"
+    },
+    {
+      "label": "private",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L4",
+      "community": 6,
+      "norm_label": "private",
+      "id": "t_package_private"
+    },
+    {
+      "label": "type",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "community": 6,
+      "norm_label": "type",
+      "id": "t_package_type"
+    },
+    {
+      "label": "main",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L6",
+      "community": 6,
+      "norm_label": "main",
+      "id": "t_package_main"
+    },
+    {
+      "label": "packageManager",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L7",
+      "community": 6,
+      "norm_label": "packagemanager",
+      "id": "t_package_packagemanager"
+    },
+    {
+      "label": "workspaces",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L8",
+      "community": 6,
+      "norm_label": "workspaces",
+      "id": "t_package_workspaces"
+    },
+    {
+      "label": "engines",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "community": 6,
+      "norm_label": "engines",
+      "id": "t_package_engines"
+    },
+    {
+      "label": "bun",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "community": 6,
+      "norm_label": "bun",
+      "id": "t_package_engines_bun"
+    },
+    {
+      "label": "scripts",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "community": 6,
+      "norm_label": "scripts",
+      "id": "t_package_scripts"
+    },
+    {
+      "label": "start",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "community": 6,
+      "norm_label": "start",
+      "id": "t_package_scripts_start"
+    },
+    {
+      "label": "tui",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "community": 6,
+      "norm_label": "tui",
+      "id": "t_package_scripts_tui"
+    },
+    {
+      "label": "typecheck",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L18",
+      "community": 6,
+      "norm_label": "typecheck",
+      "id": "t_package_scripts_typecheck"
+    },
+    {
+      "label": "test",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "community": 6,
+      "norm_label": "test",
+      "id": "t_package_scripts_test"
+    },
+    {
+      "label": "test:coverage",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L20",
+      "community": 6,
+      "norm_label": "test:coverage",
+      "id": "t_package_scripts_test_coverage"
+    },
+    {
+      "label": "lint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L21",
+      "community": 6,
+      "norm_label": "lint",
+      "id": "t_package_scripts_lint"
+    },
+    {
+      "label": "fmt",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L22",
+      "community": 6,
+      "norm_label": "fmt",
+      "id": "t_package_scripts_fmt"
+    },
+    {
+      "label": "dev",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L23",
+      "community": 6,
+      "norm_label": "dev",
+      "id": "t_package_scripts_dev"
+    },
+    {
+      "label": "cgen",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L24",
+      "community": 6,
+      "norm_label": "cgen",
+      "id": "t_package_scripts_cgen"
+    },
+    {
+      "label": "gentok",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "community": 6,
+      "norm_label": "gentok",
+      "id": "t_package_scripts_gentok"
+    },
+    {
+      "label": "clear-hasura",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L26",
+      "community": 6,
+      "norm_label": "clear-hasura",
+      "id": "t_package_scripts_clear_hasura"
+    },
+    {
+      "label": "dev:reset",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L27",
+      "community": 6,
+      "norm_label": "dev:reset",
+      "id": "t_package_scripts_dev_reset"
+    },
+    {
+      "label": "dependencies",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L29",
+      "community": 6,
+      "norm_label": "dependencies",
+      "id": "t_package_dependencies"
+    },
+    {
+      "label": "@envio-dev/hypersync-client",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L30",
+      "community": 6,
+      "norm_label": "@envio-dev/hypersync-client",
+      "id": "t_package_dependencies_envio_dev_hypersync_client"
+    },
+    {
+      "label": "envio",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L31",
+      "community": 6,
+      "norm_label": "envio",
+      "id": "t_package_dependencies_envio"
+    },
+    {
+      "label": "pino",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "community": 6,
+      "norm_label": "pino",
+      "id": "t_package_dependencies_pino"
+    },
+    {
+      "label": "viem",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L33",
+      "community": 6,
+      "norm_label": "viem",
+      "id": "t_package_dependencies_viem"
+    },
+    {
+      "label": "zod",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L34",
+      "community": 6,
+      "norm_label": "zod",
+      "id": "t_package_dependencies_zod"
+    },
+    {
+      "label": "devDependencies",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L36",
+      "community": 6,
+      "norm_label": "devdependencies",
+      "id": "t_package_devdependencies"
+    },
+    {
+      "label": "@nomicfoundation/solidity-language-server",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L37",
+      "community": 6,
+      "norm_label": "@nomicfoundation/solidity-language-server",
+      "id": "t_package_devdependencies_nomicfoundation_solidity_language_server"
+    },
+    {
+      "label": "@taplo/cli",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L38",
+      "community": 6,
+      "norm_label": "@taplo/cli",
+      "id": "t_package_devdependencies_taplo_cli"
+    },
+    {
+      "label": "@types/node",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L39",
+      "community": 6,
+      "norm_label": "@types/node",
+      "id": "t_package_devdependencies_types_node"
+    },
+    {
+      "label": "@vitest/coverage-istanbul",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L40",
+      "community": 6,
+      "norm_label": "@vitest/coverage-istanbul",
+      "id": "t_package_devdependencies_vitest_coverage_istanbul"
+    },
+    {
+      "label": "@vitest/coverage-v8",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L41",
+      "community": 6,
+      "norm_label": "@vitest/coverage-v8",
+      "id": "t_package_devdependencies_vitest_coverage_v8"
+    },
+    {
+      "label": "bash-language-server",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L42",
+      "community": 6,
+      "norm_label": "bash-language-server",
+      "id": "t_package_devdependencies_bash_language_server"
+    },
+    {
+      "label": "bun-types",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "community": 6,
+      "norm_label": "bun-types",
+      "id": "t_package_devdependencies_bun_types"
+    },
+    {
+      "label": "eslint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L44",
+      "community": 6,
+      "norm_label": "eslint",
+      "id": "t_package_devdependencies_eslint"
+    },
+    {
+      "label": "eslint-config-prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "community": 6,
+      "norm_label": "eslint-config-prettier",
+      "id": "t_package_devdependencies_eslint_config_prettier"
+    },
+    {
+      "label": "fast-check",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L46",
+      "community": 6,
+      "norm_label": "fast-check",
+      "id": "t_package_devdependencies_fast_check"
+    },
+    {
+      "label": "graphql-language-service-cli",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L47",
+      "community": 6,
+      "norm_label": "graphql-language-service-cli",
+      "id": "t_package_devdependencies_graphql_language_service_cli"
+    },
+    {
+      "label": "pino-pretty",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L48",
+      "community": 6,
+      "norm_label": "pino-pretty",
+      "id": "t_package_devdependencies_pino_pretty"
+    },
+    {
+      "label": "prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L49",
+      "community": 6,
+      "norm_label": "prettier",
+      "id": "t_package_devdependencies_prettier"
+    },
+    {
+      "label": "typescript",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L50",
+      "community": 6,
+      "norm_label": "typescript",
+      "id": "t_package_devdependencies_typescript"
+    },
+    {
+      "label": "typescript-eslint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L51",
+      "community": 6,
+      "norm_label": "typescript-eslint",
+      "id": "t_package_devdependencies_typescript_eslint"
+    },
+    {
+      "label": "typescript-language-server",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L52",
+      "community": 6,
+      "norm_label": "typescript-language-server",
+      "id": "t_package_devdependencies_typescript_language_server"
+    },
+    {
+      "label": "vitest",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L53",
+      "community": 6,
+      "norm_label": "vitest",
+      "id": "t_package_devdependencies_vitest"
+    },
+    {
+      "label": "vscode-langservers-extracted",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L54",
+      "community": 6,
+      "norm_label": "vscode-langservers-extracted",
+      "id": "t_package_devdependencies_vscode_langservers_extracted"
+    },
+    {
+      "label": "yaml-language-server",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L55",
+      "community": 6,
+      "norm_label": "yaml-language-server",
+      "id": "t_package_devdependencies_yaml_language_server"
+    },
+    {
+      "label": "defaults.ts",
+      "file_type": "code",
+      "source_file": "src/config/defaults.ts",
+      "source_location": "L1",
+      "community": 84,
+      "norm_label": "defaults.ts",
+      "id": "src_config_defaults_ts"
+    },
+    {
+      "label": "DEFAULTS",
+      "file_type": "code",
+      "source_file": "src/config/defaults.ts",
+      "source_location": "L2",
+      "community": 84,
+      "norm_label": "defaults",
+      "id": "config_defaults_defaults"
+    },
+    {
+      "label": "loader.test.ts",
+      "file_type": "code",
+      "source_file": "src/config/loader.test.ts",
+      "source_location": "L1",
+      "community": 84,
+      "norm_label": "loader.test.ts",
+      "id": "src_config_loader_test_ts"
+    },
+    {
+      "label": "env",
+      "file_type": "code",
+      "source_file": "src/config/loader.test.ts",
+      "source_location": "L5",
+      "community": 84,
+      "norm_label": "env",
+      "id": "config_loader_test_env"
+    },
+    {
+      "label": "config",
+      "file_type": "code",
+      "source_file": "src/config/loader.test.ts",
+      "source_location": "L11",
+      "community": 84,
+      "norm_label": "config",
+      "id": "config_loader_test_config"
+    },
+    {
+      "label": "loader.ts",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L1",
+      "community": 84,
+      "norm_label": "loader.ts",
+      "id": "src_config_loader_ts"
+    },
+    {
+      "label": "ENV_TO_PATH",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L6",
+      "community": 84,
+      "norm_label": "env_to_path",
+      "id": "config_loader_env_to_path"
+    },
+    {
+      "label": "deepMerge()",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L80",
+      "community": 84,
+      "norm_label": "deepmerge()",
+      "id": "config_loader_deepmerge"
+    },
+    {
+      "label": "envToOverrides()",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L97",
+      "community": 84,
+      "norm_label": "envtooverrides()",
+      "id": "config_loader_envtooverrides"
+    },
+    {
+      "label": "loadConfig()",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L128",
+      "community": 84,
+      "norm_label": "loadconfig()",
+      "id": "config_loader_loadconfig"
+    },
+    {
+      "label": "loadConfigOrDie()",
+      "file_type": "code",
+      "source_file": "src/config/loader.ts",
+      "source_location": "L143",
+      "community": 84,
+      "norm_label": "loadconfigordie()",
+      "id": "config_loader_loadconfigordie"
+    },
+    {
+      "label": "schema.test.ts",
+      "file_type": "code",
+      "source_file": "src/config/schema.test.ts",
+      "source_location": "L1",
+      "community": 84,
+      "norm_label": "schema.test.ts",
+      "id": "src_config_schema_test_ts"
+    },
+    {
+      "label": "REQUIRED_ENV",
+      "file_type": "code",
+      "source_file": "src/config/schema.test.ts",
+      "source_location": "L4",
+      "community": 84,
+      "norm_label": "required_env",
+      "id": "config_schema_test_required_env"
+    },
+    {
+      "label": "cfg",
+      "file_type": "code",
+      "source_file": "src/config/schema.test.ts",
+      "source_location": "L12",
+      "community": 84,
+      "norm_label": "cfg",
+      "id": "config_schema_test_cfg"
+    },
+    {
+      "label": "schema.ts",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L1",
+      "community": 20,
+      "norm_label": "schema.ts",
+      "id": "src_config_schema_ts"
+    },
+    {
+      "label": "bigintFromString",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L4",
+      "community": 20,
+      "norm_label": "bigintfromstring",
+      "id": "config_schema_bigintfromstring"
+    },
+    {
+      "label": "numberFromString",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L13",
+      "community": 20,
+      "norm_label": "numberfromstring",
+      "id": "config_schema_numberfromstring"
+    },
+    {
+      "label": "stringArrayFromCsv",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L16",
+      "community": 20,
+      "norm_label": "stringarrayfromcsv",
+      "id": "config_schema_stringarrayfromcsv"
+    },
+    {
+      "label": "RpcConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L28",
+      "community": 20,
+      "norm_label": "rpcconfigschema",
+      "id": "config_schema_rpcconfigschema"
+    },
+    {
+      "label": "RpcConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L43",
+      "community": 31,
+      "norm_label": "rpcconfig",
+      "id": "config_schema_rpcconfig"
+    },
+    {
+      "label": "GasConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L45",
+      "community": 20,
+      "norm_label": "gasconfigschema",
+      "id": "config_schema_gasconfigschema"
+    },
+    {
+      "label": "GasConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L58",
+      "community": 20,
+      "norm_label": "gasconfig",
+      "id": "config_schema_gasconfig"
+    },
+    {
+      "label": "RoutingConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L60",
+      "community": 20,
+      "norm_label": "routingconfigschema",
+      "id": "config_schema_routingconfigschema"
+    },
+    {
+      "label": "RoutingConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L70",
+      "community": 20,
+      "norm_label": "routingconfig",
+      "id": "config_schema_routingconfig"
+    },
+    {
+      "label": "SubmissionStrategySchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L72",
+      "community": 20,
+      "norm_label": "submissionstrategyschema",
+      "id": "config_schema_submissionstrategyschema"
+    },
+    {
+      "label": "SubmissionStrategy",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L73",
+      "community": 24,
+      "norm_label": "submissionstrategy",
+      "id": "config_schema_submissionstrategy"
+    },
+    {
+      "label": "ExecutionConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L75",
+      "community": 20,
+      "norm_label": "executionconfigschema",
+      "id": "config_schema_executionconfigschema"
+    },
+    {
+      "label": "ExecutionConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L94",
+      "community": 20,
+      "norm_label": "executionconfig",
+      "id": "config_schema_executionconfig"
+    },
+    {
+      "label": "MempoolConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L96",
+      "community": 20,
+      "norm_label": "mempoolconfigschema",
+      "id": "config_schema_mempoolconfigschema"
+    },
+    {
+      "label": "MempoolConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L102",
+      "community": 20,
+      "norm_label": "mempoolconfig",
+      "id": "config_schema_mempoolconfig"
+    },
+    {
+      "label": "FastLaneConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L104",
+      "community": 20,
+      "norm_label": "fastlaneconfigschema",
+      "id": "config_schema_fastlaneconfigschema"
+    },
+    {
+      "label": "FastLaneConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L110",
+      "community": 20,
+      "norm_label": "fastlaneconfig",
+      "id": "config_schema_fastlaneconfig"
+    },
+    {
+      "label": "ObservabilityConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L112",
+      "community": 20,
+      "norm_label": "observabilityconfigschema",
+      "id": "config_schema_observabilityconfigschema"
+    },
+    {
+      "label": "ObservabilityConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L116",
+      "community": 20,
+      "norm_label": "observabilityconfig",
+      "id": "config_schema_observabilityconfig"
+    },
+    {
+      "label": "PathsConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L118",
+      "community": 20,
+      "norm_label": "pathsconfigschema",
+      "id": "config_schema_pathsconfigschema"
+    },
+    {
+      "label": "PathsConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L122",
+      "community": 20,
+      "norm_label": "pathsconfig",
+      "id": "config_schema_pathsconfig"
+    },
+    {
+      "label": "AppConfigSchema",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L124",
+      "community": 84,
+      "norm_label": "appconfigschema",
+      "id": "config_schema_appconfigschema"
+    },
+    {
+      "label": "AppConfig",
+      "file_type": "code",
+      "source_file": "src/config/schema.ts",
+      "source_location": "L137",
+      "community": 18,
+      "norm_label": "appconfig",
+      "id": "config_schema_appconfig"
+    },
+    {
       "label": "boot.test.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_boot_test_ts",
       "community": 18,
-      "norm_label": "boot.test.ts"
+      "norm_label": "boot.test.ts",
+      "id": "src_orchestrator_boot_test_ts"
     },
     {
       "label": "config",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.test.ts",
       "source_location": "L7",
-      "id": "orchestrator_boot_test_config",
       "community": 18,
-      "norm_label": "config"
+      "norm_label": "config",
+      "id": "orchestrator_boot_test_config"
     },
     {
       "label": "boot.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_boot_ts",
       "community": 18,
-      "norm_label": "boot.ts"
+      "norm_label": "boot.ts",
+      "id": "src_orchestrator_boot_ts"
     },
     {
       "label": "RuntimeContext",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L25",
-      "id": "orchestrator_boot_runtimecontext",
       "community": 32,
-      "norm_label": "runtimecontext"
+      "norm_label": "runtimecontext",
+      "id": "orchestrator_boot_runtimecontext"
     },
     {
       "label": "bootApplication()",
       "file_type": "code",
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L57",
-      "id": "orchestrator_boot_bootapplication",
       "community": 18,
-      "norm_label": "bootapplication()"
+      "norm_label": "bootapplication()",
+      "id": "orchestrator_boot_bootapplication"
     },
     {
       "label": "loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_loop_ts",
       "community": 32,
-      "norm_label": "loop.ts"
+      "norm_label": "loop.ts",
+      "id": "src_orchestrator_loop_ts"
     },
     {
       "label": "PassLoopDeps",
       "file_type": "code",
       "source_file": "src/orchestrator/loop.ts",
       "source_location": "L25",
-      "id": "orchestrator_loop_passloopdeps",
       "community": 32,
-      "norm_label": "passloopdeps"
+      "norm_label": "passloopdeps",
+      "id": "orchestrator_loop_passloopdeps"
     },
     {
       "label": "pass_loop.test.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_test_ts",
       "community": 32,
-      "norm_label": "pass_loop.test.ts"
+      "norm_label": "pass_loop.test.ts",
+      "id": "src_orchestrator_pass_loop_test_ts"
     },
     {
       "label": "MOCK_CANDIDATE_EXECUTION",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L7",
-      "id": "orchestrator_pass_loop_test_mock_candidate_execution",
       "community": 32,
-      "norm_label": "mock_candidate_execution"
+      "norm_label": "mock_candidate_execution",
+      "id": "orchestrator_pass_loop_test_mock_candidate_execution"
     },
     {
       "label": "mockTracker()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L14",
-      "id": "orchestrator_pass_loop_test_mocktracker",
       "community": 32,
-      "norm_label": "mocktracker()"
+      "norm_label": "mocktracker()",
+      "id": "orchestrator_pass_loop_test_mocktracker"
     },
     {
       "label": "mockTierManager()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L25",
-      "id": "orchestrator_pass_loop_test_mocktiermanager",
       "community": 32,
-      "norm_label": "mocktiermanager()"
+      "norm_label": "mocktiermanager()",
+      "id": "orchestrator_pass_loop_test_mocktiermanager"
     },
     {
       "label": "mockCircuitBreaker()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L39",
-      "id": "orchestrator_pass_loop_test_mockcircuitbreaker",
       "community": 32,
-      "norm_label": "mockcircuitbreaker()"
+      "norm_label": "mockcircuitbreaker()",
+      "id": "orchestrator_pass_loop_test_mockcircuitbreaker"
     },
     {
       "label": "stateWithPool",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L53",
-      "id": "orchestrator_pass_loop_test_statewithpool",
       "community": 32,
-      "norm_label": "statewithpool"
+      "norm_label": "statewithpool",
+      "id": "orchestrator_pass_loop_test_statewithpool"
     },
     {
       "label": "mockExecute",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L58",
-      "id": "orchestrator_pass_loop_test_mockexecute",
       "community": 32,
-      "norm_label": "mockexecute"
+      "norm_label": "mockexecute",
+      "id": "orchestrator_pass_loop_test_mockexecute"
     },
     {
       "label": "mockContext",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L60",
-      "id": "orchestrator_pass_loop_test_mockcontext",
       "community": 32,
-      "norm_label": "mockcontext"
+      "norm_label": "mockcontext",
+      "id": "orchestrator_pass_loop_test_mockcontext"
     },
     {
       "label": "deps",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L152",
-      "id": "orchestrator_pass_loop_test_deps",
       "community": 32,
-      "norm_label": "deps"
+      "norm_label": "deps",
+      "id": "orchestrator_pass_loop_test_deps"
     },
     {
       "label": "enumerateCyclesSpy",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.test.ts",
       "source_location": "L331",
-      "id": "orchestrator_pass_loop_test_enumeratecyclesspy",
       "community": 32,
-      "norm_label": "enumeratecyclesspy"
+      "norm_label": "enumeratecyclesspy",
+      "id": "orchestrator_pass_loop_test_enumeratecyclesspy"
     },
     {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 32,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L28",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 32,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "instrumenter",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L68",
-      "id": "orchestrator_pass_loop_instrumenter",
       "community": 32,
-      "norm_label": "instrumenter"
+      "norm_label": "instrumenter",
+      "id": "orchestrator_pass_loop_instrumenter"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L70",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 32,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L84",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 32,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "fetcher.ts",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L1",
-      "id": "src_pipeline_fetcher_ts",
       "community": 38,
-      "norm_label": "fetcher.ts"
+      "norm_label": "fetcher.ts",
+      "id": "src_pipeline_fetcher_ts"
     },
     {
       "label": "V2_ABI",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L10",
-      "id": "pipeline_fetcher_v2_abi",
       "community": 38,
-      "norm_label": "v2_abi"
+      "norm_label": "v2_abi",
+      "id": "pipeline_fetcher_v2_abi"
     },
     {
       "label": "V3_ABI",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L11",
-      "id": "pipeline_fetcher_v3_abi",
       "community": 38,
-      "norm_label": "v3_abi"
+      "norm_label": "v3_abi",
+      "id": "pipeline_fetcher_v3_abi"
     },
     {
       "label": "V4_ABI",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L15",
-      "id": "pipeline_fetcher_v4_abi",
       "community": 38,
-      "norm_label": "v4_abi"
+      "norm_label": "v4_abi",
+      "id": "pipeline_fetcher_v4_abi"
     },
     {
       "label": "WOOFI_PAIR_ABI",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L22",
-      "id": "pipeline_fetcher_woofi_pair_abi",
       "community": 38,
-      "norm_label": "woofi_pair_abi"
+      "norm_label": "woofi_pair_abi",
+      "id": "pipeline_fetcher_woofi_pair_abi"
     },
     {
       "label": "_failedPools",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L24",
-      "id": "pipeline_fetcher_failedpools",
       "community": 38,
-      "norm_label": "_failedpools"
+      "norm_label": "_failedpools",
+      "id": "pipeline_fetcher_failedpools"
     },
     {
       "label": "getFailedPools()",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L28",
-      "id": "pipeline_fetcher_getfailedpools",
       "community": 38,
-      "norm_label": "getfailedpools()"
+      "norm_label": "getfailedpools()",
+      "id": "pipeline_fetcher_getfailedpools"
     },
     {
       "label": "pruneFailedPools()",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L32",
-      "id": "pipeline_fetcher_prunefailedpools",
       "community": 32,
-      "norm_label": "prunefailedpools()"
+      "norm_label": "prunefailedpools()",
+      "id": "pipeline_fetcher_prunefailedpools"
     },
     {
       "label": "fetchMissingPoolState()",
       "file_type": "code",
       "source_file": "src/pipeline/fetcher.ts",
       "source_location": "L50",
-      "id": "pipeline_fetcher_fetchmissingpoolstate",
       "community": 32,
-      "norm_label": "fetchmissingpoolstate()"
+      "norm_label": "fetchmissingpoolstate()",
+      "id": "pipeline_fetcher_fetchmissingpoolstate"
     },
     {
       "label": "finder.ts",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L1",
-      "id": "src_pipeline_finder_ts",
       "community": 32,
-      "norm_label": "finder.ts"
+      "norm_label": "finder.ts",
+      "id": "src_pipeline_finder_ts"
     },
     {
       "label": "routeKeyFromEdges()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L5",
-      "id": "pipeline_finder_routekeyfromedges",
       "community": 32,
-      "norm_label": "routekeyfromedges()"
+      "norm_label": "routekeyfromedges()",
+      "id": "pipeline_finder_routekeyfromedges"
     },
     {
       "label": "averageObscurity()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L11",
-      "id": "pipeline_finder_averageobscurity",
       "community": 32,
-      "norm_label": "averageobscurity()"
+      "norm_label": "averageobscurity()",
+      "id": "pipeline_finder_averageobscurity"
     },
     {
       "label": "feeLogWeight()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L18",
-      "id": "pipeline_finder_feelogweight",
       "community": 32,
-      "norm_label": "feelogweight()"
+      "norm_label": "feelogweight()",
+      "id": "pipeline_finder_feelogweight"
     },
     {
       "label": "getObscurityBonus()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L39",
-      "id": "pipeline_finder_getobscuritybonus",
       "community": 32,
-      "norm_label": "getobscuritybonus()"
+      "norm_label": "getobscuritybonus()",
+      "id": "pipeline_finder_getobscuritybonus"
     },
     {
       "label": "cycleObscurityBonus()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L65",
-      "id": "pipeline_finder_cycleobscuritybonus",
       "community": 32,
-      "norm_label": "cycleobscuritybonus()"
+      "norm_label": "cycleobscuritybonus()",
+      "id": "pipeline_finder_cycleobscuritybonus"
     },
     {
       "label": "scoreCycleWithFeedback()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L74",
-      "id": "pipeline_finder_scorecyclewithfeedback",
       "community": 22,
-      "norm_label": "scorecyclewithfeedback()"
+      "norm_label": "scorecyclewithfeedback()",
+      "id": "pipeline_finder_scorecyclewithfeedback"
     },
     {
       "label": "findCycles()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L83",
-      "id": "pipeline_finder_findcycles",
       "community": 32,
-      "norm_label": "findcycles()"
+      "norm_label": "findcycles()",
+      "id": "pipeline_finder_findcycles"
     },
     {
       "label": "enumerateCycles()",
       "file_type": "code",
       "source_file": "src/pipeline/finder.ts",
       "source_location": "L278",
-      "id": "pipeline_finder_enumeratecycles",
       "community": 32,
-      "norm_label": "enumeratecycles()"
+      "norm_label": "enumeratecycles()",
+      "id": "pipeline_finder_enumeratecycles"
     },
     {
       "label": "pipeline.ts",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L1",
-      "id": "src_pipeline_pipeline_ts",
       "community": 12,
-      "norm_label": "pipeline.ts"
+      "norm_label": "pipeline.ts",
+      "id": "src_pipeline_pipeline_ts"
     },
     {
       "label": "PipelineResult",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L25",
-      "id": "pipeline_pipeline_pipelineresult",
       "community": 54,
-      "norm_label": "pipelineresult"
+      "norm_label": "pipelineresult",
+      "id": "pipeline_pipeline_pipelineresult"
     },
     {
       "label": "getEffectivePriceImpactForCycle()",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L39",
-      "id": "pipeline_pipeline_geteffectivepriceimpactforcycle",
       "community": 12,
-      "norm_label": "geteffectivepriceimpactforcycle()"
+      "norm_label": "geteffectivepriceimpactforcycle()",
+      "id": "pipeline_pipeline_geteffectivepriceimpactforcycle"
     },
     {
       "label": "MinimalEvalHolder",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L76",
-      "id": "pipeline_pipeline_minimalevalholder",
       "community": 54,
-      "norm_label": "minimalevalholder"
+      "norm_label": "minimalevalholder",
+      "id": "pipeline_pipeline_minimalevalholder"
     },
     {
       "label": "evaluateAmount()",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L82",
-      "id": "pipeline_pipeline_evaluateamount",
       "community": 12,
-      "norm_label": "evaluateamount()"
+      "norm_label": "evaluateamount()",
+      "id": "pipeline_pipeline_evaluateamount"
     },
     {
       "label": "evaluatePipeline()",
       "file_type": "code",
       "source_file": "src/pipeline/pipeline.ts",
       "source_location": "L207",
-      "id": "pipeline_pipeline_evaluatepipeline",
       "community": 32,
-      "norm_label": "evaluatepipeline()"
+      "norm_label": "evaluatepipeline()",
+      "id": "pipeline_pipeline_evaluatepipeline"
     },
     {
       "label": "rates.ts",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L1",
-      "id": "src_pipeline_rates_ts",
       "community": 12,
-      "norm_label": "rates.ts"
+      "norm_label": "rates.ts",
+      "id": "src_pipeline_rates_ts"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L5",
-      "id": "pipeline_rates_wmatic_lower",
       "community": 12,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "pipeline_rates_wmatic_lower"
     },
     {
       "label": "ComputeMaticRatesOptions",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L7",
-      "id": "pipeline_rates_computematicratesoptions",
       "community": 12,
-      "norm_label": "computematicratesoptions"
+      "norm_label": "computematicratesoptions",
+      "id": "pipeline_rates_computematicratesoptions"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L20",
-      "id": "pipeline_rates_computematicrates",
       "community": 32,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "pipeline_rates_computematicrates"
     },
     {
       "label": "types.ts",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L1",
-      "id": "src_pipeline_types_ts",
       "community": 8,
-      "norm_label": "types.ts"
+      "norm_label": "types.ts",
+      "id": "src_pipeline_types_ts"
     },
     {
       "label": "SwapEdge",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L9",
-      "id": "pipeline_types_swapedge",
       "community": 8,
-      "norm_label": "swapedge"
+      "norm_label": "swapedge",
+      "id": "pipeline_types_swapedge"
     },
     {
       "label": "RoutingGraph",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L21",
-      "id": "pipeline_types_routinggraph",
       "community": 8,
-      "norm_label": "routinggraph"
+      "norm_label": "routinggraph",
+      "id": "pipeline_types_routinggraph"
     },
     {
       "label": "FoundCycle",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L28",
-      "id": "pipeline_types_foundcycle",
       "community": 32,
-      "norm_label": "foundcycle"
+      "norm_label": "foundcycle",
+      "id": "pipeline_types_foundcycle"
     },
     {
       "label": "PipelineOptions",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L37",
-      "id": "pipeline_types_pipelineoptions",
       "community": 12,
-      "norm_label": "pipelineoptions"
+      "norm_label": "pipelineoptions",
+      "id": "pipeline_types_pipelineoptions"
     },
     {
       "label": "PipelineResult",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L59",
-      "id": "pipeline_types_pipelineresult",
       "community": 54,
-      "norm_label": "pipelineresult"
+      "norm_label": "pipelineresult",
+      "id": "pipeline_types_pipelineresult"
     },
     {
       "label": "SimulationEdge",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L73",
-      "id": "pipeline_types_simulationedge",
       "community": 12,
-      "norm_label": "simulationedge"
+      "norm_label": "simulationedge",
+      "id": "pipeline_types_simulationedge"
     },
     {
       "label": "StateSnapshot",
       "file_type": "code",
       "source_file": "src/pipeline/types.ts",
       "source_location": "L86",
-      "id": "pipeline_types_statesnapshot",
       "community": 8,
-      "norm_label": "statesnapshot"
+      "norm_label": "statesnapshot",
+      "id": "pipeline_types_statesnapshot"
     },
     {
       "label": "manager.ts",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L1",
-      "id": "src_rpc_manager_ts",
-      "community": 90,
-      "norm_label": "manager.ts"
+      "community": 31,
+      "norm_label": "manager.ts",
+      "id": "src_rpc_manager_ts"
     },
     {
       "label": "httpTransport()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L15",
-      "id": "rpc_manager_httptransport",
-      "community": 95,
-      "norm_label": "httptransport()"
+      "community": 31,
+      "norm_label": "httptransport()",
+      "id": "rpc_manager_httptransport"
     },
     {
       "label": "RpcManagerOptions",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L28",
-      "id": "rpc_manager_rpcmanageroptions",
-      "community": 90,
-      "norm_label": "rpcmanageroptions"
+      "community": 31,
+      "norm_label": "rpcmanageroptions",
+      "id": "rpc_manager_rpcmanageroptions"
     },
     {
       "label": "RpcManager",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L32",
-      "id": "rpc_manager_rpcmanager",
       "community": 31,
-      "norm_label": "rpcmanager"
+      "norm_label": "rpcmanager",
+      "id": "rpc_manager_rpcmanager"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L42",
-      "id": "rpc_manager_rpcmanager_constructor",
-      "community": 90,
-      "norm_label": ".constructor()"
+      "community": 31,
+      "norm_label": ".constructor()",
+      "id": "rpc_manager_rpcmanager_constructor"
     },
     {
       "label": ".getReadClient()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L90",
-      "id": "rpc_manager_rpcmanager_getreadclient",
       "community": 31,
-      "norm_label": ".getreadclient()"
+      "norm_label": ".getreadclient()",
+      "id": "rpc_manager_rpcmanager_getreadclient"
     },
     {
       "label": ".getReorgDetector()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L95",
-      "id": "rpc_manager_rpcmanager_getreorgdetector",
       "community": 31,
-      "norm_label": ".getreorgdetector()"
+      "norm_label": ".getreorgdetector()",
+      "id": "rpc_manager_rpcmanager_getreorgdetector"
     },
     {
       "label": ".hyperRpc()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L106",
-      "id": "rpc_manager_rpcmanager_hyperrpc",
       "community": 31,
-      "norm_label": ".hyperrpc()"
+      "norm_label": ".hyperrpc()",
+      "id": "rpc_manager_rpcmanager_hyperrpc"
     },
     {
       "label": ".hyperSync()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L111",
-      "id": "rpc_manager_rpcmanager_hypersync",
       "community": 31,
-      "norm_label": ".hypersync()"
+      "norm_label": ".hypersync()",
+      "id": "rpc_manager_rpcmanager_hypersync"
     },
     {
       "label": ".read()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L116",
-      "id": "rpc_manager_rpcmanager_read",
       "community": 31,
-      "norm_label": ".read()"
+      "norm_label": ".read()",
+      "id": "rpc_manager_rpcmanager_read"
     },
     {
       "label": ".addExecutionClient()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L130",
-      "id": "rpc_manager_rpcmanager_addexecutionclient",
-      "community": 95,
-      "norm_label": ".addexecutionclient()"
+      "community": 31,
+      "norm_label": ".addexecutionclient()",
+      "id": "rpc_manager_rpcmanager_addexecutionclient"
     },
     {
       "label": ".getExecutionClients()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L143",
-      "id": "rpc_manager_rpcmanager_getexecutionclients",
       "community": 31,
-      "norm_label": ".getexecutionclients()"
+      "norm_label": ".getexecutionclients()",
+      "id": "rpc_manager_rpcmanager_getexecutionclients"
     },
     {
       "label": ".addFastLane()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L148",
-      "id": "rpc_manager_rpcmanager_addfastlane",
-      "community": 95,
-      "norm_label": ".addfastlane()"
+      "community": 31,
+      "norm_label": ".addfastlane()",
+      "id": "rpc_manager_rpcmanager_addfastlane"
     },
     {
       "label": ".getFastLane()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L174",
-      "id": "rpc_manager_rpcmanager_getfastlane",
       "community": 24,
-      "norm_label": ".getfastlane()"
+      "norm_label": ".getfastlane()",
+      "id": "rpc_manager_rpcmanager_getfastlane"
     },
     {
       "label": ".addWebSocketSubscriber()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L179",
-      "id": "rpc_manager_rpcmanager_addwebsocketsubscriber",
       "community": 14,
-      "norm_label": ".addwebsocketsubscriber()"
+      "norm_label": ".addwebsocketsubscriber()",
+      "id": "rpc_manager_rpcmanager_addwebsocketsubscriber"
     },
     {
       "label": ".getWebSocketSubscriber()",
       "file_type": "code",
       "source_file": "src/rpc/manager.ts",
       "source_location": "L189",
-      "id": "rpc_manager_rpcmanager_getwebsocketsubscriber",
       "community": 14,
-      "norm_label": ".getwebsocketsubscriber()"
+      "norm_label": ".getwebsocketsubscriber()",
+      "id": "rpc_manager_rpcmanager_getwebsocketsubscriber"
     },
     {
       "label": "gas.test.ts",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L1",
-      "id": "src_services_execution_gas_test_ts",
       "community": 50,
-      "norm_label": "gas.test.ts"
+      "norm_label": "gas.test.ts",
+      "id": "src_services_execution_gas_test_ts"
     },
     {
       "label": "oracle",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L14",
-      "id": "execution_gas_test_oracle",
       "community": 50,
-      "norm_label": "oracle"
+      "norm_label": "oracle",
+      "id": "execution_gas_test_oracle"
     },
     {
       "label": "fetchGas",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L19",
-      "id": "execution_gas_test_fetchgas",
       "community": 50,
-      "norm_label": "fetchgas"
+      "norm_label": "fetchgas",
+      "id": "execution_gas_test_fetchgas"
     },
     {
       "label": "snap",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L22",
-      "id": "execution_gas_test_snap",
       "community": 50,
-      "norm_label": "snap"
+      "norm_label": "snap",
+      "id": "execution_gas_test_snap"
     },
     {
       "label": "first",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L61",
-      "id": "execution_gas_test_first",
       "community": 50,
-      "norm_label": "first"
+      "norm_label": "first",
+      "id": "execution_gas_test_first"
     },
     {
       "label": "second",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L67",
-      "id": "execution_gas_test_second",
       "community": 50,
-      "norm_label": "second"
+      "norm_label": "second",
+      "id": "execution_gas_test_second"
     },
     {
       "label": "hints",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L93",
-      "id": "execution_gas_test_hints",
       "community": 50,
-      "norm_label": "hints"
+      "norm_label": "hints",
+      "id": "execution_gas_test_hints"
     },
     {
       "label": "scaled",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L103",
-      "id": "execution_gas_test_scaled",
       "community": 50,
-      "norm_label": "scaled"
+      "norm_label": "scaled",
+      "id": "execution_gas_test_scaled"
     },
     {
       "label": "effective",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L144",
-      "id": "execution_gas_test_effective",
       "community": 50,
-      "norm_label": "effective"
+      "norm_label": "effective",
+      "id": "execution_gas_test_effective"
     },
     {
       "label": "makeMockClient()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L151",
-      "id": "execution_gas_test_makemockclient",
       "community": 50,
-      "norm_label": "makemockclient()"
+      "norm_label": "makemockclient()",
+      "id": "execution_gas_test_makemockclient"
     },
     {
       "label": "client",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L169",
-      "id": "execution_gas_test_client",
       "community": 50,
-      "norm_label": "client"
+      "norm_label": "client",
+      "id": "execution_gas_test_client"
     },
     {
       "label": "fetcher",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L173",
-      "id": "execution_gas_test_fetcher",
       "community": 50,
-      "norm_label": "fetcher"
+      "norm_label": "fetcher",
+      "id": "execution_gas_test_fetcher"
     },
     {
       "label": "getFeeHistory",
       "file_type": "code",
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L190",
-      "id": "execution_gas_test_getfeehistory",
       "community": 50,
-      "norm_label": "getfeehistory"
+      "norm_label": "getfeehistory",
+      "id": "execution_gas_test_getfeehistory"
     },
     {
       "label": "gas.ts",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L1",
-      "id": "src_services_execution_gas_ts",
       "community": 50,
-      "norm_label": "gas.ts"
+      "norm_label": "gas.ts",
+      "id": "src_services_execution_gas_ts"
     },
     {
       "label": "GasOracleConfig",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L4",
-      "id": "execution_gas_gasoracleconfig",
       "community": 50,
-      "norm_label": "gasoracleconfig"
+      "norm_label": "gasoracleconfig",
+      "id": "execution_gas_gasoracleconfig"
     },
     {
       "label": "DEFAULT_GAS_CONFIG",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L19",
-      "id": "execution_gas_default_gas_config",
       "community": 50,
-      "norm_label": "default_gas_config"
+      "norm_label": "default_gas_config",
+      "id": "execution_gas_default_gas_config"
     },
     {
       "label": "PolygonGasHints",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L33",
-      "id": "execution_gas_polygongashints",
       "community": 50,
-      "norm_label": "polygongashints"
+      "norm_label": "polygongashints",
+      "id": "execution_gas_polygongashints"
     },
     {
       "label": "GasOracle",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L39",
-      "id": "execution_gas_gasoracle",
       "community": 50,
-      "norm_label": "gasoracle"
+      "norm_label": "gasoracle",
+      "id": "execution_gas_gasoracle"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L46",
-      "id": "execution_gas_gasoracle_constructor",
       "community": 50,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "execution_gas_gasoracle_constructor"
     },
     {
       "label": ".getSnapshot()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L51",
-      "id": "execution_gas_gasoracle_getsnapshot",
       "community": 50,
-      "norm_label": ".getsnapshot()"
+      "norm_label": ".getsnapshot()",
+      "id": "execution_gas_gasoracle_getsnapshot"
     },
     {
       "label": ".getPredictedBaseFee()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L55",
-      "id": "execution_gas_gasoracle_getpredictedbasefee",
       "community": 50,
-      "norm_label": ".getpredictedbasefee()"
+      "norm_label": ".getpredictedbasefee()",
+      "id": "execution_gas_gasoracle_getpredictedbasefee"
     },
     {
       "label": ".estimateCongestion()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L59",
-      "id": "execution_gas_gasoracle_estimatecongestion",
       "community": 50,
-      "norm_label": ".estimatecongestion()"
+      "norm_label": ".estimatecongestion()",
+      "id": "execution_gas_gasoracle_estimatecongestion"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L72",
-      "id": "execution_gas_gasoracle_start",
       "community": 50,
-      "norm_label": ".start()"
+      "norm_label": ".start()",
+      "id": "execution_gas_gasoracle_start"
     },
     {
       "label": ".stop()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L78",
-      "id": "execution_gas_gasoracle_stop",
       "community": 50,
-      "norm_label": ".stop()"
+      "norm_label": ".stop()",
+      "id": "execution_gas_gasoracle_stop"
     },
     {
       "label": ".refresh()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L82",
-      "id": "execution_gas_gasoracle_refresh",
       "community": 50,
-      "norm_label": ".refresh()"
+      "norm_label": ".refresh()",
+      "id": "execution_gas_gasoracle_refresh"
     },
     {
       "label": ".computePercentilePriorityFee()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L125",
-      "id": "execution_gas_gasoracle_computepercentilepriorityfee",
       "community": 50,
-      "norm_label": ".computepercentilepriorityfee()"
+      "norm_label": ".computepercentilepriorityfee()",
+      "id": "execution_gas_gasoracle_computepercentilepriorityfee"
     },
     {
       "label": ".computeDynamicPriorityFee()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L132",
-      "id": "execution_gas_gasoracle_computedynamicpriorityfee",
       "community": 50,
-      "norm_label": ".computedynamicpriorityfee()"
+      "norm_label": ".computedynamicpriorityfee()",
+      "id": "execution_gas_gasoracle_computedynamicpriorityfee"
     },
     {
       "label": ".getEffectiveMaxBidMultiplier()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L142",
-      "id": "execution_gas_gasoracle_geteffectivemaxbidmultiplier",
       "community": 50,
-      "norm_label": ".geteffectivemaxbidmultiplier()"
+      "norm_label": ".geteffectivemaxbidmultiplier()",
+      "id": "execution_gas_gasoracle_geteffectivemaxbidmultiplier"
     },
     {
       "label": "GasFetcherOptions",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L153",
-      "id": "execution_gas_gasfetcheroptions",
       "community": 50,
-      "norm_label": "gasfetcheroptions"
+      "norm_label": "gasfetcheroptions",
+      "id": "execution_gas_gasfetcheroptions"
     },
     {
       "label": "createGasFetcher()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L168",
-      "id": "execution_gas_creategasfetcher",
       "community": 18,
-      "norm_label": "creategasfetcher()"
+      "norm_label": "creategasfetcher()",
+      "id": "execution_gas_creategasfetcher"
     },
     {
       "label": "clampPriorityFee()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L222",
-      "id": "execution_gas_clamppriorityfee",
       "community": 50,
-      "norm_label": "clamppriorityfee()"
+      "norm_label": "clamppriorityfee()",
+      "id": "execution_gas_clamppriorityfee"
     },
     {
       "label": "scalePriorityFeeByProfitMargin()",
       "file_type": "code",
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L239",
-      "id": "execution_gas_scalepriorityfeebyprofitmargin",
       "community": 24,
-      "norm_label": "scalepriorityfeebyprofitmargin()"
+      "norm_label": "scalepriorityfeebyprofitmargin()",
+      "id": "execution_gas_scalepriorityfeebyprofitmargin"
     },
     {
       "label": "submit.ts",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L1",
-      "id": "src_services_execution_submit_ts",
       "community": 24,
-      "norm_label": "submit.ts"
+      "norm_label": "submit.ts",
+      "id": "src_services_execution_submit_ts"
     },
     {
       "label": "SubmitTxFn",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L7",
-      "id": "execution_submit_submittxfn",
       "community": 94,
-      "norm_label": "submittxfn"
+      "norm_label": "submittxfn",
+      "id": "execution_submit_submittxfn"
     },
     {
       "label": "SubmissionStrategyOptions",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L9",
-      "id": "execution_submit_submissionstrategyoptions",
       "community": 24,
-      "norm_label": "submissionstrategyoptions"
+      "norm_label": "submissionstrategyoptions",
+      "id": "execution_submit_submissionstrategyoptions"
     },
     {
       "label": "SubmissionStrategy",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L15",
-      "id": "execution_submit_submissionstrategy",
       "community": 24,
-      "norm_label": "submissionstrategy"
+      "norm_label": "submissionstrategy",
+      "id": "execution_submit_submissionstrategy"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L20",
-      "id": "execution_submit_submissionstrategy_constructor",
       "community": 50,
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "execution_submit_submissionstrategy_constructor"
     },
     {
       "label": ".submit()",
       "file_type": "code",
       "source_file": "src/services/execution/submit.ts",
       "source_location": "L31",
-      "id": "execution_submit_submissionstrategy_submit",
       "community": 24,
-      "norm_label": ".submit()"
+      "norm_label": ".submit()",
+      "id": "execution_submit_submissionstrategy_submit"
     },
     {
       "label": "events.ts",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "id": "src_tui_events_ts",
       "community": 32,
-      "norm_label": "events.ts"
+      "norm_label": "events.ts",
+      "id": "src_tui_events_ts"
     },
     {
       "label": "ArbEvent",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L1",
-      "id": "tui_events_arbevent",
       "community": 3,
-      "norm_label": "arbevent"
+      "norm_label": "arbevent",
+      "id": "tui_events_arbevent"
     },
     {
       "label": "EventHandler",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L35",
-      "id": "tui_events_eventhandler",
       "community": 32,
-      "norm_label": "eventhandler"
+      "norm_label": "eventhandler",
+      "id": "tui_events_eventhandler"
     },
     {
       "label": "EventBus",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L37",
-      "id": "tui_events_eventbus",
       "community": 32,
-      "norm_label": "eventbus"
+      "norm_label": "eventbus",
+      "id": "tui_events_eventbus"
     },
     {
       "label": ".on()",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L40",
-      "id": "tui_events_eventbus_on",
       "community": 32,
-      "norm_label": ".on()"
+      "norm_label": ".on()",
+      "id": "tui_events_eventbus_on"
     },
     {
       "label": ".emit()",
       "file_type": "code",
       "source_file": "src/tui/events.ts",
       "source_location": "L47",
-      "id": "tui_events_eventbus_emit",
       "community": 14,
-      "norm_label": ".emit()"
+      "norm_label": ".emit()",
+      "id": "tui_events_eventbus_emit"
     },
     {
       "label": "state.ts",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L1",
-      "id": "src_tui_state_ts",
       "community": 3,
-      "norm_label": "state.ts"
+      "norm_label": "state.ts",
+      "id": "src_tui_state_ts"
     },
     {
       "label": "MetricsState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L3",
-      "id": "tui_state_metricsstate",
       "community": 3,
-      "norm_label": "metricsstate"
+      "norm_label": "metricsstate",
+      "id": "tui_state_metricsstate"
     },
     {
       "label": "OpportunityEntry",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L14",
-      "id": "tui_state_opportunityentry",
       "community": 3,
-      "norm_label": "opportunityentry"
+      "norm_label": "opportunityentry",
+      "id": "tui_state_opportunityentry"
     },
     {
       "label": "SystemState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L23",
-      "id": "tui_state_systemstate",
       "community": 3,
-      "norm_label": "systemstate"
+      "norm_label": "systemstate",
+      "id": "tui_state_systemstate"
     },
     {
       "label": "LogEntry",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L47",
-      "id": "tui_state_logentry",
       "community": 3,
-      "norm_label": "logentry"
+      "norm_label": "logentry",
+      "id": "tui_state_logentry"
     },
     {
       "label": "TuiState",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L53",
-      "id": "tui_state_tuistate",
       "community": 3,
-      "norm_label": "tuistate"
+      "norm_label": "tuistate",
+      "id": "tui_state_tuistate"
     },
     {
       "label": "createInitialState()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L64",
-      "id": "tui_state_createinitialstate",
       "community": 3,
-      "norm_label": "createinitialstate()"
+      "norm_label": "createinitialstate()",
+      "id": "tui_state_createinitialstate"
     },
     {
       "label": "appendLog()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L103",
-      "id": "tui_state_appendlog",
       "community": 3,
-      "norm_label": "appendlog()"
+      "norm_label": "appendlog()",
+      "id": "tui_state_appendlog"
     },
     {
       "label": "updateOpportunity()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L110",
-      "id": "tui_state_updateopportunity",
       "community": 3,
-      "norm_label": "updateopportunity()"
+      "norm_label": "updateopportunity()",
+      "id": "tui_state_updateopportunity"
     },
     {
       "label": "applyEvent()",
       "file_type": "code",
       "source_file": "src/tui/state.ts",
       "source_location": "L134",
-      "id": "tui_state_applyevent",
       "community": 3,
-      "norm_label": "applyevent()"
-    },
-    {
-      "label": "rpc_client.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "rpc_client.ts",
-      "id": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "label": "getRpcUrls()",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L21",
-      "community": 27,
-      "norm_label": "getrpcurls()",
-      "id": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "label": "rpcUrls",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L52",
-      "community": 27,
-      "norm_label": "rpcurls",
-      "id": "effects_rpc_client_rpcurls"
-    },
-    {
-      "label": "transports",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L54",
-      "community": 27,
-      "norm_label": "transports",
-      "id": "effects_rpc_client_transports"
-    },
-    {
-      "label": "publicClient",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L67",
-      "community": 27,
-      "norm_label": "publicclient",
-      "id": "effects_rpc_client_publicclient"
+      "norm_label": "applyevent()",
+      "id": "tui_state_applyevent"
     },
     {
       "label": "balancer.ts",
@@ -2672,7 +2672,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hypersync_service.ts",
       "source_location": "L1",
-      "community": 90,
+      "community": 31,
       "norm_label": "hypersync_service.ts",
       "id": "src_infra_hypersync_hypersync_service_ts"
     },
@@ -2816,7 +2816,7 @@
       "file_type": "code",
       "source_file": "src/infra/hypersync/hypersync_service.ts",
       "source_location": "L331",
-      "community": 90,
+      "community": 31,
       "norm_label": "createhypersyncservice()",
       "id": "hypersync_hypersync_service_createhypersyncservice"
     },
@@ -10115,7 +10115,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L1",
-      "community": 95,
+      "community": 31,
       "norm_label": "chains.ts",
       "id": "src_infra_rpc_chains_ts"
     },
@@ -10124,7 +10124,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L5",
-      "community": 95,
+      "community": 31,
       "norm_label": "chains",
       "id": "rpc_chains_chains"
     },
@@ -10133,7 +10133,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/chains.ts",
       "source_location": "L9",
-      "community": 95,
+      "community": 31,
       "norm_label": "getchain()",
       "id": "rpc_chains_getchain"
     },
@@ -11366,7 +11366,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/reorg_detector.ts",
       "source_location": "L1",
-      "community": 90,
+      "community": 31,
       "norm_label": "reorg_detector.ts",
       "id": "src_infra_resilience_reorg_detector_ts"
     },
@@ -11375,7 +11375,7 @@
       "file_type": "code",
       "source_file": "src/infra/resilience/reorg_detector.ts",
       "source_location": "L5",
-      "community": 90,
+      "community": 31,
       "norm_label": "blockinfo",
       "id": "resilience_reorg_detector_blockinfo"
     },
@@ -11465,7 +11465,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L1",
-      "community": 95,
+      "community": 18,
       "norm_label": "client_factory.ts",
       "id": "src_infra_rpc_client_factory_ts"
     },
@@ -11474,7 +11474,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L17",
-      "community": 95,
+      "community": 18,
       "norm_label": "clientfactoryoptions",
       "id": "rpc_client_factory_clientfactoryoptions"
     },
@@ -11483,7 +11483,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L29",
-      "community": 95,
+      "community": 18,
       "norm_label": "createoptimizedtransport()",
       "id": "rpc_client_factory_createoptimizedtransport"
     },
@@ -11492,7 +11492,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L42",
-      "community": 95,
+      "community": 18,
       "norm_label": "createwebsockettransport()",
       "id": "rpc_client_factory_createwebsockettransport"
     },
@@ -11501,7 +11501,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L48",
-      "community": 95,
+      "community": 18,
       "norm_label": "createreadclient()",
       "id": "rpc_client_factory_createreadclient"
     },
@@ -11510,7 +11510,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L69",
-      "community": 95,
+      "community": 18,
       "norm_label": "createexecutionclient()",
       "id": "rpc_client_factory_createexecutionclient"
     },
@@ -11519,7 +11519,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L81",
-      "community": 95,
+      "community": 18,
       "norm_label": "archive_test_token",
       "id": "rpc_client_factory_archive_test_token"
     },
@@ -11528,7 +11528,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L83",
-      "community": 95,
+      "community": 18,
       "norm_label": "decimals_test_abi",
       "id": "rpc_client_factory_decimals_test_abi"
     },
@@ -11537,7 +11537,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/client_factory.ts",
       "source_location": "L90",
-      "community": 95,
+      "community": 18,
       "norm_label": "filterarchivalrpcurls()",
       "id": "rpc_client_factory_filterarchivalrpcurls"
     },
@@ -11546,7 +11546,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L1",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpc.ts",
       "id": "src_infra_rpc_hyperrpc_ts"
     },
@@ -11555,7 +11555,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L29",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpcconfig",
       "id": "rpc_hyperrpc_hyperrpcconfig"
     },
@@ -11564,7 +11564,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L36",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpcblock",
       "id": "rpc_hyperrpc_hyperrpcblock"
     },
@@ -11573,7 +11573,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L44",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpctransaction",
       "id": "rpc_hyperrpc_hyperrpctransaction"
     },
@@ -11582,7 +11582,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L52",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpcreceipt",
       "id": "rpc_hyperrpc_hyperrpcreceipt"
     },
@@ -11591,7 +11591,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L59",
-      "community": 90,
+      "community": 31,
       "norm_label": "hyperrpclog",
       "id": "rpc_hyperrpc_hyperrpclog"
     },
@@ -11717,7 +11717,7 @@
       "file_type": "code",
       "source_file": "src/infra/rpc/hyperrpc.ts",
       "source_location": "L195",
-      "community": 90,
+      "community": 31,
       "norm_label": "createhyperrpcclient()",
       "id": "rpc_hyperrpc_createhyperrpcclient"
     },
@@ -19185,14 +19185,290 @@
   ],
   "links": [
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_getrpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_rpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_transports"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_eventbuslike"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "hypersync_hyperindex_process_loadenvfile"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_hypersync_hyperindex_process_ts",
+      "target": "src_infra_observability_logger_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "src_infra_hypersync_hyperindex_process_ts"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/hypersync/hyperindex_process.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
+      "target": "observability_logger_logger"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_hyperindexprocess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_infra_resilience_hyperindex_monitor_ts",
+      "target": "hypersync_hyperindex_process_createhyperindexprocess"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".grok/lsp.json",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_json",
-      "target": "grok_lsp_bash",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash"
     },
     {
       "relation": "contains",
@@ -19200,9 +19476,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_json",
-      "target": "grok_lsp_rescript",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript"
     },
     {
       "relation": "contains",
@@ -19210,9 +19486,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_json",
-      "target": "grok_lsp_typescript",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript"
     },
     {
       "relation": "contains",
@@ -19220,9 +19496,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_json",
-      "target": "grok_lsp_yaml",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml"
     },
     {
       "relation": "contains",
@@ -19230,9 +19506,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript",
-      "target": "grok_lsp_typescript_args",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript_args"
     },
     {
       "relation": "contains",
@@ -19240,9 +19516,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript",
-      "target": "grok_lsp_typescript_command",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript_command"
     },
     {
       "relation": "contains",
@@ -19250,9 +19526,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript",
-      "target": "grok_lsp_typescript_env",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript_env"
     },
     {
       "relation": "contains",
@@ -19260,9 +19536,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript",
-      "target": "grok_lsp_typescript_extensiontolanguage",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript_extensiontolanguage"
     },
     {
       "relation": "contains",
@@ -19270,9 +19546,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript",
-      "target": "grok_lsp_typescript_startuptimeout",
-      "confidence_score": 1.0
+      "target": "grok_lsp_typescript_startuptimeout"
     },
     {
       "relation": "contains",
@@ -19280,9 +19556,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_js",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_js"
     },
     {
       "relation": "contains",
@@ -19290,9 +19566,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_jsx",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_jsx"
     },
     {
       "relation": "contains",
@@ -19300,9 +19576,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_ts",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_ts"
     },
     {
       "relation": "contains",
@@ -19310,9 +19586,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_tsx",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_tsx"
     },
     {
       "relation": "contains",
@@ -19320,9 +19596,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_typescript_env",
-      "target": "grok_lsp_env_lspmux_server",
-      "confidence_score": 1.0
+      "target": "grok_lsp_env_lspmux_server"
     },
     {
       "relation": "contains",
@@ -19330,9 +19606,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash_env",
-      "target": "grok_lsp_env_lspmux_server",
-      "confidence_score": 1.0
+      "target": "grok_lsp_env_lspmux_server"
     },
     {
       "relation": "contains",
@@ -19340,9 +19616,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript_env",
-      "target": "grok_lsp_env_lspmux_server",
-      "confidence_score": 1.0
+      "target": "grok_lsp_env_lspmux_server"
     },
     {
       "relation": "contains",
@@ -19350,9 +19626,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml_env",
-      "target": "grok_lsp_env_lspmux_server",
-      "confidence_score": 1.0
+      "target": "grok_lsp_env_lspmux_server"
     },
     {
       "relation": "contains",
@@ -19360,9 +19636,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml",
-      "target": "grok_lsp_yaml_args",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml_args"
     },
     {
       "relation": "contains",
@@ -19370,9 +19646,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml",
-      "target": "grok_lsp_yaml_command",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml_command"
     },
     {
       "relation": "contains",
@@ -19380,9 +19656,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml",
-      "target": "grok_lsp_yaml_env",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml_env"
     },
     {
       "relation": "contains",
@@ -19390,9 +19666,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml",
-      "target": "grok_lsp_yaml_extensiontolanguage",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml_extensiontolanguage"
     },
     {
       "relation": "contains",
@@ -19400,9 +19676,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml",
-      "target": "grok_lsp_yaml_startuptimeout",
-      "confidence_score": 1.0
+      "target": "grok_lsp_yaml_startuptimeout"
     },
     {
       "relation": "contains",
@@ -19410,9 +19686,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_yaml",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_yaml"
     },
     {
       "relation": "contains",
@@ -19420,9 +19696,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_yaml_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_yml",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_yml"
     },
     {
       "relation": "contains",
@@ -19430,9 +19706,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash",
-      "target": "grok_lsp_bash_args",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash_args"
     },
     {
       "relation": "contains",
@@ -19440,9 +19716,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash",
-      "target": "grok_lsp_bash_command",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash_command"
     },
     {
       "relation": "contains",
@@ -19450,9 +19726,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash",
-      "target": "grok_lsp_bash_env",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash_env"
     },
     {
       "relation": "contains",
@@ -19460,9 +19736,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash",
-      "target": "grok_lsp_bash_extensiontolanguage",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash_extensiontolanguage"
     },
     {
       "relation": "contains",
@@ -19470,9 +19746,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash",
-      "target": "grok_lsp_bash_startuptimeout",
-      "confidence_score": 1.0
+      "target": "grok_lsp_bash_startuptimeout"
     },
     {
       "relation": "contains",
@@ -19480,9 +19756,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_bash",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_bash"
     },
     {
       "relation": "contains",
@@ -19490,9 +19766,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_bash_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_sh",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_sh"
     },
     {
       "relation": "contains",
@@ -19500,9 +19776,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript",
-      "target": "grok_lsp_rescript_args",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript_args"
     },
     {
       "relation": "contains",
@@ -19510,9 +19786,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript",
-      "target": "grok_lsp_rescript_command",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript_command"
     },
     {
       "relation": "contains",
@@ -19520,9 +19796,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript",
-      "target": "grok_lsp_rescript_env",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript_env"
     },
     {
       "relation": "contains",
@@ -19530,9 +19806,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript",
-      "target": "grok_lsp_rescript_extensiontolanguage",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript_extensiontolanguage"
     },
     {
       "relation": "contains",
@@ -19540,9 +19816,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript",
-      "target": "grok_lsp_rescript_startuptimeout",
-      "confidence_score": 1.0
+      "target": "grok_lsp_rescript_startuptimeout"
     },
     {
       "relation": "contains",
@@ -19550,9 +19826,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_res",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_res"
     },
     {
       "relation": "contains",
@@ -19560,9 +19836,9 @@
       "source_file": ".grok/lsp.json",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "grok_lsp_rescript_extensiontolanguage",
-      "target": "grok_lsp_extensiontolanguage_resi",
-      "confidence_score": 1.0
+      "target": "grok_lsp_extensiontolanguage_resi"
     },
     {
       "relation": "contains",
@@ -19860,9 +20136,9 @@
       "source_file": "package.json",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_bash_language_server",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_bash_language_server"
     },
     {
       "relation": "contains",
@@ -19910,9 +20186,9 @@
       "source_file": "package.json",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_graphql_language_service_cli",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_graphql_language_service_cli"
     },
     {
       "relation": "contains",
@@ -19920,9 +20196,9 @@
       "source_file": "package.json",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_nomicfoundation_solidity_language_server",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_nomicfoundation_solidity_language_server"
     },
     {
       "relation": "contains",
@@ -19950,9 +20226,9 @@
       "source_file": "package.json",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_taplo_cli",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_taplo_cli"
     },
     {
       "relation": "contains",
@@ -19990,9 +20266,9 @@
       "source_file": "package.json",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_typescript_language_server",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_typescript_language_server"
     },
     {
       "relation": "contains",
@@ -20030,9 +20306,9 @@
       "source_file": "package.json",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_vscode_langservers_extracted",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_vscode_langservers_extracted"
     },
     {
       "relation": "contains",
@@ -20040,9 +20316,9 @@
       "source_file": "package.json",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "t_package_devdependencies",
-      "target": "t_package_devdependencies_yaml_language_server",
-      "confidence_score": 1.0
+      "target": "t_package_devdependencies_yaml_language_server"
     },
     {
       "relation": "imports_from",
@@ -20694,176 +20970,6 @@
       "target": "config_schema_appconfig"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_eventbuslike"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_hyperindexstatusevent"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "hypersync_hyperindex_process_loadenvfile"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_hypersync_hyperindex_process_ts",
-      "target": "src_infra_observability_logger_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "src_infra_hypersync_hyperindex_process_ts"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/hypersync/hyperindex_process.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hypersync_hyperindex_process_hyperindexprocessoptions",
-      "target": "observability_logger_logger"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitoroptions",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocessoptions"
-    },
-    {
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_hyperindexprocess"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "resilience_hyperindex_monitor_hyperindexmonitor_constructor",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/infra/resilience/hyperindex_monitor.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_infra_resilience_hyperindex_monitor_ts",
-      "target": "hypersync_hyperindex_process_createhyperindexprocess"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -20924,9 +21030,9 @@
       "source_file": "src/orchestrator/boot.ts",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_orchestrator_boot_ts",
-      "target": "execution_gas_creategasfetcher",
-      "confidence_score": 1.0
+      "target": "execution_gas_creategasfetcher"
     },
     {
       "relation": "imports",
@@ -25174,9 +25280,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_creategasfetcher",
-      "confidence_score": 1.0
+      "target": "execution_gas_creategasfetcher"
     },
     {
       "relation": "imports",
@@ -25217,9 +25323,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L191",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_test_client",
-      "confidence_score": 1.0
+      "target": "execution_gas_test_client"
     },
     {
       "relation": "contains",
@@ -25227,9 +25333,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_test_effective",
-      "confidence_score": 1.0
+      "target": "execution_gas_test_effective"
     },
     {
       "relation": "contains",
@@ -25237,9 +25343,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L192",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_test_fetcher",
-      "confidence_score": 1.0
+      "target": "execution_gas_test_fetcher"
     },
     {
       "relation": "contains",
@@ -25267,9 +25373,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L190",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_test_getfeehistory",
-      "confidence_score": 1.0
+      "target": "execution_gas_test_getfeehistory"
     },
     {
       "relation": "contains",
@@ -25287,9 +25393,9 @@
       "source_file": "src/services/execution/gas.test.ts",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_test_ts",
-      "target": "execution_gas_test_makemockclient",
-      "confidence_score": 1.0
+      "target": "execution_gas_test_makemockclient"
     },
     {
       "relation": "contains",
@@ -25358,9 +25464,9 @@
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_ts",
-      "target": "execution_gas_creategasfetcher",
-      "confidence_score": 1.0
+      "target": "execution_gas_creategasfetcher"
     },
     {
       "relation": "contains",
@@ -25378,9 +25484,9 @@
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_execution_gas_ts",
-      "target": "execution_gas_gasfetcheroptions",
-      "confidence_score": 1.0
+      "target": "execution_gas_gasfetcheroptions"
     },
     {
       "relation": "contains",
@@ -25523,9 +25629,9 @@
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L142",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "execution_gas_gasoracle",
-      "target": "execution_gas_gasoracle_geteffectivemaxbidmultiplier",
-      "confidence_score": 1.0
+      "target": "execution_gas_gasoracle_geteffectivemaxbidmultiplier"
     },
     {
       "relation": "method",
@@ -25672,9 +25778,9 @@
       "source_file": "src/services/execution/gas.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "execution_gas_gasoracle_geteffectivemaxbidmultiplier",
-      "target": "execution_gas_gasoracle_estimatecongestion",
-      "confidence_score": 1.0
+      "target": "execution_gas_gasoracle_estimatecongestion"
     },
     {
       "relation": "calls",
@@ -26393,112 +26499,6 @@
       "confidence_score": 1.0,
       "source": "src_tui_main_ts",
       "target": "tui_state_applyevent"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_rpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_transports"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
     },
     {
       "relation": "imports",
@@ -52928,5 +52928,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "7d18612d3795454b785809c05861368fb2f3f71f"
+  "built_at_commit": "3de1ad3464cb4a543ae09ed057d51e0329461574"
 }

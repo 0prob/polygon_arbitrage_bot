@@ -5,7 +5,6 @@ import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
 import { STATIC_ANCHORS } from "../infra/hypersync/hyperindex_graphql.ts";
-import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
 const V3_ABI = parseAbi([
@@ -53,7 +52,6 @@ export async function fetchMissingPoolState(
   pools: PoolMeta[],
   currentCycles: FoundCycle[],
   forceRefresh: boolean = false,
-  _hyperSync?: HyperSyncService,
 ): Promise<Set<string>> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
@@ -94,12 +92,6 @@ export async function fetchMissingPoolState(
   }
 
   if (missingAddresses.size === 0) return updated;
-
-  // HyperSync logs pre-fetch path removed: it was a no-op stub that populated
-  // { initialized: false, fromHyperSyncLogs: true } placeholders, causing the
-  // subsequent multicall to do wasted work (and potentially confusing simulators
-  // that saw uninitialized state). All state is now fetched via the reliable
-  // multicall batch path below.
 
   const toFetch = Array.from(missingAddresses);
 

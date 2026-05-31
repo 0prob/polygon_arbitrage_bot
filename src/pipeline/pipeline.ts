@@ -347,7 +347,13 @@ export async function evaluatePipeline(
       }),
     );
 
-    type EvalSuccess = { type: "success"; bestResult: RouteSimulationResult; bestAssessment: ProfitAssessment; bestGrossMatic: bigint; cycle: FoundCycle };
+    type EvalSuccess = {
+      type: "success";
+      bestResult: RouteSimulationResult;
+      bestAssessment: ProfitAssessment;
+      bestGrossMatic: bigint;
+      cycle: FoundCycle;
+    };
     const sortedResults = results
       .filter((r): r is EvalSuccess => r.type === "success")
       .sort((a, b) => Number(b.bestGrossMatic - a.bestGrossMatic));

@@ -165,10 +165,7 @@ export interface GasFetcherOptions {
  * This protects against individual RPCs returning stale or under-estimated priority fees,
  * which is especially common on Polygon during volatility.
  */
-export function createGasFetcher(
-  client: PublicClient,
-  opts: GasFetcherOptions,
-): () => Promise<{ baseFee: bigint; priorityFee: bigint }> {
+export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions): () => Promise<{ baseFee: bigint; priorityFee: bigint }> {
   const percentile = Math.max(0, Math.min(100, Math.floor(opts.feeHistoryPercentile)));
   const blockCount = opts.feeHistoryBlockCount ?? 2;
   const fallback = 30n * 10n ** 9n;

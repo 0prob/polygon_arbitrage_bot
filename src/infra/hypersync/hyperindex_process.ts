@@ -135,7 +135,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
           suppressedCount: s.count,
           durationMs: now - s.firstSeen,
         },
-        `Suppressed ${s.count} similar hypersync_client transient errors (final flush on shutdown)`
+        `Suppressed ${s.count} similar hypersync_client transient errors (final flush on shutdown)`,
       );
       _hypersyncTransientErrorSuppression = null;
     }
@@ -243,16 +243,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // We emit the first one at full severity, then count silently (at debug), and emit a summary on the next
     // different event or after the suppression window.
     const isHypersyncTransientError =
-      /hypersync_client.*(failed to get (height|arrow data) from server|error sending request for url.*hypersync|dns error|connection error|timed out)/i.test(originalTrimmed);
+      /hypersync_client.*(failed to get (height|arrow data) from server|error sending request for url.*hypersync|dns error|connection error|timed out)/i.test(
+        originalTrimmed,
+      );
 
     if (isHypersyncTransientError) {
       const signature = "hypersync_client:transient_fetch_error";
       const now = Date.now();
 
       const current = _hypersyncTransientErrorSuppression;
-      const shouldFlush = !current ||
-        current.signature !== signature ||
-        (now - current.lastSeen > HYPERSYNC_SUPPRESS_WINDOW_MS);
+      const shouldFlush = !current || current.signature !== signature || now - current.lastSeen > HYPERSYNC_SUPPRESS_WINDOW_MS;
 
       if (shouldFlush) {
         if (current && current.count > 0) {
@@ -265,7 +265,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
               windowMs: HYPERSYNC_SUPPRESS_WINDOW_MS,
               firstRawSample: originalTrimmed.slice(0, 200),
             },
-            `Suppressed ${current.count} similar hypersync_client transient errors in the last ${Math.round((now - current.firstSeen) / 1000)}s`
+            `Suppressed ${current.count} similar hypersync_client transient errors in the last ${Math.round((now - current.firstSeen) / 1000)}s`,
           );
         }
         _hypersyncTransientErrorSuppression = { signature, count: 0, firstSeen: now, lastSeen: now };
@@ -275,7 +275,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         current.lastSeen = now;
         opts.logger.debug(
           { source: "hyperindex", raw: originalTrimmed, suppressed: true, runningCount: current.count },
-          "HyperIndex hypersync_client transient error (rate-limited)"
+          "HyperIndex hypersync_client transient error (rate-limited)",
         );
         return; // skip normal error promotion + other processing for this noisy line
       }
@@ -498,10 +498,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // Build a pool from (in priority order):
     //   explicit opts + ENVIO_API_TOKENS + single token + files (root + hyperindex/.env)
     const tokenPool = new ApiTokenPool({
-      tokens: [
-        ...(opts.envioApiTokens ?? []),
-        ...(opts.envioApiToken ? [opts.envioApiToken] : []),
-      ],
+      tokens: [...(opts.envioApiTokens ?? []), ...(opts.envioApiToken ? [opts.envioApiToken] : [])],
       scanEnvFiles: true,
       rootDir: path.join(hiDir, ".."),
     });

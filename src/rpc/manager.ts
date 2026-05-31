@@ -7,23 +7,11 @@ import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import { HyperRpcClient, createHyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 import { HyperSyncService, createHyperSyncService } from "../infra/hypersync/hypersync_service.ts";
+import { RequestScheduler, RequestPriority } from "../services/rpc/request_scheduler.ts";
 
 const DEFAULT_BATCH_SIZE = 100;
 const DEFAULT_BATCH_WAIT_MS = 16;
 const DEFAULT_TIMEOUT_MS = 10_000;
-
-function httpTransport(url: string, opts?: { batchSize?: number; timeoutMs?: number }) {
-  return http(url, {
-    batch: { batchSize: opts?.batchSize ?? DEFAULT_BATCH_SIZE },
-    timeout: opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    fetchOptions: {
-      headers: {
-        Connection: "keep-alive",
-        "Keep-Alive": "timeout=60, max=1000",
-      },
-    },
-  });
-}
 
 export interface RpcManagerOptions {
   chainId?: number;
@@ -31,6 +19,7 @@ export interface RpcManagerOptions {
 
 export class RpcManager {
   public readonly chainId: number;
+  public readonly scheduler: RequestScheduler;
   private _readClient: PublicClient;
   private _executionClients: WalletClient[] = [];
   private _fastLane: FastLaneSubmitter | undefined;
@@ -42,17 +31,19 @@ export class RpcManager {
   constructor(config: RpcConfig, opts?: RpcManagerOptions) {
     this.chainId = opts?.chainId ?? 137;
     const chain = getChain(this.chainId);
+    this.scheduler = new RequestScheduler(config.chainstackRps ?? 250);
 
-    // Read client: fallback across polygonRpcUrls
+    // Read client: rate-limited transport to polygonRpcUrls
+    // When multiple URLs are configured, use fallback for redundancy
     const transports = config.polygonRpcUrls.map((url) =>
-      httpTransport(url, {
+      this.rateLimitedTransport(url, RequestPriority.HIGH, {
         batchSize: config.batchSize,
         timeoutMs: config.requestTimeoutMs,
       }),
     );
     this._readClient = createPublicClient({
       chain,
-      transport: fallback(transports, { rank: true }),
+      transport: transports.length > 1 ? fallback(transports, { rank: true }) : transports[0],
       batch: {
         multicall: {
           wait: config.batchWaitMs ?? DEFAULT_BATCH_WAIT_MS,
@@ -126,6 +117,29 @@ export class RpcManager {
     };
   }
 
+  /** Create a rate-limited Viem http transport wrapping the scheduler */
+  private rateLimitedTransport(url: string, priority: RequestPriority, opts?: { batchSize?: number; timeoutMs?: number }) {
+    const rawTransport = http(url, {
+      batch: { batchSize: opts?.batchSize ?? DEFAULT_BATCH_SIZE },
+      timeout: opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      fetchOptions: {
+        headers: {
+          Connection: "keep-alive",
+          "Keep-Alive": "timeout=60, max=1000",
+        },
+      },
+    });
+
+    return (args: Parameters<ReturnType<typeof http>>[0]) => {
+      const transport = rawTransport(args);
+      const originalRequest = transport.request.bind(transport);
+      transport.request = async ({ method, params }: { method: string; params?: unknown }) => {
+        return this.scheduler.acquire(priority, () => originalRequest({ method, params }));
+      };
+      return transport;
+    };
+  }
+
   // === Execution clients ===
   addExecutionClient(rpcUrl: string, privateKey: string): WalletClient {
     const chain = getChain(this.chainId);
@@ -134,7 +148,7 @@ export class RpcManager {
     const client = createWalletClient({
       account,
       chain,
-      transport: httpTransport(rpcUrl, { timeoutMs: 15_000, batchSize: 50 }),
+      transport: this.rateLimitedTransport(rpcUrl, RequestPriority.CRITICAL, { timeoutMs: 15_000, batchSize: 50 }),
     });
     this._executionClients.push(client);
     return client;

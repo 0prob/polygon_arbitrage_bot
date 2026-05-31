@@ -40,10 +40,15 @@ export class ApiTokenPool {
   constructor(opts: ApiTokenPoolOptions = {}) {
     const explicit = (opts.tokens ?? []).filter(Boolean);
 
-    let fromEnv: string[] = [];
+    const fromEnv: string[] = [];
     const multi = process.env.ENVIO_API_TOKENS;
     if (multi) {
-      fromEnv.push(...multi.split(",").map((s) => s.trim()).filter(Boolean));
+      fromEnv.push(
+        ...multi
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
     }
     const single = process.env.ENVIO_API_TOKEN;
     if (single) fromEnv.push(single.trim());
@@ -51,10 +56,7 @@ export class ApiTokenPool {
     let fromFiles: string[] = [];
     if (opts.scanEnvFiles !== false) {
       const root = opts.rootDir ?? process.cwd();
-      fromFiles = [
-        ...parseEnvTokens(path.join(root, ".env")),
-        ...parseEnvTokens(path.join(root, "hyperindex", ".env")),
-      ];
+      fromFiles = [...parseEnvTokens(path.join(root, ".env")), ...parseEnvTokens(path.join(root, "hyperindex", ".env"))];
     }
 
     // Deduplicate while preserving order of first appearance
@@ -164,7 +166,10 @@ function parseEnvTokens(filePath: string): string[] {
         // Strip outer quotes if present on the entire value
         const value = rawValue.replace(/^['"](.*)['"]$/, "$1");
         for (const part of value.split(",")) {
-          const t = part.trim().replace(/^['"](.*)['"]$/, "$1").trim();
+          const t = part
+            .trim()
+            .replace(/^['"](.*)['"]$/, "$1")
+            .trim();
           if (t) out.push(t);
         }
       }

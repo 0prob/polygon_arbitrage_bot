@@ -45,7 +45,7 @@ export class HyperIndexMonitor implements Lifecycle {
   constructor(private opts: HyperIndexMonitorOptions) {
     this.proc = createHyperIndexProcess(opts.processOptions);
     this.checkIntervalMs = opts.checkIntervalMs ?? 10_000;
-    this.maxStallMs = opts.maxStallMs ?? 60_000;
+    this.maxStallMs = opts.maxStallMs ?? 30_000;
     this.maxLagBlocks = opts.maxLagBlocks ?? 200;
   }
 
@@ -194,6 +194,22 @@ export class HyperIndexMonitor implements Lifecycle {
     const current = await this.getIndexedHeight();
     const lag = this.getCurrentLag();
 
+    // Hasura health check: if we have a URL but can't reach it, it's a critical failure.
+    // This often happens when docker containers get stuck or fail to start properly.
+    if (this.opts.processOptions.hasuraUrl) {
+      try {
+        const url = new URL(this.opts.processOptions.hasuraUrl);
+        const healthUrl = `${url.protocol}//${url.host}/healthz`;
+        const res = await fetch(healthUrl, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) throw new Error(`Hasura health check returned ${res.status}`);
+      } catch (err) {
+        this.opts.logger.error({ err, url: this.opts.processOptions.hasuraUrl }, "Hasura unreachable — forcing HyperIndex restart");
+        this._isHealthy = false;
+        await this.restart();
+        return;
+      }
+    }
+
     // Surface rate limit info (useful for autonomous debugging of 100 req/min issues)
     if (this.opts.hyperSync) {
       try {
@@ -281,7 +297,15 @@ export class HyperIndexMonitor implements Lifecycle {
     return this.lastSyncedBlock;
   }
 
-  getLastStatus(): { status: string; synced: number; remote: number; lag: number; syncRate: number; rateLimitPain?: number; envioKeyPrefix?: string } {
+  getLastStatus(): {
+    status: string;
+    synced: number;
+    remote: number;
+    lag: number;
+    syncRate: number;
+    rateLimitPain?: number;
+    envioKeyPrefix?: string;
+  } {
     const lag = this.getCurrentLag();
     const keyPrefix = (this.proc as any).getCurrentEnvioKeyPrefix?.();
     return {

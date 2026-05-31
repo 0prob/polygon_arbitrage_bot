@@ -50,15 +50,12 @@ export class HyperSyncService {
       throw new Error("@envio-dev/hypersync-client is not installed. Run `bun install` to get the native modules.");
     }
 
-    const tokens = config.apiTokens?.length
-      ? config.apiTokens
-      : config.apiToken
-        ? [config.apiToken]
-        : [];
+    const tokens = config.apiTokens?.length ? config.apiTokens : config.apiToken ? [config.apiToken] : [];
 
-    this.pool = tokens.length > 0
-      ? new ApiTokenPool({ tokens, maxRpmPerToken: config.maxRpmPerToken })
-      : createDefaultApiTokenPool(config.maxRpmPerToken);
+    this.pool =
+      tokens.length > 0
+        ? new ApiTokenPool({ tokens, maxRpmPerToken: config.maxRpmPerToken })
+        : createDefaultApiTokenPool(config.maxRpmPerToken);
 
     if (!this.pool.hasTokens()) {
       // Still create a single unauthenticated client (free public tier)
@@ -183,13 +180,26 @@ export class HyperSyncService {
 
   /**
    * Fetch a single block (simplified, returns partial data).
+   * For "latest", first resolves the current height via getHeight() to avoid
+   * scanning from block 0.
    * For full fidelity, the legacy HyperRpcClient (JSON-RPC) can still be used alongside.
    */
   async getBlockByNumber(blockNumber: bigint | number | "latest"): Promise<any | null> {
-    const fromBlock = typeof blockNumber === "string" ? undefined : Number(blockNumber);
+    let targetBlock: number;
+    if (blockNumber === "latest") {
+      try {
+        targetBlock = await this.getHeight();
+      } catch (err) {
+        this.logger?.warn({ err }, "HyperSync getBlockByNumber('latest') — getHeight failed, falling back to publicClient");
+        return null;
+      }
+    } else {
+      targetBlock = Number(blockNumber);
+    }
+
     const query: any = {
-      fromBlock: fromBlock ?? 0,
-      toBlock: fromBlock !== undefined ? fromBlock + 1 : undefined,
+      fromBlock: targetBlock,
+      toBlock: targetBlock + 1,
       fieldSelection: {
         block: ["Number", "Hash", "ParentHash", "Timestamp"],
       },

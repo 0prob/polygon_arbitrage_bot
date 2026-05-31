@@ -39,6 +39,7 @@ export const RpcConfigSchema = z.object({
   // Helps avoid hammering free-tier keys and triggering long server backoffs.
   // When using multiple keys via ENVIO_API_TOKENS / hyperindex/.env, this is applied per-key.
   hypersyncMaxRpmPerToken: numberFromString.int().positive().optional(),
+  chainstackRps: numberFromString.int().positive().optional(),
 });
 export type RpcConfig = z.infer<typeof RpcConfigSchema>;
 
