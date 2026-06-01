@@ -1,5 +1,6 @@
 import { createPublicClient, createWalletClient, http, fallback, type PublicClient, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { Alchemy, Network, type AlchemySettings } from "alchemy-sdk";
 import type { RpcConfig } from "../config/schema.ts";
 import { getChain } from "../infra/rpc/chains.ts";
 import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
@@ -27,11 +28,22 @@ export class RpcManager {
   private _reorgDetector: ReorgDetector | undefined;
   private _hyperRpc: HyperRpcClient | undefined;
   private _hyperSync: HyperSyncService | undefined;
+  private _alchemy: Alchemy | undefined;
 
   constructor(config: RpcConfig, opts?: RpcManagerOptions) {
     this.chainId = opts?.chainId ?? 137;
     const chain = getChain(this.chainId);
     this.scheduler = new RequestScheduler(config.chainstackRps ?? 250);
+
+    // Alchemy SDK initialization
+    if (config.alchemyApiKey) {
+      const settings: AlchemySettings = {
+        apiKey: config.alchemyApiKey,
+        network: Network.MATIC_MAINNET,
+        batchRequests: config.alchemyBatchRequests,
+      };
+      this._alchemy = new Alchemy(settings);
+    }
 
     // Read client: rate-limited transport to polygonRpcUrls
     // When multiple URLs are configured, use fallback for redundancy
@@ -39,6 +51,7 @@ export class RpcManager {
       this.rateLimitedTransport(url, RequestPriority.HIGH, {
         batchSize: config.batchSize,
         timeoutMs: config.requestTimeoutMs,
+        alchemyApiKey: config.alchemyApiKey,
       }),
     );
     this._readClient = createPublicClient({
@@ -105,6 +118,11 @@ export class RpcManager {
     return this._hyperSync;
   }
 
+  /** Alchemy SDK instance (populated when ALCHEMY_API_KEY is configured) */
+  get alchemy(): Alchemy | undefined {
+    return this._alchemy;
+  }
+
   // === Read operations ===
   get read() {
     return {
@@ -120,15 +138,25 @@ export class RpcManager {
   }
 
   /** Create a rate-limited Viem http transport wrapping the scheduler */
-  private rateLimitedTransport(url: string, priority: RequestPriority, opts?: { batchSize?: number; timeoutMs?: number }) {
+  private rateLimitedTransport(
+    url: string,
+    priority: RequestPriority,
+    opts?: { batchSize?: number; timeoutMs?: number; alchemyApiKey?: string },
+  ) {
+    const headers: Record<string, string> = {
+      Connection: "keep-alive",
+      "Keep-Alive": "timeout=60, max=1000",
+    };
+
+    if (opts?.alchemyApiKey && url.includes("alchemy")) {
+      headers["X-Alchemy-Token"] = opts.alchemyApiKey;
+    }
+
     const rawTransport = http(url, {
-      batch: { batchSize: opts?.batchSize ?? DEFAULT_BATCH_SIZE },
+      batch: opts?.batchSize ? { batchSize: opts.batchSize } : { batchSize: DEFAULT_BATCH_SIZE },
       timeout: opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       fetchOptions: {
-        headers: {
-          Connection: "keep-alive",
-          "Keep-Alive": "timeout=60, max=1000",
-        },
+        headers,
       },
     });
 
@@ -193,8 +221,15 @@ export class RpcManager {
 
   // === WebSocket ===
   addWebSocketSubscriber(url: string, opts?: { reconnectDelayMs?: number; pingIntervalMs?: number }): WebSocketSubscriber {
+    let finalUrl = url;
+    if (this._alchemy && url.includes("alchemy")) {
+      // Alchemy resilient WebSocket URL format (can use SDK internally if we refactor WebSocketSubscriber,
+      // but for now we'll just ensure the URL is optimized if it's an alchemy one)
+      // The current WebSocketSubscriber uses raw ws, we could enhance it later.
+    }
+
     this._ws = new WebSocketSubscriber({
-      url,
+      url: finalUrl,
       maxPendingTxsPerTick: 10,
       reconnectDelayMs: opts?.reconnectDelayMs ?? 5_000,
       pingIntervalMs: opts?.pingIntervalMs ?? 15_000,

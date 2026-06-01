@@ -63,6 +63,9 @@ export class HyperSyncService {
         url: config.url,
         apiToken: "",
         httpReqTimeoutMillis: config.timeoutMs ?? 30000,
+        maxNumRetries: 12,
+        retryBackoffMs: 500,
+        proactiveRateLimitSleep: true,
       };
       this.clients.push({ token: "", client: new HypersyncClient(clientConfig) });
       this.logger?.warn("No HyperSync API tokens found — using unauthenticated public endpoint (very low rate limit)");
@@ -70,6 +73,9 @@ export class HyperSyncService {
       const baseCfg = {
         url: config.url,
         httpReqTimeoutMillis: config.timeoutMs ?? 30000,
+        maxNumRetries: 12,
+        retryBackoffMs: 500,
+        proactiveRateLimitSleep: true,
       };
       for (const tok of this.pool["tokens"] ?? []) {
         // Access private for construction only; pool already holds the list

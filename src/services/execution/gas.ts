@@ -156,12 +156,26 @@ export interface GasFetcherOptions {
   feeHistoryBlockCount?: number;
 }
 
+export const POLYGON_GAS_STATION_URLS: Record<number, string> = {
+  137: "https://gasstation.polygon.technology/v2",
+};
+
+export interface PolygonGasStationResponse {
+  safeLow: { maxPriorityFee: number; maxFee: number };
+  standard: { maxPriorityFee: number; maxFee: number };
+  fast: { maxPriorityFee: number; maxFee: number };
+  estimatedBaseFee: number;
+  blockTime: number;
+  blockNumber: number;
+}
+
 /**
- * Creates a robust gas fetcher that combines two priority fee sources:
+ * Creates a robust gas fetcher that combines three priority fee sources:
  * 1. The client's native estimateMaxPriorityFeePerGas()
  * 2. Explicit eth_feeHistory reward at the configured percentile
+ * 3. Polygon Gas Station API recommendations (when available for the chain)
  *
- * Takes the higher of the two (conservative) when both succeed.
+ * Takes the highest of the three (conservative) when they succeed.
  * This protects against individual RPCs returning stale or under-estimated priority fees,
  * which is especially common on Polygon during volatility.
  */
@@ -172,7 +186,10 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
 
   return async () => {
     try {
-      const [block, priorityFromClient, feeHistory] = await Promise.all([
+      const chainId = client.chain?.id;
+      const stationUrl = chainId ? POLYGON_GAS_STATION_URLS[chainId] : undefined;
+
+      const [block, priorityFromClient, feeHistory, stationResult] = await Promise.all([
         client.getBlock({ blockTag: "latest" }),
         client.estimateMaxPriorityFeePerGas().catch(() => null),
         client
@@ -182,6 +199,7 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
             rewardPercentiles: [percentile],
           })
           .catch(() => null),
+        stationUrl ? fetchGasFromStation(stationUrl, percentile).catch(() => null) : Promise.resolve(null),
       ]);
 
       const baseFee = block.baseFeePerGas ?? fallback;
@@ -198,14 +216,13 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
         }
       }
 
-      // Conservative policy: when both sources report, take the higher value.
+      const priorityFromStation = stationResult?.priorityFee ?? null;
+
+      // Conservative policy: when multiple sources report, take the highest value.
       // This biases toward landing the transaction during uncertain/volatile periods.
-      let priorityFee: bigint;
-      if (priorityFromClient && priorityFromHistory) {
-        priorityFee = priorityFromClient > priorityFromHistory ? priorityFromClient : priorityFromHistory;
-      } else {
-        priorityFee = priorityFromClient ?? priorityFromHistory ?? fallback;
-      }
+      const candidates = [priorityFromClient, priorityFromHistory, priorityFromStation].filter((v): v is bigint => v !== null && v > 0n);
+
+      let priorityFee = candidates.length > 0 ? candidates.reduce((a, b) => (a > b ? a : b)) : fallback;
 
       if (priorityFee <= 0n) priorityFee = fallback;
 
@@ -215,6 +232,26 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
     }
   };
 }
+
+async function fetchGasFromStation(url: string, percentile: number): Promise<{ baseFee: bigint; priorityFee: bigint } | null> {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    if (!response.ok) return null;
+    const data = (await response.json()) as PolygonGasStationResponse;
+
+    let level: "safeLow" | "standard" | "fast" = "fast";
+    if (percentile <= 15) level = "safeLow";
+    else if (percentile <= 35) level = "standard";
+
+    const baseFee = BigInt(Math.round(data.estimatedBaseFee * 1e9));
+    const priorityFee = BigInt(Math.round(data[level].maxPriorityFee * 1e9));
+
+    return { baseFee, priorityFee };
+  } catch (_err) {
+    return null;
+  }
+}
+
 
 function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint {
   const floor = BigInt(config.priorityFeeFloorGwei) * 1_000_000_000n;

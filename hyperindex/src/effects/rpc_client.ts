@@ -54,8 +54,14 @@ const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
     batch: { batchSize: BATCH_SIZE },
     timeout: 10_000,
-    retryCount: 1,
-    retryDelay: 150,
+    retryCount: 3,
+    retryDelay: 250,
+    fetchOptions: {
+      headers: {
+        Connection: "keep-alive",
+        "Keep-Alive": "timeout=60, max=1000",
+      },
+    },
   })
 );
 

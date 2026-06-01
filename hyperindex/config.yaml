@@ -104,6 +104,14 @@ chains:
     # below are precise to each protocol's deployment and take precedence.
     # Recommended: set POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
     start_block: ${POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
+    
+    # RPC fallback (Best practice): Switches to RPC if HyperSync becomes unavailable for >20s.
+    # Ensures high availability and automatic failover.
+    rpc: ${POLYGON_RPC_URL}
+
+    # Max reorg depth (Polygon best practice): Standard depth to handle rollbacks.
+    # HyperIndex automatically handles these when rollback_on_reorg is true.
+    max_reorg_depth: 200
 
     # === Envio/HyperSync Optimizations (see user best-practices) ===
     # Point 2: All contracts below use tight event whitelists (never empty/generic). HyperSync drops

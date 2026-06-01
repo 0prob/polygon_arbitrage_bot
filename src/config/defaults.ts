@@ -13,6 +13,8 @@ export const DEFAULTS = {
     hyperSyncUrl: "",
     hypersyncMaxRpmPerToken: 200,
     chainstackRps: 250,
+    alchemyApiKey: "",
+    alchemyBatchRequests: true,
   },
   gas: {
     pollIntervalMs: 2_000,

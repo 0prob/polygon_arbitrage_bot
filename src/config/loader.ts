@@ -68,6 +68,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
 
   HYPERSYNC_MAX_RPM_PER_TOKEN: ["rpc", "hypersyncMaxRpmPerToken"],
   CHAINSTACK_RPS: ["rpc", "chainstackRps"],
+  ALCHEMY_API_KEY: ["rpc", "alchemyApiKey"],
+  ALCHEMY_BATCH_REQUESTS: ["rpc", "alchemyBatchRequests"],
 
   LOG_LEVEL: ["observability", "logLevel"],
   TUI: ["observability", "tuiEnabled"],

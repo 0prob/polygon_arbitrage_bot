@@ -31,15 +31,16 @@ export const RpcConfigSchema = z.object({
   requestTimeoutMs: numberFromString.int().positive(),
   batchWaitMs: numberFromString.int().nonnegative(),
   batchSize: numberFromString.int().positive(),
+  // Paid RPC Tier Settings
+  chainstackRps: numberFromString.int().positive().optional(),
+  alchemyApiKey: z.string().optional(),
+  alchemyBatchRequests: z.coerce.boolean().default(true),
   // HyperRPC (high-performance provider for the listed read methods)
   hyperRpcUrl: z.string().optional(),
   hyperRpcApiToken: z.string().optional(),
   hyperSyncUrl: z.string().optional(),
   // Client-side pacing for direct @envio-dev/hypersync-client usage (and passed to HyperSyncService).
-  // Helps avoid hammering free-tier keys and triggering long server backoffs.
-  // When using multiple keys via ENVIO_API_TOKENS / hyperindex/.env, this is applied per-key.
   hypersyncMaxRpmPerToken: numberFromString.int().positive().optional(),
-  chainstackRps: numberFromString.int().positive().optional(),
 });
 export type RpcConfig = z.infer<typeof RpcConfigSchema>;
 

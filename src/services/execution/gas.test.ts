@@ -199,4 +199,31 @@ describe("createGasFetcher (dual-source)", () => {
       }),
     );
   });
+
+  it("uses gas station value when it is the highest of all sources", async () => {
+    const client = makeMockClient({
+      estimateMaxPriorityFeePerGas: vi.fn().mockResolvedValue(10n * 10n ** 9n),
+      getFeeHistory: vi.fn().mockResolvedValue({ reward: [[12n * 10n ** 9n]] }),
+    });
+    client.chain = { id: 137 };
+
+    // Mock fetch
+    const mockResponse = {
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          standard: { maxPriorityFee: 25 },
+          estimatedBaseFee: 30,
+        }),
+    };
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(mockResponse as any);
+
+    const fetcher = createGasFetcher(client, { feeHistoryPercentile: 25 });
+    const result = await fetcher();
+
+    expect(result.priorityFee).toBe(25n * 10n ** 9n); // took the highest (Gas Station)
+    expect(fetchSpy).toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
+  });
 });
