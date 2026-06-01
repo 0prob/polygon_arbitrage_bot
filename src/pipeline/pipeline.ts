@@ -216,7 +216,7 @@ export async function evaluatePipeline(
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
 
-  const CONCURRENCY = options.concurrency ?? 50;
+  const CONCURRENCY = options.concurrency ?? 75;
   const batches: FoundCycle[][] = [];
   for (let i = 0; i < cycles.length; i += CONCURRENCY) {
     batches.push(cycles.slice(i, i + CONCURRENCY));

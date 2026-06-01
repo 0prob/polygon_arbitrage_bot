@@ -82,43 +82,30 @@ const MAX_CYCLES_PER_PASS = 250_000;
 
 export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
   const cycles: FoundCycle[] = [];
-  const hopLimit = Math.min(maxHops, 6); // Cap at 6 for safety; 5 is the practical increase for discovery
+  const hopLimit = Math.min(maxHops, 6);
   const { adjacency } = graph;
 
-  // Hardware protection: time + load budget so we don't melt the CPU or lock the system
   const ENUM_START = Date.now();
-  const TIME_BUDGET_MS = 1400; // ~1.4s hard stop — safe on most dev/laptop hardware during LF pass
-  try {
-    const load = os.loadavg()[0];
-    if (load > 7.5) {
-      // High load — be conservative, fall back toward 4 hops behavior
-      // (the if guards below will still allow 5 if user explicitly set high maxHops, but we won't push as hard)
-      console.warn?.(`[finder] High system load (${load.toFixed(1)}), enumeration will be time-capped aggressively`);
-    }
-  } catch {}
+  const TIME_BUDGET_MS = 1400;
 
   function overBudget(): boolean {
-    if (Date.now() - ENUM_START > TIME_BUDGET_MS) {
-      return true;
-    }
-    if (cycles.length >= maxCycles) return true;
-    return false;
+    return Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
   }
 
-  // Pre-filter adjacency to skip empty or dead tokens
-  const activeAdjacency = new Map<string, SwapEdge[]>();
+  // Pre-filter adjacency and pre-calculate obscurity for all edges
+  const activeAdjacency = new Map<string, Array<SwapEdge & { obscurity: number }>>();
   for (const [token, edges] of adjacency) {
-    if (edges.length > 0) activeAdjacency.set(token, edges);
+    if (edges.length > 0) {
+      activeAdjacency.set(
+        token,
+        edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) })),
+      );
+    }
   }
 
   for (const [startToken, firstEdges] of activeAdjacency) {
     if (overBudget()) break;
-    if (cycles.length >= maxCycles) break;
 
-    // BFS/DFS with hop tracking is more flexible, but for performance
-    // we keep unrolled loops for common cases (2, 3 hops)
-
-    // ── 2-hop: A → B → A ─────────────────────────────────────────
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       const second = activeAdjacency.get(e1.tokenOut);
@@ -128,8 +115,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
         if (e2.tokenOut !== startToken) continue;
         if (e2.poolAddress === e1.poolAddress) continue;
 
-        const obs = cycleObscurityBonus([e1, e2]);
-        // Long-tail boost: subtract from logWeight so obscure cycles sort as "better" (lower logWeight first)
+        const obs = (e1.obscurity + e2.obscurity) / 2;
         cycles.push({
           startToken: startToken as Address,
           edges: [e1, e2],
@@ -142,7 +128,6 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
     if (hopLimit < 3 || overBudget()) continue;
 
-    // ── 3-hop: A → B → C → A ─────────────────────────────────────
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       const second = activeAdjacency.get(e1.tokenOut);
@@ -158,7 +143,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
           if (e3.tokenOut !== startToken) continue;
           if (e3.poolAddress === e1.poolAddress || e3.poolAddress === e2.poolAddress) continue;
 
-          const obs = cycleObscurityBonus([e1, e2, e3]);
+          const obs = (e1.obscurity + e2.obscurity + e3.obscurity) / 3;
           cycles.push({
             startToken: startToken as Address,
             edges: [e1, e2, e3],
@@ -172,7 +157,6 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
     if (hopLimit < 4 || overBudget()) continue;
 
-    // ── 4-hop: A → B → C → D → A (Selective high-quality search) ────
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       const second = activeAdjacency.get(e1.tokenOut);
@@ -194,7 +178,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
             if (e4.tokenOut !== startToken) continue;
             if (e4.poolAddress === e1.poolAddress || e4.poolAddress === e2.poolAddress || e4.poolAddress === e3.poolAddress) continue;
 
-            const obs = cycleObscurityBonus([e1, e2, e3, e4]);
+            const obs = (e1.obscurity + e2.obscurity + e3.obscurity + e4.obscurity) / 4;
             cycles.push({
               startToken: startToken as Address,
               edges: [e1, e2, e3, e4],
@@ -209,10 +193,6 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
     if (hopLimit < 5 || overBudget()) continue;
 
-    // ── 5-hop: A → B → C → D → E → A  (Long-tail discovery boost) ───
-    // Increasing to 5 hops significantly expands opportunity space into
-    // complex cross-protocol paths (esp. obscure V2 + DODO/Curve/Balancer)
-    // that lower-hop bots miss. Guarded by cycle cap + time budget below.
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       const second = activeAdjacency.get(e1.tokenOut);
@@ -246,8 +226,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
               )
                 continue;
 
-              const obs = cycleObscurityBonus([e1, e2, e3, e4, e5]);
-              // Even stronger long-tail preference for 5-hop obscure paths
+              const obs = (e1.obscurity + e2.obscurity + e3.obscurity + e4.obscurity + e5.obscurity) / 5;
               cycles.push({
                 startToken: startToken as Address,
                 edges: [e1, e2, e3, e4, e5],
