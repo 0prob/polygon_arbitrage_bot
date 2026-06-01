@@ -1,7 +1,7 @@
 import { indexer } from "envio";
 import { fetchCurveMetadata } from "../effects/curve_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 
 // Modern v3 contractRegister form (supports `where` for early filtering on indexed params).
@@ -16,7 +16,6 @@ indexer.onEvent(
   {
     contract: "CurveRegistry",
     event: "PoolAdded",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["pool", "pool"]),
   },
   async ({ event, context }) => {
     const pool = event.params.pool.toLowerCase();
@@ -28,6 +27,11 @@ indexer.onEvent(
     const tEffCurve = Date.now();
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4, blockNumber: BigInt(event.block.number) });
     logEffectTime("fetchCurveMetadata", Date.now() - tEffCurve, Number(event.block.number));
+
+    // Manual JS-level filter for hot bias mode because tokens are not in event params
+    if (INDEXER_HOT_BIAS && !meta.coins.some((coin) => involvesHotBase(coin, coin))) {
+      return;
+    }
 
     if (context.isPreload) {
       return;

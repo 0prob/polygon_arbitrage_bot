@@ -6,7 +6,7 @@
 export const BPS_DENOM = 10_000n; // For bigint-based profit/risk/slippage calculations
 export const BPS_DENOMINATOR = 10_000; // For number-based slippage/fee encoding in calldata
 
-import { isGarbageAddress } from "../infra/garbage/garbage-tracker.ts";
+import { isGarbageAddress, isGarbagePool as isGarbagePoolTracker } from "../infra/garbage/garbage-tracker.ts";
 
 /**
  * @deprecated Use `isGarbageAddress` from `src/infra/garbage/garbage-tracker.ts` instead.
@@ -17,7 +17,6 @@ export const KNOWN_GARBAGE_ADDRESSES = new Set<string>([
 ]);
 
 /** Returns true if any token in the pool is a known garbage address. */
-export function isGarbagePool(pool: { tokens?: string[] }): boolean {
-  if (!pool.tokens || pool.tokens.length === 0) return false;
-  return pool.tokens.some((t) => isGarbageAddress(t));
+export function isGarbagePool(pool: { address: string; tokens?: string[] }): boolean {
+  return isGarbagePoolTracker(pool);
 }

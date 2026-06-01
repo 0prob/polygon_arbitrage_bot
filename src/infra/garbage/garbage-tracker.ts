@@ -47,7 +47,7 @@ export function isGarbageAddress(address: string): boolean {
 }
 
 /**
- * Mark an address as garbage and persist it to disk.
+ * Mark an address (token or pool) as garbage and persist it to disk.
  * Safe to call multiple times for the same address.
  */
 export async function markAsGarbage(address: string): Promise<void> {
@@ -63,6 +63,15 @@ export async function markAsGarbage(address: string): Promise<void> {
   // Write the full current set (simple and safe for this use case)
   const list = Array.from(garbageAddresses).sort();
   await writeFile(GARBAGE_FILE, JSON.stringify(list, null, 2), "utf8");
+}
+
+/**
+ * Check if a pool is garbage (either because of its tokens or its own address).
+ */
+export function isGarbagePool(pool: { address: string; tokens?: string[] }): boolean {
+  if (isGarbageAddress(pool.address)) return true;
+  if (!pool.tokens || pool.tokens.length === 0) return false;
+  return pool.tokens.some((t) => isGarbageAddress(t));
 }
 
 /**

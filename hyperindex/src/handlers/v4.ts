@@ -1,10 +1,15 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
+import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 
 const v4MetaCache = new Map<string, { tickSpacing: number; hooks: string }>();
 
 indexer.onEvent(
-  { contract: "PoolManager", event: "Initialize" },
+  {
+    contract: "PoolManager",
+    event: "Initialize",
+    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["currency0", "currency1"]),
+  },
   async ({ event, context }) => {
     const poolId = event.params.id.toLowerCase();
     const currency0 = event.params.currency0.toLowerCase();

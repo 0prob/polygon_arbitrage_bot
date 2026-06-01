@@ -1,7 +1,7 @@
 import { indexer } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 
 async function handleDodoPool(
@@ -12,6 +12,11 @@ async function handleDodoPool(
   blockNumber: number,
   txHash: string | undefined,
 ) {
+  // Manual JS-level filter for hot bias mode because baseToken/quoteToken are not indexed
+  if (INDEXER_HOT_BIAS && !involvesHotBase(base, quote)) {
+    return;
+  }
+
   context.PoolMeta.set({
     id: pool,
     address: pool,
@@ -63,6 +68,9 @@ async function handleDodoPool(
 indexer.contractRegister(
   { contract: "DodoFactory", event: "DVMDeployed" },
   async ({ event, context }) => {
+    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
+      return;
+    }
     context.chain.DodoPool.add(event.params.dvm);
   },
 );
@@ -70,6 +78,9 @@ indexer.contractRegister(
 indexer.contractRegister(
   { contract: "DodoFactory", event: "DPPDeployed" },
   async ({ event, context }) => {
+    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
+      return;
+    }
     context.chain.DodoPool.add(event.params.dpp);
   },
 );
@@ -77,6 +88,9 @@ indexer.contractRegister(
 indexer.contractRegister(
   { contract: "DodoFactory", event: "DSPDeployed" },
   async ({ event, context }) => {
+    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
+      return;
+    }
     context.chain.DodoPool.add(event.params.dsp);
   },
 );
@@ -86,7 +100,6 @@ indexer.onEvent(
   {
     contract: "DodoFactory",
     event: "DVMDeployed",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
   },
   async ({ event, context }) => {
     await handleDodoPool(
@@ -106,7 +119,6 @@ indexer.onEvent(
   {
     contract: "DodoFactory",
     event: "DPPDeployed",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
   },
   async ({ event, context }) => {
     await handleDodoPool(
@@ -126,7 +138,6 @@ indexer.onEvent(
   {
     contract: "DodoFactory",
     event: "DSPDeployed",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["baseToken", "quoteToken"]),
   },
   async ({ event, context }) => {
     await handleDodoPool(
