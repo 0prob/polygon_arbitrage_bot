@@ -221,7 +221,7 @@ export class RpcManager {
 
   // === WebSocket ===
   addWebSocketSubscriber(url: string, opts?: { reconnectDelayMs?: number; pingIntervalMs?: number }): WebSocketSubscriber {
-    let finalUrl = url;
+    const finalUrl = url;
     if (this._alchemy && url.includes("alchemy")) {
       // Alchemy resilient WebSocket URL format (can use SDK internally if we refactor WebSocketSubscriber,
       // but for now we'll just ensure the URL is optimized if it's an alchemy one)

@@ -11,5 +11,36 @@
         ]
       }
     ]
+  },
+  "mcpServers": {
+    "envio": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@envio-dev/mcp-server"
+      ]
+    },
+    "coingecko": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@coingecko/mcp-server"
+      ]
+    },
+    "dexscreener": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "dexscreener-mcp"
+      ]
+    },
+    "alchemy": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@alchemy/mcp-server"
+      ],
+      "env": {}
+    }
   }
 }

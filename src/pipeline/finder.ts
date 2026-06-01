@@ -1,6 +1,5 @@
 import type { Address } from "../core/types/common.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
-import * as os from "os";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
   const parts = edges.map((e) => e.poolAddress.toLowerCase()).sort();
@@ -47,9 +46,9 @@ export function getObscurityBonus(protocol: string): number {
     return 1.4; // very obscure V2 factories
   }
   if (p.includes("dodo")) return 1.25;
-  if (p.includes("balancer")) return 1.1;
-  if (p.includes("curve")) return 1.0;
-  if (p.includes("woofi")) return 0.9;
+  if (p.toLowerCase().includes("balancer")) return 1.1;
+  if (p.toLowerCase().includes("curve")) return 1.0;
+  if (p.toLowerCase().includes("woofi")) return 0.9;
 
   // Mainstream high-competition (de-prioritize for speed races)
   if (p.includes("uniswap")) return 0.15;
@@ -60,15 +59,6 @@ export function getObscurityBonus(protocol: string): number {
   if (p.includes("_v2")) return 0.7;
 
   return 0.5; // default mild bonus for anything non-pure-mainstream
-}
-
-function cycleObscurityBonus(edges: SwapEdge[]): number {
-  if (!edges.length) return 0;
-  let sum = 0;
-  for (const e of edges) {
-    sum += getObscurityBonus(e.protocol);
-  }
-  return sum / edges.length;
 }
 
 export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getWinRate: (key: string) => number): number {

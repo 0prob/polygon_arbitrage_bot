@@ -16,7 +16,12 @@ import {
 } from "../pipeline/index.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
-import { discoverPoolsFromHasura, buildStateCacheFromGraphQL, fetchTokenMetasFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
+import {
+  discoverPoolsFromHasura,
+  buildStateCacheFromGraphQL,
+  fetchTokenMetasFromHasura,
+  fetchIndexerProgressFromHasura,
+} from "../infra/hypersync/hyperindex_graphql.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
@@ -75,10 +80,11 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   discoverPoolsFromHasura,
   buildStateCacheFromGraphQL,
   fetchTokenMetasFromHasura,
+  fetchIndexerProgressFromHasura,
   routeKeyFromEdges,
   buildExecutionCandidate,
   instrumenter,
-  averageObscurity: averageObscurity as any, // from finder (re-exported via pipeline)
+  averageObscurity: averageObscurity as any, // from finder (re-exported via pipeline),
 };
 
 /**
@@ -193,6 +199,15 @@ async function runLfStateRefresh(
     }
     const metas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret);
     ctx.logger.info({ entries: gqlCache.size, metas: metas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
+
+    // New: lightweight progress signal from the block handler (see hyperindex/src/handlers/progress.ts)
+    const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret));
+    if (progress) {
+      ctx.logger.info(
+        { chainId: progress.chainId, lastProcessedBlock: progress.lastProcessedBlock },
+        "IndexerProgress from block handler",
+      );
+    }
   } catch (err) {
     ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
   }

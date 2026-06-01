@@ -164,7 +164,7 @@ describe("runPassLoop", () => {
               poolAddress: VALID_ADDR_B,
               tokenIn: VALID_ADDR_A,
               tokenOut: VALID_ADDR_C,
-              protocol: "quickswap_v2",
+              protocol: "QUICKSWAP_V2",
               feeBps: 30n,
             },
           ],
@@ -183,7 +183,7 @@ describe("runPassLoop", () => {
                   poolAddress: VALID_ADDR_B,
                   tokenIn: VALID_ADDR_A,
                   tokenOut: VALID_ADDR_C,
-                  protocol: "quickswap_v2",
+                  protocol: "QUICKSWAP_V2",
                   feeBps: 30n,
                 },
               ],
@@ -209,7 +209,7 @@ describe("runPassLoop", () => {
                   poolAddress: VALID_ADDR_B,
                   tokenIn: VALID_ADDR_A,
                   tokenOut: VALID_ADDR_C,
-                  protocol: "quickswap_v2",
+                  protocol: "QUICKSWAP_V2",
                   feeBps: 30n,
                 },
               ],
@@ -237,6 +237,7 @@ describe("runPassLoop", () => {
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
       fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
+      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
       discoverPoolsFromHasura: vi
         .fn()
         .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),
@@ -347,6 +348,7 @@ describe("runPassLoop", () => {
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
       fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
+      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
       discoverPoolsFromHasura: vi
         .fn()
         .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),

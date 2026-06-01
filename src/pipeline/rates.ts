@@ -144,7 +144,7 @@ export function computeMaticRates(
                 newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
               }
             }
-          } else if (protocol.includes("curve")) {
+          } else if (protocol.toLowerCase().includes("curve")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
               knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;

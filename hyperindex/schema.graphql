@@ -1,13 +1,61 @@
+# HyperIndex schema for Polygon DEX arbitrage bot data ingestion.
+# See https://docs.envio.dev/docs/HyperIndex/schema for full reference.
+# Key patterns applied:
+# - Protocol enum for type-safe predefined values (instead of free String).
+# - @index on high-cardinality / filter fields (addresses, blocks, protocol).
+# - @config(precision) on all BigInt / [BigInt] for large on-chain numerics (256-bit scale).
+# - Explicit docs + clear camelCase names.
+# - Flat/denormalized design (no @derivedFrom relations) optimized for the bot's
+#   bulk GraphQL loads + in-memory pipeline (see hyperindex_graphql.ts + pass_loop).
+# - ID! on all entities (addresses or natural keys, lowercased for consistency).
+#
+# After edits: cd hyperindex && pnpm codegen (or bunx envio codegen) to refresh .envio/ types.
+
+"""
+Protocol variants for DEX pools indexed by the arbitrage bot.
+Stored as GraphQL enum (and PG enum) for type safety in handlers + queries
+(per https://docs.envio.dev/docs/HyperIndex/schema#enum-types).
+Enum member names become the stored values.
+"""
+enum Protocol {
+  UNISWAP_V2
+  SUSHISWAP_V2
+  QUICKSWAP_V2
+  DFYN_V2
+  APESWAP_V2
+  MESHSWAP_V2
+  JETSWAP_V2
+  COMETHSWAP_V2
+  UNISWAP_V3
+  SUSHISWAP_V3
+  QUICKSWAP_V3
+  KYBERSWAP_ELASTIC
+  CURVE
+  BALANCER_V2
+  DODO_V2
+  UNISWAP_V4
+  UNKNOWN_V2
+  UNKNOWN_V3
+}
+
+"""
+Lightweight metadata for a discovered pool (from factory events).
+Primary source for bot's discoverPoolsFromHasura + graph construction.
+tokens stored as denormalized [String!] (addresses) for fast bulk loads;
+decimals joined via separate TokenMeta or static registry.
+No @derivedFrom relations (keeps queries simple/N+1-free for bot's full-table
+in-memory pipeline pattern).
+"""
 type PoolMeta {
   id: ID!
   address: String! @index
-  protocol: String! @index
+  protocol: Protocol! @index
   tokens: [String!]!
   fee: Int
   tickSpacing: Int
   createdBlock: Int! @index
   createdTx: String
-  poolId: String @index # For Balancer
+  poolId: String @index # For Balancer (internal poolId)
 }
 
 type BalancerPoolIdToAddress {
@@ -15,12 +63,20 @@ type BalancerPoolIdToAddress {
   address: String! @index
 }
 
+"""
+V2-style constant-product pool state snapshot (mostly creation-time in the
+live-debug "no per-event state writes" profile — see config.yaml).
+Bot owns hot state via its RPC fetcher + multicalls. This provides
+best-effort bootstrap cache + historical discovery.
+BigInt fields use @config(precision) per schema docs for large 256-bit-ish
+on-chain values (https://docs.envio.dev/docs/HyperIndex/schema#advanced-precision-and-scale-config-directive).
+"""
 type V2PoolState {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
-  reserve0: BigInt!
-  reserve1: BigInt!
+  reserve0: BigInt! @config(precision: 76)
+  reserve1: BigInt! @config(precision: 76)
   fee: Int
 }
 
@@ -28,8 +84,8 @@ type V3PoolState {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
-  sqrtPriceX96: BigInt!
-  liquidity: BigInt!
+  sqrtPriceX96: BigInt! @config(precision: 78)
+  liquidity: BigInt! @config(precision: 78)
   tick: Int!
   fee: Int
   tickSpacing: Int # Added for arbitrage math parity with V4PoolState
@@ -39,10 +95,10 @@ type V4PoolState {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
-  sqrtPriceX96: BigInt!
-  liquidity: BigInt!
+  sqrtPriceX96: BigInt! @config(precision: 78)
+  liquidity: BigInt! @config(precision: 78)
   tick: Int!
-  fee: BigInt!
+  fee: BigInt! @config(precision: 78)
   tickSpacing: Int!
   hooks: String!
 }
@@ -51,10 +107,10 @@ type CurvePoolState {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
-  balances: [BigInt!]!
-  A: BigInt!
-  fee: BigInt!
-  rates: [BigInt!]
+  balances: [BigInt!]! @config(precision: 76)
+  A: BigInt! @config(precision: 76)
+  fee: BigInt! @config(precision: 76)
+  rates: [BigInt!] @config(precision: 76)
 }
 
 type BalancerPoolState {
@@ -62,31 +118,50 @@ type BalancerPoolState {
   address: String! @index
   lastUpdatedBlock: Int! @index
   poolId: String! @index
-  balances: [BigInt!]!
-  weights: [BigInt!]
-  amp: BigInt
-  swapFee: BigInt!
-  scalingFactors: [BigInt!]
+  balances: [BigInt!]! @config(precision: 76)
+  weights: [BigInt!] @config(precision: 76)
+  amp: BigInt @config(precision: 76)
+  swapFee: BigInt! @config(precision: 76)
+  scalingFactors: [BigInt!] @config(precision: 76)
 }
 
 type DodoPoolState {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
-  baseReserve: BigInt!
-  quoteReserve: BigInt!
-  targetBase: BigInt!
-  targetQuote: BigInt!
+  baseReserve: BigInt! @config(precision: 76)
+  quoteReserve: BigInt! @config(precision: 76)
+  targetBase: BigInt! @config(precision: 76)
+  targetQuote: BigInt! @config(precision: 76)
   rStatus: Int!
-  k: BigInt!
-  fee: BigInt!
-  i: BigInt!
-  lpFeeRate: BigInt!
-  mtFeeRate: BigInt!
+  k: BigInt! @config(precision: 78)
+  fee: BigInt! @config(precision: 76)
+  i: BigInt! @config(precision: 76)
+  lpFeeRate: BigInt! @config(precision: 76)
+  mtFeeRate: BigInt! @config(precision: 76)
 }
 
+"""
+ERC20 decimals cache (populated via Effect API + STATIC_TOKEN_DECIMALS registry
+on first-seen tokens during factory events like PairCreated/PoolCreated).
+Heavily used + indexed for the bot's math and the handlers' preload/effects.
+"""
 type TokenMeta {
   id: ID!
   address: String! @index
   decimals: Int
+}
+
+"""
+Indexer-level progress signal written by a block handler (see progress.ts:
+dual onBlock registration with different historical/realtime `where` strides
+and `context.isPreload` guard — follows Envio block-handlers docs).
+Gives a reliable, queryable view of the last block for which handlers executed.
+Complements log-scraped progress from the Envio process + used by bot for lag monitoring.
+"""
+type IndexerProgress {
+  id: ID!                    # chain id as string (e.g. "137")
+  chainId: Int!
+  lastProcessedBlock: Int!
+  updatedAtBlock: Int!
 }

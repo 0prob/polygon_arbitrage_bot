@@ -6,7 +6,7 @@
 export const BPS_DENOM = 10_000n; // For bigint-based profit/risk/slippage calculations
 export const BPS_DENOMINATOR = 10_000; // For number-based slippage/fee encoding in calldata
 
-import { isGarbageAddress, isGarbagePool as isGarbagePoolTracker } from "../infra/garbage/garbage-tracker.ts";
+import { isGarbagePool as isGarbagePoolTracker } from "../infra/garbage/garbage-tracker.ts";
 
 /**
  * @deprecated Use `isGarbageAddress` from `src/infra/garbage/garbage-tracker.ts` instead.

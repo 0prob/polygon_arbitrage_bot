@@ -4,12 +4,29 @@
     ".opencode/plugins/graphify.js"
   ],
   "mcp": {
-    "context7": {
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "fetch": {
+      "type": "local",
+      "command": ["uvx", "mcp-server-fetch"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "postgres": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres", "postgresql://postgres:testing@localhost:5433/envio-dev"],
+      "enabled": true
+    },
+    "envio-docs": {
       "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-1117899b-f62f-4130-a772-9752ec03b564"
-      },
+      "url": "https://docs.envio.dev/mcp",
       "enabled": true
     }
   }

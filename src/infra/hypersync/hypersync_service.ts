@@ -307,14 +307,29 @@ export class HyperSyncService {
   async getTransactionTraces(txHash: string, lookbackBlocks = 200): Promise<any[]> {
     try {
       const height = await this.getHeight();
+      // Improved query inspired by Envio HyperSync native transfer / trace best practices:
+      // - Explicitly request "value" field to capture native token movements (MATIC on Polygon).
+      // - Use callType filter for efficiency when we primarily care about value-carrying calls.
+      //   (see https://docs.envio.dev/blog/tracking-native-eth-transfers-hypersync)
+      // - Still broad enough for full call graph analysis used by the arb bot (flashloans, protocol fingerprinting).
       const query: any = {
         fromBlock: Math.max(0, height - lookbackBlocks),
         fieldSelection: {
-          trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error"],
+          trace: [
+            "BlockNumber",
+            "TransactionHash",
+            "TraceAddress",
+            "Action",
+            "Result",
+            "Error",
+            "Value", // Critical for native (MATIC) transfer detection
+          ] as any,
           transaction: ["Hash"],
         },
         transactions: [{ hash: [txHash] }],
-        traces: [{}], // Request traces for matching txs
+        // Request all traces for the tx (full call graph). For pure native value monitoring
+        // a future method could narrow to callType: ["call"] + value > threshold at query time.
+        traces: [{}],
       };
       return await this.withClient(async (c) => {
         const res = await c.get(query);

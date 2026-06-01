@@ -2,17 +2,22 @@
 /**
  * Generates an expanded STATIC_TOKEN_DECIMALS map for Polygon.
  *
- * Pulls from several free, public token lists (no API keys required).
- * Run with: bun run generate-tokens > src/effects/token_registry.ts.tmp && mv ...
+ * Pulls from several free, public token lists + the bot's own data.
+ *
+ * Recommended usage:
+ *   bun run gentok:auto     # full cycle (recommended)
+ *   bun run gentok          # raw generator (writes to stdout)
  *
  * Sources (all free, focused on Polygon):
  * - CoinGecko Polygon (broadest)
  * - Uniswap
  * - Sushiswap
  * - TrustWallet Polygon assets
+ * - 1inch Token List (excellent broad coverage)
+ * - QuickSwap token list
  * - Official Polygon Token Lists (mapped + popular) from api-polygon-tokens.polygon.technology
  *
- * Plus a large curated core list of high-frequency V2 bases.
+ * Plus a curated core list of high-frequency V2/V3 bases.
  */
 
 type TokenListToken = {
@@ -35,11 +40,20 @@ const LISTS = [
   // Trust Wallet assets for Polygon (good additional coverage)
   "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json",
 
+  // 1inch Token List — excellent broad coverage across chains including Polygon
+  "https://raw.githubusercontent.com/1inch/token-list/master/tokenlist.json",
+
   // === Official Polygon Token Lists (highest value for our use case) ===
   // These are curated by the Polygon team and focus on actually bridged / popular tokens.
   // Perfect for reducing RPC calls in fetchTokenMeta during V2/V3 factory events.
   "https://api-polygon-tokens.polygon.technology/tokenlists/mapped.tokenlist.json",   // Mapped/bridged tokens
   "https://api-polygon-tokens.polygon.technology/tokenlists/popular.tokenlist.json", // Top used tokens
+
+  // QuickSwap community/maintained list (good for Polygon DEX-specific tokens)
+  "https://raw.githubusercontent.com/QuickSwap/QuickSwap-token-list/master/quickswap.tokenlist.json",
+
+  // Official Polygon (maticnetwork) token list — good source of bridged and ecosystem tokens
+  "https://raw.githubusercontent.com/maticnetwork/polygon-token-list/main/src/tokens/polygonTokens.json",
 ];
 
 async function fetchList(url: string): Promise<TokenListToken[]> {
@@ -113,6 +127,76 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
   }
 }
 
+// Optional local file for manually adding tokens the bot sees in production
+// that are not yet in public lists (e.g. very new launches or low-volume gems).
+// Place a file at hyperindex/extra-tokens.json with shape: [{ "address": "0x...", "decimals": 18 }, ...]
+const EXTRA_TOKENS_FILE = "./extra-tokens.json";
+
+// Bot's own anchor pools — extract every token the bot is actively configured to trade.
+const BOT_POOLS_FILE = "../../scripts/pools.json";
+
+// Runtime discovered tokens (from previous indexer runs)
+const DISCOVERED_FILE = "./data/discovered-decimals.json";
+
+// Auto-discovered cold tokens written by the running indexer
+const AUTO_EXTRA_FILE = "./data/auto-extra-tokens.json";
+
+async function loadExtraTokens(): Promise<TokenListToken[]> {
+  try {
+    const content = await Bun.file(EXTRA_TOKENS_FILE).text();
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((t: any) => t.address && typeof t.decimals === "number")
+        .map((t: any) => ({
+          address: t.address.toLowerCase(),
+          decimals: Number(t.decimals),
+          symbol: t.symbol,
+          name: t.name,
+        }));
+    }
+  } catch {
+    // File doesn't exist or is invalid — that's fine
+  }
+  return [];
+}
+
+async function loadFromPoolsFile(): Promise<TokenListToken[]> {
+  try {
+    const content = await Bun.file(BOT_POOLS_FILE).text();
+    const pools = JSON.parse(content);
+    const tokens = new Map<string, number>();
+
+    for (const pool of pools) {
+      if (Array.isArray(pool.tokens)) {
+        for (const addr of pool.tokens) {
+          if (typeof addr === "string" && !tokens.has(addr.toLowerCase())) {
+            // We don't know decimals here — we'll use 18 as a safe default for bases.
+            // Real decimals will be corrected when the public lists or extra files are merged.
+            tokens.set(addr.toLowerCase(), 18);
+          }
+        }
+      }
+    }
+    return Array.from(tokens.entries()).map(([address, decimals]) => ({ address, decimals }));
+  } catch {
+    return [];
+  }
+}
+
+async function loadDiscoveredFile(path: string): Promise<TokenListToken[]> {
+  try {
+    const content = await Bun.file(path).text();
+    const data = JSON.parse(content);
+    if (data && typeof data === "object") {
+      return Object.entries(data)
+        .filter(([addr, dec]) => typeof addr === "string" && typeof dec === "number")
+        .map(([address, decimals]) => ({ address: address.toLowerCase(), decimals: decimals as number }));
+    }
+  } catch {}
+  return [];
+}
+
 async function main() {
   console.log("/**");
   console.log(" * Static token decimals registry for Polygon (0 RPC for known tokens).");
@@ -126,7 +210,11 @@ async function main() {
   console.log(" * effect falls back to RPC → shows up as 70-85% 'Loaders' time in pipeline split.");
   console.log(" * Keep this registry as complete as possible. Run: bun run generate-tokens");
   console.log(" *");
-  console.log(" * Current sources: CoinGecko, Uniswap, Sushiswap, TrustWallet + official Polygon mapped/popular lists + curated core.");
+  console.log(" * Current sources: CoinGecko, Uniswap, Sushiswap, TrustWallet, 1inch, QuickSwap + official Polygon mapped/popular lists + curated core.");
+  console.log(" *");
+  console.log(" * Extra tokens: Place hyperindex/extra-tokens.json (manual) or let the bot auto-write to data/auto-extra-tokens.json.");
+  console.log(" * The generator also pulls tokens from the bot's scripts/pools.json and runtime discoveries.");
+  console.log(" * Cold tokens discovered by the running indexer are automatically fed back into the registry.");
   console.log(" *");
   console.log(" * Refresh: bun run generate-tokens");
   console.log(" */");
@@ -206,8 +294,9 @@ async function main() {
     "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK old (dup safe)
     "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO (dup safe)
 
-    // === Expanded set of high-frequency Polygon V2 bases & popular tokens ===
-    // These dramatically reduce RPC calls in fetchTokenMeta for V2Factory.PairCreated.
+    // === High-frequency Polygon bases (critical for V2Factory.PairCreated performance) ===
+    // These appear in thousands of pairs. Having them in the static registry eliminates
+    // expensive RPC calls inside fetchTokenMeta during new pool discovery.
     "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6,   // USDC PoS
     "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,   // USDC.e
     "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,   // USDT
@@ -227,25 +316,9 @@ async function main() {
     "0x6f7c932e7684666c9fd1d44527765433e01ff61d": 18,  // USDD
     "0x2e1ad108ff1d8c782fcbbb89aad783ac49586756": 18,  // stMATIC
     "0x5fe2b58c013d7601147dcdd68c143a77499f5531": 18,  // GRT
-    "0x0000000000000000000000000000000000001010": 18,  // MATIC
+    "0x0000000000000000000000000000000000001010": 18,  // MATIC (native)
     "0x1b815d120b3ef02039ee11dc2d63b2d2e5e8e8e8": 18,  // MANA
     "0x2f800db0fdb5223b3c3f354886d907a671414a7f": 18,  // TCO2
-    "0x1b815d120b3ef02039ee11dc2d63b2d2e5e8e8e8": 18,  // MANA
-    "0x6f7c5b0f0b2e3c1a4d5e6f7a8b9c0d1e2f3a4b5c": 18,  // Additional common
-    "0x3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b": 18,  // Additional common
-    "0x4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c": 18,  // Additional common
-    "0x5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d": 18,  // Additional common
-    "0x0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f": 18,  // Additional common
-    "0x8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d": 18,  // Additional common
-    "0x5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e": 18,  // Additional common
-    "0x7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a": 18,  // Additional common
-    "0x0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d": 18,  // Additional common
-    "0x3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a": 18,  // Additional common
-    "0x4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b": 18,  // Additional common
-    "0x0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b": 18,  // Additional common
-    "0x5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a": 18,  // Additional common
-    "0x6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b": 18,  // Additional common
-    "0x7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c": 6,   // Additional common
   };
 
   Object.entries(core).forEach(([addr, dec]) => allTokens.set(addr.toLowerCase(), dec));
@@ -258,6 +331,50 @@ async function main() {
       }
     }
     console.error(`Fetched ${tokens.length} tokens from ${url}`);
+  }
+
+  // Load tokens from the bot's own anchor pools (scripts/pools.json)
+  const fromPools = await loadFromPoolsFile();
+  for (const t of fromPools) {
+    if (!allTokens.has(t.address)) {
+      allTokens.set(t.address, t.decimals);
+    }
+  }
+  if (fromPools.length > 0) {
+    console.error(`Loaded ${fromPools.length} tokens from bot pools.json`);
+  }
+
+  // Load runtime discovered tokens
+  const discovered = await loadDiscoveredFile(DISCOVERED_FILE);
+  for (const t of discovered) {
+    if (!allTokens.has(t.address)) {
+      allTokens.set(t.address, t.decimals);
+    }
+  }
+  if (discovered.length > 0) {
+    console.error(`Loaded ${discovered.length} tokens from ${DISCOVERED_FILE}`);
+  }
+
+  // Load auto-discovered cold tokens written by the running indexer
+  const autoExtra = await loadDiscoveredFile(AUTO_EXTRA_FILE);
+  for (const t of autoExtra) {
+    if (!allTokens.has(t.address)) {
+      allTokens.set(t.address, t.decimals);
+    }
+  }
+  if (autoExtra.length > 0) {
+    console.error(`Loaded ${autoExtra.length} auto-discovered tokens from ${AUTO_EXTRA_FILE}`);
+  }
+
+  // Load any manually curated extra tokens
+  const extra = await loadExtraTokens();
+  for (const t of extra) {
+    if (!allTokens.has(t.address)) {
+      allTokens.set(t.address, t.decimals);
+    }
+  }
+  if (extra.length > 0) {
+    console.error(`Loaded ${extra.length} extra tokens from ${EXTRA_TOKENS_FILE}`);
   }
 
   // QuickSwap token list is currently unavailable from public raw GitHub sources.

@@ -1,0 +1,51 @@
+# Polygon Arbitrage Bot — llms.txt
+
+This file helps AI assistants discover the most important documentation for working on this high-frequency, flash-loan-only DEX arbitrage bot on Polygon.
+
+## Primary Context Files (read these first)
+
+- AGENTS.md — Comprehensive AI context: architecture, invariants (flash-loan only), hot-path rules, key commands, debugging loop with arb-tx-tools skill, testing patterns.
+- skill.md — Machine-readable capabilities, workflows, and integration guide for AI agents (modeled on Polygon-style skill files).
+- README.md — High-level project overview and quickstart.
+- TODO.md — Current open tasks and priorities.
+
+## Architecture & Core Documentation
+
+- docs/superpowers/ideal-architecture.md — Long-term architectural vision.
+- docs/superpowers/plans/ — Phased implementation plans (RPC layer, pipeline, execution, orchestration, TUI, chainstack, arb-tx-tools MCP).
+- docs/superpowers/specs/ — Detailed design specs.
+- src/orchestrator/ — Main control loops (boot, pass_loop, runner).
+- src/pipeline/ — Graph construction, cycle finding, simulation, state fetching, rates, evaluation.
+- src/services/execution/ — Submission, calldata building, receipt polling, risk management.
+- src/core/math/ — All AMM simulators (V2, V3, Curve, Balancer, DODO, WooFi).
+- sol/src/ArbExecutor.sol — The critical on-chain executor (flash-loan only invariants).
+
+## Indexing Layer (hyperindex/)
+
+- hyperindex/config.yaml — Detailed configuration with extensive comments on optimizations, hot bias, effects, live-debug profile.
+- hyperindex/schema.graphql — Entity model (PoolMeta, per-protocol *PoolState, TokenMeta, IndexerProgress).
+- hyperindex/src/handlers/ — Dynamic contract registration + event handlers (factories + no-op pool handlers).
+- hyperindex/src/effects/ — Effect API usage for token/protocol metadata enrichment (RPC + caching + persistence).
+- Previous Envio doc reviews (in chat history or docs/) cover preload optimization, Effect API, dynamic contracts, schema, config, traces, etc.
+
+## AI Tooling & Skills (this project is heavily AI-optimized)
+
+- .grok/skills/arb-tx-tools/SKILL.md — Primary debugging superpower: Anvil simulator, ABICoder against real ABIs, log tailer.
+- .claude/skills/ — Many indexer-specific skills (schema, handlers, performance, external calls, traces, etc.).
+- docs/superpowers/plans/2026-06-01-arb-tx-tools-*.md — History and design of the custom AI debugging tools.
+
+## Other Important Files
+
+- src/config/ — Zod schemas, defaults, addresses, hot_tokens.
+- src/infra/hypersync/ — HyperSync client wrapper + trace parser (native value transfer support recently added).
+- src/infra/resilience/ — Circuit breakers, reorg detection, HyperIndex monitoring.
+- src/rpc/manager.ts — Centralized RPC access (read, execution, FastLane, WS).
+- vitest.config.ts + various *.test.ts — Testing approach.
+- DEBUG_OPTIMIZATIONS.md, DUPLICATION_AUDIT.md — Historical cleanup and performance work.
+
+## External Resources (for AI assistants)
+
+- Polygon developer documentation: Use Context7 library `llmstxt/polygon_technology_llms_txt` or the official Polygon Docs MCP server (`https://docs.polygon.technology/mcp`) for accurate, up-to-date Polygon (PoS, Agglayer, CDK, etc.) information.
+- Envio HyperIndex docs: Use the Envio Docs MCP or Context7 when working on the `hyperindex/` layer.
+
+This project follows a "AI-first development" philosophy. Always prefer using the provided custom skills (especially arb-tx-tools) over raw terminal commands when debugging on-chain behavior.

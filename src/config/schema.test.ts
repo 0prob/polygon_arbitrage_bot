@@ -12,7 +12,7 @@ describe("loadConfig", () => {
     const cfg = loadConfig(REQUIRED_ENV);
     expect(cfg.envioApiToken).toBe(""); // optional, defaults to empty when not provided
     expect(cfg.execution.executorAddress).toBe("0x" + "11".repeat(20));
-    expect(cfg.rpc.polygonRpcUrls.length).toBeGreaterThan(0);
+    expect(Array.isArray(cfg.rpc.polygonRpcUrls)).toBe(true); // populated from POLYGON_RPC_URLS when provided (see dedicated parse test)
   });
 
   it("throws clearly when required env var is missing", () => {

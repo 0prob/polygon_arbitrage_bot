@@ -17,19 +17,9 @@ async function handleDodoPool(
     return;
   }
 
-  context.PoolMeta.set({
-    id: pool,
-    address: pool,
-    protocol: "dodo_v2",
-    tokens: [base, quote],
-    fee: 10,
-    tickSpacing: undefined,
-    createdBlock: blockNumber,
-    createdTx: txHash,
-    poolId: undefined,
-  });
-
-  // Fire DODO metadata + both token metas concurrently (critical for backfill throughput)
+  // Schedule ALL effects at the top (after cheap hot filter) so DODO + token metadata
+  // participate in Envio preload batching + memoization. PoolMeta write moved after guard.
+  // See https://docs.envio.dev/docs/HyperIndex/event-handlers#preload-optimization
   const tEffDodo = Date.now();
   const [meta, baseMeta, quoteMeta] = await Promise.all([
     context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) }),
@@ -41,6 +31,18 @@ async function handleDodoPool(
   if (context.isPreload) {
     return; // Aggressive preload exit: effects done (batched), skip writes (ignored anyway) and any future work.
   }
+
+  context.PoolMeta.set({
+    id: pool,
+    address: pool,
+    protocol: "DODO_V2",
+    tokens: [base, quote],
+    fee: 10,
+    tickSpacing: undefined,
+    createdBlock: blockNumber,
+    createdTx: txHash,
+    poolId: undefined,
+  });
 
   context.DodoPoolState.set({
     id: pool,
@@ -72,6 +74,10 @@ indexer.contractRegister(
       return;
     }
     context.chain.DodoPool.add(event.params.dvm);
+
+    if (context.log) {
+      context.log.info("Registered dynamic DODO pool (DVM)", { pool: event.params.dvm });
+    }
   },
 );
 
@@ -82,6 +88,10 @@ indexer.contractRegister(
       return;
     }
     context.chain.DodoPool.add(event.params.dpp);
+
+    if (context.log) {
+      context.log.info("Registered dynamic DODO pool (DPP)", { pool: event.params.dpp });
+    }
   },
 );
 
@@ -92,6 +102,10 @@ indexer.contractRegister(
       return;
     }
     context.chain.DodoPool.add(event.params.dsp);
+
+    if (context.log) {
+      context.log.info("Registered dynamic DODO pool (DSP)", { pool: event.params.dsp });
+    }
   },
 );
 
@@ -104,13 +118,13 @@ indexer.onEvent(
   async ({ event, context }) => {
     await handleDodoPool(
       context,
-      event.params.dvm.toLowerCase(),
-      event.params.baseToken.toLowerCase(),
-      event.params.quoteToken.toLowerCase(),
+      event.params.dvm,
+      event.params.baseToken,
+      event.params.quoteToken,
       Number(event.block.number),
       event.transaction.hash,
     );
-    if (context.isPreload) return;
+    // Note: handleDodoPool already performs the isPreload early return after effects.
   },
 );
 
@@ -123,13 +137,13 @@ indexer.onEvent(
   async ({ event, context }) => {
     await handleDodoPool(
       context,
-      event.params.dpp.toLowerCase(),
-      event.params.baseToken.toLowerCase(),
-      event.params.quoteToken.toLowerCase(),
+      event.params.dpp,
+      event.params.baseToken,
+      event.params.quoteToken,
       Number(event.block.number),
       event.transaction.hash,
     );
-    if (context.isPreload) return;
+    // Note: handleDodoPool already performs the isPreload early return after effects.
   },
 );
 
@@ -142,12 +156,12 @@ indexer.onEvent(
   async ({ event, context }) => {
     await handleDodoPool(
       context,
-      event.params.dsp.toLowerCase(),
-      event.params.baseToken.toLowerCase(),
-      event.params.quoteToken.toLowerCase(),
+      event.params.dsp,
+      event.params.baseToken,
+      event.params.quoteToken,
       Number(event.block.number),
       event.transaction.hash,
     );
-    if (context.isPreload) return;
+    // Note: handleDodoPool already performs the isPreload early return after effects.
   },
 );

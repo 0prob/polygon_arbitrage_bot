@@ -7,6 +7,7 @@
     "dev": "envio dev",
     "run": "envio run",
     "generate-tokens": "bun scripts/generate-polygon-tokens.ts",
+    "generate-tokens:auto": "bun scripts/update-token-registry.ts",
     "clear-hasura": "bun scripts/clear-hasura-metadata.ts",
     "dev:reset": "bun run clear-hasura || echo '⚠️  clear-hasura failed (missing secret or Hasura not ready) — continuing with full reset anyway' && bunx envio dev -r"
   },

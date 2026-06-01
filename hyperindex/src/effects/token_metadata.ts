@@ -6,6 +6,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
+const AUTO_EXTRA_TOKENS_FILE = path.resolve("data/auto-extra-tokens.json");
 const FAILED_DECIMALS_RETRY_MS = 30 * 60 * 1000; // 30 minutes before retrying a failed token
 
 // Runtime discovered decimals (persisted across restarts for this indexer instance)
@@ -43,6 +44,39 @@ async function saveDiscoveredDecimals() {
   return discoveredSavePending;
 }
 
+// Best-effort append of newly discovered cold tokens so that `bun run gentok`
+// can promote them into the static registry automatically.
+const autoExtraWritePending = new Set<string>();
+
+async function appendToAutoExtraTokens(address: string, decimals: number) {
+  const addr = address;
+  if (autoExtraWritePending.has(addr)) return;
+  autoExtraWritePending.add(addr);
+
+  try {
+    await mkdir(path.dirname(AUTO_EXTRA_TOKENS_FILE), { recursive: true });
+
+    let existing: any[] = [];
+    try {
+      const raw = await readFile(AUTO_EXTRA_TOKENS_FILE, "utf8");
+      existing = JSON.parse(raw);
+      if (!Array.isArray(existing)) existing = [];
+    } catch {}
+
+    // Deduplicate
+    if (existing.some((t: any) => t.address?.toLowerCase() === addr)) {
+      return;
+    }
+
+    existing.push({ address: addr, decimals });
+    await writeFile(AUTO_EXTRA_TOKENS_FILE, JSON.stringify(existing, null, 2), "utf8");
+  } catch (e) {
+    console.warn("[token_metadata] Failed to append to auto-extra-tokens:", (e as Error).message);
+  } finally {
+    autoExtraWritePending.delete(addr);
+  }
+}
+
 // Track failures with timestamps for retry
 const failedTokenAttempts: Map<string, number> = new Map();
 
@@ -62,13 +96,14 @@ function safeDecimals(d: number): number {
  * token metadata the arbitrage engine actually uses (for amount scaling,
  * price impact, profit math, etc.).
  *
- * 1. Large static registry (fastest — 1400+ Polygon tokens, 0 RPC)
- * 2. Batched RPC (last resort, at the historical block when needed)
+ * 1. Large static registry (fastest — 6000+ Polygon tokens, 0 RPC)
+ * 2. Batched RPC (last resort)
+ *
+ * Cold tokens discovered via RPC are **automatically** appended to
+ * `data/auto-extra-tokens.json` so the next `bun run gentok` promotes them
+ * into the static registry.
  *
  * This is the #1 lever for V2Factory.PairCreated performance.
- * When tokens miss here, they appear as expensive "Loaders" time in Envio profiling.
- *
- * Expand the registry aggressively with: bun run generate-tokens
  */
 // Used to deduplicate warnings when we repeatedly fail to fetch decimals for
 // the same broken/malformed token (e.g. factory address emitted as a token).
@@ -87,7 +122,7 @@ export const fetchTokenMeta = createEffect(
     cache: true, // Critical for performance on restarts / re-runs
   },
   async ({ input, context }) => {
-    const addr = input.address.toLowerCase();
+    const addr = input.address;
 
     // Layer 1: Static + discovered runtime cache (aggressive persistence)
     const staticCached = STATIC_TOKEN_DECIMALS[addr];
@@ -108,16 +143,38 @@ export const fetchTokenMeta = createEffect(
     }
 
     try {
-      const opts = input.blockNumber
-        ? { blockNumber: input.blockNumber }
-        : undefined;
+      // For token decimals we deliberately use "latest" (omit blockNumber).
+      // Decimals are immutable on any reasonable ERC20. Passing historical blockNumber
+      // forces archive-style calls that are dramatically slower under concurrent load
+      // from the indexer (observed as consistent ~15s SLOW_EFFECT even on very recent blocks
+      // with paid RPCs). Using latest makes the live-debug tail fast while remaining correct.
+      const opts = undefined;
 
+      // Per-call diagnostic (fires inside the effect execution context)
+      console.log(JSON.stringify({
+        level: 30,
+        msg: "TOKEN_META_RPC_CALL_START",
+        token: input.address,
+        block: input.blockNumber ? Number(input.blockNumber) : null,
+        note: "Using latest (no blockNumber) for immutable decimals — testing if historical block tag was the source of 15s latency"
+      }));
+
+      const tRpc0 = Date.now();
       const decimals = await publicClient.readContract({
         address: input.address as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "decimals",
         ...opts,
       });
+      const rpcMs = Date.now() - tRpc0;
+
+      console.log(JSON.stringify({
+        level: 30,
+        msg: "TOKEN_META_RPC_DONE",
+        token: input.address,
+        rpcDurationMs: rpcMs,
+        note: rpcMs > 2000 ? "Still slow even with latest" : "Fast with latest"
+      }));
 
       const result = { address: input.address, decimals: safeDecimals(Number(decimals)) };
 
@@ -125,8 +182,12 @@ export const fetchTokenMeta = createEffect(
       discoveredDecimals[addr] = result.decimals;
       saveDiscoveredDecimals().catch(() => {});
 
+      // Auto-feed the gentok generator with newly discovered cold tokens.
+      // This dramatically reduces future 15s effects on new launches.
+      appendToAutoExtraTokens(addr, result.decimals).catch(() => {});
+
       if (context.log) {
-        context.log.info(`Fetched decimals for new token via RPC (persisted)`, {
+        context.log.info(`Fetched decimals for new token via RPC (persisted + auto-extra)`, {
           token: input.address,
           decimals: result.decimals,
         });

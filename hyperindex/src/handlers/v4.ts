@@ -11,30 +11,44 @@ indexer.onEvent(
     where: createHotBiasWhere(INDEXER_HOT_BIAS, ["currency0", "currency1"]),
   },
   async ({ event, context }) => {
-    const poolId = event.params.id.toLowerCase();
-    const currency0 = event.params.currency0.toLowerCase();
-    const currency1 = event.params.currency1.toLowerCase();
+    const poolId = event.params.id;
+    const currency0 = event.params.currency0;
+    const currency1 = event.params.currency1;
     const tickSpacing = Number(event.params.tickSpacing);
-    const hooks = event.params.hooks.toLowerCase();
+    const hooks = event.params.hooks;
+    const blockNumber = Number(event.block.number);
+    const txHash = event.transaction?.hash;
+
+    // Schedule ALL effects early (before any sets/caches) so they participate
+    // in Envio V3 preload batching + memoization across the event batch.
+    // See: https://docs.envio.dev/docs/HyperIndex/preload-optimization
+    const [c0meta, c1meta] = await Promise.all([
+      context.effect(fetchTokenMeta, { address: currency0, blockNumber: BigInt(blockNumber) }),
+      context.effect(fetchTokenMeta, { address: currency1, blockNumber: BigInt(blockNumber) }),
+    ]);
+
+    if (context.isPreload) {
+      return;
+    }
 
     v4MetaCache.set(poolId, { tickSpacing, hooks });
 
     context.PoolMeta.set({
       id: poolId,
       address: poolId,
-      protocol: "uniswap_v4",
+      protocol: "UNISWAP_V4",
       tokens: [currency0, currency1],
       fee: Number(event.params.fee),
       tickSpacing,
-      createdBlock: Number(event.block.number),
-      createdTx: undefined,
+      createdBlock: blockNumber,
+      createdTx: txHash,
       poolId: undefined,
     });
 
     context.V4PoolState.set({
       id: poolId,
       address: poolId,
-      lastUpdatedBlock: Number(event.block.number),
+      lastUpdatedBlock: blockNumber,
       sqrtPriceX96: event.params.sqrtPriceX96,
       liquidity: 0n,
       tick: Number(event.params.tick),
@@ -42,15 +56,6 @@ indexer.onEvent(
       tickSpacing,
       hooks,
     });
-
-    const [c0meta, c1meta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: currency0, blockNumber: BigInt(event.block.number) }),
-      context.effect(fetchTokenMeta, { address: currency1, blockNumber: BigInt(event.block.number) }),
-    ]);
-
-    if (context.isPreload) {
-      return;
-    }
 
     context.TokenMeta.set({ id: currency0, address: currency0, decimals: c0meta.decimals });
     context.TokenMeta.set({ id: currency1, address: currency1, decimals: c1meta.decimals });

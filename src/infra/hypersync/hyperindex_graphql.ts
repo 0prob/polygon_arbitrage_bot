@@ -403,3 +403,42 @@ export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret:
   }
   return metas;
 }
+
+export interface IndexerProgress {
+  chainId: number;
+  lastProcessedBlock: number;
+  updatedAtBlock: number;
+}
+
+/**
+ * Fetches the latest IndexerProgress written by the block handler.
+ * Returns the first (and normally only) row, or undefined if the handler
+ * has never run or the table is empty.
+ */
+export async function fetchIndexerProgressFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+): Promise<IndexerProgress | undefined> {
+  try {
+    const result = await graphQLQuery(
+      graphqlUrl,
+      adminSecret,
+      `{ IndexerProgress(limit: 5) { id chainId lastProcessedBlock updatedAtBlock } }`,
+    );
+    const rows = (result as { data?: { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } } | null)?.data
+      ?.IndexerProgress ?? [];
+
+    if (rows.length === 0) return undefined;
+
+    // Prefer the highest block if multiple chains ever appear
+    const best = rows.reduce((a, b) => (b.lastProcessedBlock > a.lastProcessedBlock ? b : a));
+    return {
+      chainId: best.chainId,
+      lastProcessedBlock: best.lastProcessedBlock,
+      updatedAtBlock: best.updatedAtBlock,
+    };
+  } catch (err) {
+    console.warn("fetchIndexerProgressFromHasura failed", err);
+    return undefined;
+  }
+}

@@ -78,6 +78,13 @@ export interface HyperIndexProcessOptions {
    *   - Intended for the autonomous debug loop and manual `--hyperindex-reset` flows.
    */
   forceFullReset?: boolean;
+
+  /**
+   * If true (default), automatically run `bun run gentok:auto` after the HyperIndex
+   * process shuts down gracefully. This promotes any cold tokens discovered during
+   * the run into the static STATIC_TOKEN_DECIMALS registry.
+   */
+  autoUpdateTokenRegistryOnShutdown?: boolean;
 }
 
 export interface HyperIndexProcess {
@@ -103,6 +110,7 @@ export interface HyperIndexProcess {
  */
 export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIndexProcess {
   let proc: ChildProcess | null = null;
+  let _weStartedIndexer = false;
   let _stdoutHandler: ((data: Buffer) => void) | null = null;
   let _stderrHandler: ((data: Buffer) => void) | null = null;
   let _exitHandler: ((code: number | null, signal: string | null) => void) | null = null;
@@ -181,7 +189,33 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
    * Best-effort clear of Hasura metadata.
    * Safe to call even if Hasura is not reachable.
    */
-  async function clearHasuraMetadata(url: string, secret: string | undefined, logger: Logger): Promise<void> {
+  /**
+ * Best-effort run of `bun run gentok:auto` after HyperIndex shutdown.
+ * This promotes any tokens discovered via RPC during the run into the static registry.
+ */
+function runGentokAuto(hiDir: string, logger: Logger): void {
+  // Fire and forget — we don't want shutdown to be blocked by this.
+  setTimeout(() => {
+    try {
+      logger.info("Running gentok:auto after HyperIndex shutdown to promote newly discovered cold tokens...");
+      const child = spawn("bun", ["run", "gentok:auto"], {
+        cwd: hiDir,
+        stdio: "ignore",
+        detached: true,
+      });
+      child.unref();
+
+      // Give it a generous amount of time, then we stop caring
+      setTimeout(() => {
+        try { child.kill(); } catch {}
+      }, 90_000);
+    } catch (err) {
+      logger.debug({ err }, "Failed to spawn gentok:auto after shutdown (non-fatal)");
+    }
+  }, 0);
+}
+
+async function clearHasuraMetadata(url: string, secret: string | undefined, logger: Logger): Promise<void> {
     const endpoint = `${url.replace(/\/$/, "")}/v1/metadata`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -571,6 +605,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       detached: true, // Start in a new process group
     });
 
+    _weStartedIndexer = true;
+
     _stdoutHandler = (data: Buffer) => {
       const line = data.toString().trim();
       if (!line) return;
@@ -709,8 +745,17 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       p.on("exit", cleanup);
     });
 
+    const shouldRunGentok = _weStartedIndexer && opts.autoUpdateTokenRegistryOnShutdown !== false;
+
     proc = null;
     _currentEnvioKeyPrefix = undefined;
+    _weStartedIndexer = false;
+
+    // Automatically promote any cold tokens discovered during this run into the static registry.
+    // This is best-effort and runs after the indexer has fully shut down.
+    if (shouldRunGentok) {
+      runGentokAuto(hiDir, opts.logger);
+    }
   }
 
   function isRunning(): boolean {

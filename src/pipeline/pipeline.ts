@@ -65,7 +65,7 @@ function getEffectivePriceImpactForCycle(
     try {
       const result = simulateHop(simEdge, currentAmount, stateCache);
       currentAmount = result.amountOut;
-    } catch (_err: unknown) {
+    } catch {
       return true;
     }
   }
@@ -199,7 +199,7 @@ function evaluateAmount(
     }
 
     return { result: fullResult, assessment, grossProfitMatic: grossMatic };
-  } catch (_err: unknown) {
+  } catch {
     return { result: null, assessment: null, grossProfitMatic: null };
   }
 }
@@ -341,7 +341,7 @@ export async function evaluatePipeline(
           }
 
           return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic, cycle };
-        } catch (_err: unknown) {
+        } catch {
           return { type: "error" as const, cycle };
         }
       }),

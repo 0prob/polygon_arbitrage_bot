@@ -118,11 +118,29 @@ bun run fmt               # Format code
 
 # HyperIndex (Envio) development
 bun run dev               # Start the indexer (development mode)
+bun run gentok            # Regenerate STATIC_TOKEN_DECIMALS from public lists + bot data
+bun run gentok:auto       # Recommended: full cycle (pulls auto-discovered tokens + safe write)
 bun run dev:reset         # Kills port (respects ENVIO_INDEXER_PORT) + full reset (recommended for schema/start_block/handler changes)
 bun run dev:kill          # Kill any process holding the default Envio indexer port (9898)
 bun run cgen              # Regenerate Envio types after schema/config changes
 bun run gentok            # Regenerate the static token decimals registry
 bun run clear-hasura      # Clear Hasura metadata
+```
+
+## For AI Assistants & Agents
+
+This repository is intentionally optimized for AI coding agents.
+
+Recommended reading order:
+1. `AGENTS.md` — primary context and hard rules.
+2. `skill.md` — structured capabilities and workflows (agent-friendly format).
+3. `llms.txt` — document discovery index.
+
+When you need accurate Polygon documentation (chain behavior, Agglayer, stablecoins, etc.), use:
+- Context7 with library `llmstxt/polygon_technology_llms_txt`, or
+- The official Polygon Docs MCP server.
+
+See `skill.md` for more details on working effectively with AI tools in this codebase (including the powerful `arb-tx-tools` skill).
 ```
 
 ### Working with the Indexer

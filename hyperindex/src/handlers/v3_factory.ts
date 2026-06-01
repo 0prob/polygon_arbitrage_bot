@@ -7,10 +7,10 @@ import { logEffectTime } from "../utils/instrumentation";
 // both static config and dynamically registered addresses (survives restarts).
 
 const FACTORY_PROTOCOLS: Record<string, string> = {
-  "0x1f98431c8ad98523631ae4a59f267346ea31f984": "uniswap_v3",
-  "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2": "sushiswap_v3",
-  "0x411b0facc3489691f28ad58c47006af5e3ab3a28": "quickswap_v3",
-  "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a": "kyberswap_elastic",
+  "0x1f98431c8ad98523631ae4a59f267346ea31f984": "UNISWAP_V3",
+  "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2": "SUSHISWAP_V3",
+  "0x411b0facc3489691f28ad58c47006af5e3ab3a28": "QUICKSWAP_V3",
+  "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a": "KYBERSWAP_ELASTIC",
 };
 
 indexer.contractRegister(
@@ -21,6 +21,10 @@ indexer.contractRegister(
   },
   async ({ event, context }) => {
     context.chain.UniswapV3Pool.add(event.params.pool);
+
+    if (context.log) {
+      context.log.info("Registered dynamic V3 pool", { pool: event.params.pool });
+    }
   },
 );
 
@@ -31,38 +35,42 @@ indexer.onEvent(
     where: createHotBiasWhere(INDEXER_HOT_BIAS),
   },
   async ({ event, context }) => {
-    const t0 = event.params.token0.toLowerCase();
-    const t1 = event.params.token1.toLowerCase();
+    const t0 = event.params.token0;
+    const t1 = event.params.token1;
 
-    const factoryAddr = event.srcAddress.toLowerCase();
+    const factoryAddr = event.srcAddress;
 
     if (t0 === factoryAddr || t1 === factoryAddr) {
       return;
     }
 
-    const protocol = FACTORY_PROTOCOLS[factoryAddr] ?? "unknown_v3";
-    context.PoolMeta.set({
-      id: event.params.pool.toLowerCase(),
-      address: event.params.pool.toLowerCase(),
-      protocol,
-      tokens: [t0, t1],
-      fee: Number(event.params.fee),
-      tickSpacing: Number(event.params.tickSpacing),
-      createdBlock: Number(event.block.number),
-      createdTx: event.transaction.hash,
-      poolId: undefined,
-    });
+    const protocol = FACTORY_PROTOCOLS[factoryAddr] ?? "UNKNOWN_V3";
+    const poolAddr = event.params.pool;
+    const blockNumber = Number(event.block.number);
 
+    // Effects first (before any sets) for preload batching. PoolMeta set moved post-guard.
     const tEff0 = Date.now();
     const [t0meta, t1meta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(event.block.number) }),
-      context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(event.block.number) }),
+      context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(blockNumber) }),
+      context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(blockNumber) }),
     ]);
-    logEffectTime("fetchTokenMeta:pool", Date.now() - tEff0, Number(event.block.number));
+    logEffectTime("fetchTokenMeta:pool", Date.now() - tEff0, blockNumber);
 
     if (context.isPreload) {
       return;
     }
+
+    context.PoolMeta.set({
+      id: poolAddr,
+      address: poolAddr,
+      protocol,
+      tokens: [t0, t1],
+      fee: Number(event.params.fee),
+      tickSpacing: Number(event.params.tickSpacing),
+      createdBlock: blockNumber,
+      createdTx: event.transaction.hash,
+      poolId: undefined,
+    });
 
     context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
     context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });

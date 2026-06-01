@@ -1,5 +1,13 @@
 name: arb_bot_ingestion
 description: "High-performance DEX indexing for arbitrage opportunities (Polygon-optimized)"
+ecosystem: evm
+
+# Address format: lowercase makes all surfaced addresses (event.srcAddress, transaction.from/to,
+# entity ids, dynamically registered contract addresses, etc.) consistently lowercase.
+# This greatly reduces the need for manual .toLowerCase() calls in handlers (see recent cleanup).
+# See https://docs.envio.dev/docs/HyperIndex/configuration-file#address-format
+address_format: lowercase
+
 # Best practice (2026 docs): Keep reorg support enabled in production for safety.
 # HyperIndex handles rollbacks automatically when enabled.
 rollback_on_reorg: true
@@ -96,6 +104,121 @@ full_batch_size: 5000
 # The host process probes + filters for archival support and prefers endpoints from POLYGON_RPC_URLS
 # (set in root .env) before falling back to free public RPCs (after removing any that fail historical calls).
 # Set POLYGON_RPC_URLS (comma-separated) in your .env for custom/paid providers with archive.
+
+# === Global Contract Definitions (recommended V3 pattern) ===
+# Contracts are defined once here (name + ABI + events + field_selection).
+# Per-chain entries only supply addresses + start_block overrides.
+# This follows https://docs.envio.dev/docs/HyperIndex/configuration-file#contracts-definition
+contracts:
+  # V2 Factories
+  - name: V2Factory
+    abi_file_path: abis/uniswap_v2_factory.json
+    events:
+      - event: PairCreated
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # V3 Factories
+  - name: V3Factory
+    abi_file_path: abis/uniswap_v3_factory.json
+    events:
+      - event: PoolCreated
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # V2 Pools (dynamically registered, mostly no-op for live debug)
+  - name: UniswapV2Pool
+    abi_file_path: abis/uniswap_v2_pool.json
+    events:
+      - event: Sync
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # V3 Pools (dynamically registered)
+  - name: UniswapV3Pool
+    abi_file_path: abis/uniswap_v3_pool.json
+    events:
+      - event: Swap
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: Initialize
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # Curve
+  - name: CurveRegistry
+    abi_file_path: abis/curve_factory.json
+    events:
+      - event: PoolAdded
+        field_selection:
+          transaction_fields: ["hash"]
+
+  - name: CurvePool
+    abi_file_path: abis/curve_pool.json
+    events:
+      - event: TokenExchange
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: AddLiquidity
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: RemoveLiquidity
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: RemoveLiquidityOne
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # Uniswap V4
+  - name: PoolManager
+    abi_file_path: abis/uniswap_v4_pool_manager.json
+    events:
+      - event: Initialize
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: Swap
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # Balancer V2
+  - name: BalancerVault
+    abi_file_path: abis/balancer_vault.json
+    events:
+      - event: PoolRegistered
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: TokensRegistered
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: Swap
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: PoolBalanceChanged
+        field_selection:
+          transaction_fields: ["hash"]
+
+  # DODO V2
+  - name: DodoFactory
+    abi_file_path: abis/dodo_factory.json
+    events:
+      - event: DVMDeployed
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: DPPDeployed
+        field_selection:
+          transaction_fields: ["hash"]
+      - event: DSPDeployed
+        field_selection:
+          transaction_fields: ["hash"]
+
+  - name: DodoPool
+    abi_file_path: abis/dodo_pool.json
+    events:
+      - event: Sync
+        field_selection:
+          transaction_fields: ["hash"]
+
+# === Chains ===
 chains:
   - id: 137
     # OPTIMIZATION (Point 1): Exact start_block per chain/contract.
@@ -105,16 +228,20 @@ chains:
     # Recommended: set POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
     start_block: ${POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
     
-    # RPC fallback (Best practice): Switches to RPC if HyperSync becomes unavailable for >20s.
-    # Ensures high availability and automatic failover.
-    rpc: ${POLYGON_RPC_URL}
+    # RPC configuration (V3 structured form recommended in config docs).
+    # HyperSync is primary for Polygon. This RPC acts as fallback when HyperSync is unavailable.
+    # See https://docs.envio.dev/docs/HyperIndex/configuration-file#rpc and config-schema-reference.
+    # You can expand this to separate sync vs realtime providers + tuning parameters later.
+    rpc:
+      - url: ${POLYGON_RPC_URL}
+        for: fallback
 
     # Max reorg depth (Polygon best practice): Standard depth to handle rollbacks.
     # HyperIndex automatically handles these when rollback_on_reorg is true.
     max_reorg_depth: 200
 
     # === Envio/HyperSync Optimizations (see user best-practices) ===
-    # Point 2: All contracts below use tight event whitelists (never empty/generic). HyperSync drops
+    # Point 2: All contracts use tight event whitelists (never empty/generic). HyperSync drops
     #          unneeded payloads before they reach the indexer → major historical sync speedup.
     # Point 4: Preload optimization is enabled by default in Envio v3 (batched entity pre-fetch alongside
     #          event processing). No explicit flag required; visible in metrics as "envio_preload_*".
@@ -129,9 +256,9 @@ chains:
       url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
       # api_token can also be set here, but ENVIO_API_TOKEN env var is the standard approach.
     contracts:
-      # Consolidated V2 Factories (Point 1 + Point 3: exact start_block + dynamic registration in handler)
+      # V2 Factories - multiple addresses + per-factory start_block override
       - name: V2Factory
-        start_block: ${POLYGON_START_BLOCK:-5024576} # Quickswap V2 deployment
+        start_block: ${POLYGON_START_BLOCK:-5024576}
         address:
           - "0x5757371414417b8c6caad45baef941abc7d3ab32" # Quickswap
           - "0xc35dadb65012ec5796536bd9864ed8773abc74c4" # Sushi
@@ -141,140 +268,48 @@ chains:
           - "0x9f3044f7f9fc8bc9ed615d54845b4577b833282d" # Meshswap
           - "0x668ad0ed2622c62e24f0d5ab6b6ac1b9d2cd4ac7" # Jetswap
           - "0x800b052609c355ca8103e06f022aa30647ead60a" # Cometh
-        abi_file_path: abis/uniswap_v2_factory.json
-        # handler removed - using automatic registration from src/handlers/ (V3 style)
-        events:
-          - event: PairCreated
-            field_selection:
-              transaction_fields: ["hash"]
-      
-      # Consolidated V3 Factories (Point 1 + Point 3: exact start_block + dynamic registration in handler)
+
+      # V3 Factories
       - name: V3Factory
-        start_block: ${POLYGON_START_BLOCK:-22757547} # Uniswap V3 deployment
+        start_block: ${POLYGON_START_BLOCK:-22757547}
         address:
           - "0x1f98431c8ad98523631ae4a59f267346ea31f984" # Uniswap
           - "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2" # Sushi
           - "0x411b0facc3489691f28ad58c47006af5e3ab3a28" # Quickswap
           - "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a" # Kyberswap
-        abi_file_path: abis/uniswap_v3_factory.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: PoolCreated
-            field_selection:
-              transaction_fields: ["hash"]
 
-      # Wildcard Pools (Dynamically Registered)
+      # Wildcard pools (addresses supplied dynamically via contractRegister in handlers)
       - name: UniswapV2Pool
         start_block: ${POLYGON_START_BLOCK:-5024576}
-        abi_file_path: abis/uniswap_v2_pool.json
-        # Live-debug no-op handler. Use minimal field_selection since we ignore the event body.
-        events:
-          - event: Sync
-            field_selection:
-              # Only what's needed for the (no-op) handler + any monitoring. HyperSync drops the rest early.
-              transaction_fields: ["hash"]
 
       - name: UniswapV3Pool
         start_block: ${POLYGON_START_BLOCK:-22757547}
-        abi_file_path: abis/uniswap_v3_pool.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: Swap
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: Initialize
-            field_selection:
-              transaction_fields: ["hash"]
 
-      # Specific Single-Address Contracts
-      # CurveRegistry (Point 1 + Point 3: exact start_block + dynamic registration in curve_factory.ts)
+      # Curve
       - name: CurveRegistry
         start_block: ${POLYGON_START_BLOCK:-10000000}
         address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
-        abi_file_path: abis/curve_factory.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: PoolAdded
-            field_selection:
-              transaction_fields: ["hash"]
 
-      # CurvePool
       - name: CurvePool
         start_block: ${POLYGON_START_BLOCK:-10000000}
-        abi_file_path: abis/curve_pool.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: TokenExchange
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: AddLiquidity
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: RemoveLiquidity
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: RemoveLiquidityOne
-            field_selection:
-              transaction_fields: ["hash"]
 
+      # Uniswap V4
       - name: PoolManager
-        start_block: ${POLYGON_START_BLOCK:-66980384} # Uniswap V4 deployment
+        start_block: ${POLYGON_START_BLOCK:-66980384}
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
-        abi_file_path: abis/uniswap_v4_pool_manager.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: Initialize
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: Swap
-            field_selection:
-              transaction_fields: ["hash"]
 
+      # Balancer V2
       - name: BalancerVault
         start_block: ${POLYGON_START_BLOCK:-15832990}
         address: "0xba12222222228d8ba445958a75a0704d566bf2c8"
-        abi_file_path: abis/balancer_vault.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: PoolRegistered
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: TokensRegistered
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: Swap
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: PoolBalanceChanged
-            field_selection:
-              transaction_fields: ["hash"]
 
-      # DODO V2 Factories (Point 1 + Point 3: exact start_block + dynamic registration added in dodo_factory.ts)
+      # DODO V2
       - name: DodoFactory
         start_block: ${POLYGON_START_BLOCK:-14722979}
         address:
           - "0x79887f65f83bdf15bcc8736b5e5bcdb48fb8fe13" # DVM
           - "0xdfaf9584f5d229a9dbe5978523317820a8897c5a" # DPP
           - "0x4d97e480ea49ac57ce8c1f7c79b1a0c3d4adc7c4" # DSP
-        abi_file_path: abis/dodo_factory.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: DVMDeployed
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: DPPDeployed
-            field_selection:
-              transaction_fields: ["hash"]
-          - event: DSPDeployed
-            field_selection:
-              transaction_fields: ["hash"]
 
       - name: DodoPool
-        # Point 1: Uses same start_block as factory. Point 3: addresses supplied exclusively via contractRegister in dodo_factory.ts
         start_block: ${POLYGON_START_BLOCK:-14722979}
-        abi_file_path: abis/dodo_pool.json
-        # handler removed - automatic registration from src/handlers/ (V3)
-        events:
-          - event: Sync
-            field_selection:
-              transaction_fields: ["hash"]

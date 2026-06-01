@@ -19,6 +19,7 @@ import type {
   discoverPoolsFromHasura,
   buildStateCacheFromGraphQL,
   fetchTokenMetasFromHasura,
+  fetchIndexerProgressFromHasura,
 } from "../infra/hypersync/hyperindex_graphql.ts";
 
 // Re-export the real function types so PassLoopDeps stays accurate and free of `any`.
@@ -30,6 +31,7 @@ export interface PassLoopDeps {
   discoverPoolsFromHasura: typeof discoverPoolsFromHasura;
   buildStateCacheFromGraphQL: typeof buildStateCacheFromGraphQL;
   fetchTokenMetasFromHasura: typeof fetchTokenMetasFromHasura;
+  fetchIndexerProgressFromHasura: typeof fetchIndexerProgressFromHasura;
   averageObscurity?: (edges: SwapEdge[]) => number; // optional for long-tail risk relaxation (uses SwapEdge from pipeline)
   routeKeyFromEdges: (edges: SwapEdge[], startToken: Address) => string;
   buildExecutionCandidate: typeof buildExecutionCandidate;

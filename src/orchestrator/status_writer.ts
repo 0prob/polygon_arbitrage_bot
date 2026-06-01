@@ -29,6 +29,8 @@ export interface StatusPayload {
     healthy: boolean;
     /** Whether the indexer is running in hot-bias mode (limits discovery to major tokens) or broad long-tail mode */
     discoveryMode?: "broad" | "hot-bias";
+    /** Last block processed by handlers (from the IndexerProgress block handler entity) */
+    progressBlock?: number;
   };
   timestamp: string;
 }
@@ -49,6 +51,7 @@ export function buildStatusPayload(
     syncRate: number;
     healthy: boolean;
     discoveryMode?: "broad" | "hot-bias";
+    progressBlock?: number;
   },
 ): StatusPayload {
   const uptimeSec = Math.floor((Date.now() - metrics.startTime) / 1000);

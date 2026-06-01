@@ -14,6 +14,12 @@ export interface ParsedTraceSummary {
   hasInternalReverts: boolean;
   suspiciousPatterns: string[]; // e.g. ["possible_sandwich", "jit_liquidity", "multiple_large_swaps"]
   rawTraceCount: number;
+
+  // Native (MATIC on Polygon / ETH on other chains) transfer signals.
+  // Populated from trace.action.value when call_type is "call".
+  // See https://docs.envio.dev/blog/tracking-native-eth-transfers-hypersync for efficient HyperSync patterns.
+  nativeValueTransferred: bigint; // total wei moved in value-carrying calls
+  hasLargeNativeTransfer: boolean;
 }
 
 /**
@@ -26,6 +32,10 @@ export interface ParsedTraceSummary {
  *   - Mempool competing tx detection
  *   - Risk / quarantine decisions
  *   - Better simulation / dry-run context
+ *
+ * Native (MATIC) transfer detection follows patterns from
+ * https://docs.envio.dev/blog/tracking-native-eth-transfers-hypersync
+ * (efficient callType + value filtering on HyperSync traces).
  */
 export function parseTransactionTraces(txHash: string, traces: any[], logger?: Logger): ParsedTraceSummary {
   if (!Array.isArray(traces) || traces.length === 0) {
@@ -42,6 +52,8 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
     hasInternalReverts: false,
     suspiciousPatterns: [],
     rawTraceCount: traces.length,
+    nativeValueTransferred: 0n,
+    hasLargeNativeTransfer: false,
   };
 
   const protocolSet = new Set<string>();
@@ -50,6 +62,10 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
   let sawBalancerFlash = false;
   let sawAaveFlash = false;
   let swapCount = 0;
+
+  // Native value transfer tracking (MATIC on Polygon)
+  let totalNativeValue = 0n;
+  const LARGE_NATIVE_THRESHOLD = 100_000_000_000_000_000n; // 0.1 MATIC (tune as needed)
 
   for (const trace of traces) {
     const action = trace.action || {};
@@ -62,6 +78,12 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
     // Detect flashloans (common patterns)
     const to = (action.to || "").toLowerCase();
     const inputData = (action.input || "").toLowerCase();
+
+    // Native value transfer (from blog: call_type=call with value)
+    const value = action.value ? BigInt(action.value) : 0n;
+    if (value > 0n) {
+      totalNativeValue += value;
+    }
 
     if (to.includes("ba12222222228d8ba445958a75a0704d566bf2c8")) {
       // Balancer Vault
@@ -106,6 +128,9 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
   summary.touchedProtocols = Array.from(protocolSet);
   summary.hasInternalReverts = hasRevert;
 
+  summary.nativeValueTransferred = totalNativeValue;
+  summary.hasLargeNativeTransfer = totalNativeValue >= LARGE_NATIVE_THRESHOLD;
+
   if (sawBalancerFlash) {
     summary.usedFlashloan = true;
     summary.flashloanProvider = "BALANCER";
@@ -139,6 +164,8 @@ function createEmptySummary(txHash: string): ParsedTraceSummary {
     hasInternalReverts: false,
     suspiciousPatterns: [],
     rawTraceCount: 0,
+    nativeValueTransferred: 0n,
+    hasLargeNativeTransfer: false,
   };
 }
 
@@ -184,6 +211,12 @@ export function getTraceMessages(summary: ParsedTraceSummary): string[] {
 
   if (summary.callCount > 20) {
     messages.push(`High activity (${summary.callCount} calls)`);
+  }
+
+  if (summary.hasLargeNativeTransfer) {
+    messages.push(`Large native transfer: ${summary.nativeValueTransferred} wei`);
+  } else if (summary.nativeValueTransferred > 0n) {
+    messages.push(`Native value moved: ${summary.nativeValueTransferred} wei`);
   }
 
   return messages;

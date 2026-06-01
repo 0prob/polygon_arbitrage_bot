@@ -90,13 +90,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780272589.8897734,
-    "ast_hash": "13965046d411fac1bd1ed865eb756c10",
+    "mtime": 1780291830.0919423,
+    "ast_hash": "0beeea7c6cb812e38ed0dccc32257a4b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
-    "mtime": 1780252642.7271872,
-    "ast_hash": "d8f5b37c1cb692d38e95c841d28bca09",
+    "mtime": 1780286986.0523546,
+    "ast_hash": "c7883ee917b2009646e02c788053128a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
@@ -110,13 +110,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_factory.ts": {
-    "mtime": 1780129559.7247667,
-    "ast_hash": "bb12f6dc940e171730307d784eecbe97",
+    "mtime": 1780273445.6326525,
+    "ast_hash": "d1985ba67a9294f73b0fbc96a2ca8017",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/balancer.ts": {
-    "mtime": 1780252698.2986102,
-    "ast_hash": "4c49e4a9b46b9c107de56177017558c4",
+    "mtime": 1780273515.843909,
+    "ast_hash": "4b440114955e1a444d67f578d45554b1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
@@ -125,8 +125,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_factory.ts": {
-    "mtime": 1780129555.9248877,
-    "ast_hash": "f7710367dc2da1b67ff7bf1941f4cc06",
+    "mtime": 1780273480.416284,
+    "ast_hash": "1639cf541cee2c0ffc30197166995f10",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_pool.ts": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/settings.json": {
-    "mtime": 1780250336.10717,
-    "ast_hash": "f080aabf772e803c9e24b9ad0acbf2b6",
+    "mtime": 1780292322.3378134,
+    "ast_hash": "a0b7b82a43b17c1c416057c86acb0b02",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.grok/settings.json": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/finder.ts": {
-    "mtime": 1780272680.6247978,
-    "ast_hash": "7823056a0c0e677c95292c5eeceb8ff4",
+    "mtime": 1780298950.630372,
+    "ast_hash": "d4bcf21f0c285a7effa4e50201c3f3ab",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/pipeline.ts": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/rpc/manager.ts": {
-    "mtime": 1780272170.9503365,
-    "ast_hash": "81afdcc2a512330e6fc2312139fa3fc9",
+    "mtime": 1780298898.7550771,
+    "ast_hash": "4ffeb7e3f093961477485ba2130b25d1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/fastlane.ts": {
@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/schema.test.ts": {
-    "mtime": 1780154796.7637112,
-    "ast_hash": "af9727b87bd64a072e80771408c1466e",
+    "mtime": 1780298959.090258,
+    "ast_hash": "e1a69c2a2d123178760044307214a591",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/config/loader.test.ts": {
@@ -860,8 +860,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
-    "mtime": 1780006801.4381325,
-    "ast_hash": "27ef8d99a1fbcb5cf6619b3e11cf57fe",
+    "mtime": 1780298952.5703459,
+    "ast_hash": "d59a3aa91bbbbb967b5aa5f5f6d80c87",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/graph_incremental.ts": {
@@ -885,8 +885,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/garbage/garbage-tracker.ts": {
-    "mtime": 1780061142.2714636,
-    "ast_hash": "5a44c51549826a164281764f9cfbb806",
+    "mtime": 1780273599.0230284,
+    "ast_hash": "4cba3944252d49a466f94d3e161ac020",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/dodo_pool.json": {
@@ -1140,8 +1140,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/rpc/request_scheduler.test.ts": {
-    "mtime": 1780238522.3306448,
-    "ast_hash": "bb76171b222a0fb69cd9bd01d6b6828d",
+    "mtime": 1780298987.849872,
+    "ast_hash": "8518846fbe6e856742c821dea5c99f4f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/rpc/request_scheduler.ts": {

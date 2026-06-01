@@ -13,18 +13,33 @@ indexer.onEvent(
     event: "PoolRegistered",
   },
   async ({ event, context }) => {
-    const pool = event.params.poolAddress.toLowerCase();
-    const poolId = event.params.poolId.toLowerCase();
+    const pool = event.params.poolAddress;
+    const poolId = event.params.poolId;
+    const blockNumber = Number(event.block.number);
 
     // All effects scheduled early → participate in Envio v3 preload batching + dedup.
+    // Token effects moved before isPreload guard (were after) for full preload optimization.
     const tEffBal = Date.now();
-    const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(event.block.number) });
-    logEffectTime("fetchBalancerMetadata", Date.now() - tEffBal, Number(event.block.number));
+    const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(blockNumber) });
+    logEffectTime("fetchBalancerMetadata", Date.now() - tEffBal, blockNumber);
 
     // Manual JS-level filter for hot bias mode because tokens are not in event params
     if (INDEXER_HOT_BIAS && !meta.tokens.some((token) => involvesHotBase(token, token))) {
       return;
     }
+
+    // Schedule token metadata effects early (after balancer meta which provides the token list)
+    // so they run in the preload phase for batching/memoization.
+    const tEffBalTokens = Date.now();
+    const tokenMetas = await Promise.all(
+      meta.tokens.map((token) =>
+        context.effect(fetchTokenMeta, {
+          address: token,
+          blockNumber: BigInt(blockNumber),
+        })
+      )
+    );
+    logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, blockNumber);
 
     if (context.isPreload) {
       return;
@@ -39,11 +54,11 @@ indexer.onEvent(
     context.PoolMeta.set({
       id: pool,
       address: pool,
-      protocol: "balancer_v2",
+      protocol: "BALANCER_V2",
       tokens,
       fee: fee > 0 ? fee : undefined,
       tickSpacing: undefined,
-      createdBlock: Number(event.block.number),
+      createdBlock: blockNumber,
       createdTx: event.transaction.hash,
       poolId: poolId,
     });
@@ -53,7 +68,7 @@ indexer.onEvent(
     context.BalancerPoolState.set({
       id: pool,
       address: pool,
-      lastUpdatedBlock: Number(event.block.number),
+      lastUpdatedBlock: blockNumber,
       poolId: poolId,
       balances: meta.balances,
       weights: meta.weights,
@@ -61,20 +76,6 @@ indexer.onEvent(
       swapFee: meta.swapFee,
       scalingFactors: meta.scalingFactors,
     });
-
-    // Parallelize token metadata fetches (critical for backfill speed)
-    const tEffBalTokens = Date.now();
-    const tokenMetas = await Promise.all(
-      meta.tokens.map((token) =>
-        context.effect(fetchTokenMeta, {
-          address: token,
-          blockNumber: BigInt(event.block.number),
-        })
-      )
-    );
-    logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, Number(event.block.number));
-
-    if (context.isPreload) return;
 
     meta.tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
@@ -85,13 +86,25 @@ indexer.onEvent(
 indexer.onEvent(
   { contract: "BalancerVault", event: "TokensRegistered" },
   async ({ event, context }) => {
-    const tokens = event.params.tokens.map((t: string) => t.toLowerCase());
+    const tokens = event.params.tokens;
+    const blockNumber = Number(event.block.number);
 
     if (INDEXER_HOT_BIAS && !tokens.some((token: string) => involvesHotBase(token, token))) {
       return;
     }
 
-    const poolId = event.params.poolId.toLowerCase();
+    // Schedule token effects early (tokens come from event params; no extra meta needed)
+    // so they get preload batching. DB gets below also benefit from preload.
+    const tokenMetasPromise = Promise.all(
+      tokens.map((token) =>
+        context.effect(fetchTokenMeta, {
+          address: token,
+          blockNumber: BigInt(blockNumber),
+        })
+      )
+    );
+
+    const poolId = event.params.poolId;
 
     let poolAddr = balancerIdToAddrCache.get(poolId);
     if (!poolAddr) {
@@ -103,32 +116,24 @@ indexer.onEvent(
 
     const existing = await context.PoolMeta.get(poolAddr);
     const fee = existing?.fee ?? 0;
+
+    if (context.isPreload) return;
+
     balancerMetaCache.set(poolAddr, { tokens, fee });
 
     context.PoolMeta.set({
       id: poolAddr,
       address: poolAddr,
-      protocol: "balancer_v2",
+      protocol: "BALANCER_V2",
       tokens: tokens,
       fee,
       tickSpacing: undefined,
-      createdBlock: Number(event.block.number),
+      createdBlock: blockNumber,
       createdTx: event.transaction.hash,
       poolId: poolId,
     });
 
-    // Parallelize token metadata fetches (critical for backfill speed)
-    const tokenMetas = await Promise.all(
-      tokens.map((token) =>
-        context.effect(fetchTokenMeta, {
-          address: token,
-          blockNumber: BigInt(event.block.number),
-        })
-      )
-    );
-
-    if (context.isPreload) return;
-
+    const tokenMetas = await tokenMetasPromise;
     tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     });
