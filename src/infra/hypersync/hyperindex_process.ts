@@ -528,13 +528,23 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
     }
     // If empty list, let the hyperindex rpc_client fall back to its internal default free public
 
-    // === MULTI-TOKEN SUPPORT FOR FREE TIER ROTATION ===
+    // === MULTI-TOKEN SUPPORT FOR FREE TIER ROTATION + 200 rpm COORDINATION ===
     // Build a pool from (in priority order):
     //   explicit opts + ENVIO_API_TOKENS + single token + files (root + hyperindex/.env)
+    //
+    // We pass maxRpmPerToken (from HYPERSYNC_RPM_TARGET or default 180) so the
+    // local pacing in ApiTokenPool is consistent with the "get close to 200 without
+    // tripping the HyperSync free tier" goal across the bot + this long-lived child.
+    const rpmTarget = Number(
+      process.env.HYPERSYNC_RPM_TARGET ||
+        (opts as any).hypersyncRpmTarget ||
+        180,
+    );
     const tokenPool = new ApiTokenPool({
       tokens: [...(opts.envioApiTokens ?? []), ...(opts.envioApiToken ? [opts.envioApiToken] : [])],
       scanEnvFiles: true,
       rootDir: path.join(hiDir, ".."),
+      maxRpmPerToken: rpmTarget > 0 ? rpmTarget : 180,
     });
 
     const chosenToken = tokenPool.next();
@@ -547,6 +557,7 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
           chosenTokenPrefix: _currentEnvioKeyPrefix,
           totalKeysInPool: status.totalKeys,
           localPacingMs: status.localPacingMs,
+          rpmTarget,
         },
         "HyperIndex starting with rotated ENVIO_API_TOKEN from pool (multi-key free tier strategy)",
       );
@@ -558,6 +569,26 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
       opts.logger.warn(
         "No ENVIO_API_TOKEN provided (checked opts + ENVIO_API_TOKENS + .env files). HyperSync/HyperIndex will be heavily rate-limited. Add multiple keys to hyperindex/.env or set ENVIO_API_TOKENS.",
       );
+    }
+
+    // === LIVE DEBUG + PROGRESS HANDLER COORDINATION ===
+    // When the user sets a high POLYGON_START_BLOCK (e.g. 86M) for fast live-tail
+    // on a free token, also tell the progress onBlock handler inside the child
+    // to start from the same high block. This prevents the Envio error:
+    //   "The start block for onBlock handler "IndexerProgressRealtime" is less than the chain start block"
+    const chainStartStr = env.POLYGON_START_BLOCK || rootEnvVars.POLYGON_START_BLOCK || process.env.POLYGON_START_BLOCK;
+    const chainStartNum = chainStartStr ? Number(chainStartStr) : 0;
+    if (chainStartNum >= 80_000_000) {
+      env.INDEXER_PROGRESS_REALTIME_START = String(chainStartNum);
+      opts.logger.info(
+        { chainStart: chainStartNum, set: "INDEXER_PROGRESS_REALTIME_START" },
+        "High POLYGON_START_BLOCK detected — aligning IndexerProgressRealtime onBlock handler start for live-debug mode",
+      );
+    }
+
+    // Forward the RPM target so any future code inside the child (or effects) can be aware.
+    if (!env.HYPERSYNC_RPM_TARGET) {
+      env.HYPERSYNC_RPM_TARGET = String(rpmTarget);
     }
 
     // === AUTONOMOUS DEBUG LOOP SUPPORT ===

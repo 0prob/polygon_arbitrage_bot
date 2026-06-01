@@ -69,9 +69,23 @@ export class ApiTokenPool {
       }
     }
 
-    const rpm = opts.maxRpmPerToken ?? 200;
+    // Central coordination point for the ~200 rpm free-tier HyperSync budget.
+    // We target a bit below the hard limit (default 180) so that:
+    //   - the long-lived `envio dev` child (HyperIndex),
+    //   - this bot's direct HyperSyncService queries,
+    //   - token rotation, and
+    //   - any other tooling
+    // can all coexist without any single consumer tripping the server-side 200 rpm wall
+    // and causing 45s+ backoffs.
+    //
+    // Set HYPERSYNC_RPM_TARGET=190 (or up to 195) in .env for more aggressive usage
+    // when you have good tokens or are doing short bursts. Use 160-170 for very
+    // conservative multi-consumer setups.
+    const rpm = opts.maxRpmPerToken ?? Number(process.env.HYPERSYNC_RPM_TARGET ?? 180);
     if (rpm > 0) {
-      // e.g. 200 rpm → one request no faster than every 300ms on average per token
+      // e.g. 180 rpm → one request no faster than every ~334ms on average per token.
+      // This leaves headroom so the Envio HyperIndex child + bot direct calls
+      // don't collectively exceed the token's budget.
       this.minIntervalMs = Math.ceil(60_000 / rpm);
     }
   }

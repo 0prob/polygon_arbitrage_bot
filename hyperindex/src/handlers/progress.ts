@@ -20,15 +20,31 @@ import { indexer } from "envio";
 // -----------------------------------------------------------------------------
 // Configuration (override via environment variables)
 // -----------------------------------------------------------------------------
+const getEffectiveChainStart = (): number => {
+  const v = process.env.POLYGON_START_BLOCK;
+  const n = v ? Number(v) : 0;
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
 const getRealtimeStart = (chainId: number): number | undefined => {
-  if (chainId === 137) {
-    // Polygon — the chain this indexer primarily runs on.
-    // Default chosen to be after many major DEX deployments but still allows
-    // a meaningful historical period when doing fresh syncs.
-    return Number(process.env.INDEXER_PROGRESS_REALTIME_START ?? 65_000_000);
+  if (chainId !== 137) return undefined;
+
+  const override = process.env.INDEXER_PROGRESS_REALTIME_START;
+  if (override) {
+    const n = Number(override);
+    return Number.isFinite(n) ? n : undefined;
   }
-  // Extend here for additional chains in the future
-  return undefined;
+
+  const chainStart = getEffectiveChainStart();
+  if (chainStart >= 80_000_000) {
+    // Live-debug / high-start mode (e.g. POLYGON_START_BLOCK=86M).
+    // Start progress tracking from (or very near) the chain start so the
+    // onBlock where range never goes below what the chain is configured for.
+    return chainStart;
+  }
+
+  // Normal / historical-friendly default
+  return 65_000_000;
 };
 
 const HISTORICAL_EVERY = Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000);
@@ -52,26 +68,40 @@ const updateIndexerProgress = async ({ block, context }: any) => {
 
 // -----------------------------------------------------------------------------
 // Historical registration (coarse stride, everything before the cutoff)
+// Only register if there is actually a historical range to cover for this chain.
+// This avoids the noisy "indexer.onBlock matched 0 chains" warning in high-start
+// live-debug runs (e.g. POLYGON_START_BLOCK=86M).
 // -----------------------------------------------------------------------------
-indexer.onBlock(
-  {
-    name: "IndexerProgressHistorical",
-    where: ({ chain }) => {
-      const start = getRealtimeStart(chain.id);
-      if (!start) return false;
+const _chainStartForReg = getEffectiveChainStart();
+const _realtimeForReg = getRealtimeStart(137);
+const _shouldRegisterHistorical =
+  _realtimeForReg != null && _realtimeForReg - 1 >= _chainStartForReg;
 
-      return {
-        block: {
-          number: {
-            _lte: start - 1,
-            _every: HISTORICAL_EVERY,
+if (_shouldRegisterHistorical) {
+  indexer.onBlock(
+    {
+      name: "IndexerProgressHistorical",
+      where: ({ chain }) => {
+        const start = getRealtimeStart(chain.id);
+        if (!start) return false;
+
+        const chainStart = getEffectiveChainStart();
+        const histEnd = start - 1;
+        if (histEnd < chainStart) return false;
+
+        return {
+          block: {
+            number: {
+              _lte: histEnd,
+              _every: HISTORICAL_EVERY,
+            },
           },
-        },
-      };
+        };
+      },
     },
-  },
-  updateIndexerProgress
-);
+    updateIndexerProgress
+  );
+}
 
 // -----------------------------------------------------------------------------
 // Realtime registration (finer stride, from the cutoff forward)
@@ -83,10 +113,14 @@ indexer.onBlock(
       const start = getRealtimeStart(chain.id);
       if (!start) return false;
 
+      const chainStart = getEffectiveChainStart();
+      // Never ask for blocks before what the chain itself is configured to start at.
+      const effectiveStart = Math.max(start, chainStart);
+
       return {
         block: {
           number: {
-            _gte: start,
+            _gte: effectiveStart,
             _every: REALTIME_EVERY,
           },
         },
