@@ -5,8 +5,16 @@ import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
+interface DodoHandlerContext {
+  effect: (effect: any, input: any) => Promise<any>;
+  isPreload: boolean;
+  PoolMeta: { set: (entity: any) => void };
+  DodoPoolState: { set: (entity: any) => void };
+  TokenMeta: { set: (entity: any) => void };
+}
+
 async function handleDodoPool(
-  context: any,
+  context: DodoHandlerContext,
   pool: string,
   base: string,
   quote: string,
@@ -30,7 +38,7 @@ async function handleDodoPool(
   const tokensP = runWithConcurrency(
     [base, quote],
     concurrency,
-    (addr) => context.effect(fetchTokenMeta, { address: addr, blockNumber: BigInt(blockNumber) })
+    (addr) => context.effect(fetchTokenMeta, { address: addr })
   );
   const [meta, tokenMetas] = await Promise.all([dodoP, tokensP]);
   const [baseMeta, quoteMeta] = tokenMetas as any[];
@@ -72,104 +80,44 @@ async function handleDodoPool(
   context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
 }
 
-// Dynamic contract registration using Envio v3 patterns.
-// See https://docs.envio.dev/docs/HyperIndex/dynamic-contracts
-// We use the modern object form. `where` can be added for topic filtering on indexed params.
-indexer.contractRegister(
-  { contract: "DodoFactory", event: "DVMDeployed" },
-  async ({ event, context }) => {
-    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
-      return;
-    }
-    context.chain.DodoPool.add(event.params.dvm);
+const DODO_POOL_EVENTS = [
+  { event: "DVMDeployed" as const, poolField: "dvm" as const, label: "DVM" },
+  { event: "DPPDeployed" as const, poolField: "dpp" as const, label: "DPP" },
+  { event: "DSPDeployed" as const, poolField: "dsp" as const, label: "DSP" },
+];
 
-    if (context.log) {
-      context.log.info("Registered dynamic DODO pool (DVM)", { pool: event.params.dvm });
-    }
-  },
-);
+function registerDodoEvent(
+  cfg: typeof DODO_POOL_EVENTS[number],
+): void {
 
-indexer.contractRegister(
-  { contract: "DodoFactory", event: "DPPDeployed" },
-  async ({ event, context }) => {
-    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
-      return;
-    }
-    context.chain.DodoPool.add(event.params.dpp);
+  indexer.contractRegister(
+    { contract: "DodoFactory", event: cfg.event },
+    async ({ event: ev, context }: any) => {
+      if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
+        return;
+      }
+      context.chain.DodoPool.add(ev.params[cfg.poolField]);
+      if (context.log) {
+        context.log.info(`Registered dynamic DODO pool (${cfg.label})`, { pool: ev.params[cfg.poolField] });
+      }
+    },
+  );
 
-    if (context.log) {
-      context.log.info("Registered dynamic DODO pool (DPP)", { pool: event.params.dpp });
-    }
-  },
-);
+  indexer.onEvent(
+    { contract: "DodoFactory", event: cfg.event },
+    async ({ event: ev, context }: any) => {
+      await handleDodoPool(
+        context,
+        ev.params[cfg.poolField],
+        ev.params.baseToken,
+        ev.params.quoteToken,
+        Number(ev.block.number),
+        ev.transaction.hash,
+      );
+    },
+  );
+}
 
-indexer.contractRegister(
-  { contract: "DodoFactory", event: "DSPDeployed" },
-  async ({ event, context }) => {
-    if (INDEXER_HOT_BIAS && !involvesHotBase(event.params.baseToken, event.params.quoteToken)) {
-      return;
-    }
-    context.chain.DodoPool.add(event.params.dsp);
-
-    if (context.log) {
-      context.log.info("Registered dynamic DODO pool (DSP)", { pool: event.params.dsp });
-    }
-  },
-);
-
-// DVM
-indexer.onEvent(
-  {
-    contract: "DodoFactory",
-    event: "DVMDeployed",
-  },
-  async ({ event, context }) => {
-    await handleDodoPool(
-      context,
-      event.params.dvm,
-      event.params.baseToken,
-      event.params.quoteToken,
-      Number(event.block.number),
-      event.transaction.hash,
-    );
-    // Note: handleDodoPool already performs the isPreload early return after effects.
-  },
-);
-
-// DPP
-indexer.onEvent(
-  {
-    contract: "DodoFactory",
-    event: "DPPDeployed",
-  },
-  async ({ event, context }) => {
-    await handleDodoPool(
-      context,
-      event.params.dpp,
-      event.params.baseToken,
-      event.params.quoteToken,
-      Number(event.block.number),
-      event.transaction.hash,
-    );
-    // Note: handleDodoPool already performs the isPreload early return after effects.
-  },
-);
-
-// DSP
-indexer.onEvent(
-  {
-    contract: "DodoFactory",
-    event: "DSPDeployed",
-  },
-  async ({ event, context }) => {
-    await handleDodoPool(
-      context,
-      event.params.dsp,
-      event.params.baseToken,
-      event.params.quoteToken,
-      Number(event.block.number),
-      event.transaction.hash,
-    );
-    // Note: handleDodoPool already performs the isPreload early return after effects.
-  },
-);
+for (const cfg of DODO_POOL_EVENTS) {
+  registerDodoEvent(cfg);
+}

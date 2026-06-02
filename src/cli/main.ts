@@ -83,6 +83,12 @@ async function main() {
     },
     logger,
     checkIntervalMs: 10_000,
+    // HyperSync free-tier rate limit waits can be 41-45s (60 req/min window reset).
+    // Stall threshold must exceed this or the monitor kills HyperIndex mid-wait and
+    // causes an immediate restart loop. 60s gives a full rate-limit cycle of headroom.
+    maxStallMs: 60_000,
+    // Warn at 200 blocks lag, only restart at 400 (2x) to avoid churn on transient catch-up.
+    maxLagBlocks: 200,
   });
 
   try {

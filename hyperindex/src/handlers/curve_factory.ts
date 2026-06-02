@@ -15,21 +15,6 @@ indexer.contractRegister(
   async ({ event, context }) => {
     const pool = event.params.pool;
 
-    // For hot bias mode we need the coins to decide — fetch early via Effect API
-    // (batching + memoization still applies across the batch of factory events).
-    if (INDEXER_HOT_BIAS) {
-      const meta = await context.effect(fetchCurveMetadata, {
-        pool,
-        nCoins: 4,
-        blockNumber: BigInt(Number(event.block.number)),
-      });
-
-      if (!meta.coins.some((coin) => involvesHotBase(coin, coin))) {
-        // Cold pool under hot bias — do not register. Future pool events will be ignored.
-        return;
-      }
-    }
-
     context.chain.CurvePool.add(pool);
 
     if (context.log) {
@@ -71,7 +56,7 @@ indexer.onEvent(
     const coinMetas = await runWithConcurrency(
       meta.coins,
       concurrency,
-      (coin) => context.effect(fetchTokenMeta, { address: coin, blockNumber: BigInt(blockNumber) })
+      (coin) => context.effect(fetchTokenMeta, { address: coin })
     );
     logEffectTime("fetchTokenMeta:curveCoins", Date.now() - tEffCoins, blockNumber);
 

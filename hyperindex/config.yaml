@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: arb_bot_ingestion
 description: "High-performance DEX indexing for arbitrage opportunities (Polygon-optimized)"
 ecosystem: evm
@@ -82,6 +83,12 @@ raw_events: false
 # with near-zero DB write cost (the previous 50-60% DB Writes tax is gone).
 # Cold full-history backfill on Polygon from 2021 is still gated by effect loaders on first-seen pools + batch size.
 
+# Global field_selection: all events request transaction hash.
+# Consolidated from per-contract copies (was 11x identical blocks).
+field_selection:
+  transaction_fields:
+    - hash
+
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
 #
@@ -118,7 +125,8 @@ full_batch_size: 2800  # Conservative for single free-tier token + live-debug (8
 # Set POLYGON_RPC_URLS (comma-separated) in your .env for custom/paid providers with archive.
 
 # === Global Contract Definitions (recommended V3 pattern) ===
-# Contracts are defined once here (name + ABI + events + field_selection).
+# Contracts are defined once here (name + ABI + events).
+# field_selection is consolidated at root level (transaction hash on all events).
 # Per-chain entries only supply addresses + start_block overrides.
 # This follows https://docs.envio.dev/docs/HyperIndex/configuration-file#contracts-definition
 contracts:
@@ -127,108 +135,68 @@ contracts:
     abi_file_path: abis/uniswap_v2_factory.json
     events:
       - event: PairCreated
-        field_selection:
-          transaction_fields: ["hash"]
 
   # V3 Factories
   - name: V3Factory
     abi_file_path: abis/uniswap_v3_factory.json
     events:
       - event: PoolCreated
-        field_selection:
-          transaction_fields: ["hash"]
 
   # V2 Pools (dynamically registered, mostly no-op for live debug)
   - name: UniswapV2Pool
     abi_file_path: abis/uniswap_v2_pool.json
     events:
       - event: Sync
-        field_selection:
-          transaction_fields: ["hash"]
 
   # V3 Pools (dynamically registered)
   - name: UniswapV3Pool
     abi_file_path: abis/uniswap_v3_pool.json
     events:
       - event: Swap
-        field_selection:
-          transaction_fields: ["hash"]
       - event: Initialize
-        field_selection:
-          transaction_fields: ["hash"]
 
   # Curve
   - name: CurveRegistry
     abi_file_path: abis/curve_factory.json
     events:
       - event: PoolAdded
-        field_selection:
-          transaction_fields: ["hash"]
 
   - name: CurvePool
     abi_file_path: abis/curve_pool.json
     events:
       - event: TokenExchange
-        field_selection:
-          transaction_fields: ["hash"]
       - event: AddLiquidity
-        field_selection:
-          transaction_fields: ["hash"]
       - event: RemoveLiquidity
-        field_selection:
-          transaction_fields: ["hash"]
       - event: RemoveLiquidityOne
-        field_selection:
-          transaction_fields: ["hash"]
 
   # Uniswap V4
   - name: PoolManager
     abi_file_path: abis/uniswap_v4_pool_manager.json
     events:
       - event: Initialize
-        field_selection:
-          transaction_fields: ["hash"]
       - event: Swap
-        field_selection:
-          transaction_fields: ["hash"]
 
   # Balancer V2
   - name: BalancerVault
     abi_file_path: abis/balancer_vault.json
     events:
       - event: PoolRegistered
-        field_selection:
-          transaction_fields: ["hash"]
       - event: TokensRegistered
-        field_selection:
-          transaction_fields: ["hash"]
       - event: Swap
-        field_selection:
-          transaction_fields: ["hash"]
       - event: PoolBalanceChanged
-        field_selection:
-          transaction_fields: ["hash"]
 
   # DODO V2
   - name: DodoFactory
     abi_file_path: abis/dodo_factory.json
     events:
       - event: DVMDeployed
-        field_selection:
-          transaction_fields: ["hash"]
       - event: DPPDeployed
-        field_selection:
-          transaction_fields: ["hash"]
       - event: DSPDeployed
-        field_selection:
-          transaction_fields: ["hash"]
 
   - name: DodoPool
     abi_file_path: abis/dodo_pool.json
     events:
       - event: Sync
-        field_selection:
-          transaction_fields: ["hash"]
 
 # === Chains ===
 chains:
@@ -300,7 +268,7 @@ chains:
       # Curve
       - name: CurveRegistry
         start_block: ${POLYGON_START_BLOCK:-10000000}
-        address: "0x296d2B5C23833A70D07c8fCBB97d846c1ff90DDD"
+        address: "0x296d2b5c23833a70d07c8fcbb97d846c1ff90ddd"
 
       - name: CurvePool
         start_block: ${POLYGON_START_BLOCK:-10000000}

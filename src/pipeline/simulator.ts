@@ -11,7 +11,7 @@ import type { SwapEdge, SimulationEdge } from "./types.ts";
 import { TokenRegistry } from "./token_registry.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 
-function normalizeProtocol(raw: string): string {
+export function normalizeProtocol(raw: string): string {
   const u = raw.toUpperCase();
   if (u.startsWith("CURVE")) return "CURVE";
   if (u.startsWith("BALANCER")) return "BALANCER";
@@ -20,6 +20,59 @@ function normalizeProtocol(raw: string): string {
   if (u.includes("V3") || u === "KYBERSWAP_ELASTIC" || u === "UNISWAP_V4") return "V3";
   if (u.includes("V2")) return "V2";
   return u;
+}
+
+export function computeSpotPrice(
+  normalizedProtocol: string,
+  zeroForOne: boolean,
+  tokenInIdx: number | undefined,
+  tokenOutIdx: number | undefined,
+  state: PoolState,
+): number {
+  if (normalizedProtocol === "V2") {
+    const r0 = state.reserve0 as bigint | undefined;
+    const r1 = state.reserve1 as bigint | undefined;
+    if (r0 && r1) {
+      return zeroForOne ? Number(r1) / Number(r0) : Number(r0) / Number(r1);
+    }
+  } else if (normalizedProtocol === "V3" || normalizedProtocol === "V4") {
+    const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
+    if (sqrtPriceX96) {
+      const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
+      return zeroForOne ? price : 1 / price;
+    }
+  } else if (normalizedProtocol === "BALANCER") {
+    const balances = state.balances as bigint[] | undefined;
+    const weights = state.weights as bigint[] | undefined;
+    if (balances && balances.length >= 2 && weights && weights.length >= 2) {
+      const inIdx = tokenInIdx ?? (zeroForOne ? 0 : 1);
+      const outIdx = tokenOutIdx ?? (zeroForOne ? 1 : 0);
+      if (balances[inIdx] > 0n && balances[outIdx] > 0n && weights[inIdx] > 0n && weights[outIdx] > 0n) {
+        return Number(balances[outIdx] * weights[inIdx]) / Number(balances[inIdx] * weights[outIdx]);
+      }
+    }
+  } else if (normalizedProtocol === "CURVE") {
+    const balances = state.balances as bigint[] | undefined;
+    if (balances && balances.length >= 2) {
+      const inIdx = tokenInIdx ?? (zeroForOne ? 0 : 1);
+      const outIdx = tokenOutIdx ?? (zeroForOne ? 1 : 0);
+      if (balances[inIdx] > 0n && balances[outIdx] > 0n) {
+        return Number(balances[outIdx]) / Number(balances[inIdx]);
+      }
+    }
+  } else if (normalizedProtocol === "DODO") {
+    const b = state.baseReserve as bigint | undefined;
+    const q = state.quoteReserve as bigint | undefined;
+    if (b && q && b > 0n && q > 0n) {
+      return zeroForOne ? Number(q) / Number(b) : Number(b) / Number(q);
+    }
+  } else if (normalizedProtocol === "WOOFI") {
+    const rawPrice = state.price as bigint | undefined;
+    if (rawPrice && rawPrice > 0n) {
+      return zeroForOne ? Number(rawPrice) / 1e18 : 1e18 / Number(rawPrice);
+    }
+  }
+  return 0;
 }
 
 export function simulateHop(
@@ -36,7 +89,7 @@ export function simulateHop(
 
   let result: SimulatedHopResult;
 
-  switch (normalizeProtocol(edge.protocol)) {
+  switch (edge.normalizedProtocol) {
     case "V2":
       const feeBps =
         edge.swapFeeBps != null
@@ -187,6 +240,7 @@ export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCa
       tokenIn: edge.tokenIn,
       tokenOut: edge.tokenOut,
       protocol: edge.protocol,
+      normalizedProtocol: normalizeProtocol(edge.protocol),
       zeroForOne: edge.zeroForOne,
       tokenInIdx: edge.tokenInIdx,
       tokenOutIdx: edge.tokenOutIdx,
@@ -215,6 +269,7 @@ export function getEffectivePriceImpact(
     tokenIn: edge.tokenIn,
     tokenOut: edge.tokenOut,
     protocol: edge.protocol,
+    normalizedProtocol: normalizeProtocol(edge.protocol),
     zeroForOne: edge.zeroForOne,
     tokenInIdx: edge.tokenInIdx,
     tokenOutIdx: edge.tokenOutIdx,
@@ -224,57 +279,53 @@ export function getEffectivePriceImpact(
 
   const result = simulateHop(simEdge, amountIn, stateCache, tokenRegistry);
   const realizedPrice = Number(result.amountOut) / Number(amountIn);
-
-  let spotPrice = 1.0;
-  const protocol = normalizeProtocol(edge.protocol);
-
-  if (protocol === "V2") {
-    const r0 = state.reserve0 as bigint | undefined;
-    const r1 = state.reserve1 as bigint | undefined;
-    if (r0 && r1) {
-      spotPrice = edge.zeroForOne ? Number(r1) / Number(r0) : Number(r0) / Number(r1);
-    }
-  } else if (protocol === "V3" || protocol === "V4") {
-    const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
-    if (sqrtPriceX96) {
-      const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
-      spotPrice = edge.zeroForOne ? price : 1 / price;
-    }
-  } else if (protocol === "BALANCER") {
-    const balances = state.balances as bigint[] | undefined;
-    const weights = state.weights as bigint[] | undefined;
-    if (balances && balances.length >= 2 && weights && weights.length >= 2) {
-      const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
-      const outIdx = edge.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0);
-      if (balances[inIdx] > 0n && balances[outIdx] > 0n && weights[inIdx] > 0n && weights[outIdx] > 0n) {
-        spotPrice = Number(balances[outIdx] * weights[inIdx]) / Number(balances[inIdx] * weights[outIdx]);
-      }
-    }
-  } else if (protocol === "CURVE") {
-    const balances = state.balances as bigint[] | undefined;
-    if (balances && balances.length >= 2) {
-      const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
-      const outIdx = edge.tokenOutIdx ?? (edge.zeroForOne ? 1 : 0);
-      if (balances[inIdx] > 0n && balances[outIdx] > 0n) {
-        spotPrice = Number(balances[outIdx]) / Number(balances[inIdx]);
-      }
-    }
-  } else if (protocol === "DODO") {
-    const b = state.baseReserve as bigint | undefined;
-    const q = state.quoteReserve as bigint | undefined;
-    if (b && q && b > 0n && q > 0n) {
-      spotPrice = edge.zeroForOne ? Number(q) / Number(b) : Number(b) / Number(q);
-    }
-  } else if (protocol === "WOOFI") {
-    const rawPrice = state.price as bigint | undefined;
-    if (rawPrice && rawPrice > 0n) {
-      spotPrice = edge.zeroForOne ? Number(rawPrice) / 1e18 : 1e18 / Number(rawPrice);
-    }
-  }
+  const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
 
   if (spotPrice === 0) return 0;
-  const impact = (spotPrice - realizedPrice) / spotPrice;
-  return impact;
+  return (spotPrice - realizedPrice) / spotPrice;
+}
+
+/**
+ * Combined minimal simulation + impact check in a single pass.
+ * Calls simulateHop once per edge, uses the result for both impact checking
+ * and amount propagation. Eliminates the 2x-3x simulateHop overhead of
+ * calling getEffectivePriceImpactForCycle + simulateRouteMinimal separately.
+ */
+export function simulateMinimalWithImpactCheck(
+  edges: SwapEdge[],
+  amountIn: bigint,
+  stateCache: RouteStateCache,
+  prebuiltSimEdges: SimulationEdge[] | undefined,
+  maxImpactThreshold: number,
+): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  let currentAmount = amountIn;
+  let totalGas = 0;
+
+  for (let i = 0; i < simEdges.length; i++) {
+    const simEdge = simEdges[i];
+    if (!prebuiltSimEdges) {
+      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      if (!state || isInvalidState(state)) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
+    }
+
+    const hop = simulateHop(simEdge, currentAmount, stateCache);
+
+    const state = simEdge.stateRef;
+    if (state) {
+      const realizedPrice = Number(hop.amountOut) / Number(currentAmount);
+      const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
+      if (spotPrice > 0) {
+        const impact = (spotPrice - realizedPrice) / spotPrice;
+        if (impact > maxImpactThreshold) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
+      }
+    }
+
+    currentAmount = hop.amountOut;
+    totalGas += hop.gasEstimate;
+  }
+
+  return { success: true, profit: currentAmount - amountIn, totalGas, amountOut: currentAmount };
 }
 
 export function getTestAmount(tokenAddress: string, metas?: Map<string, { decimals: number }>): bigint {

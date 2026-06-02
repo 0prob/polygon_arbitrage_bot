@@ -20,14 +20,6 @@ import { getRpmTarget, isLowQuota, isVeryLowQuota } from "../utils/pacing";
  */
 
 function getRpcUrls(): string[] {
-  // === TEMPORARY DEBUG OVERRIDE (2026-06 live debug session) ===
-  // Force the known-good paid endpoints first, bypassing potentially invisible env in Envio effect runtime.
-  // This directly targets the 15s SLOW_EFFECT root cause (public RPC fallback).
-  const debugForced = [
-    "https://polygon-mainnet.core.chainstack.com/03efdc1db374a4df08d42e72b1408637",
-    "https://polygon-mainnet.g.alchemy.com/v2/ZOXfVdATBMVCMI-ACp5hW",
-  ];
-
   const raw =
     process.env.POLYGON_RPC_URLS ||
     process.env.POLYGON_RPC_URL ||
@@ -38,16 +30,12 @@ function getRpcUrls(): string[] {
       .split(/[,;\s]+/)
       .map((u) => u.trim())
       .filter((u) => u.length > 0);
-    if (list.length > 0) {
-      // Put debug-forced first, then any others from env (deduped)
-      const combined = [...debugForced, ...list.filter(u => !debugForced.includes(u))];
-      return combined;
-    }
+    if (list.length > 0) return list;
   }
 
-  // Even with no env at all, still use the good ones + public as last resort
+  // Public fallbacks — only used when no POLYGON_RPC_URLS is configured.
+  // These are rate-limited and slow; add paid endpoints to POLYGON_RPC_URLS in .env.
   return [
-    ...debugForced,
     "https://polygon.drpc.org",
     "https://polygon-mainnet.public.blastapi.io",
     "https://polygon.api.onfinality.io/public",
@@ -66,21 +54,6 @@ const MULTICALL_BATCH_SIZE = veryLow ? 32 : low ? 64 : 128;
 const MULTICALL_WAIT_MS = veryLow ? 80 : low ? 40 : 10;
 
 const rpcUrls = getRpcUrls();
-
-// DIAGNOSTIC (live debug): This runs inside the Envio effect/loader context.
-// If you see only the 3 public fallbacks here, then POLYGON_RPC_URLS was not visible
-// to the effect runtime → explains 10-15s SLOW_EFFECT on fetchTokenMeta etc.
-console.log(JSON.stringify({
-  level: 30,
-  msg: "RPC_CLIENT_INIT",
-  resolvedRpcUrls: rpcUrls,
-  source: process.env.POLYGON_RPC_URLS ? "POLYGON_RPC_URLS" : (process.env.POLYGON_RPC_URL ? "POLYGON_RPC_URL" : "PUBLIC_FALLBACKS_ONLY"),
-  rpmTarget: rpm,
-  batchMode: veryLow ? "very-conservative" : low ? "conservative" : "normal",
-  batchSize: BATCH_SIZE,
-  multicallBatch: MULTICALL_BATCH_SIZE,
-  multicallWaitMs: MULTICALL_WAIT_MS
-}));
 
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {

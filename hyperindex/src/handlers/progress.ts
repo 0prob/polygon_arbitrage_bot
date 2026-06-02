@@ -21,32 +21,29 @@ import { getProgressOnBlockStride } from "../utils/pacing";
 // -----------------------------------------------------------------------------
 // Configuration (override via environment variables)
 // -----------------------------------------------------------------------------
-const getEffectiveChainStart = (): number => {
+const POLYGON_CHAIN_ID = 137;
+
+/** When chain start is >= this threshold, treat as live-debug high-start mode. */
+const LIVE_DEBUG_START_THRESHOLD = 80_000_000;
+
+/** Default realtime cutoff for progress tracking during historical backfill. */
+const DEFAULT_REALTIME_START = 65_000_000;
+
+const chainStart = (() => {
   const v = process.env.POLYGON_START_BLOCK;
   const n = v ? Number(v) : 0;
   return Number.isFinite(n) && n > 0 ? n : 0;
-};
+})();
 
-const getRealtimeStart = (chainId: number): number | undefined => {
-  if (chainId !== 137) return undefined;
-
+const realtimeStart = (() => {
   const override = process.env.INDEXER_PROGRESS_REALTIME_START;
   if (override) {
     const n = Number(override);
-    return Number.isFinite(n) ? n : undefined;
+    if (Number.isFinite(n)) return n;
   }
-
-  const chainStart = getEffectiveChainStart();
-  if (chainStart >= 80_000_000) {
-    // Live-debug / high-start mode (e.g. POLYGON_START_BLOCK=86M).
-    // Start progress tracking from (or very near) the chain start so the
-    // onBlock where range never goes below what the chain is configured for.
-    return chainStart;
-  }
-
-  // Normal / historical-friendly default
-  return 65_000_000;
-};
+  if (chainStart >= LIVE_DEBUG_START_THRESHOLD) return chainStart;
+  return DEFAULT_REALTIME_START;
+})();
 
 const HISTORICAL_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000));
 const REALTIME_EVERY   = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY   ?? 200));
@@ -73,30 +70,18 @@ const updateIndexerProgress = async ({ block, context }: any) => {
 // This avoids the noisy "indexer.onBlock matched 0 chains" warning in high-start
 // live-debug runs (e.g. POLYGON_START_BLOCK=86M).
 // -----------------------------------------------------------------------------
-const _chainStartForReg = getEffectiveChainStart();
-const _realtimeForReg = getRealtimeStart(137);
-const _shouldRegisterHistorical =
-  _realtimeForReg != null && _realtimeForReg - 1 >= _chainStartForReg;
+const shouldRegisterHistorical = realtimeStart != null && realtimeStart - 1 >= chainStart;
 
-if (_shouldRegisterHistorical) {
+if (shouldRegisterHistorical) {
+  const histEnd = realtimeStart - 1;
+
   indexer.onBlock(
     {
       name: "IndexerProgressHistorical",
       where: ({ chain }) => {
-        const start = getRealtimeStart(chain.id);
-        if (!start) return false;
-
-        const chainStart = getEffectiveChainStart();
-        const histEnd = start - 1;
-        if (histEnd < chainStart) return false;
-
+        if (chain.id !== POLYGON_CHAIN_ID) return false;
         return {
-          block: {
-            number: {
-              _lte: histEnd,
-              _every: HISTORICAL_EVERY,
-            },
-          },
+          block: { number: { _lte: histEnd, _every: HISTORICAL_EVERY } },
         };
       },
     },
@@ -107,24 +92,15 @@ if (_shouldRegisterHistorical) {
 // -----------------------------------------------------------------------------
 // Realtime registration (finer stride, from the cutoff forward)
 // -----------------------------------------------------------------------------
+const effectiveRealtimeStart = Math.max(realtimeStart, chainStart);
+
 indexer.onBlock(
   {
     name: "IndexerProgressRealtime",
     where: ({ chain }) => {
-      const start = getRealtimeStart(chain.id);
-      if (!start) return false;
-
-      const chainStart = getEffectiveChainStart();
-      // Never ask for blocks before what the chain itself is configured to start at.
-      const effectiveStart = Math.max(start, chainStart);
-
+      if (chain.id !== POLYGON_CHAIN_ID) return false;
       return {
-        block: {
-          number: {
-            _gte: effectiveStart,
-            _every: REALTIME_EVERY,
-          },
-        },
+        block: { number: { _gte: effectiveRealtimeStart, _every: REALTIME_EVERY } },
       };
     },
   },

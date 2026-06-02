@@ -75,6 +75,7 @@ export interface SimulationEdge {
   tokenIn: string;
   tokenOut: string;
   protocol: string;
+  normalizedProtocol: string;
   zeroForOne: boolean;
   fee?: number | bigint | string | null;
   swapFeeBps?: number | null;

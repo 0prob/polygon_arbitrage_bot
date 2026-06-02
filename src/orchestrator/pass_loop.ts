@@ -124,7 +124,7 @@ async function runPoolDiscovery(
   try {
     const discoveryStartTime = Date.now();
     const hasuraPools = await ctx.rpcCircuit.execute(
-      () => deps.discoverPoolsFromHasura(graphqlUrl, secret),
+      () => deps.discoverPoolsFromHasura(graphqlUrl, secret, ctx.logger),
       async () => {
         ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
         return [];
@@ -189,7 +189,7 @@ async function runLfStateRefresh(
   try {
     const graphqlUrl = ctx.config.hasuraUrl;
     const secret = ctx.config.hasuraSecret;
-    const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret));
+    const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret, ctx.logger));
     let newEntries = 0;
     for (const [addr, state] of gqlCache.entries()) {
       if (!stateCache.has(addr)) {
@@ -197,19 +197,27 @@ async function runLfStateRefresh(
         newEntries++;
       }
     }
-    const metas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret);
-    ctx.logger.info({ entries: gqlCache.size, metas: metas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
+    const metas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret, ctx.logger);
+    ctx.logger.debug({ entries: gqlCache.size, metas: metas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
 
     // New: lightweight progress signal from the block handler (see hyperindex/src/handlers/progress.ts)
-    const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret));
+    const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret, ctx.logger));
     if (progress) {
-      ctx.logger.info(
+      ctx.logger.debug(
         { chainId: progress.chainId, lastProcessedBlock: progress.lastProcessedBlock },
         "IndexerProgress from block handler",
       );
     }
   } catch (err) {
-    ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
+    // Suppress repeated "circuit open" noise: only warn on the first open event; debug thereafter.
+    // The circuit can stay open for up to 60s while logging every 1s LF tick = ~60 identical lines.
+    const isCircuitOpenError =
+      err instanceof Error && err.message.includes("Circuit breaker") && err.message.includes("is open");
+    if (isCircuitOpenError && ctx.hasuraCircuit.getState() === "open") {
+      ctx.logger.debug({ err }, "Hasura circuit open — skipping HyperIndex state refresh (RPC fallback active)");
+    } else {
+      ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex, falling back to RPC");
+    }
   }
 
   // Force-refresh state via RPC for ALL pools
@@ -498,7 +506,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Stage 4: Re-check whether cachedMetas should be refreshed (done inside LF, may be needed for HF)
       if (!cachedMetas && (hasuraPoolsCache?.length ?? 0) > 0) {
         try {
-          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
         } catch {
           // Non-critical; will retry on next LF
         }
@@ -537,7 +545,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         // Using seed + focus gives cheap dirty-token propagation (P3 optimization).
         pendingFocusTokens = focusTokens.size > 0 ? focusTokens : null;
         if (!cachedMetas) {
-          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret);
+          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
         }
       }
 
@@ -657,7 +665,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       if (result.attempted > 0) {
         const tier = ctx.tierManager.getCurrent();
-        ctx.logger.info(
+        ctx.logger.debug(
           {
             attempted: result.attempted,
             simulated: result.simulated,
@@ -676,7 +684,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         );
 
         if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
-          ctx.logger.info({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
+          ctx.logger.debug({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
         } else if (result.profitable.length > 0) {
           const candidates: { candidate: CandidateExecution; profitable: (typeof result.profitable)[number]; routeKey: string }[] = [];
 
@@ -921,7 +929,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }
           : undefined,
       );
-      await writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
+      writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
 
       // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
       // Previously this (plus checkReorg's serial getBlocks) ran every 200ms — major hot-path violation.

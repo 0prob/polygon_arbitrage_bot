@@ -11,7 +11,7 @@ import { indexer } from "envio";
  *
  * The arbitrage bot relies on:
  *   - Its own RPC fetcher (`fetchMissingPoolState`) for hot state
- *   - 60s `discoverPoolsFromHasura` for new pools
+ *   - Periodic pool discovery from Hasura
  *
  * References:
  *   - https://docs.envio.dev/docs/HyperIndex/preload-optimization

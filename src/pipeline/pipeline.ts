@@ -3,9 +3,11 @@ import type { RouteSimulationResult, RouteStateCache } from "../core/types/route
 import {
   simulateRoute,
   simulateRouteMinimal,
+  simulateMinimalWithImpactCheck,
   buildSimulationEdges,
   simulateHop,
   getEffectivePriceImpact,
+  normalizeProtocol,
   getTestAmount,
 } from "./simulator.ts";
 import type { SimulationEdge } from "./types.ts";
@@ -56,6 +58,7 @@ function getEffectivePriceImpactForCycle(
       tokenIn: edge.tokenIn,
       tokenOut: edge.tokenOut,
       protocol: edge.protocol,
+      normalizedProtocol: normalizeProtocol(edge.protocol),
       zeroForOne: edge.zeroForOne,
       tokenInIdx: edge.tokenInIdx,
       tokenOutIdx: edge.tokenOutIdx,
@@ -89,31 +92,38 @@ function evaluateAmount(
   prebuiltSimEdges?: SimulationEdge[],
   outHolder?: MinimalEvalHolder,
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
-  if (!skipImpactCheck) {
-    const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-    if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
-      return { result: null, assessment: null, grossProfitMatic: null };
-    }
-  }
-
   try {
     let simProfit: bigint;
     let simGas: number;
     let simAmountIn = amount;
     let fullResult: RouteSimulationResult | null = null;
 
-    if (minimalForSearch) {
-      // Hot path during ternary search — avoid allocating full path/hop arrays on every probe
-      const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
-      simProfit = minimal.profit;
-      simGas = minimal.totalGas;
-
-      // outHolder writing happens after core numbers are computed below
+    if (!skipImpactCheck && minimalForSearch) {
+      // COMBINED PATH: impact check + simulation in a single pass.
+      // Calls simulateHop once per edge instead of 3x (impact ×2 + simulation).
+      const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+      const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact);
+      if (!combined.success) return { result: null, assessment: null, grossProfitMatic: null };
+      simProfit = combined.profit;
+      simGas = combined.totalGas;
     } else {
-      fullResult = simulateRoute(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
-      simProfit = fullResult.profit;
-      simGas = fullResult.totalGas;
-      simAmountIn = fullResult.amountIn;
+      if (!skipImpactCheck) {
+        const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+        if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
+          return { result: null, assessment: null, grossProfitMatic: null };
+        }
+      }
+
+      if (minimalForSearch) {
+        const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
+        simProfit = minimal.profit;
+        simGas = minimal.totalGas;
+      } else {
+        fullResult = simulateRoute(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
+        simProfit = fullResult.profit;
+        simGas = fullResult.totalGas;
+        simAmountIn = fullResult.amountIn;
+      }
     }
 
     const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
@@ -222,8 +232,15 @@ export async function evaluatePipeline(
     batches.push(cycles.slice(i, i + CONCURRENCY));
   }
 
-  for (const batch of batches) {
+  for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+    const batch = batches[batchIdx];
     if (profitable.length >= 10) break;
+
+    // Yield to event loop every 10 batches to prevent starvation of
+    // mempool signals, WebSocket newHead events, etc.
+    if (batchIdx > 0 && batchIdx % 10 === 0) {
+      await new Promise((r) => setTimeout(r, 0));
+    }
 
     const results = await Promise.all(
       batch.map(async (cycle) => {
@@ -244,7 +261,7 @@ export async function evaluatePipeline(
           const high = baseAmount;
           const ternaryIters = options.ternarySearchIterations ?? 15;
           const evalLow = evaluateAmount(cycle, low, stateCache, options, false, true, prebuiltSimEdges); // minimal for initial probe
-          if (!evalLow.result || evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
+          if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
             return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", cycle };
           }
 
@@ -278,8 +295,8 @@ export async function evaluatePipeline(
                 bestGrossMatic = grossProfitMatic;
               }
 
-              if (result && assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
-                bestResult = result; // will be null in minimal mode
+              if (assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
+                bestResult = result; // will be null in minimal mode — final full sim handles it
                 bestAssessment = assessment;
                 bestProfit = assessment.netProfitAfterGasMaticWei;
                 bestAmount = mid;
@@ -302,21 +319,21 @@ export async function evaluatePipeline(
             const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
             const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
 
-            if (profit1 > bestProfit && eval1.result && eval1.assessment) {
-              bestResult = eval1.result;
+            if (profit1 > bestProfit && eval1.assessment) {
+              bestResult = eval1.result; // null in minimal mode
               bestAssessment = eval1.assessment;
               bestProfit = profit1;
               bestAmount = m1;
             }
-            if (profit2 > bestProfit && eval2.result && eval2.assessment) {
-              bestResult = eval2.result;
+            if (profit2 > bestProfit && eval2.assessment) {
+              bestResult = eval2.result; // null in minimal mode
               bestAssessment = eval2.assessment;
               bestProfit = profit2;
               bestAmount = m2;
             }
 
             if (profit1 < 0 && profit2 < 0) {
-              if (eval1.result === null && eval2.result === null) {
+              if (eval1.assessment === null && eval2.assessment === null) {
                 right = m1;
               } else {
                 if (profit1 > profit2) right = m2;
@@ -356,7 +373,7 @@ export async function evaluatePipeline(
     };
     const sortedResults = results
       .filter((r): r is EvalSuccess => r.type === "success")
-      .sort((a, b) => Number(b.bestGrossMatic - a.bestGrossMatic));
+      .sort((a, b) => (b.bestGrossMatic > a.bestGrossMatic ? 1 : b.bestGrossMatic < a.bestGrossMatic ? -1 : 0));
 
     if (sortedResults.length > 0 && sortedResults[0].bestGrossMatic > 0n) {
       const top = sortedResults[0];

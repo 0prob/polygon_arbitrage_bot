@@ -250,7 +250,7 @@ export class HyperIndexMonitor implements Lifecycle {
       try {
         const rl = this.opts.hyperSync.rateLimitInfo?.();
         if (rl && this._managingProcess) {
-          this.opts.logger.info({ rateLimitInfo: rl, lag }, "HyperIndex monitor - current HyperSync rate limit state");
+          this.opts.logger.debug({ rateLimitInfo: rl, lag }, "HyperIndex monitor - current HyperSync rate limit state");
         }
       } catch {}
     }
@@ -314,7 +314,7 @@ export class HyperIndexMonitor implements Lifecycle {
         } catch {}
       }
 
-      this.opts.logger.info(extra, "HyperIndex sync status (instrumented trace)");
+      this.opts.logger.debug(extra, "HyperIndex sync status (instrumented trace)");
 
       if (lag > 200) {
         this.opts.logger.warn(

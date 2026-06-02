@@ -5,13 +5,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/vitest.config.ts": {
-    "mtime": 1779726611.7109172,
-    "ast_hash": "c8919bf9c8f280dd5cf0e353915cd670",
+    "mtime": 1780401861.3518264,
+    "ast_hash": "08c27ccb38744dec2f996f4b1e31bf98",
     "semantic_hash": ""
   },
   "/home/x/arb/t/package.json": {
-    "mtime": 1780312165.1197531,
-    "ast_hash": "7ebd26d4f180e2327d1c6bf96bba1b6a",
+    "mtime": 1780401747.7209947,
+    "ast_hash": "2b771180ec6668635b27d371716051c1",
     "semantic_hash": ""
   },
   "/home/x/arb/t/sol/deploy": {
@@ -90,13 +90,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780326765.934065,
-    "ast_hash": "46efbcc46184c0a6b182091330234e40",
+    "mtime": 1780401365.6969318,
+    "ast_hash": "af4fa1417795a966475f9fccb0455f3a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
-    "mtime": 1780324656.593891,
-    "ast_hash": "be408f5a2956596c57622a072af4de68",
+    "mtime": 1780386593.420272,
+    "ast_hash": "e094e0b22b3563f1181d7693cf3abe83",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_pool.ts": {
@@ -110,23 +110,23 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/dodo_factory.ts": {
-    "mtime": 1780324798.5162077,
-    "ast_hash": "f10c4724b8bee956fca8653000ca00f9",
+    "mtime": 1780386687.687114,
+    "ast_hash": "d32bd3f6235c4a47fe251900478fbc54",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/balancer.ts": {
-    "mtime": 1780324654.761913,
-    "ast_hash": "a11f0a6b31e0d1a47b56965562ed3c1c",
+    "mtime": 1780386710.778832,
+    "ast_hash": "1005d19d26fdf74c3d515577e43a975b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
-    "mtime": 1780324790.4683022,
-    "ast_hash": "21ad7e624865c037867ed201dbdc8501",
+    "mtime": 1780399618.852095,
+    "ast_hash": "6826dd4947e09920942c3ed1235984f5",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_factory.ts": {
-    "mtime": 1780324785.4243615,
-    "ast_hash": "ac0c3c5bef0df3dd78cc5fc50d352c4c",
+    "mtime": 1780399618.852095,
+    "ast_hash": "5fda9a50a4def2822dd7a34cdfc9f5c3",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_pool.ts": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v2_factory.ts": {
-    "mtime": 1780324788.1683292,
-    "ast_hash": "51553a11c2c4c369b464397b53cc6657",
+    "mtime": 1780399618.852095,
+    "ast_hash": "523e461ce994f9f4dc93f33404c07290",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/dodo_metadata.ts": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/settings.json": {
-    "mtime": 1780299539.2508729,
-    "ast_hash": "08b920e69568e0c96edbe809151d23bd",
+    "mtime": 1780397649.9896793,
+    "ast_hash": "fa26194caa5841066a86c46bbbe5593e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.grok/settings.json": {
@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/.opencode/opencode.json": {
-    "mtime": 1780321943.9464357,
-    "ast_hash": "58e47778fbd9616fc3b92b07be53aa00",
+    "mtime": 1780402136.1898339,
+    "ast_hash": "1627612be107116eaae24f35a429ad6c",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.opencode/package.json": {
@@ -780,8 +780,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1780324685.753542,
-    "ast_hash": "5026b9cb5ad27e8aee17588f1ac63103",
+    "mtime": 1780327102.3512332,
+    "ast_hash": "d690cf2ee190294398d1781ecb6c2d79",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {
@@ -855,8 +855,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1780306292.589913,
-    "ast_hash": "04dd248b2bdf67fb55836b64bf020328",
+    "mtime": 1780327062.99158,
+    "ast_hash": "72eeca395a59822c8c923eaad17acb34",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
@@ -1180,8 +1180,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/progress.ts": {
-    "mtime": 1780326490.0240562,
-    "ast_hash": "b0a379674cd7ce02e3f9b730bb34e144",
+    "mtime": 1780386621.2279294,
+    "ast_hash": "89d790cb47ce95b3ff8fe72d6c497c2b",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.grok/skills/arb-tx-tools/scripts/abicoder.ts": {
@@ -1222,6 +1222,51 @@
   "/home/x/arb/t/docs/superpowers/specs/2026-06-01-arb-tx-tools-mcp-design.md": {
     "mtime": 1780323175.2908936,
     "ast_hash": "b31736d60e4683528888853d60a99e8c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/hyperindex/src/utils/pacing.ts": {
+    "mtime": 1780386655.1795123,
+    "ast_hash": "c66f5b2e03a3d3041e7ce157abc74e13",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/utils.ts": {
+    "mtime": 1780401768.7887757,
+    "ast_hash": "479f6ed140b668af0ea4ddbe89ee934c",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/abi-registry.test.ts": {
+    "mtime": 1780401850.567925,
+    "ast_hash": "29c1b59fb4814a5df8b4bd1597623423",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/abi-registry.ts": {
+    "mtime": 1780401888.5916476,
+    "ast_hash": "012b0568b84afc9d5b8199ff6b5661c3",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/anvil-manager.test.ts": {
+    "mtime": 1780401940.8712914,
+    "ast_hash": "38b0326aa51a7486229a48ac9a72a8aa",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/anvil-manager.ts": {
+    "mtime": 1780401948.9912348,
+    "ast_hash": "c778c29a628fd22d8f387d5580eef2b3",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/log-capture.test.ts": {
+    "mtime": 1780402016.090752,
+    "ast_hash": "d41dc5a46ebf5cdc6bb8e188cae55c41",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools/log-capture.ts": {
+    "mtime": 1780401996.970892,
+    "ast_hash": "5284aeffe3915da610f67af78a1bd9d6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/scripts/arb-tx-tools.ts": {
+    "mtime": 1780402095.502152,
+    "ast_hash": "4b8c6f4579b09fd4e5bcd3a6509227db",
     "semantic_hash": ""
   }
 }

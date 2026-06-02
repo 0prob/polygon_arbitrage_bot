@@ -13,26 +13,12 @@
     ]
   },
   "mcpServers": {
-    "envio": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@envio-dev/mcp-server"
-      ]
-    },
-    "coingecko": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@coingecko/mcp-server"
-      ]
-    },
-    "dexscreener": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "dexscreener-mcp"
-      ]
+    "envio_docs": {
+      "httpUrl": "https://docs.envio.dev/mcp",
+      "headers": {
+        "Accept": "application/json, text/event-stream"
+      },
+      "trust": true
     },
     "alchemy": {
       "command": "npx",

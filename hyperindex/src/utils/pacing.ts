@@ -72,8 +72,12 @@ export async function runWithConcurrency<T, R>(
   limit: number,
   fn: (item: T, index: number) => Promise<R>
 ): Promise<R[]> {
-  if (limit <= 1 || items.length <= 1) {
-    return Promise.all(items.map((item, i) => fn(item, i)));
+  if (limit <= 1) {
+    const results: R[] = [];
+    for (let i = 0; i < items.length; i++) {
+      results.push(await fn(items[i], i));
+    }
+    return results;
   }
 
   const results: R[] = new Array(items.length);

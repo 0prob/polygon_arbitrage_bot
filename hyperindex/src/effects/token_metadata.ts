@@ -7,7 +7,7 @@ import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
 const AUTO_EXTRA_TOKENS_FILE = path.resolve("data/auto-extra-tokens.json");
-const FAILED_DECIMALS_RETRY_MS = 30 * 60 * 1000; // 30 minutes before retrying a failed token
+const FAILED_DECIMALS_RETRY_MS = 5 * 60 * 1000; // 5 minutes before retrying a failed token (reduced from 30m — transient RPC failures should recover quickly)
 
 // Runtime discovered decimals (persisted across restarts for this indexer instance)
 const discoveredDecimals: Record<string, number> = {};
@@ -114,8 +114,6 @@ export const fetchTokenMeta = createEffect(
     name: "fetchTokenMeta",
     input: {
       address: S.string,
-      // Pass the block number for historical correctness when re-indexing
-      blockNumber: S.optional(S.bigint),
     },
     output: { address: S.string, decimals: S.number },
     rateLimit: { calls: 500, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
@@ -143,38 +141,11 @@ export const fetchTokenMeta = createEffect(
     }
 
     try {
-      // For token decimals we deliberately use "latest" (omit blockNumber).
-      // Decimals are immutable on any reasonable ERC20. Passing historical blockNumber
-      // forces archive-style calls that are dramatically slower under concurrent load
-      // from the indexer (observed as consistent ~15s SLOW_EFFECT even on very recent blocks
-      // with paid RPCs). Using latest makes the live-debug tail fast while remaining correct.
-      const opts = undefined;
-
-      // Per-call diagnostic (fires inside the effect execution context)
-      console.log(JSON.stringify({
-        level: 30,
-        msg: "TOKEN_META_RPC_CALL_START",
-        token: input.address,
-        block: input.blockNumber ? Number(input.blockNumber) : null,
-        note: "Using latest (no blockNumber) for immutable decimals — testing if historical block tag was the source of 15s latency"
-      }));
-
-      const tRpc0 = Date.now();
       const decimals = await publicClient.readContract({
         address: input.address as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "decimals",
-        ...opts,
       });
-      const rpcMs = Date.now() - tRpc0;
-
-      console.log(JSON.stringify({
-        level: 30,
-        msg: "TOKEN_META_RPC_DONE",
-        token: input.address,
-        rpcDurationMs: rpcMs,
-        note: rpcMs > 2000 ? "Still slow even with latest" : "Fast with latest"
-      }));
 
       const result = { address: input.address, decimals: safeDecimals(Number(decimals)) };
 
@@ -209,7 +180,7 @@ export const fetchTokenMeta = createEffect(
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +
             `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
-            `Defaulting to 18 for this token (will retry in ~30min).`,
+            `Defaulting to 18 for this token (will retry in ~5min).`,
             { token: input.address }
           );
         } else {

@@ -4,8 +4,6 @@ import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
-const v4MetaCache = new Map<string, { tickSpacing: number; hooks: string }>();
-
 indexer.onEvent(
   {
     contract: "PoolManager",
@@ -31,15 +29,13 @@ indexer.onEvent(
     const [c0meta, c1meta] = await runWithConcurrency(
       [currency0, currency1],
       concurrency,
-      (addr) => context.effect(fetchTokenMeta, { address: addr, blockNumber: BigInt(blockNumber) })
+      (addr) => context.effect(fetchTokenMeta, { address: addr })
     );
     logEffectTime("fetchTokenMeta:v4", Date.now() - tEff0, blockNumber);
 
     if (context.isPreload) {
       return;
     }
-
-    v4MetaCache.set(poolId, { tickSpacing, hooks });
 
     context.PoolMeta.set({
       id: poolId,

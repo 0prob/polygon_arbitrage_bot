@@ -38,11 +38,7 @@ indexer.onEvent(
     const tokenMetas = await runWithConcurrency(
       meta.tokens,
       concurrency,
-      (token) =>
-        context.effect(fetchTokenMeta, {
-          address: token,
-          blockNumber: BigInt(blockNumber),
-        })
+      (token) => context.effect(fetchTokenMeta, { address: token })
     );
     logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, blockNumber);
 
@@ -107,11 +103,7 @@ indexer.onEvent(
     const tokenMetasPromise = runWithConcurrency(
       tokens,
       concurrency,
-      (token) =>
-        context.effect(fetchTokenMeta, {
-          address: token,
-          blockNumber: BigInt(blockNumber),
-        })
+      (token) => context.effect(fetchTokenMeta, { address: token })
     );
 
     const poolId = event.params.poolId;

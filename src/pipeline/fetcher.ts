@@ -30,7 +30,6 @@ export function getFailedPools(): Map<string, { count: number; lastTry: number }
 
 export function pruneFailedPools(now: number = Date.now()): void {
   if (_failedPools.size <= FAILED_POOLS_MAX_SIZE) {
-    // Age-based eviction for old entries even if under cap
     for (const [addr, entry] of _failedPools) {
       if (now - entry.lastTry > FAILED_POOLS_MAX_AGE_MS) {
         _failedPools.delete(addr);
@@ -38,12 +37,25 @@ export function pruneFailedPools(now: number = Date.now()): void {
     }
     return;
   }
-  // Over cap: evict oldest first (simple, no extra structures)
   const entries = Array.from(_failedPools.entries()).sort((a, b) => a[1].lastTry - b[1].lastTry);
   const toEvict = entries.length - Math.floor(FAILED_POOLS_MAX_SIZE * 0.9);
   for (let i = 0; i < toEvict && i < entries.length; i++) {
     _failedPools.delete(entries[i][0]);
   }
+}
+
+function trackFailedPool(addr: string, stateCache: Map<string, Record<string, unknown>>, now: number): void {
+  const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
+  _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
+  if (fail.count >= 1) {
+    stateCache.set(addr, INVALID_POOL_STATE);
+  }
+}
+
+function trackSuccessfulPool(addr: string, stateCache: Map<string, Record<string, unknown>>, state: Record<string, unknown>, updated: Set<string>): void {
+  stateCache.set(addr, state);
+  updated.add(addr);
+  _failedPools.delete(addr);
 }
 
 export async function fetchMissingPoolState(
@@ -157,26 +169,16 @@ export async function fetchMissingPoolState(
               const r1 = Array.isArray(r) ? r[1] : (r as any).reserve1;
 
               if (r0 !== undefined && r1 !== undefined) {
-                stateCache.set(addr, {
+                trackSuccessfulPool(addr, stateCache, {
                   reserve0: toBigInt(r0, 0n),
                   reserve1: toBigInt(r1, 0n),
                   initialized: true,
-                });
-                updated.add(addr);
-                _failedPools.delete(addr);
+                }, updated);
               } else {
-                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-                if (fail.count >= 1) {
-                  stateCache.set(addr, INVALID_POOL_STATE);
-                }
+                trackFailedPool(addr, stateCache, now);
               }
             } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 1) {
-                stateCache.set(addr, INVALID_POOL_STATE);
-              }
+              trackFailedPool(addr, stateCache, now);
             }
           } else if (proto.includes("v3") || proto.includes("elastic")) {
             const slot0Res = results[resultIdx++];
@@ -187,27 +189,17 @@ export async function fetchMissingPoolState(
               const tick = s[1] !== undefined ? s[1] : s.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
-                stateCache.set(addr, {
+                trackSuccessfulPool(addr, stateCache, {
                   sqrtPriceX96: BigInt(sqrtPriceX96),
                   tick: Number(tick),
                   liquidity: BigInt(liqRes.result as any),
                   initialized: true,
-                });
-                updated.add(addr);
-                _failedPools.delete(addr);
+                }, updated);
               } else {
-                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-                if (fail.count >= 1) {
-                  stateCache.set(addr, INVALID_POOL_STATE);
-                }
+                trackFailedPool(addr, stateCache, now);
               }
             } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 1) {
-                stateCache.set(addr, INVALID_POOL_STATE);
-              }
+              trackFailedPool(addr, stateCache, now);
             }
           } else if (proto.includes("v4")) {
             const slot0Res = results[resultIdx++];
@@ -221,7 +213,7 @@ export async function fetchMissingPoolState(
               const tick = s[1] !== undefined ? s[1] : s.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
-                stateCache.set(addr, {
+                trackSuccessfulPool(addr, stateCache, {
                   sqrtPriceX96: BigInt(sqrtPriceX96),
                   liquidity: BigInt(liqRes.result as any),
                   tick: Number(tick),
@@ -229,40 +221,24 @@ export async function fetchMissingPoolState(
                   tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
                   hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
                   initialized: true,
-                });
-                updated.add(addr);
-                _failedPools.delete(addr);
+                }, updated);
               } else {
-                const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-                _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-                if (fail.count >= 1) {
-                  stateCache.set(addr, INVALID_POOL_STATE);
-                }
+                trackFailedPool(addr, stateCache, now);
               }
             } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 1) {
-                stateCache.set(addr, INVALID_POOL_STATE);
-              }
+              trackFailedPool(addr, stateCache, now);
             }
           } else if (proto.includes("woofi")) {
             const priceRes = results[resultIdx++];
             const feeRes = results[resultIdx++];
             if (priceRes?.status === "success" && priceRes.result) {
-              stateCache.set(addr, {
+              trackSuccessfulPool(addr, stateCache, {
                 price: BigInt(priceRes.result as any),
                 fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
                 initialized: true,
-              });
-              updated.add(addr);
-              _failedPools.delete(addr);
+              }, updated);
             } else {
-              const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-              _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-              if (fail.count >= 1) {
-                stateCache.set(addr, INVALID_POOL_STATE);
-              }
+              trackFailedPool(addr, stateCache, now);
             }
           }
         }

@@ -38,12 +38,6 @@
  *   5. Raise full_batch_size only if you have RPC headroom
  */
 
-export interface TimingSample {
-  name: string;
-  durationMs: number;
-  blockNumber?: number;
-}
-
 /**
  * Wrap an async operation and log its duration.
  * Use this inside handlers around context.effect calls for fine-grained visibility.
@@ -70,24 +64,4 @@ export function logEffectTime(name: string, durationMs: number, blockNumber?: nu
   }
 }
 
-/**
- * Simple synchronous timing for pure handler work (post-effect).
- * Call at the start and end of the non-effect portion of a handler.
- */
-export function timeHandlerBody<T>(name: string, fn: () => T): T {
-  const t0 = Date.now();
-  const result = fn();
-  const dt = Date.now() - t0;
-  if (dt > 5) {
-    console.log(
-      JSON.stringify({
-        level: 30,
-        time: Date.now(),
-        msg: "HANDLER_BODY",
-        handler: name,
-        durationMs: dt,
-      })
-    );
-  }
-  return result;
-}
+

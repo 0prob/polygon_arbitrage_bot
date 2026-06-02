@@ -1,5 +1,6 @@
 import { isGarbagePool } from "../../core/constants.ts";
 import { markAsGarbage } from "../garbage/garbage-tracker.ts";
+import type { Logger } from "../observability/logger.ts";
 
 // Factories we actively index. If one of these addresses appears as a "token"
 // in a pool, it is almost certainly garbage data from a broken PairCreated event.
@@ -185,7 +186,7 @@ export interface HasuraPoolState {
 
 const _cachedState: Map<string, any> = new Map();
 
-export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string): Promise<Map<string, any>> {
+export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn" | "error">): Promise<Map<string, any>> {
   try {
     _cachedState.clear();
     const results = await Promise.allSettled([
@@ -206,7 +207,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
     let anyFulfilled = false;
     for (let i = 0; i < results.length; i++) {
       if (results[i].status === "rejected") {
-        console.warn(`GraphQL query "${queries[i]}" failed:`, (results[i] as PromiseRejectedResult).reason);
+        logger?.warn({ query: queries[i], err: (results[i] as PromiseRejectedResult).reason }, "GraphQL query failed");
       } else {
         anyFulfilled = true;
       }
@@ -290,14 +291,14 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
   } catch (err) {
-    console.warn("buildStateCacheFromGraphQL unexpected error", err);
+    logger?.warn({ err }, "buildStateCacheFromGraphQL unexpected error");
     throw err;
   }
 
   return _cachedState;
 }
 
-export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string): Promise<HasuraPoolMeta[]> {
+export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn" | "error">): Promise<HasuraPoolMeta[]> {
   const anchors = STATIC_ANCHORS;
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
@@ -375,7 +376,7 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
       for (const token of p.tokens) {
         if (KNOWN_FACTORIES.has(token)) {
           markAsGarbage(token)
-            .then(() => console.warn(`[garbage] Auto-discovered during pool sync: ${token} (will be filtered from graph)`))
+            .then(() => logger?.warn({ token }, "Auto-discovered garbage during pool sync (will be filtered from graph)"))
             .catch(() => {});
         }
       }
@@ -383,12 +384,12 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
 
     return combined;
   } catch (err) {
-    console.error(`[discoverPoolsFromHasura] Error parsing results:`, err);
+    logger?.error({ err }, "discoverPoolsFromHasura error parsing results");
     return anchors;
   }
 }
 
-export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret: string): Promise<Map<string, { decimals: number }>> {
+export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn">): Promise<Map<string, { decimals: number }>> {
   const metas = new Map<string, { decimals: number }>();
   try {
     const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
@@ -399,7 +400,7 @@ export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret:
       }
     }
   } catch (err) {
-    console.warn("fetchTokenMetasFromHasura failed", err);
+    logger?.warn({ err }, "fetchTokenMetasFromHasura failed");
   }
   return metas;
 }
@@ -418,6 +419,7 @@ export interface IndexerProgress {
 export async function fetchIndexerProgressFromHasura(
   graphqlUrl: string,
   adminSecret: string,
+  logger?: Pick<Logger, "warn">,
 ): Promise<IndexerProgress | undefined> {
   try {
     const result = await graphQLQuery(
@@ -438,7 +440,7 @@ export async function fetchIndexerProgressFromHasura(
       updatedAtBlock: best.updatedAtBlock,
     };
   } catch (err) {
-    console.warn("fetchIndexerProgressFromHasura failed", err);
+    logger?.warn({ err }, "fetchIndexerProgressFromHasura failed");
     return undefined;
   }
 }

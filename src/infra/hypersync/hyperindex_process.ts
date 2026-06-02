@@ -269,7 +269,8 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
     const originalTrimmed = line.replace(/^\[.*?\]\s*/, "");
 
     // === CRITICAL: Log every single line from Envio for complete activity tracing ===
-    opts.logger.info({ source: "hyperindex", raw: line, chain }, "HyperIndex stdout/stderr");
+    // Debug level avoids duplicate logging — stdout/stderr handlers already log each line.
+    opts.logger.debug({ source: "hyperindex", raw: line, chain }, "HyperIndex stdout/stderr");
 
     // === HYPERSYNC_CLIENT NOISE SUPPRESSION ===
     // These transient errors (height probes returning 405, connection/DNS failures, arrow-ipc timeouts)
