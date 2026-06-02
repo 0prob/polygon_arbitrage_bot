@@ -356,6 +356,11 @@ export class HyperSyncService {
       return { logs: [], blocks: [], transactions: [] };
     }
   }
+
+  /** Number of ENVIO_API_TOKENs in the pool — monitor uses this to skip useless restarts when only 1 token exists */
+  getEnvioTokenPoolSize(): number {
+    return this.pool.count();
+  }
 }
 
 // Factory, similar to createHyperRpcClient

@@ -35,6 +35,7 @@ export class HyperIndexMonitor implements Lifecycle {
 
   // Rate limit pain detector — when we see a lot of quota pain, we want to cycle
   // to the next ENVIO_API_TOKEN in the pool (via restart) faster than a full stall.
+  // Only effective when multiple tokens exist — with 1 token restart just picks the same exhausted key.
   private rateLimitPainCount = 0;
   private lastRateLimitPain = 0;
 
@@ -190,17 +191,27 @@ export class HyperIndexMonitor implements Lifecycle {
 
           // If remaining is critically low for a while, treat as "rate limit pain" and
           // force a HyperIndex restart (which will now pick the *next* token from the pool).
+          // Only effective with 2+ tokens — with 1 token, restart just picks the same exhausted key.
           if (rl.remaining !== undefined && rl.remaining <= 2 && this._managingProcess) {
             this.rateLimitPainCount++;
             this.lastRateLimitPain = Date.now();
-            if (this.rateLimitPainCount >= 3) {
+            const poolSize = this.opts.hyperSync?.getEnvioTokenPoolSize?.() ?? 1;
+            if (this.rateLimitPainCount >= 3 && poolSize > 1) {
               this.opts.logger.warn(
-                { rateLimitInfo: rl, painCount: this.rateLimitPainCount },
+                { rateLimitInfo: rl, painCount: this.rateLimitPainCount, poolSize },
                 "Persistent HyperSync rate limit pain — forcing HyperIndex restart to rotate to next ENVIO_API_TOKEN in pool",
               );
               this.rateLimitPainCount = 0;
               await this.restart();
               return;
+            }
+            if (poolSize <= 1 && this.rateLimitPainCount >= 3) {
+              this.opts.logger.warn(
+                { rateLimitInfo: rl, painCount: this.rateLimitPainCount, poolSize },
+                "Persistent HyperSync rate limit pain but only 1 token — would restart but same exhausted key. Waiting for rate limit window to reset.",
+              );
+              // Reset the pain counter to avoid logging this every tick
+              this.rateLimitPainCount = 1;
             }
           } else {
             // Decay the pain counter when we're healthy again
@@ -261,12 +272,29 @@ export class HyperIndexMonitor implements Lifecycle {
         this.lastProgressTime = Date.now();
         this.recordBlockSample(current);
       } else if (this._managingProcess && Date.now() - this.lastProgressTime > this.maxStallMs) {
+        // Before declaring a stall, check if HyperSync rate limits are exhausted.
+        // HyperIndex may be legitimately waiting 41-45s for the next rate-limit window.
+        // In that case, extend the stall threshold rather than restarting into the same exhausted key.
+        const rl = this.opts.hyperSync?.rateLimitInfo?.();
+        const isRateLimited = rl && rl.remaining !== undefined && rl.remaining < 5;
+        if (isRateLimited) {
+          const resetsIn = rl.resetsIn ?? 45;
+          const extendedMax = this.maxStallMs + resetsIn * 1000 + 5_000;
+          if (Date.now() - this.lastProgressTime < extendedMax) {
+            this.opts.logger.debug(
+              { stallMs: Date.now() - this.lastProgressTime, extendedMax, rateLimitInfo: rl },
+              "HyperIndex not progressing but known to be rate-limited — extending stall threshold instead of restarting",
+            );
+            return;
+          }
+        }
         this.opts.logger.error(
           {
             lastSynced: this.lastSyncedBlock,
             stallMs: Date.now() - this.lastProgressTime,
             lag,
             maxStallMs: this.maxStallMs,
+            ...(isRateLimited ? { rateLimitInfo: rl } : {}),
           },
           "HyperIndex sync STALLED — no progress for a long time. Forcing restart. (Check pipeline split, rate limits, RPC quality, and batch size in hyperindex/config.yaml)",
         );
@@ -283,9 +311,20 @@ export class HyperIndexMonitor implements Lifecycle {
         "HyperIndex significantly behind chain head",
       );
       if (this._managingProcess && lag > this.maxLagBlocks * 2) {
-        this._isHealthy = false;
-        await this.restart();
-        return;
+        // Don't restart for lag if we're heavily rate-limited — the restart would pick
+        // the same exhausted token and make no progress, but we'd lose the existing
+        // rate-limit wait progress.
+        const rl = this.opts.hyperSync?.rateLimitInfo?.();
+        if (rl && rl.remaining !== undefined && rl.remaining < 5) {
+          this.opts.logger.warn(
+            { lag, rateLimitInfo: rl },
+            "Skip lag-based restart — HyperIndex is rate-limited, restart would hit same exhausted token",
+          );
+        } else {
+          this._isHealthy = false;
+          await this.restart();
+          return;
+        }
       }
     }
 

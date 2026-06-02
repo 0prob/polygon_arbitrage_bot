@@ -108,7 +108,7 @@ field_selection:
 #
 # The cache: true on all effects + bounded concurrency in registration handlers
 # make repeated work cheap after warm-up. Per-event state writes removed for live debug profile.
-full_batch_size: 2800  # Conservative for single free-tier token + live-debug (86M+). See rate-limit coordination notes above. Use 4500-5000 only with paid tokens or multiple ENVIO_API_TOKENS.
+full_batch_size: 1000  # Reduced for observed 60-80 rpm free tier (was 2800). Each batch with 1000 events at 60 rpm takes ~16s to fetch, fitting in a 41s rate-limit window. Increase to 2800+ only with paid tokens, multiple ENVIO_API_TOKENS, or HYPERSYNC_RPM_TARGET >= 150.
 # The value above (currently 2800) is the conservative default for free-token live-debug.
 # Envio's general recommendation for Polygon is 3000-8000 when you have quota headroom.
 # Larger batches help amortize effect work across more events (see instrumentation.ts).
