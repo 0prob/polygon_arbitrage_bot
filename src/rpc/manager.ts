@@ -73,7 +73,6 @@ export class RpcManager {
         url: config.hyperSyncUrl,
         apiToken: config.hyperRpcApiToken,
         timeoutMs: config.requestTimeoutMs,
-        maxRpmPerToken: config.hypersyncMaxRpmPerToken,
       });
     }
 

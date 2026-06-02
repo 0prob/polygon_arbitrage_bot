@@ -12,12 +12,10 @@
     "dev:reset": "bun run clear-hasura || echo '⚠️  clear-hasura failed (missing secret or Hasura not ready) — continuing with full reset anyway' && bunx envio dev -r"
   },
   "dependencies": {
-    "envio": "^3.0.2",
-    "ethers": "^6.16.0",
-    "viem": "^2.51.0"
+    "viem": "2.52.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
-    "typescript": "^6.0.3"
+    "typescript": "^5.4.5"
   }
 }

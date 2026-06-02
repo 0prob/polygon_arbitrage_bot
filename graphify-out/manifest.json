@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780404777.918792,
-    "ast_hash": "6ff4e738ab882f61a4fa81e02b35d995",
+    "mtime": 1780410223.1387303,
+    "ast_hash": "f1a841f43321f474d7bfc474f68deb17",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -675,8 +675,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/hyperindex_monitor.ts": {
-    "mtime": 1780406914.1868956,
-    "ast_hash": "e6a9b8b8d3a47a69f9365ee01f315ffc",
+    "mtime": 1780410512.7516925,
+    "ast_hash": "d714f4a0ae87b386b140304518774252",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/tier_manager.test.ts": {
@@ -770,8 +770,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/config.yaml": {
-    "mtime": 1780409895.234184,
-    "ast_hash": "d8030f88efcc80c813c3e44ea2925699",
+    "mtime": 1780410424.4126184,
+    "ast_hash": "f79c3c8c3e1d268adcc69e4c22a99af8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.gemini/todos.md": {
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hypersync_service.ts": {
-    "mtime": 1780324937.8265882,
-    "ast_hash": "b79a0e1cc960260ac5416eb0268b8547",
+    "mtime": 1780410489.9079318,
+    "ast_hash": "ef030f2d26b61a0e24495cc504a16430",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {

@@ -33,12 +33,6 @@ export class HyperIndexMonitor implements Lifecycle {
   private lastRemoteBlock = 0;
   private lastChainHead = 0;
 
-  // Rate limit pain detector — when we see a lot of quota pain, we want to cycle
-  // to the next ENVIO_API_TOKEN in the pool (via restart) faster than a full stall.
-  // Only effective when multiple tokens exist — with 1 token restart just picks the same exhausted key.
-  private rateLimitPainCount = 0;
-  private lastRateLimitPain = 0;
-
   // Simple rate tracking (blocks per second over recent samples)
   private readonly blockSamples: { time: number; block: number }[] = [];
   private readonly MAX_SAMPLES = 20;
@@ -176,49 +170,14 @@ export class HyperIndexMonitor implements Lifecycle {
         const head = await this.opts.hyperSync.getHeight();
         if (head > this.lastChainHead) this.lastChainHead = head;
 
-        // === AUTONOMOUS DEBUG: Always surface rate limit state on every tick ===
-        // React to rate limiting by temporarily backing off HyperSync calls.
+        // === SURFACE RATE LIMIT STATE ===
+        // With paid 200 rpm plan, rate limits are transient. Log for observability.
         const rl = this.opts.hyperSync.rateLimitInfo?.();
-        if (rl) {
-          // Simple reaction: if we're heavily rate limited, skip the next few health ticks for HyperSync calls.
-          if (rl.remaining !== undefined && rl.remaining < 5) {
-            this.opts.logger.warn(
-              { rateLimitInfo: rl },
-              "HyperSync heavily rate-limited — temporarily reducing monitor HyperSync activity",
-            );
-            // We can let the existing waitForRateLimit() in other places handle most of it.
-          }
-
-          // If remaining is critically low for a while, treat as "rate limit pain" and
-          // force a HyperIndex restart (which will now pick the *next* token from the pool).
-          // Only effective with 2+ tokens — with 1 token, restart just picks the same exhausted key.
-          if (rl.remaining !== undefined && rl.remaining <= 2 && this._managingProcess) {
-            this.rateLimitPainCount++;
-            this.lastRateLimitPain = Date.now();
-            const poolSize = this.opts.hyperSync?.getEnvioTokenPoolSize?.() ?? 1;
-            if (this.rateLimitPainCount >= 3 && poolSize > 1) {
-              this.opts.logger.warn(
-                { rateLimitInfo: rl, painCount: this.rateLimitPainCount, poolSize },
-                "Persistent HyperSync rate limit pain — forcing HyperIndex restart to rotate to next ENVIO_API_TOKEN in pool",
-              );
-              this.rateLimitPainCount = 0;
-              await this.restart();
-              return;
-            }
-            if (poolSize <= 1 && this.rateLimitPainCount >= 3) {
-              this.opts.logger.warn(
-                { rateLimitInfo: rl, painCount: this.rateLimitPainCount, poolSize },
-                "Persistent HyperSync rate limit pain but only 1 token — would restart but same exhausted key. Waiting for rate limit window to reset.",
-              );
-              // Reset the pain counter to avoid logging this every tick
-              this.rateLimitPainCount = 1;
-            }
-          } else {
-            // Decay the pain counter when we're healthy again
-            if (this.rateLimitPainCount > 0 && Date.now() - this.lastRateLimitPain > 60_000) {
-              this.rateLimitPainCount = Math.max(0, this.rateLimitPainCount - 1);
-            }
-          }
+        if (rl && rl.remaining !== undefined && rl.remaining < 10) {
+          this.opts.logger.warn(
+            { rateLimitInfo: rl },
+            "HyperSync rate-limited — paid plan should recover within the rate window",
+          );
         }
       } catch (err) {
         this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
@@ -376,7 +335,6 @@ export class HyperIndexMonitor implements Lifecycle {
     remote: number;
     lag: number;
     syncRate: number;
-    rateLimitPain?: number;
     envioKeyPrefix?: string;
   } {
     const lag = this.getCurrentLag();
@@ -387,7 +345,6 @@ export class HyperIndexMonitor implements Lifecycle {
       remote: this.lastRemoteBlock || this.lastChainHead,
       lag,
       syncRate: this.getSyncRate(),
-      rateLimitPain: this.rateLimitPainCount,
       envioKeyPrefix: keyPrefix,
     };
   }

@@ -14,26 +14,17 @@ address_format: lowercase
 rollback_on_reorg: true
 raw_events: false
 
-# === LIVE DEBUG INDEXER (Rate Limit Reality + Fast Tail on Free Token) ===
+# === HYPERINDEX CONFIG (Paid Envio Starter Plan — 200 rpm) ===
 # Run with `bun run dev` or `envio start`.
 #
-# This indexer is intentionally configured as a *lightweight live discovery feed* for the arb bot:
-# - No per-Sync/Swap state writes (see handler no-ops) → DB writes near zero in live tail.
-# - Bot's primary pool state comes from its own RPC fetcher + multicalls (LF path).
-# - Hasura is used for: (a) 60s discovery of *new* pools, (b) best-effort bootstrap cache.
+# This indexer serves as a lightweight live discovery feed for the arb bot:
+#   → fast startup
+#   → minimal historical backfill
+#   → works well with the paid Envio starter plan (~200 rpm)
 #
-# CRITICAL OBSERVED BEHAVIOR (May 2026 debug run):
-# - Free / low-tier ENVIO_API_TOKEN (60-200 req/min HyperSync, 200 on paid starter) + full Polygon history from 5M
-#   → massive rate-limit backoff + slow catch-up (many "rate limit exhausted" + partition retries).
-# - "Block not found in HyperSync" messages are benign (partition drift) and auto-retried.
-#
-# For usable live-debug runs on free token:
-#   1. Set POLYGON_START_BLOCK in .env to a recent block (e.g. 86500000 or higher).
-#   2. The per-contract overrides below that are older will still respect the global unless you also
-#      raise them. For pure "new pools only" you can override the global high and leave lowers.
-#   3. full_batch_size tuned to your HYPERSYNC_RPM_TARGET (see the detailed section below).
-#
-# To do a true full historical backfill: use a paid ENVIO_API_TOKEN + higher batch + more RAM.
+# Historical backfill (processing 50M+ events from 2021) is still gated by:
+#   → effect loaders on first-seen pools
+#   → batch size (now 4500 for 200 rpm)
 #
 # === Backfill / Live performance debugging (Pipeline Split) ===
 # Envio "Pipeline split" (visible in envio dev / metrics) shows time distribution:
@@ -92,23 +83,9 @@ field_selection:
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
 #
-# IMPORTANT (rate limit coordination): Choose based on HYPERSYNC_RPM_TARGET.
-#   - 180+ rpm target (comfortable free tier with rotation) → 4000-5000 is fine
-#   - 140-175 rpm (typical single free token live-debug)     → 2200-3000 recommended
-#   - <130 rpm (very tight)                                  → 1000-1800
-#
-# The new src/utils/pacing.ts + runWithConcurrency in handlers + dynamic batching in
-# rpc_client.ts automatically tighten effect parallelism and viem batch sizes when
-# HYPERSYNC_RPM_TARGET is low. Lower full_batch_size here complements that.
-#
-# - 5000 (previous default) → aggressive; good only with paid tokens or multiple keys
-# - 2800                    → current conservative default for 86M+ live-debug on free tokens
-# - Higher (7000-10000)     → only with excellent quota headroom
-# - Lower (1000-1800)       → when you see frequent 45s+ HyperSync rate limit waits
-#
-# The cache: true on all effects + bounded concurrency in registration handlers
-# make repeated work cheap after warm-up. Per-event state writes removed for live debug profile.
-full_batch_size: 1000  # Reduced for observed 60-80 rpm free tier (was 2800). Each batch with 1000 events at 60 rpm takes ~16s to fetch, fitting in a 41s rate-limit window. Increase to 2800+ only with paid tokens, multiple ENVIO_API_TOKENS, or HYPERSYNC_RPM_TARGET >= 150.
+# Batch size for paid 200 rpm plan. Each batch of 4500 blocks uses ~1.5s of HyperSync budget.
+# Tune down if you see persistent rate limit waits despite the paid key.
+full_batch_size: 4500  # 200 rpm paid plan. 180+ rpm → 4000-5000 recommended.
 # The value above (currently 2800) is the conservative default for free-token live-debug.
 # Envio's general recommendation for Polygon is 3000-8000 when you have quota headroom.
 # Larger batches help amortize effect work across more events (see instrumentation.ts).

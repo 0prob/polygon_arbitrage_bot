@@ -185,46 +185,56 @@ export interface HasuraPoolState {
 }
 
 const _cachedState: Map<string, any> = new Map();
+const MAX_CACHE_SIZE = 50000;
+const CACHE_TTL_MS = 300000; // 5 minutes
+let _lastCacheClear = 0;
+
+function evictExpiredCacheEntries(): void {
+  const now = Date.now();
+  // Only clear cache every 5 minutes to avoid constant map recreation
+  if (now - _lastCacheClear > CACHE_TTL_MS) {
+    _cachedState.clear();
+    _lastCacheClear = now;
+  } else if (_cachedState.size > MAX_CACHE_SIZE) {
+    // If size exceeded, clear oldest half (approximation)
+    const entries = Array.from(_cachedState.entries());
+    _cachedState.clear();
+    // Keep second half (most recently added)
+    const keepCount = Math.floor(MAX_CACHE_SIZE * 0.5);
+    for (let i = entries.length - keepCount; i < entries.length; i++) {
+      if (entries[i]) {
+        _cachedState.set(entries[i][0], entries[i][1]);
+      }
+    }
+  }
+}
 
 export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn" | "error">): Promise<Map<string, any>> {
   try {
+    evictExpiredCacheEntries();
+    
+    // Optimize: Use single batched query instead of 6 separate requests
+    const batchedQuery = `{
+      V2PoolState(limit: 15000) { id reserve0 reserve1 }
+      V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity }
+      V4PoolState(limit: 5000) { id sqrtPriceX96 liquidity tick fee tickSpacing hooks }
+      BalancerPoolState(limit: 5000) { id poolId balances weights amp swapFee scalingFactors }
+      CurvePoolState(limit: 5000) { id balances A fee rates }
+      DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
+    }`;
+
+    const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
+    const data = (result as { data?: GraphQLData } | null)?.data;
+    
+    if (!data) {
+      throw new Error("No data returned from batched GraphQL query");
+    }
+
+    // Clear and rebuild cache with new data
     _cachedState.clear();
-    const results = await Promise.allSettled([
-      graphQLQuery(graphqlUrl, adminSecret, `{ V2PoolState(limit: 15000) { id reserve0 reserve1 } }`),
-      graphQLQuery(graphqlUrl, adminSecret, `{ V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity } }`),
-      graphQLQuery(graphqlUrl, adminSecret, `{ V4PoolState(limit: 5000) { id sqrtPriceX96 liquidity tick fee tickSpacing hooks } }`),
-      graphQLQuery(graphqlUrl, adminSecret, `{ BalancerPoolState(limit: 5000) { id poolId balances weights amp swapFee scalingFactors } }`),
-      graphQLQuery(graphqlUrl, adminSecret, `{ CurvePoolState(limit: 5000) { id balances A fee rates } }`),
-      graphQLQuery(
-        graphqlUrl,
-        adminSecret,
-        `{ DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate } }`,
-      ),
-    ]);
 
-    const queries = ["V2PoolState", "V3PoolState", "V4PoolState", "BalancerPoolState", "CurvePoolState", "DodoPoolState"];
-
-    let anyFulfilled = false;
-    for (let i = 0; i < results.length; i++) {
-      if (results[i].status === "rejected") {
-        logger?.warn({ query: queries[i], err: (results[i] as PromiseRejectedResult).reason }, "GraphQL query failed");
-      } else {
-        anyFulfilled = true;
-      }
-    }
-
-    if (!anyFulfilled) {
-      throw new Error("All GraphQL state queries failed — HyperIndex endpoint unreachable");
-    }
-
-    const data0 = (results[0].status === "fulfilled" ? (results[0].value as { data?: GraphQLData })?.data : null) ?? {};
-    const data1 = (results[1].status === "fulfilled" ? (results[1].value as { data?: GraphQLData })?.data : null) ?? {};
-    const data2 = (results[2].status === "fulfilled" ? (results[2].value as { data?: GraphQLData })?.data : null) ?? {};
-    const data3 = (results[3].status === "fulfilled" ? (results[3].value as { data?: GraphQLData })?.data : null) ?? {};
-    const data4 = (results[4].status === "fulfilled" ? (results[4].value as { data?: GraphQLData })?.data : null) ?? {};
-    const data5 = (results[5].status === "fulfilled" ? (results[5].value as { data?: GraphQLData })?.data : null) ?? {};
-
-    const v2States = data0.V2PoolState ?? [];
+    // Process all state types efficiently
+    const v2States = data.V2PoolState ?? [];
     for (const s of v2States) {
       _cachedState.set(s.id.toLowerCase(), {
         reserve0: BigInt(s.reserve0),
@@ -232,7 +242,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    const v3States = data1.V3PoolState ?? [];
+    const v3States = data.V3PoolState ?? [];
     for (const s of v3States) {
       _cachedState.set(s.id.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
@@ -241,7 +251,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    const v4States = data2.V4PoolState ?? [];
+    const v4States = data.V4PoolState ?? [];
     for (const s of v4States) {
       _cachedState.set(s.id.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
@@ -253,7 +263,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    const balancerStates = data3.BalancerPoolState ?? [];
+    const balancerStates = data.BalancerPoolState ?? [];
     for (const s of balancerStates) {
       _cachedState.set(s.id.toLowerCase(), {
         poolId: s.poolId,
@@ -265,7 +275,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    const curveStates = data4.CurvePoolState ?? [];
+    const curveStates = data.CurvePoolState ?? [];
     for (const s of curveStates) {
       _cachedState.set(s.id.toLowerCase(), {
         balances: parseBigIntArray(s.balances),
@@ -275,7 +285,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
       });
     }
 
-    const dodoStates = data5.DodoPoolState ?? [];
+    const dodoStates = data.DodoPoolState ?? [];
     for (const s of dodoStates) {
       _cachedState.set(s.id.toLowerCase(), {
         baseReserve: BigInt(s.baseReserve),

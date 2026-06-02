@@ -34,10 +34,8 @@ export interface SystemState {
   hiSyncRate: number;
   hiChain?: string;
   hiLastSeen: number;
-  /** Short prefix of currently active ENVIO_API_TOKEN for the HyperIndex process (multi-key rotation) */
+  /** Short prefix of currently active ENVIO_API_TOKEN for the HyperIndex process */
   hiEnvioKeyPrefix?: string;
-  /** HyperSync rate limit pain counter — how many times we've hit critical quota */
-  hiRateLimitPain?: number;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
   pipelineStage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING";
@@ -321,12 +319,6 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       }
       if (event.envioKeyPrefix) {
         state.system.hiEnvioKeyPrefix = event.envioKeyPrefix;
-      }
-      if (event.rateLimitPain !== undefined) {
-        state.system.hiRateLimitPain = event.rateLimitPain;
-        if (event.rateLimitPain > 0 && event.rateLimitPain % 3 === 0) {
-          appendLog(state, "Indexer", `Rate limit pain: ${event.rateLimitPain} (rotating keys)`);
-        }
       }
 
       // Log important HyperIndex transitions and warnings

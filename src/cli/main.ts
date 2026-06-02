@@ -243,7 +243,6 @@ async function main() {
         syncRate: status.syncRate,
         discoveryMode,
         envioKeyPrefix: status.envioKeyPrefix,
-        rateLimitPain: status.rateLimitPain,
       });
     } catch {}
   }, 5000);

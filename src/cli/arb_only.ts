@@ -65,7 +65,6 @@ async function main() {
       lag: 0,
       syncRate: 0,
       discoveryMode: "broad",
-      rateLimitPain: 0,
     });
   }, 10000);
 

@@ -1,0 +1,35 @@
+# Bun configuration for optimal performance and development
+[install]
+# Use exact versions by default for reproducible builds
+exact = true
+
+# Cache packages globally for faster installs
+cache = true
+
+# Auto-install peer dependencies
+auto-install-peers = true
+
+[install.scopes]
+# Prefer faster registries for common scopes
+"@types" = "https://registry.npmjs.org/"
+
+[run]
+# Enable hot reloading for development
+hot = true
+
+# Prefer bun runtime over node for better performance
+prefer-bun = true
+
+[test]
+# Run tests in parallel for speed
+coverage = true
+preload = []
+
+[build]
+# Optimize for production builds
+minify = true
+splitting = true
+target = "node"
+
+# Bundle external dependencies for better startup performance
+external = ["fsevents"]

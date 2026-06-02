@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tgz
+
+# Runtime
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/settings.json
+.idea/
+
+# OS files  
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Cache directories
+.cache/
+.turbo/
+
+# Logs
+*.log
+logs/
+
+# Lock files (keep bun.lock, ignore others)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+*.tmp
+*.temp

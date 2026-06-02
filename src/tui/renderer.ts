@@ -211,13 +211,12 @@ export class Renderer {
     }
     const bar = animator.progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 12);
     const mode = s.hiDiscoveryMode ?? "broad";
-    const rlPain = (s.hiRateLimitPain ?? 0) > 0 ? `  RL:${s.hiRateLimitPain}` : "";
 
     return [
       ` ${animator.sectionLabel("📡", "Index")}`,
       ` ${statusIcon} Block: ${color(blockStr, CYAN)} / ${remoteStr} ${dim(s.hiStatus)}`,
       ` ${bar} ${color(`${pct}%`, GREEN)} ${dim("lag:")}${color(String(lag), lagColor)}${s.hiSyncRate > 0 ? dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
-      ` Mode: ${mode}${rlPain}`,
+      ` Mode: ${mode}`,
     ];
   }
 
