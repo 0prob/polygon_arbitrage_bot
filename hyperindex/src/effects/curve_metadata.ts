@@ -38,12 +38,8 @@ export const fetchCurveMetadata = createEffect(
       const opts = input.blockNumber ? { blockNumber: input.blockNumber } : undefined;
 
       const [A, fee, ...all] = await Promise.all([
-        publicClient
-          .readContract({ address: pool, abi: CURVE_ABI, functionName: "A", ...opts })
-          .catch(() => 0n),
-        publicClient
-          .readContract({ address: pool, abi: CURVE_ABI, functionName: "fee", ...opts })
-          .catch(() => 0n),
+        publicClient.readContract({ address: pool, abi: CURVE_ABI, functionName: "A", ...opts }).catch(() => 0n),
+        publicClient.readContract({ address: pool, abi: CURVE_ABI, functionName: "fee", ...opts }).catch(() => 0n),
         ...Array.from({ length: input.nCoins * 3 }, (_, i) => {
           let fn: "balances" | "coins" | "rates";
           let arg: bigint;
@@ -83,7 +79,9 @@ export const fetchCurveMetadata = createEffect(
 
       if (context.log) {
         if (isQuota) {
-          context.log.warn("Alchemy quota / monthly capacity exceeded while fetching Curve metadata. Add more RPC providers to POLYGON_RPC_URLS.");
+          context.log.warn(
+            "Alchemy quota / monthly capacity exceeded while fetching Curve metadata. Add more RPC providers to POLYGON_RPC_URLS.",
+          );
         } else {
           context.log.warn("Failed to fetch Curve metadata", {
             pool: input.pool,

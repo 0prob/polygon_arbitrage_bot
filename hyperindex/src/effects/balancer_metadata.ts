@@ -10,9 +10,7 @@ const BALANCER_ABI = parseAbi([
   "function getScalingFactors() view returns (uint256[])",
 ]);
 
-const VAULT_ABI = parseAbi([
-  "function getPoolTokens(bytes32 poolId) view returns (address[], uint256[], uint256)",
-]);
+const VAULT_ABI = parseAbi(["function getPoolTokens(bytes32 poolId) view returns (address[], uint256[], uint256)"]);
 
 const BALANCER_VAULT = "0xba12222222228d8ba445958a75a0704d566bf2c8" as const;
 
@@ -121,7 +119,7 @@ export const fetchBalancerMetadata = createEffect(
         if (isQuota) {
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching Balancer metadata. ` +
-            `Add more providers to POLYGON_RPC_URLS or reduce effect rateLimits.`
+              `Add more providers to POLYGON_RPC_URLS or reduce effect rateLimits.`,
           );
         } else {
           context.log.warn("Failed to fetch Balancer metadata", {

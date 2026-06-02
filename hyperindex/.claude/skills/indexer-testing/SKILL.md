@@ -25,12 +25,12 @@ describe("Indexer Testing", () => {
 
     t.expect(
       await indexer.process({ chains: { 1: {} } }),
-      "Should find the first block with an event on chain 1 and process it."
+      "Should find the first block with an event on chain 1 and process it.",
     ).toMatchInlineSnapshot(``);
 
     t.expect(
       await indexer.process({ chains: { 1: {} } }),
-      "Should find the second block with an event on chain 1 and process it."
+      "Should find the second block with an event on chain 1 and process it.",
     ).toMatchInlineSnapshot(``);
   });
 });
@@ -47,8 +47,8 @@ Processes the first block with matching events, then exits. Each subsequent call
 ```ts
 const result = await indexer.process({
   chains: {
-    1: {},           // auto-detect first block with events on chain 1
-    8453: {},        // same for chain 8453
+    1: {}, // auto-detect first block with events on chain 1
+    8453: {}, // same for chain 8453
   },
 });
 ```
@@ -94,9 +94,9 @@ Preset state before processing and read entities after.
 indexer.EntityName.set({ id: "...", field: value });
 
 // Read state after processing
-await indexer.EntityName.get("id");        // returns entity | undefined
+await indexer.EntityName.get("id"); // returns entity | undefined
 await indexer.EntityName.getOrThrow("id"); // throws if not found
-await indexer.EntityName.getAll();         // returns all entities of this type
+await indexer.EntityName.getAll(); // returns all entities of this type
 ```
 
 ## result.changes

@@ -17,6 +17,7 @@ HyperSync supports full trace queries at the data layer, but the Envio Indexer d
 ## HyperSync Trace Support
 
 HyperSync can query traces with filtering by:
+
 - `from` / `to` — sender/recipient addresses
 - `address` — contract address
 - `callType` — call, delegatecall, staticcall
@@ -50,7 +51,7 @@ const getTraces = createEffect(
       }),
     });
     return (await res.json()).result;
-  }
+  },
 );
 ```
 

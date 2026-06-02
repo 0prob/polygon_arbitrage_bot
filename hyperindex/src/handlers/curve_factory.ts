@@ -10,18 +10,15 @@ import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 // to register a pool at all. Under hot bias we skip cold Curve pools entirely
 // (avoiding delivery of all their future TokenExchange etc. events).
 // See https://docs.envio.dev/docs/HyperIndex/dynamic-contracts#async-contract-register
-indexer.contractRegister(
-  { contract: "CurveRegistry", event: "PoolAdded" },
-  async ({ event, context }) => {
-    const pool = event.params.pool;
+indexer.contractRegister({ contract: "CurveRegistry", event: "PoolAdded" }, async ({ event, context }) => {
+  const pool = event.params.pool;
 
-    context.chain.CurvePool.add(pool);
+  context.chain.CurvePool.add(pool);
 
-    if (context.log) {
-      context.log.info("Registered dynamic Curve pool", { pool });
-    }
-  },
-);
+  if (context.log) {
+    context.log.info("Registered dynamic Curve pool", { pool });
+  }
+});
 
 indexer.onEvent(
   {
@@ -53,11 +50,7 @@ indexer.onEvent(
     // Concurrency is capped when HYPERSYNC_RPM_TARGET is low to keep request patterns smooth.
     const tEffCoins = Date.now();
     const concurrency = getMetadataConcurrency();
-    const coinMetas = await runWithConcurrency(
-      meta.coins,
-      concurrency,
-      (coin) => context.effect(fetchTokenMeta, { address: coin })
-    );
+    const coinMetas = await runWithConcurrency(meta.coins, concurrency, (coin) => context.effect(fetchTokenMeta, { address: coin }));
     logEffectTime("fetchTokenMeta:curveCoins", Date.now() - tEffCoins, blockNumber);
 
     if (context.isPreload) {

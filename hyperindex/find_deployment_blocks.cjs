@@ -1,4 +1,4 @@
-const { JsonRpcProvider } = require('ethers');
+const { JsonRpcProvider } = require("ethers");
 
 // Need a working Polygon RPC.
 const rpcUrl = "https://polygon-rpc.com";
@@ -21,7 +21,7 @@ const contracts = {
   Cometh: "0x800b052609c355ca8103e06f022aa30647ead60a",
   SushiV3: "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2",
   QuickswapV3: "0x411b0facc3489691f28ad58c47006af5e3ab3a28",
-  Kyberswap: "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a"
+  Kyberswap: "0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a",
 };
 
 async function findDeploymentBlock(name, address, latestBlock) {
@@ -40,13 +40,13 @@ async function findDeploymentBlock(name, address, latestBlock) {
         low = mid + 1;
       }
     } catch (e) {
-      if (e.message.includes('missing trie node')) {
-         // Some public nodes don't have full archive state for all blocks.
-         // If we hit this, it means we probably can't binary search reliably.
-         console.error(`Archive node required. Failed at block ${mid}`);
-         return -1;
+      if (e.message.includes("missing trie node")) {
+        // Some public nodes don't have full archive state for all blocks.
+        // If we hit this, it means we probably can't binary search reliably.
+        console.error(`Archive node required. Failed at block ${mid}`);
+        return -1;
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
   return best;
@@ -56,11 +56,11 @@ async function main() {
   try {
     const latest = await provider.getBlockNumber();
     console.log(`Latest block: ${latest}`);
-    
+
     for (const [name, addr] of Object.entries(contracts)) {
-        console.log(`Searching for ${name} (${addr})...`);
-        const block = await findDeploymentBlock(name, addr, latest);
-        console.log(`${name}: ${block}`);
+      console.log(`Searching for ${name} (${addr})...`);
+      const block = await findDeploymentBlock(name, addr, latest);
+      console.log(`${name}: ${block}`);
     }
   } catch (e) {
     console.error(e);

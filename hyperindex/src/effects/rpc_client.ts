@@ -20,11 +20,7 @@ import { getRpmTarget, isLowQuota, isVeryLowQuota } from "../utils/pacing";
  */
 
 function getRpcUrls(): string[] {
-  const raw =
-    process.env.POLYGON_RPC_URLS ||
-    process.env.POLYGON_RPC_URL ||
-    process.env.POLYGON_RPC ||
-    "";
+  const raw = process.env.ENVIO_POLYGON_RPC_URLS || process.env.ENVIO_POLYGON_RPC_URL || process.env.POLYGON_RPC_URLS || process.env.POLYGON_RPC_URL || "";
   if (raw) {
     const list = raw
       .split(/[,;\s]+/)
@@ -33,13 +29,9 @@ function getRpcUrls(): string[] {
     if (list.length > 0) return list;
   }
 
-  // Public fallbacks — only used when no POLYGON_RPC_URLS is configured.
-  // These are rate-limited and slow; add paid endpoints to POLYGON_RPC_URLS in .env.
-  return [
-    "https://polygon.drpc.org",
-    "https://polygon-mainnet.public.blastapi.io",
-    "https://polygon.api.onfinality.io/public",
-  ];
+  // Public fallbacks — only used when no ENVIO_POLYGON_RPC_URLS is configured.
+  // These are rate-limited and slow; add paid endpoints to ENVIO_POLYGON_RPC_URLS in .env.
+  return ["https://polygon.drpc.org", "https://polygon-mainnet.public.blastapi.io", "https://polygon.api.onfinality.io/public"];
 }
 
 const rpm = getRpmTarget();
@@ -67,12 +59,10 @@ const transports: HttpTransport[] = rpcUrls.map((url) =>
         "Keep-Alive": "timeout=60, max=1000",
       },
     },
-  })
+  }),
 );
 
-const transport = transports.length > 1
-  ? fallback(transports, { rank: true })
-  : transports[0];
+const transport = transports.length > 1 ? fallback(transports, { rank: true }) : transports[0];
 
 export const publicClient: PublicClient = createPublicClient({
   chain: polygon,

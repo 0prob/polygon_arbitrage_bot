@@ -59,9 +59,7 @@ export function logEffectTime(name: string, durationMs: number, blockNumber?: nu
         effect: name,
         durationMs: Math.round(durationMs),
         block: blockNumber,
-      })
+      }),
     );
   }
 }
-
-

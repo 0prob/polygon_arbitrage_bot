@@ -10,30 +10,18 @@ import { indexer } from "envio";
  * CurveRegistry.PoolAdded (in curve_factory.ts) still writes initial CurvePoolState + PoolMeta
  * at pool creation time — that remains (rare, cheap).
  */
-indexer.onEvent(
-  { contract: "CurvePool", event: "TokenExchange" },
-  async () => {
-    // No-op. Live state via RPC fetcher; creation metadata via CurveRegistry.
-  },
-);
+indexer.onEvent({ contract: "CurvePool", event: "TokenExchange" }, async () => {
+  // No-op. Live state via RPC fetcher; creation metadata via CurveRegistry.
+});
 
-indexer.onEvent(
-  { contract: "CurvePool", event: "AddLiquidity" },
-  async () => {
-    // No-op.
-  },
-);
+indexer.onEvent({ contract: "CurvePool", event: "AddLiquidity" }, async () => {
+  // No-op.
+});
 
-indexer.onEvent(
-  { contract: "CurvePool", event: "RemoveLiquidity" },
-  async () => {
-    // No-op.
-  },
-);
+indexer.onEvent({ contract: "CurvePool", event: "RemoveLiquidity" }, async () => {
+  // No-op.
+});
 
-indexer.onEvent(
-  { contract: "CurvePool", event: "RemoveLiquidityOne" },
-  async () => {
-    // No-op.
-  },
-);
+indexer.onEvent({ contract: "CurvePool", event: "RemoveLiquidityOne" }, async () => {
+  // No-op.
+});

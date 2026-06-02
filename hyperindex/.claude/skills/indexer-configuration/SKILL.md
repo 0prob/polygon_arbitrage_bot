@@ -15,13 +15,13 @@ metadata:
 ```yaml
 name: my-indexer
 description: Optional description
-schema: schema.graphql         # custom path (default: schema.graphql)
-address_format: checksum       # checksum (default) | lowercase
+schema: schema.graphql # custom path (default: schema.graphql)
+address_format: checksum # checksum (default) | lowercase
 
 contracts:
   - name: MyContract
     abi_file_path: ./abis/MyContract.json
-    handler: ./src/EventHandlers.ts  # optional — auto-discovered from src/handlers/
+    handler: ./src/EventHandlers.ts # optional — auto-discovered from src/handlers/
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 value)
 
@@ -51,7 +51,6 @@ Uses `chains` (not `networks`) and `max_reorg_depth` (not `confirmed_block_thres
 # No address — wildcard indexing (all contracts matching ABI)
 - name: Token
   # address omitted — indexes all matching events chain-wide
-
 # Factory-registered — see indexer-factory skill
 ```
 
@@ -62,11 +61,11 @@ For proxied contracts, use the **proxy address** (where events emit), not the im
 ```yaml
 chains:
   - id: 1
-    start_block: 0            # 0 = HyperSync auto-detects first event block
+    start_block: 0 # 0 = HyperSync auto-detects first event block
     contracts:
       - name: Token
         address: "0x1234..."
-        start_block: 18000000  # per-contract override (takes precedence)
+        start_block: 18000000 # per-contract override (takes precedence)
 ```
 
 `start_block: 0` with HyperSync skips empty blocks automatically.
@@ -117,8 +116,8 @@ Global `field_selection` is at the root level (sibling to `contracts` and `chain
 
 ```yaml
 rpc:
-  - url: ${ENVIO_RPC_URL}                    # required — errors if missing
-  - url: ${ENVIO_RPC_URL:-http://localhost:8545}  # with default value
+  - url: ${ENVIO_RPC_URL} # required — errors if missing
+  - url: ${ENVIO_RPC_URL:-http://localhost:8545} # with default value
 ```
 
 Works in any string value in config. Set via `.env` file or shell environment.

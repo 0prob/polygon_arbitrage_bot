@@ -35,11 +35,7 @@ indexer.onEvent(
     // Use runWithConcurrency to respect HYPERSYNC_RPM_TARGET (limits parallel token meta effects).
     const tEffBalTokens = Date.now();
     const concurrency = getMetadataConcurrency();
-    const tokenMetas = await runWithConcurrency(
-      meta.tokens,
-      concurrency,
-      (token) => context.effect(fetchTokenMeta, { address: token })
-    );
+    const tokenMetas = await runWithConcurrency(meta.tokens, concurrency, (token) => context.effect(fetchTokenMeta, { address: token }));
     logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, blockNumber);
 
     if (context.isPreload) {
@@ -84,76 +80,63 @@ indexer.onEvent(
   },
 );
 
-indexer.onEvent(
-  { contract: "BalancerVault", event: "TokensRegistered" },
-  async ({ event, context }) => {
-    const rawTokens = event.params.tokens;
-    const tokens = [...rawTokens]; // copy to mutable array to satisfy PoolMeta/cache types + runWithConcurrency
-    const blockNumber = Number(event.block.number);
+indexer.onEvent({ contract: "BalancerVault", event: "TokensRegistered" }, async ({ event, context }) => {
+  const rawTokens = event.params.tokens;
+  const tokens = [...rawTokens]; // copy to mutable array to satisfy PoolMeta/cache types + runWithConcurrency
+  const blockNumber = Number(event.block.number);
 
-    if (INDEXER_HOT_BIAS && !tokens.some((token) => involvesHotBase(token, token))) {
-      return;
-    }
+  if (INDEXER_HOT_BIAS && !tokens.some((token) => involvesHotBase(token, token))) {
+    return;
+  }
 
-    // Schedule token effects early (tokens come from event params; no extra meta needed)
-    // so they get preload batching. DB gets below also benefit from preload.
-    //
-    // Bounded concurrency for low HYPERSYNC_RPM_TARGET.
-    const concurrency = getMetadataConcurrency();
-    const tokenMetasPromise = runWithConcurrency(
-      tokens,
-      concurrency,
-      (token) => context.effect(fetchTokenMeta, { address: token })
-    );
+  // Schedule token effects early (tokens come from event params; no extra meta needed)
+  // so they get preload batching. DB gets below also benefit from preload.
+  //
+  // Bounded concurrency for low HYPERSYNC_RPM_TARGET.
+  const concurrency = getMetadataConcurrency();
+  const tokenMetasPromise = runWithConcurrency(tokens, concurrency, (token) => context.effect(fetchTokenMeta, { address: token }));
 
-    const poolId = event.params.poolId;
+  const poolId = event.params.poolId;
 
-    let poolAddr = balancerIdToAddrCache.get(poolId);
-    if (!poolAddr) {
-      const mapping = await context.BalancerPoolIdToAddress.get(poolId);
-      if (!mapping) return;
-      poolAddr = mapping.address;
-      balancerIdToAddrCache.set(poolId, poolAddr);
-    }
+  let poolAddr = balancerIdToAddrCache.get(poolId);
+  if (!poolAddr) {
+    const mapping = await context.BalancerPoolIdToAddress.get(poolId);
+    if (!mapping) return;
+    poolAddr = mapping.address;
+    balancerIdToAddrCache.set(poolId, poolAddr);
+  }
 
-    const existing = await context.PoolMeta.get(poolAddr);
-    const fee = existing?.fee ?? 0;
+  const existing = await context.PoolMeta.get(poolAddr);
+  const fee = existing?.fee ?? 0;
 
-    if (context.isPreload) return;
+  if (context.isPreload) return;
 
-    balancerMetaCache.set(poolAddr, { tokens, fee });
+  balancerMetaCache.set(poolAddr, { tokens, fee });
 
-    context.PoolMeta.set({
-      id: poolAddr,
-      address: poolAddr,
-      protocol: "BALANCER_V2",
-      tokens: tokens,
-      fee,
-      tickSpacing: undefined,
-      createdBlock: blockNumber,
-      createdTx: event.transaction.hash,
-      poolId: poolId,
-    });
+  context.PoolMeta.set({
+    id: poolAddr,
+    address: poolAddr,
+    protocol: "BALANCER_V2",
+    tokens: tokens,
+    fee,
+    tickSpacing: undefined,
+    createdBlock: blockNumber,
+    createdTx: event.transaction.hash,
+    poolId: poolId,
+  });
 
-    const tokenMetas = await tokenMetasPromise;
-    tokens.forEach((token, i) => {
-      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
-    });
-  },
-);
+  const tokenMetas = await tokenMetasPromise;
+  tokens.forEach((token, i) => {
+    context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
+  });
+});
 
-indexer.onEvent(
-  { contract: "BalancerVault", event: "Swap" },
-  async () => {
-    // No-op for live debug indexer.
-    // Per-event BalancerPoolState writes removed (was contributing to DB write %).
-    // Discovery writes (PoolRegistered/TokensRegistered) remain above.
-  },
-);
+indexer.onEvent({ contract: "BalancerVault", event: "Swap" }, async () => {
+  // No-op for live debug indexer.
+  // Per-event BalancerPoolState writes removed (was contributing to DB write %).
+  // Discovery writes (PoolRegistered/TokensRegistered) remain above.
+});
 
-indexer.onEvent(
-  { contract: "BalancerVault", event: "PoolBalanceChanged" },
-  async () => {
-    // No-op for live debug indexer.
-  },
-);
+indexer.onEvent({ contract: "BalancerVault", event: "PoolBalanceChanged" }, async () => {
+  // No-op for live debug indexer.
+});

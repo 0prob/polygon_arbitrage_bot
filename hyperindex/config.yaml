@@ -83,13 +83,10 @@ field_selection:
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
 #
-# Batch size for paid 200 rpm plan. Each batch of 4500 blocks uses ~1.5s of HyperSync budget.
-# Tune down if you see persistent rate limit waits despite the paid key.
-full_batch_size: 4500  # 200 rpm paid plan. 180+ rpm → 4000-5000 recommended.
-# The value above (currently 2800) is the conservative default for free-token live-debug.
-# Envio's general recommendation for Polygon is 3000-8000 when you have quota headroom.
-# Larger batches help amortize effect work across more events (see instrumentation.ts).
-# Use the pacing-aware values documented in the rate-limit coordination section.
+# Dynamic batch sizing based on quota tier - uses environment variable for runtime flexibility
+# Paid 200 rpm plan: 4000-4500, Free tier: 1000-1800
+# Enhanced to read from ENVIO_ prefixed variable first
+full_batch_size: ${ENVIO_FULL_BATCH_SIZE:-4500} # Dynamic based on quota via env var. See pacing.ts for recommended values.
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).
@@ -182,20 +179,35 @@ chains:
     # Avoid start_block: 0 when deployment blocks are known — it wastes processing on irrelevant history.
     # Global default here is conservative (env override or ~Quickswap-era 5.48M). Per-contract overrides
     # below are precise to each protocol's deployment and take precedence.
-    # Recommended: set POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
-    start_block: ${POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
-    
+    # Recommended: set ENVIO_POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
+    start_block: ${ENVIO_POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
+
     # RPC configuration (V3 structured form recommended in config docs).
     # HyperSync is primary for Polygon. This RPC acts as fallback when HyperSync is unavailable.
     # See https://docs.envio.dev/docs/HyperIndex/configuration-file#rpc and config-schema-reference.
-    # You can expand this to separate sync vs realtime providers + tuning parameters later.
+    # Enhanced with multiple providers and proper fallback hierarchy
     rpc:
-      - url: ${POLYGON_RPC_URL}
+      - url: ${ENVIO_POLYGON_RPC_URL}
         for: fallback
+        initial_block_interval: 2000
+        backoff_multiplicative: 0.8
+        acceleration_additive: 500
+        interval_ceiling: 5000
+        backoff_millis: 3000
+        query_timeout_millis: 15000
+        fallback_stall_timeout: 4000
+      # Secondary fallback for redundancy
+      - url: https://polygon-mainnet.g.alchemy.com/v2/${ENVIO_ALCHEMY_API_KEY}
+        for: fallback
+        initial_block_interval: 1500
+        backoff_multiplicative: 0.7
+        interval_ceiling: 4000
+        query_timeout_millis: 12000
 
     # Max reorg depth (Polygon best practice): Standard depth to handle rollbacks.
     # HyperIndex automatically handles these when rollback_on_reorg is true.
-    max_reorg_depth: 200
+    # Increased to 300 for better safety on Polygon (can have deeper reorgs during network stress)
+    max_reorg_depth: 300
 
     # === Envio/HyperSync Optimizations (see user best-practices) ===
     # Point 2: All contracts use tight event whitelists (never empty/generic). HyperSync drops
@@ -210,12 +222,12 @@ chains:
     #          with complex field selection. Our usage is either (a) the managed HyperIndex pipeline or
     #          (b) simple block queries + post-index Hasura GraphQL against the DB (no joins needed).
     hypersync_config:
-      url: ${POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
+      url: ${ENVIO_POLYGON_HYPERSYNC_URL:-https://polygon.hypersync.xyz}
       # api_token can also be set here, but ENVIO_API_TOKEN env var is the standard approach.
     contracts:
       # V2 Factories - multiple addresses + per-factory start_block override
       - name: V2Factory
-        start_block: ${POLYGON_START_BLOCK:-5024576}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-5024576}
         address:
           - "0x5757371414417b8c6caad45baef941abc7d3ab32" # Quickswap
           - "0xc35dadb65012ec5796536bd9864ed8773abc74c4" # Sushi
@@ -228,7 +240,7 @@ chains:
 
       # V3 Factories
       - name: V3Factory
-        start_block: ${POLYGON_START_BLOCK:-22757547}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-22757547}
         address:
           - "0x1f98431c8ad98523631ae4a59f267346ea31f984" # Uniswap
           - "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2" # Sushi
@@ -237,36 +249,36 @@ chains:
 
       # Wildcard pools (addresses supplied dynamically via contractRegister in handlers)
       - name: UniswapV2Pool
-        start_block: ${POLYGON_START_BLOCK:-5024576}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-5024576}
 
       - name: UniswapV3Pool
-        start_block: ${POLYGON_START_BLOCK:-22757547}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-22757547}
 
       # Curve
       - name: CurveRegistry
-        start_block: ${POLYGON_START_BLOCK:-10000000}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-10000000}
         address: "0x296d2b5c23833a70d07c8fcbb97d846c1ff90ddd"
 
       - name: CurvePool
-        start_block: ${POLYGON_START_BLOCK:-10000000}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-10000000}
 
       # Uniswap V4
       - name: PoolManager
-        start_block: ${POLYGON_START_BLOCK:-66980384}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-66980384}
         address: "0x67366782805870060151383f4bbff9dab53e5cd6"
 
       # Balancer V2
       - name: BalancerVault
-        start_block: ${POLYGON_START_BLOCK:-15832990}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-15832990}
         address: "0xba12222222228d8ba445958a75a0704d566bf2c8"
 
       # DODO V2
       - name: DodoFactory
-        start_block: ${POLYGON_START_BLOCK:-14722979}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-14722979}
         address:
           - "0x79887f65f83bdf15bcc8736b5e5bcdb48fb8fe13" # DVM
           - "0xdfaf9584f5d229a9dbe5978523317820a8897c5a" # DPP
           - "0x4d97e480ea49ac57ce8c1f7c79b1a0c3d4adc7c4" # DSP
 
       - name: DodoPool
-        start_block: ${POLYGON_START_BLOCK:-14722979}
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-14722979}

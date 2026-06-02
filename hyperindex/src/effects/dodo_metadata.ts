@@ -79,7 +79,9 @@ export const fetchDodoMetadata = createEffect(
 
       if (context.log) {
         if (isQuota) {
-          context.log.warn("Alchemy quota / monthly capacity exceeded while fetching DODO metadata. Add more RPC providers to POLYGON_RPC_URLS.");
+          context.log.warn(
+            "Alchemy quota / monthly capacity exceeded while fetching DODO metadata. Add more RPC providers to POLYGON_RPC_URLS.",
+          );
         } else {
           context.log.warn("Failed to fetch DODO metadata", {
             pool: input.pool,

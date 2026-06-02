@@ -52,13 +52,7 @@ export const KNOWN_FACTORIES_SET = new Set(KNOWN_FACTORIES.map((a) => a.toLowerC
 export function isLikelyGarbagePair(token0: string, token1: string): boolean {
   const t0 = token0.toLowerCase();
   const t1 = token1.toLowerCase();
-  return (
-    t0 === ZERO_ADDRESS ||
-    t1 === ZERO_ADDRESS ||
-    KNOWN_FACTORIES_SET.has(t0) ||
-    KNOWN_FACTORIES_SET.has(t1) ||
-    t0 === t1
-  );
+  return t0 === ZERO_ADDRESS || t1 === ZERO_ADDRESS || KNOWN_FACTORIES_SET.has(t0) || KNOWN_FACTORIES_SET.has(t1) || t0 === t1;
 }
 
 /**
@@ -92,13 +86,13 @@ export function createHotBiasWhere(hotBias: boolean, paramNames: [string, string
   const [p0, p1] = paramNames;
 
   return {
-    params: [
-      { [p0]: HOT_BASE_TOKENS },
-      { [p1]: HOT_BASE_TOKENS },
-    ],
+    params: [{ [p0]: HOT_BASE_TOKENS }, { [p1]: HOT_BASE_TOKENS }],
   };
 }
 
 /** Convenience: read the bias flag from environment (recommended way for hyperindex). */
-export const INDEXER_HOT_BIAS = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
-
+export const INDEXER_HOT_BIAS = 
+  process.env.ENVIO_INDEXER_HOT_BIAS === "true" || 
+  process.env.ENVIO_INDEXER_HOT_BIAS === "1" ||
+  process.env.INDEXER_HOT_BIAS === "true" || 
+  process.env.INDEXER_HOT_BIAS === "1";

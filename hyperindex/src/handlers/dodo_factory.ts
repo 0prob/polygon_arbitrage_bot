@@ -35,11 +35,7 @@ async function handleDodoPool(
   const tEffDodo = Date.now();
   const concurrency = getMetadataConcurrency();
   const dodoP = context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) });
-  const tokensP = runWithConcurrency(
-    [base, quote],
-    concurrency,
-    (addr) => context.effect(fetchTokenMeta, { address: addr })
-  );
+  const tokensP = runWithConcurrency([base, quote], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
   const [meta, tokenMetas] = await Promise.all([dodoP, tokensP]);
   const [baseMeta, quoteMeta] = tokenMetas as any[];
   logEffectTime("fetchDodoMetadata+tokens", Date.now() - tEffDodo, blockNumber);
@@ -86,36 +82,27 @@ const DODO_POOL_EVENTS = [
   { event: "DSPDeployed" as const, poolField: "dsp" as const, label: "DSP" },
 ];
 
-function registerDodoEvent(
-  cfg: typeof DODO_POOL_EVENTS[number],
-): void {
+function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
+  indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+    if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
+      return;
+    }
+    context.chain.DodoPool.add(ev.params[cfg.poolField]);
+    if (context.log) {
+      context.log.info(`Registered dynamic DODO pool (${cfg.label})`, { pool: ev.params[cfg.poolField] });
+    }
+  });
 
-  indexer.contractRegister(
-    { contract: "DodoFactory", event: cfg.event },
-    async ({ event: ev, context }: any) => {
-      if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
-        return;
-      }
-      context.chain.DodoPool.add(ev.params[cfg.poolField]);
-      if (context.log) {
-        context.log.info(`Registered dynamic DODO pool (${cfg.label})`, { pool: ev.params[cfg.poolField] });
-      }
-    },
-  );
-
-  indexer.onEvent(
-    { contract: "DodoFactory", event: cfg.event },
-    async ({ event: ev, context }: any) => {
-      await handleDodoPool(
-        context,
-        ev.params[cfg.poolField],
-        ev.params.baseToken,
-        ev.params.quoteToken,
-        Number(ev.block.number),
-        ev.transaction.hash,
-      );
-    },
-  );
+  indexer.onEvent({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+    await handleDodoPool(
+      context,
+      ev.params[cfg.poolField],
+      ev.params.baseToken,
+      ev.params.quoteToken,
+      Number(ev.block.number),
+      ev.transaction.hash,
+    );
+  });
 }
 
 for (const cfg of DODO_POOL_EVENTS) {

@@ -20,18 +20,18 @@ metadata:
 
 ## Scalar Types
 
-| Schema Type | TypeScript Type | Notes |
-|-------------|----------------|-------|
-| `ID!` | `string` | Required on every entity |
-| `String!` | `string` | |
-| `Int!` | `number` | |
-| `Float!` | `number` | |
-| `Boolean!` | `boolean` | |
-| `BigInt!` | `bigint` | Use `@config(precision: N)` for custom precision |
-| `BigDecimal!` | `BigDecimal` | Use `@config(precision: N, scale: M)` |
-| `Bytes!` | `string` | Hex-encoded |
-| `Timestamp!` | `Date` | |
-| `Json!` | `any` | |
+| Schema Type   | TypeScript Type | Notes                                            |
+| ------------- | --------------- | ------------------------------------------------ |
+| `ID!`         | `string`        | Required on every entity                         |
+| `String!`     | `string`        |                                                  |
+| `Int!`        | `number`        |                                                  |
+| `Float!`      | `number`        |                                                  |
+| `Boolean!`    | `boolean`       |                                                  |
+| `BigInt!`     | `bigint`        | Use `@config(precision: N)` for custom precision |
+| `BigDecimal!` | `BigDecimal`    | Use `@config(precision: N, scale: M)`            |
+| `Bytes!`      | `string`        | Hex-encoded                                      |
+| `Timestamp!`  | `Date`          |                                                  |
+| `Json!`       | `any`           |                                                  |
 
 ## Enums
 
@@ -45,7 +45,7 @@ enum Status {
 type Pool {
   id: ID!
   status: Status!
-  allowedStatuses: [Status!]!  # enum arrays supported
+  allowedStatuses: [Status!]! # enum arrays supported
 }
 ```
 
@@ -61,11 +61,12 @@ type Pool {
 
 type Swap {
   id: ID!
-  pool: Pool!  # entity reference — field name matches @derivedFrom "field" arg
+  pool: Pool! # entity reference — field name matches @derivedFrom "field" arg
 }
 ```
 
 **Critical rules:**
+
 - The `field` argument must match the **schema field name** on the child entity — which is the entity reference name (`"pool"`), **not** `"pool_id"`
 - In TypeScript handlers, set this relationship using the `_id` suffix: `pool_id: poolEntity.id` — codegen transforms `pool: Pool!` → `pool_id` in the TypeScript type
 - **Never write `pool_id: String!` in the schema when using `@derivedFrom(field: "pool")`.** The schema field must be `pool: Pool!`; the `_id` is a codegen artifact for handlers only
@@ -135,17 +136,17 @@ type Token {
 type Pool @index(fields: ["token0", "token1"]) {
   id: ID!
   poolType: PoolType!
-  token0: Token!   # entity reference — handler uses token0_id
-  token1: Token!   # entity reference — handler uses token1_id
+  token0: Token! # entity reference — handler uses token0_id
+  token1: Token! # entity reference — handler uses token1_id
   reserve0: BigInt!
   reserve1: BigInt!
   totalValueLocked: BigDecimal! @config(precision: 30, scale: 15)
-  swaps: [Swap!]! @derivedFrom(field: "pool")  # "pool" matches Swap.pool field name
+  swaps: [Swap!]! @derivedFrom(field: "pool") # "pool" matches Swap.pool field name
 }
 
 type Swap {
   id: ID!
-  pool: Pool! @index   # entity reference — handler uses pool_id; @derivedFrom field arg = "pool"
+  pool: Pool! @index # entity reference — handler uses pool_id; @derivedFrom field arg = "pool"
   sender: String! @index
   amount0In: BigInt!
   amount1In: BigInt!
@@ -155,11 +156,11 @@ type Swap {
 
 **Schema vs handler field names:**
 
-| Schema field | Schema type | TypeScript handler field |
-|---|---|---|
-| `pool` | `Pool!` | `pool_id: string` |
-| `token0` | `Token!` | `token0_id: string` |
-| `collection` | `NftCollection!` | `collection_id: string` |
+| Schema field | Schema type      | TypeScript handler field |
+| ------------ | ---------------- | ------------------------ |
+| `pool`       | `Pool!`          | `pool_id: string`        |
+| `token0`     | `Token!`         | `token0_id: string`      |
+| `collection` | `NftCollection!` | `collection_id: string`  |
 
 Codegen always appends `_id` to entity reference field names in the TypeScript types. Do **not** add `_id` yourself in the schema.
 

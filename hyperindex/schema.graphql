@@ -45,8 +45,9 @@ tokens stored as denormalized [String!] (addresses) for fast bulk loads;
 decimals joined via separate TokenMeta or static registry.
 No @derivedFrom relations (keeps queries simple/N+1-free for bot's full-table
 in-memory pipeline pattern).
+Enhanced with composite indexing for better query performance.
 """
-type PoolMeta {
+type PoolMeta @index(fields: ["protocol", "createdBlock"]) {
   id: ID!
   address: String! @index
   protocol: Protocol! @index
@@ -70,8 +71,9 @@ Bot owns hot state via its RPC fetcher + multicalls. This provides
 best-effort bootstrap cache + historical discovery.
 BigInt fields use @config(precision) per schema docs for large 256-bit-ish
 on-chain values (https://docs.envio.dev/docs/HyperIndex/schema#advanced-precision-and-scale-config-directive).
+Enhanced with composite indexing for time-based queries.
 """
-type V2PoolState {
+type V2PoolState @index(fields: ["address", ["lastUpdatedBlock", "DESC"]]) {
   id: ID!
   address: String! @index
   lastUpdatedBlock: Int! @index
@@ -160,7 +162,7 @@ Gives a reliable, queryable view of the last block for which handlers executed.
 Complements log-scraped progress from the Envio process + used by bot for lag monitoring.
 """
 type IndexerProgress {
-  id: ID!                    # chain id as string (e.g. "137")
+  id: ID! # chain id as string (e.g. "137")
   chainId: Int!
   lastProcessedBlock: Int!
   updatedAtBlock: Int!

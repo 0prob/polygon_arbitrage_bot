@@ -53,11 +53,7 @@ indexer.onEvent(
     // Concurrency is reduced automatically when HYPERSYNC_RPM_TARGET is low.
     const tEff0 = Date.now();
     const concurrency = getMetadataConcurrency();
-    const [t0meta, t1meta] = await runWithConcurrency(
-      [t0, t1],
-      concurrency,
-      (addr) => context.effect(fetchTokenMeta, { address: addr })
-    );
+    const [t0meta, t1meta] = await runWithConcurrency([t0, t1], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
     logEffectTime("fetchTokenMeta:pool", Date.now() - tEff0, blockNumber);
 
     if (context.isPreload) {

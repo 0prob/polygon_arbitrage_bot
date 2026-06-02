@@ -26,10 +26,8 @@ indexer.onEvent(
     // Bounded concurrency when HYPERSYNC_RPM_TARGET low.
     const tEff0 = Date.now();
     const concurrency = getMetadataConcurrency();
-    const [c0meta, c1meta] = await runWithConcurrency(
-      [currency0, currency1],
-      concurrency,
-      (addr) => context.effect(fetchTokenMeta, { address: addr })
+    const [c0meta, c1meta] = await runWithConcurrency([currency0, currency1], concurrency, (addr) =>
+      context.effect(fetchTokenMeta, { address: addr }),
     );
     logEffectTime("fetchTokenMeta:v4", Date.now() - tEff0, blockNumber);
 
@@ -66,11 +64,8 @@ indexer.onEvent(
   },
 );
 
-indexer.onEvent(
-  { contract: "PoolManager", event: "Swap" },
-  async () => {
-    // No-op for live debug indexer.
-    // V4 Swap events no longer write V4PoolState (removes repeated DB writes).
-    // Initialize (above) still writes creation-time state — acceptable volume.
-  },
-);
+indexer.onEvent({ contract: "PoolManager", event: "Swap" }, async () => {
+  // No-op for live debug indexer.
+  // V4 Swap events no longer write V4PoolState (removes repeated DB writes).
+  // Initialize (above) still writes creation-time state — acceptable volume.
+});

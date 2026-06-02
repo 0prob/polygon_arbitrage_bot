@@ -16,6 +16,7 @@ Migrate from TheGraph subgraph to the Envio Indexer using Test-Driven Developmen
 ## Before Starting
 
 **Ask the user for:**
+
 1. **Subgraph GraphQL endpoint** (e.g., `https://api.thegraph.com/subgraphs/name/org/subgraph`)
 2. **Chain ID and contract addresses**
 3. **Block range for testing** (pick blocks with representative events)
@@ -25,20 +26,21 @@ The subgraph GraphQL is the **source of truth** — use it to verify the Envio I
 **Prerequisites:** Subgraph folder in workspace, Node.js v22+, pnpm, Docker
 
 **References:**
+
 - Envio docs: https://docs.envio.dev/docs/HyperIndex-LLM/hyperindex-complete
 - Example (Uniswap v4): https://github.com/enviodev/uniswap-v4-indexer
 
 ## Quick Reference: Key Differences
 
-| TheGraph | Envio |
-|----------|-------|
-| `@entity` decorator | No decorator needed |
-| `Bytes!` | `String!` |
-| `entity.save()` | `context.Entity.set(entity)` |
-| `store.get("Entity", id)` | `await context.Entity.get(id)` |
+| TheGraph                        | Envio                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `@entity` decorator             | No decorator needed                               |
+| `Bytes!`                        | `String!`                                         |
+| `entity.save()`                 | `context.Entity.set(entity)`                      |
+| `store.get("Entity", id)`       | `await context.Entity.get(id)`                    |
 | `ContractTemplate.create(addr)` | `context.addContract(addr)` in `contractRegister` |
-| Direct array access | `@derivedFrom` (virtual, query via `getWhere`) |
-| `.bind()` for RPC | Effect API with `context.effect()` |
+| Direct array access             | `@derivedFrom` (virtual, query via `getWhere`)    |
+| `.bind()` for RPC               | Effect API with `context.effect()`                |
 
 ## Runtime Testing Mandate
 
@@ -96,10 +98,14 @@ Clear generated event handlers and replace with empty TODO handlers.
 
 ```graphql
 # WRONG — causes "Arrays of entities is unsupported" error
-type Transaction { mints: [Mint!]! }
+type Transaction {
+  mints: [Mint!]!
+}
 
 # CORRECT
-type Transaction { mints: [Mint!]! @derivedFrom(field: "transaction") }
+type Transaction {
+  mints: [Mint!]! @derivedFrom(field: "transaction")
+}
 ```
 
 Run: `pnpm codegen` (required after schema changes)
@@ -201,19 +207,23 @@ TheGraph uses `.bind()` for RPC. Envio requires Effect API with viem. Full patte
 Full quality check guide with 12 common fixes: [references/quality-checks.md](references/quality-checks.md)
 
 ### Field Names — use `_id` suffix
+
 ```ts
 // WRONG:  { token0: token0.id }
 // CORRECT: { token0_id: token0.id }
 ```
 
 ### Missing async/await
+
 ```ts
 // WRONG:  const entity = context.Entity.get(id);  // Returns {}
 // CORRECT: const entity = await context.Entity.get(id);
 ```
+
 Note: `context.Entity.set()` is synchronous — no await needed.
 
 ### Entity Type Imports
+
 ```ts
 // WRONG:  import { Pair } from "envio";  // Pair is a contract handler, not a type
 // CORRECT (when name collides with contract):
@@ -223,15 +233,16 @@ const p: Entity<"Pair"> = { ... };
 
 ### Schema Type Mapping
 
-| Schema | TypeScript |
-|--------|------------|
-| `Int!` | `number` |
-| `BigInt!` | `bigint` / `ZERO_BI` |
-| `BigDecimal!` | `BigDecimal` / `ZERO_BD` |
-| `String!` / `Bytes!` | `string` |
-| `Entity!` | `entity_id: string` |
+| Schema               | TypeScript               |
+| -------------------- | ------------------------ |
+| `Int!`               | `number`                 |
+| `BigInt!`            | `bigint` / `ZERO_BI`     |
+| `BigDecimal!`        | `BigDecimal` / `ZERO_BD` |
+| `String!` / `Bytes!` | `string`                 |
+| `Entity!`            | `entity_id: string`      |
 
 ### Multichain IDs
+
 Prefix all entity IDs: `${event.chainId}-${originalId}`
 
 ---

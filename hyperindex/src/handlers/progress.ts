@@ -46,7 +46,7 @@ const realtimeStart = (() => {
 })();
 
 const HISTORICAL_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000));
-const REALTIME_EVERY   = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY   ?? 200));
+const REALTIME_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY ?? 200));
 
 // -----------------------------------------------------------------------------
 // The single handler implementation (registered twice below)
@@ -85,7 +85,7 @@ if (shouldRegisterHistorical) {
         };
       },
     },
-    updateIndexerProgress
+    updateIndexerProgress,
   );
 }
 
@@ -104,5 +104,5 @@ indexer.onBlock(
       };
     },
   },
-  updateIndexerProgress
+  updateIndexerProgress,
 );

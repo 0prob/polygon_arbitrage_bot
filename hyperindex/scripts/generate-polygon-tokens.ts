@@ -46,7 +46,7 @@ const LISTS = [
   // === Official Polygon Token Lists (highest value for our use case) ===
   // These are curated by the Polygon team and focus on actually bridged / popular tokens.
   // Perfect for reducing RPC calls in fetchTokenMeta during V2/V3 factory events.
-  "https://api-polygon-tokens.polygon.technology/tokenlists/mapped.tokenlist.json",   // Mapped/bridged tokens
+  "https://api-polygon-tokens.polygon.technology/tokenlists/mapped.tokenlist.json", // Mapped/bridged tokens
   "https://api-polygon-tokens.polygon.technology/tokenlists/popular.tokenlist.json", // Top used tokens
 
   // QuickSwap community/maintained list (good for Polygon DEX-specific tokens)
@@ -66,7 +66,7 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
     const json = await res.json();
 
     // Handle both { tokens: [...] } and direct array formats
-    let tokens: any[] = Array.isArray(json) ? json : json.tokens ?? [];
+    let tokens: any[] = Array.isArray(json) ? json : (json.tokens ?? []);
 
     // Only apply chainId=137 filtering for known multi-chain lists.
     const MULTI_CHAIN_LISTS = [
@@ -210,7 +210,9 @@ async function main() {
   console.log(" * effect falls back to RPC → shows up as 70-85% 'Loaders' time in pipeline split.");
   console.log(" * Keep this registry as complete as possible. Run: bun run generate-tokens");
   console.log(" *");
-  console.log(" * Current sources: CoinGecko, Uniswap, Sushiswap, TrustWallet, 1inch, QuickSwap + official Polygon mapped/popular lists + curated core.");
+  console.log(
+    " * Current sources: CoinGecko, Uniswap, Sushiswap, TrustWallet, 1inch, QuickSwap + official Polygon mapped/popular lists + curated core.",
+  );
   console.log(" *");
   console.log(" * Extra tokens: Place hyperindex/extra-tokens.json (manual) or let the bot auto-write to data/auto-extra-tokens.json.");
   console.log(" * The generator also pulls tokens from the bot's scripts/pools.json and runtime discoveries.");
@@ -229,11 +231,11 @@ async function main() {
     "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270": 18, // WMATIC
     "0x0000000000000000000000000000000000001010": 18, // MATIC
     "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH
-    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6,  // USDC
-    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,  // USDC.e
-    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,  // USDT
+    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6, // USDC
+    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6, // USDC.e
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6, // USDT
     "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18, // DAI
-    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8,  // WBTC
+    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8, // WBTC
     "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK
     "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18, // UNI
     "0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a": 18, // SUSHI
@@ -253,11 +255,11 @@ async function main() {
     // === High-frequency bases in Polygon V2 pairs (critical for V2Factory.PairCreated performance) ===
     // These appear in thousands of pairs. Having them in the static registry eliminates
     // expensive RPC calls inside fetchTokenMeta during historical backfill (Loaders phase).
-    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6,  // USDC (PoS)
-    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,  // USDC.e (bridged)
-    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,  // USDT
+    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6, // USDC (PoS)
+    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6, // USDC.e (bridged)
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6, // USDT
     "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18, // DAI
-    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8,  // WBTC
+    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8, // WBTC
     "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH
     "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK
     "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18, // UNI
@@ -282,10 +284,10 @@ async function main() {
     "0x0000000000000000000000000000000000001010": 18, // MATIC (native)
     "0x1b815d120b3ef02039ee11dc2d63b2d2e5e8e8e8": 18, // MANA
     "0x2f800db0fdb5223b3c3f354886d907a671414a7f": 18, // TCO2 (dup safe)
-    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,  // USDC.e (dup safe)
-    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,  // USDT (dup safe)
+    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6, // USDC.e (dup safe)
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6, // USDT (dup safe)
     "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18, // DAI (dup safe)
-    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8,  // WBTC (dup safe)
+    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8, // WBTC (dup safe)
     "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH (dup safe)
     "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK (dup safe)
     "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18, // UNI (dup safe)
@@ -297,28 +299,28 @@ async function main() {
     // === High-frequency Polygon bases (critical for V2Factory.PairCreated performance) ===
     // These appear in thousands of pairs. Having them in the static registry eliminates
     // expensive RPC calls inside fetchTokenMeta during new pool discovery.
-    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6,   // USDC PoS
-    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6,   // USDC.e
-    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6,   // USDT
-    "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18,  // DAI
-    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8,   // WBTC
-    "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18,  // WETH
-    "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18,  // LINK
-    "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18,  // UNI
-    "0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a": 18,  // SUSHI
-    "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18,  // BAL
-    "0x172370d5cd63279efa6d502dab29171933a610af": 18,  // CRV
-    "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18,  // AAVE
-    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18,  // GHST
-    "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18,  // QUICK
-    "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18,  // QUICK (old)
-    "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18,  // WOO
-    "0x6f7c932e7684666c9fd1d44527765433e01ff61d": 18,  // USDD
-    "0x2e1ad108ff1d8c782fcbbb89aad783ac49586756": 18,  // stMATIC
-    "0x5fe2b58c013d7601147dcdd68c143a77499f5531": 18,  // GRT
-    "0x0000000000000000000000000000000000001010": 18,  // MATIC (native)
-    "0x1b815d120b3ef02039ee11dc2d63b2d2e5e8e8e8": 18,  // MANA
-    "0x2f800db0fdb5223b3c3f354886d907a671414a7f": 18,  // TCO2
+    "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": 6, // USDC PoS
+    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": 6, // USDC.e
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": 6, // USDT
+    "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": 18, // DAI
+    "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": 8, // WBTC
+    "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH
+    "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK
+    "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18, // UNI
+    "0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a": 18, // SUSHI
+    "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18, // BAL
+    "0x172370d5cd63279efa6d502dab29171933a610af": 18, // CRV
+    "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18, // AAVE
+    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST
+    "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK
+    "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK (old)
+    "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO
+    "0x6f7c932e7684666c9fd1d44527765433e01ff61d": 18, // USDD
+    "0x2e1ad108ff1d8c782fcbbb89aad783ac49586756": 18, // stMATIC
+    "0x5fe2b58c013d7601147dcdd68c143a77499f5531": 18, // GRT
+    "0x0000000000000000000000000000000000001010": 18, // MATIC (native)
+    "0x1b815d120b3ef02039ee11dc2d63b2d2e5e8e8e8": 18, // MANA
+    "0x2f800db0fdb5223b3c3f354886d907a671414a7f": 18, // TCO2
   };
 
   Object.entries(core).forEach(([addr, dec]) => allTokens.set(addr.toLowerCase(), dec));

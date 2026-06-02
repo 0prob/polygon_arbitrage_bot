@@ -10,7 +10,7 @@
  */
 
 export function getRpmTarget(): number {
-  const raw = process.env.HYPERSYNC_RPM_TARGET;
+  const raw = process.env.ENVIO_HYPERSYNC_RPM_TARGET || process.env.HYPERSYNC_RPM_TARGET;
   if (raw) {
     const n = Number(raw);
     if (Number.isFinite(n) && n > 0) return Math.floor(n);
@@ -70,7 +70,7 @@ export function getProgressOnBlockStride(defaultStride: number): number {
 export async function runWithConcurrency<T, R>(
   items: readonly T[] | T[],
   limit: number,
-  fn: (item: T, index: number) => Promise<R>
+  fn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   if (limit <= 1) {
     const results: R[] = [];

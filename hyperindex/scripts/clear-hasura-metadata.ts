@@ -15,11 +15,7 @@
 
 // Try to pick up secrets from common locations
 const hasuraUrl = process.env.HASURA_URL ?? "http://localhost:8080";
-const secret =
-  process.env.HASURA_GRAPHQL_ADMIN_SECRET ??
-  process.env.HASURA_SECRET ??
-  process.env.HASURA_ADMIN_SECRET ??
-  "";
+const secret = process.env.HASURA_GRAPHQL_ADMIN_SECRET ?? process.env.HASURA_SECRET ?? process.env.HASURA_ADMIN_SECRET ?? "";
 
 const endpoint = `${hasuraUrl.replace(/\/$/, "")}/v1/metadata`;
 
@@ -54,9 +50,9 @@ async function clearMetadata() {
       if (isAccessDenied && !secret) {
         console.error(
           "Hasura rejected the request (admin only). Provide the admin secret via one of:\n" +
-          "  bun --env-file=.env run clear-hasura\n" +
-          "  HASURA_GRAPHQL_ADMIN_SECRET=your-secret bun run clear-hasura\n" +
-          "  HASURA_SECRET=your-secret bun run clear-hasura"
+            "  bun --env-file=.env run clear-hasura\n" +
+            "  HASURA_GRAPHQL_ADMIN_SECRET=your-secret bun run clear-hasura\n" +
+            "  HASURA_SECRET=your-secret bun run clear-hasura",
         );
       } else {
         console.error(`Failed to clear metadata (HTTP ${res.status}):`, text);

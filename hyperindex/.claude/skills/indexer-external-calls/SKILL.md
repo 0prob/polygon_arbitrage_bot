@@ -28,15 +28,12 @@ const getOwner = createEffect(
   async ({ input }) => {
     const res = await fetch(`https://api.example.com/owner/${input.tokenId}`);
     return res.json();
-  }
+  },
 );
 
-indexer.onEvent(
-  { contract: "Token", event: "Transfer" },
-  async ({ event, context }) => {
-    const owner = await context.effect(getOwner, { tokenId: event.params.tokenId });
-  }
-);
+indexer.onEvent({ contract: "Token", event: "Transfer" }, async ({ event, context }) => {
+  const owner = await context.effect(getOwner, { tokenId: event.params.tokenId });
+});
 ```
 
 ## Pass minimum input
@@ -76,18 +73,18 @@ const getTokenMetadata = createEffect(
       client.readContract({ ...args, functionName: "decimals" }),
     ]);
     return { name, symbol, decimals: Number(decimals) };
-  }
+  },
 );
 ```
 
 ## Options
 
-| Option | Type | Default |
-|---|---|---|
-| `name` | `string` | — |
-| `input` | `S.Schema` | — |
-| `output` | `S.Schema` | — |
-| `cache` | `boolean` | `false` |
+| Option      | Type                      | Default  |
+| ----------- | ------------------------- | -------- |
+| `name`      | `string`                  | —        |
+| `input`     | `S.Schema`                | —        |
+| `output`    | `S.Schema`                | —        |
+| `cache`     | `boolean`                 | `false`  |
 | `rateLimit` | `false \| { calls, per }` | required |
 
 Full reference: https://docs.envio.dev/docs/HyperIndex-LLM/hyperindex-complete

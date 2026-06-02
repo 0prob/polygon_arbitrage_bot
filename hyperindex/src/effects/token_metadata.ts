@@ -80,9 +80,7 @@ async function appendToAutoExtraTokens(address: string, decimals: number) {
 // Track failures with timestamps for retry
 const failedTokenAttempts: Map<string, number> = new Map();
 
-const ERC20_ABI = parseAbi([
-  "function decimals() view returns (uint8)",
-]);
+const ERC20_ABI = parseAbi(["function decimals() view returns (uint8)"]);
 
 function safeDecimals(d: number): number {
   if (isNaN(d) || d < 0 || d > 255) return 18;
@@ -179,9 +177,9 @@ export const fetchTokenMeta = createEffect(
         if (isQuota) {
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +
-            `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
-            `Defaulting to 18 for this token (will retry in ~5min).`,
-            { token: input.address }
+              `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
+              `Defaulting to 18 for this token (will retry in ~5min).`,
+            { token: input.address },
           );
         } else {
           context.log.warn(`Failed to fetch decimals for token — defaulting to 18 (backoff applied)`, {
