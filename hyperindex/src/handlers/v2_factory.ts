@@ -2,6 +2,7 @@ import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
+import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 // Envio v3 best practice: Use the global `indexer` object (or context.chain inside handlers)
 // to access live configuration and dynamically registered addresses (persisted across restarts).
@@ -61,11 +62,16 @@ indexer.onEvent(
     // Effects are the dominant cost (Loaders % in pipeline split).
     // We time them explicitly so slow cache misses are visible in logs.
     // PoolMeta set moved after effects + isPreload guard for zero writes in preload phase.
+    //
+    // When HYPERSYNC_RPM_TARGET is low we limit concurrency here to avoid
+    // creating request spikes that interact badly with the HyperSync budget.
     const tEff0 = Date.now();
-    const [t0meta, t1meta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: t0, blockNumber: BigInt(blockNumber) }),
-      context.effect(fetchTokenMeta, { address: t1, blockNumber: BigInt(blockNumber) }),
-    ]);
+    const concurrency = getMetadataConcurrency();
+    const [t0meta, t1meta] = await runWithConcurrency(
+      [t0, t1],
+      concurrency,
+      (addr) => context.effect(fetchTokenMeta, { address: addr, blockNumber: BigInt(blockNumber) })
+    );
     logEffectTime("fetchTokenMeta:pair", Date.now() - tEff0, blockNumber);
 
     // Aggressive isPreload: after effects (which preload batches), exit early in preload phase.

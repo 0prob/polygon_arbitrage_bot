@@ -3,6 +3,7 @@ import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
+import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 const balancerMetaCache = new Map<string, { tokens: string[]; fee: number }>();
 const balancerIdToAddrCache = new Map<string, string>();
@@ -30,14 +31,18 @@ indexer.onEvent(
 
     // Schedule token metadata effects early (after balancer meta which provides the token list)
     // so they run in the preload phase for batching/memoization.
+    //
+    // Use runWithConcurrency to respect HYPERSYNC_RPM_TARGET (limits parallel token meta effects).
     const tEffBalTokens = Date.now();
-    const tokenMetas = await Promise.all(
-      meta.tokens.map((token) =>
+    const concurrency = getMetadataConcurrency();
+    const tokenMetas = await runWithConcurrency(
+      meta.tokens,
+      concurrency,
+      (token) =>
         context.effect(fetchTokenMeta, {
           address: token,
           blockNumber: BigInt(blockNumber),
         })
-      )
     );
     logEffectTime("fetchTokenMeta:balancerTokens", Date.now() - tEffBalTokens, blockNumber);
 
@@ -46,7 +51,7 @@ indexer.onEvent(
     }
 
     const fee = meta.swapFee > 0n ? Number(meta.swapFee / 10n ** 14n) : 0;
-    const tokens = meta.tokens;
+    const tokens = [...meta.tokens]; // ensure mutable string[] for cache + PoolMeta type
 
     balancerMetaCache.set(pool, { tokens, fee });
     balancerIdToAddrCache.set(poolId, pool);
@@ -77,7 +82,7 @@ indexer.onEvent(
       scalingFactors: meta.scalingFactors,
     });
 
-    meta.tokens.forEach((token, i) => {
+    tokens.forEach((token, i) => {
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     });
   },
@@ -86,22 +91,27 @@ indexer.onEvent(
 indexer.onEvent(
   { contract: "BalancerVault", event: "TokensRegistered" },
   async ({ event, context }) => {
-    const tokens = event.params.tokens;
+    const rawTokens = event.params.tokens;
+    const tokens = [...rawTokens]; // copy to mutable array to satisfy PoolMeta/cache types + runWithConcurrency
     const blockNumber = Number(event.block.number);
 
-    if (INDEXER_HOT_BIAS && !tokens.some((token: string) => involvesHotBase(token, token))) {
+    if (INDEXER_HOT_BIAS && !tokens.some((token) => involvesHotBase(token, token))) {
       return;
     }
 
     // Schedule token effects early (tokens come from event params; no extra meta needed)
     // so they get preload batching. DB gets below also benefit from preload.
-    const tokenMetasPromise = Promise.all(
-      tokens.map((token) =>
+    //
+    // Bounded concurrency for low HYPERSYNC_RPM_TARGET.
+    const concurrency = getMetadataConcurrency();
+    const tokenMetasPromise = runWithConcurrency(
+      tokens,
+      concurrency,
+      (token) =>
         context.effect(fetchTokenMeta, {
           address: token,
           blockNumber: BigInt(blockNumber),
         })
-      )
     );
 
     const poolId = event.params.poolId;

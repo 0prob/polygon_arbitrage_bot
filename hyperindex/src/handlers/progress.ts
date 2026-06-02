@@ -1,4 +1,5 @@
 import { indexer } from "envio";
+import { getProgressOnBlockStride } from "../utils/pacing";
 
 /**
  * Block handler that maintains the IndexerProgress entity.
@@ -47,8 +48,8 @@ const getRealtimeStart = (chainId: number): number | undefined => {
   return 65_000_000;
 };
 
-const HISTORICAL_EVERY = Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000);
-const REALTIME_EVERY   = Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY   ?? 200);
+const HISTORICAL_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000));
+const REALTIME_EVERY   = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY   ?? 200));
 
 // -----------------------------------------------------------------------------
 // The single handler implementation (registered twice below)

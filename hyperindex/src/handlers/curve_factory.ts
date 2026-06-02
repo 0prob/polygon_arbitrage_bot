@@ -3,6 +3,7 @@ import { fetchCurveMetadata } from "../effects/curve_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
+import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 // Modern v3 async contractRegister with conditional logic + external call.
 // Per the dynamic-contracts guide, we can do effects here to decide whether
@@ -63,14 +64,14 @@ indexer.onEvent(
     // Schedule + await coin token metadata effects *early* (right after curve meta, before isPreload guard)
     // so the full set of effects for this event participates in preload-phase parallel batching
     // and memoization (critical for backfill). See docs.envio.dev/docs/HyperIndex/preload-optimization
+    //
+    // Concurrency is capped when HYPERSYNC_RPM_TARGET is low to keep request patterns smooth.
     const tEffCoins = Date.now();
-    const coinMetas = await Promise.all(
-      meta.coins.map((coin) =>
-        context.effect(fetchTokenMeta, {
-          address: coin,
-          blockNumber: BigInt(blockNumber),
-        })
-      )
+    const concurrency = getMetadataConcurrency();
+    const coinMetas = await runWithConcurrency(
+      meta.coins,
+      concurrency,
+      (coin) => context.effect(fetchTokenMeta, { address: coin, blockNumber: BigInt(blockNumber) })
     );
     logEffectTime("fetchTokenMeta:curveCoins", Date.now() - tEffCoins, blockNumber);
 

@@ -30,7 +30,7 @@ raw_events: false
 #   1. Set POLYGON_START_BLOCK in .env to a recent block (e.g. 86500000 or higher).
 #   2. The per-contract overrides below that are older will still respect the global unless you also
 #      raise them. For pure "new pools only" you can override the global high and leave lowers.
-#   3. full_batch_size raised to 5000 (user request after observing heavy Initialize/PoolCreated handlers).
+#   3. full_batch_size tuned to your HYPERSYNC_RPM_TARGET (see the detailed section below).
 #
 # To do a true full historical backfill: use a paid ENVIO_API_TOKEN + higher batch + more RAM.
 #
@@ -64,7 +64,7 @@ raw_events: false
 # Remaining throughput factors (after DB write elimination):
 # 1. Effect latency on first-seen pools (token/curve/dodo/balancer metadata).
 #    Mitigated by STATIC_TOKEN_DECIMALS registry + cache: true + Promise.all parallelization.
-# 2. full_batch_size (currently 5000) and number of dynamic contracts (thousands of V2/V3 pools).
+# 2. full_batch_size (now dynamically recommended via pacing.ts based on HYPERSYNC_RPM_TARGET) and number of dynamic contracts (thousands of V2/V3 pools).
 # 3. HyperSync quota / ENVIO_API_TOKEN quality.
 #    Multiple free keys are now auto-rotated (see root .env.example section 6 and src/infra/hypersync/api_token_pool.ts).
 #    Put several keys in hyperindex/.env (supports ENVIO_API_TOKEN=... lines or ENVIO_API_TOKENS=comma,sep) or set ENVIO_API_TOKENS in the root .env.
@@ -84,16 +84,28 @@ raw_events: false
 
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
-# - 5000 → current setting (good throughput for heavy Initialize/PoolCreated handlers).
-# - Higher (7000-10000) → faster backfill if you have headroom on RPC quota and RAM.
-# - Lower (2000-4000) → more stable under heavy load or limited RPC allowance.
-# The cache: true on all effects + Promise.all parallelization in registration handlers
+#
+# IMPORTANT (rate limit coordination): Choose based on HYPERSYNC_RPM_TARGET.
+#   - 180+ rpm target (comfortable free tier with rotation) → 4000-5000 is fine
+#   - 140-175 rpm (typical single free token live-debug)     → 2200-3000 recommended
+#   - <130 rpm (very tight)                                  → 1000-1800
+#
+# The new src/utils/pacing.ts + runWithConcurrency in handlers + dynamic batching in
+# rpc_client.ts automatically tighten effect parallelism and viem batch sizes when
+# HYPERSYNC_RPM_TARGET is low. Lower full_batch_size here complements that.
+#
+# - 5000 (previous default) → aggressive; good only with paid tokens or multiple keys
+# - 2800                    → current conservative default for 86M+ live-debug on free tokens
+# - Higher (7000-10000)     → only with excellent quota headroom
+# - Lower (1000-1800)       → when you see frequent 45s+ HyperSync rate limit waits
+#
+# The cache: true on all effects + bounded concurrency in registration handlers
 # make repeated work cheap after warm-up. Per-event state writes removed for live debug profile.
-full_batch_size: 5000
-# 5000 (raised after observing PoolManager.Initialize + V3Factory.PoolCreated as top 2 slowest
-# due to effect/loader time on first-seen tokens/pools). Envio default/recommendation for Polygon
-# is 3000-8000. Larger batches help amortize effect work across more events when you have RPC headroom
-# (see instrumentation.ts point 5). Use lower (e.g. 3000) only if hitting quota instability.
+full_batch_size: 2800  # Conservative for single free-tier token + live-debug (86M+). See rate-limit coordination notes above. Use 4500-5000 only with paid tokens or multiple ENVIO_API_TOKENS.
+# The value above (currently 2800) is the conservative default for free-token live-debug.
+# Envio's general recommendation for Polygon is 3000-8000 when you have quota headroom.
+# Larger batches help amortize effect work across more events (see instrumentation.ts).
+# Use the pacing-aware values documented in the rate-limit coordination section.
 
 # HyperSync is the recommended high-performance data source (2000x faster than RPC).
 # Token is passed via ENVIO_API_TOKEN (required for production use per 2026 docs).

@@ -1,6 +1,8 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { logEffectTime } from "../utils/instrumentation";
+import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 const v4MetaCache = new Map<string, { tickSpacing: number; hooks: string }>();
 
@@ -22,10 +24,16 @@ indexer.onEvent(
     // Schedule ALL effects early (before any sets/caches) so they participate
     // in Envio V3 preload batching + memoization across the event batch.
     // See: https://docs.envio.dev/docs/HyperIndex/preload-optimization
-    const [c0meta, c1meta] = await Promise.all([
-      context.effect(fetchTokenMeta, { address: currency0, blockNumber: BigInt(blockNumber) }),
-      context.effect(fetchTokenMeta, { address: currency1, blockNumber: BigInt(blockNumber) }),
-    ]);
+    //
+    // Bounded concurrency when HYPERSYNC_RPM_TARGET low.
+    const tEff0 = Date.now();
+    const concurrency = getMetadataConcurrency();
+    const [c0meta, c1meta] = await runWithConcurrency(
+      [currency0, currency1],
+      concurrency,
+      (addr) => context.effect(fetchTokenMeta, { address: addr, blockNumber: BigInt(blockNumber) })
+    );
+    logEffectTime("fetchTokenMeta:v4", Date.now() - tEff0, blockNumber);
 
     if (context.isPreload) {
       return;

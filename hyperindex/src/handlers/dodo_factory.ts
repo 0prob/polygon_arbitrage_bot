@@ -3,6 +3,7 @@ import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
+import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 async function handleDodoPool(
   context: any,
@@ -20,12 +21,19 @@ async function handleDodoPool(
   // Schedule ALL effects at the top (after cheap hot filter) so DODO + token metadata
   // participate in Envio preload batching + memoization. PoolMeta write moved after guard.
   // See https://docs.envio.dev/docs/HyperIndex/event-handlers#preload-optimization
+  //
+  // Use bounded concurrency (via runWithConcurrency) when HYPERSYNC_RPM_TARGET is low to avoid request spikes.
+  // We start the DODO meta effect + the (possibly limited) token effects concurrently.
   const tEffDodo = Date.now();
-  const [meta, baseMeta, quoteMeta] = await Promise.all([
-    context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) }),
-    context.effect(fetchTokenMeta, { address: base, blockNumber: BigInt(blockNumber) }),
-    context.effect(fetchTokenMeta, { address: quote, blockNumber: BigInt(blockNumber) }),
-  ]);
+  const concurrency = getMetadataConcurrency();
+  const dodoP = context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) });
+  const tokensP = runWithConcurrency(
+    [base, quote],
+    concurrency,
+    (addr) => context.effect(fetchTokenMeta, { address: addr, blockNumber: BigInt(blockNumber) })
+  );
+  const [meta, tokenMetas] = await Promise.all([dodoP, tokensP]);
+  const [baseMeta, quoteMeta] = tokenMetas as any[];
   logEffectTime("fetchDodoMetadata+tokens", Date.now() - tEffDodo, blockNumber);
 
   if (context.isPreload) {

@@ -1,5 +1,6 @@
 import { createPublicClient, http, fallback, type PublicClient, type HttpTransport } from "viem";
 import { polygon } from "viem/chains";
+import { getRpmTarget, isLowQuota, isVeryLowQuota } from "../utils/pacing";
 
 /**
  * Centralized RPC client for all effects (token decimals, Curve/Balancer/DODO metadata, etc.).
@@ -53,9 +54,16 @@ function getRpcUrls(): string[] {
   ];
 }
 
-const BATCH_SIZE = 128;             // Higher with pay-as-you-go Alchemy
-const MULTICALL_BATCH_SIZE = 128;
-const MULTICALL_WAIT_MS = 10;         // Slightly more aggressive batching
+const rpm = getRpmTarget();
+const low = isLowQuota();
+const veryLow = isVeryLowQuota();
+
+// Dynamic batching tuned to the overall quota (HYPERSYNC_RPM_TARGET).
+// When the free-tier HyperSync budget is tight we reduce RPC burstiness from effects
+// so the whole system (HyperSync fetches + metadata effects) stays smoother.
+const BATCH_SIZE = veryLow ? 32 : low ? 64 : 128;
+const MULTICALL_BATCH_SIZE = veryLow ? 32 : low ? 64 : 128;
+const MULTICALL_WAIT_MS = veryLow ? 80 : low ? 40 : 10;
 
 const rpcUrls = getRpcUrls();
 
@@ -66,7 +74,12 @@ console.log(JSON.stringify({
   level: 30,
   msg: "RPC_CLIENT_INIT",
   resolvedRpcUrls: rpcUrls,
-  source: process.env.POLYGON_RPC_URLS ? "POLYGON_RPC_URLS" : (process.env.POLYGON_RPC_URL ? "POLYGON_RPC_URL" : "PUBLIC_FALLBACKS_ONLY")
+  source: process.env.POLYGON_RPC_URLS ? "POLYGON_RPC_URLS" : (process.env.POLYGON_RPC_URL ? "POLYGON_RPC_URL" : "PUBLIC_FALLBACKS_ONLY"),
+  rpmTarget: rpm,
+  batchMode: veryLow ? "very-conservative" : low ? "conservative" : "normal",
+  batchSize: BATCH_SIZE,
+  multicallBatch: MULTICALL_BATCH_SIZE,
+  multicallWaitMs: MULTICALL_WAIT_MS
 }));
 
 const transports: HttpTransport[] = rpcUrls.map((url) =>
