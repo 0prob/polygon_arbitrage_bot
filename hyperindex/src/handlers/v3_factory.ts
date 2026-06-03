@@ -1,6 +1,6 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -41,7 +41,8 @@ indexer.onEvent(
 
     const factoryAddr = event.srcAddress;
 
-    if (t0 === factoryAddr || t1 === factoryAddr) {
+    // Consistency: skip obvious garbage pairs (zero address, factory-as-token, etc.)
+    if (t0 === factoryAddr || t1 === factoryAddr || isLikelyGarbagePair(t0, t1)) {
       return;
     }
 

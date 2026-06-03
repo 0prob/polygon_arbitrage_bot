@@ -2,7 +2,7 @@ import { createEffect, S } from "envio";
 import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
 import { STATIC_TOKEN_DECIMALS } from "./token_registry";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
@@ -82,6 +82,7 @@ async function appendToAutoExtraTokens(address: string, decimals: number) {
 // A non-ERC20 contract never becomes one, so no TTL — skip forever.
 const failedTokens: Set<string> = new Set();
 let failedLoaded = false;
+let failedSavePending: Promise<void> | null = null;
 
 async function loadFailedTokens() {
   if (failedLoaded) return;
@@ -101,12 +102,20 @@ async function loadFailedTokens() {
 }
 
 async function saveFailedTokens() {
-  try {
-    await mkdir(path.dirname(FAILED_DECIMALS_FILE), { recursive: true });
-    await writeFile(FAILED_DECIMALS_FILE, JSON.stringify([...failedTokens].sort(), null, 2), "utf8");
-  } catch {
-    // Best effort
-  }
+  if (failedSavePending) return failedSavePending;
+  failedSavePending = (async () => {
+    try {
+      const tmpFile = FAILED_DECIMALS_FILE + ".tmp";
+      await mkdir(path.dirname(FAILED_DECIMALS_FILE), { recursive: true });
+      await writeFile(tmpFile, JSON.stringify([...failedTokens].sort(), null, 2), "utf8");
+      await rename(tmpFile, FAILED_DECIMALS_FILE);
+    } catch (e) {
+      console.warn("[token_metadata] Failed to persist failed tokens:", (e as Error).message);
+    } finally {
+      failedSavePending = null;
+    }
+  })();
+  return failedSavePending;
 }
 
 const ERC20_ABI = parseAbi(["function decimals() view returns (uint8)"]);
@@ -193,13 +202,38 @@ export const fetchTokenMeta = createEffect(
 
       return result;
     } catch (err) {
-      // Permanent blocklist: non-ERC20 contracts never become valid — add once, skip forever
-      failedTokens.add(addr);
-      saveFailedTokens().catch(() => {});
-
-      // Never fail the whole indexing run for one bad token
       const errStr = String(err);
-      const isQuota = errStr.includes("Monthly") || errStr.includes("capacity") || errStr.includes("quota") || errStr.includes("rate");
+
+      // Distinguish between definitive "this is not an ERC20 token" errors
+      // and transient "the network/RPC is having trouble" errors.
+      const isDefinitiveError =
+        errStr.includes("reverted") ||
+        errStr.includes("not found") ||
+        errStr.includes("Invalid address") ||
+        errStr.includes("not a contract");
+
+      const isQuota =
+        errStr.includes("Monthly") ||
+        errStr.includes("capacity") ||
+        errStr.includes("quota") ||
+        errStr.includes("rate") ||
+        errStr.includes("429");
+
+      const isNetwork =
+        errStr.includes("timeout") ||
+        errStr.includes("failed to fetch") ||
+        errStr.includes("HTTP") ||
+        errStr.includes("500") ||
+        errStr.includes("502") ||
+        errStr.includes("503") ||
+        errStr.includes("504");
+
+      // Only add to permanent blocklist if it's a definitive non-token error.
+      // Network/quota errors should be retried in a future run.
+      if (isDefinitiveError && !isQuota && !isNetwork) {
+        failedTokens.add(addr);
+        saveFailedTokens().catch(() => {});
+      }
 
       if (context.log && !failedDecimalsTokens.has(addr)) {
         failedDecimalsTokens.add(addr);
@@ -211,15 +245,22 @@ export const fetchTokenMeta = createEffect(
               `Defaulting to 18 for this token (will retry in ~5min).`,
             { token: input.address },
           );
+        } else if (isNetwork) {
+          context.log.warn(`Network error fetching decimals for token — defaulting to 18 (will retry in ~5min)`, {
+            token: input.address,
+            error: errStr,
+          });
         } else {
-          context.log.warn(`Failed to fetch decimals for token — defaulting to 18 (backoff applied)`, {
+          context.log.warn(`Definitive failure fetching decimals for token — defaulting to 18 (added to permanent blocklist)`, {
             token: input.address,
             error: errStr,
           });
         }
       }
 
-      // Do not cache obviously bad results forever in Envio effect cache
+      // Do not cache obviously bad/transient results forever in Envio effect cache.
+      // If it's definitive, Envio can cache it, but our Layer 2 blocklist already handles it.
+      // If it's transient, we want Envio to retry.
       context.cache = false;
       return { address: input.address, decimals: 18 };
     }
