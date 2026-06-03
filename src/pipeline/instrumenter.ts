@@ -42,7 +42,7 @@ export class ArbInstrumenter {
     const states: Record<string, PoolState> = {};
     for (const pool of result.poolPath) {
       const s = stateCache.get(pool.toLowerCase());
-      if (s) states[pool.toLowerCase()] = { ...(s as any) };
+      if (s) states[pool.toLowerCase()] = { ...s };
     }
 
     const hops = result.protocols.map((protocol, i) => ({

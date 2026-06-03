@@ -20,7 +20,7 @@
  *   - Zero per-event state writes on high-volume events → DB Writes near zero
  *
  * To observe real numbers:
- *   1. cd hyperindex && bun run dev   (or root `bun run hyperindex`)
+ *   1. cd hyperindex && bun run dev   (or root `bun run dev`)
  *   2. Watch envio stdout / TUI for pipeline split percentages
  *   3. Or grep logs for "PIPELINE_SPLIT" if you add a periodic emitter
  *
@@ -51,6 +51,7 @@ export function logEffectTime(name: string, durationMs: number, blockNumber?: nu
   // Only log slow effects (>50ms) to avoid noise in normal operation.
   // Fast cached hits are <1ms and are the common case after warmup.
   if (durationMs > 50) {
+    // eslint-disable-next-line no-console
     console.log(
       JSON.stringify({
         level: 30,

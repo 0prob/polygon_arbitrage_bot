@@ -39,3 +39,13 @@ pnpm-lock.yaml
 # Temporary files
 *.tmp
 *.temp
+
+# Generated outputs (do not format)
+hyperindex/.envio/
+hyperindex/env.d.ts
+hyperindex/envio-env.d.ts
+sol/out/
+sol/cache/
+sol/broadcast/
+hyperindex/hyperindex.db
+graphify-out/

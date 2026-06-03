@@ -117,7 +117,7 @@ export class GasOracle {
         gasPrice: predictedBase + clampedPriority,
         timestamp: Date.now(),
       };
-    } catch (_err: unknown) {
+    } catch {
       // Keep last known values on fetch failure
     }
   }
@@ -227,7 +227,7 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
       if (priorityFee <= 0n) priorityFee = fallback;
 
       return { baseFee, priorityFee };
-    } catch (_err: unknown) {
+    } catch {
       return { baseFee: fallback, priorityFee: fallback };
     }
   };
@@ -247,7 +247,7 @@ async function fetchGasFromStation(url: string, percentile: number): Promise<{ b
     const priorityFee = BigInt(Math.round(data[level].maxPriorityFee * 1e9));
 
     return { baseFee, priorityFee };
-  } catch (_err) {
+  } catch (_) {
     return null;
   }
 }

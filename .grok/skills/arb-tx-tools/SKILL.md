@@ -126,6 +126,10 @@ Local Anvil is the escape hatch when you need state overrides, persistent impers
 
 All scripts are executable directly with `bun` and import real project code/ABIs so they stay in sync forever.
 
+**MCP note**: The server entrypoint is `bun run scripts/arb-tx-tools.ts` (registered in .opencode/opencode.json under "arb-tx-tools"). Shared impls live in scripts/arb-tx-tools/ (AnvilManager etc) and are also imported by the direct .grok skill scripts.
+
+lspmux (root lspmux/) is for general language server multiplexing in your AI coding client, separate from these tx tools.
+
 ## Quick Start (copy-paste for the agent)
 
 ```bash

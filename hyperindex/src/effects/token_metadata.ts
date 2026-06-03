@@ -57,7 +57,7 @@ async function appendToAutoExtraTokens(address: string, decimals: number) {
   try {
     await mkdir(path.dirname(AUTO_EXTRA_TOKENS_FILE), { recursive: true });
 
-    let existing: any[] = [];
+    let existing: Array<{ address?: string; decimals?: number }> = [];
     try {
       const raw = await readFile(AUTO_EXTRA_TOKENS_FILE, "utf8");
       existing = JSON.parse(raw);
@@ -65,7 +65,7 @@ async function appendToAutoExtraTokens(address: string, decimals: number) {
     } catch {}
 
     // Deduplicate
-    if (existing.some((t: any) => t.address?.toLowerCase() === addr)) {
+    if (existing.some((t) => t.address?.toLowerCase() === addr)) {
       return;
     }
 

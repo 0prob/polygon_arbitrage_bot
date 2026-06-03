@@ -236,7 +236,7 @@ export async function bootApplication(
                   value: tx.value?.toString() ?? "0",
                 });
               }
-            } catch (_err: unknown) {
+            } catch {
               /* tx may have been mined before we fetch it */
             }
           }

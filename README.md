@@ -18,6 +18,7 @@ High-frequency, **strictly flash-loan-only** arbitrage bot for Polygon (chain 13
 ## Architecture (post cleanups)
 
 Key points:
+
 - `src/rpc/manager.ts` is the only way to get RPC clients.
 - `src/pipeline/` owns graph/finder/sim/fetch/rates/eval (pure).
 - `src/orchestrator/pass_loop.ts` is the multi-frequency orchestrator (loop.ts is now a tiny typed DI bag; old dead `runPipeline` extraction removed long ago).
@@ -43,18 +44,9 @@ HyperIndex lives in `hyperindex/` (separate package, dynamic contracts + effect-
 
 Sol: `sol/src/ArbExecutor.sol` (enforces flash only) + tests.
 
-## AI Superpowers
+## AI Tooling
 
-Primary: the arb-tx-tools skill.
-
-- Direct (terminal): `bun .grok/skills/arb-tx-tools/scripts/log-tailer.ts --last 100 --errors-only`
-  then `.../simulator.ts simulate ...` or start-fork
-  then `.../abicoder.ts decode-revert --data 0x...`
-- MCP (if registered via .opencode or your client): `bun run scripts/arb-tx-tools.ts`
-
-Modules under scripts/arb-tx-tools/ are shared with the MCP server and were consolidated into the direct scripts.
-
-See AGENTS.md + .grok/skills/arb-tx-tools/SKILL.md for the loop and exact incantations (including Alchemy MCP path via search_tool + use_tool).
+See the dedicated **AI Tooling, Skills, MCPs & lspmux** section below (and AGENTS.md + skill.md + llms.txt + .grok/skills/arb-tx-tools/SKILL.md for the full arb-tx-tools loop, consolidated modules, and how to use `/graphify`, Context7, Alchemy MCP sims, etc.).
 
 ## Quick Start (current)
 
@@ -64,7 +56,7 @@ bun install
 bun run check
 
 bun run tui
-# or arb-only (you run hyperindex externally): bun run src/cli/arb_only.ts --tui
+# or arb-only (you run HyperIndex externally via `bun run dev`): bun run arbt
 ```
 
 See updated .env.example for all current options. No --cleanup flag anymore (dummy removed).
@@ -73,7 +65,7 @@ See updated .env.example for all current options. No --cleanup flag anymore (dum
 
 - Full current commands and invariants: AGENTS.md
 - llms.txt for AI assistants
-- All changes audited for dead code, duplication, and single sources.
+- All changes audited for dead code, duplication, and single sources (see src/DUPLICATION_AUDIT.md).
 
 ## Supported Protocols
 
@@ -98,50 +90,62 @@ See updated .env.example for all current options. No --cleanup flag anymore (dum
 ## Quick Start
 
 ```bash
-cp .env.example .env
-# Edit (see .env.example for current vars)
+cp .env.example .env   # fill ENVIO_API_TOKEN, PRIVATE_KEY, EXECUTOR_ADDRESS, RPCs etc.
 bun install
 bun run check
 
-bun run tui
-# Arb-only mode (external indexer): bun run src/cli/arb_only.ts --tui
+bun run tui          # full bot + TUI (recommended)
+# Arb-only (external HyperIndex): first `bun run dev` in another shell, then `bun run arbt`
 ```
 
-## AI Debugging
+## AI Tooling, Skills, MCPs & lspmux
 
-See AGENTS.md and the arb-tx-tools skill. Direct scripts live under `.grok/skills/arb-tx-tools/scripts/`. Some logic shared/consolidated with `scripts/arb-tx-tools/`.
+This repo is heavily optimized for AI coding agents.
+
+**Primary debug skill**: `arb-tx-tools`
+
+- Direct: `bun .grok/skills/arb-tx-tools/scripts/{log-tailer.ts, simulator.ts, abicoder.ts}`
+- MCP: registered as `arb-tx-tools` (see .opencode/opencode.json)
+- Consolidated: direct scripts now import shared AnvilManager / buildAbiRegistry+decodeRevert / LogCapture from `scripts/arb-tx-tools/`
+- Full loop + Alchemy MCP usage: see `.grok/skills/arb-tx-tools/SKILL.md`
+
+**Other skills**:
+
+- `.grok/skills/`: arb-tx-tools, create-skill, best-of-n, check-work, etc.
+- `.claude/skills/`: full suite of Envio indexer skills (indexer-schema, indexer-handlers, indexer-performance, indexer-factory, indexer-traces, migrate-from-subgraph, ...) + graphify (`/graphify` any input → knowledge graph).
+- Context7 for fresh library docs (resolve-library-id + query-docs).
+
+**MCP servers** (in .opencode/opencode.json + connected):
+
+- arb-tx-tools, sequential-thinking, fetch, memory, postgres (Hasura), envio_docs (remote)
+- alchemy (EVM sim/trace/etc — use `search_tool` first then `use_tool`), coingecko, dexscreener, context7, grok_com_github, puppeteer, etc.
+
+**lspmux**:
+
+- Multiplexes language servers (TS, Solidity, GraphQL, YAML, Bash, JSON, TOML...) on 127.0.0.1:27631.
+- Config: `lspmux/config.toml`; bins in `lspmux/bin/` proxy node_modules LSPs.
+- Configure your AI editor/agent to point at the mux for consistent go-to-def / find-refs / hover / symbols across tools (avoids per-tool server duplication).
+
+See AGENTS.md + skill.md + llms.txt for onboarding.
 
 ## Configuration
 
-See the rewritten `.env.example` (top section has required + common; full details in src/config/* ).
+See `.env.example` (required first, then tuning) and `src/config/`.
 
-No legacy cleanup script or --cleanup (removed as dummy).
+No --cleanup (dummy removed long ago); real one-time garbage cleanup runs automatically via tracker.
 
-See `.env.example` (updated) and `src/config/` for the current set of variables. DRY_RUN_BEFORE_SUBMIT and --cleanup are gone (cleanup was dummy; dry runner is always available via ctx).
+## Scripts / Commands (current minimal set)
 
-## Scripts / Commands
+- `bun run tui` — full bot with TUI
+- `bun run start` — full bot headless
+- `bun run arb` / `bun run arbt` — arb-only (headless / TUI); pair with `bun run dev`
+- `bun run dev` — HyperIndex standalone (with auto codegen + env)
+- `bun run check` — tsc + eslint + prettier check (consolidated)
+- `bun run fix` — eslint --fix + prettier --write
+- Tests: `bunx vitest run` (direct; no "test" script in package.json)
+- AI tools as above; HyperIndex inside: `cd hyperindex && bun run dev|codegen|dev:reset|...`
 
-See AGENTS.md for the current list (bun run start / tui / hyperindex, check/fix, and the arb-tx-tools direct CLIs under .grok/skills/).
-
-## For AI Assistants & Agents
-
-This repo is heavily optimized for AI agents (custom skills + MCP + detailed context files).
-
-See AGENTS.md + skill.md + updated llms.txt for the current state, commands, and arb-tx-tools usage (direct CLIs + consolidated shared modules).
-
-## Running HyperIndex
-
-`bun run hyperindex` (from root) — runs the indexer by itself (normal dev mode, via wrapper for ENVIO_API_TOKEN etc.).
-
-For development on the indexer itself (after changing schema.graphql, config.yaml, handlers, or start_block):
-- `cd hyperindex && bun run dev:reset`
-  - Internally: runs `clear-hasura` (clears Hasura metadata to prevent "tables already tracked" warnings from Envio's effects) or warns, then `envio dev -r` (full reset/rebuild).
-- `envio dev -r` (or `bun run dev -r` inside hyperindex) alone: does the reset but may leave metadata warnings if effects have created tables.
-- `clear-hasura`: standalone metadata clear (usually not needed by itself; see the dev:reset for the benefit).
-- `codegen`: regenerate Envio types after schema/config changes. **Now largely automatic**: the HyperIndex wrapper (used by both `bun run hyperindex` and the main bot) detects if schema.graphql or config.yaml is newer than .envio/types.d.ts and runs `envio codegen` for you before starting. No more forgetting the manual step. (The hyperindex internal `codegen` script remains for explicit runs.)
-- Token generation (generate-tokens / generate-tokens:auto): largely automatic now. The bot's HyperIndex process wrapper calls the auto version on shutdown to self-update the static registry with newly discovered cold tokens (from effects during run). No more manual `gentok` or root gentok scripts. The generator scripts remain inside hyperindex/ for the auto mechanism and manual full regen if wanted.
-
-See `hyperindex/package.json` and `hyperindex/scripts/` for the full list.
+See AGENTS.md for invariants and full details.
 
 ## Solidity Contracts
 
@@ -155,7 +159,7 @@ Foundry project in `sol/`:
 
 The `hyperindex/` directory contains an Envio indexer that ingests events from Polygon factories, tracking pool discovery (and optionally state) in a Hasura-backed PostgreSQL instance.
 
-See the **"Working with the Indexer"** section above for the recommended development workflow (`dev` vs `dev:reset`).
+See "Scripts / Commands" and the detailed dev notes in AGENTS.md / skill.md (or run `bun run dev` + `cd hyperindex && bun run dev:reset` for indexer work). The root wrapper (`scripts/dev-hyperindex.ts`) provides auto `codegen` and token updates.
 
 ## Tests
 

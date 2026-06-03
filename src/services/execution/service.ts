@@ -31,7 +31,7 @@ function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, exec
       if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
         netProfit += parsed.args.value ?? 0n;
       }
-    } catch (_err: unknown) {
+    } catch {
       /* skip unmatched logs */
     }
   }

@@ -68,7 +68,7 @@ export class EventBus {
     for (const handler of this.handlers) {
       try {
         handler(event);
-      } catch (_err: unknown) {
+      } catch {
         // swallow handler errors so one bad handler doesn't kill the bus
       }
     }

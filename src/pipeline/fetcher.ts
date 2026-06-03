@@ -156,6 +156,7 @@ export async function fetchMissingPoolState(
         const results = await publicClient.multicall({
           // The per-protocol ABIs + function selection above guarantee shape correctness;
           // the cast is only to satisfy viem's precise Abi typing for heterogeneous batches.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           contracts: calls as any,
           allowFailure: true,
         });
@@ -170,7 +171,9 @@ export async function fetchMissingPoolState(
             const res = results[resultIdx++];
             if (res?.status === "success" && res.result) {
               const r = res.result as Record<string, unknown> | unknown[];
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const r0 = Array.isArray(r) ? r[0] : (r as any).reserve0;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const r1 = Array.isArray(r) ? r[1] : (r as any).reserve1;
 
               if (r0 !== undefined && r1 !== undefined) {
@@ -194,6 +197,7 @@ export async function fetchMissingPoolState(
             const slot0Res = results[resultIdx++];
             const liqRes = results[resultIdx++];
             if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const s = slot0Res.result as any;
               const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
               const tick = s[1] !== undefined ? s[1] : s.tick;
@@ -205,6 +209,7 @@ export async function fetchMissingPoolState(
                   {
                     sqrtPriceX96: BigInt(sqrtPriceX96),
                     tick: Number(tick),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     liquidity: BigInt(liqRes.result as any),
                     initialized: true,
                   },
@@ -223,6 +228,7 @@ export async function fetchMissingPoolState(
             const tsRes = results[resultIdx++];
             const hooksRes = results[resultIdx++];
             if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const s = slot0Res.result as any;
               const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
               const tick = s[1] !== undefined ? s[1] : s.tick;
@@ -233,10 +239,14 @@ export async function fetchMissingPoolState(
                   stateCache,
                   {
                     sqrtPriceX96: BigInt(sqrtPriceX96),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     liquidity: BigInt(liqRes.result as any),
                     tick: Number(tick),
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
                     initialized: true,
                   },
@@ -256,7 +266,9 @@ export async function fetchMissingPoolState(
                 addr,
                 stateCache,
                 {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   price: BigInt(priceRes.result as any),
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
                   initialized: true,
                 },

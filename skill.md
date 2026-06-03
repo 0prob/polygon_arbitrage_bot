@@ -6,7 +6,7 @@ compatibility: Requires Bun, Node.js 20+, Foundry, Polygon RPC endpoints (archiv
 metadata:
   author: x/arb/t team
   version: "2026.06"
-  docs: https://github.com/owner/arb/t (see AGENTS.md, README.md, docs/superpowers/)
+  docs: https://github.com/owner/arb/t (see AGENTS.md, README.md, llms.txt; skills in .grok/skills/ and .claude/skills/)
 ---
 
 # Polygon Arbitrage Bot
@@ -80,9 +80,12 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 **Other AI skills**
 
-- Multiple indexer skills (schema, handlers, performance, traces, external calls, etc.).
-- Graphify for codebase knowledge graphs.
-- Context7 and MCP support already configured in the environment.
+- Multiple indexer skills (schema, handlers, performance, traces, external-calls, factory, blocks, transactions, testing, wildcard, filters, multichain, migrate-from-subgraph, etc.).
+- graphify: `/graphify` (or skill) — any code/docs/logs → structured knowledge graph (outputs to graphify-out/).
+- Context7 (for up-to-date docs of any lib).
+- help, create-skill, best-of-n, check-work, execute-plan, review, design, implement, pr-babysit, etc.
+
+Trigger via `/<name>` slash or keywords; many auto-activate. Follow the SKILL.md frontmatter + structure when authoring new.
 
 **Simulation & Testing**
 
@@ -110,7 +113,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 2. Add protocol constants and calldata encoding in `src/services/execution/calldata/`.
 3. Update `src/pipeline/simulator.ts` and `finder.ts` dispatch logic.
 4. If new pool type: extend HyperIndex (new handlers/effects in `hyperindex/`, update schema if needed).
-5. `codegen` is now automatic via the HyperIndex wrapper on start (mtime check of schema/config vs .envio/types; runs `envio codegen` before `envio dev` / `bun run hi`). Explicit `cd hyperindex && bun run codegen` still works.
+5. `codegen` is now automatic via the HyperIndex wrapper on start (mtime check of schema/config vs .envio/types; runs `envio codegen` before `envio dev` / `bun run dev`). Explicit `cd hyperindex && bun run codegen` still works.
 6. Add hot tokens / garbage filters if appropriate (see hyperindex/src/utils/hot_tokens.ts and src/infra/garbage).
 7. Write unit tests for the new math module.
 8. Test end-to-end with `bun run arbt` (arb-only + TUI) or `bun run tui` against real/forked state.
@@ -123,8 +126,8 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 3. For dynamic contracts: follow `contractRegister` + `where` patterns (see previous Envio dynamic-contracts review).
 4. For effects: use `createEffect` with proper input/output schemas, rate limits, and `cache: true`.
 5. For preload optimization: schedule all effects early, guard sets with `context.isPreload`.
-6. `codegen` after schema/config changes is now **automatic** in the HyperIndex startup wrapper (in `src/infra/hypersync/hyperindex_process.ts` and `scripts/dev-hyperindex.ts`; mtime check vs .envio/types.d.ts runs `envio codegen` before spawn). No manual step in normal `bun run hi` or bot flows. Explicit `cd hyperindex && bun run codegen` available.
-7. Test discovery with `bun run hi` (from root) or via the main bot's 60s poll.
+6. `codegen` after schema/config changes is now **automatic** in the HyperIndex startup wrapper (in `src/infra/hypersync/hyperindex_process.ts` and `scripts/dev-hyperindex.ts`; mtime check vs .envio/types.d.ts runs `envio codegen` before spawn). No manual step in normal `bun run dev` or bot flows. Explicit `cd hyperindex && bun run codegen` available.
+7. Test discovery with `bun run dev` (from root) or via the main bot's 60s poll.
 8. Monitor pipeline split (Loaders/Handlers/DB Writes) and SLOW_EFFECT logs.
 9. Use lspmux (lspmux/config.toml + bins) for language server access (TS/Solidity/GraphQL etc.) if your AI tool supports LSP queries.
 
@@ -152,14 +155,20 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 - `bun run tui` — full bot + TUI (best for live use)
 - `bun run start` — full bot headless
-- `bun run arb` / `bun run arbt` — arb-only (no internal HyperIndex)
-- `bun run hi` — HyperIndex by itself
+- `bun run arb` — arb-only headless
+- `bun run arbt` — arb-only + TUI (use with separate `bun run dev`)
+- `bun run dev` — HyperIndex by itself (auto codegen on launch)
 - `bun run check` — typecheck + eslint + prettier check (consolidated)
 - `bun run fix` — auto lint + format
 - Tests: `bunx vitest run` (direct, no "test" script in package)
-- HyperIndex dev: `cd hyperindex && bun run dev` (or use root `hi`)
-- AI: `bun .grok/skills/arb-tx-tools/scripts/log-tailer.ts ...` etc., or MCP "arb-tx-tools"
-- lspmux for LSPs (see lspmux/)
+- HyperIndex dev: `cd hyperindex && bun run dev|dev:reset|codegen|clear-hasura|generate-tokens:auto` (or root `dev`)
+- AI: `bun .grok/skills/arb-tx-tools/scripts/...` (or MCP "arb-tx-tools")
+- lspmux for LSPs (see lspmux/config.toml + bin/ wrappers)
+
+**MCP + skills best practice**
+
+- For any MCP (alchemy, context7, envio_docs, arb-tx-tools, memory...): call the agent's `search_tool({query: "..."})` first to discover exact schema, then `use_tool({tool_name: "exact__name", tool_input: {...}})` . Never guess parameter names.
+- Skills: use `/arb-tx-tools`, `/graphify`, indexer-\* etc. Many auto-trigger. lspmux is for the coding environment's language intelligence (configure your client to 127.0.0.1:27631).
 
 **Core technologies**
 

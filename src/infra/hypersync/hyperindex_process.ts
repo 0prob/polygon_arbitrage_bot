@@ -198,10 +198,7 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
   const generatedTypesPath = path.join(hiDir, ".envio/types.d.ts");
 
   try {
-    const [schemaStat, configStat] = await Promise.all([
-      stat(schemaPath),
-      stat(configPath),
-    ]);
+    const [schemaStat, configStat] = await Promise.all([stat(schemaPath), stat(configPath)]);
 
     let generatedStat: Awaited<ReturnType<typeof stat>> | undefined;
     try {
@@ -216,7 +213,7 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
       logger?.info("HyperIndex schema.graphql or config.yaml is newer than generated types — running `envio codegen` automatically...");
       execSync("bunx envio codegen", {
         cwd: hiDir,
-        stdio: "inherit",  // Show output so user sees it happened
+        stdio: "inherit", // Show output so user sees it happened
         timeout: 30000,
       });
       logger?.info("✅ HyperIndex codegen completed (types refreshed).");

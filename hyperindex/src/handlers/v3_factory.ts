@@ -4,6 +4,26 @@ import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../ut
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
+type Protocol =
+  | "UNISWAP_V2"
+  | "SUSHISWAP_V2"
+  | "QUICKSWAP_V2"
+  | "DFYN_V2"
+  | "APESWAP_V2"
+  | "MESHSWAP_V2"
+  | "JETSWAP_V2"
+  | "COMETHSWAP_V2"
+  | "UNISWAP_V3"
+  | "SUSHISWAP_V3"
+  | "QUICKSWAP_V3"
+  | "KYBERSWAP_ELASTIC"
+  | "CURVE"
+  | "BALANCER_V2"
+  | "DODO_V2"
+  | "UNISWAP_V4"
+  | "UNKNOWN_V2"
+  | "UNKNOWN_V3";
+
 // Envio v3: context.chain and the global `indexer` object give typed access to
 // both static config and dynamically registered addresses (survives restarts).
 
@@ -64,7 +84,7 @@ indexer.onEvent(
     context.PoolMeta.set({
       id: poolAddr,
       address: poolAddr,
-      protocol: protocol as any,
+      protocol: protocol as Protocol,
       tokens: [t0, t1],
       fee: Number(event.params.fee),
       tickSpacing: Number(event.params.tickSpacing),

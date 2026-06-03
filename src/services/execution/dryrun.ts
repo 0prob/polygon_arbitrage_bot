@@ -71,7 +71,7 @@ export class MempoolAwareDryRunner {
         };
         return this.lastPendingState;
       }
-    } catch (_err: unknown) {
+    } catch {
       /* ignore */
     }
     return null;
@@ -130,7 +130,7 @@ export class MempoolAwareDryRunner {
                 data: revertData!,
               });
               reason = `${decoded.errorName}(${decoded.args?.join(", ") || ""})`;
-            } catch (_err: unknown) {
+            } catch {
               reason = err.shortMessage || err.message;
             }
           } else {

@@ -92,7 +92,7 @@ export class HyperIndexMonitor implements Lifecycle {
     if (this._managingProcess) {
       try {
         await this.proc.stop();
-      } catch (_err: unknown) {
+      } catch {
         // best effort
       }
     }
@@ -411,7 +411,7 @@ export class HyperIndexMonitor implements Lifecycle {
     this._isHealthy = false;
     try {
       await this.proc.stop();
-    } catch (_err: unknown) {
+    } catch (_: unknown) {
       // best effort
     }
     this.restartAttempts++;

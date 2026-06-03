@@ -6,11 +6,11 @@ import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 interface DodoHandlerContext {
-  effect: (effect: any, input: any) => Promise<any>;
+  effect: (effect: unknown, input: unknown) => Promise<unknown>;
   isPreload: boolean;
-  PoolMeta: { set: (entity: any) => void };
-  DodoPoolState: { set: (entity: any) => void };
-  TokenMeta: { set: (entity: any) => void };
+  PoolMeta: { set: (entity: unknown) => void };
+  DodoPoolState: { set: (entity: unknown) => void };
+  TokenMeta: { set: (entity: unknown) => void };
 }
 
 async function handleDodoPool(
@@ -37,7 +37,7 @@ async function handleDodoPool(
   const dodoP = context.effect(fetchDodoMetadata, { pool, blockNumber: BigInt(blockNumber) });
   const tokensP = runWithConcurrency([base, quote], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
   const [meta, tokenMetas] = await Promise.all([dodoP, tokensP]);
-  const [baseMeta, quoteMeta] = tokenMetas as any[];
+  const [baseMeta, quoteMeta] = tokenMetas as Array<{ decimals: number }>;
   logEffectTime("fetchDodoMetadata+tokens", Date.now() - tEffDodo, blockNumber);
 
   if (context.isPreload) {
@@ -83,7 +83,7 @@ const DODO_POOL_EVENTS = [
 ];
 
 function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
-  indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+  indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
       return;
     }
@@ -93,7 +93,7 @@ function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
     }
   });
 
-  indexer.onEvent({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+  indexer.onEvent({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     await handleDodoPool(
       context,
       ev.params[cfg.poolField],

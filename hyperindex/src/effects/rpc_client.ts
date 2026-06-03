@@ -39,16 +39,16 @@ function getRpcUrls(): string[] {
   return ["https://polygon.drpc.org", "https://polygon-mainnet.public.blastapi.io", "https://polygon.api.onfinality.io/public"];
 }
 
-const rpm = getRpmTarget();
+const _rpm = getRpmTarget();
 const low = isLowQuota();
 const veryLow = isVeryLowQuota();
 
 // Dynamic batching tuned to the overall quota (HYPERSYNC_RPM_TARGET).
 // When the free-tier HyperSync budget is tight we reduce RPC burstiness from effects
 // so the whole system (HyperSync fetches + metadata effects) stays smoother.
-// Disabled JSON-RPC batching (BATCH_SIZE = 1) because some endpoints (Chainstack) 
+// Disabled JSON-RPC batching (BATCH_SIZE = 1) because some endpoints (Chainstack)
 // struggle with large JSON-RPC batches even when using Multicall internally.
-const BATCH_SIZE = 1; 
+const _BATCH_SIZE = 1;
 const MULTICALL_BATCH_SIZE = veryLow ? 8 : low ? 12 : 16;
 const MULTICALL_WAIT_MS = veryLow ? 100 : low ? 75 : 50;
 

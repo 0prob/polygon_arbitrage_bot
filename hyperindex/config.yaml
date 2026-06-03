@@ -15,7 +15,7 @@ rollback_on_reorg: true
 raw_events: false
 
 # === HYPERINDEX CONFIG (Paid Envio Starter Plan — 200 rpm) ===
-# Run with `bun run hyperindex` (root) or `cd hyperindex && bun run dev` or `envio start`.
+# Run with root `bun run dev` (preferred wrapper with auto codegen/env) or `cd hyperindex && bun run dev` or `envio start`.
 #
 # This indexer serves as a lightweight live discovery feed for the arb bot:
 #   → fast startup

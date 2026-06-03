@@ -47,19 +47,20 @@ This env is AI-first with custom skills (in .grok/skills/ and .claude/skills/), 
 - Others like alchemy, coingecko, dexscreener, context7, grok_com_github, puppeteer, etc. (use search_tool first to discover schemas, then use_tool).
 - Use via the agent's MCP integration.
 
-**lspmux**
-- Muxes language servers (TS, Solidity, GraphQL, YAML, Bash, JSON, TOML) for consistent code intelligence.
-- Config: lspmux/config.toml (listen 127.0.0.1:27631)
-- Bins in lspmux/bin/ proxy to node_modules versions.
-- Useful for AI coding assistants (opencode, grok build, etc.) to query LSPs for symbols, defs, refs, hovers without conflicts. Configure your AI tool to use the mux port/client if supported.
+**lspmux (included for code intelligence in AI editors/agents)**
+- Muxes language servers (typescript, solidity, graphql, yaml, bash, json, toml, ...) on 127.0.0.1:27631.
+- Config: `lspmux/config.toml`; lightweight proxy bins live in `lspmux/bin/` (point at the project's node_modules LSPs).
+- Best usage: point your coding agent / opencode / LSP client at the mux address for go-to-definition, find-references, hover docs, workspace symbols etc. without spawning duplicate servers per tool.
+- See lspmux/ and .opencode/ setup.
 
-**Other AI integrations**
-- Context7 for up-to-date lib docs (use resolve-library-id then query-docs).
-- graphify for codebase graphs (run via skill or /graphify).
-- Use `bun run check` often; direct `bunx vitest` for tests.
-- For Polygon/Envio: official MCPs + Context7 `llmstxt/polygon_technology_llms_txt`.
+**Other AI integrations + best usage**
+- Context7: always use for library/framework docs (resolve-library-id first, then query-docs). Prefer over training data or web search.
+- graphify: trigger with `/graphify` (or via .claude/skills/graphify) on any input (code, logs, docs, PRs) to produce / update knowledge graph in graphify-out/.
+- Skills: slash commands like `/arb-tx-tools`, `/graphify`, `/help`, `/best-of-n`, indexer-* etc. Many auto-trigger on keywords. Create new via create-skill skill.
+- MCP: for any connected server (including alchemy, context7, envio_docs), ALWAYS call `search_tool` with keyword query first (to get schema), then `use_tool` with exact tool_name + structured input. Never guess params.
+- Use `bun run check` often; `bunx vitest run` for tests.
 
-See .grok/skills/*/SKILL.md and system MCP announcements for details. Always start with AGENTS.md + skill.md + llms.txt.
+See .grok/skills/*/SKILL.md , .claude/skills/*/SKILL.md , system MCP announcements, and lspmux/ for details. Always start with AGENTS.md + skill.md + llms.txt + README.
 
 ## Indexing
 
@@ -70,15 +71,16 @@ See .grok/skills/*/SKILL.md and system MCP announcements for details. Always sta
 
 - `bun run tui` — full bot with TUI (recommended for monitoring)
 - `bun run start` — full bot headless
-- `bun run arb` / `bun run arbt` — arb-only mode (external HyperIndex, with/without TUI)
-- `bun run hi` — run HyperIndex by itself
+- `bun run arb` — arb-only headless (pair with `bun run dev` in other shell)
+- `bun run arbt` — arb-only + TUI
+- `bun run dev` — run HyperIndex by itself (auto codegen + env wrapper)
 - `bun run check` — typecheck + lint + prettier (consolidated)
 - `bun run fix` — auto-fix lint + format
-- AI tools: direct from .grok/skills/arb-tx-tools/scripts/ or via MCP
+- AI tools: direct `bun .grok/skills/arb-tx-tools/scripts/...` or via MCP "arb-tx-tools"
 - Tests: `bunx vitest run` (direct)
-- HyperIndex internal: `cd hyperindex && bun run ...` (dev, codegen, etc.)
+- HyperIndex inside: `cd hyperindex && bun run dev|dev:reset|codegen|clear-hasura|generate-tokens:auto`
 
-No more --cleanup (dummy removed).
+No more --cleanup (dummy removed). Auto codegen on launch.
 
 ## Other
 

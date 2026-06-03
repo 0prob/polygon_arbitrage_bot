@@ -18,7 +18,7 @@ if (!envioToken) {
 const hyperindexDir = resolve(import.meta.dirname, "..", "hyperindex");
 
 // Use the shared implementation from the HyperIndex process wrapper (single source of truth for auto-codegen logic).
-// This ensures identical behavior whether running via `bun run hyperindex` or from within the full bot.
+// This ensures identical behavior whether running via root `bun run dev` (the package script) or from within the full bot.
 import { ensureCodegenUpToDate } from "../src/infra/hypersync/hyperindex_process.ts";
 
 await ensureCodegenUpToDate(hyperindexDir);

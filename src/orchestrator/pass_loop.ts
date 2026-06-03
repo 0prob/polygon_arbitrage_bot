@@ -13,6 +13,7 @@ import {
   computeMaticRates,
   pruneFailedPools,
   averageObscurity,
+  type SwapEdge,
 } from "../pipeline/index.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
@@ -810,7 +811,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               for (const c of candidates) {
                 bus?.emit({
                   type: "execution_attempt",
-                  protocolPath: c.profitable.cycle.edges.map((e: any) => e.protocol).join("→"),
+                  protocolPath: c.profitable.cycle.edges.map((e: SwapEdge) => e.protocol).join("→"),
                   hopCount: c.profitable.cycle.hopCount,
                   expectedProfit: c.profitable.assessment.netProfitAfterGas,
                   txHash: undefined,
@@ -824,7 +825,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 const execResult = results[i];
                 const routeKey = groupRouteKeys[i];
                 const execDetails = candidates.find((c) => c.routeKey === routeKey);
-                const protocolPath = execDetails?.profitable.cycle.edges.map((e: any) => e.protocol).join("→");
+                const protocolPath = execDetails?.profitable.cycle.edges.map((e: SwapEdge) => e.protocol).join("→");
                 const hopCount = execDetails?.profitable.cycle.hopCount;
 
                 if (execResult.success) {

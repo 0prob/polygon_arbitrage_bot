@@ -75,7 +75,7 @@ export class SubmissionStrategy {
           new Promise<null>((_, reject) => setTimeout(() => reject(new Error("private timeout")), 2_000)),
         ]);
         if (txHash) return txHash;
-      } catch (_err: unknown) {
+      } catch {
         this.logger.debug({}, "Private submission failed, falling back to public");
       }
     }

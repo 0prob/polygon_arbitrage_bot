@@ -54,6 +54,7 @@ const REALTIME_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGR
 // -----------------------------------------------------------------------------
 // The single handler implementation (registered twice below)
 // -----------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const updateIndexerProgress = async ({ block, context }: any) => {
   if (context.isPreload) return;
 

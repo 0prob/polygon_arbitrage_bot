@@ -17,8 +17,7 @@
     "tui": "bun --env-file=.env run src/cli/main.ts --tui",
     "arb": "bun --env-file=.env run src/cli/arb_only.ts",
     "arbt": "bun --env-file=.env run src/cli/arb_only.ts --tui",
-    "hi": "bun --env-file=.env --env-file=hyperindex/.env scripts/dev-hyperindex.ts",
-    "check": "bunx tsc --noEmit && bunx eslint src/ && bunx prettier --check .",
+    "dev": "bun --env-file=.env --env-file=hyperindex/.env scripts/dev-hyperindex.ts",
     "fix": "bunx eslint src/ --fix && bunx prettier --write ."
   },
   "dependencies": {

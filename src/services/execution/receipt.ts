@@ -53,7 +53,7 @@ export class ReceiptPoller {
             traceSummary,
           };
         }
-      } catch (_err: unknown) {
+      } catch {
         // Receipt not yet available
       }
       await new Promise((r) => setTimeout(r, this.pollMs));

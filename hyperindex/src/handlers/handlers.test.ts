@@ -36,10 +36,10 @@ const POOL_ADDR = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const SIM_BLOCK = 5_100_000;
 
 describe("V2Factory.PairCreated", () => {
-  it("creates PoolMeta and TokenMeta for a valid pair", async (t) => {
+  it("creates PoolMeta and TokenMeta for a valid pair", async (_t) => {
     const indexer = createTestIndexer();
 
-    const result = await indexer.process({
+    const _result = await indexer.process({
       chains: {
         137: {
           simulate: [
@@ -162,10 +162,10 @@ describe("V2Factory.PairCreated", () => {
 });
 
 describe("V3Factory.PoolCreated", () => {
-  it("creates PoolMeta with fee and tickSpacing for a valid V3 pool", async (t) => {
+  it("creates PoolMeta with fee and tickSpacing for a valid V3 pool", async (_t) => {
     const indexer = createTestIndexer();
 
-    const result = await indexer.process({
+    const _result = await indexer.process({
       chains: {
         137: {
           simulate: [
@@ -292,7 +292,7 @@ describe("Multiple events in sequence", () => {
   it("processes V2 and V3 pool creation in same block", async () => {
     const indexer = createTestIndexer();
 
-    const result = await indexer.process({
+    const _result = await indexer.process({
       chains: {
         137: {
           simulate: [

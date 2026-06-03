@@ -29,11 +29,7 @@ import * as path from "path";
 
 // Consolidated: use the shared AbiRegistry from the MCP modules (scripts/arb-tx-tools/abi-registry.ts)
 // This eliminates duplication of ABI scanning, selector indexing, and basic error decoding.
-import {
-  buildAbiRegistry,
-  decodeRevert as sharedDecodeRevert,
-  type AbiRegistry,
-} from "../../../../scripts/arb-tx-tools/abi-registry.ts";
+import { buildAbiRegistry, decodeRevert as sharedDecodeRevert, type AbiRegistry } from "../../../../scripts/arb-tx-tools/abi-registry.ts";
 
 // Import project ABIs to pass as extras (source of truth for custom errors + swap calls)
 import {
@@ -105,7 +101,7 @@ function parseArgs(argv: string[]) {
 }
 
 function tryDecodeWithAbi(data: Hex) {
-  // Use collected ABIs for function/error decode (viem direct). 
+  // Use collected ABIs for function/error decode (viem direct).
   // The abiRegistry (from shared buildAbiRegistry) provides indexed selectors/names for nicer output.
   const flatAbis = extraAbis.flat();
   try {
@@ -152,7 +148,10 @@ async function decodeRevert(data: Hex, hint?: string) {
     const shared = await sharedDecodeRevert(data, abiRegistry);
     if (shared) {
       console.log(`Custom Error (shared): ${shared.name}`);
-      console.log("Args:", JSON.stringify(shared.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2));
+      console.log(
+        "Args:",
+        JSON.stringify(shared.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2),
+      );
       console.log("Signature:", shared.signature);
       return;
     }
