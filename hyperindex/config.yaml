@@ -182,27 +182,33 @@ chains:
     # Recommended: set ENVIO_POLYGON_START_BLOCK in .env to a realistic recent value if doing partial re-syncs.
     start_block: ${ENVIO_POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
 
-    # RPC configuration (V3 structured form recommended in config docs).
-    # HyperSync is primary for Polygon. These RPCs act as fallback when HyperSync
-    # is unavailable. Per docs, fallback activates when no new block is received
-    # for >20 seconds — this is built into HyperIndex, not configurable here.
-    # See https://docs.envio.dev/docs/HyperIndex/rpc-sync#improving-resilience-with-rpc-fallback
-    rpc:
-      - url: ${ENVIO_POLYGON_RPC_URL}
-        for: fallback
-        initial_block_interval: 2000
-        backoff_multiplicative: 0.8
-        acceleration_additive: 500
-        interval_ceiling: 5000
-        backoff_millis: 3000
-        query_timeout_millis: 15000
-      # Secondary fallback for redundancy
-      - url: https://polygon-mainnet.g.alchemy.com/v2/${ENVIO_ALCHEMY_API_KEY}
-        for: fallback
-        initial_block_interval: 1500
-        backoff_multiplicative: 0.7
-        interval_ceiling: 4000
-        query_timeout_millis: 12000
+    # RPC configuration: DISABLED (HyperSync-only mode)
+    #
+    # RPC fallback is intentionally removed because:
+    #   1. When at chain head (live tail), HyperSync waits >20s for new blocks then
+    #      triggers RPC fallback.
+    #   2. Our config has multiple wildcard contracts (UniswapV2Pool, UniswapV3Pool,
+    #      CurvePool, DodoPool, BalancerVault, V4PoolManager) which trigger:
+    #        "RPC data-source currently supports event filters only when there's a
+    #         single wildcard event."
+    #   3. That error causes a fatal process exit in the HyperSync→RPC→HyperSync cycle.
+    #
+    # HyperSync (paid Envio starter plan, 200 rpm) handles live-tail natively via
+    # long-polling. No RPC fallback needed for the live debug mode.
+    # If HyperSync becomes unavailable, the bot falls back to its own RPC fetcher.
+    #
+    # To re-enable later (e.g. for historical re-sync resilience), uncomment below
+    # and limit to non-wildcard contracts only. See envio GitHub issue tracker.
+    #
+    # rpc:
+    #   - url: ${ENVIO_POLYGON_RPC_URL}
+    #     for: fallback
+    #     initial_block_interval: 2000
+    #     backoff_multiplicative: 0.8
+    #     acceleration_additive: 500
+    #     interval_ceiling: 5000
+    #     backoff_millis: 3000
+    #     query_timeout_millis: 15000
 
     # Max reorg depth for Polygon. Docs recommend 150 for Polygon, 250 for Ethereum.
     # We use 200 (the global default) which is conservative but safe.

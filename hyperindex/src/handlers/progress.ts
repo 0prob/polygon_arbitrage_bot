@@ -30,13 +30,16 @@ const LIVE_DEBUG_START_THRESHOLD = 80_000_000;
 const DEFAULT_REALTIME_START = 65_000_000;
 
 const chainStart = (() => {
-  const v = process.env.POLYGON_START_BLOCK;
+  // Read both POLYGON_START_BLOCK (set by bot process manager) and ENVIO_POLYGON_START_BLOCK
+  // (set by standalone envio dev runs via env var). POLYGON_START_BLOCK takes priority.
+  const v = process.env.POLYGON_START_BLOCK || process.env.ENVIO_POLYGON_START_BLOCK;
   const n = v ? Number(v) : 0;
   return Number.isFinite(n) && n > 0 ? n : 0;
 })();
 
 const realtimeStart = (() => {
-  const override = process.env.INDEXER_PROGRESS_REALTIME_START;
+  // Also accept ENVIO_INDEXER_PROGRESS_REALTIME_START as an alias (set by bot process manager).
+  const override = process.env.INDEXER_PROGRESS_REALTIME_START || process.env.ENVIO_INDEXER_PROGRESS_REALTIME_START;
   if (override) {
     const n = Number(override);
     if (Number.isFinite(n)) return n;
