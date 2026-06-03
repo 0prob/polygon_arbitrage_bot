@@ -50,9 +50,9 @@ const rpcUrls = getRpcUrls();
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
     batch: { batchSize: BATCH_SIZE },
-    timeout: 10_000,
-    retryCount: 3,
-    retryDelay: 250,
+    timeout: 4_000,  // Reduced from 10s: fail fast for fetchTokenMeta — default-18 is cheap, 15s hangs are not
+    retryCount: 1,   // Reduced from 3: one retry is enough; repeated failures mean the endpoint is down
+    retryDelay: 150,
     fetchOptions: {
       headers: {
         Connection: "keep-alive",
@@ -62,7 +62,7 @@ const transports: HttpTransport[] = rpcUrls.map((url) =>
   }),
 );
 
-const transport = transports.length > 1 ? fallback(transports, { rank: true }) : transports[0];
+const transport = transports.length > 1 ? fallback(transports, { rank: false }) : transports[0];
 
 export const publicClient: PublicClient = createPublicClient({
   chain: polygon,

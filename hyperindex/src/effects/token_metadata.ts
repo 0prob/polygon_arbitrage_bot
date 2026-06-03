@@ -6,8 +6,9 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
+const FAILED_DECIMALS_FILE = path.resolve("data/failed-decimals.json");
 const AUTO_EXTRA_TOKENS_FILE = path.resolve("data/auto-extra-tokens.json");
-const FAILED_DECIMALS_RETRY_MS = 5 * 60 * 1000; // 5 minutes before retrying a failed token (reduced from 30m — transient RPC failures should recover quickly)
+// No TTL — a contract that isn't ERC20 will never become one. Permanent blocklist.
 
 // Runtime discovered decimals (persisted across restarts for this indexer instance)
 const discoveredDecimals: Record<string, number> = {};
@@ -77,8 +78,36 @@ async function appendToAutoExtraTokens(address: string, decimals: number) {
   }
 }
 
-// Track failures with timestamps for retry
-const failedTokenAttempts: Map<string, number> = new Map();
+// Permanent blocklist of addresses that are not ERC20 (no decimals()).
+// A non-ERC20 contract never becomes one, so no TTL — skip forever.
+const failedTokens: Set<string> = new Set();
+let failedLoaded = false;
+
+async function loadFailedTokens() {
+  if (failedLoaded) return;
+  failedLoaded = true;
+  try {
+    const raw = await readFile(FAILED_DECIMALS_FILE, "utf8");
+    const data = JSON.parse(raw);
+    if (Array.isArray(data)) {
+      for (const addr of data) failedTokens.add(addr);
+    } else if (data && typeof data === "object") {
+      // Migrate old timestamp-map format (keys are addresses)
+      for (const addr of Object.keys(data)) failedTokens.add(addr);
+    }
+  } catch {
+    // File may not exist yet
+  }
+}
+
+async function saveFailedTokens() {
+  try {
+    await mkdir(path.dirname(FAILED_DECIMALS_FILE), { recursive: true });
+    await writeFile(FAILED_DECIMALS_FILE, JSON.stringify([...failedTokens].sort(), null, 2), "utf8");
+  } catch {
+    // Best effort
+  }
+}
 
 const ERC20_ABI = parseAbi(["function decimals() view returns (uint8)"]);
 
@@ -132,9 +161,9 @@ export const fetchTokenMeta = createEffect(
       return { address: input.address, decimals: discovered };
     }
 
-    // Layer 2: Check recent failure with backoff (aggressive failure handling)
-    const lastFail = failedTokenAttempts.get(addr);
-    if (lastFail && Date.now() - lastFail < FAILED_DECIMALS_RETRY_MS) {
+    // Layer 2: Permanent blocklist — non-ERC20 contracts never become valid
+    await loadFailedTokens();
+    if (failedTokens.has(addr)) {
       return { address: input.address, decimals: 18 };
     }
 
@@ -164,8 +193,9 @@ export const fetchTokenMeta = createEffect(
 
       return result;
     } catch (err) {
-      // Aggressive failure handling: remember the failure with timestamp
-      failedTokenAttempts.set(addr, Date.now());
+      // Permanent blocklist: non-ERC20 contracts never become valid — add once, skip forever
+      failedTokens.add(addr);
+      saveFailedTokens().catch(() => {});
 
       // Never fail the whole indexing run for one bad token
       const errStr = String(err);
