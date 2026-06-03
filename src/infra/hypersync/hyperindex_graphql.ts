@@ -228,7 +228,7 @@ export async function buildStateCacheFromGraphQL(
     }`;
 
     const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
-    const data = (result as { data?: GraphQLData } | null)?.data;
+    const data = result as GraphQLData | null;
 
     if (!data) {
       throw new Error("No data returned from batched GraphQL query");
@@ -333,7 +333,7 @@ export async function discoverPoolsFromHasura(
           adminSecret,
           `{ PoolMeta(limit: ${PAGE}, offset: ${offset}) { id protocol tokens fee } }`,
         );
-        const d = (pageResult as { data?: GraphQLData } | null)?.data;
+        const d = pageResult as GraphQLData | null;
         if (d?.PoolMeta) {
           allRows.push(...d.PoolMeta);
           ok = true;
@@ -415,7 +415,7 @@ export async function fetchTokenMetasFromHasura(
   const metas = new Map<string, { decimals: number }>();
   try {
     const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
-    const rows = (result as { data?: GraphQLData } | null)?.data?.TokenMeta ?? [];
+    const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
     for (const m of rows) {
       if (m.address && m.decimals != null) {
         metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
@@ -450,8 +450,8 @@ export async function fetchIndexerProgressFromHasura(
       `{ IndexerProgress(limit: 5) { id chainId lastProcessedBlock updatedAtBlock } }`,
     );
     const rows =
-      (result as { data?: { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } } | null)
-        ?.data?.IndexerProgress ?? [];
+      (result as { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } | null)
+        ?.IndexerProgress ?? [];
 
     if (rows.length === 0) return undefined;
 

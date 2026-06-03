@@ -176,6 +176,7 @@ async function runLfStateRefresh(
   bus: EventBus | undefined,
   pools: PoolMeta[],
   lastRefreshTime: number,
+  currentCycles: FoundCycle[],
 ): Promise<{ lastRefreshTime: number; lastFullRefreshTime: number; ratesNeedFullRefresh: boolean }> {
   const now = Date.now();
   const LF_INTERVAL = 1000;
@@ -219,8 +220,9 @@ async function runLfStateRefresh(
     }
   }
 
-  // Force-refresh state via RPC for ALL pools
-  await fetchMissingPoolState(ctx.publicClient, stateCache, pools, [], true);
+  // Fetch state for pools in current cycles that are missing from cache.
+  // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline for 40-80s.
+  await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
 
   return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true };
 }
@@ -464,7 +466,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
       {
-        const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime);
+        const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime, cachedCycles ?? []);
         if (lfResult.ratesNeedFullRefresh) {
           lastRefreshTime = lfResult.lastRefreshTime;
           lastFullRefreshTime = lfResult.lastFullRefreshTime;

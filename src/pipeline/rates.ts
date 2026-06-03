@@ -63,7 +63,7 @@ export function computeMaticRates(
   const orderedPools = focus && focus.size > 0 ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0)) : pools;
 
   // Use a more thorough BFS-style propagation.
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 15; i++) {
     let changed = false;
 
     for (const pool of orderedPools) {
@@ -177,8 +177,10 @@ export function computeMaticRates(
             }
           }
 
-          // Require at least 1 MATIC worth of known token to propagate rate
-          if (knownValueMatic < 1n * RATE_PRECISION) {
+          // Require at least 0.01 MATIC worth of known token to propagate rate.
+          // Lower threshold enables rate propagation to reach obscure/long-tail tokens
+          // connected via minimal liquidity (e.g. dfyn/ape pools with small reserves).
+          if (knownValueMatic < 10_000_000_000_000_000n) {
             skippedLowLiquidity++;
             continue;
           }

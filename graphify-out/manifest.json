@@ -10,7 +10,7 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/package.json": {
-    "mtime": 1780423694.29261,
+    "mtime": 1780452374.4647887,
     "ast_hash": "f1878d4213772db80c5b8f7fd3c0ba58",
     "semantic_hash": ""
   },
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780451383.098292,
-    "ast_hash": "26e212a3dc19bd8b0a931c8cfca6d691",
+    "mtime": 1780452512.4595814,
+    "ast_hash": "e5691f87171279916e32f1725b5f2f33",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -660,8 +660,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
-    "mtime": 1780438480.2393134,
-    "ast_hash": "2df5751120d87c9b30320b3c0986e4d4",
+    "mtime": 1780452245.8658645,
+    "ast_hash": "914267c73bb633cc7e32acd55ff5522f",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/resilience/circuit_breaker.ts": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1780446835.3567643,
-    "ast_hash": "e42db2962fe9be5454c8b4dee0374c4e",
+    "mtime": 1780452244.9418721,
+    "ast_hash": "c44f2ff783ab595cf5fc0ffd98cbf731",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
@@ -1120,8 +1120,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/pools.json": {
-    "mtime": 1780423699.564545,
-    "ast_hash": "c83a76ba26a55bbd96fb18a69d464da2",
+    "mtime": 1780452574.387025,
+    "ast_hash": "18c2e4ce47b92b3e14ac4317a828b106",
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/cleanup.sh": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/arb-tx-tools/abi-registry.test.ts": {
-    "mtime": 1780423699.4925458,
-    "ast_hash": "8be67931a25e7eaf28d7ece011f5c41e",
+    "mtime": 1780452324.485213,
+    "ast_hash": "95a4c34e820c051573605bd26963ca71",
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/arb-tx-tools/abi-registry.ts": {
@@ -1250,13 +1250,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/arb-tx-tools/log-capture.ts": {
-    "mtime": 1780401996.970892,
-    "ast_hash": "5284aeffe3915da610f67af78a1bd9d6",
+    "mtime": 1780452330.9771585,
+    "ast_hash": "ab699958e7f4fd8896cd621d0cfe9020",
     "semantic_hash": ""
   },
   "/home/x/arb/t/scripts/arb-tx-tools.ts": {
-    "mtime": 1780423699.484546,
-    "ast_hash": "222c9eaa967c583a1528a5c52e4305f9",
+    "mtime": 1780452315.9052854,
+    "ast_hash": "1505e8be0c98bb05f9c87a4a4b95e5be",
     "semantic_hash": ""
   },
   "/home/x/arb/t/.prettierrc.json": {
@@ -1295,13 +1295,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/data/failed-decimals.json": {
-    "mtime": 1780451023.0740535,
-    "ast_hash": "9e28d1f85753e8a83c392ffb360960b5",
+    "mtime": 1780452244.829873,
+    "ast_hash": "43d179d27b146aa6e42bc1d94201ed36",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/handlers.test.ts": {
-    "mtime": 1780449521.3218408,
-    "ast_hash": "dc9bcb781a6fa575d061b67604e3bce3",
+    "mtime": 1780452245.1698704,
+    "ast_hash": "51d5ee755bed4fe835afac8640426123",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/scripts/restart_loop.sh": {
