@@ -1,7 +1,7 @@
 import type { PoolState } from "../core/types/pool.ts";
 import { isInvalidState } from "../core/types/pool.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
-import { simulateV2Swap } from "../core/math/uniswap_v2.ts";
+import { simulateV2Swap, resolveV2Fee } from "../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../core/math/uniswap_v3.ts";
 import { simulateCurveSwap } from "../core/math/curve.ts";
 import { simulateBalancerSwap } from "../core/math/balancer.ts";
@@ -91,16 +91,16 @@ export function simulateHop(
 
   switch (edge.normalizedProtocol) {
     case "V2":
-      const feeBps =
-        edge.swapFeeBps != null
-          ? BigInt(edge.swapFeeBps)
-          : edge.fee != null
-            ? BigInt(edge.fee) < 1000n
-              ? BigInt(edge.fee)
-              : 10000n - BigInt(edge.fee)
-            : 30n;
+      const feeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : edge.fee != null ? BigInt(edge.fee) : undefined;
+      const { numerator, denominator } = resolveV2Fee(state, undefined, 10000n);
 
-      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, 10000n - feeBps, 10000n);
+      // If fee was explicitly provided in the edge, use it to derive numerator
+      let finalNum = numerator;
+      if (feeBps !== undefined) {
+        finalNum = feeBps < 500n ? denominator - feeBps : feeBps;
+      }
+
+      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, finalNum, denominator);
       break;
     case "V3":
       result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));

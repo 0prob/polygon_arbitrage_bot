@@ -222,9 +222,9 @@ async function runLfStateRefresh(
 
   // Fetch state for pools in current cycles that are missing from cache.
   // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline for 40-80s.
-  await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
+  const updated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
 
-  return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true };
+  return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true, updated };
 }
 
 /**
@@ -452,6 +452,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Heavy serial getBlock calls inside checkReorg were killing HF latency/RPC budget.
 
       const stateCache = ctx.stateCache;
+      const updatedPools = new Set<string>();
 
       // Stage 1: Pool discovery (60s cadence)
       {
@@ -467,22 +468,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
       {
         const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime, cachedCycles ?? []);
+        if (lfResult.updated) {
+          for (const addr of lfResult.updated) updatedPools.add(addr);
+        }
         if (lfResult.ratesNeedFullRefresh) {
           lastRefreshTime = lfResult.lastRefreshTime;
           lastFullRefreshTime = lfResult.lastFullRefreshTime;
           ratesNeedFullRefresh = true;
           pendingFocusTokens = null;
-        }
-      }
-
-      // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
-      if (ctx.graphUpdater && cachedGraph && !ratesNeedFullRefresh) {
-        for (const pool of hasuraPoolsCache ?? []) {
-          const addr = pool.address.toLowerCase();
-          const state = stateCache.get(addr);
-          if (state) {
-            ctx.graphUpdater.applyPoolStateUpdate(cachedGraph, addr, state);
-          }
         }
       }
 
@@ -502,6 +495,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedCycles = enumResult.cycles;
         lastRefreshTime = enumResult.lastRefreshTime;
         isLfPass = enumResult.didEnumerate;
+      }
+
+      // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
+      // Now optimized to only update "dirty" pools successfully refreshed in Stage 2 or Pre-fetch
+      if (ctx.graphUpdater && cachedGraph && !ratesNeedFullRefresh && updatedPools.size > 0) {
+        for (const addr of updatedPools) {
+          const state = stateCache.get(addr);
+          if (state) {
+            ctx.graphUpdater.applyPoolStateUpdate(cachedGraph, addr, state);
+          }
+        }
       }
 
       // Stage 4: Re-check whether cachedMetas should be refreshed (done inside LF, may be needed for HF)
@@ -527,6 +531,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
         const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
+        if (justUpdated.size > 0) {
+          for (const addr of justUpdated) updatedPools.add(addr);
+        }
 
         // Build focus tokens from the pools we actually refreshed this round.
         // O(1) lookup via address map instead of O(N) pools.find() per updated address.

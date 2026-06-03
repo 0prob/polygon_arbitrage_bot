@@ -81,6 +81,34 @@ export function getV2AmountIn(
   return numerator / denominator + 1n;
 }
 
+export function resolveV2Fee(
+  pool: V2PoolStateLike,
+  feeNumerator?: bigint,
+  feeDenominator?: bigint,
+): { numerator: bigint; denominator: bigint } {
+  let resolvedFeeDenominator = feeDenominator ?? toBigInt(pool.feeDenominator, 10000n);
+  let resolvedFeeNumerator = feeNumerator;
+
+  if (resolvedFeeNumerator === undefined) {
+    const feeRaw = pool.fee;
+    if (feeRaw != null) {
+      const feeBps = toBigInt(feeRaw);
+      // If fee is small (e.g. 30), assume it's BPS and calculate numerator
+      if (feeBps < 500n) {
+        resolvedFeeNumerator = resolvedFeeDenominator - feeBps;
+      } else {
+        // Otherwise assume it's already a numerator
+        resolvedFeeNumerator = feeBps;
+      }
+    } else {
+      resolvedFeeNumerator = 9970n;
+      resolvedFeeDenominator = 10000n;
+    }
+  }
+
+  return { numerator: resolvedFeeNumerator, denominator: resolvedFeeDenominator };
+}
+
 /**
  * Simulate a V2 swap given pool state.
  *
@@ -113,28 +141,8 @@ export function simulateV2Swap(
     return { amountOut: 0n, gasEstimate: 0 };
   }
 
-  // Handle fee mapping: if fee is in bps (e.g. 30), numerator should be 9970/10000
-  let resolvedFeeDenominator = feeDenominator ?? toBigInt(pool.feeDenominator, 10000n);
-  let resolvedFeeNumerator = feeNumerator;
-
-  if (resolvedFeeNumerator === undefined) {
-    const feeRaw = pool.fee;
-    if (feeRaw != null) {
-      const feeBps = toBigInt(feeRaw);
-      // If fee is small (e.g. 30), assume it's BPS and calculate numerator
-      if (feeBps < 500n) {
-        resolvedFeeNumerator = resolvedFeeDenominator - feeBps;
-      } else {
-        // Otherwise assume it's already a numerator
-        resolvedFeeNumerator = feeBps;
-      }
-    } else {
-      resolvedFeeNumerator = 9970n;
-      resolvedFeeDenominator = 10000n;
-    }
-  }
-
-  const amountOut = getV2AmountOut(amountIn, reserveIn, reserveOut, resolvedFeeNumerator, resolvedFeeDenominator);
+  const { numerator, denominator } = resolveV2Fee(pool, feeNumerator, feeDenominator);
+  const amountOut = getV2AmountOut(amountIn, reserveIn, reserveOut, numerator, denominator);
 
   // V2 swaps on Polygon use the transfer-first pattern (ERC20.transfer + pair.swap).
   // Measured on-chain: ~85–95k gas. Use 90k as a conservative estimate.

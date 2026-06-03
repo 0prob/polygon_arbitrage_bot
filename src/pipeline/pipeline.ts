@@ -8,10 +8,11 @@ import {
   simulateHop,
   getEffectivePriceImpact,
   normalizeProtocol,
+  computeSpotPrice,
   getTestAmount,
 } from "./simulator.ts";
 import type { SimulationEdge } from "./types.ts";
-import { computeProfit, computeProfitCore } from "../core/assessment/profit.ts";
+import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
 import type { PoolState } from "../core/types/pool.ts";
 
@@ -36,43 +37,6 @@ export interface PipelineResult {
   pruned: number;
   noRate: number;
   maxGrossProfitMatic?: bigint;
-}
-
-function getEffectivePriceImpactForCycle(
-  cycle: FoundCycle,
-  amount: bigint,
-  stateCache: RouteStateCache,
-  maxImpactThreshold: number = 0.15,
-): boolean {
-  let currentAmount = amount;
-  for (const edge of cycle.edges) {
-    const impact = getEffectivePriceImpact(edge, currentAmount, stateCache);
-    if (impact > maxImpactThreshold) {
-      return true;
-    }
-    const poolAddr = edge.poolAddress.toLowerCase();
-    const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
-    if (!state) return false;
-    const simEdge: SimulationEdge = {
-      poolAddress: edge.poolAddress,
-      tokenIn: edge.tokenIn,
-      tokenOut: edge.tokenOut,
-      protocol: edge.protocol,
-      normalizedProtocol: normalizeProtocol(edge.protocol),
-      zeroForOne: edge.zeroForOne,
-      tokenInIdx: edge.tokenInIdx,
-      tokenOutIdx: edge.tokenOutIdx,
-      fee: edge.feeBps,
-      stateRef: state,
-    };
-    try {
-      const result = simulateHop(simEdge, currentAmount, stateCache);
-      currentAmount = result.amountOut;
-    } catch {
-      return true;
-    }
-  }
-  return false;
 }
 
 // Reusable holder to reduce per-probe allocations during ternary search
@@ -107,22 +71,43 @@ function evaluateAmount(
       simProfit = combined.profit;
       simGas = combined.totalGas;
     } else {
-      if (!skipImpactCheck) {
-        const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-        if (getEffectivePriceImpactForCycle(cycle, amount, stateCache, maxImpact)) {
-          return { result: null, assessment: null, grossProfitMatic: null };
-        }
-      }
-
       if (minimalForSearch) {
-        const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
-        simProfit = minimal.profit;
-        simGas = minimal.totalGas;
+        if (!skipImpactCheck) {
+          const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+          const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact);
+          if (!combined.success) return { result: null, assessment: null, grossProfitMatic: null };
+          simProfit = combined.profit;
+          simGas = combined.totalGas;
+        } else {
+          const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
+          simProfit = minimal.profit;
+          simGas = minimal.totalGas;
+        }
       } else {
         fullResult = simulateRoute(cycle.edges, amount, stateCache, undefined, prebuiltSimEdges);
         simProfit = fullResult.profit;
         simGas = fullResult.totalGas;
         simAmountIn = fullResult.amountIn;
+
+        if (!skipImpactCheck) {
+          const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
+          // Efficient post-simulation impact check: reuses the hopAmounts from simulateRoute
+          // to avoid calling simulateHop 2x more per edge.
+          for (let i = 0; i < cycle.edges.length; i++) {
+            const edge = cycle.edges[i];
+            const poolAddr = edge.poolAddress.toLowerCase();
+            const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
+            if (!state) return { result: null, assessment: null, grossProfitMatic: null };
+
+            const normalizedProtocol = normalizeProtocol(edge.protocol);
+            const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
+            if (spotPrice > 0 && fullResult.hopAmounts[i] > 0n) {
+              const realizedPrice = Number(fullResult.hopAmounts[i + 1]) / Number(fullResult.hopAmounts[i]);
+              const impact = (spotPrice - realizedPrice) / spotPrice;
+              if (impact > maxImpact) return { result: null, assessment: null, grossProfitMatic: null };
+            }
+          }
+        }
       }
     }
 
@@ -139,8 +124,8 @@ function evaluateAmount(
         const rateOut = options.tokenToMaticRates.get(edge.tokenOut.toLowerCase()) ?? 0n;
 
         if (rateIn > 0n && rateOut > 0n) {
-          const valIn = (fullResult.hopAmounts[i] * rateIn) / 10n ** 18n;
-          const valOut = (fullResult.hopAmounts[i + 1] * rateOut) / 10n ** 18n;
+          const valIn = tokensToMaticWei(fullResult.hopAmounts[i], rateIn);
+          const valOut = tokensToMaticWei(fullResult.hopAmounts[i + 1], rateOut);
 
           const isExtremeLoss = valOut < valIn / 2n;
           const isExtremeGain = valOut > valIn * 5n;
@@ -200,7 +185,7 @@ function evaluateAmount(
       netProfitAfterGasMaticWei = assessment.netProfitAfterGasMaticWei;
     }
 
-    const grossMatic = (simProfit * startRate) / 10n ** 18n;
+    const grossMatic = tokensToMaticWei(simProfit, startRate);
 
     if (minimalForSearch && outHolder) {
       outHolder.grossProfitMatic = grossMatic;

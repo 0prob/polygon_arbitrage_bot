@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780476886.3008673,
-    "ast_hash": "d64661e894910613467e46a3c08c21f6",
+    "mtime": 1780478763.8734748,
+    "ast_hash": "d2acebb31895c49a8ae152c67f2d0068",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/effects/rpc_client.ts": {
-    "mtime": 1780452244.9418721,
-    "ast_hash": "c44f2ff783ab595cf5fc0ffd98cbf731",
+    "mtime": 1780478094.763552,
+    "ast_hash": "41693bf06057278284e6af96e9d33624",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
@@ -1302,6 +1302,11 @@
   "/home/x/arb/t/hyperindex/scripts/restart_loop.sh": {
     "mtime": 1780451376.5183609,
     "ast_hash": "05ab5e567f5d5f0d5b3edcb45968838d",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/test_pad.ts": {
+    "mtime": 1780478575.2791433,
+    "ast_hash": "3c9194034f834f7a0f51895249e574a6",
     "semantic_hash": ""
   }
 }

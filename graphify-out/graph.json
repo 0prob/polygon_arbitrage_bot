@@ -4,328 +4,409 @@
   "graph": {},
   "nodes": [
     {
+      "label": "rpc_client.ts",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L1",
+      "id": "hyperindex_src_effects_rpc_client_ts",
+      "community": 27,
+      "norm_label": "rpc_client.ts"
+    },
+    {
+      "label": "getRpcUrls()",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L22",
+      "id": "effects_rpc_client_getrpcurls",
+      "community": 27,
+      "norm_label": "getrpcurls()"
+    },
+    {
+      "label": "rpm",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L42",
+      "id": "effects_rpc_client_rpm",
+      "community": 27,
+      "norm_label": "rpm"
+    },
+    {
+      "label": "low",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L43",
+      "id": "effects_rpc_client_low",
+      "community": 27,
+      "norm_label": "low"
+    },
+    {
+      "label": "veryLow",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L44",
+      "id": "effects_rpc_client_verylow",
+      "community": 27,
+      "norm_label": "verylow"
+    },
+    {
+      "label": "rpcUrls",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L55",
+      "id": "effects_rpc_client_rpcurls",
+      "community": 27,
+      "norm_label": "rpcurls"
+    },
+    {
+      "label": "transports",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L57",
+      "id": "effects_rpc_client_transports",
+      "community": 27,
+      "norm_label": "transports"
+    },
+    {
+      "label": "publicClient",
+      "file_type": "code",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L74",
+      "id": "effects_rpc_client_publicclient",
+      "community": 27,
+      "norm_label": "publicclient"
+    },
+    {
+      "label": "test_pad.ts",
+      "file_type": "code",
+      "source_file": "test_pad.ts",
+      "source_location": "L1",
+      "id": "test_pad_ts",
+      "community": 51,
+      "norm_label": "test_pad.ts"
+    },
+    {
       "label": "hyperindex_graphql.ts",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L1",
-      "id": "src_infra_hypersync_hyperindex_graphql_ts",
       "community": 93,
-      "norm_label": "hyperindex_graphql.ts"
+      "norm_label": "hyperindex_graphql.ts",
+      "id": "src_infra_hypersync_hyperindex_graphql_ts"
     },
     {
       "label": "KNOWN_FACTORIES",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L7",
-      "id": "hypersync_hyperindex_graphql_known_factories",
       "community": 93,
-      "norm_label": "known_factories"
+      "norm_label": "known_factories",
+      "id": "hypersync_hyperindex_graphql_known_factories"
     },
     {
       "label": "HasuraPoolMeta",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L16",
-      "id": "hypersync_hyperindex_graphql_hasurapoolmeta",
       "community": 93,
-      "norm_label": "hasurapoolmeta"
+      "norm_label": "hasurapoolmeta",
+      "id": "hypersync_hyperindex_graphql_hasurapoolmeta"
     },
     {
       "label": "PoolMetaRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L24",
-      "id": "hypersync_hyperindex_graphql_poolmetarow",
       "community": 93,
-      "norm_label": "poolmetarow"
+      "norm_label": "poolmetarow",
+      "id": "hypersync_hyperindex_graphql_poolmetarow"
     },
     {
       "label": "V2StateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L30",
-      "id": "hypersync_hyperindex_graphql_v2staterow",
       "community": 93,
-      "norm_label": "v2staterow"
+      "norm_label": "v2staterow",
+      "id": "hypersync_hyperindex_graphql_v2staterow"
     },
     {
       "label": "V3StateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L35",
-      "id": "hypersync_hyperindex_graphql_v3staterow",
       "community": 93,
-      "norm_label": "v3staterow"
+      "norm_label": "v3staterow",
+      "id": "hypersync_hyperindex_graphql_v3staterow"
     },
     {
       "label": "V4StateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L41",
-      "id": "hypersync_hyperindex_graphql_v4staterow",
       "community": 93,
-      "norm_label": "v4staterow"
+      "norm_label": "v4staterow",
+      "id": "hypersync_hyperindex_graphql_v4staterow"
     },
     {
       "label": "BalancerStateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L50",
-      "id": "hypersync_hyperindex_graphql_balancerstaterow",
       "community": 93,
-      "norm_label": "balancerstaterow"
+      "norm_label": "balancerstaterow",
+      "id": "hypersync_hyperindex_graphql_balancerstaterow"
     },
     {
       "label": "CurveStateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L59",
-      "id": "hypersync_hyperindex_graphql_curvestaterow",
       "community": 93,
-      "norm_label": "curvestaterow"
+      "norm_label": "curvestaterow",
+      "id": "hypersync_hyperindex_graphql_curvestaterow"
     },
     {
       "label": "DodoStateRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L66",
-      "id": "hypersync_hyperindex_graphql_dodostaterow",
       "community": 93,
-      "norm_label": "dodostaterow"
+      "norm_label": "dodostaterow",
+      "id": "hypersync_hyperindex_graphql_dodostaterow"
     },
     {
       "label": "TokenMetaRow",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L79",
-      "id": "hypersync_hyperindex_graphql_tokenmetarow",
       "community": 93,
-      "norm_label": "tokenmetarow"
+      "norm_label": "tokenmetarow",
+      "id": "hypersync_hyperindex_graphql_tokenmetarow"
     },
     {
       "label": "GraphQLData",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L85",
-      "id": "hypersync_hyperindex_graphql_graphqldata",
       "community": 93,
-      "norm_label": "graphqldata"
+      "norm_label": "graphqldata",
+      "id": "hypersync_hyperindex_graphql_graphqldata"
     },
     {
       "label": "parseBigIntArray()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L96",
-      "id": "hypersync_hyperindex_graphql_parsebigintarray",
       "community": 93,
-      "norm_label": "parsebigintarray()"
+      "norm_label": "parsebigintarray()",
+      "id": "hypersync_hyperindex_graphql_parsebigintarray"
     },
     {
       "label": "_staticAnchors",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L112",
-      "id": "hypersync_hyperindex_graphql_staticanchors",
       "community": 93,
-      "norm_label": "_staticanchors"
+      "norm_label": "_staticanchors",
+      "id": "hypersync_hyperindex_graphql_staticanchors"
     },
     {
       "label": "graphQLQuery()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L147",
-      "id": "hypersync_hyperindex_graphql_graphqlquery",
       "community": 90,
-      "norm_label": "graphqlquery()"
+      "norm_label": "graphqlquery()",
+      "id": "hypersync_hyperindex_graphql_graphqlquery"
     },
     {
       "label": "HasuraPoolState",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L177",
-      "id": "hypersync_hyperindex_graphql_hasurapoolstate",
       "community": 93,
-      "norm_label": "hasurapoolstate"
+      "norm_label": "hasurapoolstate",
+      "id": "hypersync_hyperindex_graphql_hasurapoolstate"
     },
     {
       "label": "_cachedState",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L187",
-      "id": "hypersync_hyperindex_graphql_cachedstate",
       "community": 93,
-      "norm_label": "_cachedstate"
+      "norm_label": "_cachedstate",
+      "id": "hypersync_hyperindex_graphql_cachedstate"
     },
     {
       "label": "evictExpiredCacheEntries()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L192",
-      "id": "hypersync_hyperindex_graphql_evictexpiredcacheentries",
       "community": 93,
-      "norm_label": "evictexpiredcacheentries()"
+      "norm_label": "evictexpiredcacheentries()",
+      "id": "hypersync_hyperindex_graphql_evictexpiredcacheentries"
     },
     {
       "label": "buildStateCacheFromGraphQL()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L212",
-      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql",
       "community": 93,
-      "norm_label": "buildstatecachefromgraphql()"
+      "norm_label": "buildstatecachefromgraphql()",
+      "id": "hypersync_hyperindex_graphql_buildstatecachefromgraphql"
     },
     {
       "label": "discoverPoolsFromHasura()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L315",
-      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura",
       "community": 90,
-      "norm_label": "discoverpoolsfromhasura()"
+      "norm_label": "discoverpoolsfromhasura()",
+      "id": "hypersync_hyperindex_graphql_discoverpoolsfromhasura"
     },
     {
       "label": "fetchTokenMetasFromHasura()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L410",
-      "id": "hypersync_hyperindex_graphql_fetchtokenmetasfromhasura",
       "community": 90,
-      "norm_label": "fetchtokenmetasfromhasura()"
+      "norm_label": "fetchtokenmetasfromhasura()",
+      "id": "hypersync_hyperindex_graphql_fetchtokenmetasfromhasura"
     },
     {
       "label": "IndexerProgress",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L430",
-      "id": "hypersync_hyperindex_graphql_indexerprogress",
       "community": 93,
-      "norm_label": "indexerprogress"
+      "norm_label": "indexerprogress",
+      "id": "hypersync_hyperindex_graphql_indexerprogress"
     },
     {
       "label": "fetchIndexerProgressFromHasura()",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L441",
-      "id": "hypersync_hyperindex_graphql_fetchindexerprogressfromhasura",
       "community": 90,
-      "norm_label": "fetchindexerprogressfromhasura()"
+      "norm_label": "fetchindexerprogressfromhasura()",
+      "id": "hypersync_hyperindex_graphql_fetchindexerprogressfromhasura"
     },
     {
       "label": "pass_loop.ts",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L1",
-      "id": "src_orchestrator_pass_loop_ts",
       "community": 90,
-      "norm_label": "pass_loop.ts"
+      "norm_label": "pass_loop.ts",
+      "id": "src_orchestrator_pass_loop_ts"
     },
     {
       "label": "sleep()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L33",
-      "id": "orchestrator_pass_loop_sleep",
       "community": 90,
-      "norm_label": "sleep()"
+      "norm_label": "sleep()",
+      "id": "orchestrator_pass_loop_sleep"
     },
     {
       "label": "instrumenter",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L73",
-      "id": "orchestrator_pass_loop_instrumenter",
       "community": 90,
-      "norm_label": "instrumenter"
+      "norm_label": "instrumenter",
+      "id": "orchestrator_pass_loop_instrumenter"
     },
     {
       "label": "DEFAULT_DEPS",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L75",
-      "id": "orchestrator_pass_loop_default_deps",
       "community": 90,
-      "norm_label": "default_deps"
+      "norm_label": "default_deps",
+      "id": "orchestrator_pass_loop_default_deps"
     },
     {
       "label": "runPoolDiscovery()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L94",
-      "id": "orchestrator_pass_loop_runpooldiscovery",
       "community": 90,
-      "norm_label": "runpooldiscovery()"
+      "norm_label": "runpooldiscovery()",
+      "id": "orchestrator_pass_loop_runpooldiscovery"
     },
     {
       "label": "runLfStateRefresh()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L173",
-      "id": "orchestrator_pass_loop_runlfstaterefresh",
       "community": 90,
-      "norm_label": "runlfstaterefresh()"
+      "norm_label": "runlfstaterefresh()",
+      "id": "orchestrator_pass_loop_runlfstaterefresh"
     },
     {
       "label": "runEnumerationPhase()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L234",
-      "id": "orchestrator_pass_loop_runenumerationphase",
       "community": 90,
-      "norm_label": "runenumerationphase()"
+      "norm_label": "runenumerationphase()",
+      "id": "orchestrator_pass_loop_runenumerationphase"
     },
     {
       "label": "runPassLoop()",
       "file_type": "code",
       "source_file": "src/orchestrator/pass_loop.ts",
       "source_location": "L323",
-      "id": "orchestrator_pass_loop_runpassloop",
       "community": 90,
-      "norm_label": "runpassloop()"
+      "norm_label": "runpassloop()",
+      "id": "orchestrator_pass_loop_runpassloop"
     },
     {
       "label": "rates.ts",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L1",
-      "id": "src_pipeline_rates_ts",
       "community": 33,
-      "norm_label": "rates.ts"
+      "norm_label": "rates.ts",
+      "id": "src_pipeline_rates_ts"
     },
     {
       "label": "WMATIC_LOWER",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L5",
-      "id": "pipeline_rates_wmatic_lower",
       "community": 33,
-      "norm_label": "wmatic_lower"
+      "norm_label": "wmatic_lower",
+      "id": "pipeline_rates_wmatic_lower"
     },
     {
       "label": "ComputeMaticRatesOptions",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L7",
-      "id": "pipeline_rates_computematicratesoptions",
       "community": 33,
-      "norm_label": "computematicratesoptions"
+      "norm_label": "computematicratesoptions",
+      "id": "pipeline_rates_computematicratesoptions"
     },
     {
       "label": "computeMaticRates()",
       "file_type": "code",
       "source_file": "src/pipeline/rates.ts",
       "source_location": "L20",
-      "id": "pipeline_rates_computematicrates",
       "community": 90,
-      "norm_label": "computematicrates()"
+      "norm_label": "computematicrates()",
+      "id": "pipeline_rates_computematicrates"
     },
     {
       "label": "STATIC_ANCHORS",
       "file_type": "code",
       "source_file": "src/infra/hypersync/hyperindex_graphql.ts",
       "source_location": "L143",
-      "id": "hypersync_hyperindex_graphql_static_anchors",
       "community": 0,
-      "norm_label": "static_anchors"
+      "norm_label": "static_anchors",
+      "id": "hypersync_hyperindex_graphql_static_anchors"
     },
     {
       "label": "SKILL.md",
@@ -3476,78 +3557,6 @@
       "community": 88,
       "norm_label": "debug 2026-05 follow-ups (from debug_optimizations.md)",
       "id": "t_todo_debug_2026_05_follow_ups_from_debug_optimizations_md"
-    },
-    {
-      "label": "rpc_client.ts",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "rpc_client.ts",
-      "id": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "label": "getRpcUrls()",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L22",
-      "community": 27,
-      "norm_label": "getrpcurls()",
-      "id": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "label": "rpm",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L42",
-      "community": 27,
-      "norm_label": "rpm",
-      "id": "effects_rpc_client_rpm"
-    },
-    {
-      "label": "low",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L43",
-      "community": 27,
-      "norm_label": "low",
-      "id": "effects_rpc_client_low"
-    },
-    {
-      "label": "veryLow",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L44",
-      "community": 27,
-      "norm_label": "verylow",
-      "id": "effects_rpc_client_verylow"
-    },
-    {
-      "label": "rpcUrls",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L53",
-      "community": 27,
-      "norm_label": "rpcurls",
-      "id": "effects_rpc_client_rpcurls"
-    },
-    {
-      "label": "transports",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L55",
-      "community": 27,
-      "norm_label": "transports",
-      "id": "effects_rpc_client_transports"
-    },
-    {
-      "label": "publicClient",
-      "file_type": "code",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L72",
-      "community": 27,
-      "norm_label": "publicclient",
-      "id": "effects_rpc_client_publicclient"
     },
     {
       "label": "handlers.test.ts",
@@ -23344,6 +23353,186 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "hyperindex_src_effects_rpc_client_ts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_getrpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_low"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_rpcurls"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_rpm"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_transports"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "effects_rpc_client_verylow"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "hyperindex_src_utils_pacing_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "utils_pacing_getrpmtarget"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "utils_pacing_islowquota"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/rpc_client.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_rpc_client_ts",
+      "target": "utils_pacing_isverylowquota"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_balancer_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/curve_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_curve_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hyperindex_src_effects_dodo_metadata_ts",
+      "target": "effects_rpc_client_publicclient"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/infra/garbage/garbage-tracker.ts",
       "source_location": "L102",
       "weight": 1.0,
@@ -28566,186 +28755,6 @@
       "confidence_score": 1.0,
       "source": "todo_md",
       "target": "t_todo_debug_2026_05_follow_ups_from_debug_optimizations_md"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "hyperindex_src_effects_rpc_client_ts"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_getrpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L58",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_low"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_rpcurls"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L57",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_rpm"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_transports"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L59",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "effects_rpc_client_verylow"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "hyperindex_src_utils_pacing_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "utils_pacing_getrpmtarget"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "utils_pacing_islowquota"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/rpc_client.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_rpc_client_ts",
-      "target": "utils_pacing_isverylowquota"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/balancer_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_balancer_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/curve_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_curve_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "hyperindex/src/effects/dodo_metadata.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "hyperindex_src_effects_dodo_metadata_ts",
-      "target": "effects_rpc_client_publicclient"
     },
     {
       "relation": "contains",
@@ -63296,5 +63305,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a1aa0d5cd5a8d74060b4976e21fed7e3171dee55"
+  "built_at_commit": "52b10f7393cc1b9805b9953d5f19b2b63d4c4db6"
 }

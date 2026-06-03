@@ -11,13 +11,14 @@ export function isBigIntConvertible(value: unknown): value is BigIntConvertible 
 
 export function toBigInt(value: unknown, fallback = 0n): bigint {
   if (typeof value === "bigint") return value;
-  if (value == null) return fallback;
-  if (!isBigIntConvertible(value)) return fallback;
-  try {
-    return BigInt(value);
-  } catch {
-    return fallback;
+  if (isBigIntConvertible(value)) {
+    try {
+      return BigInt(value);
+    } catch {
+      return fallback;
+    }
   }
+  return fallback;
 }
 
 /**
@@ -25,12 +26,15 @@ export function toBigInt(value: unknown, fallback = 0n): bigint {
  * Accepts bigint, string, number, or boolean inputs.
  */
 export function toBigIntOrNull(value: unknown): bigint | null {
-  if (!isBigIntConvertible(value)) return null;
-  try {
-    return BigInt(value);
-  } catch {
-    return null;
+  if (typeof value === "bigint") return value;
+  if (isBigIntConvertible(value)) {
+    try {
+      return BigInt(value);
+    } catch {
+      return null;
+    }
   }
+  return null;
 }
 
 /**
