@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780478763.8734748,
-    "ast_hash": "d2acebb31895c49a8ae152c67f2d0068",
+    "mtime": 1780479143.1621585,
+    "ast_hash": "2923132d7fd189e432f588634375ed53",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/uniswap_v2.ts": {
-    "mtime": 1779727071.1384141,
-    "ast_hash": "72da46358ea7a3990fbb957410628bee",
+    "mtime": 1780479594.2140694,
+    "ast_hash": "0fcd3da44d0947c94f66d869e17ecd98",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/math/dodo.ts": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/bigint.ts": {
-    "mtime": 1779982290.8275316,
-    "ast_hash": "ff015bcf6b1b9936aab5c75642edba37",
+    "mtime": 1780479325.1125216,
+    "ast_hash": "3a02c2e0635a8c92cbbcd6f9c44d41d7",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/utils/errors.ts": {
@@ -530,8 +530,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1780463766.7157829,
-    "ast_hash": "9f3709a703bfa096c84549b48051c56c",
+    "mtime": 1780479311.0526488,
+    "ast_hash": "0bf52d0ff997e2daf8f434946d2c3d01",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/pipeline.ts": {
-    "mtime": 1780409154.0141368,
-    "ast_hash": "85dd2069776170767bb1dc754736c49c",
+    "mtime": 1780479916.4791021,
+    "ast_hash": "f3089d8f6c3c3aaee1bd7c7e82657e5e",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/rates.ts": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/simulator.ts": {
-    "mtime": 1780409132.2183766,
-    "ast_hash": "bccb91c20bfa040f55d13409c3eddbc5",
+    "mtime": 1780479856.9876516,
+    "ast_hash": "4243141daaea640cd84e4799004725b8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/rpc/manager.ts": {
@@ -627,11 +627,6 @@
   "/home/x/arb/t/src/infra/rpc/websocket_subscriber.ts": {
     "mtime": 1779982139.7890213,
     "ast_hash": "903afbe9132b7d4174625bea81aec0cc",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/src/infra/rpc/multicall.ts": {
-    "mtime": 1779982139.733022,
-    "ast_hash": "836370367005b250909dba06fe80c77d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/rpc/retry.ts": {
@@ -1307,6 +1302,11 @@
   "/home/x/arb/t/test_pad.ts": {
     "mtime": 1780478575.2791433,
     "ast_hash": "3c9194034f834f7a0f51895249e574a6",
+    "semantic_hash": ""
+  },
+  "/home/x/arb/t/docs/superpowers/specs/2026-06-03-redundancy-cleanup-design.md": {
+    "mtime": 1780479247.5852218,
+    "ast_hash": "b7cbc3a604a069a676eeb727fb5135e4",
     "semantic_hash": ""
   }
 }

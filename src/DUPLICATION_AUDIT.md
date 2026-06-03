@@ -31,7 +31,7 @@ The architecture is now closer to the "ideal" described in AGENTS.md and the des
   - Confirmed via grep that only 3 production import sites remained (all fixed).
   - Deleted 2 completely dead files (never imported, per plan): `jit_discovery.ts`, `graph_manager.ts`.
   - Moved the 2 live holdouts + their tests into `src/pipeline/`:
-    - `TokenRegistry` (tax adjustment, only used by simulator) → `pipeline/token_registry.ts`
+    - `TokenRegistry` (tax adjustment, only used by simulator) → `pipeline/token_registry.ts` (later fully removed as dead/unwired code)
     - `IncrementalGraphUpdater` (LF graph mutation) → `pipeline/graph_incremental.ts`
   - Deleted the entire `src/services/strategy/` directory (all remaining stubs, re-exports, and legacy tests).
 - **Result**: `src/services/` now contains only active `execution/` + `mempool/`. `pipeline/` is the single source of truth.
@@ -65,7 +65,7 @@ The architecture is now closer to the "ideal" described in AGENTS.md and the des
 - Deleted redundant legacy tests that were exercising pipeline logic through old import paths.
 - Primary coverage for the moved classes and pipeline logic remains via:
   - `orchestrator/pass_loop.test.ts` (heavy integration + DI mocks)
-  - `src/pipeline/graph_incremental.test.ts` + `token_registry.test.ts` (relocated)
+  - `src/pipeline/graph_incremental.test.ts` + `token_registry.test.ts` (relocated; the latter later deleted as tax code removed)
   - Execution + core tests
 - All exercised tests (including the ones for relocated code) pass post-cleanup.
 
@@ -80,7 +80,7 @@ The architecture is now closer to the "ideal" described in AGENTS.md and the des
 ## Verification
 
 - `bun run typecheck` — only pre-existing non-blocking issues in pass_loop.ts (no new breakage from cleanup).
-- Relevant tests (`graph_incremental`, `token_registry`, candidate, pass_loop) — all pass.
+- Relevant tests (`graph_incremental`, `token_registry` [pre-removal], candidate, pass_loop) — all pass.
 - Full previous test runs (before final slimming) were green.
 
 ## Impact on Docs
@@ -117,7 +117,7 @@ User gave "go ahead" for remaining lower-priority items. The following were comp
 
 ### 4. Barrel discoverability
 
-- Added re-exports for the two relocated modules (`TokenRegistry`, `IncrementalGraphUpdater`) from `src/pipeline/index.ts`.
+- Added re-exports for the two relocated modules (`TokenRegistry`, `IncrementalGraphUpdater`) from `src/pipeline/index.ts`. (TokenRegistry re-export + file later removed entirely.)
 
 ### 5. Minor cross-file comment hygiene
 
@@ -161,3 +161,140 @@ All changes keep behavior identical while making the 200ms path easier to reason
 
 Typecheck: clean after this round.
 Relevant tests: pass (one heavy integration test timed out in CI-like env — pre-existing behavior, not related to these refactors).
+
+---
+
+## 2026-06-03 Comprehensive Duplicated Operations Audit (Current Session)
+
+**Goal:** Ensure no unnecessarily duplicated *operations* (repeated sims, normalizations, edge gens, dead branches, double work in hot/LF paths) anywhere in active runtime code.
+
+### Findings & Fixes
+
+1. **Dead legacy impact function + import residue (`getEffectivePriceImpact`)**
+   - Defined in `simulator.ts`, imported (unused) in `pipeline.ts`, re-exported in `index.ts`.
+   - No callers in any `*.ts` (only graphify artifacts + old design docs).
+   - Its body did a full `simulateHop` per edge just for impact — exactly the 2-3x overhead the `simulateMinimalWithImpactCheck` + post-sim reuse were invented to kill.
+   - **Action:** Removed function, cleaned import/export lists, updated AGENTS.md simulator summary, removed stale comment referencing removed `getEffectivePriceImpactForCycle`.
+   - Result: no more dead "re-sim for impact" path that could be accidentally called.
+
+2. **Dead control-flow branch + duplicated combined-call expression in `evaluateAmount` (pipeline.ts)**
+   - Original:
+     ```
+     if (!skip && minimal) { combined }
+     else {
+       if (minimal) {
+         if (!skip) { combined }  // unreachable — outer if already handled
+         else { minimal }
+       } else { full + optional inline impact }
+     }
+     ```
+   - The inner `if(!skip)` under minimal was impossible to reach given call sites (all probes: skip=false+minimal=true; final full: skip=true+minimal=false).
+   - The `simulateMinimalWithImpactCheck` literal was copy-pasted.
+   - **Action:** Restructured to `if (minimalForSearch) { if(skip) minimal else combined } else { full + optional post-impact }`.
+   - This removes the dead branch (never-executed code) and the source of the duplicated call expression.
+   - Comments updated. Behavior identical (all tests + integration pass).
+
+3. **Duplicated edge-generation logic (buildGraph vs addNewPool)**
+   - Identical nested i/j loops, zeroForOne/i<j, feeBps fallback, directed edge creation for every token pair — ~15 LOC duplicated exactly.
+   - Lived in `graph.ts` (full rebuilds on LF/enum) and `graph_incremental.ts` (discovery path, also used in its tests).
+   - Risk: future edit to directed-edge rules (e.g. fee handling, indices) would only touch one site.
+   - **Action:** Extracted `createEdgesForPool(pool, state): SwapEdge[]` (pure) in `graph.ts`.
+     - `buildGraph` now uses it (also cleaned tokens.add to be once-per-token).
+     - `addNewPool` now delegates (removed local DEFAULT_FEE_BPS dup const + now-unused imports).
+   - Exported from `pipeline/index.ts` barrel.
+   - Bonus: tokens.add moved out of inner loop (minor op reduction).
+   - Tests for incremental + full graph continue to pass.
+
+4. **Triple normalization + extra hash recompute on every candidate build (calldata path)**
+   - `buildFlashParams` did `normalizeExecutorCalls`, then called `computeRouteHash` (which normed *again*).
+   - `builder.buildArbTx` then called `computeRouteHash(calls)` a third time after `encodeExecuteArb*` (which internally went through buildFlash).
+   - `normalizeExecutorCalls` does getAddress + BigInt + lowercasing + hex validation — real work, even if small.
+   - Called on every profitable candidate (rare but in the "execute" path after ternary).
+   - **Action:**
+     - Added internal `computeRouteHashFromNormalized(normalized)`.
+     - `computeRouteHash(raw)` and `buildFlashParams` now use it (norm exactly once per buildFlash).
+     - `encodeExecuteArb` / `encodeExecuteArbWithAave` now return `{..., routeHash: flashParams.routeHash}`.
+     - `builder` now takes `encodedTx.routeHash` directly (removed its `computeRouteHash` call + import).
+   - Result: normalization now happens once per arb build instead of 2-3x. No behavior change (hashes identical, tests pass).
+
+5. **Other minor cleanups during audit**
+   - Removed unused `simulateHop` from `pipeline.ts` import (still correctly exported from simulator for primitives + internal use).
+   - Fixed pre-existing (but now-surfaced) return-type mismatch in `runLfStateRefresh` (added `updated?: Set<string>` and early-return value) so `tsc --noEmit` is clean.
+   - Updated outdated simulator bullet in AGENTS.md.
+   - Confirmed `simulateHop` primitive, rate sweep, mempool coalescing, dry-run eth_call etc. have no unnecessary repeated work. (Dead un-wired TokenRegistry/tax support fully removed in this session as part of dead-op cleanup — see tax removal section.)
+
+### Verification
+- `bun run typecheck` → clean (0 errors)
+- All pipeline + execution + orchestrator + core math tests (including heavy `pass_loop.test.ts` integration exercising full eval/ternary/graph-inc/edge paths) → 254+ tests green.
+- No new allocations or hot-path work introduced; several removed.
+- This pass completes more of the spirit of the 2026-06-03-redundancy-cleanup-design.md (sim + graph inc + bigint already largely done in prior sessions; these were the remaining residues).
+
+The hot 200ms path (evaluate + rates + graph state update) and LF (build/enum) now have measurably less duplicated work and simpler control flow with zero semantic change.
+
+Future audits can grep for `simulateHop` call sites + `buildSimulationEdges` reuse + single `computeMaticRates` guard + `updatedPools` dirty set as the invariants.
+
+---
+
+## Deep Dive: HyperIndex Handlers (2026-06-03)
+
+**Scope:** Full read of all 12 files in `hyperindex/src/handlers/` + related effects/utils/config/schema + consumption in `src/infra/hypersync/hyperindex_graphql.ts` + bot side. Cross-ref with Envio skills (indexer-handlers, indexer-factory, indexer-external-calls, indexer-blocks, indexer-performance, indexer-schema, indexer-multichain notes).
+
+**Key Architecture (live "discovery + bootstrap only" profile):**
+- **Factory/creation handlers** (v2_factory, v3_factory, v4, curve_factory, dodo_factory, balancer.ts): 
+  - `indexer.contractRegister(...)` (some async, with hot-bias `where` or manual filter) to dynamically add pool contracts via `context.chain.XXXPool.add(addr)`.
+  - `onEvent` for PairCreated/PoolCreated/PoolAdded/Initialize/PoolRegistered etc.
+  - **Strict preload discipline**: ALL `context.effect(...)` (fetchTokenMeta + protocol meta like fetchCurveMetadata) scheduled *first* (often with `runWithConcurrency` + timing via `logEffectTime`). Then `if (context.isPreload) return;`. Only then the few `.set()` for PoolMeta + TokenMeta + *PoolState (creation snapshot only).
+  - Hot-bias / garbage guards (using shared `hot_tokens.ts` + `INDEXER_HOT_BIAS` env) early, often before effects or in where.
+  - Protocol-specific state written only at creation (e.g. CurvePoolState with A/balances from effect; Dodo with reserves etc.).
+- **Per-pool event handlers** (*_pool.ts for v2/v3/curve/dodo + parts of balancer/v4): 100% no-op `async () => {}` for Sync/Swap/TokenExchange/AddLiquidity/Remove*/Initialize (post-creation)/Swap/PoolBalanceChanged.
+  - Rationale (documented): bot owns hot state via its own `fetchMissingPoolState` (multicall RPC in LF/pre-fetch) + `computeMaticRates`. Indexer provides (1) discovery feed (Hasura -> bot), (2) best-effort state bootstrap at startup. Eliminates the old 50-60% "DB Writes" in pipeline split.
+- **Progress (progress.ts)**: Exemplary use of indexer-blocks skill. Single `updateIndexerProgress` fn registered *twice* via `indexer.onBlock` with different `name` + `where` closures (historical `_lte + _every coarse` vs realtime `_gte + _every fine`). Uses env for start blocks + strides (via pacing.ts), `context.isPreload` guard, self-contained (no config.yaml entry needed). Chain filter for multi-chain readiness.
+- **Tests (handlers.test.ts)**: Use `createTestIndexer()` + `process({chains: {137: {simulate: [...]}}})`. Cover creation, garbage guards (factory-as-token, zero-addr), UNKNOWN_* protocols, dynamic registration side-effect, multi-event in one block. Sets `INDEXER_PROGRESS_REALTIME_START` early to avoid historical block handler conflicts.
+
+**Shared Infrastructure (heavily used, correct per skills):**
+- `hot_tokens.ts`: `isLikelyGarbagePair`, `involvesHotBase`, `createHotBiasWhere(hotBias, paramNames?)` (for where or manual), `INDEXER_HOT_BIAS` (supports multiple env names). Deliberate small dup of bot's list (commented strategy alignment: default broad for long-tail thesis).
+- `pacing.ts`: `runWithConcurrency` (worker pool or serial), `getMetadataConcurrency()` (1-6 based on RPM target), batch sizing, progress stride. Prevents spikes on bursts of factory events under quota.
+- `instrumentation.ts`: `logEffectTime` (only >50ms -> SLOW_EFFECT json logs). Makes Loaders % debuggable.
+- Effects (token_metadata, curve/dodo/balancer_metadata): `createEffect` with `cache: true`, rateLimit, S schema. Use shared `publicClient` (viem, batched, fallback from POLYGON_RPC_URLS). Heavy historical reads; static cache + discoveredDecimals persistence in token one.
+- Schema: Denormalized `tokens: [String!]!` on PoolMeta (no joins for bot perf), separate *PoolState entities (BigInt with @config(precision)), TokenMeta, IndexerProgress, BalancerPoolIdToAddress. No @derivedFrom. Matches "indexer-schema" guidance.
+- Config: `address_format: lowercase` (cleanup win), global `field_selection` for tx hash, env-driven `full_batch_size`, rollback_on_reorg, no raw_events. Static contracts in yaml for factories/vault/manager; dynamics via register.
+
+**Duplication / Patterns Observed:**
+- High structural similarity across V2/V3/curve/dodo/balancer creation handlers (effect scheduling + timing + concurrency + isPreload guard + PoolMeta/TokenMeta sets + protocol State). This is *good* consistency, not harmful dup ops. DODO factors some into `handleDodoPool` + registration loop (best of the bunch). Balancer has in-memory caches for id<->addr (needed for TokensRegistered follow-up event).
+- No repeated *expensive operations* (effects are the cost; guarded + cached + paced). The "dup" is boilerplate for the creation flow, which could be a small shared util in future but would obscure per-protocol meta/effect differences.
+- Pool no-ops are the optimization, not a problem.
+- Consumption in bot: `discoverPoolsFromHasura` (PoolMeta query), `buildStateCacheFromGraphQL` (big batched query pulling all *PoolState kinds into RouteStateCache shape). Matches the "indexer is feed, bot owns state" design.
+- Hyperindex side also has its own `token_registry.ts` (decimals/STATIC) -- name collision with old tax one (now removed); scripts like update-token-registry + gentok manage it. Separate concern.
+
+**Opportunities / Notes (no action taken unless critical):**
+- Boilerplate in creation handlers could be helperized (e.g. `writePoolCreationMeta(context, {protocol, tokens, fee, ...}, metas)`) but each has unique effect (fetchCurve etc), timing of hot filter, extra State writes (V4, Curve, Balancer, Dodo), so current is fine and readable.
+- Balancer's two events + caches are a bit special (poolId indirection).
+- Strong adherence to all indexer-* skills docs. The design (no per-event state, effects early + preload exit, where + JS guards, pacing for quota) is exactly why the indexer is "cheap" for the arb bot use case.
+- When changing factories or adding protocols, mirror the effect-first / isPreload / log / concurrency pattern.
+
+Overall: healthy, well-documented, performance-oriented code with intentional (safe) similarity. No unnecessary duplicated ops in the hot ingestion path.
+
+---
+
+## Recursive Finder Refactor + Tax Removal (This Session)
+
+**Recursive finder (`src/pipeline/finder.ts`):**
+- Replaced ~170 lines of duplicated nested for-loops (one block per hop depth 2/3/4/5, with manual pool checks, obs averaging with magic coefs 0.8/1.1/1.4/1.7, cumFee, early continues) with a clean DFS + backtracking `dfs(...)` helper (~40 lines core).
+- Preserves 100% behavior: pre-computed activeAdjacency + obscurity (for perf), time budget 1400ms + maxCycles, hopLimit cap, pool dedup by address, collect-on-close + return-to-avoid-extend (replaces the per-depth `if (eX.out === start) continue`), same logWeight / cumulativeFeeBps formulas.
+- Verified with synthetic graph (triangle + reverse pools): produces 2hop + 3hop+ cycles (4 2h / 16 3h in the test graph due to bidir exploration; has the required closers). Integration + full tests pass. enumerateCycles unchanged.
+- This directly eliminates the code-duplication source of "duplicated operations" (the search logic was written 4x).
+
+**Tax wiring/removal:**
+- Audit confirmed: `TokenRegistry` + `applySellTax`/`applyBuyTax` (float * on amounts) + optional params on `simulateHop`/`simulateRoute*` + `getEffectivePriceImpact` (already removed) were completely dead: never instantiated, never passed from `PipelineOptions` / boot / pass_loop / evaluate, `simulateMinimalWithImpactCheck` didn't even support the param.
+- In hot path (every probe hop during ternary * 1000s cycles) it would have added map lookups + Number(bigint) + * + floor.
+- Decision (per request pairing "removal"): **full removal** (not wiring, which would be a new feature requiring tax data source in schema/effects/config, plumbing through options, impact calc adjustments for taxes, etc.).
+- Removed: param from simulateHop/Route/RouteMinimal, branches in hop, import, barrel export, the two source files (via git rm), updated calls in pipeline.ts (shifted prebuilt arg), all mentions in DUPLICATION_AUDIT.md + history.
+- Also cleaned a stale comment.
+- Result: simpler simulator signatures, no dead conditional ops, smaller hot path surface. (Note: hyperindex has its *own* unrelated token_registry.ts for decimals — untouched.)
+- Tests pass; no behavior change (taxes were never applied).
+
+Both changes are pure cleanup / dedup with verification that cycle discovery and sim paths are identical.
+
+**Final State:** Typecheck clean. 250+ tests green (incl. heavy pass_loop integration exercising finder + pipeline sim). git tracks the deletions. DUPLICATION_AUDIT.md updated with deep dive + these items. 
+
+The project now has even less duplicated logic/ops.

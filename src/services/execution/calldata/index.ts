@@ -102,15 +102,19 @@ function normalizeExecutorCalls(calls: unknown): ExecutorCall[] {
   });
 }
 
-export function computeRouteHash(calls: unknown): `0x${string}` {
-  const normalized = normalizeExecutorCalls(calls);
+function computeRouteHashFromNormalized(normalized: ExecutorCall[]): `0x${string}` {
   const encoded = encodeAbiParameters(CALL_STRUCT_ARRAY_ABI, [normalized.map((c) => ({ target: c.target, value: c.value, data: c.data }))]);
   return keccak256(encoded);
 }
 
+export function computeRouteHash(calls: unknown): `0x${string}` {
+  const normalized = normalizeExecutorCalls(calls);
+  return computeRouteHashFromNormalized(normalized);
+}
+
 export function buildFlashParams(input: FlashParamsInput) {
   const normalizedCalls = normalizeExecutorCalls(input.calls);
-  const routeHash = computeRouteHash(normalizedCalls);
+  const routeHash = computeRouteHashFromNormalized(normalizedCalls);
   return {
     profitToken: getAddress(input.profitToken),
     minProfit: input.minProfit,
@@ -127,7 +131,7 @@ export function encodeExecuteArb(input: ExecuteArbInput) {
     functionName: "executeArb",
     args: [getAddress(input.flashToken), input.flashAmount, flashParams],
   });
-  return { to: getAddress(input.executorAddress), data, value: 0n };
+  return { to: getAddress(input.executorAddress), data, value: 0n, routeHash: flashParams.routeHash };
 }
 
 export function encodeExecuteArbWithAave(input: ExecuteArbInput) {
@@ -137,5 +141,5 @@ export function encodeExecuteArbWithAave(input: ExecuteArbInput) {
     functionName: "executeArbWithAave",
     args: [getAddress(input.flashToken), input.flashAmount, flashParams],
   });
-  return { to: getAddress(input.executorAddress), data, value: 0n };
+  return { to: getAddress(input.executorAddress), data, value: 0n, routeHash: flashParams.routeHash };
 }

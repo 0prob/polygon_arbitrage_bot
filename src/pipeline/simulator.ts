@@ -8,7 +8,6 @@ import { simulateBalancerSwap } from "../core/math/balancer.ts";
 import { simulateDodoSwap } from "../core/math/dodo.ts";
 import { simulateWoofiSwap } from "../core/math/woofi.ts";
 import type { SwapEdge, SimulationEdge } from "./types.ts";
-import { TokenRegistry } from "./token_registry.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 
 export function normalizeProtocol(raw: string): string {
@@ -79,13 +78,13 @@ export function simulateHop(
   edge: SimulationEdge,
   amountIn: bigint,
   stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry,
 ): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
   const state = stateCache.get(poolAddr) ?? edge.stateRef;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
-  const effectiveAmountIn = tokenRegistry ? tokenRegistry.applySellTax(edge.tokenIn, amountIn) : amountIn;
+  // Tax support removed (was un-wired dead code; added float math + map lookups in hot path with no config source).
+  const effectiveAmountIn = amountIn;
 
   let result: SimulatedHopResult;
 
@@ -121,10 +120,6 @@ export function simulateHop(
       throw new Error(`Unknown protocol: ${edge.protocol}`);
   }
 
-  if (tokenRegistry) {
-    result.amountOut = tokenRegistry.applyBuyTax(edge.tokenOut, result.amountOut);
-  }
-
   return result;
 }
 
@@ -136,7 +131,6 @@ export function simulateRoute(
   edges: SwapEdge[],
   amountIn: bigint,
   stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry,
   prebuiltSimEdges?: SimulationEdge[],
 ): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
@@ -156,7 +150,7 @@ export function simulateRoute(
       }
     }
 
-    const hop = simulateHop(simEdge, hopAmounts[i], stateCache, tokenRegistry);
+    const hop = simulateHop(simEdge, hopAmounts[i], stateCache);
     hopAmounts.push(hop.amountOut);
     totalGas += hop.gasEstimate;
     poolPath.push(edges[i].poolAddress); // use original edges for original casing if needed
@@ -193,7 +187,6 @@ export function simulateRouteMinimal(
   edges: SwapEdge[],
   amountIn: bigint,
   stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry,
   prebuiltSimEdges?: SimulationEdge[],
 ): { profit: bigint; totalGas: number; amountOut: bigint } {
   let currentAmount = amountIn;
@@ -211,7 +204,7 @@ export function simulateRouteMinimal(
       }
     }
 
-    const hop = simulateHop(simEdge, currentAmount, stateCache, tokenRegistry);
+    const hop = simulateHop(simEdge, currentAmount, stateCache);
     currentAmount = hop.amountOut;
     totalGas += hop.gasEstimate;
   }
@@ -252,44 +245,11 @@ export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCa
   return simEdges;
 }
 
-export function getEffectivePriceImpact(
-  edge: SwapEdge,
-  amountIn: bigint,
-  stateCache: RouteStateCache,
-  tokenRegistry?: TokenRegistry,
-): number {
-  if (amountIn === 0n) return 0;
-
-  const poolAddr = edge.poolAddress.toLowerCase();
-  const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
-  if (!state || isInvalidState(state)) return 0;
-
-  const simEdge: SimulationEdge = {
-    poolAddress: edge.poolAddress,
-    tokenIn: edge.tokenIn,
-    tokenOut: edge.tokenOut,
-    protocol: edge.protocol,
-    normalizedProtocol: normalizeProtocol(edge.protocol),
-    zeroForOne: edge.zeroForOne,
-    tokenInIdx: edge.tokenInIdx,
-    tokenOutIdx: edge.tokenOutIdx,
-    fee: edge.feeBps,
-    stateRef: state,
-  };
-
-  const result = simulateHop(simEdge, amountIn, stateCache, tokenRegistry);
-  const realizedPrice = Number(result.amountOut) / Number(amountIn);
-  const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
-
-  if (spotPrice === 0) return 0;
-  return (spotPrice - realizedPrice) / spotPrice;
-}
-
 /**
  * Combined minimal simulation + impact check in a single pass.
  * Calls simulateHop once per edge, uses the result for both impact checking
- * and amount propagation. Eliminates the 2x-3x simulateHop overhead of
- * calling getEffectivePriceImpactForCycle + simulateRouteMinimal separately.
+ * and amount propagation. (Legacy getEffectivePriceImpact path removed; this
+ * replaces the prior 2-3x hop calls during search/impact.)
  */
 export function simulateMinimalWithImpactCheck(
   edges: SwapEdge[],

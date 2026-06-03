@@ -1,8 +1,6 @@
-import type { RoutingGraph, SwapEdge } from "./types.ts";
+import type { RoutingGraph } from "./types.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
-import type { Address } from "../core/types/common.ts";
-
-const DEFAULT_FEE_BPS = 30n;
+import { createEdgesForPool } from "./graph.ts";
 
 export class IncrementalGraphUpdater {
   private fullRebuildCount = 0;
@@ -53,27 +51,13 @@ export class IncrementalGraphUpdater {
       graph.tokens.add(tLower);
     }
 
-    for (let i = 0; i < t.length; i++) {
-      const tILower = t[i].toLowerCase();
-      for (let j = 0; j < t.length; j++) {
-        if (i === j) continue;
-        const tJLower = t[j].toLowerCase();
-        const edge: SwapEdge = {
-          poolAddress: addr as Address,
-          protocol: pool.protocol,
-          tokenIn: tILower as Address,
-          tokenOut: tJLower as Address,
-          feeBps: pool.fee != null ? BigInt(pool.fee) : DEFAULT_FEE_BPS,
-          stateRef: state,
-          zeroForOne: i < j,
-          tokenInIdx: i,
-          tokenOutIdx: j,
-        };
-        if (!graph.adjacency.has(tILower)) {
-          graph.adjacency.set(tILower, []);
-        }
-        graph.adjacency.get(tILower)!.push(edge);
+    const poolEdges = createEdgesForPool(pool, state);
+    for (const edge of poolEdges) {
+      const tILower = edge.tokenIn;
+      if (!graph.adjacency.has(tILower)) {
+        graph.adjacency.set(tILower, []);
       }
+      graph.adjacency.get(tILower)!.push(edge);
     }
   }
 

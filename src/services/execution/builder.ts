@@ -1,5 +1,5 @@
 import { getAddress } from "viem";
-import { encodeRoute, encodeExecuteArb, encodeExecuteArbWithAave, computeRouteHash, type ExecutorCall } from "./calldata/index.ts";
+import { encodeRoute, encodeExecuteArb, encodeExecuteArbWithAave, type ExecutorCall } from "./calldata/index.ts";
 
 /**
  * Builds calldata for the flash-loan-only ArbExecutor.
@@ -136,7 +136,7 @@ export function buildArbTx(route: BuilderRouteInput, config: BuilderConfig, opti
     flashLoanSource === "AAVE_V3"
       ? encodeExecuteArbWithAave({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls })
       : encodeExecuteArb({ executorAddress, flashToken, flashAmount, profitToken, minProfit, deadline, calls });
-  const routeHash = computeRouteHash(calls);
+  const routeHash = encodedTx.routeHash;
 
   return {
     to: encodedTx.to,

@@ -177,11 +177,11 @@ async function runLfStateRefresh(
   pools: PoolMeta[],
   lastRefreshTime: number,
   currentCycles: FoundCycle[],
-): Promise<{ lastRefreshTime: number; lastFullRefreshTime: number; ratesNeedFullRefresh: boolean }> {
+): Promise<{ lastRefreshTime: number; lastFullRefreshTime: number; ratesNeedFullRefresh: boolean; updated?: Set<string> }> {
   const now = Date.now();
   const LF_INTERVAL = 1000;
   if (!(now - lastRefreshTime >= LF_INTERVAL && pools.length > 0)) {
-    return { lastRefreshTime, lastFullRefreshTime: 0, ratesNeedFullRefresh: false };
+    return { lastRefreshTime, lastFullRefreshTime: 0, ratesNeedFullRefresh: false, updated: new Set<string>() };
   }
 
   bus?.emit({ type: "pipeline_stage", stage: "LF_REFRESH" });
