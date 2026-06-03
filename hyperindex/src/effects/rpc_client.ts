@@ -46,16 +46,18 @@ const veryLow = isVeryLowQuota();
 // Dynamic batching tuned to the overall quota (HYPERSYNC_RPM_TARGET).
 // When the free-tier HyperSync budget is tight we reduce RPC burstiness from effects
 // so the whole system (HyperSync fetches + metadata effects) stays smoother.
-const BATCH_SIZE = veryLow ? 32 : low ? 64 : 128;
-const MULTICALL_BATCH_SIZE = veryLow ? 32 : low ? 64 : 128;
-const MULTICALL_WAIT_MS = veryLow ? 80 : low ? 40 : 10;
+// Disabled JSON-RPC batching (BATCH_SIZE = 1) because some endpoints (Chainstack) 
+// struggle with large JSON-RPC batches even when using Multicall internally.
+const BATCH_SIZE = 1; 
+const MULTICALL_BATCH_SIZE = veryLow ? 8 : low ? 12 : 16;
+const MULTICALL_WAIT_MS = veryLow ? 100 : low ? 75 : 50;
 
 const rpcUrls = getRpcUrls();
 
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
-    batch: { batchSize: BATCH_SIZE },
-    timeout: 4_000, // Reduced from 10s: fail fast for fetchTokenMeta — default-18 is cheap, 15s hangs are not
+    batch: false, // Disabled JSON-RPC batching entirely for better compatibility. Multicall remains enabled on the client.
+    timeout: 8_000, // Increased to 8s for more stability on slow/overloaded endpoints.
     retryCount: 1, // Reduced from 3: one retry is enough; repeated failures mean the endpoint is down
     retryDelay: 150,
     fetchOptions: {

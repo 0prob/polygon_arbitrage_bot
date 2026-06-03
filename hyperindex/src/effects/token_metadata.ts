@@ -156,34 +156,39 @@ export const fetchTokenMeta = createEffect(
     cache: true, // Critical for performance on restarts / re-runs
   },
   async ({ input, context }) => {
-    const addr = input.address;
+    // Ensure address is correctly padded to 42 characters (20 bytes hex + "0x").
+    // Sometimes Envio/viem event parsing drops leading zeros on addresses.
+    let addr = input.address.toLowerCase();
+    if (addr.startsWith("0x") && addr.length < 42) {
+      addr = "0x" + addr.slice(2).padStart(40, "0");
+    }
 
     // Layer 1: Static + discovered runtime cache (aggressive persistence)
     const staticCached = STATIC_TOKEN_DECIMALS[addr];
     if (staticCached !== undefined) {
-      return { address: input.address, decimals: staticCached };
+      return { address: addr, decimals: staticCached };
     }
 
     await loadDiscoveredDecimals();
     const discovered = discoveredDecimals[addr];
     if (discovered !== undefined) {
-      return { address: input.address, decimals: discovered };
+      return { address: addr, decimals: discovered };
     }
 
     // Layer 2: Permanent blocklist — non-ERC20 contracts never become valid
     await loadFailedTokens();
     if (failedTokens.has(addr)) {
-      return { address: input.address, decimals: 18 };
+      return { address: addr, decimals: 18 };
     }
 
     try {
       const decimals = await publicClient.readContract({
-        address: input.address as `0x${string}`,
+        address: addr as `0x${string}`,
         abi: ERC20_ABI,
         functionName: "decimals",
       });
 
-      const result = { address: input.address, decimals: safeDecimals(Number(decimals)) };
+      const result = { address: addr, decimals: safeDecimals(Number(decimals)) };
 
       // Persist successful discovery aggressively
       discoveredDecimals[addr] = result.decimals;
@@ -195,7 +200,7 @@ export const fetchTokenMeta = createEffect(
 
       if (context.log) {
         context.log.info(`Fetched decimals for new token via RPC (persisted + auto-extra)`, {
-          token: input.address,
+          token: addr,
           decimals: result.decimals,
         });
       }
@@ -210,7 +215,9 @@ export const fetchTokenMeta = createEffect(
         errStr.includes("reverted") ||
         errStr.includes("not found") ||
         errStr.includes("Invalid address") ||
-        errStr.includes("not a contract");
+        errStr.includes("not a contract") ||
+        errStr.includes("odd length") ||
+        errStr.includes("cannot unmarshal");
 
       const isQuota =
         errStr.includes("Monthly") ||
@@ -230,7 +237,9 @@ export const fetchTokenMeta = createEffect(
 
       // Only add to permanent blocklist if it's a definitive non-token error.
       // Network/quota errors should be retried in a future run.
-      if (isDefinitiveError && !isQuota && !isNetwork) {
+      // NOTE: "HTTP request failed" from viem might contain the inner RPC error.
+      // We prioritize definitive errors over network wrappers.
+      if (isDefinitiveError && !isQuota) {
         failedTokens.add(addr);
         saveFailedTokens().catch(() => {});
       }
@@ -238,31 +247,29 @@ export const fetchTokenMeta = createEffect(
       if (context.log && !failedDecimalsTokens.has(addr)) {
         failedDecimalsTokens.add(addr);
 
-        if (isQuota) {
+        if (isDefinitiveError && !isQuota) {
+          context.log.warn(`Definitive failure fetching decimals for token — defaulting to 18 (added to permanent blocklist)`, {
+            token: addr,
+            error: errStr.split("\n")[0], // Keep logs clean
+          });
+        } else if (isQuota) {
           context.log.warn(
             `Alchemy quota / monthly capacity exceeded while fetching decimals. ` +
               `Add more providers to POLYGON_RPC_URLS (comma-separated) or lower effect rateLimits temporarily. ` +
               `Defaulting to 18 for this token (will retry in ~5min).`,
-            { token: input.address },
+            { token: addr },
           );
         } else if (isNetwork) {
           context.log.warn(`Network error fetching decimals for token — defaulting to 18 (will retry in ~5min)`, {
-            token: input.address,
-            error: errStr,
-          });
-        } else {
-          context.log.warn(`Definitive failure fetching decimals for token — defaulting to 18 (added to permanent blocklist)`, {
-            token: input.address,
-            error: errStr,
+            token: addr,
+            error: errStr.split("\n")[0],
           });
         }
       }
 
       // Do not cache obviously bad/transient results forever in Envio effect cache.
-      // If it's definitive, Envio can cache it, but our Layer 2 blocklist already handles it.
-      // If it's transient, we want Envio to retry.
       context.cache = false;
-      return { address: input.address, decimals: 18 };
+      return { address: addr, decimals: 18 };
     }
   },
 );

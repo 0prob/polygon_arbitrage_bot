@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780463202.0495675,
-    "ast_hash": "712a1d9b2bfd3236519f97afe6939508",
+    "mtime": 1780476886.3008673,
+    "ast_hash": "d64661e894910613467e46a3c08c21f6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -120,8 +120,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v3_factory.ts": {
-    "mtime": 1780423699.3725474,
-    "ast_hash": "20f9acafcfe07e2a7a11a9732b735d60",
+    "mtime": 1780476792.4812858,
+    "ast_hash": "c4245f155ee86a5c23ee814cfc7713bc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/curve_factory.ts": {
@@ -1292,11 +1292,6 @@
   "/home/x/arb/t/HYPERINDEX_OPTIMIZATION_SUMMARY.md": {
     "mtime": 1780423698.6165566,
     "ast_hash": "f7d0c150ac1df2feb903fcca60c166be",
-    "semantic_hash": ""
-  },
-  "/home/x/arb/t/hyperindex/data/failed-decimals.json": {
-    "mtime": 1780461906.97517,
-    "ast_hash": "6c66be4ceb1fc2241750361ff52656ac",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/handlers.test.ts": {
