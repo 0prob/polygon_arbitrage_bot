@@ -84,7 +84,7 @@ export const DEFAULT_DEPS: PassLoopDeps = {
   routeKeyFromEdges,
   buildExecutionCandidate,
   instrumenter,
-  averageObscurity: averageObscurity as any, // from finder (re-exported via pipeline),
+  averageObscurity, // from finder (re-exported via pipeline); matches optional in PassLoopDeps
 };
 
 /**

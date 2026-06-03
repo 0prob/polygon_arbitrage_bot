@@ -20,3 +20,4 @@
 - (Done) Lightweight HF budget tripwire + maxHotPathDurationMs metric
 - (Done in third pass) fetchMissingPoolState now returns updated addresses; full focusTokens + dirty-pool prioritization + targeted final sweep in computeMaticRates
 - (Done) maxHotPathMs exposed in StatusPayload / status.json (visible to TUI + health)
+- (Done, full audit) 2026-06 comprehensive file-by-file: dead getPools excised, garbage+factories+address-norm+routeKey consolidated to single sources, latent candidate routeKey=hash bug fixed (was poisoning poolsFrom/quarantine/inflight/tracker), dangling sol interfaces+lib removed (0 refs), all syntax/logic verified, tests+type green.

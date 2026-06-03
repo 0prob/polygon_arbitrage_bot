@@ -298,3 +298,35 @@ Both changes are pure cleanup / dedup with verification that cycle discovery and
 **Final State:** Typecheck clean. 250+ tests green (incl. heavy pass_loop integration exercising finder + pipeline sim). git tracks the deletions. DUPLICATION_AUDIT.md updated with deep dive + these items. 
 
 The project now has even less duplicated logic/ops.
+
+---
+
+## Comprehensive File-by-File Audit Pass (Current Session)
+
+**Scope:** Every owned source file (src/**/*.ts, scripts/**/*.ts, hyperindex/src/**/*.ts + configs/schema, sol/src/**/*.sol + tests, root configs/scripts, arb-tx-tools skill impls). Excluded only generated (out/, .envio/, caches, node_modules, graphify-out).
+
+**Process per file:**
+- Syntax (tsc --noEmit, vitest, forge where applicable) + logic walkthrough.
+- Incomplete: completed (e.g. wiring, missing returns).
+- Dead/defunct/dangling: removed (getPools in RuntimeContext/boot + all mocks; 5 unused sol interfaces + 1 library with 0 references in active ArbExecutor/tests/scripts; dead KNOWN_* lists; prior strategy/ + token tax + runPipeline already gone).
+- Simplified/consolidated:
+  - Garbage: single source in `src/infra/garbage/garbage-tracker.ts` (KNOWN_INDEXED_FACTORIES + all isGarbage*/mark*/perform*); `src/core/constants.ts` now pure re-exports (no local impls/lists). Updated graphql + tracker internal. No more drift.
+  - Address normalization: builder.ts now delegates `normalizeEvmAddress` to `calldata/utils.ts:asAddress` (viem getAddress) + try/catch. Removed local regex/getAddress dup.
+  - Route keying bug (latent from hash-consolidation): `candidate.ts` was setting `CandidateExecution.routeKey = built.routeHash` (keccak). This broke `poolsFromRouteKey`, quarantine/inflight keys, pre-filter consistency, tracker pools, and group batching (hash != "addr:addr:start" format). Fixed: always derive identity via `routeKeyFromEdges` (or .id), consistent with pass_loop prefilter/cooldown/dryrun paths. Hash remains internal to BuiltTransaction/calldata only.
+  - averageObscurity cast removed in DEFAULT_DEPS.
+  - getPools fully excised (was returning [] and only present in mocks + type; never called in pass_loop or real paths).
+  - Minor: unused imports (e.g. PoolMeta post-getPools), comments cleaned.
+- Single source verified for: BPS (core/constants), bigint utils, error formatting, createEdgesForPool (graph), routeKey/avgObscurity (finder), sim dispatch, profit/risk, garbage, address norm (now), calldata builders, RPC (always via manager), etc. No new dups introduced.
+- Cross-checked: no similar fns left in parallel modules (strategy long gone; token tax gone; loop.ts dead extraction gone).
+
+**Verification:**
+- `bun run typecheck` → 0 errors (clean).
+- `bunx vitest run` → 251 passed (incl. heavy pass_loop integration, candidate, graph inc, execution, core math, orchestrator boot).
+- `cd sol && forge test` → auth/atomic pass (Aave fork 429 is env/quota, not code).
+- `bun run lint:check` → only pre-existing any/unused-_ in tests + external (no new).
+- Manual: all  ~100+ project .ts/.sol reviewed in batches + targeted reads/greps for dups (normalize*, BPS, garbage lists, routeKey, getPools, unused exports, top-level awaits, etc.).
+- Git: additional dead sol files deleted (tracked as D); no behavior change.
+
+**Docs updated:** This entry + references in code comments. AGENTS.md already reflected prior clean state.
+
+Result: tighter codebase, fewer footguns (keying), no duplication vectors for core concerns.

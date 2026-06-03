@@ -1,17 +1,9 @@
-import { isGarbagePool } from "../../core/constants.ts";
+import { isGarbagePool, KNOWN_INDEXED_FACTORIES } from "../../core/constants.ts";
 import { markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
 
-// Factories we actively index. If one of these addresses appears as a "token"
-// in a pool, it is almost certainly garbage data from a broken PairCreated event.
-const KNOWN_FACTORIES = new Set([
-  "0x5757371414417b8c6caad45baef941abc7d3ab32", // Quickswap V2
-  "0xc35dadb65012ec5796536bd9864ed8773abc74c4", // Sushiswap V2
-  "0x9e5a52f57b3038f1b8eee45f28b3c1967e22799c", // Uniswap V2
-  "0x1f98431c8ad98523631ae4a59f267346ea31f984", // Uniswap V3
-  "0x917933899c6a5f8e37f31e19f92cdbff7e8ff0e2", // Sushi V3
-  "0x411b0facc3489691f28ad58c47006af5e3ab3a28", // Quickswap V3
-]);
+// Use the single source of truth for indexed factories (re-exported via core/constants for convenience).
+const KNOWN_FACTORIES = KNOWN_INDEXED_FACTORIES;
 
 export interface HasuraPoolMeta {
   address: string;

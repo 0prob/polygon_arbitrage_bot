@@ -2,7 +2,6 @@ import { type PublicClient } from "viem";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
-import type { PoolMeta } from "../core/types/pool.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { SubmissionStrategy, type SubmitTxFn } from "../services/execution/submit.ts";
 import { ReceiptPoller } from "../services/execution/receipt.ts";
@@ -28,7 +27,6 @@ export interface RuntimeContext {
   stateCache: RouteStateCache;
   executionService: ExecutionService;
   mempoolService: MempoolService;
-  getPools: () => PoolMeta[];
   publicClient: PublicClient;
   rpc: RpcManager;
   isRunning: boolean;
@@ -88,10 +86,6 @@ export async function bootApplication(
   const publicClient = rpc.getReadClient();
 
   const stateCache: RouteStateCache = new Map();
-
-  const getPools = (): PoolMeta[] => {
-    return [];
-  };
 
   const gasOracleConfig: GasOracleConfig = {
     pollIntervalMs: config.gas.pollIntervalMs,
@@ -304,7 +298,6 @@ export async function bootApplication(
     stateCache,
     executionService,
     mempoolService,
-    getPools,
     publicClient,
     rpc,
     isRunning: true,

@@ -1,5 +1,5 @@
-import { getAddress } from "viem";
 import { encodeRoute, encodeExecuteArb, encodeExecuteArbWithAave, type ExecutorCall } from "./calldata/index.ts";
+import { asAddress } from "./calldata/utils.ts";
 
 /**
  * Builds calldata for the flash-loan-only ArbExecutor.
@@ -74,11 +74,13 @@ export interface BuiltTransaction {
 const DEFAULT_DEADLINE_OFFSET_S = 120;
 const DEFAULT_MAX_CALLS = 12;
 
+/** Delegates to the single asAddress (viem getAddress) source; returns null instead of throwing for validation paths. */
 function normalizeEvmAddress(value: unknown): `0x${string}` | null {
-  if (typeof value === "string" && /^0x[0-9a-fA-F]{40}$/.test(value)) {
-    return getAddress(value);
+  try {
+    return asAddress(value);
+  } catch {
+    return null;
   }
-  return null;
 }
 
 function assertValidRoute(route: BuilderRouteInput): void {

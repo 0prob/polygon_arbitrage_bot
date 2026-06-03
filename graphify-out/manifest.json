@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/.envio/types.d.ts": {
-    "mtime": 1780479143.1621585,
-    "ast_hash": "2923132d7fd189e432f588634375ed53",
+    "mtime": 1780488850.1184058,
+    "ast_hash": "1b88b158f4b39a676f530e2a5e5df0b2",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/src/handlers/v4.ts": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/builder.ts": {
-    "mtime": 1779968897.1837041,
-    "ast_hash": "8e1995efec20d5cc8acc8e70664af9e1",
+    "mtime": 1780489082.3840055,
+    "ast_hash": "b02afbef7b81efacaceb9691ee79bc32",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/dryrun.ts": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/candidate.ts": {
-    "mtime": 1779969348.3352377,
-    "ast_hash": "59be2c4449e662507439f71007515752",
+    "mtime": 1780489055.688281,
+    "ast_hash": "dfd0d1db52a6d3f2abc8de50d26f3d58",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/tracker.ts": {
@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/calldata/index.ts": {
-    "mtime": 1779727071.6824088,
-    "ast_hash": "f87bf78d16159788cabe463f5ce5a970",
+    "mtime": 1780484657.6582587,
+    "ast_hash": "7035344ec8d85ebc357a36841e78fb96",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/services/execution/calldata/abis.ts": {
@@ -525,18 +525,18 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.test.ts": {
-    "mtime": 1780324223.5553646,
-    "ast_hash": "c85cf000697fbaac5ccf23a6db840e14",
+    "mtime": 1780489271.2780554,
+    "ast_hash": "4d920ceed3ba557694902e69af4a6aac",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/pass_loop.ts": {
-    "mtime": 1780479311.0526488,
-    "ast_hash": "0bf52d0ff997e2daf8f434946d2c3d01",
+    "mtime": 1780489075.7680738,
+    "ast_hash": "a45f8287f3663e07264f1030f62bccab",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/boot.ts": {
-    "mtime": 1780157295.0979912,
-    "ast_hash": "f7f4dddc787cf21293a4d38f618d3c54",
+    "mtime": 1780489104.2837794,
+    "ast_hash": "fc728c6ae68e7977efe5c5e119702400",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/orchestrator/loop.ts": {
@@ -560,23 +560,23 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/index.ts": {
-    "mtime": 1779982139.9810195,
-    "ast_hash": "c2bee30e80a18b1ea5747358783189a6",
+    "mtime": 1780488475.0182922,
+    "ast_hash": "ccf733ee562318a21962739aa4c4a24a",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/graph.ts": {
-    "mtime": 1780006637.8922453,
-    "ast_hash": "fced1e41dc68d0bf3613f67e5740393b",
+    "mtime": 1780484631.36252,
+    "ast_hash": "b8bffe00dc7ea6c9e04d61ff8a704ea6",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/finder.ts": {
-    "mtime": 1780324258.2628994,
-    "ast_hash": "77de1cf150ef5ec462a4f4ffdd312a88",
+    "mtime": 1780488385.4632227,
+    "ast_hash": "1de034ad0ecac0369da54caa568b00c8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/pipeline.ts": {
-    "mtime": 1780479916.4791021,
-    "ast_hash": "f3089d8f6c3c3aaee1bd7c7e82657e5e",
+    "mtime": 1780488472.2103212,
+    "ast_hash": "e44e800c8b28cee9af2b771e5b5138ee",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/rates.ts": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/simulator.ts": {
-    "mtime": 1780479856.9876516,
-    "ast_hash": "4243141daaea640cd84e4799004725b8",
+    "mtime": 1780488455.3784962,
+    "ast_hash": "2563a2215d6d9bb3ac9536e6bc0708e8",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/rpc/manager.ts": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_graphql.ts": {
-    "mtime": 1780462629.2515683,
-    "ast_hash": "3255789963dbf1c020f9abe27bc236dd",
+    "mtime": 1780489025.9365885,
+    "ast_hash": "0594dc6816e74f459123fc932a15fe9d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/hypersync/hyperindex_process.ts": {
@@ -730,8 +730,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/AGENTS.md": {
-    "mtime": 1780325233.247228,
-    "ast_hash": "8f460b0cb1b247ea3b58bbfd4f8f1739",
+    "mtime": 1780484622.126612,
+    "ast_hash": "a5051b783c144088f34894896188f375",
     "semantic_hash": ""
   },
   "/home/x/arb/t/GEMINI.md": {
@@ -745,8 +745,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/TODO.md": {
-    "mtime": 1780423700.9165282,
-    "ast_hash": "59c4851b21bec4c85c162f0dd769a411",
+    "mtime": 1780489348.857255,
+    "ast_hash": "7202786dc71f78302015cb35850acc5d",
     "semantic_hash": ""
   },
   "/home/x/arb/t/sol/README.md": {
@@ -845,13 +845,13 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/core/constants.ts": {
-    "mtime": 1780298952.5703459,
-    "ast_hash": "d59a3aa91bbbbb967b5aa5f5f6d80c87",
+    "mtime": 1780489101.6598065,
+    "ast_hash": "fd942d12fef9b0fcd649181771b3adbb",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/graph_incremental.ts": {
-    "mtime": 1780108969.2996101,
-    "ast_hash": "a36c45d90513f033fa9c5c6236487923",
+    "mtime": 1780484702.849809,
+    "ast_hash": "a6d5fb8010c2a8488a5d72a0c79bf048",
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/pipeline/graph_incremental.test.ts": {
@@ -860,8 +860,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/DUPLICATION_AUDIT.md": {
-    "mtime": 1779982139.525024,
-    "ast_hash": "26e13afcc8992d4e5ce2ab02041ae2ab",
+    "mtime": 1780489307.5176814,
+    "ast_hash": "7e530ee27b55e3e11d36629f685c86bd",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/scripts/clear-hasura-metadata.ts": {
@@ -870,8 +870,8 @@
     "semantic_hash": ""
   },
   "/home/x/arb/t/src/infra/garbage/garbage-tracker.ts": {
-    "mtime": 1780273599.0230284,
-    "ast_hash": "4cba3944252d49a466f94d3e161ac020",
+    "mtime": 1780489020.4366453,
+    "ast_hash": "b86cf35e30649dfa9b952280d55e94cc",
     "semantic_hash": ""
   },
   "/home/x/arb/t/hyperindex/abis/dodo_pool.json": {

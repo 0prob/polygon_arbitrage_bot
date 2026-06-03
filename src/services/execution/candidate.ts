@@ -1,6 +1,7 @@
 import { buildArbTx, type BuilderRouteInput, type BuilderConfig } from "./builder.ts";
 import type { CandidateExecution } from "./service.ts";
 import type { PipelineResult } from "../../pipeline/index.ts";
+import { routeKeyFromEdges } from "../../pipeline/index.ts";
 import type { RouteStateCache } from "../../core/types/route.ts";
 
 export type ProfitableResult = PipelineResult["profitable"][number];
@@ -60,8 +61,13 @@ export function buildExecutionCandidate(
   const minProfit = tokenProfit > 0n ? (tokenProfit * 90n) / 100n : 0n;
   const built = buildArbTx(route, config, { slippageBps: options.slippageBps, minProfit, flashLoanSource: options.flashLoanSource });
 
+  // Use cycle-derived identity key (not the calldata hash) for quarantine/inflight/tracker/poolsFromRouteKey.
+  // The hash is an internal on-chain guard; bot state keys on the route identity for consistency with
+  // pre-filters, cooldowns, and pool-disjoint batching.
+  const identityKey = profitable.cycle.id ?? routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+
   return {
-    routeKey: built.routeHash,
+    routeKey: identityKey,
     calldata: built.data,
     targetAddress: built.to,
     value: built.value,
