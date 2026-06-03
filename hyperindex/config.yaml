@@ -183,9 +183,10 @@ chains:
     start_block: ${ENVIO_POLYGON_START_BLOCK:-5024576} # LIVE-DEBUG DEFAULT: recent block for fast tail on free/low-tier tokens. Override in .env for full history (paid token recommended). Old per-contract overrides below are kept for precision when a higher global is not set.
 
     # RPC configuration (V3 structured form recommended in config docs).
-    # HyperSync is primary for Polygon. This RPC acts as fallback when HyperSync is unavailable.
-    # See https://docs.envio.dev/docs/HyperIndex/configuration-file#rpc and config-schema-reference.
-    # Enhanced with multiple providers and proper fallback hierarchy
+    # HyperSync is primary for Polygon. These RPCs act as fallback when HyperSync
+    # is unavailable. Per docs, fallback activates when no new block is received
+    # for >20 seconds — this is built into HyperIndex, not configurable here.
+    # See https://docs.envio.dev/docs/HyperIndex/rpc-sync#improving-resilience-with-rpc-fallback
     rpc:
       - url: ${ENVIO_POLYGON_RPC_URL}
         for: fallback
@@ -195,7 +196,6 @@ chains:
         interval_ceiling: 5000
         backoff_millis: 3000
         query_timeout_millis: 15000
-        fallback_stall_timeout: 4000
       # Secondary fallback for redundancy
       - url: https://polygon-mainnet.g.alchemy.com/v2/${ENVIO_ALCHEMY_API_KEY}
         for: fallback
@@ -204,10 +204,11 @@ chains:
         interval_ceiling: 4000
         query_timeout_millis: 12000
 
-    # Max reorg depth (Polygon best practice): Standard depth to handle rollbacks.
-    # HyperIndex automatically handles these when rollback_on_reorg is true.
-    # Increased to 300 for better safety on Polygon (can have deeper reorgs during network stress)
-    max_reorg_depth: 300
+    # Max reorg depth for Polygon. Docs recommend 150 for Polygon, 250 for Ethereum.
+    # We use 200 (the global default) which is conservative but safe.
+    # HyperIndex rolls back all entity state automatically when a reorg is detected.
+    # Side effects in handler code (external calls, logs) are NOT rolled back.
+    max_reorg_depth: 200
 
     # === Envio/HyperSync Optimizations (see user best-practices) ===
     # Point 2: All contracts use tight event whitelists (never empty/generic). HyperSync drops
