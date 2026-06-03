@@ -73,10 +73,11 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 **arb-tx-tools skill (primary AI debugging loop)**
 
-- Transaction simulator (Anvil forks + Alchemy MCP `simulateExecution`/`traceCall`).
-- ABICoder using exact project ABIs + custom errors.
-- Log tailer for runtime TS errors, JSON-RPC limits, HyperIndex lag, etc.
-- Typical loop: tailer → reproduce with simulator → decode revert → fix → verify.
+- Direct: .grok/skills/arb-tx-tools/scripts/{simulator.ts, abicoder.ts, log-tailer.ts}
+- Some consolidation: direct scripts now import shared logic from scripts/arb-tx-tools/{anvil-manager,abi-registry,log-capture}.ts
+- (MCP server at scripts/arb-tx-tools.ts for registered envs)
+- Typical loop: tailer → reproduce (local anvil or Alchemy MCP) → abicoder decode-revert → fix (builder/math etc) → verify.
+- Note: cleanup.sh + --cleanup removed (was dummy).
 
 **Other AI skills**
 
@@ -123,7 +124,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 4. For effects: use `createEffect` with proper input/output schemas, rate limits, and `cache: true`.
 5. For preload optimization: schedule all effects early, guard sets with `context.isPreload`.
 6. Run `cd hyperindex && pnpm codegen` after schema/config changes.
-7. Test discovery with `bun run dev` in hyperindex or via the main bot's 60s poll.
+7. Test discovery with `bun run hyperindex` (from root) or via the main bot's 60s poll.
 8. Monitor pipeline split (Loaders/Handlers/DB Writes) and SLOW_EFFECT logs.
 
 ### Workflow: Add or improve AI tooling / skills for the project
@@ -139,7 +140,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 1. Point the assistant at `AGENTS.md` (primary) + this `skill.md` + `llms.txt`.
 2. Instruct it to use the `arb-tx-tools` skill for all on-chain debugging.
 3. For Polygon chain details, have it use Context7 library `llmstxt/polygon_technology_llms_txt` or the Polygon Docs MCP.
-4. Run `bun test` and typecheck early and often.
+4. Run `bun run check` (or `bunx vitest run` for tests) and typecheck early and often.
 5. Respect hot-path rules (no sync I/O in 200ms loop, use RpcManager, etc.).
 
 ---
@@ -148,11 +149,12 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 **Key commands**
 
-- `bun run src/cli/main.ts --tui`
-- `bun run src/cli/arb_only.ts --tui`
-- `bun test`
-- `bun run typecheck`
-- `cd hyperindex && pnpm dev` (or `bun run dev`)
+- `bun run tui`
+- `bun run start` (headless)
+- `bun run hyperindex`
+- `bun run check` (consolidated)
+- `bunx vitest run` (tests directly)
+- `cd hyperindex && bun run dev` (or `bun run hyperindex` from root)
 - `arb-tx-tools` (the custom skill for simulation + decoding)
 
 **Core technologies**

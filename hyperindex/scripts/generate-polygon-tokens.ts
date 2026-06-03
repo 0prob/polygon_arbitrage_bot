@@ -4,9 +4,9 @@
  *
  * Pulls from several free, public token lists + the bot's own data.
  *
- * Recommended usage:
- *   bun run gentok:auto     # full cycle (recommended)
- *   bun run gentok          # raw generator (writes to stdout)
+ * Recommended usage (internal, called by auto-update):
+ *   bun run generate-tokens:auto
+ *   bun run generate-tokens     # raw (for the auto script)
  *
  * Sources (all free, focused on Polygon):
  * - CoinGecko Polygon (broadest)

@@ -6,8 +6,7 @@
  *
  * Usage:
  *   bun run generate-tokens:auto
- *   # or from root:
- *   bun run gentok:auto
+ *   (called automatically by the bot's HyperIndex process wrapper on shutdown for self-updating)
  */
 
 import { spawn } from "child_process";

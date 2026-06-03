@@ -18,6 +18,9 @@ import * as fs from "fs";
 import * as path from "path";
 import { spawn } from "child_process";
 
+// Consolidated: reuse LogCapture from the MCP/shared modules for ring buffer, fs.watch follow, and pino parsing logic.
+import { LogCapture } from "../../../../scripts/arb-tx-tools/log-capture.ts";
+
 const DEFAULT_LOG = path.resolve(import.meta.dir, "../../../../data/runner.log");
 const TUI_LOG_HINT = "data/runner.log (written when TUI or --file-log active)";
 
@@ -86,13 +89,44 @@ function tailFile(opts: TailOptions) {
     process.exit(1);
   }
 
-  const content = fs.readFileSync(p, "utf8");
-  const lines = content.trim().split("\n").slice(-opts.last);
+  // Use shared LogCapture for ring buffer + watch logic (consolidates duplication with MCP modules)
+  const max = Math.max(2000, opts.last || 200);
+  const capture = new LogCapture(max);
 
-  console.log(`=== Log Tailer: ${p} (last ${opts.last} lines, filtered) ===\n`);
+  // Preload recent lines by parsing and pushing to shared capture (reuses its pino parser)
+  const content = fs.readFileSync(p, "utf8");
+  const allLines = content.trim().split("\n");
+  const recent = opts.last > 0 ? allLines.slice(-opts.last) : allLines;
+  for (const line of recent) {
+    if (!line.trim()) continue;
+    try {
+      const parsed = JSON.parse(line);
+      const level = (parsed.level ?? "INFO").toString().toUpperCase();
+      const msg = parsed.msg ?? parsed.message ?? line;
+      capture.push(level, msg, line);
+    } catch {
+      capture.push("INFO", line, line);
+    }
+  }
+
+  console.log(`=== Log Tailer: ${p} (last ${opts.last || "all"} lines, filtered) ===\n`);
+
+  // Get filtered via shared (supports last, errorsOnly, filter regex, since)
+  const filterRe = opts.filter || (opts.search ? new RegExp(opts.search, "i") : undefined);
+  let entries = capture.getLogs({
+    last: opts.last || undefined,
+    errorsOnly: opts.errorsOnly,
+    filter: filterRe,
+  });
+
+  // Further apply CLI's isInteresting for search/errors heuristic if needed (backward compat)
+  if (opts.search || opts.errorsOnly) {
+    entries = entries.filter((e) => isInteresting(e.raw || e.message, opts));
+  }
 
   let printed = 0;
-  for (const line of lines) {
+  for (const e of entries) {
+    const line = e.raw || `${e.timestamp} ${e.level} ${e.message}`;
     if (isInteresting(line, opts)) {
       console.log(formatLine(line, opts.json));
       printed++;
@@ -103,28 +137,25 @@ function tailFile(opts: TailOptions) {
   if (!opts.follow) return;
 
   console.log("\n--- Following (Ctrl-C to stop) ---\n");
-  // Simple follow using fs.watch + read last bytes (robust enough for this use)
-  let size = fs.statSync(p).size;
-  const watcher = fs.watch(p, (event) => {
-    if (event !== "change") return;
-    const newSize = fs.statSync(p).size;
-    if (newSize <= size) {
-      size = newSize;
-      return;
+  capture.startWatching(p);
+
+  // Drain loop: periodically get new from capture's buffer (the watch populates it)
+  let lastCount = capture.getAll().length;
+  const iv = setInterval(() => {
+    const all = capture.getAll();
+    const newEntries = all.slice(lastCount);
+    for (const e of newEntries) {
+      const line = e.raw || e.message;
+      if (isInteresting(line, opts)) {
+        console.log(formatLine(line, opts.json));
+      }
     }
-    const fd = fs.openSync(p, "r");
-    const buf = Buffer.alloc(newSize - size);
-    fs.readSync(fd, buf, 0, buf.length, size);
-    fs.closeSync(fd);
-    size = newSize;
-    const newLines = buf.toString().split("\n");
-    for (const nl of newLines) {
-      if (nl && isInteresting(nl, opts)) console.log(formatLine(nl, opts.json));
-    }
-  });
+    lastCount = all.length;
+  }, 250);
 
   process.on("SIGINT", () => {
-    watcher.close();
+    clearInterval(iv);
+    capture.stop();
     process.exit(0);
   });
 }

@@ -27,7 +27,15 @@ import { polygon } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
-// Import all project ABIs (source of truth for custom errors + swap calls)
+// Consolidated: use the shared AbiRegistry from the MCP modules (scripts/arb-tx-tools/abi-registry.ts)
+// This eliminates duplication of ABI scanning, selector indexing, and basic error decoding.
+import {
+  buildAbiRegistry,
+  decodeRevert as sharedDecodeRevert,
+  type AbiRegistry,
+} from "../../../../scripts/arb-tx-tools/abi-registry.ts";
+
+// Import project ABIs to pass as extras (source of truth for custom errors + swap calls)
 import {
   EXECUTOR_ABI,
   EXECUTOR_AAVE_ABI,
@@ -47,47 +55,32 @@ import {
   ERC20_TRANSFER_ABI,
 } from "../../../../src/services/execution/calldata/abis.ts";
 
-// Also load some hyperindex ABIs for common tokens/pools if present
+// HyperIndex abis dir for additional protocol ABIs
 const HYPER_ABIS_DIR = path.resolve(import.meta.dir, "../../../../hyperindex/abis");
 
-const ALL_ABIS = [
-  ...EXECUTOR_ABI,
-  ...EXECUTOR_AAVE_ABI,
-  ...EXECUTOR_APPROVE_IF_NEEDED_ABI,
-  ...V2_PAIR_SWAP_ABI,
-  ...V3_POOL_SWAP_ABI,
-  ...KYBER_ELASTIC_POOL_SWAP_ABI,
-  ...DODO_SELL_BASE_ABI,
-  ...DODO_SELL_QUOTE_ABI,
-  ...WOOFI_ROUTER_SWAP_ABI,
-  ...BALANCER_VAULT_SWAP_ABI,
-  ...CURVE_EXCHANGE_INT128_ABI,
-  ...CURVE_EXCHANGE_UINT256_ABI,
-  ...CURVE_EXCHANGE_INT128_RECEIVER_ABI,
-  ...POOL_MANAGER_LOCK_ABI,
-  ...CALL_STRUCT_ARRAY_ABI,
-  ...ERC20_TRANSFER_ABI,
-];
+// Collect extras from the main abis.ts (they are already the ABI arrays)
+const extraAbis: any[] = [
+  EXECUTOR_ABI,
+  EXECUTOR_AAVE_ABI,
+  EXECUTOR_APPROVE_IF_NEEDED_ABI,
+  V2_PAIR_SWAP_ABI,
+  V3_POOL_SWAP_ABI,
+  KYBER_ELASTIC_POOL_SWAP_ABI,
+  DODO_SELL_BASE_ABI,
+  DODO_SELL_QUOTE_ABI,
+  WOOFI_ROUTER_SWAP_ABI,
+  BALANCER_VAULT_SWAP_ABI,
+  CURVE_EXCHANGE_INT128_ABI,
+  CURVE_EXCHANGE_UINT256_ABI,
+  CURVE_EXCHANGE_INT128_RECEIVER_ABI,
+  POOL_MANAGER_LOCK_ABI,
+  CALL_STRUCT_ARRAY_ABI,
+  ERC20_TRANSFER_ABI,
+].filter((a): a is any[] => Array.isArray(a));
 
-// Try to augment with more ABIs from hyperindex (erc20, factories, etc.)
-function loadExtraAbis(): any[] {
-  const extras: any[] = [];
-  try {
-    if (fs.existsSync(HYPER_ABIS_DIR)) {
-      const files = fs.readdirSync(HYPER_ABIS_DIR).filter((f) => f.endsWith(".json"));
-      for (const f of files) {
-        try {
-          const json = JSON.parse(fs.readFileSync(path.join(HYPER_ABIS_DIR, f), "utf8"));
-          if (Array.isArray(json)) extras.push(...json);
-          else if (json.abi) extras.push(...json.abi);
-        } catch {}
-      }
-    }
-  } catch {}
-  return extras;
-}
-
-const FULL_ABI = [...ALL_ABIS, ...loadExtraAbis()];
+// Build the registry (reuses the single source of truth for indexing functions + errors)
+const abiRegistry: AbiRegistry = buildAbiRegistry(HYPER_ABIS_DIR, extraAbis);
+const FULL_ABI = extraAbis.flat();
 
 function parseArgs(argv: string[]) {
   const args: Record<string, string | boolean> = {};
@@ -112,15 +105,16 @@ function parseArgs(argv: string[]) {
 }
 
 function tryDecodeWithAbi(data: Hex) {
-  // Try function first
+  // Use collected ABIs for function/error decode (viem direct). 
+  // The abiRegistry (from shared buildAbiRegistry) provides indexed selectors/names for nicer output.
+  const flatAbis = extraAbis.flat();
   try {
-    const decoded = decodeFunctionData({ abi: FULL_ABI as any, data });
+    const decoded = decodeFunctionData({ abi: flatAbis as any, data });
     return { kind: "function", ...decoded };
   } catch {}
 
-  // Try error
   try {
-    const decoded = decodeErrorResult({ abi: FULL_ABI as any, data });
+    const decoded = decodeErrorResult({ abi: flatAbis as any, data });
     return { kind: "error", ...decoded };
   } catch {}
 
@@ -152,6 +146,17 @@ async function decodeRevert(data: Hex, hint?: string) {
   console.log("=== Decoding Revert / Error Data ===");
   console.log("Data:", data);
   if (hint) console.log("Hint:", hint);
+
+  // Prefer the consolidated shared decoder (from scripts/arb-tx-tools/abi-registry)
+  try {
+    const shared = await sharedDecodeRevert(data, abiRegistry);
+    if (shared) {
+      console.log(`Custom Error (shared): ${shared.name}`);
+      console.log("Args:", JSON.stringify(shared.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2));
+      console.log("Signature:", shared.signature);
+      return;
+    }
+  } catch {}
 
   const res = tryDecodeWithAbi(data);
   if (res) {

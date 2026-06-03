@@ -29,6 +29,9 @@ import { spawn, execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 
+// Consolidated reuse: AnvilManager from shared MCP modules for fork lifecycle (start, detect listening, stop, info)
+import { AnvilManager } from "../../../../scripts/arb-tx-tools/anvil-manager.ts";
+
 // Pull in ABIs + executor knowledge so we can build realistic arb simulations
 import { EXECUTOR_ABI, EXECUTOR_AAVE_ABI } from "../../../../src/services/execution/calldata/abis.ts";
 import { USDC, USDC_NATIVE, WMATIC, WETH } from "../../../../src/config/addresses.ts"; // may not exist exactly - fallback below
@@ -64,43 +67,32 @@ function getRpcFromEnv(): string {
 
 async function startFork(args: any) {
   const port = Number(args.port || DEFAULT_ANVIL_PORT);
-  const rpc = args.rpc || getRpcFromEnv();
-  const block = args.block ? `--fork-block-number ${args.block}` : "";
+  const rpcUrl = args.rpc || getRpcFromEnv();
+  const forkBlockNumber = args.block ? Number(args.block) : undefined;
 
-  console.log("=== Starting Anvil Fork ===");
-  console.log(`Forking: ${rpc}`);
-  console.log(`Listening: http://127.0.0.1:${port}`);
-  console.log("Command (for manual / background):");
-  console.log(`  anvil --fork-url "${rpc}" --port ${port} ${block} --chain-id 31337 --gas-limit 30000000 --base-fee 1000000000`);
+  console.log("=== Starting Anvil Fork (using shared AnvilManager) ===");
+  console.log(`Forking: ${rpcUrl}`);
 
-  // If not --background, we can try to spawn here (will block until killed)
-  if (!args.background && !args["no-spawn"]) {
-    console.log("\nSpawning anvil (this process will hold the fork open)...");
-    const child = spawn(
-      "anvil",
-      [
-        "--fork-url",
-        rpc,
-        "--port",
-        String(port),
-        "--chain-id",
-        "31337",
-        "--gas-limit",
-        "30000000",
-        "--base-fee",
-        "1000000000",
-        ...(args.block ? ["--fork-block-number", args.block] : []),
-      ],
-      { stdio: "inherit" },
-    );
-
-    process.on("SIGINT", () => {
-      child.kill("SIGINT");
-      process.exit(0);
-    });
-    await new Promise((r) => child.on("exit", r));
-  } else {
-    console.log("\nRun the anvil command above in another terminal or with & / the monitor tool.");
+  // Consolidated: delegate to shared AnvilManager (from scripts/arb-tx-tools/anvil-manager.ts)
+  // This reuses spawn, "Listening on" detection, info tracking, and stop logic.
+  const manager = new AnvilManager();
+  try {
+    const info = await manager.startFork({ port, forkBlockNumber, rpcUrl });
+    console.log(`Listening: ${info.rpcUrl}`);
+    console.log(`Fork block: ${info.forkBlock || "latest"}`);
+    console.log(`PID: ${info.pid}`);
+    console.log("\nFork managed via shared AnvilManager (reused from MCP modules).");
+    console.log("Stop with: pkill anvil   (or kill the listed PID).");
+    if (!args.background) {
+      console.log("\n(Holding; Ctrl-C to terminate.)");
+      await new Promise(() => {});
+    }
+  } catch (e: any) {
+    console.error("Failed to start fork via manager:", e.message);
+    // Fallback print the manual command
+    const block = forkBlockNumber ? `--fork-block-number ${forkBlockNumber}` : "";
+    console.log("Manual command:");
+    console.log(`  anvil --fork-url "${rpcUrl}" --port ${port} ${block} --chain-id 31337 ...`);
   }
 }
 

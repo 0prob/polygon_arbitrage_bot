@@ -20,7 +20,7 @@
  *   - Zero per-event state writes on high-volume events → DB Writes near zero
  *
  * To observe real numbers:
- *   1. cd hyperindex && bun run dev   (or root `bun run dev`)
+ *   1. cd hyperindex && bun run dev   (or root `bun run hyperindex`)
  *   2. Watch envio stdout / TUI for pipeline split percentages
  *   3. Or grep logs for "PIPELINE_SPLIT" if you add a periodic emitter
  *
@@ -32,7 +32,7 @@
  *
  * Fix levers (in priority order):
  *   1. POLYGON_RPC_URLS with fast archival provider(s) in .env (top priority)
- *   2. Keep scripts/generate-polygon-tokens.ts output complete (run `bun run gentok`)
+ *   2. The token registry is now self-updating via generate-tokens:auto (run on indexer shutdown by the bot).
  *   3. Effect cache: true (already set on all effects)
  *   4. Parallel Promise.all for independent effects (already done in handlers)
  *   5. Raise full_batch_size only if you have RPC headroom

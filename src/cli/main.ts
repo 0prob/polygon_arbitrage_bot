@@ -7,7 +7,6 @@ import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
-import { execSync } from "child_process";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import "../infra/garbage/garbage-tracker.ts"; // Ensure garbage list starts loading early
 import { performOneTimeGarbageCleanup } from "../infra/garbage/garbage-tracker.ts";
@@ -17,7 +16,6 @@ import { DEFAULTS } from "../config/defaults.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
-  const useCleanup = process.argv.includes("--cleanup");
   const resetHasura = process.argv.includes("--reset-hasura");
   const hyperindexReset = process.argv.includes("--hyperindex-reset") || process.argv.includes("--force-full-reset");
   const config = loadConfig(process.env);
@@ -55,15 +53,6 @@ async function main() {
   } else {
     const good = await filterArchivalRpcUrls(rawRpcs.length ? rawRpcs : DEFAULTS.rpc.polygonRpcUrls);
     indexerRpcs = good.length > 0 ? good : rawRpcs;
-  }
-
-  if (useCleanup) {
-    logger.info("Running pre-flight cleanup");
-    try {
-      execSync("bash scripts/cleanup.sh", { stdio: "inherit", timeout: 30000 });
-    } catch (err) {
-      logger.warn({ err }, "Cleanup script failed (continuing anyway)");
-    }
   }
 
   const hyperIndexMonitor = new HyperIndexMonitor({

@@ -76,7 +76,7 @@ export interface HyperIndexProcessOptions {
   forceFullReset?: boolean;
 
   /**
-   * If true (default), automatically run `bun run gentok:auto` after the HyperIndex
+   * If true (default), automatically run the token registry auto-update after the HyperIndex
    * process shuts down gracefully. This promotes any cold tokens discovered during
    * the run into the static STATIC_TOKEN_DECIMALS registry.
    */
@@ -245,16 +245,16 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
    * Safe to call even if Hasura is not reachable.
    */
   /**
-   * Best-effort run of `bun run gentok:auto` after HyperIndex shutdown.
-   * This promotes any tokens discovered via RPC during the run into the static registry.
+   * Best-effort run of the token registry auto-update after HyperIndex shutdown.
+   * This promotes any cold tokens discovered via RPC (in effects) into the static registry
+   * used by the indexer (no more manual gentok).
    */
   function runGentokAuto(hiDir: string, logger: Logger): void {
     // Fire and forget — we don't want shutdown to be blocked by this.
     setTimeout(() => {
       try {
-        logger.info("Running gentok:auto after HyperIndex shutdown to promote newly discovered cold tokens...");
-        const child = spawn("bun", ["run", "gentok:auto"], {
-          cwd: hiDir,
+        logger.info("Running generate-tokens:auto (self-updating token registry) after HyperIndex shutdown...");
+        const child = spawn("bun", ["run", "--cwd", hiDir, "generate-tokens:auto"], {
           stdio: "ignore",
           detached: true,
         });
@@ -267,7 +267,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
           } catch {}
         }, 90_000);
       } catch (err) {
-        logger.debug({ err }, "Failed to spawn gentok:auto after shutdown (non-fatal)");
+        logger.debug({ err }, "Failed to spawn generate-tokens:auto after shutdown (non-fatal)");
       }
     }, 0);
   }

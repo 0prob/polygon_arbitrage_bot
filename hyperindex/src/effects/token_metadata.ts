@@ -45,7 +45,7 @@ async function saveDiscoveredDecimals() {
   return discoveredSavePending;
 }
 
-// Best-effort append of newly discovered cold tokens so that `bun run gentok`
+// Best-effort append of newly discovered cold tokens so the auto-update (generate-tokens:auto) promotes them on next indexer run / shutdown.
 // can promote them into the static registry automatically.
 const autoExtraWritePending = new Set<string>();
 
@@ -136,7 +136,7 @@ function safeDecimals(d: number): number {
  * 2. Batched RPC (last resort)
  *
  * Cold tokens discovered via RPC are **automatically** appended to
- * `data/auto-extra-tokens.json` so the next `bun run gentok` promotes them
+ * `data/auto-extra-tokens.json` so the automatic token registry update promotes them (no manual `gentok` needed).
  * into the static registry.
  *
  * This is the #1 lever for V2Factory.PairCreated performance.

@@ -18,14 +18,14 @@ export class AnvilManager {
     return this.info;
   }
 
-  async startFork(options?: { forkBlockNumber?: number; port?: number }): Promise<ForkInfo> {
+  async startFork(options?: { forkBlockNumber?: number; port?: number; rpcUrl?: string }): Promise<ForkInfo> {
     if (this.isRunning()) {
       return this.info!;
     }
 
-    const rpcUrl = process.env.POLYGON_RPC_URL;
+    const rpcUrl = options?.rpcUrl || process.env.POLYGON_RPC_URL;
     if (!rpcUrl) {
-      throw new Error("POLYGON_RPC_URL is not set. Set it in .env or pass via --env-file.");
+      throw new Error("POLYGON_RPC_URL is not set (or pass rpcUrl in options). Set it in .env or pass via --env-file.");
     }
 
     const port = options?.port ?? parseInt(process.env.FORK_PORT ?? "8545", 10);

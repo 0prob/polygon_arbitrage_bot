@@ -1,64 +1,79 @@
 # Polygon Arb Bot
 
-High-frequency arbitrage bot for Polygon (chain 137). **Strictly flash-loan dependent** for all arbitrage: the `ArbExecutor` contract (Balancer V2 + Aave V3 flash paths) performs atomic borrow → multi-hop swaps → repay + profit extraction. No capital-backed or wallet-funded execution paths exist in the architecture or contracts.
+High-frequency, **strictly flash-loan-only** arbitrage bot for Polygon (chain 137). Every arb path is atomic via Balancer V2 or Aave V3 flash loan on the `ArbExecutor` contract. No capital-backed or inventory execution paths exist anywhere in the system (contract reverts with `FlashLoanRequired` / `FlashLoanOnly` on misuse).
 
-- Simulation `amountIn` values are the precise flash principal sizes.
-- Profit math always deducts the configured flash fee (0 bps Balancer, 5 bps Aave on Polygon).
-- On-chain: `executeArb` / `executeArbWithAave` both require `flashAmount > 0` and enforce flash-only callbacks (`FlashLoanRequired`, `FlashLoanOnly` errors).
+- `RouteSimulationResult.amountIn` is always the exact flash principal borrowed.
+- Profit assessment (`computeProfit`) always deducts the flash loan fee.
+- See `sol/src/ArbExecutor.sol` and `src/core/assessment/profit.ts`.
 
-## Features
+## Features (current)
 
-- **Multi-protocol**: Uni V2/V3, Sushi V2/V3, QuickSwap V2/V3, Curve, Balancer, DODO, WooFi, KyberSwap, Uni V4
-- **Flash loans**: Balancer V2 (BalancerPoolFlashRecipient) and Aave V3
-- **Real-time state**: HyperIndex/Envio event indexer → Hasura → GraphQL pool state
-- **TUI dashboard**: Terminal UI with live metrics, logs, and keybindings
-- **Multi-frequency loop**: Fast (200ms) cycles for simulation/execution, slow (1s) cycles for state refresh, discovery (60s) for new pools
+- Multi-protocol AMM math (V2/V3, Curve, Balancer, DODO, WooFi, V4 etc.)
+- Real-time discovery via custom Envio HyperIndex (dynamic registration, effects for meta, hot-bias option)
+- Hot path: 200ms HF (sim/execute) + 1s LF (state/rates) + 60s discovery
+- Sophisticated resilience (circuits, reorg on slow path only, tier degrade, mempool signals)
+- TUI + structured logs + extensive AI debugging tools (Anvil + ABI decoder + log tailer, with some shared modules between MCP and direct CLIs)
+- All hot-path work is pure or gated; single sources for graph edges, rates, garbage, etc. (see recent DUPLICATION_AUDIT)
 
-## Architecture
+## Architecture (post cleanups)
+
+Key points:
+- `src/rpc/manager.ts` is the only way to get RPC clients.
+- `src/pipeline/` owns graph/finder/sim/fetch/rates/eval (pure).
+- `src/orchestrator/pass_loop.ts` is the multi-frequency orchestrator (loop.ts is now a tiny typed DI bag; old dead `runPipeline` extraction removed long ago).
+- `src/services/execution/` is thin + calldata builders.
+- No more `getPools` dangling, no tax wiring, no legacy strategy/ facade.
+- Garbage/factories consolidated to `infra/garbage/garbage-tracker.ts` (re-exported via core/constants).
+- Arb tx tools: some logic consolidated (direct .grok scripts now import AnvilManager, shared abi-registry, LogCapture).
 
 ```
 src/
-├── cli/                  Entry point (main.ts) — config → boot → runner → TUI
-├── config/               Zod-validated env config loader, addresses, defaults
-├── rpc/manager.ts        RpcManager — single class for all RPC access (read, execution, FastLane, WebSocket)
-├── pipeline/             9 files — explicit pipeline stages (graph, finder, simulator, fetcher, rates, pipeline, instrumenter)
-├── orchestrator/
-│   ├── boot.ts           ~300L — wires RuntimeContext, starts HyperIndex, RPC, services
-│   ├── pass_loop.ts      ~600L — main loop with multi-frequency timing + metrics wrapper
-│   ├── loop.ts           Pipeline type definitions + runPipeline orchestrator
-│   ├── runner.ts          PassRunner wrapper
-│   └── shutdown.ts       Cleanup
-├── services/
-│   ├── execution/        ExecutionService (thin facade), SubmissionStrategy, ReceiptPoller, GasOracle, NonceManager, QuarantineManager, ExecutionTracker, DryRunner, Calldata builders
-│   └── mempool/          Pending tx watching (coalescing, signal emission)
-├── infra/
-│   ├── hypersync/        HyperIndex/Envio subprocess manager + GraphQL queries
-│   ├── rpc/              Client factory, WebSocket subscriptions
-│   ├── resilience/       Circuit breakers, reorg detector, hyperindex monitor
-│   └── observability/    Logger (Pino), health server
-├── core/
-│   ├── math/             AMM simulators: V2, V3, Curve, Balancer, DODO, WooFi
-│   ├── assessment/       Profit & risk calculation
-│   ├── types/            Pool, route, execution type definitions
-│   └── utils/            BigInt helpers, error formatting
-└── tui/                  Terminal UI (event bus, layout, renderer, state)
+├── cli/main.ts + arb_only.ts
+├── config/
+├── rpc/manager.ts
+├── pipeline/               # graph, finder (DFS), simulator (combined impact+sim), fetcher (returns updated), rates (incremental), ...
+├── orchestrator/           # boot, pass_loop (HF/LF + dirty updates + single rates + budget), ...
+├── services/execution/ + mempool/
+├── infra/{hypersync,rpc,resilience,garbage,observability}
+├── core/{math,assessment,types,utils,constants}
+└── tui/
 ```
 
-### Pipeline Flow (5 stages)
+HyperIndex lives in `hyperindex/` (separate package, dynamic contracts + effect-first preload profile).
 
+Sol: `sol/src/ArbExecutor.sol` (enforces flash only) + tests.
+
+## AI Superpowers
+
+Primary: the arb-tx-tools skill.
+
+- Direct (terminal): `bun .grok/skills/arb-tx-tools/scripts/log-tailer.ts --last 100 --errors-only`
+  then `.../simulator.ts simulate ...` or start-fork
+  then `.../abicoder.ts decode-revert --data 0x...`
+- MCP (if registered via .opencode or your client): `bun run scripts/arb-tx-tools.ts`
+
+Modules under scripts/arb-tx-tools/ are shared with the MCP server and were consolidated into the direct scripts.
+
+See AGENTS.md + .grok/skills/arb-tx-tools/SKILL.md for the loop and exact incantations (including Alchemy MCP path via search_tool + use_tool).
+
+## Quick Start (current)
+
+```bash
+cp .env.example .env   # fill required (ENVIO, PRIVATE_KEY, EXECUTOR, RPCs)
+bun install
+bun run check
+
+bun run tui
+# or arb-only (you run hyperindex externally): bun run src/cli/arb_only.ts --tui
 ```
-Discovery       →   GraphQL: new pools + state refresh
-Enumeration     →   Build graph → Find cycles (2/3/4-hop)
-Simulation      →   Ternary search → Evaluate amount → Profit assessment
-Candidate Build →   Calldata → Dry-run → Gas estimation
-Execution       →   Group compatible → Submit → Track confirmations
-```
 
-Multi-frequency timing:
+See updated .env.example for all current options. No --cleanup flag anymore (dummy removed).
 
-- **HF (200ms)**: Simulation + execution for current cycle set
-- **LF (1s)**: State refresh via RPC, rate recalculation, graph rebuild
-- **Discovery (60s)**: Poll HyperIndex for new pools
+## More
+
+- Full current commands and invariants: AGENTS.md
+- llms.txt for AI assistants
+- All changes audited for dead code, duplication, and single sources.
 
 ## Supported Protocols
 
@@ -75,116 +90,58 @@ Multi-frequency timing:
 
 ## Prerequisites
 
-- **Bun** >=1.2.0
-- **Envio API token** (free at https://envio.dev/app)
-- **Polygon RPC URLs** (Alchemy, QuickNode, or public)
-- **Deployed ArbExecutor contract** on Polygon
-- **Funded private key** for submission
+- Bun >= 1.2
+- Envio API token (for HyperIndex/HyperSync)
+- Polygon RPC(s) — archival preferred for discovery
+- Deployed ArbExecutor (flash-loan-only) + gas-funded key
 
 ## Quick Start
 
 ```bash
-git clone <repo> && cd polygon-arb-bot
 cp .env.example .env
-# Edit .env — all required vars must be set
+# Edit (see .env.example for current vars)
 bun install
+bun run check
 
-# Run the bot
-bun run start              # Headless
-bun run tui                # With Terminal UI
+bun run tui
+# Arb-only mode (external indexer): bun run src/cli/arb_only.ts --tui
 ```
+
+## AI Debugging
+
+See AGENTS.md and the arb-tx-tools skill. Direct scripts live under `.grok/skills/arb-tx-tools/scripts/`. Some logic shared/consolidated with `scripts/arb-tx-tools/`.
 
 ## Configuration
 
-Environment variables are loaded via `src/config/loader.ts`, merged with built-in defaults (`src/config/defaults.ts`), and validated with Zod. See `.env.example` for every available option.
+See the rewritten `.env.example` (top section has required + common; full details in src/config/* ).
 
-**Required vars**: `ENVIO_API_TOKEN`, `EXECUTION_RPC`, `GAS_ESTIMATION_RPC`, `EXECUTOR_ADDRESS`, `PRIVATE_KEY`.
+No legacy cleanup script or --cleanup (removed as dummy).
 
-### Testnet / dry-run
+See `.env.example` (updated) and `src/config/` for the current set of variables. DRY_RUN_BEFORE_SUBMIT and --cleanup are gone (cleanup was dummy; dry runner is always available via ctx).
 
-Set `DRY_RUN_BEFORE_SUBMIT=true` (default) to simulate without submitting.
+## Scripts / Commands
 
-## Scripts
-
-```bash
-# Main bot
-bun run start             # Run the bot (headless)
-bun run tui               # Run the bot with Terminal UI
-
-# Development & testing
-bun run test              # Run all tests
-bun run typecheck         # TypeScript type checking
-bun run lint              # Lint + auto-fix
-bun run fmt               # Format code
-
-# HyperIndex (Envio) development
-bun run dev               # Start the indexer (development mode)
-bun run gentok            # Regenerate STATIC_TOKEN_DECIMALS from public lists + bot data
-bun run gentok:auto       # Recommended: full cycle (pulls auto-discovered tokens + safe write)
-bun run dev:reset         # Kills port (respects ENVIO_INDEXER_PORT) + full reset (recommended for schema/start_block/handler changes)
-bun run dev:kill          # Kill any process holding the default Envio indexer port (9898)
-bun run cgen              # Regenerate Envio types after schema/config changes
-bun run gentok            # Regenerate the static token decimals registry
-bun run clear-hasura      # Clear Hasura metadata
-```
+See AGENTS.md for the current list (bun run start / tui / hyperindex, check/fix, and the arb-tx-tools direct CLIs under .grok/skills/).
 
 ## For AI Assistants & Agents
 
-This repository is intentionally optimized for AI coding agents.
+This repo is heavily optimized for AI agents (custom skills + MCP + detailed context files).
 
-Recommended reading order:
+See AGENTS.md + skill.md + updated llms.txt for the current state, commands, and arb-tx-tools usage (direct CLIs + consolidated shared modules).
 
-1. `AGENTS.md` — primary context and hard rules.
-2. `skill.md` — structured capabilities and workflows (agent-friendly format).
-3. `llms.txt` — document discovery index.
+## Running HyperIndex
 
-When you need accurate Polygon documentation (chain behavior, Agglayer, stablecoins, etc.), use:
+`bun run hyperindex` (from root) — runs the indexer by itself (normal dev mode, via wrapper for ENVIO_API_TOKEN etc.).
 
-- Context7 with library `llmstxt/polygon_technology_llms_txt`, or
-- The official Polygon Docs MCP server.
+For development on the indexer itself (after changing schema.graphql, config.yaml, handlers, or start_block):
+- `cd hyperindex && bun run dev:reset`
+  - Internally: runs `clear-hasura` (clears Hasura metadata to prevent "tables already tracked" warnings from Envio's effects) or warns, then `envio dev -r` (full reset/rebuild).
+- `envio dev -r` (or `bun run dev -r` inside hyperindex) alone: does the reset but may leave metadata warnings if effects have created tables.
+- `clear-hasura`: standalone metadata clear (usually not needed by itself; see the dev:reset for the benefit).
+- `codegen`: regenerate Envio types after schema/config changes. Run manually (e.g. in your pre-commit or when you edit schema). We removed the root `cgen` shortcut; integrate into editor task / husky / justfile if you want automation on schema change detection.
+- Token generation (generate-tokens / generate-tokens:auto): largely automatic now. The bot's HyperIndex process wrapper calls the auto version on shutdown to self-update the static registry with newly discovered cold tokens (from effects during run). No more manual `gentok` or root gentok scripts. The generator scripts remain inside hyperindex/ for the auto mechanism and manual full regen if wanted.
 
-See `skill.md` for more details on working effectively with AI tools in this codebase (including the powerful `arb-tx-tools` skill).
-
-````
-
-### Working with the Indexer
-
-The `hyperindex/` folder contains an Envio indexer.
-
-**Common workflow:**
-
-```bash
-# When actively changing config.yaml, schema, handlers, or start_block:
-bun run dev:reset
-
-# For quick restarts (when nothing structural changed):
-bun run dev
-````
-
-`bun run dev:reset` now automatically:
-
-1. Runs `dev:kill` (respects `ENVIO_INDEXER_PORT` if set)
-2. Performs a full reset (`envio dev -r` + Hasura metadata clear)
-
-This is currently the safest and most reliable command when actively developing the indexer.
-
-**Port conflicts (very common)**
-
-If you see `Port 9898 is already in use`, you can still run:
-
-```bash
-bun run dev:kill
-# or manually:
-lsof -ti :9898 | xargs kill -9
-```
-
-You can also run the indexer on a different port:
-
-```bash
-ENVIO_INDEXER_PORT=9899 bun run dev
-```
-
-The `dev:reset` command is strongly recommended whenever you change `start_block`, the GraphQL schema, or handler logic. It performs a clean reset of both the indexer storage and Hasura metadata.
+See `hyperindex/package.json` and `hyperindex/scripts/` for the full list.
 
 ## Solidity Contracts
 
