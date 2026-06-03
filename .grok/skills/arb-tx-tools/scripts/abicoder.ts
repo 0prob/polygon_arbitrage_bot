@@ -13,7 +13,16 @@
  *   bun .grok/skills/arb-tx-tools/scripts/abicoder.ts 4byte 0x12345678
  */
 
-import { createPublicClient, http, decodeFunctionData, decodeErrorResult, decodeEventLog, type Hex, type Log, type Transaction } from "viem";
+import {
+  createPublicClient,
+  http,
+  decodeFunctionData,
+  decodeErrorResult,
+  decodeEventLog,
+  type Hex,
+  type Log,
+  type Transaction,
+} from "viem";
 import { polygon } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
@@ -65,7 +74,7 @@ function loadExtraAbis(): any[] {
   const extras: any[] = [];
   try {
     if (fs.existsSync(HYPER_ABIS_DIR)) {
-      const files = fs.readdirSync(HYPER_ABIS_DIR).filter(f => f.endsWith(".json"));
+      const files = fs.readdirSync(HYPER_ABIS_DIR).filter((f) => f.endsWith(".json"));
       for (const f of files) {
         try {
           const json = JSON.parse(fs.readFileSync(path.join(HYPER_ABIS_DIR, f), "utf8"));
@@ -121,10 +130,10 @@ function tryDecodeWithAbi(data: Hex) {
 function formatDecoded(d: any): string {
   if (!d) return "Unable to decode with known ABIs (try 4byte or provide custom ABI)";
   if (d.kind === "function") {
-    return `Function: ${d.functionName}\nArgs: ${JSON.stringify(d.args, (_, v) => typeof v === "bigint" ? v.toString() : v, 2)}`;
+    return `Function: ${d.functionName}\nArgs: ${JSON.stringify(d.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)}`;
   }
   if (d.kind === "error") {
-    return `Custom Error: ${d.errorName}\nArgs: ${JSON.stringify(d.args, (_, v) => typeof v === "bigint" ? v.toString() : v, 2)}`;
+    return `Custom Error: ${d.errorName}\nArgs: ${JSON.stringify(d.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)}`;
   }
   return JSON.stringify(d, null, 2);
 }
@@ -166,7 +175,17 @@ async function decodeRevert(data: Hex, hint?: string) {
   // Panic
   if (data.startsWith("0x4e487b71")) {
     const code = parseInt(data.slice(10, 74), 16);
-    const panics: Record<number, string> = { 0x01: "assert", 0x11: "overflow", 0x12: "div0", 0x21: "invalid enum", 0x31: "pop empty", 0x32: "index OOB", 0x41: "alloc", 0x51: "call", 0x61: "assert" };
+    const panics: Record<number, string> = {
+      0x01: "assert",
+      0x11: "overflow",
+      0x12: "div0",
+      0x21: "invalid enum",
+      0x31: "pop empty",
+      0x32: "index OOB",
+      0x41: "alloc",
+      0x51: "call",
+      0x61: "assert",
+    };
     console.log(`Panic(0x${code.toString(16)}): ${panics[code] || "unknown"}`);
     return;
   }
@@ -175,7 +194,12 @@ async function decodeRevert(data: Hex, hint?: string) {
 }
 
 async function getClient(rpcUrl?: string) {
-  const url = rpcUrl || process.env.POLYGON_RPC_URL || process.env.POLYGON_RPC_URLS?.split(",")[0] || process.env.ETH_RPC_URL || "https://polygon-rpc.com";
+  const url =
+    rpcUrl ||
+    process.env.POLYGON_RPC_URL ||
+    process.env.POLYGON_RPC_URLS?.split(",")[0] ||
+    process.env.ETH_RPC_URL ||
+    "https://polygon-rpc.com";
   return createPublicClient({ chain: polygon, transport: http(url) });
 }
 
@@ -208,7 +232,10 @@ async function decodeReceipt(hash: Hex, rpcUrl?: string) {
     try {
       const decoded = decodeEventLog({ abi: FULL_ABI as any, data: log.data, topics: log.topics as any });
       console.log(`  Event: ${decoded.eventName}`);
-      console.log(`  Args:`, JSON.stringify(decoded.args, (_, v) => typeof v === "bigint" ? v.toString() : v, 2));
+      console.log(
+        `  Args:`,
+        JSON.stringify(decoded.args, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2),
+      );
     } catch {
       console.log(`  (no ABI match) topics[0]=${log.topics?.[0]}`);
     }

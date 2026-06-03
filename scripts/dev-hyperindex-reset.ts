@@ -33,7 +33,7 @@ if (envioToken) {
 // Spawn the envio dev process with reset flag
 const child = spawn("bunx", ["envio", "dev", "-r"], {
   cwd: hyperindexDir,
-  stdio: "inherit", 
+  stdio: "inherit",
   env,
   shell: false,
 });

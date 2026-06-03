@@ -91,8 +91,8 @@ export function createHotBiasWhere(hotBias: boolean, paramNames: [string, string
 }
 
 /** Convenience: read the bias flag from environment (recommended way for hyperindex). */
-export const INDEXER_HOT_BIAS = 
-  process.env.ENVIO_INDEXER_HOT_BIAS === "true" || 
+export const INDEXER_HOT_BIAS =
+  process.env.ENVIO_INDEXER_HOT_BIAS === "true" ||
   process.env.ENVIO_INDEXER_HOT_BIAS === "1" ||
-  process.env.INDEXER_HOT_BIAS === "true" || 
+  process.env.INDEXER_HOT_BIAS === "true" ||
   process.env.INDEXER_HOT_BIAS === "1";

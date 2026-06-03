@@ -6,9 +6,7 @@ Detailed code patterns for migrating from TheGraph subgraph to the Envio Indexer
 
 ```typescript
 // TheGraph:
-let entity = new EventEntity(
-  event.transaction.hash.concatI32(event.logIndex.toI32())
-);
+let entity = new EventEntity(event.transaction.hash.concatI32(event.logIndex.toI32()));
 entity.field1 = event.params.field1;
 entity.save();
 
@@ -101,21 +99,23 @@ export function convertTokenToDecimal(tokenAmount: bigint, exchangeDecimals: big
 ```
 
 **Common mistakes:**
+
 1. Replacing `ZERO_BD` with `0` — loses precision
 2. Replacing `ZERO_BI` with `0` — wrong type
 3. Returning `number` instead of `BigDecimal` — loses precision
 4. Using `Math.pow()` instead of `BigDecimal` arithmetic — loses precision
 
 **Entity field initialization:**
+
 ```typescript
 // CORRECT — use constants
 const pair: Pair = {
   id: event.params.pair,
-  reserve0: ZERO_BD,     // NOT 0
-  reserve1: ZERO_BD,     // NOT 0
-  totalSupply: ZERO_BD,  // NOT 0
-  volumeUSD: ZERO_BD,    // NOT 0
-  txCount: ZERO_BI,      // NOT 0
+  reserve0: ZERO_BD, // NOT 0
+  reserve1: ZERO_BD, // NOT 0
+  totalSupply: ZERO_BD, // NOT 0
+  volumeUSD: ZERO_BD, // NOT 0
+  txCount: ZERO_BI, // NOT 0
 };
 ```
 
@@ -134,6 +134,7 @@ const burns = await context.Burn.getWhere({ transaction_id: { _eq: transactionId
 ```
 
 **Full example:**
+
 ```typescript
 const existingMint = await context.Mint.getWhere({ transaction_id: { _eq: transactionId } });
 
@@ -177,11 +178,9 @@ export const getSomething = createEffect(
     rateLimit: false,
   },
   async ({ input, context }) => {
-    const something = await fetch(
-      `https://api.example.com/something?address=${input.address}&blockNumber=${input.blockNumber}`
-    );
+    const something = await fetch(`https://api.example.com/something?address=${input.address}&blockNumber=${input.blockNumber}`);
     return something.json();
-  }
+  },
 );
 ```
 
@@ -255,7 +254,7 @@ export const getTokenMetadata = createEffect(
       context.log.error(`Error fetching token metadata for ${tokenAddress}: ${error}`);
       return { name: "Unknown", symbol: "Unknown", decimals: 0, totalSupply: "0" };
     }
-  }
+  },
 );
 ```
 

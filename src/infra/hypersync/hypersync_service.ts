@@ -186,15 +186,7 @@ export class HyperSyncService {
       const query: any = {
         fromBlock: Math.max(0, height - lookbackBlocks),
         fieldSelection: {
-          trace: [
-            "BlockNumber",
-            "TransactionHash",
-            "TraceAddress",
-            "Action",
-            "Result",
-            "Error",
-            "Value",
-          ] as any,
+          trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error", "Value"] as any,
           transaction: ["Hash"],
         },
         transactions: [{ hash: [txHash] }],

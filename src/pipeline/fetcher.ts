@@ -52,7 +52,12 @@ function trackFailedPool(addr: string, stateCache: Map<string, Record<string, un
   }
 }
 
-function trackSuccessfulPool(addr: string, stateCache: Map<string, Record<string, unknown>>, state: Record<string, unknown>, updated: Set<string>): void {
+function trackSuccessfulPool(
+  addr: string,
+  stateCache: Map<string, Record<string, unknown>>,
+  state: Record<string, unknown>,
+  updated: Set<string>,
+): void {
   stateCache.set(addr, state);
   updated.add(addr);
   _failedPools.delete(addr);
@@ -169,11 +174,16 @@ export async function fetchMissingPoolState(
               const r1 = Array.isArray(r) ? r[1] : (r as any).reserve1;
 
               if (r0 !== undefined && r1 !== undefined) {
-                trackSuccessfulPool(addr, stateCache, {
-                  reserve0: toBigInt(r0, 0n),
-                  reserve1: toBigInt(r1, 0n),
-                  initialized: true,
-                }, updated);
+                trackSuccessfulPool(
+                  addr,
+                  stateCache,
+                  {
+                    reserve0: toBigInt(r0, 0n),
+                    reserve1: toBigInt(r1, 0n),
+                    initialized: true,
+                  },
+                  updated,
+                );
               } else {
                 trackFailedPool(addr, stateCache, now);
               }
@@ -189,12 +199,17 @@ export async function fetchMissingPoolState(
               const tick = s[1] !== undefined ? s[1] : s.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
-                trackSuccessfulPool(addr, stateCache, {
-                  sqrtPriceX96: BigInt(sqrtPriceX96),
-                  tick: Number(tick),
-                  liquidity: BigInt(liqRes.result as any),
-                  initialized: true,
-                }, updated);
+                trackSuccessfulPool(
+                  addr,
+                  stateCache,
+                  {
+                    sqrtPriceX96: BigInt(sqrtPriceX96),
+                    tick: Number(tick),
+                    liquidity: BigInt(liqRes.result as any),
+                    initialized: true,
+                  },
+                  updated,
+                );
               } else {
                 trackFailedPool(addr, stateCache, now);
               }
@@ -213,15 +228,20 @@ export async function fetchMissingPoolState(
               const tick = s[1] !== undefined ? s[1] : s.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
-                trackSuccessfulPool(addr, stateCache, {
-                  sqrtPriceX96: BigInt(sqrtPriceX96),
-                  liquidity: BigInt(liqRes.result as any),
-                  tick: Number(tick),
-                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
-                  tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
-                  hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
-                  initialized: true,
-                }, updated);
+                trackSuccessfulPool(
+                  addr,
+                  stateCache,
+                  {
+                    sqrtPriceX96: BigInt(sqrtPriceX96),
+                    liquidity: BigInt(liqRes.result as any),
+                    tick: Number(tick),
+                    fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                    tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
+                    hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
+                    initialized: true,
+                  },
+                  updated,
+                );
               } else {
                 trackFailedPool(addr, stateCache, now);
               }
@@ -232,11 +252,16 @@ export async function fetchMissingPoolState(
             const priceRes = results[resultIdx++];
             const feeRes = results[resultIdx++];
             if (priceRes?.status === "success" && priceRes.result) {
-              trackSuccessfulPool(addr, stateCache, {
-                price: BigInt(priceRes.result as any),
-                fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
-                initialized: true,
-              }, updated);
+              trackSuccessfulPool(
+                addr,
+                stateCache,
+                {
+                  price: BigInt(priceRes.result as any),
+                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                  initialized: true,
+                },
+                updated,
+              );
             } else {
               trackFailedPool(addr, stateCache, now);
             }

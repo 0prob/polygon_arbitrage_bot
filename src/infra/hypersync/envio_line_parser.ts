@@ -1,30 +1,32 @@
-
-
 /**
  * Parsed information from an Envio process line
  */
 export interface EnvioLineParsedInfo {
   chain?: string;
-  eventType: 'throughput' | 'pipeline_bottleneck' | 'slow_handler' | 'progress' | 'lifecycle' | 'error' | 'transient_error' | 'unknown';
-  
+  eventType: "throughput" | "pipeline_bottleneck" | "slow_handler" | "progress" | "lifecycle" | "error" | "transient_error" | "unknown";
+
   // Progress info
   syncedBlock?: number;
   remoteBlock?: number;
-  
+
   // Performance info
   eventsPerSec?: number;
   eventCount?: number;
-  
+
   // Status info
-  status?: 'syncing' | 'synced' | 'indexer_ready' | 'running' | 'error';
-  
+  status?: "syncing" | "synced" | "indexer_ready" | "running" | "error";
+
   // Error classification
   isTransientError?: boolean;
   shouldSuppress?: boolean;
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
-  
+  logLevel?: "debug" | "info" | "warn" | "error";
+
   // Error suppression info
   flushSummary?: string;
+
+  // Rate-limit info parsed from stdout (e.g. "remaining=0/60 reqs, resets_in=41s")
+  // rateLimitResetAt is a Date.now()-relative epoch ms when the rate limit window resets.
+  rateLimitResetAt?: number;
 }
 
 /**
@@ -42,7 +44,7 @@ class ErrorSuppressor {
 
   check(signature: string): { shouldSuppress: boolean; flushSummary?: string } {
     const now = Date.now();
-    
+
     if (!this.suppression || this.suppression.signature !== signature) {
       // New error type or first occurrence - flush previous if any
       const flushSummary = this.flush();
@@ -66,7 +68,7 @@ class ErrorSuppressor {
 
   flush(): string | undefined {
     if (!this.suppression || this.suppression.count === 0) return undefined;
-    
+
     const summary = `Suppressed ${this.suppression.count} similar errors in ${Math.round((Date.now() - this.suppression.firstSeen) / 1000)}s`;
     this.suppression = null;
     return summary;
@@ -86,7 +88,7 @@ export class EnvioLineParser {
   parse(line: string): EnvioLineParsedInfo {
     const chainMatch = line.match(/^\[([^\]]+)\]/);
     const chain = chainMatch && !chainMatch[1].includes(":") ? chainMatch[1].toLowerCase() : undefined;
-    
+
     const trimmedLower = line.replace(/^\[.*?\]\s*/, "").toLowerCase();
     const originalTrimmed = line.replace(/^\[.*?\]\s*/, "");
 
@@ -94,14 +96,14 @@ export class EnvioLineParser {
     if (this.isHypersyncTransientError(originalTrimmed)) {
       const signature = "hypersync_client:transient_fetch_error";
       const { shouldSuppress, flushSummary } = this.errorSuppressor.check(signature);
-      
+
       return {
-        eventType: 'transient_error',
+        eventType: "transient_error",
         chain,
         isTransientError: true,
         shouldSuppress,
-        logLevel: shouldSuppress ? 'debug' : 'warn',
-        flushSummary
+        logLevel: shouldSuppress ? "debug" : "warn",
+        flushSummary,
       };
     }
 
@@ -111,7 +113,7 @@ export class EnvioLineParser {
       return { ...throughputInfo, chain };
     }
 
-    // Parse progress information  
+    // Parse progress information
     const progressInfo = this.parseProgress(trimmedLower);
     if (progressInfo) {
       return { ...progressInfo, chain };
@@ -120,9 +122,9 @@ export class EnvioLineParser {
     // Parse pipeline bottlenecks
     if (this.isPipelineBottleneck(originalTrimmed)) {
       return {
-        eventType: 'pipeline_bottleneck',
+        eventType: "pipeline_bottleneck",
         chain,
-        logLevel: 'warn'
+        logLevel: "warn",
       };
     }
 
@@ -147,14 +149,16 @@ export class EnvioLineParser {
     }
 
     return {
-      eventType: 'unknown',
+      eventType: "unknown",
       chain,
-      logLevel: 'debug'
+      logLevel: "debug",
     };
   }
 
   private isHypersyncTransientError(line: string): boolean {
-    return /hypersync_client.*(failed to get (height|arrow data) from server|error sending request for url.*hypersync|dns error|connection error|timed out)/i.test(line);
+    return /hypersync_client.*(failed to get (height|arrow data) from server|error sending request for url.*hypersync|dns error|connection error|timed out)/i.test(
+      line,
+    );
   }
 
   private parseThroughput(line: string): EnvioLineParsedInfo | null {
@@ -162,9 +166,9 @@ export class EnvioLineParser {
     const epsMatch = line.match(/(\d{2,})\s*(?:events?|evts?)\s*(?:\/\s*s|per\s*s|\/s|@\s*(\d+)|eps|\/sec)/i);
     if (epsMatch) {
       return {
-        eventType: 'throughput',
+        eventType: "throughput",
         eventsPerSec: parseInt(epsMatch[1], 10),
-        logLevel: 'info'
+        logLevel: "info",
       };
     }
 
@@ -172,9 +176,9 @@ export class EnvioLineParser {
     const bareEvents = line.match(/(\d{4,})\s*events?/i);
     if (bareEvents) {
       return {
-        eventType: 'throughput',
+        eventType: "throughput",
         eventCount: parseInt(bareEvents[1], 10),
-        logLevel: 'debug'
+        logLevel: "debug",
       };
     }
 
@@ -186,23 +190,23 @@ export class EnvioLineParser {
     const blockArrow = line.match(/(\d{5,})\s*->\s*(\d{5,})/);
     if (blockArrow) {
       return {
-        eventType: 'progress',
-        status: 'syncing',
+        eventType: "progress",
+        status: "syncing",
         syncedBlock: parseInt(blockArrow[1], 10),
         remoteBlock: parseInt(blockArrow[2], 10),
-        logLevel: 'debug'
+        logLevel: "debug",
       };
     }
 
-    // Block progress patterns: "12345 / 12350"  
+    // Block progress patterns: "12345 / 12350"
     const progressSlash = line.match(/(\d{5,})\s*\/\s*(\d{5,})/);
     if (progressSlash) {
       return {
-        eventType: 'progress', 
-        status: 'syncing',
+        eventType: "progress",
+        status: "syncing",
         syncedBlock: parseInt(progressSlash[1], 10),
         remoteBlock: parseInt(progressSlash[2], 10),
-        logLevel: 'debug'
+        logLevel: "debug",
       };
     }
 
@@ -218,11 +222,11 @@ export class EnvioLineParser {
       // Try to extract block info for progress tracking
       const slowEffectBlock = line.match(/"block":\s*(\d{5,})/);
       const syncedBlock = slowEffectBlock ? parseInt(slowEffectBlock[1], 10) : undefined;
-      
+
       return {
-        eventType: 'slow_handler',
+        eventType: "slow_handler",
         syncedBlock,
-        logLevel: 'info'
+        logLevel: "info",
       };
     }
     return null;
@@ -233,40 +237,40 @@ export class EnvioLineParser {
     if (/(indexed|synced|caught up|caught-up|live tail|following head)/i.test(line)) {
       const nums = line.match(/\d{5,}/g);
       const block = nums ? parseInt(nums[nums.length - 1], 10) : undefined;
-      
+
       return {
-        eventType: 'lifecycle',
-        status: 'synced',
+        eventType: "lifecycle",
+        status: "synced",
         syncedBlock: block,
         remoteBlock: block,
-        logLevel: 'info'
+        logLevel: "info",
       };
     }
 
     // Important milestones
     if (/Starting indexing!/i.test(line)) {
       return {
-        eventType: 'lifecycle',
-        status: 'indexer_ready',
-        logLevel: 'warn'
+        eventType: "lifecycle",
+        status: "indexer_ready",
+        logLevel: "warn",
       };
     }
 
     // General startup signals
     if (/connected|listening|ready|running|started|backfill (started|complete)|Using Postgres|Using Hasura/i.test(line)) {
       return {
-        eventType: 'lifecycle',
-        status: 'running',
-        logLevel: 'debug'
+        eventType: "lifecycle",
+        status: "running",
+        logLevel: "debug",
       };
     }
 
     // Docker/infrastructure startup
     if (/graphql|hasura|docker|container/i.test(line)) {
       return {
-        eventType: 'lifecycle', 
-        status: 'running',
-        logLevel: 'debug'
+        eventType: "lifecycle",
+        status: "running",
+        logLevel: "debug",
       };
     }
 
@@ -276,12 +280,23 @@ export class EnvioLineParser {
   private parseError(line: string): EnvioLineParsedInfo | null {
     if (/error|fail|exception|panic|rate limit|quota|429|throttl|slow|stall|metadata-warning/i.test(line)) {
       const isError = /error|fail|panic|429/i.test(line);
-      const status = isError ? 'error' : undefined;
-      
+      const status = isError ? "error" : undefined;
+
+      // Parse rate-limit reset window from HyperIndex stdout lines such as:
+      //   "rate limit exhausted (remaining=0/60 reqs, resets_in=41s), proactively waiting 41s for window reset."
+      //   "rate limited by server (remaining=0/60 reqs, resets_in=41s), waiting 42s before retry."
+      let rateLimitResetAt: number | undefined;
+      const resetsInMatch = line.match(/resets_in=(\d+)s/i);
+      if (resetsInMatch) {
+        const resetsInSec = parseInt(resetsInMatch[1], 10);
+        rateLimitResetAt = Date.now() + resetsInSec * 1000 + 2_000; // +2s buffer
+      }
+
       return {
-        eventType: 'error',
+        eventType: "error",
         status,
-        logLevel: isError ? 'error' : 'warn'
+        logLevel: isError && !rateLimitResetAt ? "error" : "warn",
+        rateLimitResetAt,
       };
     }
 

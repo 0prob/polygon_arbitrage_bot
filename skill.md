@@ -26,6 +26,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 ### Core Arbitrage Engine
 
 **Discover and evaluate profitable cycles**
+
 - Ingest pools via HyperIndex (new PairCreated/PoolCreated events).
 - Build adjacency graph from on-chain + cached state.
 - Enumerate 2/3/4-hop cycles.
@@ -34,12 +35,14 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 - Only execute when `RouteSimulationResult.amountIn` exactly matches flash principal and profit exceeds threshold after all costs.
 
 **Flash-loan-only execution (strict invariant)**
+
 - All cycles go through `ArbExecutor` using Balancer V2 or Aave V3 flash loans.
 - No inventory or pre-funded capital on the executor contract.
 - Reverts cleanly on misuse (`FlashLoanRequired`, `FlashLoanOnly`).
 - Calldata builders in `services/execution/calldata/`.
 
 **Mempool and competing tx awareness**
+
 - Real-time pending tx monitoring with coalescing.
 - HyperSync trace parsing for flashloan detection, protocol fingerprinting, depth analysis, and suspicious patterns (sandwiches, JIT, etc.).
 - Quarantine and risk scoring for execution.
@@ -47,6 +50,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 ### Data & Indexing Layer
 
 **Envio HyperIndex (hyperindex/)**
+
 - Dynamic contract registration for thousands of pools via factory events.
 - Effect API for enriching creation events with token decimals and protocol metadata (RPC + local caches + persistence).
 - Live-debug profile: minimal DB writes on hot paths; bot owns live state via RPC fetcher.
@@ -54,11 +58,13 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 - See `hyperindex/config.yaml`, `src/handlers/`, `src/effects/`, and previous Envio doc reviews for patterns.
 
 **Direct HyperSync client usage**
+
 - High-performance reads, trace fetching, receipt reconstruction.
 - Multi-token rotation and local rate limiting.
 - Used for both indexing bootstrap and execution-time intelligence.
 
 **State & Rates**
+
 - `fetchMissingPoolState` (LF path + pre-fetch).
 - `computeMaticRates` and price impact calculations.
 - Token registry with static + discovered decimals.
@@ -66,17 +72,20 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 ### Development & Debugging Superpowers
 
 **arb-tx-tools skill (primary AI debugging loop)**
+
 - Transaction simulator (Anvil forks + Alchemy MCP `simulateExecution`/`traceCall`).
 - ABICoder using exact project ABIs + custom errors.
 - Log tailer for runtime TS errors, JSON-RPC limits, HyperIndex lag, etc.
 - Typical loop: tailer → reproduce with simulator → decode revert → fix → verify.
 
 **Other AI skills**
+
 - Multiple indexer skills (schema, handlers, performance, traces, external calls, etc.).
 - Graphify for codebase knowledge graphs.
 - Context7 and MCP support already configured in the environment.
 
 **Simulation & Testing**
+
 - Foundry tests for ArbExecutor (atomic, Aave fork, auth).
 - TS pipeline tests (graph, simulator, token registry).
 - Pass loop tests with full dependency injection.
@@ -138,6 +147,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 ## Integration
 
 **Key commands**
+
 - `bun run src/cli/main.ts --tui`
 - `bun run src/cli/arb_only.ts --tui`
 - `bun test`
@@ -146,6 +156,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 - `arb-tx-tools` (the custom skill for simulation + decoding)
 
 **Core technologies**
+
 - TypeScript + Bun (runtime)
 - viem + wagmi patterns (RPC)
 - Foundry (Solidity contracts + tests)
@@ -154,6 +165,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 - Extensive custom AI skills and MCP configuration
 
 **Important invariants (never violate)**
+
 - Flash-loan-only on executor (see `sol/src/ArbExecutor.sol` and AGENTS.md).
 - All profit math deducts flash fees.
 - Hot path (200ms): no sync I/O, use injected deps, respect frequency tiers.
@@ -161,6 +173,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 - Prefer HyperSync + direct client over raw RPC where possible.
 
 **Key addresses (Polygon mainnet)**
+
 - See `src/config/addresses.ts`
 - ArbExecutor (deployed)
 - Balancer Vault, Aave V3 Pool, major DEX factories and routers
@@ -179,6 +192,7 @@ For the absolute latest architecture and rules, always start with `AGENTS.md`.
 ---
 
 **Recommended for AI agents working in this repo**:
+
 - Read `AGENTS.md` first.
 - Read this `skill.md` for structured capabilities and workflows.
 - Use `llms.txt` (if present) for broad document discovery.

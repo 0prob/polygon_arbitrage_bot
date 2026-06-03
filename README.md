@@ -55,22 +55,23 @@ Execution       →   Group compatible → Submit → Track confirmations
 ```
 
 Multi-frequency timing:
+
 - **HF (200ms)**: Simulation + execution for current cycle set
 - **LF (1s)**: State refresh via RPC, rate recalculation, graph rebuild
 - **Discovery (60s)**: Poll HyperIndex for new pools
 
 ## Supported Protocols
 
-| Protocol | Math Engine | Factory |
-|----------|-------------|---------|
-| Uniswap V2 / Sushi V2 / Quick V2 | `uniswap_v2.ts` | Factory-based |
-| Uniswap V3 / Sushi V3 / Quick V3 | `uniswap_v3.ts` | Factory-based |
-| KyberSwap Elastic | `uniswap_v3.ts` | Factory-based |
-| Curve StableSwap | `curve.ts` | Registry-based |
-| Balancer V2 | `balancer.ts` | Vault-based |
-| DODO vPMM | `dodo.ts` | DVM/DPP/DSP |
-| WooFi SSLP | `woofi.ts` | SSLP-based |
-| Uniswap V4 | `uniswap_v4.ts` | PoolManager |
+| Protocol                         | Math Engine     | Factory        |
+| -------------------------------- | --------------- | -------------- |
+| Uniswap V2 / Sushi V2 / Quick V2 | `uniswap_v2.ts` | Factory-based  |
+| Uniswap V3 / Sushi V3 / Quick V3 | `uniswap_v3.ts` | Factory-based  |
+| KyberSwap Elastic                | `uniswap_v3.ts` | Factory-based  |
+| Curve StableSwap                 | `curve.ts`      | Registry-based |
+| Balancer V2                      | `balancer.ts`   | Vault-based    |
+| DODO vPMM                        | `dodo.ts`       | DVM/DPP/DSP    |
+| WooFi SSLP                       | `woofi.ts`      | SSLP-based     |
+| Uniswap V4                       | `uniswap_v4.ts` | PoolManager    |
 
 ## Prerequisites
 
@@ -132,16 +133,19 @@ bun run clear-hasura      # Clear Hasura metadata
 This repository is intentionally optimized for AI coding agents.
 
 Recommended reading order:
+
 1. `AGENTS.md` — primary context and hard rules.
 2. `skill.md` — structured capabilities and workflows (agent-friendly format).
 3. `llms.txt` — document discovery index.
 
 When you need accurate Polygon documentation (chain behavior, Agglayer, stablecoins, etc.), use:
+
 - Context7 with library `llmstxt/polygon_technology_llms_txt`, or
 - The official Polygon Docs MCP server.
 
 See `skill.md` for more details on working effectively with AI tools in this codebase (including the powerful `arb-tx-tools` skill).
-```
+
+````
 
 ### Working with the Indexer
 
@@ -155,9 +159,10 @@ bun run dev:reset
 
 # For quick restarts (when nothing structural changed):
 bun run dev
-```
+````
 
 `bun run dev:reset` now automatically:
+
 1. Runs `dev:kill` (respects `ENVIO_INDEXER_PORT` if set)
 2. Performs a full reset (`envio dev -r` + Hasura metadata clear)
 
@@ -185,8 +190,8 @@ The `dev:reset` command is strongly recommended whenever you change `start_block
 
 Foundry project in `sol/`:
 
-| Contract | Purpose |
-|----------|---------|
+| Contract          | Purpose                                                     |
+| ----------------- | ----------------------------------------------------------- |
 | `ArbExecutor.sol` | On-chain execution: flash loan → swap path → repay → profit |
 
 ## HyperIndex

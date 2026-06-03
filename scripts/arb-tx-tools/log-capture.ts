@@ -20,7 +20,6 @@ export class LogCapture {
   private maxLines: number;
   private fileWatcher: FSWatcher | null = null;
   private fileSize = 0;
-  private filePath: string | null = null;
   public errorCount = 0;
 
   constructor(maxLines = 1000) {
@@ -44,7 +43,6 @@ export class LogCapture {
   }
 
   startWatching(filePath: string): void {
-    this.filePath = filePath;
     if (!existsSync(filePath)) return;
 
     this.fileSize = readFileSync(filePath).length;

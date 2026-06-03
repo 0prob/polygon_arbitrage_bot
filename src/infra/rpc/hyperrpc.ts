@@ -88,7 +88,7 @@ export class HyperRpcClient {
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 
     const id = ++this.requestId;
-    
+
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (this.token) {
       headers["Authorization"] = `Bearer ${this.token}`;

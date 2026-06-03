@@ -24,9 +24,9 @@ const UNISWAP_V3 = "0x1f98431c8ad98523631ae4a59f267346ea31f984";
 
 // Stable tokens — guaranteed in STATIC_TOKEN_DECIMALS (no RPC needed in tests)
 const WMATIC = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
-const USDC   = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
-const WETH   = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619";
-const USDT   = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
+const USDC = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
+const WETH = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619";
+const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
 
 // Fake pair/pool addresses
 const PAIR_ADDR = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -71,7 +71,7 @@ describe("V2Factory.PairCreated", () => {
     const t0 = await indexer.TokenMeta.get(WMATIC);
     const t1 = await indexer.TokenMeta.get(USDC);
     expect(t0?.decimals).toBe(18); // WMATIC = 18
-    expect(t1?.decimals).toBe(6);  // USDC = 6
+    expect(t1?.decimals).toBe(6); // USDC = 6
   });
 
   it("ignores pairs where token0 === factory address (garbage guard)", async () => {
@@ -326,4 +326,3 @@ describe("Multiple events in sequence", () => {
     expect(totalEvents).toBeGreaterThanOrEqual(2);
   });
 });
-

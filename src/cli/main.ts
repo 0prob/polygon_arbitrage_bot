@@ -140,25 +140,18 @@ async function main() {
     hyperIndexMonitor.setHyperSyncService(ctx.hyperSync);
   }
 
-  // Provide a real indexed height from Hasura (major improvement over log scraping only)
-  // Queries a representative table for the latest processed block.
+  // Provide indexed height from Hasura using envio_chains.progress_block —
+  // the authoritative HyperIndex sync position (per Envio docs: "check envio_chains
+  // to see each chain's latest processed block"). Single row, always current,
+  // independent of whether handlers write state (which ours don't for live-tail perf).
   const hasuraUrl = config.hasuraUrl;
   const hasuraSecret = config.hasuraSecret;
   if (hasuraUrl) {
-    // Optimized hybrid query: takes the global max lastUpdatedBlock across *all* pool state tables
-    // + createdBlock from PoolMeta. This gives the most accurate "how far the indexer has processed
-    // data the bot actually cares about" with a single cheap GraphQL roundtrip.
     const getIndexedHeight = async (): Promise<number> => {
       try {
-        const query = `{
-          v2: V2PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          v3: V3PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          v4: V4PoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          curve: CurvePoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          balancer: BalancerPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          dodo: DodoPoolState(limit: 1, order_by: {lastUpdatedBlock: desc}) { lastUpdatedBlock }
-          meta: PoolMeta(limit: 1, order_by: {createdBlock: desc}) { createdBlock }
-        }`;
+        // envio_chains.progress_block is the canonical "how far has HyperIndex processed"
+        // field. It advances on every batch regardless of entity writes in handlers.
+        const query = `{ envio_chains(where: {id: {_eq: 137}}) { progress_block } }`;
 
         const resp = await fetch(hasuraUrl, {
           method: "POST",
@@ -170,19 +163,8 @@ async function main() {
         });
 
         const json = (await resp.json()) as any;
-        const d = json?.data || {};
-
-        const candidates = [
-          d.v2?.[0]?.lastUpdatedBlock,
-          d.v3?.[0]?.lastUpdatedBlock,
-          d.v4?.[0]?.lastUpdatedBlock,
-          d.curve?.[0]?.lastUpdatedBlock,
-          d.balancer?.[0]?.lastUpdatedBlock,
-          d.dodo?.[0]?.lastUpdatedBlock,
-          d.meta?.[0]?.createdBlock,
-        ].filter((x): x is number => typeof x === "number" && x > 0);
-
-        return candidates.length > 0 ? Math.max(...candidates) : 0;
+        const block = json?.data?.envio_chains?.[0]?.progress_block;
+        return typeof block === "number" && block > 0 ? block : 0;
       } catch {
         return 0;
       }

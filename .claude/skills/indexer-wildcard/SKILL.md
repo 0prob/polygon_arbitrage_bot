@@ -32,21 +32,18 @@ chains:
 Pass `wildcard: true` in the options object to `indexer.onEvent`. Use `event.srcAddress` to identify which contract emitted the event:
 
 ```ts
-indexer.onEvent(
-  { contract: "ERC20", event: "Transfer", wildcard: true },
-  async ({ event, context }) => {
-    const tokenAddress = event.srcAddress; // The actual contract address
-    const id = `${event.chainId}-${event.transaction.hash}-${event.logIndex}`;
+indexer.onEvent({ contract: "ERC20", event: "Transfer", wildcard: true }, async ({ event, context }) => {
+  const tokenAddress = event.srcAddress; // The actual contract address
+  const id = `${event.chainId}-${event.transaction.hash}-${event.logIndex}`;
 
-    context.Transfer.set({
-      id,
-      token_id: `${event.chainId}-${tokenAddress}`,
-      from: event.params.from,
-      to: event.params.to,
-      value: event.params.value,
-    });
-  },
-);
+  context.Transfer.set({
+    id,
+    token_id: `${event.chainId}-${tokenAddress}`,
+    from: event.params.from,
+    to: event.params.to,
+    value: event.params.value,
+  });
+});
 ```
 
 ## Combining with Event Filters (`where`)

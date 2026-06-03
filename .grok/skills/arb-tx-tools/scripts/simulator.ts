@@ -49,17 +49,17 @@ function parseArgs(argv: string[]) {
     if (a.startsWith("--")) {
       const k = a.slice(2);
       const v = argv[i + 1];
-      if (v && !v.startsWith("--")) { args[k] = v; i++; } else args[k] = true;
+      if (v && !v.startsWith("--")) {
+        args[k] = v;
+        i++;
+      } else args[k] = true;
     } else if (!args._cmd) args._cmd = a;
   }
   return args;
 }
 
 function getRpcFromEnv(): string {
-  return process.env.POLYGON_RPC_URL ||
-         process.env.POLYGON_RPC_URLS?.split(",")[0] ||
-         process.env.ETH_RPC_URL ||
-         "https://polygon-rpc.com";
+  return process.env.POLYGON_RPC_URL || process.env.POLYGON_RPC_URLS?.split(",")[0] || process.env.ETH_RPC_URL || "https://polygon-rpc.com";
 }
 
 async function startFork(args: any) {
@@ -76,17 +76,29 @@ async function startFork(args: any) {
   // If not --background, we can try to spawn here (will block until killed)
   if (!args.background && !args["no-spawn"]) {
     console.log("\nSpawning anvil (this process will hold the fork open)...");
-    const child = spawn("anvil", [
-      "--fork-url", rpc,
-      "--port", String(port),
-      "--chain-id", "31337",
-      "--gas-limit", "30000000",
-      "--base-fee", "1000000000",
-      ...(args.block ? ["--fork-block-number", args.block] : []),
-    ], { stdio: "inherit" });
+    const child = spawn(
+      "anvil",
+      [
+        "--fork-url",
+        rpc,
+        "--port",
+        String(port),
+        "--chain-id",
+        "31337",
+        "--gas-limit",
+        "30000000",
+        "--base-fee",
+        "1000000000",
+        ...(args.block ? ["--fork-block-number", args.block] : []),
+      ],
+      { stdio: "inherit" },
+    );
 
-    process.on("SIGINT", () => { child.kill("SIGINT"); process.exit(0); });
-    await new Promise(r => child.on("exit", r));
+    process.on("SIGINT", () => {
+      child.kill("SIGINT");
+      process.exit(0);
+    });
+    await new Promise((r) => child.on("exit", r));
   } else {
     console.log("\nRun the anvil command above in another terminal or with & / the monitor tool.");
   }
@@ -147,12 +159,17 @@ async function simulateArb(args: any) {
   const port = Number(args.port || 18545); // use uncommon port for temp fork
 
   if (!callsJson) {
-    console.error("Missing --calls '[{ \"target\": \"0x..\", \"data\": \"0x..\" }]' ");
+    console.error('Missing --calls \'[{ "target": "0x..", "data": "0x.." }]\' ');
     process.exit(1);
   }
 
   let calls: any[];
-  try { calls = JSON.parse(callsJson); } catch (e) { console.error("Invalid JSON for --calls"); throw e; }
+  try {
+    calls = JSON.parse(callsJson);
+  } catch (e) {
+    console.error("Invalid JSON for --calls");
+    throw e;
+  }
 
   console.log("=== Arb Route Simulation on Fresh Anvil Fork ===");
   console.log(`Flash: ${flashToken} ${flashAmount}`);
@@ -162,15 +179,10 @@ async function simulateArb(args: any) {
   const forkRpc = ANVIL_RPC(port);
   console.log(`Starting temp anvil on ${forkRpc} (forking ${rpc})...`);
 
-  const anvil = spawn("anvil", [
-    "--fork-url", rpc,
-    "--port", String(port),
-    "--chain-id", "31337",
-    "--silent",
-  ]);
+  const anvil = spawn("anvil", ["--fork-url", rpc, "--port", String(port), "--chain-id", "31337", "--silent"]);
 
   // Give anvil 1.5s to come up
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 1500));
 
   const client = createPublicClient({ chain: polygon, transport: http(forkRpc) });
 
@@ -187,7 +199,9 @@ async function simulateArb(args: any) {
     console.log("  3. Call the ArbExecutor with proper FlashParams + route calls");
     console.log("  4. Decode any revert with abicoder.ts");
     console.log("\nExample next step after this script matures:");
-    console.log(`  cast call --rpc-url ${forkRpc} <executor> "executeArb(address,uint256,(address,uint256,uint256,bytes32,(address,uint256,bytes)[]))" ...`);
+    console.log(
+      `  cast call --rpc-url ${forkRpc} <executor> "executeArb(address,uint256,(address,uint256,uint256,bytes32,(address,uint256,bytes)[]))" ...`,
+    );
 
     // Quick smoke: just do an eth_call to a known contract to prove fork is live
     const code = await client.getBytecode({ address: KNOWN_TOKENS.USDC });

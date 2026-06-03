@@ -71,11 +71,11 @@ describe("EnvioLineParser", () => {
 
     test("suppresses repeated hypersync errors", () => {
       const line = "hypersync_client connection error timeout";
-      
+
       // First occurrence should not be suppressed
       const first = parser.parse(line);
       expect(first.shouldSuppress).toBe(false);
-      
+
       // Second occurrence should be suppressed
       const second = parser.parse(line);
       expect(second.shouldSuppress).toBe(true);

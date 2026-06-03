@@ -43,8 +43,8 @@ Handlers accept an optional 2nd argument — see `indexer-wildcard` and `indexer
 
 ```ts
 // Read
-const entity = await context.Entity.get(id);              // Entity | undefined
-const entity = await context.Entity.getOrThrow(id);       // throws if missing
+const entity = await context.Entity.get(id); // Entity | undefined
+const entity = await context.Entity.getOrThrow(id); // throws if missing
 const entity = await context.Entity.getOrCreate({ id, ...defaults });
 
 // Query by indexed fields (@index in schema)
@@ -56,8 +56,8 @@ const list = await context.Entity.getWhere({ fieldName: { _lte: value } });
 const list = await context.Entity.getWhere({ fieldName: { _in: [value1, value2] } });
 
 // Write
-context.Entity.set(entity);          // create or update (sync — no await)
-context.Entity.deleteUnsafe(id);     // delete (sync — no await)
+context.Entity.set(entity); // create or update (sync — no await)
+context.Entity.deleteUnsafe(id); // delete (sync — no await)
 ```
 
 `getWhere` operators: `_eq`, `_gt`, `_lt`, `_gte`, `_lte`, `_in`. Only `@index` fields are queryable. See `indexer-schema` for @index syntax.
@@ -65,11 +65,11 @@ context.Entity.deleteUnsafe(id);     // delete (sync — no await)
 ### Context Properties
 
 ```ts
-context.chain.id           // number — current chain ID
-context.chain.isRealtime   // boolean — true when ALL chains have caught up to head
-context.isPreload      // boolean — true during preload phase
-context.log            // { debug, info, warn, error, errorWithExn }
-context.effect(fn, input)  // external call via Effect API (see indexer-external-calls)
+context.chain.id; // number — current chain ID
+context.chain.isRealtime; // boolean — true when ALL chains have caught up to head
+context.isPreload; // boolean — true during preload phase
+context.log; // { debug, info, warn, error, errorWithExn }
+context.effect(fn, input); // external call via Effect API (see indexer-external-calls)
 ```
 
 ## Spread Operator for Updates
@@ -88,26 +88,29 @@ if (entity) {
 ```ts
 import { indexer } from "envio";
 
-indexer.name;                        // "my-indexer"
-indexer.chainIds;                    // [1, 137]
-indexer.chains[1].id;                // 1
-indexer.chains[1].name;              // "ethereum"
-indexer.chains[1].startBlock;        // 0
-indexer.chains[1].isRealtime;        // false
-indexer.chains[1].MyContract.name;   // "MyContract"
+indexer.name; // "my-indexer"
+indexer.chainIds; // [1, 137]
+indexer.chains[1].id; // 1
+indexer.chains[1].name; // "ethereum"
+indexer.chains[1].startBlock; // 0
+indexer.chains[1].isRealtime; // false
+indexer.chains[1].MyContract.name; // "MyContract"
 indexer.chains[1].MyContract.addresses; // ["0x..."]
-indexer.chains[1].MyContract.abi;    // [...]
+indexer.chains[1].MyContract.abi; // [...]
 ```
 
 ## Common Pitfalls
 
 **Entity IDs** — prefer `${chainId}_${blockNumber}_${logIndex}` as a unique ID:
+
 ```ts
 const id = `${event.chainId}_${event.block.number}_${event.logIndex}`;
 ```
+
 This is globally unique across chains and blocks. Use it as the default unless the entity is a singleton (e.g., a Token or Pool keyed by address).
 
 **Entity relationships** — schema uses entity references; handlers use the `_id` suffix that codegen adds:
+
 ```ts
 // Schema:   token0: Token!       ← entity reference, field name is "token0"
 // Handler:  { token0_id: token0.id }  ← codegen adds _id; NEVER write "token0" here

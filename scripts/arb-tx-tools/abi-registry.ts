@@ -53,7 +53,9 @@ function indexAbi(registry: AbiRegistry, abi: unknown): void {
           name,
           inputs: inputs.map((i) => ({ name: (i as any).name as string, type: (i as any).type as string })),
         };
-      } catch { /* skip unresolvable */ }
+      } catch {
+        /* skip unresolvable */
+      }
     } else if (type === "error") {
       try {
         const selector = computeSelector(entry as any);
@@ -62,12 +64,17 @@ function indexAbi(registry: AbiRegistry, abi: unknown): void {
           inputs: inputs.map((i) => ({ name: (i as any).name as string, type: (i as any).type as string })),
           signature: `${name}(${(entry as any).inputs.map((i: any) => i.type).join(",")})`,
         };
-      } catch { /* skip unresolvable */ }
+      } catch {
+        /* skip unresolvable */
+      }
     }
   }
 }
 
-export async function decodeRevert(data: `0x${string}`, registry: AbiRegistry): Promise<{ name: string; args: Record<string, unknown>; signature: string } | null> {
+export async function decodeRevert(
+  data: `0x${string}`,
+  registry: AbiRegistry,
+): Promise<{ name: string; args: Record<string, unknown>; signature: string } | null> {
   if (data.length < 10) return null;
   const selector = data.slice(0, 10) as `0x${string}`;
   const errorDef = registry.errors[selector];
@@ -78,7 +85,9 @@ export async function decodeRevert(data: `0x${string}`, registry: AbiRegistry): 
     const types = errorDef.inputs.map((i) => i.type);
     const args = decodeAbiParameters(types as any, `0x${data.slice(10)}` as `0x${string}`);
     const named: Record<string, unknown> = {};
-    errorDef.inputs.forEach((inp, i) => { named[inp.name || `arg${i}`] = args[i]; });
+    errorDef.inputs.forEach((inp, i) => {
+      named[inp.name || `arg${i}`] = args[i];
+    });
     return { name: errorDef.name, args: named, signature: errorDef.signature };
   } catch {
     return { name: errorDef.name, args: {}, signature: errorDef.signature };

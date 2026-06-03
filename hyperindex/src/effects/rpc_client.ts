@@ -20,7 +20,12 @@ import { getRpmTarget, isLowQuota, isVeryLowQuota } from "../utils/pacing";
  */
 
 function getRpcUrls(): string[] {
-  const raw = process.env.ENVIO_POLYGON_RPC_URLS || process.env.ENVIO_POLYGON_RPC_URL || process.env.POLYGON_RPC_URLS || process.env.POLYGON_RPC_URL || "";
+  const raw =
+    process.env.ENVIO_POLYGON_RPC_URLS ||
+    process.env.ENVIO_POLYGON_RPC_URL ||
+    process.env.POLYGON_RPC_URLS ||
+    process.env.POLYGON_RPC_URL ||
+    "";
   if (raw) {
     const list = raw
       .split(/[,;\s]+/)
@@ -50,8 +55,8 @@ const rpcUrls = getRpcUrls();
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
     batch: { batchSize: BATCH_SIZE },
-    timeout: 4_000,  // Reduced from 10s: fail fast for fetchTokenMeta — default-18 is cheap, 15s hangs are not
-    retryCount: 1,   // Reduced from 3: one retry is enough; repeated failures mean the endpoint is down
+    timeout: 4_000, // Reduced from 10s: fail fast for fetchTokenMeta — default-18 is cheap, 15s hangs are not
+    retryCount: 1, // Reduced from 3: one retry is enough; repeated failures mean the endpoint is down
     retryDelay: 150,
     fetchOptions: {
       headers: {

@@ -42,7 +42,10 @@ function parseArgs(argv: string[]): TailOptions {
     else if (a === "--search") o.search = argv[++i];
     else if (a === "--json") o.json = true;
     else if (a === "--errors" || a === "--errors-only") o.errorsOnly = true;
-    else if (!a.startsWith("-") && !o.logPathOverridden) { o.logPath = a; o.logPathOverridden = true; }
+    else if (!a.startsWith("-") && !o.logPathOverridden) {
+      o.logPath = a;
+      o.logPathOverridden = true;
+    }
   }
   return o as TailOptions;
 }
@@ -59,7 +62,7 @@ function formatLine(line: string, jsonMode: boolean): string {
     const ctx = obj.context ? ` [${JSON.stringify(obj.context)}]` : "";
     const err = obj.err || obj.error ? `\n  Error: ${obj.err?.message || obj.error?.stack?.split("\n")[0] || ""}` : "";
     const stack = (obj.stack || obj.err?.stack || obj.error?.stack || "").split("\n").slice(0, 6).join("\n  ");
-    return `[${time.slice(11,19)}] ${level}: ${msg}${ctx}${err}${stack ? "\n  Stack: " + stack : ""}`;
+    return `[${time.slice(11, 19)}] ${level}: ${msg}${ctx}${err}${stack ? "\n  Stack: " + stack : ""}`;
   } catch {
     // plain text line
     return line;
@@ -105,7 +108,10 @@ function tailFile(opts: TailOptions) {
   const watcher = fs.watch(p, (event) => {
     if (event !== "change") return;
     const newSize = fs.statSync(p).size;
-    if (newSize <= size) { size = newSize; return; }
+    if (newSize <= size) {
+      size = newSize;
+      return;
+    }
     const fd = fs.openSync(p, "r");
     const buf = Buffer.alloc(newSize - size);
     fs.readSync(fd, buf, 0, buf.length, size);
@@ -117,7 +123,10 @@ function tailFile(opts: TailOptions) {
     }
   });
 
-  process.on("SIGINT", () => { watcher.close(); process.exit(0); });
+  process.on("SIGINT", () => {
+    watcher.close();
+    process.exit(0);
+  });
 }
 
 function printHelp() {
@@ -159,4 +168,7 @@ async function main() {
   tailFile(opts);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

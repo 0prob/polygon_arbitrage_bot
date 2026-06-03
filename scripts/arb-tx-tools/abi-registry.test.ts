@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildAbiRegistry } from "./abi-registry.ts";
-import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -15,7 +15,7 @@ describe("abi-registry", () => {
       JSON.stringify([
         { type: "function", name: "swap", inputs: [{ name: "amount", type: "uint256" }], stateMutability: "nonpayable" },
         { type: "error", name: "InsufficientOutputAmount", inputs: [{ name: "amount", type: "uint256" }] },
-      ])
+      ]),
     );
 
     const registry = buildAbiRegistry(tmpDir);
@@ -41,10 +41,8 @@ describe("abi-registry", () => {
   });
 
   it("includes extra ABIs passed as argument", () => {
-    const extra = [
-      { type: "error", name: "CustomError", inputs: [{ name: "x", type: "uint256" }] },
-    ];
-    const registry = buildAbiRegistry("/nonexistent", [extra]);
+    const extra = [{ type: "error", name: "CustomError", inputs: [{ name: "x", type: "uint256" }] }];
+    const registry = buildAbiRegistry("/nonexistent", [extra as unknown as Record<string, unknown>]);
     const errKeys = Object.keys(registry.errors);
     expect(errKeys.length).toBeGreaterThan(0);
     expect(registry.errors[errKeys[0]].name).toBe("CustomError");

@@ -252,7 +252,6 @@ async function fetchGasFromStation(url: string, percentile: number): Promise<{ b
   }
 }
 
-
 function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint {
   const floor = BigInt(config.priorityFeeFloorGwei) * 1_000_000_000n;
   const ceiling = BigInt(config.priorityFeeCeilingGwei) * 1_000_000_000n;

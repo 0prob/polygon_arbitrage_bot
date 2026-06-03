@@ -46,6 +46,8 @@ export class HyperIndexMonitor implements Lifecycle {
 
   /** Tracks whether we started the HyperIndex process ourselves. If false, an external envio is managing it. */
   private _managingProcess = false;
+  /** Guard against concurrent restart attempts triggered by overlapping checkHealth() ticks. */
+  private _restarting = false;
 
   async prepare(): Promise<void> {
     // Check if Hasura is already running before starting our own process.
@@ -153,6 +155,11 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   private async checkHealth(): Promise<void> {
+    // Prevent re-entrant calls: if a restart is already in progress (from a prior tick),
+    // skip this tick entirely. This is the root cause of the "Hasura unreachable restart storm"
+    // where multiple concurrent checkHealth ticks each trigger restart() simultaneously.
+    if (this._restarting) return;
+
     // When externally managed (user runs `bun dev` separately), skip process management
     if (this._managingProcess) {
       if (!this.proc.isRunning()) {
@@ -174,10 +181,7 @@ export class HyperIndexMonitor implements Lifecycle {
         // With paid 200 rpm plan, rate limits are transient. Log for observability.
         const rl = this.opts.hyperSync.rateLimitInfo?.();
         if (rl && rl.remaining !== undefined && rl.remaining < 10) {
-          this.opts.logger.warn(
-            { rateLimitInfo: rl },
-            "HyperSync rate-limited — paid plan should recover within the rate window",
-          );
+          this.opts.logger.warn({ rateLimitInfo: rl }, "HyperSync rate-limited — paid plan should recover within the rate window");
         }
       } catch (err) {
         this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
@@ -234,26 +238,44 @@ export class HyperIndexMonitor implements Lifecycle {
         // Before declaring a stall, check if HyperSync rate limits are exhausted.
         // HyperIndex may be legitimately waiting 41-45s for the next rate-limit window.
         // In that case, extend the stall threshold rather than restarting into the same exhausted key.
-        const rl = this.opts.hyperSync?.rateLimitInfo?.();
-        const isRateLimited = rl && rl.remaining !== undefined && rl.remaining < 5;
-        if (isRateLimited) {
-          const resetsIn = rl.resetsIn ?? 45;
-          const extendedMax = this.maxStallMs + resetsIn * 1000 + 5_000;
-          if (Date.now() - this.lastProgressTime < extendedMax) {
-            this.opts.logger.debug(
-              { stallMs: Date.now() - this.lastProgressTime, extendedMax, rateLimitInfo: rl },
-              "HyperIndex not progressing but known to be rate-limited — extending stall threshold instead of restarting",
-            );
-            return;
-          }
+        //
+        // Two sources of rate-limit truth (checked in order of reliability):
+        //   1. getProcessRateLimitInfo() — parsed from HyperIndex stdout ("resets_in=41s").
+        //      This is the authoritative signal: the child process knows its own rate-limit state.
+        //   2. this.opts.hyperSync?.rateLimitInfo?.() — from the SDK client.
+        //      Useful when the SDK is making direct HyperSync calls, but may be null/stale
+        //      relative to what the child process is experiencing.
+        const procRl = this.proc.getProcessRateLimitInfo?.();
+        const sdkRl = this.opts.hyperSync?.rateLimitInfo?.();
+
+        // Determine reset deadline from whichever source has data, preferring process stdout
+        let rateLimitResetAt: number | undefined;
+        if (procRl) {
+          rateLimitResetAt = procRl.resetAt;
+        } else if (sdkRl && sdkRl.remaining !== undefined && sdkRl.remaining < 5) {
+          const resetsIn = sdkRl.resetsIn ?? 45;
+          rateLimitResetAt = Date.now() + resetsIn * 1000 + 5_000;
         }
+
+        const isRateLimited = rateLimitResetAt !== undefined && Date.now() < rateLimitResetAt;
+        if (isRateLimited) {
+          const remainingMs = rateLimitResetAt! - Date.now();
+          this.opts.logger.debug(
+            { stallMs: Date.now() - this.lastProgressTime, rateLimitResetAt, remainingMs, procRl, sdkRl },
+            "HyperIndex not progressing but known to be rate-limited — extending stall threshold instead of restarting",
+          );
+          return;
+        }
+
+        // Not rate-limited — genuine stall
+        const rl = procRl ?? sdkRl;
         this.opts.logger.error(
           {
             lastSynced: this.lastSyncedBlock,
             stallMs: Date.now() - this.lastProgressTime,
             lag,
             maxStallMs: this.maxStallMs,
-            ...(isRateLimited ? { rateLimitInfo: rl } : {}),
+            ...(rl ? { rateLimitInfo: rl } : {}),
           },
           "HyperIndex sync STALLED — no progress for a long time. Forcing restart. (Check pipeline split, rate limits, RPC quality, and batch size in hyperindex/config.yaml)",
         );
@@ -385,6 +407,7 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   private async restart(): Promise<void> {
+    this._restarting = true;
     this._isHealthy = false;
     try {
       await this.proc.stop();
@@ -402,6 +425,8 @@ export class HyperIndexMonitor implements Lifecycle {
       this.opts.logger.info({}, "HyperIndex restarted successfully");
     } catch (err) {
       this.opts.logger.error({ err, attempt: this.restartAttempts }, "HyperIndex restart failed");
+    } finally {
+      this._restarting = false;
     }
   }
 }

@@ -95,7 +95,11 @@ export class AnvilManager {
       proc.on("exit", () => resolve({ stopped: true }));
       proc.kill("SIGTERM");
       setTimeout(() => {
-        try { proc.kill("SIGKILL"); } catch { /* ignore */ }
+        try {
+          proc.kill("SIGKILL");
+        } catch {
+          /* ignore */
+        }
         resolve({ stopped: true });
       }, 3000);
     });

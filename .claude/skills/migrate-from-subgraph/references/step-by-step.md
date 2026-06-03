@@ -19,11 +19,13 @@ pnpm dev
 ```
 
 **Why this is critical:**
+
 - TypeScript compilation (`tsc --noEmit`) only catches syntax and type errors
 - Runtime errors (database issues, missing entities, logic errors) only appear when running the indexer
 - Testing after each change makes debugging much easier — you know exactly which change caused the issue
 
 **Runtime Testing Checklist:**
+
 - [ ] After every code change, run `pnpm test`
 - [ ] If needed, run `pnpm dev` for ~30 seconds
 - [ ] Watch the output for any error messages or warnings
@@ -31,6 +33,7 @@ pnpm dev
 - [ ] Only proceed to the next step after confirming tests pass
 
 **Common Runtime Errors to Watch For:**
+
 - Database connection issues
 - Missing entity lookups returning `{}` instead of `undefined`
 - Logic errors in calculations
@@ -63,6 +66,7 @@ Contract.EventName.handler(async ({ event, context }) => {
 ```
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -96,6 +100,7 @@ type EventEntity {
 ```
 
 **Key changes:**
+
 - Remove `@entity` decorators
 - `Bytes!` → `String!`
 - Keep `ID!`, `BigInt!`, `BigDecimal!`
@@ -121,6 +126,7 @@ type Transaction {
 ```
 
 **How @derivedFrom works in Envio:**
+
 - `@derivedFrom` arrays are VIRTUAL fields — they don't exist in generated types
 - They're populated automatically when querying the API, not in handlers
 - You CANNOT access them in handlers (e.g., `transaction.mints` will not work)
@@ -139,6 +145,7 @@ After migrating, verify the schema is IDENTICAL to the original (apart from synt
 **Only acceptable differences:** `@entity` removed, `Bytes!` → `String!`
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -186,6 +193,7 @@ chains:
 **Do NOT duplicate contract definitions in chain sections.** Global contracts define handlers and events; chain sections only define addresses.
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -237,6 +245,7 @@ it("Should register dynamic Pair contracts", async () => {
 ```
 
 **Common patterns:**
+
 ```typescript
 // Pair contracts
 Factory.PairCreated.contractRegister(({ event, context }) => {
@@ -255,11 +264,13 @@ VaultFactory.VaultCreated.contractRegister(({ event, context }) => {
 ```
 
 **Important:**
+
 - MUST be placed ABOVE the handler for the same event
 - MUST use the exact contract name from config.yaml (e.g., `addPair` for `Pair`)
 - MUST reference the correct event parameter containing the new contract address
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -271,6 +282,7 @@ pnpm codegen && pnpm tsc --noEmit && pnpm test
 **Implement helper functions that have NO dependencies on incomplete entities/handlers.**
 
 A function has "no dependencies" if it:
+
 - Has no `context.Entity.get()` calls
 - Doesn't call other unimplemented helper functions
 - Only uses constants, basic math, or static data
@@ -286,14 +298,14 @@ export function fetchTokenSymbol(tokenAddress: string): string {
 
 // CORRECT — complete implementation
 export function isNullEthValue(value: string): boolean {
-  return value === '0x0000000000000000000000000000000000000000000000000000000000000001' ||
-         value === '0x0000000000000000000000000000000000000000000000000000000000000000';
+  return (
+    value === "0x0000000000000000000000000000000000000000000000000000000000000001" ||
+    value === "0x0000000000000000000000000000000000000000000000000000000000000000"
+  );
 }
 
 export function convertEthToDecimal(eth: bigint): BigDecimal {
-  return new BigDecimal(eth.toString()).div(
-    new BigDecimal('1000000000000000000')
-  );
+  return new BigDecimal(eth.toString()).div(new BigDecimal("1000000000000000000"));
 }
 ```
 
@@ -302,6 +314,7 @@ export function convertEthToDecimal(eth: bigint): BigDecimal {
 **External calls MUST use Effect API** — see [migration-patterns.md](migration-patterns.md) for Effect API patterns.
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -311,6 +324,7 @@ pnpm codegen && pnpm tsc --noEmit && pnpm test
 ## Step 5b: Implement Simple Handlers
 
 Handlers that only set parameter values with minimal processing:
+
 - Direct parameter mapping to entity fields
 - Loading existing entities and updating with new data
 - Basic event handlers with no complex business logic
@@ -318,6 +332,7 @@ Handlers that only set parameter values with minimal processing:
 **Write a failing test first, then implement until it passes.**
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -327,10 +342,12 @@ pnpm codegen && pnpm tsc --noEmit && pnpm test
 ## Step 5c: Implement Moderate Complexity Handlers
 
 Handlers that call helper functions but don't create complex entity relationships:
+
 - Handlers that call helper functions
 - Handlers that update multiple entities with straightforward logic
 
 **As you implement each handler, implement any helper functions it calls:**
+
 1. Identify helper functions called by the current handler
 2. Check if they have dependencies on incomplete entities/handlers
 3. If NO dependencies, implement them immediately
@@ -338,6 +355,7 @@ Handlers that call helper functions but don't create complex entity relationship
 5. Continue recursively until all required helpers are complete
 
 **Quality Check:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -349,6 +367,7 @@ pnpm codegen && pnpm tsc --noEmit && pnpm test
 Handlers with complex business logic, multiple entity relationships, contract binding (RPC calls), or dependencies on multiple other handlers.
 
 **Implementation strategy:**
+
 1. Implement ONE complex handler at a time
 2. Identify all helper functions it calls
 3. Implement any missing helper functions
@@ -357,12 +376,14 @@ Handlers with complex business logic, multiple entity relationships, contract bi
 6. Move to next handler ONLY after current one passes
 
 **Why this order matters:**
+
 - Prevents "entity not found" errors during development
 - Ensures required entities exist before complex handlers use them
 - Allows incremental testing and validation
 - Reduces circular dependency issues
 
 **Quality Check after each helper AND each handler:**
+
 ```bash
 pnpm codegen && pnpm tsc --noEmit && pnpm test
 ```
@@ -374,6 +395,7 @@ pnpm codegen && pnpm tsc --noEmit && pnpm test
 ### 6.1: Systematic Handler Logic Review
 
 Go through EACH handler, one by one:
+
 1. Compare logic to subgraph implementation
 2. Identify missing or unnecessary logic
 3. Update handler
@@ -386,6 +408,7 @@ Go through EACH handler, one by one:
 ### 6.2: Systematic Helper Function Review
 
 Same process for every helper function:
+
 1. Compare to subgraph implementation
 2. Identify gaps
 3. Fix and re-check
@@ -394,6 +417,7 @@ Same process for every helper function:
 ### 6.3: Verification Checklist
 
 After each handler/function review:
+
 - [ ] Logic matches subgraph exactly — no missing or extra logic
 - [ ] All edge cases handled — same conditional branches
 - [ ] Entity operations correct — proper loading, updating, saving

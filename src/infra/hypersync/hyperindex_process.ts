@@ -89,6 +89,13 @@ export interface HyperIndexProcess {
   isRunning: () => boolean;
   /** Short prefix of the ENVIO key currently active for this HyperIndex child (for TUI "ENVIO Key:" indicator) */
   getCurrentEnvioKeyPrefix?: () => string | undefined;
+  /**
+   * Returns rate-limit state parsed from HyperIndex process stdout, or null if none observed.
+   * resetAt is a Date.now()-epoch ms timestamp when the rate-limit window is expected to reset.
+   * This is the authoritative signal for the stall guard when the HyperSync SDK client
+   * does not have live visibility into the child process's rate-limit state.
+   */
+  getProcessRateLimitInfo?: () => { resetAt: number } | null;
 }
 
 /**
@@ -112,15 +119,13 @@ async function needsAggressiveCleanup(): Promise<boolean> {
     // Check for containers marked for removal or in error states
     const listCmd = `docker ps -a --filter name=envio- --format "{{.Status}}" 2>/dev/null || true`;
     const output = execSync(listCmd, { encoding: "utf8", timeout: 3000 });
-    
+
     // Look for problematic states
-    const lines = output.trim().split('\n').filter(Boolean);
-    const hasStuckContainers = lines.some(status => 
-      status.includes('marked for removal') || 
-      status.includes('Dead') || 
-      status.includes('(unhealthy)')
+    const lines = output.trim().split("\n").filter(Boolean);
+    const hasStuckContainers = lines.some(
+      (status) => status.includes("marked for removal") || status.includes("Dead") || status.includes("(unhealthy)"),
     );
-    
+
     return hasStuckContainers;
   } catch {
     // If we can't check, err on the side of caution
@@ -135,7 +140,7 @@ async function performLightweightDockerCleanup(hiDir: string): Promise<void> {
   try {
     // Just stop envio and clean running containers
     execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 6000 });
-    
+
     // Remove any still-running envio containers
     const bulkRm = "docker rm -f $(docker ps -q --filter name=envio- 2>/dev/null) 2>/dev/null || true";
     execSync(bulkRm, { stdio: "ignore", timeout: 3000 });
@@ -151,16 +156,16 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
   try {
     // Stop envio first
     execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 8000 });
-    
+
     // Force remove all envio containers (including stopped ones)
     const bulkRm = "docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true";
     execSync(bulkRm, { stdio: "ignore", timeout: 5000 });
-    
+
     // Individual container cleanup for stubborn cases
     const listCmd = `docker ps -a --filter name=envio- --format "{{.ID}}" 2>/dev/null || true`;
     const containerIds = execSync(listCmd, { encoding: "utf8", timeout: 4000 }).trim();
     if (containerIds) {
-      for (const id of containerIds.split('\n').filter(Boolean)) {
+      for (const id of containerIds.split("\n").filter(Boolean)) {
         try {
           execSync(`docker rm -f ${id}`, { stdio: "ignore", timeout: 2000 });
         } catch {
@@ -168,7 +173,7 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
         }
       }
     }
-    
+
     // Clean volumes only on force reset
     if (forceFullReset) {
       execSync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", {
@@ -193,6 +198,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
   let _statusTimer: ReturnType<typeof setInterval> | null = null;
   let _stderrBuffer: string[] = [];
   let _hasDoneReactiveHasuraClear = false;
+  // Rate-limit info parsed from HyperIndex stdout (reset epoch ms, or null if not rate-limited)
+  let _processRateLimitResetAt: number | null = null;
 
   // Refactored line parser for better maintainability
   const envioLineParser = new EnvioLineParser();
@@ -238,32 +245,34 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
    * Safe to call even if Hasura is not reachable.
    */
   /**
- * Best-effort run of `bun run gentok:auto` after HyperIndex shutdown.
- * This promotes any tokens discovered via RPC during the run into the static registry.
- */
-function runGentokAuto(hiDir: string, logger: Logger): void {
-  // Fire and forget — we don't want shutdown to be blocked by this.
-  setTimeout(() => {
-    try {
-      logger.info("Running gentok:auto after HyperIndex shutdown to promote newly discovered cold tokens...");
-      const child = spawn("bun", ["run", "gentok:auto"], {
-        cwd: hiDir,
-        stdio: "ignore",
-        detached: true,
-      });
-      child.unref();
+   * Best-effort run of `bun run gentok:auto` after HyperIndex shutdown.
+   * This promotes any tokens discovered via RPC during the run into the static registry.
+   */
+  function runGentokAuto(hiDir: string, logger: Logger): void {
+    // Fire and forget — we don't want shutdown to be blocked by this.
+    setTimeout(() => {
+      try {
+        logger.info("Running gentok:auto after HyperIndex shutdown to promote newly discovered cold tokens...");
+        const child = spawn("bun", ["run", "gentok:auto"], {
+          cwd: hiDir,
+          stdio: "ignore",
+          detached: true,
+        });
+        child.unref();
 
-      // Give it a generous amount of time, then we stop caring
-      setTimeout(() => {
-        try { child.kill(); } catch {}
-      }, 90_000);
-    } catch (err) {
-      logger.debug({ err }, "Failed to spawn gentok:auto after shutdown (non-fatal)");
-    }
-  }, 0);
-}
+        // Give it a generous amount of time, then we stop caring
+        setTimeout(() => {
+          try {
+            child.kill();
+          } catch {}
+        }, 90_000);
+      } catch (err) {
+        logger.debug({ err }, "Failed to spawn gentok:auto after shutdown (non-fatal)");
+      }
+    }, 0);
+  }
 
-async function clearHasuraMetadata(url: string, secret: string | undefined, logger: Logger): Promise<void> {
+  async function clearHasuraMetadata(url: string, secret: string | undefined, logger: Logger): Promise<void> {
     const endpoint = `${url.replace(/\/$/, "")}/v1/metadata`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -303,54 +312,48 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
   function parseEnvioLine(line: string): void {
     // Parse the line using the focused parser
     const parsed = envioLineParser.parse(line);
-    
+
     // Log every single line for complete activity tracing (debug level to avoid duplication)
     opts.logger.debug({ source: "hyperindex", raw: line, parsed }, "HyperIndex output");
 
     // Handle error suppression summaries
     if (parsed.flushSummary) {
-      opts.logger.warn(
-        { source: "hyperindex", suppressedErrors: parsed.flushSummary },
-        "Error suppression summary"
-      );
+      opts.logger.warn({ source: "hyperindex", suppressedErrors: parsed.flushSummary }, "Error suppression summary");
     }
 
     // Skip processing if this is a suppressed transient error
     if (parsed.shouldSuppress) {
-      opts.logger.debug(
-        { source: "hyperindex", raw: line, eventType: parsed.eventType },
-        "Suppressed transient error"
-      );
+      opts.logger.debug({ source: "hyperindex", raw: line, eventType: parsed.eventType }, "Suppressed transient error");
       return;
     }
 
     // Handle different event types
     switch (parsed.eventType) {
-      case 'throughput':
+      case "throughput":
         handleThroughputEvent(parsed);
         break;
-        
-      case 'progress':
+
+      case "progress":
         handleProgressEvent(parsed);
         break;
-        
-      case 'slow_handler':
+
+      case "slow_handler":
         handleSlowHandlerEvent(parsed);
         break;
-        
-      case 'lifecycle':
+
+      case "lifecycle":
         handleLifecycleEvent(parsed);
         break;
-        
-      case 'error':
-      case 'transient_error':
+
+      case "error":
+      case "transient_error":
         handleErrorEvent(parsed);
         break;
-        
-      case 'pipeline_bottleneck':
+
+      case "pipeline_bottleneck":
         opts.logger.warn(
           { source: "hyperindex", raw: line },
-          "HyperIndex PIPELINE SPLIT / bottleneck indicator (Loaders/Handlers/DB Writes)"
+          "HyperIndex PIPELINE SPLIT / bottleneck indicator (Loaders/Handlers/DB Writes)",
         );
         break;
     }
@@ -367,15 +370,9 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
 
   function handleThroughputEvent(parsed: EnvioLineParsedInfo): void {
     if (parsed.eventsPerSec) {
-      opts.logger.info(
-        { source: "hyperindex", eventsPerSec: parsed.eventsPerSec },
-        "HyperIndex throughput"
-      );
+      opts.logger.info({ source: "hyperindex", eventsPerSec: parsed.eventsPerSec }, "HyperIndex throughput");
     } else if (parsed.eventCount) {
-      opts.logger.debug(
-        { source: "hyperindex", eventCount: parsed.eventCount },
-        "HyperIndex event count"
-      );
+      opts.logger.debug({ source: "hyperindex", eventCount: parsed.eventCount }, "HyperIndex event count");
     }
   }
 
@@ -388,11 +385,8 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
   }
 
   function handleSlowHandlerEvent(parsed: EnvioLineParsedInfo): void {
-    opts.logger.info(
-      { source: "hyperindex", syncedBlock: parsed.syncedBlock },
-      "HyperIndex possible slow handler or effect"
-    );
-    
+    opts.logger.info({ source: "hyperindex", syncedBlock: parsed.syncedBlock }, "HyperIndex possible slow handler or effect");
+
     // Update progress from slow handler block info
     if (parsed.syncedBlock) {
       _lastParsedBlock = Math.max(_lastParsedBlock, parsed.syncedBlock);
@@ -401,28 +395,38 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
   }
 
   function handleLifecycleEvent(parsed: EnvioLineParsedInfo): void {
-    if (parsed.status === 'indexer_ready') {
+    if (parsed.status === "indexer_ready") {
       opts.logger.warn(
         { source: "hyperindex", milestone: "indexer_ready" },
-        "HyperIndex reached 'Starting indexing!' — real event processing should begin"
+        "HyperIndex reached 'Starting indexing!' — real event processing should begin",
       );
       emitStatus("indexer_ready", _lastParsedBlock, _lastRemoteBlock, parsed.chain);
-    } else if (parsed.status === 'synced' && parsed.syncedBlock) {
+    } else if (parsed.status === "synced" && parsed.syncedBlock) {
       emitStatus("synced", parsed.syncedBlock, parsed.remoteBlock || parsed.syncedBlock, parsed.chain);
-    } else if (parsed.status === 'running') {
+    } else if (parsed.status === "running") {
       if (_lastParsedBlock === 0) emitStatus("running", 0, 0, parsed.chain);
     }
   }
 
   function handleErrorEvent(parsed: EnvioLineParsedInfo): void {
+    // Capture rate-limit reset time from stdout so the monitor's stall guard can use it
+    if (parsed.rateLimitResetAt) {
+      _processRateLimitResetAt = parsed.rateLimitResetAt;
+    }
+
     if (parsed.logLevel) {
       opts.logger[parsed.logLevel as "error" | "warn"](
-        { source: "hyperindex", eventType: parsed.eventType },
-        "HyperIndex error/warning"
+        {
+          source: "hyperindex",
+          raw: undefined,
+          eventType: parsed.eventType,
+          ...(parsed.rateLimitResetAt ? { rateLimitResetAt: parsed.rateLimitResetAt } : {}),
+        },
+        "HyperIndex error/warning",
       );
     }
-    
-    if (parsed.status === 'error') {
+
+    if (parsed.status === "error") {
       emitStatus("error", _lastParsedBlock, _lastRemoteBlock, parsed.chain);
     }
   }
@@ -431,11 +435,11 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
     if (proc) return;
 
     // Envio line parser handles its own state management now - no manual reset needed
-    
+
     // === OPTIMIZED DOCKER CLEANUP: Smart cleanup based on actual container state ===
     // Only do aggressive cleanup if we detect stuck containers or on explicit force reset
-    const shouldForceCleanup = opts.forceFullReset || await needsAggressiveCleanup();
-    
+    const shouldForceCleanup = opts.forceFullReset || (await needsAggressiveCleanup());
+
     if (shouldForceCleanup) {
       opts.logger.info("Performing aggressive Docker cleanup (stuck containers or explicit reset)...");
       await performAggressiveDockerCleanup(hiDir, opts.forceFullReset || false);
@@ -500,15 +504,10 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
     if (explicitToken) {
       env.ENVIO_API_TOKEN = explicitToken;
       _currentEnvioKeyPrefix = explicitToken.slice(0, 8) + "…";
-      opts.logger.info(
-        { tokenPrefix: _currentEnvioKeyPrefix },
-        "HyperIndex using single ENVIO_API_TOKEN (paid plan — 200 rpm)",
-      );
+      opts.logger.info({ tokenPrefix: _currentEnvioKeyPrefix }, "HyperIndex using single ENVIO_API_TOKEN (paid plan — 200 rpm)");
     } else {
       _currentEnvioKeyPrefix = undefined;
-      opts.logger.warn(
-        "No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be heavily rate-limited. Set ENVIO_API_TOKEN in .env.",
-      );
+      opts.logger.warn("No ENVIO_API_TOKEN provided. HyperSync/HyperIndex will be heavily rate-limited. Set ENVIO_API_TOKEN in .env.");
     }
 
     // === LIVE DEBUG + PROGRESS HANDLER COORDINATION ===
@@ -736,5 +735,15 @@ async function clearHasuraMetadata(url: string, secret: string | undefined, logg
     return _currentEnvioKeyPrefix;
   }
 
-  return { start, stop, isRunning, getCurrentEnvioKeyPrefix };
+  function getProcessRateLimitInfo(): { resetAt: number } | null {
+    if (_processRateLimitResetAt === null) return null;
+    // Expire stale rate-limit info (max 120s — well past any real window)
+    if (Date.now() > _processRateLimitResetAt + 120_000) {
+      _processRateLimitResetAt = null;
+      return null;
+    }
+    return { resetAt: _processRateLimitResetAt };
+  }
+
+  return { start, stop, isRunning, getCurrentEnvioKeyPrefix, getProcessRateLimitInfo };
 }

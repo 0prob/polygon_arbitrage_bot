@@ -45,7 +45,7 @@ indexer.onBlock(
       id: `${block.number}`,
       blockNumber: BigInt(block.number),
     });
-  }
+  },
 );
 ```
 
@@ -70,15 +70,16 @@ async ({ block, context }) => {
 ```
 
 See:
+
 - `indexer-handlers` for the full `context` API (including `isPreload`, `chain`, `effect`, `log`)
 - `indexer-external-calls` when you need RPC, HTTP, or other I/O from a block handler
 
 ## Options
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `name` | `string` | yes | Handler name for logging, metrics, and debugging |
-| `where` | `({ chain }) => boolean \| filter` | no | Evaluated once per configured chain at startup. Return `false` to disable for that chain, `true` or omit to run on every block, or `{ block: { number: { _gte?, _lte?, _every? } } }` to scope it. `_every` is relative to `_gte` (or 0): `(blockNumber - _gte) % _every === 0`. |
+| Option  | Type                               | Required | Description                                                                                                                                                                                                                                                                      |
+| ------- | ---------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`  | `string`                           | yes      | Handler name for logging, metrics, and debugging                                                                                                                                                                                                                                 |
+| `where` | `({ chain }) => boolean \| filter` | no       | Evaluated once per configured chain at startup. Return `false` to disable for that chain, `true` or omit to run on every block, or `{ block: { number: { _gte?, _lte?, _every? } } }` to scope it. `_every` is relative to `_gte` (or 0): `(blockNumber - _gte) % _every === 0`. |
 
 ## Performance Recipes
 
@@ -104,7 +105,7 @@ indexer.onBlock(
   async ({ block, context }) => {
     if (context.isPreload) return;
     // coarse historical writes
-  }
+  },
 );
 
 indexer.onBlock(
@@ -119,7 +120,7 @@ indexer.onBlock(
   async ({ block, context }) => {
     if (context.isPreload) return;
     // fine-grained realtime
-  }
+  },
 );
 ```
 
@@ -154,8 +155,8 @@ indexer.onBlock(
 
     // fetch once and seed entities
     const data = await fetchInitialData();
-    data.forEach(d => context.ReferenceData.set(d));
-  }
+    data.forEach((d) => context.ReferenceData.set(d));
+  },
 );
 ```
 

@@ -211,8 +211,7 @@ async function runLfStateRefresh(
   } catch (err) {
     // Suppress repeated "circuit open" noise: only warn on the first open event; debug thereafter.
     // The circuit can stay open for up to 60s while logging every 1s LF tick = ~60 identical lines.
-    const isCircuitOpenError =
-      err instanceof Error && err.message.includes("Circuit breaker") && err.message.includes("is open");
+    const isCircuitOpenError = err instanceof Error && err.message.includes("Circuit breaker") && err.message.includes("is open");
     if (isCircuitOpenError && ctx.hasuraCircuit.getState() === "open") {
       ctx.logger.debug({ err }, "Hasura circuit open — skipping HyperIndex state refresh (RPC fallback active)");
     } else {

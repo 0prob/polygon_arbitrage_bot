@@ -58,8 +58,8 @@ export function fetchTokenTotalSupply(tokenAddress: string): bigint {
 ```typescript
 // WRONG
 const pair: Entity<"Pair"> = {
-  token0: token0.id,    // Should be token0_id
-  token1: token1.id,    // Should be token1_id
+  token0: token0.id, // Should be token0_id
+  token1: token1.id, // Should be token1_id
 };
 
 // CORRECT — use _id suffix for relationships
@@ -120,16 +120,17 @@ export async function updateTokenDayData() {
 
 Always verify code types match schema types exactly:
 
-| Schema | TypeScript |
-|--------|------------|
-| `Int!` | `number` |
-| `BigInt!` | `bigint` / `ZERO_BI` |
-| `BigDecimal!` | `BigDecimal` / `ZERO_BD` |
-| `String!` / `Bytes!` | `string` |
-| `Boolean!` | `boolean` |
-| `EntityType!` | `entity_type_id: string` |
+| Schema               | TypeScript               |
+| -------------------- | ------------------------ |
+| `Int!`               | `number`                 |
+| `BigInt!`            | `bigint` / `ZERO_BI`     |
+| `BigDecimal!`        | `BigDecimal` / `ZERO_BD` |
+| `String!` / `Bytes!` | `string`                 |
+| `Boolean!`           | `boolean`                |
+| `EntityType!`        | `entity_type_id: string` |
 
 **Example mismatch:**
+
 ```typescript
 // WRONG — schema expects Int!, code sets BigInt
 // Schema: date: Int!
@@ -158,6 +159,7 @@ When you need `event.transaction.hash` or other transaction fields, you MUST add
 ```
 
 **Common events that need transaction hash:**
+
 - Transfer, Mint, Burn, Swap events
 - Any event creating or updating Transaction entities
 
@@ -200,8 +202,8 @@ import { Pair, Token } from "envio";
 import { BigDecimal } from "bignumber.js";
 
 const pair: Pair = {
-  token0: token0.id,         // Wrong field name
-  totalSupply: ZERO_BD,      // Wrong type (should be bigint)
+  token0: token0.id, // Wrong field name
+  totalSupply: ZERO_BD, // Wrong type (should be bigint)
 };
 
 // AFTER — all issues fixed
@@ -209,8 +211,8 @@ import type { Entity } from "envio";
 import { BigDecimal } from "envio";
 
 const pair: Entity<"Pair"> = {
-  token0_id: token0.id,      // Correct field name
-  totalSupply: ZERO_BI,      // Correct type (bigint)
+  token0_id: token0.id, // Correct field name
+  totalSupply: ZERO_BI, // Correct type (bigint)
 };
 ```
 
@@ -231,6 +233,7 @@ const mintEvent: MintEvent = { ... };
 ```
 
 **Only fix errors that prevent:**
+
 1. Codegen from working
 2. TypeScript compilation
 3. Basic file structure

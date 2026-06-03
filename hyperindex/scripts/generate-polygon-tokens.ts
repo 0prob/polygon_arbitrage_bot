@@ -113,8 +113,9 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
       return extracted;
     }
 
+    const isValidHexAddress = (a: string) => /^0x[a-f0-9]{40}$/i.test(a);
     return tokens
-      .filter((t) => t.address && typeof t.decimals === "number")
+      .filter((t) => t.address && typeof t.decimals === "number" && isValidHexAddress(t.address))
       .map((t) => ({
         address: t.address.toLowerCase(),
         decimals: Number(t.decimals),

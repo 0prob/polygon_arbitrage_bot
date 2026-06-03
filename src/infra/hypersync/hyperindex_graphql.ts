@@ -209,10 +209,14 @@ function evictExpiredCacheEntries(): void {
   }
 }
 
-export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn" | "error">): Promise<Map<string, any>> {
+export async function buildStateCacheFromGraphQL(
+  graphqlUrl: string,
+  adminSecret: string,
+  logger?: Pick<Logger, "warn" | "error">,
+): Promise<Map<string, any>> {
   try {
     evictExpiredCacheEntries();
-    
+
     // Optimize: Use single batched query instead of 6 separate requests
     const batchedQuery = `{
       V2PoolState(limit: 15000) { id reserve0 reserve1 }
@@ -225,7 +229,7 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
 
     const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
     const data = (result as { data?: GraphQLData } | null)?.data;
-    
+
     if (!data) {
       throw new Error("No data returned from batched GraphQL query");
     }
@@ -308,7 +312,11 @@ export async function buildStateCacheFromGraphQL(graphqlUrl: string, adminSecret
   return _cachedState;
 }
 
-export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn" | "error">): Promise<HasuraPoolMeta[]> {
+export async function discoverPoolsFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+  logger?: Pick<Logger, "warn" | "error">,
+): Promise<HasuraPoolMeta[]> {
   const anchors = STATIC_ANCHORS;
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
@@ -399,7 +407,11 @@ export async function discoverPoolsFromHasura(graphqlUrl: string, adminSecret: s
   }
 }
 
-export async function fetchTokenMetasFromHasura(graphqlUrl: string, adminSecret: string, logger?: Pick<Logger, "warn">): Promise<Map<string, { decimals: number }>> {
+export async function fetchTokenMetasFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+  logger?: Pick<Logger, "warn">,
+): Promise<Map<string, { decimals: number }>> {
   const metas = new Map<string, { decimals: number }>();
   try {
     const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
@@ -437,8 +449,9 @@ export async function fetchIndexerProgressFromHasura(
       adminSecret,
       `{ IndexerProgress(limit: 5) { id chainId lastProcessedBlock updatedAtBlock } }`,
     );
-    const rows = (result as { data?: { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } } | null)?.data
-      ?.IndexerProgress ?? [];
+    const rows =
+      (result as { data?: { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } } | null)
+        ?.data?.IndexerProgress ?? [];
 
     if (rows.length === 0) return undefined;
 

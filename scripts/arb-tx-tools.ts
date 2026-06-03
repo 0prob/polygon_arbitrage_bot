@@ -1,12 +1,7 @@
 #!/usr/bin/env bun
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  McpError,
-  ErrorCode,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 
 import { loadEnv, polygonChain } from "./arb-tx-tools/utils.ts";
 import { buildAbiRegistry, decodeRevert, AbiRegistry } from "./arb-tx-tools/abi-registry.ts";
@@ -29,16 +24,20 @@ async function loadAllAbis(): Promise<AbiRegistry> {
       const foundryOut = JSON.parse(readFileSync(SOL_ABI, "utf-8"));
       if (foundryOut.abi) extraAbis.push(foundryOut.abi);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   try {
-    const abisModule = await import("./src/services/execution/calldata/abis.ts");
+    const abisModule = await import("../src/services/execution/calldata/abis.ts");
     for (const val of Object.values(abisModule)) {
-      if (Array.isArray(val)) {
-        extraAbis.push(val);
+      if (Array.isArray(val) && val.length > 0) {
+        extraAbis.push(val as unknown as Record<string, unknown>);
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return buildAbiRegistry(HYPERINDEX_ABI_DIR, extraAbis);
 }
@@ -74,10 +73,7 @@ const originalWrite = process.stderr.write.bind(process.stderr);
   return originalWrite(chunk, ...args);
 } as typeof process.stderr.write;
 
-const server = new Server(
-  { name: "arb-tx-tools", version: "1.0.0" },
-  { capabilities: { tools: {} } }
-);
+const server = new Server({ name: "arb-tx-tools", version: "1.0.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
@@ -113,7 +109,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "simulate-arb",
-      description: "Full flash-loan route simulation. Starts a fork and returns route details. Use simulate with constructed calldata for execution.",
+      description:
+        "Full flash-loan route simulation. Starts a fork and returns route details. Use simulate with constructed calldata for execution.",
       inputSchema: {
         type: "object",
         properties: {
@@ -228,11 +225,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "simulate": {
-        const rpcUrl = args?.publicRpc
-          ? process.env.POLYGON_RPC_URL
-          : anvilManager.isRunning()
-            ? anvilManager.getInfo()!.rpcUrl
-            : null;
+        const rpcUrl = args?.publicRpc ? process.env.POLYGON_RPC_URL : anvilManager.isRunning() ? anvilManager.getInfo()!.rpcUrl : null;
 
         if (!rpcUrl) {
           if (!anvilManager.isRunning()) {
@@ -270,7 +263,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             if (revertData.startsWith("0x08c379a0")) {
               const { decodeAbiParameters } = await import("viem");
               const [msg] = decodeAbiParameters([{ type: "string" }], `0x${revertData.slice(10)}` as `0x${string}`);
-              return { content: [{ type: "text", text: JSON.stringify({ success: false, revert: { name: "Error(string)", args: { message: msg } } }, null, 2) }] };
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: JSON.stringify({ success: false, revert: { name: "Error(string)", args: { message: msg } } }, null, 2),
+                  },
+                ],
+              };
             }
           }
           return { content: [{ type: "text", text: JSON.stringify({ success: false, error: json.error.message }, null, 2) }] };
@@ -284,20 +284,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           forkBlockNumber: args?.forkBlockNumber as number | undefined,
         });
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              message: "Fork is running. Use 'simulate' with the calldata from the bot's builder to test your route.",
-              fork: forkInfo,
-              route: {
-                tokenIn: args?.tokenIn,
-                tokenOut: args?.tokenOut,
-                amountIn: args?.amountIn,
-                pools: args?.pools,
-                flashLoanSource: args?.flashLoanSource,
-              },
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  message: "Fork is running. Use 'simulate' with the calldata from the bot's builder to test your route.",
+                  fork: forkInfo,
+                  route: {
+                    tokenIn: args?.tokenIn,
+                    tokenOut: args?.tokenOut,
+                    amountIn: args?.amountIn,
+                    pools: args?.pools,
+                    flashLoanSource: args?.flashLoanSource,
+                  },
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
@@ -328,10 +334,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!client) throw new McpError(ErrorCode.InvalidRequest, "POLYGON_RPC_URL not set");
         const hash = (args as any).hash as `0x${string}`;
 
-        const [receipt, tx] = await Promise.all([
-          client.getTransactionReceipt({ hash }),
-          client.getTransaction({ hash }),
-        ]);
+        const [receipt, tx] = await Promise.all([client.getTransactionReceipt({ hash }), client.getTransaction({ hash })]);
 
         const result: Record<string, unknown> = {
           txHash: hash,
@@ -343,11 +346,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const callResult = await client.call({
               to: tx.to!,
               data: tx.input,
-              from: tx.from,
+              account: tx.from,
               blockNumber: receipt.blockNumber,
             });
-            if (callResult) {
-              const decoded = await decodeRevert(callResult, abiRegistry);
+            if (callResult?.data) {
+              const decoded = await decodeRevert(callResult.data, abiRegistry);
               if (decoded) result.revert = decoded;
             }
           } catch (e: any) {
@@ -401,7 +404,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           const types = func.inputs.map((i) => i.type);
           const values = decodeAbiParameters(types as any, `0x${inputData.slice(10)}` as `0x${string}`);
           const named: Record<string, unknown> = {};
-          func.inputs.forEach((inp, i) => { named[inp.name || `arg${i}`] = values[i]; });
+          func.inputs.forEach((inp, i) => {
+            named[inp.name || `arg${i}`] = values[i];
+          });
           return { content: [{ type: "text", text: JSON.stringify({ selector, function: func.name, args: named }) }] };
         } catch (e: any) {
           return { content: [{ type: "text", text: JSON.stringify({ selector, function: func.name, args: {}, error: e.message }) }] };
@@ -417,14 +422,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           since: opts?.since,
         });
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              entries: entries.map((e) => ({ timestamp: e.timestamp, level: e.level, message: e.message })),
-              total: logCapture.getAll().length,
-              errorCount: logCapture.errorCount,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  entries: entries.map((e) => ({ timestamp: e.timestamp, level: e.level, message: e.message })),
+                  total: logCapture.getAll().length,
+                  errorCount: logCapture.errorCount,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
@@ -432,33 +443,43 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const since = (args as any)?.since;
         const entries = logCapture.getLogs({ since, last: 200 });
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({ entries, cursor: entries.length > 0 ? entries[entries.length - 1].timestamp : null }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ entries, cursor: entries.length > 0 ? entries[entries.length - 1].timestamp : null }),
+            },
+          ],
         };
       }
 
       case "errors": {
         const entries = logCapture.getLogs({ last: 100, errorsOnly: true });
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({ entries, total: logCapture.getAll().length, errorCount: logCapture.errorCount }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ entries, total: logCapture.getAll().length, errorCount: logCapture.errorCount }),
+            },
+          ],
         };
       }
 
       case "status": {
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              ...logCapture.getStatus(),
-              forkRunning: anvilManager.isRunning(),
-              forkInfo: anvilManager.getInfo(),
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  ...logCapture.getStatus(),
+                  forkRunning: anvilManager.isRunning(),
+                  forkInfo: anvilManager.getInfo(),
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
