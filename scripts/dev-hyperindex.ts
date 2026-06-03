@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
 /**
- * Dev script for starting Envio HyperIndex with proper token handling
+ * Dev script for starting Envio HyperIndex with proper token handling.
+ * Now also auto-runs codegen if schema/config changed (no more manual step).
  */
 import { spawn } from "child_process";
 import { resolve } from "path";
@@ -15,6 +16,12 @@ if (!envioToken) {
 }
 
 const hyperindexDir = resolve(import.meta.dirname, "..", "hyperindex");
+
+// Use the shared implementation from the HyperIndex process wrapper (single source of truth for auto-codegen logic).
+// This ensures identical behavior whether running via `bun run hyperindex` or from within the full bot.
+import { ensureCodegenUpToDate } from "../src/infra/hypersync/hyperindex_process.ts";
+
+await ensureCodegenUpToDate(hyperindexDir);
 
 // Prepare environment for child process
 const env = {

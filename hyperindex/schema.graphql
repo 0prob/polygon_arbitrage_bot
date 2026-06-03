@@ -9,7 +9,7 @@
 #   bulk GraphQL loads + in-memory pipeline (see hyperindex_graphql.ts + pass_loop).
 # - ID! on all entities (addresses or natural keys, lowercased for consistency).
 #
-# After edits: cd hyperindex && pnpm codegen (or bunx envio codegen) to refresh .envio/ types.
+# After edits: codegen is now auto-run by the HyperIndex process wrapper (in bot or `bun run hyperindex`) if schema/config mtime > generated types. Explicit: cd hyperindex && bun run codegen (or bunx envio codegen).
 
 """
 Protocol variants for DEX pools indexed by the arbitrage bot.

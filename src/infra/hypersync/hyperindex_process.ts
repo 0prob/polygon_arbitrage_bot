@@ -1,6 +1,6 @@
 import { spawn, execSync, type ChildProcess } from "child_process";
 import path from "path";
-import { readFile } from "fs/promises";
+import { readFile, stat } from "fs/promises";
 import type { Logger } from "../observability/logger.ts";
 import { EnvioLineParser, type EnvioLineParsedInfo } from "./envio_line_parser.ts";
 
@@ -183,6 +183,50 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
     }
   } catch {
     // Errors are logged but not critical
+  }
+}
+
+/**
+ * Automatically runs `envio codegen` if the schema or config is newer than the generated types.
+ * This eliminates the common manual step after editing hyperindex/schema.graphql or config.yaml.
+ * Beneficial for dev UX, prevents type mismatches in handlers/effects, and reduces "forgot to codegen" errors.
+ * Safe to call often (cheap mtime check; codegen is idempotent-ish).
+ */
+export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Promise<void> {
+  const schemaPath = path.join(hiDir, "schema.graphql");
+  const configPath = path.join(hiDir, "config.yaml");
+  const generatedTypesPath = path.join(hiDir, ".envio/types.d.ts");
+
+  try {
+    const [schemaStat, configStat] = await Promise.all([
+      stat(schemaPath),
+      stat(configPath),
+    ]);
+
+    let generatedStat: Awaited<ReturnType<typeof stat>> | undefined;
+    try {
+      generatedStat = await stat(generatedTypesPath);
+    } catch {
+      // No generated file yet → definitely need codegen
+      generatedStat = { mtimeMs: 0 } as any;
+    }
+
+    const sourceMtime = Math.max(schemaStat.mtimeMs, configStat.mtimeMs);
+    if (!generatedStat || sourceMtime > generatedStat.mtimeMs) {
+      logger?.info("HyperIndex schema.graphql or config.yaml is newer than generated types — running `envio codegen` automatically...");
+      execSync("bunx envio codegen", {
+        cwd: hiDir,
+        stdio: "inherit",  // Show output so user sees it happened
+        timeout: 30000,
+      });
+      logger?.info("✅ HyperIndex codegen completed (types refreshed).");
+    }
+  } catch (err: any) {
+    // Non-fatal: if files missing or codegen fails (e.g. no envio in path), just warn.
+    // Normal startup can still proceed; user will get TS errors later if types stale.
+    if (err.code !== "ENOENT") {
+      logger?.warn({ err: err.message }, "Could not auto-run HyperIndex codegen (non-fatal; run manually if types are stale)");
+    }
   }
 }
 
@@ -433,6 +477,11 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
 
   async function start(): Promise<void> {
     if (proc) return;
+
+    // Auto-ensure Envio codegen is up-to-date before starting (or restarting) the indexer.
+    // This automates the previously manual "cd hyperindex && bunx envio codegen" step after any
+    // schema.graphql or config.yaml edit. Greatly improves dev experience and prevents stale types.
+    await ensureCodegenUpToDate(hiDir, opts.logger);
 
     // Envio line parser handles its own state management now - no manual reset needed
 

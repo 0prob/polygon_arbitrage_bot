@@ -138,7 +138,7 @@ For development on the indexer itself (after changing schema.graphql, config.yam
   - Internally: runs `clear-hasura` (clears Hasura metadata to prevent "tables already tracked" warnings from Envio's effects) or warns, then `envio dev -r` (full reset/rebuild).
 - `envio dev -r` (or `bun run dev -r` inside hyperindex) alone: does the reset but may leave metadata warnings if effects have created tables.
 - `clear-hasura`: standalone metadata clear (usually not needed by itself; see the dev:reset for the benefit).
-- `codegen`: regenerate Envio types after schema/config changes. Run manually (e.g. in your pre-commit or when you edit schema). We removed the root `cgen` shortcut; integrate into editor task / husky / justfile if you want automation on schema change detection.
+- `codegen`: regenerate Envio types after schema/config changes. **Now largely automatic**: the HyperIndex wrapper (used by both `bun run hyperindex` and the main bot) detects if schema.graphql or config.yaml is newer than .envio/types.d.ts and runs `envio codegen` for you before starting. No more forgetting the manual step. (The hyperindex internal `codegen` script remains for explicit runs.)
 - Token generation (generate-tokens / generate-tokens:auto): largely automatic now. The bot's HyperIndex process wrapper calls the auto version on shutdown to self-update the static registry with newly discovered cold tokens (from effects during run). No more manual `gentok` or root gentok scripts. The generator scripts remain inside hyperindex/ for the auto mechanism and manual full regen if wanted.
 
 See `hyperindex/package.json` and `hyperindex/scripts/` for the full list.

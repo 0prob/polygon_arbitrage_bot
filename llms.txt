@@ -25,27 +25,58 @@ This file helps AI assistants discover the most important documentation for the 
 - hyperindex/ — Envio indexer (dynamic factories, effects-first + preload + isPreload guards, no-op hot events, hot-bias, pacing). Own token_registry for decimals only.
 - sol/src/ArbExecutor.sol — flash-only enforcement + custom errors. Tests in sol/test/.
 
-## AI Debugging Superpowers (arb-tx-tools)
+## AI Tooling & Skills (primary for agents)
 
-- Direct CLI (recommended for terminal/agent): .grok/skills/arb-tx-tools/scripts/{simulator.ts (Anvil+Alchemy), abicoder.ts (real ABIs + consolidated registry), log-tailer.ts (pino + follow)}
-- MCP server (if your env registers it): scripts/arb-tx-tools.ts (uses shared modules in scripts/arb-tx-tools/{anvil-manager,abi-registry,log-capture,utils})
-- Shared modules were partially consolidated in latest pass (direct scripts now import/reuse AnvilManager, buildAbiRegistry+decode, LogCapture).
+This env is AI-first with custom skills (in .grok/skills/ and .claude/skills/), MCP servers, Context7, lspmux for language servers, and graphify.
 
-See .grok/skills/arb-tx-tools/SKILL.md and AGENTS.md for usage loop: tailer → reproduce (anvil or alchemy MCP) → abicoder decode → fix (builder/math/assessment) → verify.
+**arb-tx-tools (core debugging skill, auto-triggers on relevant keywords or /arb-tx-tools)**
+- Direct CLI: `bun .grok/skills/arb-tx-tools/scripts/{simulator.ts, abicoder.ts, log-tailer.ts}`
+- MCP: registered as "arb-tx-tools" (bun run scripts/arb-tx-tools.ts) — uses shared modules from scripts/arb-tx-tools/ (consolidated AnvilManager, abi-registry, LogCapture)
+- Loop: log-tailer → simulator (Anvil or Alchemy MCP via search_tool + use_tool) → abicoder decode-revert → fix → verify.
+- See .grok/skills/arb-tx-tools/SKILL.md for full.
+
+**Other skills**
+- .grok/skills/ : arb-tx-tools (main), help, create-skill, best-of-n, check-work, execute-plan, etc. Also pptx, docx, xlsx, imagine for assets.
+- .claude/skills/ : many Envio indexer skills (indexer-schema, indexer-handlers, indexer-performance, indexer-traces, indexer-factory, indexer-blocks, etc.), migrate-from-subgraph, graphify.
+- Use `/graphify` for any input (code, docs) → knowledge graph.
+- Use skills via slash commands or auto.
+
+**MCP servers (registered in .opencode/opencode.json and system)**
+- arb-tx-tools (local)
+- sequential-thinking, fetch, memory, postgres (for Hasura), envio_docs (remote)
+- Others like alchemy, coingecko, dexscreener, context7, grok_com_github, puppeteer, etc. (use search_tool first to discover schemas, then use_tool).
+- Use via the agent's MCP integration.
+
+**lspmux**
+- Muxes language servers (TS, Solidity, GraphQL, YAML, Bash, JSON, TOML) for consistent code intelligence.
+- Config: lspmux/config.toml (listen 127.0.0.1:27631)
+- Bins in lspmux/bin/ proxy to node_modules versions.
+- Useful for AI coding assistants (opencode, grok build, etc.) to query LSPs for symbols, defs, refs, hovers without conflicts. Configure your AI tool to use the mux port/client if supported.
+
+**Other AI integrations**
+- Context7 for up-to-date lib docs (use resolve-library-id then query-docs).
+- graphify for codebase graphs (run via skill or /graphify).
+- Use `bun run check` often; direct `bunx vitest` for tests.
+- For Polygon/Envio: official MCPs + Context7 `llmstxt/polygon_technology_llms_txt`.
+
+See .grok/skills/*/SKILL.md and system MCP announcements for details. Always start with AGENTS.md + skill.md + llms.txt.
 
 ## Indexing
 
 - hyperindex/config.yaml + schema.graphql + src/{handlers,effects,utils}/ — follow the Envio skills patterns (contractRegister + where hot bias, effects early + isPreload return, pacing, no hot state writes).
 - Bot consumes via discover + buildStateCacheFromGraphQL + fetcher for live.
 
-## Key Commands (current, simplified)
+## Key Commands (current, simplified package.json)
 
-- `bun run start` (full bot headless) / `tui` (with TUI) / `arb` / `arb:tui` (arb-only) / `hyperindex` (HyperIndex by itself)
-- `bun run check` (consolidated typecheck + lint + fmt check)
-- `bun run fix` (auto lint + format)
-- Direct AI tools: `bun .grok/skills/arb-tx-tools/scripts/log-tailer.ts --last 100 --errors-only` (etc.)
-- (MCP if active): `bun run scripts/arb-tx-tools.ts`
-- Tests directly (no package "test" script): `bunx vitest run`
+- `bun run tui` — full bot with TUI (recommended for monitoring)
+- `bun run start` — full bot headless
+- `bun run arb` / `bun run arbt` — arb-only mode (external HyperIndex, with/without TUI)
+- `bun run hi` — run HyperIndex by itself
+- `bun run check` — typecheck + lint + prettier (consolidated)
+- `bun run fix` — auto-fix lint + format
+- AI tools: direct from .grok/skills/arb-tx-tools/scripts/ or via MCP
+- Tests: `bunx vitest run` (direct)
+- HyperIndex internal: `cd hyperindex && bun run ...` (dev, codegen, etc.)
 
 No more --cleanup (dummy removed).
 

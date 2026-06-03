@@ -71,13 +71,12 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 ### Development & Debugging Superpowers
 
-**arb-tx-tools skill (primary AI debugging loop)**
+**arb-tx-tools skill (primary AI debugging loop, auto-triggers or via /arb-tx-tools)**
 
-- Direct: .grok/skills/arb-tx-tools/scripts/{simulator.ts, abicoder.ts, log-tailer.ts}
-- Some consolidation: direct scripts now import shared logic from scripts/arb-tx-tools/{anvil-manager,abi-registry,log-capture}.ts
-- (MCP server at scripts/arb-tx-tools.ts for registered envs)
-- Typical loop: tailer → reproduce (local anvil or Alchemy MCP) → abicoder decode-revert → fix (builder/math etc) → verify.
-- Note: cleanup.sh + --cleanup removed (was dummy).
+- Direct CLIs: `bun .grok/skills/arb-tx-tools/scripts/{simulator.ts, abicoder.ts, log-tailer.ts}`
+- MCP: `bun run scripts/arb-tx-tools.ts` (registered in .opencode/opencode.json as "arb-tx-tools"; shares modules from scripts/arb-tx-tools/ for Anvil/ABI/log logic — consolidated)
+- Loop: use log-tailer → simulator (Anvil or via Alchemy MCP search_tool/use_tool) → abicoder decode → fix → verify.
+- See .grok/skills/arb-tx-tools/SKILL.md .
 
 **Other AI skills**
 
@@ -110,11 +109,12 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 1. Add math simulator in `src/core/math/` (pure functions, matching on-chain behavior exactly).
 2. Add protocol constants and calldata encoding in `src/services/execution/calldata/`.
 3. Update `src/pipeline/simulator.ts` and `finder.ts` dispatch logic.
-4. If new pool type: extend HyperIndex (new handlers/effects in `hyperindex/`, update schema if needed, run codegen).
-5. Add hot tokens / garbage filters if appropriate.
-6. Write unit tests for the new math module.
-7. Test end-to-end with `arb_only` or full TUI run against real or forked state.
-8. Update AGENTS.md and this skill.md with the new workflow details.
+4. If new pool type: extend HyperIndex (new handlers/effects in `hyperindex/`, update schema if needed).
+5. `codegen` is now automatic via the HyperIndex wrapper on start (mtime check of schema/config vs .envio/types; runs `envio codegen` before `envio dev` / `bun run hi`). Explicit `cd hyperindex && bun run codegen` still works.
+6. Add hot tokens / garbage filters if appropriate (see hyperindex/src/utils/hot_tokens.ts and src/infra/garbage).
+7. Write unit tests for the new math module.
+8. Test end-to-end with `bun run arbt` (arb-only + TUI) or `bun run tui` against real/forked state.
+9. Update AGENTS.md, skill.md, llms.txt.
 
 ### Workflow: Modify or debug the HyperIndex layer
 
@@ -123,9 +123,10 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 3. For dynamic contracts: follow `contractRegister` + `where` patterns (see previous Envio dynamic-contracts review).
 4. For effects: use `createEffect` with proper input/output schemas, rate limits, and `cache: true`.
 5. For preload optimization: schedule all effects early, guard sets with `context.isPreload`.
-6. Run `cd hyperindex && pnpm codegen` after schema/config changes.
-7. Test discovery with `bun run hyperindex` (from root) or via the main bot's 60s poll.
+6. `codegen` after schema/config changes is now **automatic** in the HyperIndex startup wrapper (in `src/infra/hypersync/hyperindex_process.ts` and `scripts/dev-hyperindex.ts`; mtime check vs .envio/types.d.ts runs `envio codegen` before spawn). No manual step in normal `bun run hi` or bot flows. Explicit `cd hyperindex && bun run codegen` available.
+7. Test discovery with `bun run hi` (from root) or via the main bot's 60s poll.
 8. Monitor pipeline split (Loaders/Handlers/DB Writes) and SLOW_EFFECT logs.
+9. Use lspmux (lspmux/config.toml + bins) for language server access (TS/Solidity/GraphQL etc.) if your AI tool supports LSP queries.
 
 ### Workflow: Add or improve AI tooling / skills for the project
 
@@ -147,15 +148,18 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 
 ## Integration
 
-**Key commands**
+**Key commands (current simplified package.json)**
 
-- `bun run tui`
-- `bun run start` (headless)
-- `bun run hyperindex`
-- `bun run check` (consolidated)
-- `bunx vitest run` (tests directly)
-- `cd hyperindex && bun run dev` (or `bun run hyperindex` from root)
-- `arb-tx-tools` (the custom skill for simulation + decoding)
+- `bun run tui` — full bot + TUI (best for live use)
+- `bun run start` — full bot headless
+- `bun run arb` / `bun run arbt` — arb-only (no internal HyperIndex)
+- `bun run hi` — HyperIndex by itself
+- `bun run check` — typecheck + eslint + prettier check (consolidated)
+- `bun run fix` — auto lint + format
+- Tests: `bunx vitest run` (direct, no "test" script in package)
+- HyperIndex dev: `cd hyperindex && bun run dev` (or use root `hi`)
+- AI: `bun .grok/skills/arb-tx-tools/scripts/log-tailer.ts ...` etc., or MCP "arb-tx-tools"
+- lspmux for LSPs (see lspmux/)
 
 **Core technologies**
 
