@@ -56,7 +56,7 @@ export function buildExecutionCandidate(
 
   // minProfit is enforced on-chain against the profit denominated in profitToken (start-token units).
   // We must NOT use netProfitAfterGasMaticWei here — that's MATIC wei and would be wrong for
-  // any token other than WMATIC. Use token-unit profit at 70% as the on-chain minimum guard.
+  // any token other than WMATIC. Use token-unit profit at 90% as the on-chain minimum guard.
   const tokenProfit = profitable.assessment.netProfitAfterGas;
   const minProfit = tokenProfit > 0n ? (tokenProfit * 90n) / 100n : 0n;
   const built = buildArbTx(route, config, { slippageBps: options.slippageBps, minProfit, flashLoanSource: options.flashLoanSource });

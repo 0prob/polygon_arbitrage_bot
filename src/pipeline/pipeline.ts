@@ -7,8 +7,8 @@ import {
   buildSimulationEdges,
   normalizeProtocol,
   computeSpotPrice,
-  getTestAmount,
 } from "./simulator.ts";
+import { getDynamicSearchBounds } from "./finder.ts";
 import type { SimulationEdge } from "./types.ts";
 import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
@@ -233,12 +233,17 @@ export async function evaluatePipeline(
 
           const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
 
-          const baseAmount = getTestAmount(cycle.startToken, options.tokenMetas);
-          const low = baseAmount / 5000n;
-          if (low === 0n) return { type: "pruned" as const, cycle };
-          const high = baseAmount;
+          const { low, high } = getDynamicSearchBounds(
+            cycle,
+            stateCache,
+            options.tokenToMaticRates,
+            options.maxFlashLoanUsd ?? 50_000,
+          );
+
+          if (low === 0n || low >= high) return { type: "pruned" as const, cycle };
+
           const ternaryIters = options.ternarySearchIterations ?? 15;
-          const evalLow = evaluateAmount(cycle, low, stateCache, options, false, true, prebuiltSimEdges, undefined, overlay);
+          const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
           if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
             return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", cycle };
           }
@@ -257,15 +262,15 @@ export async function evaluatePipeline(
 
           for (let iter = 0; iter < ternaryIters; iter++) {
             const range = right - left;
-            if (range <= baseAmount / CONVERGENCE_DIVISOR) {
+            if (range <= high / CONVERGENCE_DIVISOR) {
               const mid = left + range / 2n;
               const { result, assessment, grossProfitMatic } = evaluateAmount(
                 cycle,
                 mid,
                 stateCache,
                 options,
-                false,
-                true,
+                true, // skipImpactCheck=true during search
+                true, // minimalForSearch=true
                 prebuiltSimEdges,
                 undefined,
                 overlay,
@@ -286,8 +291,8 @@ export async function evaluatePipeline(
 
             const m1 = left + range / 3n;
             const m2 = right - range / 3n;
-            const eval1 = evaluateAmount(cycle, m1, stateCache, options, false, true, prebuiltSimEdges, probe1Holder, overlay);
-            const eval2 = evaluateAmount(cycle, m2, stateCache, options, false, true, prebuiltSimEdges, probe2Holder, overlay);
+            const eval1 = evaluateAmount(cycle, m1, stateCache, options, true, true, prebuiltSimEdges, probe1Holder, overlay);
+            const eval2 = evaluateAmount(cycle, m2, stateCache, options, true, true, prebuiltSimEdges, probe2Holder, overlay);
 
             if (eval1.grossProfitMatic && eval1.grossProfitMatic > bestGrossMatic) {
               bestGrossMatic = eval1.grossProfitMatic;
@@ -326,14 +331,16 @@ export async function evaluatePipeline(
             }
           }
 
-          // After search: if we only have minimal results for the winner, do one final full simulation
-          // to capture the rich RouteSimulationResult needed downstream. This is the key allocation win:
-          // 20-30 cheap minimal probes + 1 full sim per cycle instead of 20-30 full simulations.
-          if (bestResult === null && bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
-            const full = evaluateAmount(cycle, bestAmount, stateCache, options, true, false, prebuiltSimEdges, undefined, overlay);
-            if (full.result && full.assessment) {
-              bestResult = full.result;
-              bestAssessment = full.assessment;
+          // After search: do one final FULL simulation with impact check enabled.
+          // This verifies spot-price integrity before promoting to profitable.
+          if (bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
+            const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay);
+            if (final.result && final.assessment && final.assessment.shouldExecute) {
+              bestResult = final.result;
+              bestAssessment = final.assessment;
+            } else {
+              // Final check failed (likely price impact)
+              return { type: "pruned" as const, cycle };
             }
           }
 
