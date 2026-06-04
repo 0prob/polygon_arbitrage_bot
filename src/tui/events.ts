@@ -16,6 +16,7 @@ export type ArbEvent =
     }
   | { type: "gas_snapshot"; gasPrice: bigint }
   | { type: "pool_discovery"; count: number; protocols?: Record<string, number> }
+  | { type: "discovery_summary"; poolCount: number; protocolBreakdown: Record<string, number>; lagBlocks: number }
   | { type: "error"; component: string; message: string }
   | { type: "shutdown" }
   | {
@@ -38,15 +39,13 @@ export type ArbEvent =
       lag?: number;
       syncRate?: number;
       discoveryMode?: "broad" | "hot-bias";
-      /** Short prefix of the active ENVIO_API_TOKEN currently in use by the HyperIndex child */
-      envioKeyPrefix?: string;
     }
   | {
       type: "pipeline_stage";
       stage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING";
     }
   | { type: "simulation_progress"; current: number; total: number; profitable: number }
-  | { type: "mempool_pending_swap"; poolPath: string; value: bigint; txHash: string }
+  | { type: "mempool_pending_swap"; poolPath: string; value: bigint; txHash: string; traceId: string }
   | { type: "cycles_enumerated"; total: number; cyclesByHop: Record<number, number>; elapsedMs: number }
   | { type: "graph_stats"; poolCount: number; protocolBreakdown: Record<string, number>; edgeCount: number; cachedCount: number }
   | { type: "execution_attempt"; protocolPath: string; hopCount: number; expectedProfit: bigint; txHash?: string }

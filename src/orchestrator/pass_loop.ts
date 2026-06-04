@@ -154,6 +154,25 @@ async function runPoolDiscovery(
         fee: p.fee,
       }));
       onNewPools(mapped);
+
+      const protocolBreakdown = mapped.reduce(
+        (acc, p) => {
+          const proto = p.protocol.split("_")[0] ?? p.protocol;
+          acc[proto] = (acc[proto] ?? 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      const lagBlocks = (ctx.hyperIndexMonitor as any)?.getLastStatus?.().lag || 0;
+
+      bus?.emit({
+        type: "discovery_summary",
+        poolCount: mapped.length,
+        protocolBreakdown,
+        lagBlocks,
+      });
+
       ctx.logger.info({ discovered: mapped.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
       return { pools: mapped, lastDiscoveryTime: newLastDiscoveryTime };
     }
@@ -256,8 +275,20 @@ async function runLfStateRefresh(
   // so computeMaticRates (which seeds those majors) can propagate rates to far more tokens
   // immediately. This increases # of rateSafeCycles, reduces noRate %, and surfaces more
   // (and better) long-tail opportunities instead of only marginal hot V2 pairs.
+
+  // Low infra detection must precede bootstrap/gradual/etc uses of lowInfra.
+  let warnedLowInfra = false;
+  const rps = ctx.config.rpc.chainstackRps ?? 250;
+  const lowInfra = rps <= 250;
+  const indexerHotBiasEarly = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
+  if (lowInfra && !indexerHotBiasEarly && !warnedLowInfra) {
+    ctx.logger.warn({ rps }, "Low infra (RPS<=250) + no INDEXER_HOT_BIAS: recommend INDEXER_HOT_BIAS=true (pairs with our expanded HOT_BASE list) to limit discovery volume while retaining long-tail coverage on alt+base pairs. Otherwise expect higher noRate and more RPC pressure on limited infra.");
+    warnedLowInfra = true;
+  }
+
   if (stateCacheEmpty) {
-    const MAX_BOOTSTRAP_POOLS = 12000; // Increased to accelerate initial rate propagation / reduce "very high noRate" periods after long indexer stalls or cold starts (live observed with 41k+ pools, rates stuck ~4-5k covering only fraction of cycles).
+    const BASE_MAX = 12000;
+    const MAX_BOOTSTRAP_POOLS = lowInfra ? Math.floor(BASE_MAX * 0.4) : BASE_MAX;
     const stateAddrSet = new Set<string>();
     for (const addr of stateCache.keys()) stateAddrSet.add(addr);
     const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
@@ -273,6 +304,16 @@ async function runLfStateRefresh(
         "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
         "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
         "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
+        // Expanded set (keep in sync with hyperindex hot_tokens.ts HOT_BASE_TOKENS)
+        // to bootstrap rates/state for more bases on low-infra runs. This directly
+        // helps connect long-tail tokens in cycles to MATIC prices, reducing high noRate.
+        // Strategy adaptation: low infra has no edge on hot pairs; expand rated bases
+        // so obscure long-tail cycles can still compute profits.
+        "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39", // LINK
+        "0xd6df932a45c0f255f85145f286ea0b292b21c90b", // AAVE
+        "0x172370d5cd63279efa6d502dab29171933a610af", // CRV
+        "0x9a71012b13ca4d3d0cdcbc8942ec6c4e9e0e6c8c", // BAL
+        "0xb33eaad8d922b1083446dc23f610c2567fb5180f", // UNI
       ].map((t) => t.toLowerCase()),
     );
 
@@ -287,7 +328,7 @@ async function runLfStateRefresh(
     if (toBootstrap.length > 0) {
       const majorCount = prioritized.filter(touchesMajor).length;
       ctx.logger.info(
-        { missingPools: toBootstrap.length, majorConnected: majorCount },
+        { missingPools: toBootstrap.length, majorConnected: majorCount, lowInfra },
         "Bootstrap: pre-fetching V2/V3 state for rate propagation",
       );
       // Force-refresh the critical (major-connected) pools; remaining ~37k accumulate gradually.
@@ -303,7 +344,8 @@ async function runLfStateRefresh(
   _lfStateRefreshCount++;
   const CACHE_TARGET = 30000;
   if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
-    const EXPANSION_BATCH = 4000; // Larger batches to faster fill state for rate propagation (addresses persistent high noRate during/after catchup when many pools meta are present but stateCache lags).
+    const BASE_EXP = 4000;
+    const EXPANSION_BATCH = lowInfra ? Math.floor(BASE_EXP * 0.4) : BASE_EXP;
     const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
     if (uncached.length > 0) {
       const batch = uncached.slice(0, EXPANSION_BATCH);
@@ -311,7 +353,7 @@ async function runLfStateRefresh(
       if (expanded.size > 0) {
         for (const addr of expanded) updated.add(addr);
         ctx.logger.info(
-          { expanded: expanded.size, totalCached: stateCache.size, remaining: uncached.length - expanded.size },
+          { expanded: expanded.size, totalCached: stateCache.size, remaining: uncached.length - expanded.size, lowInfra },
           "Gradual cache expansion batch complete",
         );
       }
@@ -384,7 +426,11 @@ async function runEnumerationPhase(
   });
 
   const enumStartTime = Date.now();
-  const cycles = deps.enumerateCycles(graph, MAX_HOPS, ctx.config.routing.enumerationMaxPaths, (key) =>
+  const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
+  const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
+  const lowForEnum = rpsForEnum <= 250;
+  const maxPaths = lowForEnum ? Math.floor(baseMaxPaths * 0.5) : baseMaxPaths;
+  const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) =>
     ctx.executionService.tracker.getWinRate(key),
   );
   const enumElapsed = Date.now() - enumStartTime;
@@ -452,6 +498,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastRefreshTime = 0;
   let lastFullRefreshTime = 0;
   let lastDiscoveryTime = 0;
+  let lastMempoolTraceId: string | undefined = undefined;
   let cachedRates: Map<string, bigint> | null = null;
   let cachedMetas: Map<string, { decimals: number }> | null = null;
   // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
@@ -483,6 +530,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         poolPath: signal.data.factoryAddress,
         value: 0n,
         txHash: signal.data.txHash,
+        traceId: signal.data.traceId,
       });
       lastDiscoveryTime = 0;
     }
@@ -491,11 +539,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         { pool: signal.data.poolAddress, size: signal.data.estimatedSwapSize.toString(), txHash: signal.data.txHash },
         "Large swap detected in mempool — triggering fast re-simulation",
       );
+      lastMempoolTraceId = signal.data.traceId;
       bus?.emit({
         type: "mempool_pending_swap",
         poolPath: signal.data.poolAddress,
         value: signal.data.estimatedSwapSize,
         txHash: signal.data.txHash,
+        traceId: signal.data.traceId,
       });
       lastRefreshTime = 0;
     }
@@ -507,6 +557,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   while (ctx.isRunning) {
     const now = Date.now();
     const startTime = now;
+    const currentPassTraceId = lastMempoolTraceId;
+    lastMempoolTraceId = undefined;
 
     // Timing instrumentation for bottleneck analysis
     let t_point = Date.now();
@@ -677,7 +729,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }
           }
           if (broadTokenPools.length > 0) {
-            const cap = broadTokenPools.slice(0, 2500);
+            const rpsBroad = ctx.config.rpc.chainstackRps ?? 250;
+            const lowBroad = rpsBroad <= 250;
+            const broadCap = lowBroad ? 700 : 2500;
+            const cap = broadTokenPools.slice(0, broadCap);
             const extra = await fetchMissingPoolState(
               ctx.stateClient ?? ctx.publicClient,
               stateCache,
@@ -687,7 +742,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             );
             if (extra.size > 0) {
               for (const addr of extra) updatedPools.add(addr);
-              ctx.logger.info({ broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size }, "Broad state pre-fetch for cycle tokens (improves rate path coverage)");
+              ctx.logger.info({ broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size, lowInfra: lowBroad }, "Broad state pre-fetch for cycle tokens (improves rate path coverage)");
             }
           }
         }
@@ -813,9 +868,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // Apply graceful degradation if indexer lag is high
       const isDegraded = currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS;
-      const effectiveConcurrency = isDegraded
-        ? Math.max(10, Math.floor((ctx.config.routing.concurrency ?? 50) * 0.4))
-        : ctx.config.routing.concurrency;
+      const baseConc = ctx.config.routing.concurrency ?? 50;
+      let effectiveConcurrency = isDegraded
+        ? Math.max(10, Math.floor(baseConc * 0.4))
+        : baseConc;
+      const rpsConc = ctx.config.rpc.chainstackRps ?? 250;
+      if (rpsConc <= 250) {
+        effectiveConcurrency = Math.max(5, Math.floor(effectiveConcurrency * 0.5));
+      }
       const effectiveMinProfit = isDegraded
         ? ctx.config.execution.minProfitWei * 2n // Be much more selective when data is stale
         : ctx.config.execution.minProfitWei;
@@ -973,6 +1033,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
                   stateCache,
                 },
+                currentPassTraceId,
               );
 
               // Mempool-aware dry run after building candidate
@@ -1154,6 +1215,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Hot-bias mode comes from the same env var the hyperindex sees.
       // When true, the indexer limits pool discovery to "hot" major tokens (conservative mode).
       // Default (false) = broad long-tail discovery (primary strategy).
+      // Low-infra: enable hot-bias (with our expanded HOT_BASE list) to cut discovery
+      // volume while preserving rate coverage on more bases (fights high noRate).
       const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
       const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
 

@@ -85,7 +85,7 @@ describe("runPassLoop", () => {
           historySize: 20,
           spikePriorityFeeMultiplier: 1.6,
         },
-        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
+        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [], chainstackRps: 1000 }, // high rps to disable low-infra scaling
         mempool: { coalesceTtlMs: 100 },
         paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
         observability: { logLevel: "silent" },
@@ -276,7 +276,7 @@ describe("runPassLoop", () => {
           historySize: 20,
           spikePriorityFeeMultiplier: 1.6,
         },
-        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [] },
+        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [], chainstackRps: 1000 }, // high rps to disable low-infra scaling
         mempool: { coalesceTtlMs: 100 },
         paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
         observability: { logLevel: "silent" },
