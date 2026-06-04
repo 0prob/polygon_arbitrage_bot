@@ -1,5 +1,6 @@
 import type { PoolState } from "../core/types/pool.ts";
 import { isInvalidState } from "../core/types/pool.ts";
+import type { PendingStateOverlay } from "../core/types/overlay.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
 import { simulateV2Swap, resolveV2Fee } from "../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../core/math/uniswap_v3.ts";
@@ -78,9 +79,10 @@ export function simulateHop(
   edge: SimulationEdge,
   amountIn: bigint,
   stateCache: RouteStateCache,
+  overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
-  const state = stateCache.get(poolAddr) ?? edge.stateRef;
+  const state = overlay?.get(edge.poolAddress) ?? stateCache.get(poolAddr) ?? edge.stateRef;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
   // Tax support removed (was un-wired dead code; added float math + map lookups in hot path with no config source).
@@ -132,6 +134,7 @@ export function simulateRoute(
   amountIn: bigint,
   stateCache: RouteStateCache,
   prebuiltSimEdges?: SimulationEdge[],
+  overlay?: PendingStateOverlay,
 ): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
@@ -144,13 +147,13 @@ export function simulateRoute(
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
     if (!prebuiltSimEdges) {
-      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
       if (!state || isInvalidState(state)) {
         throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
       }
     }
 
-    const hop = simulateHop(simEdge, hopAmounts[i], stateCache);
+    const hop = simulateHop(simEdge, hopAmounts[i], stateCache, overlay);
     hopAmounts.push(hop.amountOut);
     totalGas += hop.gasEstimate;
     poolPath.push(edges[i].poolAddress); // use original edges for original casing if needed
@@ -257,6 +260,7 @@ export function simulateMinimalWithImpactCheck(
   stateCache: RouteStateCache,
   prebuiltSimEdges: SimulationEdge[] | undefined,
   maxImpactThreshold: number,
+  overlay?: PendingStateOverlay,
 ): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
   const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
   let currentAmount = amountIn;
@@ -265,13 +269,13 @@ export function simulateMinimalWithImpactCheck(
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
     if (!prebuiltSimEdges) {
-      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
       if (!state || isInvalidState(state)) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
     }
 
-    const hop = simulateHop(simEdge, currentAmount, stateCache);
+    const hop = simulateHop(simEdge, currentAmount, stateCache, overlay);
 
-    const state = simEdge.stateRef;
+    const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
     if (state) {
       const realizedPrice = Number(hop.amountOut) / Number(currentAmount);
       const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
@@ -292,18 +296,18 @@ export function getTestAmount(tokenAddress: string, metas?: Map<string, { decima
   const addr = tokenAddress.toLowerCase();
 
   if (addr === USDC.toLowerCase() || addr === USDC_NATIVE.toLowerCase() || addr === USDT.toLowerCase()) {
-    return 500n * 10n ** 6n;
+    return 100n * 10n ** 6n;
   }
   if (addr === WBTC.toLowerCase()) {
-    return 700_000n;
+    return 70_000n;
   }
   if (addr === "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619") {
-    return 160_000_000_000_000_000n;
+    return 30_000_000_000_000_000n;
   }
   if (addr === "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270") {
-    return 800n * 10n ** 18n;
+    return 50n * 10n ** 18n;
   }
 
   const decimals = metas?.get(addr)?.decimals ?? 18;
-  return 500n * 10n ** BigInt(decimals);
+  return 10n * 10n ** BigInt(decimals);
 }
