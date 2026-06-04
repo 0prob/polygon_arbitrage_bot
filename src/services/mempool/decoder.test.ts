@@ -20,13 +20,13 @@ describe("decodeSwapCalldata", () => {
     const known = new Set(["0xpoolv3"]);
     // selector + recipient(32) + zfo true (32) + amountSpecified positive (32) + ...
     // amount at +128 from after sel, set to 123e18
-    const amt = (123n * (10n ** 18n)).toString(16).padStart(64, "0");
+    const amt = (123n * 10n ** 18n).toString(16).padStart(64, "0");
     const input = "0x128acb08" + "0".repeat(64) + "1".padStart(64, "0") + amt + "0".repeat(64) + "0".repeat(64);
     const result = decodeSwapCalldata("0xpoolv3" as any, input, known);
     expect(result).not.toBeNull();
     expect(result!.protocol).toBe("UNISWAP_V3");
     expect(result!.poolAddress.toLowerCase()).toBe("0xpoolv3");
-    expect(result!.amountIn).toBe(123n * (10n ** 18n));
+    expect(result!.amountIn).toBe(123n * 10n ** 18n);
     expect(result!.zeroForOne).toBe(true);
   });
 

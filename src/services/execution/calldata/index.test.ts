@@ -100,7 +100,8 @@ describe("calldata module", () => {
       data: calls[0].data,
     });
     expect(decoded.functionName).toBe("swap");
-    const amountSpecified = decoded.args[2] as bigint;
+    const args = (decoded.args ?? []) as readonly unknown[];
+    const amountSpecified = args[2] as bigint;
     expect(amountSpecified).toBeLessThan(0n);
   });
 

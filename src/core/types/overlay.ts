@@ -9,7 +9,7 @@ export interface PendingStateOverlay {
 }
 
 export class InMemoryPendingStateOverlay implements PendingStateOverlay {
-  private cache = new Map<string, { state: PoolState, timestamp: number }>();
+  private cache = new Map<string, { state: PoolState; timestamp: number }>();
   private TTL = 200; // ms
 
   update(poolAddress: Address, state: PoolState): void {

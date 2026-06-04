@@ -126,7 +126,8 @@ export async function fetchMissingPoolState(
   type V3Slot0 = readonly [bigint, number, number, number, number, number, boolean] | { sqrtPriceX96: bigint; tick: number };
 
   await Promise.all(
-    batches.map(async (batch) => {
+    batches.map(async (batch, batchIdx) => {
+      console.log(`[DEBUG] fetchMissingPoolState: starting batch ${batchIdx + 1}/${batches.length} (${batch.length} pools)`);
       const calls: MulticallCall[] = [];
       for (const addr of batch) {
         const meta = poolLookup.get(addr);
@@ -157,6 +158,7 @@ export async function fetchMissingPoolState(
           contracts: calls as any,
           allowFailure: true,
         });
+        console.log(`[DEBUG] fetchMissingPoolState: batch ${batchIdx + 1} results received`);
 
         let resultIdx = 0;
         for (const addr of batch) {

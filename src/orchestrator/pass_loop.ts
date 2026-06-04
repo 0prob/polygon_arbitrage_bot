@@ -203,7 +203,6 @@ async function runLfStateRefresh(
       if (!stateCache.has(addr)) {
         const s = state as Record<string, unknown>;
         const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
-        const sq = typeof s.sqrtPriceX96 === "bigint" ? (s.sqrtPriceX96 as bigint) : null;
         const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
         const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
         // Skip Hasura states that are clearly stale (pool-creation snapshot with zero values).
@@ -258,22 +257,24 @@ async function runLfStateRefresh(
   // immediately. This increases # of rateSafeCycles, reduces noRate %, and surfaces more
   // (and better) long-tail opportunities instead of only marginal hot V2 pairs.
   if (stateCacheEmpty) {
-    const MAX_BOOTSTRAP_POOLS = 8000;
+    const MAX_BOOTSTRAP_POOLS = 12000; // Increased to accelerate initial rate propagation / reduce "very high noRate" periods after long indexer stalls or cold starts (live observed with 41k+ pools, rates stuck ~4-5k covering only fraction of cycles).
     const stateAddrSet = new Set<string>();
     for (const addr of stateCache.keys()) stateAddrSet.add(addr);
     const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
 
     // Prioritize majors so initial rate graph is well-connected (directly attacks high noRate
     // and low coverage that starves assessment of rateSafe cycles).
-    const MAJOR_TOKENS = new Set([
-      "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
-      "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC
-      "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC.e (old)
-      "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
-      "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
-      "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
-      "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
-    ].map((t) => t.toLowerCase()));
+    const MAJOR_TOKENS = new Set(
+      [
+        "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
+        "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC
+        "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC.e (old)
+        "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
+        "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
+        "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
+        "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
+      ].map((t) => t.toLowerCase()),
+    );
 
     const touchesMajor = (p: PoolMeta) => {
       const ts = (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase());
@@ -285,7 +286,10 @@ async function runLfStateRefresh(
 
     if (toBootstrap.length > 0) {
       const majorCount = prioritized.filter(touchesMajor).length;
-      ctx.logger.info({ missingPools: toBootstrap.length, majorConnected: majorCount }, "Bootstrap: pre-fetching V2/V3 state for rate propagation");
+      ctx.logger.info(
+        { missingPools: toBootstrap.length, majorConnected: majorCount },
+        "Bootstrap: pre-fetching V2/V3 state for rate propagation",
+      );
       // Force-refresh the critical (major-connected) pools; remaining ~37k accumulate gradually.
       const seedUpdated = await fetchMissingPoolState(stateClient, stateCache, toBootstrap, [], true);
       for (const addr of seedUpdated) updated.add(addr);
@@ -299,7 +303,7 @@ async function runLfStateRefresh(
   _lfStateRefreshCount++;
   const CACHE_TARGET = 30000;
   if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
-    const EXPANSION_BATCH = 2000;
+    const EXPANSION_BATCH = 4000; // Larger batches to faster fill state for rate propagation (addresses persistent high noRate during/after catchup when many pools meta are present but stateCache lags).
     const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
     if (uncached.length > 0) {
       const batch = uncached.slice(0, EXPANSION_BATCH);
@@ -503,6 +507,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   while (ctx.isRunning) {
     const now = Date.now();
     const startTime = now;
+
+    // Timing instrumentation for bottleneck analysis
+    let t_point = Date.now();
+    const timings: Record<string, number> = {};
+    const mark = (name: string) => {
+      timings[name] = Date.now() - t_point;
+      t_point = Date.now();
+    };
     isLfPass = false;
 
     const cycleWindow = 60000;
@@ -550,6 +562,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         hasuraPoolsCache = result.pools;
         lastDiscoveryTime = result.lastDiscoveryTime;
       }
+      mark("poolDiscovery");
 
       // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
       {
@@ -564,6 +577,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           pendingFocusTokens = null;
         }
       }
+      mark("lfRefresh");
 
       // Stage 3: Filter pools, rebuild graph, enumerate cycles
       {
@@ -582,6 +596,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         lastRefreshTime = enumResult.lastRefreshTime;
         isLfPass = enumResult.didEnumerate;
       }
+      mark("enumeration");
 
       // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
       // Now optimized to only update "dirty" pools successfully refreshed in Stage 2 or Pre-fetch
@@ -602,6 +617,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           // Non-critical; will retry on next LF
         }
       }
+      mark("fetchMetas");
 
       const currentCycles = cachedCycles;
 
@@ -616,7 +632,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       preFetchCounter++;
       if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
-        const justUpdated = await fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
+        const justUpdated = await fetchMissingPoolState(
+          ctx.stateClient ?? ctx.publicClient,
+          stateCache,
+          hasuraPoolsCache ?? [],
+          currentCycles,
+          false,
+        );
         if (justUpdated.size > 0) {
           for (const addr of justUpdated) updatedPools.add(addr);
         }
@@ -631,6 +653,41 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             const tokens = poolByAddr.get(addr);
             if (tokens) {
               for (const t of tokens) focusTokens.add(t.toLowerCase());
+            }
+          }
+        }
+
+        // Improvement: also pre-fetch state for *all* pools touching tokens from currentCycles (not just cycle edges).
+        // Direct edges may not be enough for rate propagation paths (token may need sibling pools to link to majors).
+        // This reduces high noRate / low rate coverage for exactly the cycles under assessment.
+        {
+          const cycleTokens = new Set<string>();
+          for (const c of currentCycles) {
+            cycleTokens.add(c.startToken.toLowerCase());
+            for (const e of c.edges) {
+              cycleTokens.add(e.tokenIn.toLowerCase());
+              cycleTokens.add(e.tokenOut.toLowerCase());
+            }
+          }
+          const broadTokenPools: PoolMeta[] = [];
+          for (const p of (hasuraPoolsCache ?? [])) {
+            const pts = (p.tokens ?? [p.token0, p.token1]).map((t: string) => t.toLowerCase());
+            if (pts.some((t: string) => cycleTokens.has(t)) && !stateCache.has(p.address.toLowerCase())) {
+              broadTokenPools.push(p);
+            }
+          }
+          if (broadTokenPools.length > 0) {
+            const cap = broadTokenPools.slice(0, 2500);
+            const extra = await fetchMissingPoolState(
+              ctx.stateClient ?? ctx.publicClient,
+              stateCache,
+              cap,
+              [],
+              true,
+            );
+            if (extra.size > 0) {
+              for (const addr of extra) updatedPools.add(addr);
+              ctx.logger.info({ broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size }, "Broad state pre-fetch for cycle tokens (improves rate path coverage)");
             }
           }
         }
@@ -799,7 +856,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       });
 
       if (rateSafeCycles.length === 0 && filteredCycles.length > 0) {
-        ctx.logger.debug({ totalFiltered: filteredCycles.length, rates: tokenToMaticRates.size }, "No rate-covered cycles this pass (coverage still growing)");
+        ctx.logger.debug(
+          { totalFiltered: filteredCycles.length, rates: tokenToMaticRates.size },
+          "No rate-covered cycles this pass (coverage still growing)",
+        );
       }
 
       const simStartTime = Date.now();
@@ -810,7 +870,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       if (result.attempted > 0) {
         const tier = ctx.tierManager.getCurrent();
-        ctx.logger.debug(
+        ctx.logger.info(
           {
             attempted: result.attempted,
             simulated: result.simulated,
@@ -832,7 +892,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           ctx.logger.info(
             {
               profitable: result.profitableCount,
-              maxGrossMatic: result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
+              maxGrossMatic:
+                result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
               rates: tokenToMaticRates.size,
             },
             "Assessment found profitable candidates (pre-filter; may skip on cooldown/dry/quarantine)",
@@ -938,7 +999,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                   // or headless to feed simulator/abicoder for exact re-runs of failing arbs.
                   try {
                     const { appendFileSync } = await import("node:fs");
-                    const dump = JSON.stringify({ ts: Date.now(), routeKey, calldata: candidate.calldata, target: candidate.targetAddress, revertData: dryRun.revertData }) + "\n";
+                    const dump =
+                      JSON.stringify({
+                        ts: Date.now(),
+                        routeKey,
+                        calldata: candidate.calldata,
+                        target: candidate.targetAddress,
+                        revertData: dryRun.revertData,
+                      }) + "\n";
                     appendFileSync("data/failing-calldata.ndjson", dump);
                   } catch {}
                   ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);

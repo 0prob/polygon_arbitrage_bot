@@ -61,12 +61,6 @@ export const DEFAULTS = {
     coalesceTtlMs: 100,
     largeSwapThresholdUsd: 10_000,
   },
-  fastlane: {
-    enabled: false,
-    rpcUrl: "",
-    blockNumberWindow: 50,
-    timestampWindowS: 60,
-  },
   observability: {
     logLevel: "info" as const,
     tuiEnabled: false,

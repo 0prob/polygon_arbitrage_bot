@@ -83,7 +83,8 @@ const DODO_POOL_EVENTS = [
 ];
 
 function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
-  indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
       return;
     }
@@ -93,7 +94,8 @@ function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
     }
   });
 
-  indexer.onEvent({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  indexer.onEvent({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     await handleDodoPool(
       context,
       ev.params[cfg.poolField],

@@ -57,12 +57,6 @@ describe("bootApplication", () => {
         dataDir: "/tmp",
         perfJsonFile: "/tmp/perf.json",
       },
-      fastlane: {
-        enabled: false,
-        rpcUrl: "https://polygon-rpc.fastlane.xyz",
-        blockNumberWindow: 50,
-        timestampWindowS: 60,
-      },
       envioApiToken: "token",
       hasuraUrl: "http://localhost:8080/v1/graphql",
       hasuraSecret: "testing",

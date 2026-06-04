@@ -1,6 +1,7 @@
 import { encodeFunctionData, getAddress, encodeAbiParameters } from "viem";
 import { MIN_SQRT_RATIO, MAX_SQRT_RATIO } from "../../../core/math/tick_math.ts";
 import { simulateV3Swap } from "../../../core/math/uniswap_v3.ts";
+import { simulateV2Swap } from "../../../core/math/uniswap_v2.ts";
 import { asAddress, normalizePositiveUint, normalizeUint, normalizeUint24, slippageAdjustedAmountOut, normalizeBytes32 } from "./utils.ts";
 import {
   CALLBACK_PROTOCOL_UNISWAP_V3,
@@ -134,7 +135,22 @@ export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteC
   const pair = asAddress(hop.poolAddress);
   const tokenIn = asAddress(hop.tokenIn);
   const amountIn = normalizePositiveUint(hop.amountIn, "encodeV2Hop amountIn");
-  const minAmountOut = slippageAdjustedAmountOut(hop.amountOut, slippageBps, "encodeV2Hop");
+  // Derive minAmountOut from the *actual committed amountIn* (which may have been extra-slipped for intermediate hops
+  // to protect against delivery shortfalls from prior hops like Balancer). This ensures the out requested from
+  // pair.swap is consistent with in sent, preventing "UniswapV2: K" reverts in dryRun / on-chain when nominal
+  // hop.amountOut (from full sim amounts) would require more in than we actually transferred.
+  let outForMin = hop.amountOut;
+  if (hop.stateRef) {
+    try {
+      const { amountOut: computed } = simulateV2Swap(hop.stateRef, amountIn, Boolean(hop.zeroForOne));
+      if (computed > 0n) {
+        outForMin = computed;
+      }
+    } catch {
+      // fallback to nominal hop.amountOut below
+    }
+  }
+  const minAmountOut = slippageAdjustedAmountOut(outForMin, slippageBps, "encodeV2Hop");
   const calls: ExecutorCall[] = [];
   calls.push({
     target: tokenIn,
@@ -193,14 +209,7 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, optio
   const isToken0 = Boolean(hop.zeroForOne);
   const swapFeePips = normalizeKyberSwapFeePips(hop);
   const simulated = simulateV3Swap(hop.stateRef ?? {}, amountIn, isToken0, swapFeePips);
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(
-    hop,
-    amountIn,
-    simulated.amountOut,
-    swapFeePips,
-    "encodeKyberElasticHop",
-    options,
-  );
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountIn, simulated.amountOut, swapFeePips, "encodeKyberElasticHop", options);
   const callbackData = encodeAbiParameters(
     [
       {

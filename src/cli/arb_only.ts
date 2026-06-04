@@ -7,6 +7,8 @@ import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
+import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
+import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -28,24 +30,73 @@ async function main() {
 
   logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only mode — assuming HyperIndex/Hasura is running externally");
 
-  const ctx = await bootApplication(config, undefined, logger, undefined);
+  // Create monitor even in arb-only (prepare will skip process start because Hasura present).
+  // This enables lag tracking, degraded mode, isHealthy, and getLastStatus() for pass_loop / TUI / status.
+  const hyperIndexMonitor = new HyperIndexMonitor({
+    processOptions: {
+      dataDir: config.paths.dataDir,
+      polygonRpcUrls: config.rpc.polygonRpcUrls,
+      envioApiToken: config.envioApiToken,
+      logger,
+      hasuraUrl: config.hasuraUrl || undefined,
+      hasuraSecret: config.hasuraSecret || undefined,
+    },
+    logger,
+    checkIntervalMs: 10_000,
+    maxStallMs: 60_000,
+    maxLagBlocks: 200,
+  });
+  try {
+    await hyperIndexMonitor.prepare();
+  } catch (err) {
+    logger.warn({ err }, "HyperIndex monitor prepare (external) failed");
+  }
 
-  // Health server requires a HyperIndexMonitor — skip in arb-only mode.
+  const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);
+
+  // Wire providers for real lag computation even in external/arb-only (enables degraded mode, accurate TUI lag, status)
+  hyperIndexMonitor.setIndexedHeightProvider(async () => {
+    try {
+      const p = await fetchIndexerProgressFromHasura(config.hasuraUrl!, config.hasuraSecret || "", logger);
+      return p?.lastProcessedBlock ?? 0;
+    } catch {
+      return 0;
+    }
+  });
+  hyperIndexMonitor.setChainHeadFetcher(async () => {
+    try {
+      const rpcUrl = config.rpc.executionRpcUrl || (config.rpc.polygonRpcUrls && config.rpc.polygonRpcUrls[0]);
+      if (!rpcUrl) return 0;
+      const res = await fetch(rpcUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }),
+      });
+      const j = await res.json();
+      const hex = j?.result;
+      return hex ? parseInt(hex, 16) : 0;
+    } catch {
+      return 0;
+    }
+  });
+  await hyperIndexMonitor.start().catch((e) => logger.warn({ e }, "monitor start warn"));
 
   const tui = useTui ? createTui(bus) : null;
   if (tui) {
     tui.start();
   }
 
-  // Emit a basic hyperindex_status so the TUI doesn't sit empty
+  // Emit real hyperindex_status (from monitor providers) so TUI shows accurate lag even in external mode
   const statusTimer = setInterval(() => {
+    const getStatus = (hyperIndexMonitor as { getLastStatus?: () => { synced?: number; remote?: number; lag?: number; syncRate?: number; syncedBlock?: number; remoteBlock?: number } }).getLastStatus;
+    const st = getStatus ? getStatus() : { synced: 0, remote: 0, lag: 0, syncRate: 0 };
     bus.emit({
       type: "hyperindex_status",
       status: "external",
-      syncedBlock: 0,
-      remoteBlock: 0,
-      lag: 0,
-      syncRate: 0,
+      syncedBlock: st.synced || st.syncedBlock || 0,
+      remoteBlock: st.remote || st.remoteBlock || 0,
+      lag: st.lag || 0,
+      syncRate: st.syncRate || 0,
       discoveryMode: "broad",
     });
   }, 10000);
@@ -55,6 +106,7 @@ async function main() {
     if (shuttingDown) return;
     shuttingDown = true;
     clearInterval(statusTimer);
+    try { await hyperIndexMonitor.stop(); } catch {}
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();

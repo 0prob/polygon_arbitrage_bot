@@ -75,9 +75,7 @@ export class MempoolService {
     }
 
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
-    const effectiveSize = isIndirect
-      ? this.options.largeSwapThresholdWei
-      : decoded.amountIn;
+    const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
     if (!isIndirect && effectiveSize < this.options.largeSwapThresholdWei) {
       this.logger.debug(
         { pool: decoded.poolAddress, amount: decoded.amountIn.toString(), thresh: this.options.largeSwapThresholdWei.toString() },

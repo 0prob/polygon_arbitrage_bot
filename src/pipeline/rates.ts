@@ -288,7 +288,10 @@ export function computeMaticRates(
   }
 
   if (logger && rates.size > 1) {
-    logger.debug?.({ rates: rates.size, skippedNoState, skippedLowLiquidity, skippedExtremeRatio, propagation: logs }, "Rate propagation complete");
+    logger.debug?.(
+      { rates: rates.size, skippedNoState, skippedLowLiquidity, skippedExtremeRatio, propagation: logs },
+      "Rate propagation complete",
+    );
   } else if (logger) {
     logger.debug?.(
       {

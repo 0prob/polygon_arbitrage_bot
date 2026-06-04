@@ -190,21 +190,9 @@ export async function bootApplication(
     };
   }
 
-  // FastLane submitter
-  const fastLaneSubmitter = rpc.addFastLane({
-    enabled: config.fastlane.enabled,
-    rpcUrl: config.fastlane.rpcUrl,
-    blockNumberWindow: config.fastlane.blockNumberWindow,
-    timestampWindowS: config.fastlane.timestampWindowS,
-  });
-  if (fastLaneSubmitter) {
-    logger.info({ rpcUrl: config.fastlane.rpcUrl }, "FastLane submitter initialized");
-  }
-
   const submissionStrategy = new SubmissionStrategy(logger, gasOracle, submitters, {
     submissionStrategy: config.execution.submissionStrategy,
     privateSubmitter,
-    fastLaneSubmitter,
   });
 
   const receiptPoller = new ReceiptPoller(rpc, config.execution.receiptTimeoutMs, config.execution.receiptPollMs);
@@ -226,47 +214,7 @@ export async function bootApplication(
   };
   const pendingStateOverlay = new InMemoryPendingStateOverlay();
   const mempoolService = new MempoolService(logger, mempoolOptions, pendingStateOverlay);
-
-  // Wire mempool pending tx watcher if WebSocket URL is configured AND mempool enabled
-  let mempoolWsClient: PublicClient | undefined;
   const mempoolWsUrl = config.mempool.enabled ? config.mempool.websocketUrl : "";
-  if (mempoolWsUrl) {
-    try {
-      const { createPublicClient, webSocket } = await import("viem");
-      mempoolWsClient = createPublicClient({
-        transport: webSocket(mempoolWsUrl),
-      });
-      mempoolWsClient.watchPendingTransactions({
-        onTransactions: async (hashes) => {
-          for (const hash of hashes.slice(0, 10)) {
-            try {
-              const tx = await publicClient.getTransaction({ hash });
-              if (tx && tx.to) {
-                mempoolService.processPendingTx({
-                  hash: tx.hash,
-                  to: tx.to,
-                  input: tx.input,
-                  value: tx.value?.toString() ?? "0",
-                });
-              }
-            } catch {
-              /* tx may have been mined before we fetch it */
-            }
-          }
-        },
-        onError: (err) => {
-          logger.error({ err }, "Mempool WS subscription error");
-        },
-      });
-      logger.info({ url: mempoolWsUrl }, "Mempool pending tx watcher started");
-      const aliveInterval = setInterval(() => {
-        logger.debug({}, "Mempool WS watcher alive");
-      }, 60_000);
-      aliveInterval.unref();
-    } catch (err) {
-      logger.warn({ err }, "Failed to start mempool WebSocket watcher");
-    }
-  }
 
   const rpcCircuit = new CircuitBreaker("polygon-rpc", {
     failureThreshold: 3,

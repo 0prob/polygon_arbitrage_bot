@@ -120,11 +120,12 @@ try {
     _staticAnchors = poolsJson.map((p) => {
       const row = p as Record<string, unknown>;
       return {
-      address: (row?.address ?? "") as string,
-      protocol: (row?.protocol ?? "unknown") as string,
-      tokens: Array.isArray(row?.tokens) ? (row.tokens as string[]) : [],
-      fee: (row?.fee ?? 30) as number,
-    }; });
+        address: (row?.address ?? "") as string,
+        protocol: (row?.protocol ?? "unknown") as string,
+        tokens: Array.isArray(row?.tokens) ? (row.tokens as string[]) : [],
+        fee: (row?.fee ?? 30) as number,
+      };
+    });
   }
 } catch {
   // silent fallback - bot will rely entirely on Hasura discovery

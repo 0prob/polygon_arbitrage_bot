@@ -233,12 +233,7 @@ export async function evaluatePipeline(
 
           const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
 
-          const { low, high } = getDynamicSearchBounds(
-            cycle,
-            stateCache,
-            options.tokenToMaticRates,
-            options.maxFlashLoanUsd ?? 50_000,
-          );
+          const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
 
           if (low === 0n || low >= high) return { type: "pruned" as const, cycle };
 

@@ -62,9 +62,18 @@ async function main() {
     process.exit(0);
   }
 
-  process.on("SIGINT", () => { console.error("SIGINT received!"); shutdown(); });
-  process.on("SIGTERM", () => { console.error("SIGTERM received!"); shutdown(); });
-  process.on("SIGHUP", () => { console.error("SIGHUP received!"); shutdown(); });
+  process.on("SIGINT", () => {
+    console.error("SIGINT received!");
+    void shutdown();
+  });
+  process.on("SIGTERM", () => {
+    console.error("SIGTERM received!");
+    void shutdown();
+  });
+  process.on("SIGHUP", () => {
+    console.error("SIGHUP received!");
+    void shutdown();
+  });
 
   const runner = new PassRunner(ctx, undefined, tui?.bus);
   await runner.run();

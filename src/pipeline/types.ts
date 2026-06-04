@@ -47,6 +47,8 @@ export interface PipelineOptions {
   maxPriceImpactThreshold?: number;
   concurrency?: number;
   roiSafetyCap?: number;
+  /** Optional cap (in USD) for dynamic search bound high; used by getDynamicSearchBounds for liquidity-aware ternary search. */
+  maxFlashLoanUsd?: number;
   /** Minimal logger surface used for debug/info during evaluation. Accepts pino-style or compatible loggers. */
   logger?: {
     debug?: (obj: Record<string, unknown>, msg?: string) => void;

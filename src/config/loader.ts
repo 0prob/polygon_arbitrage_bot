@@ -62,11 +62,6 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   DATA_DIR: ["paths", "dataDir"],
   PERF_JSON_FILE: ["paths", "perfJsonFile"],
 
-  FASTLANE_ENABLED: ["fastlane", "enabled"],
-  FASTLANE_RPC_URL: ["fastlane", "rpcUrl"],
-  FASTLANE_BLOCK_WINDOW: ["fastlane", "blockNumberWindow"],
-  FASTLANE_TIMESTAMP_WINDOW_S: ["fastlane", "timestampWindowS"],
-
   HYPERSYNC_MAX_RPM_PER_TOKEN: ["rpc", "hypersyncMaxRpmPerToken"],
   CHAINSTACK_RPS: ["rpc", "chainstackRps"],
   ALCHEMY_API_KEY: ["rpc", "alchemyApiKey"],

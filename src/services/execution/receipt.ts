@@ -44,13 +44,13 @@ export class ReceiptPoller {
         let receipt: RawReceipt | null = null;
 
         if (hyperSync) {
-          receipt = await hyperSync.getTransactionReceipt(txHash) as RawReceipt | null;
+          receipt = (await hyperSync.getTransactionReceipt(txHash)) as RawReceipt | null;
           if (receipt) {
             receipt.traces = await hyperSync.getTransactionTraces(txHash).catch(() => []);
           }
         }
         if (!receipt && hyperRpc) {
-          receipt = await hyperRpc.getTransactionReceipt(txHash as `0x${string}`) as RawReceipt | null;
+          receipt = (await hyperRpc.getTransactionReceipt(txHash as `0x${string}`)) as RawReceipt | null;
         }
         if (!receipt) {
           const viemReceipt = await this.rpc.read.getTransactionReceipt({ hash: txHash as `0x${string}` });

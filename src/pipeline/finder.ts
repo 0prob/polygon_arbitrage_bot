@@ -160,7 +160,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
     if (edges.length > 0) {
       activeAdjacency.set(
         token,
-        edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) } as EdgeWithObsc)),
+        edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) }) as EdgeWithObsc),
       );
     }
   }
@@ -172,13 +172,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
   // - obs avg + length-specific coefs (0.8,1.1,1.4,1.7) + fee log weights + cum fees
   // - budget + maxCycles respected with early exits
   // - reuses the pre-enriched edge objects in results (same as original)
-  function dfs(
-    startToken: string,
-    currToken: string,
-    path: EdgeWithObsc[],
-    usedPools: Set<string>,
-    hops: number,
-  ): void {
+  function dfs(startToken: string, currToken: string, path: EdgeWithObsc[], usedPools: Set<string>, hops: number): void {
     if (overBudget() || cycles.length >= maxCycles) return;
 
     if (hops >= 2 && currToken === startToken) {

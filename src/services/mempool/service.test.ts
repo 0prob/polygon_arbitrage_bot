@@ -33,40 +33,45 @@ describe("MempoolService", () => {
     const tx = {
       hash: "0xabc",
       to: "0xpoolv3",
-      input: "0x128acb08" + "0".repeat(64) + "1".repeat(64) + "000000000000000000000000000000000000000000000000000000000000000a" + "0".repeat(64),
+      input:
+        "0x128acb08" +
+        "0".repeat(64) +
+        "1".repeat(64) +
+        "000000000000000000000000000000000000000000000000000000000000000a" +
+        "0".repeat(64),
       value: "0x0",
     };
     service.processPendingTx(tx);
     expect(signals.length).toBe(1);
     expect((signals[0] as any).data.estimatedSwapSize).toBe(10n);
   });
-it("emits large_swap for generic indirect swap (heuristic)", () => {
-  const signals: MempoolSignal[] = [];
-  const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-  const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
-  const poolAddr = "0x" + "a".repeat(40);
-  service.setKnownPools([poolAddr]);
-  service.onSignal((s) => signals.push(s));
+  it("emits large_swap for generic indirect swap (heuristic)", () => {
+    const signals: MempoolSignal[] = [];
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const poolAddr = "0x" + "a".repeat(40);
+    service.setKnownPools([poolAddr]);
+    service.onSignal((s) => signals.push(s));
 
-  // Indirect swap via a router calling a pool.
-  // Selector (4 bytes) + padding. 
-  // To be 32-byte aligned in `extractEncodedAddresses`, we need the address to start at (i + 24) where i is 2 + 64*n.
-  // i=2: 26. i=66: 90. i=130: 154.
-  // Let"s pick i=66, start address at 90. 90-2=88 chars of padding/selector.
-  // Input is 0x...
-  // 52bbbe29 is 8 chars (4 bytes).
-  // We need 88 - 8 = 80 chars of padding.
-  const tx = {
-    hash: "0xabc",
-    to: "0xrouter",
-    input: "0x52bbbe29" + "0".repeat(80) + poolAddr.slice(2) + "0".repeat(64),
-    value: "0x0",
-  };
-  service.processPendingTx(tx);
-  expect(signals.length).toBe(1);
-  expect((signals[0] as any).data.poolAddress.toLowerCase()).toBe(poolAddr);
-  expect((signals[0] as any).data.estimatedSwapSize).toBe(1n);
-});
+    // Indirect swap via a router calling a pool.
+    // Selector (4 bytes) + padding.
+    // To be 32-byte aligned in `extractEncodedAddresses`, we need the address to start at (i + 24) where i is 2 + 64*n.
+    // i=2: 26. i=66: 90. i=130: 154.
+    // Let"s pick i=66, start address at 90. 90-2=88 chars of padding/selector.
+    // Input is 0x...
+    // 52bbbe29 is 8 chars (4 bytes).
+    // We need 88 - 8 = 80 chars of padding.
+    const tx = {
+      hash: "0xabc",
+      to: "0xrouter",
+      input: "0x52bbbe29" + "0".repeat(80) + poolAddr.slice(2) + "0".repeat(64),
+      value: "0x0",
+    };
+    service.processPendingTx(tx);
+    expect(signals.length).toBe(1);
+    expect((signals[0] as any).data.poolAddress.toLowerCase()).toBe(poolAddr);
+    expect((signals[0] as any).data.estimatedSwapSize).toBe(1n);
+  });
 
   it("does not emit for unknown pool", () => {
     const signals: MempoolSignal[] = [];
@@ -93,7 +98,7 @@ it("emits large_swap for generic indirect swap (heuristic)", () => {
     const tx = {
       hash: "0xabc",
       to: "0xpool1",
-      input: "0x022c0d9f" + "000000000000000000000000000000000000000000000000000000000000000a" + "0".repeat(64*3),
+      input: "0x022c0d9f" + "000000000000000000000000000000000000000000000000000000000000000a" + "0".repeat(64 * 3),
       value: "0x0",
     };
     service.processPendingTx(tx);

@@ -235,10 +235,10 @@ export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCa
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
-  const poolAddr = edge.poolAddress.toLowerCase();
-  const baseState = stateCache.get(poolAddr) ?? (edge.stateRef as PoolState | undefined);
-  if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
-  const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
+    const poolAddr = edge.poolAddress.toLowerCase();
+    const baseState = stateCache.get(poolAddr) ?? (edge.stateRef as PoolState | undefined);
+    if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+    const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
 
     simEdges[i] = {
       poolAddress: poolAddr,

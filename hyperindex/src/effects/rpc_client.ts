@@ -57,9 +57,9 @@ const rpcUrls = getRpcUrls();
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
     batch: false, // Disabled JSON-RPC batching entirely for better compatibility. Multicall remains enabled on the client.
-    timeout: 8_000, // Increased to 8s for more stability on slow/overloaded endpoints.
-    retryCount: 1, // Reduced from 3: one retry is enough; repeated failures mean the endpoint is down
-    retryDelay: 150,
+    timeout: 12_000, // Raised for effects (token meta + curve/balancer/dodo) which can be slow on first-seen during catchup bursts.
+    retryCount: 3, // More retries for transient HTTP failures on effect RPCs (seen live as "ContractFunctionExecutionError: HTTP request failed" + SLOW_EFFECT + "Network error fetching decimals").
+    retryDelay: 200,
     fetchOptions: {
       headers: {
         Connection: "keep-alive",
@@ -69,7 +69,7 @@ const transports: HttpTransport[] = rpcUrls.map((url) =>
   }),
 );
 
-const transport = transports.length > 1 ? fallback(transports, { rank: false }) : transports[0];
+const transport = transports.length > 1 ? fallback(transports, { rank: true }) : transports[0];
 
 export const publicClient: PublicClient = createPublicClient({
   chain: polygon,

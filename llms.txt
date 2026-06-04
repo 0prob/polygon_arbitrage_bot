@@ -14,7 +14,7 @@ This file helps AI assistants discover the most important documentation for the 
 
 - src/cli/ (main.ts, arb_only.ts) — entry, flags (--tui), wiring.
 - src/config/ — Zod + loader + defaults + addresses.
-- src/rpc/manager.ts — **Single source** for all RPC (read/execution/FastLane/WS + scheduler).
+- src/rpc/manager.ts — **Single source** for all RPC (read/execution/WS + scheduler).
 - src/pipeline/ —  graph, finder (DFS), simulator (with prebuilt edges + minimal+impact combined), fetcher (dirty/updated sets), rates (seed+focus incremental), pipeline (ternary + holders), instrumenter.
 - src/orchestrator/ — boot (wires ctx, no more getPools), pass_loop (HF/LF/discovery, dirty graph updates, single rates point, mempool signals, lag degrade, budget tripwire), runner, shutdown, status_writer. loop.ts is now tiny DI surface only (old dead runPipeline long gone).
 - src/services/execution/ — thin service + candidate (now uses consistent identity routeKey), builder/calldata (single norm for hash), dryrun, gas, nonce, quarantine, receipt, submit, tracker.

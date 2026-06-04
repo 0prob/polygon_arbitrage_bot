@@ -104,14 +104,6 @@ export const MempoolConfigSchema = z.object({
 });
 export type MempoolConfig = z.infer<typeof MempoolConfigSchema>;
 
-export const FastLaneConfigSchema = z.object({
-  enabled: z.coerce.boolean().default(false),
-  rpcUrl: z.string().default(""),
-  blockNumberWindow: z.coerce.number().int().positive().default(50),
-  timestampWindowS: z.coerce.number().int().positive().default(60),
-});
-export type FastLaneConfig = z.infer<typeof FastLaneConfigSchema>;
-
 export const ObservabilityConfigSchema = z.object({
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]),
   tuiEnabled: z.preprocess((v) => v === "true" || v === "1" || v === true, z.coerce.boolean()),
@@ -130,7 +122,6 @@ export const AppConfigSchema = z.object({
   routing: RoutingConfigSchema,
   execution: ExecutionConfigSchema,
   mempool: MempoolConfigSchema,
-  fastlane: FastLaneConfigSchema,
   observability: ObservabilityConfigSchema,
   paths: PathsConfigSchema,
   envioApiToken: z.string().default(""),

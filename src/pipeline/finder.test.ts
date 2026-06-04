@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getDynamicSearchBounds } from "./finder.ts";
-import type { FoundCycle, SwapEdge } from "./types.ts";
+import type { FoundCycle } from "./types.ts";
 import type { Address } from "../core/types/common.ts";
 
 describe("getDynamicSearchBounds", () => {
@@ -71,9 +71,7 @@ describe("getDynamicSearchBounds", () => {
   it("clamps high bound based on USD cap", () => {
     const cycle: FoundCycle = {
       startToken: WMATIC,
-      edges: [
-        { poolAddress: "0xpool1", protocol: "UNISWAP_V2", tokenIn: WMATIC, tokenOut: USDC, zeroForOne: true, feeBps: 30n },
-      ] as any,
+      edges: [{ poolAddress: "0xpool1", protocol: "UNISWAP_V2", tokenIn: WMATIC, tokenOut: USDC, zeroForOne: true, feeBps: 30n }] as any,
       hopCount: 1,
       logWeight: 0,
       cumulativeFeeBps: 30n,

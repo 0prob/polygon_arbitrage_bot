@@ -1,7 +1,6 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { GasOracle } from "./gas.ts";
-import type { FastLaneSubmitter } from "../../infra/rpc/fastlane.ts";
 import { SubmissionStrategy as SubmissionStrategyEnum } from "../../config/schema.ts";
 
 export type SubmitTxFn = (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }) => Promise<string>;
@@ -9,13 +8,11 @@ export type SubmitTxFn = (tx: { to: string; data: string; value: bigint; nonce: 
 export interface SubmissionStrategyOptions {
   submissionStrategy?: SubmissionStrategyEnum;
   privateSubmitter?: SubmitTxFn;
-  fastLaneSubmitter?: FastLaneSubmitter;
 }
 
 export class SubmissionStrategy {
   private readonly strategy: SubmissionStrategyEnum;
   private readonly privateSubmitter: SubmitTxFn | null;
-  private readonly fastLaneSubmitter: FastLaneSubmitter | null;
 
   constructor(
     private logger: Logger,
@@ -25,7 +22,6 @@ export class SubmissionStrategy {
   ) {
     this.strategy = options.submissionStrategy ?? "hybrid";
     this.privateSubmitter = options.privateSubmitter ?? null;
-    this.fastLaneSubmitter = options.fastLaneSubmitter ?? null;
   }
 
   async submit(
@@ -34,31 +30,13 @@ export class SubmissionStrategy {
   ): Promise<{ txHash: string; endpoint: string }> {
     const snapshot = this.gasOracle.getSnapshot();
     let adjustedFee = tx.maxFee;
-    let priorityFee = snapshot?.priorityFee ?? 1n * 10n ** 9n;
     if (expectedProfit && expectedProfit > 0n && snapshot) {
       const multiplier = this.gasOracle.getEffectiveMaxBidMultiplier();
       const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, multiplier);
       adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
-      priorityFee = scaled;
     }
 
     const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee });
-
-    if (this.fastLaneSubmitter?.isEnabled()) {
-      try {
-        const txHash = await this.fastLaneSubmitter.submitTransaction({
-          to: tx.to,
-          data: tx.data,
-          value: tx.value,
-          nonce: tx.nonce,
-          maxFee: adjustedFee,
-          priorityFee,
-        });
-        return { txHash, endpoint: "fastlane" };
-      } catch (err) {
-        this.logger.warn({ err }, "FastLane submission failed, falling back");
-      }
-    }
 
     if (this.strategy === "private" && this.privateSubmitter) {
       const txHash = await submit(this.privateSubmitter);

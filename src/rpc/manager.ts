@@ -3,7 +3,6 @@ import { privateKeyToAccount } from "viem/accounts";
 import { Alchemy, Network, type AlchemySettings } from "alchemy-sdk";
 import type { RpcConfig } from "../config/schema.ts";
 import { getChain } from "../infra/rpc/chains.ts";
-import { FastLaneSubmitter } from "../infra/rpc/fastlane.ts";
 import { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import { HyperRpcClient, createHyperRpcClient } from "../infra/rpc/hyperrpc.ts";
@@ -23,7 +22,6 @@ export class RpcManager {
   public readonly scheduler: RequestScheduler;
   private _readClient: PublicClient;
   private _executionClients: WalletClient[] = [];
-  private _fastLane: FastLaneSubmitter | undefined;
   private _ws: WebSocketSubscriber | undefined;
   private _reorgDetector: ReorgDetector | undefined;
   private _hyperRpc: HyperRpcClient | undefined;
@@ -223,37 +221,6 @@ export class RpcManager {
 
   getExecutionClients(): WalletClient[] {
     return this._executionClients;
-  }
-
-  // === FastLane ===
-  addFastLane(fastLaneConfig: {
-    enabled: boolean;
-    rpcUrl: string;
-    blockNumberWindow: number;
-    timestampWindowS: number;
-  }): FastLaneSubmitter | undefined {
-    if (!fastLaneConfig.enabled) return undefined;
-    const client = createWalletClient({
-      account: this._executionClients[0]!.account,
-      chain: getChain(this.chainId),
-      transport: http(fastLaneConfig.rpcUrl),
-    });
-    this._fastLane = new FastLaneSubmitter(
-      {
-        enabled: fastLaneConfig.enabled,
-        rpcUrl: fastLaneConfig.rpcUrl,
-        conditional: {
-          blockNumberWindow: fastLaneConfig.blockNumberWindow,
-          timestampWindowS: fastLaneConfig.timestampWindowS,
-        },
-      },
-      client,
-    );
-    return this._fastLane;
-  }
-
-  getFastLane(): FastLaneSubmitter | undefined {
-    return this._fastLane;
   }
 
   // === WebSocket ===

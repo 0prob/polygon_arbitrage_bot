@@ -347,6 +347,7 @@ Result: tighter codebase, fewer footguns (keying), no duplication vectors for co
 **Goal:** Activate lspmux (multiplexer on 127.0.0.1:27631 for TS/Solidity/GraphQL/YAML/JSON/TOML/Bash etc) for AI code intelligence (documentSymbol, refs, hover, go-to-def via the agent's lsp tool + editor clients). Use it (and the project's check suite) to drive a fresh workspace audit + targeted debug/optimize cleanups. Follows "prefer skills/MCP/lspmux" guidance in AGENTS.md.
 
 ### Actions
+
 - Fixed lspmux/config.toml (string "ip:port" -> array form for TCP Address enum; added pass_environment).
 - Started persistent `lspmux server` (XDG_CONFIG_HOME pointed to workspace so local config + bins take effect).
 - Updated `~/.grok/lsp.json` (and documented) to route all project languages through `lspmux client --server-path <local node_modules/.bin/xxx>` + XDG env. This ensures the AI's lsp tool + any opencode/grok-build clients use the project's installed LSP versions (matching lockfile/TS/sol) and share single instances via mux (no dup servers).
@@ -354,6 +355,7 @@ Result: tighter codebase, fewer footguns (keying), no duplication vectors for co
 - Note: internal `lsp` tool still reported "No LSP servers started" on calls (agent binary's async-lsp startup may bypass .grok/lsp.json or require restart/plugin reload); however mux server + client path is live and configured for use.
 
 ### Audit via checks + LSP intent (ran instead of raw grep for symbols/defs)
+
 - `bunx tsc --noEmit` → clean (0 errors) throughout.
 - `bunx vitest run` → 251 passed.
 - `cd sol && forge build && forge test` (non-fork) → clean (Aave fork test 429 pre-existing quota).
@@ -361,8 +363,9 @@ Result: tighter codebase, fewer footguns (keying), no duplication vectors for co
 - Used full reads + targeted (post any-clean) for hot paths: no new dups; respected "use RpcManager", no sync I/O in 200ms, single sources.
 
 ### Debug / Fixes / Optimizations Applied
-- Deleted dead `hyperindex/src/effects/env.ts` (declare var process + unused; only graphify cache ref; duplicated the proper NodeJS.ProcessEnv augmentation in hyperindex/env.d.ts). Fixed the sole eslint *error* (no-var).
-- Prefixed/removed ~20+ unused vars (mostly catch (_err) → catch {} or (_) where binding unused; best-effort ignores). Reduced noise in non-test code. (Some _ still flagged due to rule pattern; catch {} is preferred modern form.)
+
+- Deleted dead `hyperindex/src/effects/env.ts` (declare var process + unused; only graphify cache ref; duplicated the proper NodeJS.ProcessEnv augmentation in hyperindex/env.d.ts). Fixed the sole eslint _error_ (no-var).
+- Prefixed/removed ~20+ unused vars (mostly catch (_err) → catch {} or (_) where binding unused; best-effort ignores). Reduced noise in non-test code. (Some \_ still flagged due to rule pattern; catch {} is preferred modern form.)
 - Removed or disabled (with next-line) many `any` / `as any`:
   - fetcher.ts (multicall result shapes for V2/V3/V4/woofi): added targeted // eslint-disable-next-line ; kept original narrowing logic + comments. (Viem heterogeneous batch typing requires looseness.)
   - pass_loop.ts (log paths): added `type SwapEdge` import; typed `(e: SwapEdge)`.
@@ -373,10 +376,11 @@ Result: tighter codebase, fewer footguns (keying), no duplication vectors for co
   - token_metadata.ts: typed the persisted auto-extra JSON as `Array<{address?:string, decimals?:number}>`.
   - rpc_client.ts: prefixed unused rpm/BATCH_SIZE (kept for docs/comments).
   - hyperindex_process, graphql, etc: left core infra anys (RPC/trace shapes, effect glue) as they are behind resilience boundaries; hot path (200ms evaluate) now has fewer.
-- Other hygiene: fixed some _err in src/ that survived prior passes.
+- Other hygiene: fixed some \_err in src/ that survived prior passes.
 - Net: any count + unused down significantly in owned src/; no behavior change (tests green, tsc clean).
 
 **Verification post-pass:**
+
 - Typecheck: 0 errors.
 - Tests: 251 green (incl pass_loop heavy + candidate + graph inc exercising the edited paths).
 - Lint: reduced (src/ ~70s, full with scripts/hyper ~100; pre-existing in arb-tx-tools any for MCP flexibility + test loose mocks).
