@@ -2,6 +2,7 @@ import type { Address } from "../../core/types/common.ts";
 import type { PoolState } from "../../core/types/pool.ts";
 
 export interface LargeSwapSignal {
+  traceId: string;
   txHash: string;
   poolAddress: Address;
   tokenIn: Address;
@@ -27,6 +28,7 @@ export interface NewBlockSignal {
 }
 
 export interface NewPoolPendingSignal {
+  traceId: string;
   txHash: string;
   factoryAddress: Address;
 }

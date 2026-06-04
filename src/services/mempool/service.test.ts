@@ -20,6 +20,7 @@ describe("MempoolService", () => {
     };
     service.processPendingTx(tx);
     expect(signals.length).toBeGreaterThanOrEqual(1);
+    expect((signals[0].data as any).traceId).toBe("tx-abc");
   });
 
   it("emits large_swap for V3 direct swap", () => {
@@ -81,6 +82,24 @@ describe("MempoolService", () => {
 
     service.processPendingTx({ hash: "0xabc", to: "0xunknown", input: "0x022c0d9f" + "0".repeat(200), value: "0x0" });
     expect(signals.length).toBe(0);
+  });
+
+  it("emits new_pool_pending with traceId", () => {
+    const signals: MempoolSignal[] = [];
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    service.onSignal((s) => signals.push(s));
+
+    const tx = {
+      hash: "0x1234567890",
+      to: "0xfactory",
+      input: "0xc9c65396" + "0".repeat(64),
+      value: "0x0",
+    };
+    service.processPendingTx(tx);
+    expect(signals.length).toBe(1);
+    expect(signals[0].type).toBe("new_pool_pending");
+    expect((signals[0].data as any).traceId).toBe("tx-123456");
   });
 
   it("updates overlay for V2 swap", () => {

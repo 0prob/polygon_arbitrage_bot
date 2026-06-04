@@ -51,13 +51,17 @@ export class MempoolService {
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
     if (!tx.to || !tx.input) return;
 
+    const traceId = "tx-" + tx.hash.slice(2, 8);
     const selector = tx.input.slice(0, 10).toLowerCase();
     if (SELECTORS[selector]) {
       this.logger.info({ to: tx.to, selector, hash: tx.hash.slice(0, 10) + "..." }, "mempool: swap-like tx seen");
     }
 
     if (tx.input.startsWith("0xc9c65396") || tx.input.startsWith("0xa1671295")) {
-      this.emit({ type: "new_pool_pending", data: { txHash: tx.hash, factoryAddress: tx.to as `0x${string}` } });
+      this.emit({
+        type: "new_pool_pending",
+        data: { traceId, txHash: tx.hash, factoryAddress: tx.to as `0x${string}` },
+      });
       // We don't return here, might also be a swap if someone is being weird, though unlikely
     }
 
@@ -102,6 +106,7 @@ export class MempoolService {
       "mempool: emitting large_swap signal",
     );
     const signal: LargeSwapSignal = {
+      traceId,
       txHash: tx.hash,
       poolAddress: decoded.poolAddress,
       tokenIn: decoded.tokenIn,
