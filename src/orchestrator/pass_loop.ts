@@ -73,6 +73,9 @@ function sleep(ms: number): Promise<void> {
 
 const instrumenter = new ArbInstrumenter();
 
+/** LF pass counter for throttling gradual cache expansion (every 10th LF pass) */
+let _lfStateRefreshCount = 0;
+
 export const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
   findCycles,
@@ -195,13 +198,27 @@ async function runLfStateRefresh(
     const secret = ctx.config.hasuraSecret;
     const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret, ctx.logger));
     let newEntries = 0;
+    let skippedStale = 0;
     for (const [addr, state] of gqlCache.entries()) {
       if (!stateCache.has(addr)) {
+        const s = state as Record<string, unknown>;
+        const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
+        const sq = typeof s.sqrtPriceX96 === "bigint" ? (s.sqrtPriceX96 as bigint) : null;
+        const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
+        const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
+        // Skip Hasura states that are clearly stale (pool-creation snapshot with zero values).
+        // They would block gradual RPC refresh for that pool.
+        const staleV3 = liq !== null && liq === 0n;
+        const staleV2 = r0 !== null && r1 !== null && r0 === 0n && r1 === 0n;
+        if (staleV3 || staleV2) {
+          skippedStale++;
+          continue;
+        }
         stateCache.set(addr, state);
         newEntries++;
       }
     }
-    ctx.logger.debug({ entries: gqlCache.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
+    ctx.logger.debug({ entries: gqlCache.size, newEntries, skippedStale }, "State and TokenMeta refreshed from HyperIndex");
 
     // New: lightweight progress signal from the block handler (see hyperindex/src/handlers/progress.ts)
     const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret, ctx.logger));
@@ -230,7 +247,8 @@ async function runLfStateRefresh(
   // Fetch state for pools in current cycles that are missing from cache.
   // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline.
   // On first boot, any forceRefresh that IS needed is handled by the pre-fetch path.
-  const updated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
+  const stateClient = ctx.stateClient ?? ctx.publicClient;
+  const updated = await fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, false);
 
   // Bootstrap: on first LF pass, pre-fetch V2/V3 state for a sensible number of pools.
   // This lets rate propagation reach thousands of tokens on the very first pass
@@ -240,7 +258,7 @@ async function runLfStateRefresh(
   // immediately. This increases # of rateSafeCycles, reduces noRate %, and surfaces more
   // (and better) long-tail opportunities instead of only marginal hot V2 pairs.
   if (stateCacheEmpty) {
-    const MAX_BOOTSTRAP_POOLS = 15000;
+    const MAX_BOOTSTRAP_POOLS = 8000;
     const stateAddrSet = new Set<string>();
     for (const addr of stateCache.keys()) stateAddrSet.add(addr);
     const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
@@ -268,9 +286,31 @@ async function runLfStateRefresh(
     if (toBootstrap.length > 0) {
       const majorCount = prioritized.filter(touchesMajor).length;
       ctx.logger.info({ missingPools: toBootstrap.length, majorConnected: majorCount }, "Bootstrap: pre-fetching V2/V3 state for rate propagation");
-      const seedUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, toBootstrap, [], true);
+      // Force-refresh the critical (major-connected) pools; remaining ~37k accumulate gradually.
+      const seedUpdated = await fetchMissingPoolState(stateClient, stateCache, toBootstrap, [], true);
       for (const addr of seedUpdated) updated.add(addr);
-      ctx.logger.info({ seedFetched: seedUpdated.size }, "Bootstrap fetch complete");
+      ctx.logger.info({ seedFetched: seedUpdated.size, stillMissing: toBootstrap.length - seedUpdated.size }, "Bootstrap fetch complete");
+    }
+  }
+
+  // Gradual cache expansion: every 10th LF pass, force-refresh a batch of uncached pools
+  // until the cache reaches target size (~75% of total pools). Uses stateClient (dedicated RPC)
+  // so it doesn't compete with the hot path.
+  _lfStateRefreshCount++;
+  const CACHE_TARGET = 30000;
+  if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
+    const EXPANSION_BATCH = 2000;
+    const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
+    if (uncached.length > 0) {
+      const batch = uncached.slice(0, EXPANSION_BATCH);
+      const expanded = await fetchMissingPoolState(stateClient, stateCache, batch, [], true);
+      if (expanded.size > 0) {
+        for (const addr of expanded) updated.add(addr);
+        ctx.logger.info(
+          { expanded: expanded.size, totalCached: stateCache.size, remaining: uncached.length - expanded.size },
+          "Gradual cache expansion batch complete",
+        );
+      }
     }
   }
 
@@ -576,7 +616,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       preFetchCounter++;
       if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
-        const justUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
+        const justUpdated = await fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, false);
         if (justUpdated.size > 0) {
           for (const addr of justUpdated) updatedPools.add(addr);
         }

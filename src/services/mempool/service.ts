@@ -53,7 +53,7 @@ export class MempoolService {
 
     const selector = tx.input.slice(0, 10).toLowerCase();
     if (SELECTORS[selector]) {
-      this.logger.debug({ to: tx.to, selector, hash: tx.hash.slice(0, 10) + "..." }, "mempool: swap-like tx seen");
+      this.logger.info({ to: tx.to, selector, hash: tx.hash.slice(0, 10) + "..." }, "mempool: swap-like tx seen");
     }
 
     if (tx.input.startsWith("0xc9c65396") || tx.input.startsWith("0xa1671295")) {
@@ -99,6 +99,10 @@ export class MempoolService {
       }
     }
 
+    this.logger.info(
+      { pool: decoded.poolAddress, protocol: decoded.protocol, amount: decoded.amountIn.toString(), hash: tx.hash.slice(0, 10) + "..." },
+      "mempool: emitting large_swap signal",
+    );
     const signal: LargeSwapSignal = {
       txHash: tx.hash,
       poolAddress: decoded.poolAddress,

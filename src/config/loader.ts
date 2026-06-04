@@ -7,6 +7,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   POLYGON_RPC_URLS: ["rpc", "polygonRpcUrls"],
   POLYGON_RPC_URL: ["rpc", "polygonRpcUrls"], // alias
   POLYGON_RPC: ["rpc", "polygonRpcUrls"], // alias
+  STATE_RPC_URL: ["rpc", "stateRpcUrl"],
   EXECUTION_RPC: ["rpc", "executionRpcUrl"],
   CONFIG_JSON_RPC_TIMEOUT_MS: ["rpc", "requestTimeoutMs"],
   RPC_BATCH_WAIT_MS: ["rpc", "batchWaitMs"],

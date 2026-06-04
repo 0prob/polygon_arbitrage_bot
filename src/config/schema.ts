@@ -27,6 +27,7 @@ const stringArrayFromCsv = z
 
 export const RpcConfigSchema = z.object({
   polygonRpcUrls: stringArrayFromCsv,
+  stateRpcUrl: z.string().optional(),
   executionRpcUrl: z.string().min(1, "EXECUTION_RPC is required"),
   requestTimeoutMs: numberFromString.int().positive(),
   batchWaitMs: numberFromString.int().nonnegative(),

@@ -47,9 +47,7 @@ export function pruneFailedPools(now: number = Date.now()): void {
 function trackFailedPool(addr: string, stateCache: Map<string, Record<string, unknown>>, now: number): void {
   const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
   _failedPools.set(addr, { count: fail.count + 1, lastTry: now });
-  if (fail.count >= 1) {
-    stateCache.set(addr, INVALID_POOL_STATE);
-  }
+  stateCache.set(addr, INVALID_POOL_STATE);
 }
 
 function trackSuccessfulPool(
@@ -101,7 +99,7 @@ export async function fetchMissingPoolState(
         const addr = edge.poolAddress.toLowerCase();
         if (!stateCache.has(addr)) {
           const fail = _failedPools.get(addr);
-          if (fail && fail.count > 3 && now - fail.lastTry < 300_000) continue;
+          if (fail && fail.count >= 2 && now - fail.lastTry < 300_000) continue;
           missingAddresses.add(addr);
         }
       }
@@ -112,7 +110,7 @@ export async function fetchMissingPoolState(
 
   const toFetch = Array.from(missingAddresses);
 
-  const BATCH_SIZE = 500;
+  const BATCH_SIZE = 1500;
   const batches: string[][] = [];
   for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
     batches.push(toFetch.slice(i, i + BATCH_SIZE));

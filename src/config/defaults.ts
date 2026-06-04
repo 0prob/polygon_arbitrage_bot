@@ -2,6 +2,7 @@
 export const DEFAULTS = {
   rpc: {
     polygonRpcUrls: [] as string[],
+    stateRpcUrl: "" as string,
     executionRpcUrl: "" as string, // required, no default
     requestTimeoutMs: 8_000,
     batchWaitMs: 16,
