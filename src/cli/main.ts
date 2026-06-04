@@ -11,7 +11,7 @@ import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import "../infra/garbage/garbage-tracker.ts"; // Ensure garbage list starts loading early
 import { performOneTimeGarbageCleanup } from "../infra/garbage/garbage-tracker.ts";
 import { HealthServer } from "../infra/observability/health_server.ts";
-import { filterArchivalRpcUrls } from "../infra/rpc/client_factory.ts";
+import { filterArchivalRpcUrls } from "../infra/rpc/archival.ts";
 import { DEFAULTS } from "../config/defaults.ts";
 import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 

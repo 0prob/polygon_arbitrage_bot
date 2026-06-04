@@ -29,6 +29,8 @@ export class RpcManager {
   private _hyperRpc: HyperRpcClient | undefined;
   private _hyperSync: HyperSyncService | undefined;
   private _alchemy: Alchemy | undefined;
+  private _privateRelayClients: WalletClient[] = [];
+  private _stateClient: PublicClient | undefined;
 
   constructor(config: RpcConfig, opts?: RpcManagerOptions) {
     this.chainId = opts?.chainId ?? 137;
@@ -99,6 +101,42 @@ export class RpcManager {
   /** The reorg detector (wraps the read client internally) */
   getReorgDetector(): ReorgDetector {
     return this._reorgDetector!;
+  }
+
+  addStateClient(url: string, batchSize?: number, batchWaitMs?: number): PublicClient {
+    const chain = getChain(this.chainId);
+    this._stateClient = createPublicClient({
+      chain,
+      transport: this.rateLimitedTransport(url, RequestPriority.HIGH, { batchSize }),
+      batch: {
+        multicall: {
+          wait: batchWaitMs,
+          batchSize,
+        },
+      },
+    });
+    return this._stateClient;
+  }
+
+  getStateClient(): PublicClient | undefined {
+    return this._stateClient;
+  }
+
+  addPrivateRelayClient(url: string, privateKey: string): WalletClient {
+    const chain = getChain(this.chainId);
+    const pk = privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
+    const account = privateKeyToAccount(pk as `0x${string}`);
+    const client = createWalletClient({
+      account,
+      chain,
+      transport: this.rateLimitedTransport(url, RequestPriority.CRITICAL, { timeoutMs: 15_000, batchSize: 50 }),
+    });
+    this._privateRelayClients.push(client);
+    return client;
+  }
+
+  getPrivateRelayClients(): WalletClient[] {
+    return this._privateRelayClients;
   }
 
   /**

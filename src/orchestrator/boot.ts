@@ -9,7 +9,6 @@ import { GasOracle, createGasFetcher, type GasOracleConfig } from "../services/e
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
 import { InMemoryPendingStateOverlay } from "../core/types/overlay.ts";
-import { createExecutionClient } from "../infra/rpc/client_factory.ts";
 import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
@@ -29,6 +28,8 @@ export interface RuntimeContext {
   executionService: ExecutionService;
   mempoolService: MempoolService;
   publicClient: PublicClient;
+  /** Dedicated client for state-fetching multicalls; shares publicClient if no separate URL configured */
+  stateClient: PublicClient;
   rpc: RpcManager;
   isRunning: boolean;
   gasOracle: GasOracle;
@@ -86,6 +87,13 @@ export async function bootApplication(
 
   const rpc = new RpcManager(config.rpc);
   const publicClient = rpc.getReadClient();
+
+  let stateClient: PublicClient;
+  if (config.rpc.stateRpcUrl) {
+    stateClient = rpc.addStateClient(config.rpc.stateRpcUrl, config.rpc.batchSize, config.rpc.batchWaitMs);
+  } else {
+    stateClient = publicClient;
+  }
 
   const stateCache: RouteStateCache = new Map();
 
@@ -163,7 +171,7 @@ export async function bootApplication(
 
   let privateSubmitter: SubmitTxFn | undefined;
   if (config.execution.submissionStrategy !== "public" && config.execution.privateRelayUrls.length > 0) {
-    const privateClients = config.execution.privateRelayUrls.map((url) => createExecutionClient(url, config.execution.privateKey, 137));
+    const privateClients = config.execution.privateRelayUrls.map((url) => rpc.addPrivateRelayClient(url, config.execution.privateKey));
     privateClients.forEach((wc) => {
       if (!wc.account) throw new Error("Private relay client is not configured with an account.");
     });
@@ -232,7 +240,7 @@ export async function bootApplication(
         onTransactions: async (hashes) => {
           for (const hash of hashes.slice(0, 10)) {
             try {
-              const tx = await mempoolWsClient!.getTransaction({ hash });
+              const tx = await publicClient.getTransaction({ hash });
               if (tx && tx.to) {
                 mempoolService.processPendingTx({
                   hash: tx.hash,
@@ -246,8 +254,15 @@ export async function bootApplication(
             }
           }
         },
+        onError: (err) => {
+          logger.error({ err }, "Mempool WS subscription error");
+        },
       });
       logger.info({ url: mempoolWsUrl }, "Mempool pending tx watcher started");
+      const aliveInterval = setInterval(() => {
+        logger.debug({}, "Mempool WS watcher alive");
+      }, 60_000);
+      aliveInterval.unref();
     } catch (err) {
       logger.warn({ err }, "Failed to start mempool WebSocket watcher");
     }
@@ -296,6 +311,7 @@ export async function bootApplication(
     executionService,
     mempoolService,
     publicClient,
+    stateClient,
     rpc,
     isRunning: true,
     gasOracle,
