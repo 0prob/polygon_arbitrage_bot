@@ -42,12 +42,15 @@ export function computeMaticRates(
   rates.set(WMATIC_LOWER, RATE_PRECISION);
 
   // Additional bootstrap seeds for major bases to improve initial coverage and connected component.
-  // This addresses persistent low rates (9-15) / high noRate (~91% on 2546 attempted) even with focus 99,
-  // as seen across 128s/246s/448s-tailer/current runs. WMATIC alone + stateCache connects slowly;
-  // seeding stables/WETH connects more pools/tokens from the start, letting focus + propagation
-  // yield more rateSafe cycles and profitable variety sooner (higher gross ones less marginal for gas).
-  // Values are approximate MATIC-equivalents (stables ~2x if WMATIC ~0.5 USD; WETH rough 1000x);
-  // propagation will refine via real pools/state. Conservative to avoid extremes.
+  // This addresses persistent low rates / high noRate (often 60-90%+ of attempted cycles)
+  // even with focus and cycle-driven boosts, as seen in runs on low-infra setups.
+  // WMATIC alone + stateCache connects slowly for long-tail; seeding more bases
+  // (stables/WETH + popular like LINK/AAVE etc) connects more pools/tokens from the start.
+  // Expanded list kept in sync with HOT_BASE_TOKENS / MAJOR_TOKENS.
+  // Low-infra adaptation: expand rated bases so long-tail cycles get MATIC prices
+  // (no competitive edge on saturated hot pairs).
+  // Values are approximate MATIC-equivalents; conservative to avoid extremes.
+  // propagation will refine via real pools/state.
   const USDC = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359".toLowerCase();
   const USDC_OLD = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174".toLowerCase();
   const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f".toLowerCase();
@@ -60,6 +63,18 @@ export function computeMaticRates(
   rates.set(WETH, RATE_PRECISION * 1000n);
   rates.set(DAI, RATE_PRECISION * 2n);
   rates.set(WBTC, RATE_PRECISION * 30000n);
+
+  // Expanded seeds for additional bases (low-infra / coverage expansion)
+  const LINK = "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39".toLowerCase();
+  const AAVE = "0xd6df932a45c0f255f85145f286ea0b292b21c90b".toLowerCase();
+  const CRV = "0x172370d5cd63279efa6d502dab29171933a610af".toLowerCase();
+  const BAL = "0x9a71012b13ca4d3d0cdcbc8942ec6c4e9e0e6c8c".toLowerCase();
+  const UNI = "0xb33eaad8d922b1083446dc23f610c2567fb5180f".toLowerCase();
+  rates.set(LINK, RATE_PRECISION * 5n);
+  rates.set(AAVE, RATE_PRECISION * 50n);
+  rates.set(CRV, RATE_PRECISION * 2n);
+  rates.set(BAL, RATE_PRECISION * 3n);
+  rates.set(UNI, RATE_PRECISION * 5n);
 
   const logs: string[] = [];
   if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);

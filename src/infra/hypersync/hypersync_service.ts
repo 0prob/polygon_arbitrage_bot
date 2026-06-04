@@ -12,7 +12,7 @@ try {
  * High-level wrapper around the official @envio-dev/hypersync-client.
  *
  * Designed for a single paid Envio API token (starter plan ~200 rpm).
- * No multi-token rotation — the paid key provides sufficient budget.
+ * Uses the configured ENVIO_API_TOKEN (single).
  *
  * See: https://docs.envio.dev/docs/HyperSync/overview
  */

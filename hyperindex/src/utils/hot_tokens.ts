@@ -1,12 +1,20 @@
 /**
  * Lightweight hot token / garbage lists for Envio indexer `where` filtering and handler guards.
  *
- * This is a deliberate small duplication of src/config/hot_tokens.ts from the root bot.
- *
- * Strategic Context (Long-Tail / Low-Competition Arb Strategy):
+ * Strategic Context (Long-Tail / Low-Competition Arb Strategy on Low Infra):
  * The bot's primary edge comes from obscure, long-tail, low-competition paths
  * (obscure V2 factories, DODO, Curve, Balancer weighted, complex multi-hop).
  * See src/orchestrator/pass_loop.ts "LONG-TAIL / LOW-COMPETITION ARBITRAGE STRATEGY".
+ *
+ * Low-infra adaptation: unlikely to win saturated hot pairs (needs speed/advantage).
+ * Expand this HOT_BASE list (and sync MAJOR_TOKENS + rate seeds in bot) to
+ * give rate propagation more bridges. This reduces persistent high noRate for
+ * long-tail cycles that now have a path to MATIC price via expanded bases.
+ * For low infra: strongly prefer INDEXER_HOT_BIAS=true + this expanded list.
+ * This limits total pools (less state/RPC pressure on 250 RPS etc) while the
+ * broader bases still surface many "alt + base" long-tail opportunities that
+ * the math + obscurity scoring can exploit. Broad mode on low infra often starves
+ * rates (high noRate).
  *
  * Therefore:
  * - Default behavior (INDEXER_HOT_BIAS=false) = broad discovery. This is the
@@ -14,14 +22,15 @@
  * - INDEXER_HOT_BIAS=true is a *conservative / lower long-tail exposure* mode.
  *   It biases the indexer toward pools involving major bases. Use when you
  *   want reduced noise, lower risk of garbage, or temporarily higher liquidity
- *   focus. It works *against* the primary long-tail thesis.
+ *   focus on low infra (pairs well with expanded list here).
  *
  * The hot list is still very valuable for:
  *   - Strong defensive garbage filtering (always recommended)
  *   - JS-level guards
  *   - Future prioritization logic inside the bot (finder scoring, etc.)
  *
- * Keep the two files in sync manually when updating core tokens or known factories.
+ * Keep this file and the MAJOR_TOKENS + seed lists in pass_loop.ts / rates.ts in sync
+ * manually when updating.
  */
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -34,6 +43,15 @@ export const HOT_BASE_TOKENS = [
   "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
   "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
   "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
+  // Expanded for better rate coverage / lower noRate on low-infra runs.
+  // More bases = more connecting pools for propagation to long-tail tokens,
+  // while still filtering garbage. Aligns with broad discovery for long-tail strategy
+  // (primary edge on low infra where hot-pair competition is not viable).
+  "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39", // LINK
+  "0xd6df932a45c0f255f85145f286ea0b292b21c90b", // AAVE
+  "0x172370d5cd63279efa6d502dab29171933a610af", // CRV
+  "0x9a71012b13ca4d3d0cdcbc8942ec6c4e9e0e6c8c", // BAL
+  "0xb33eaad8d922b1083446dc23f610c2567fb5180f", // UNI
 ];
 
 export const HOT_BASE_SET = new Set(HOT_BASE_TOKENS.map((a) => a.toLowerCase()));

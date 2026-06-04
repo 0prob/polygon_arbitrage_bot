@@ -112,7 +112,9 @@ export function getObscurityBonus(protocol: string): number {
   // Highest priority long-tail / low-competition
   // Note: This logic assumes the indexer is running in broad discovery mode
   // (INDEXER_HOT_BIAS=false). Hot-bias mode in the indexer will starve this logic
-  // of the obscure pools it is designed to favor.
+  // of the (very) obscure pools it is designed to favor.
+  // Low-infra tradeoff: use hot-bias (with expanded HOT_BASE) anyway to keep
+  // volume/RPC/state manageable; you still get good obscure-within-hot-base paths.
   if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) {
     return 1.4; // very obscure V2 factories
   }

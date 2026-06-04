@@ -21,6 +21,7 @@ export function buildExecutionCandidate(
   profitable: ProfitableResult,
   config: BuilderConfig,
   options: CandidateBuilderOptions,
+  traceId?: string,
 ): CandidateExecution {
   const edges = profitable.cycle.edges.map((e) => {
     const fee = Number(e.feeBps ?? 0);
@@ -73,5 +74,6 @@ export function buildExecutionCandidate(
     value: built.value,
     profitToken: profitable.cycle.startToken,
     expectedProfit: profitable.assessment.netProfitAfterGas,
+    traceId,
   };
 }

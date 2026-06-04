@@ -45,6 +45,7 @@ export interface CandidateExecution {
   value: bigint;
   profitToken?: string;
   expectedProfit?: bigint;
+  traceId?: string;
 }
 
 export interface ExecutionResult {

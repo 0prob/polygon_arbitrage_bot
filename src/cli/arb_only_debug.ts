@@ -37,7 +37,7 @@ async function main() {
     tui.start();
   }
 
-  // Emit a basic hyperindex_status so the TUI doesn't sit empty
+  // Emit a basic hyperindex_status so the TUI doesn't sit empty (with prefix for ENVIO key display)
   const statusTimer = setInterval(() => {
     bus.emit({
       type: "hyperindex_status",

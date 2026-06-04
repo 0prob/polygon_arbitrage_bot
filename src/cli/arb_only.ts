@@ -88,8 +88,15 @@ async function main() {
 
   // Emit real hyperindex_status (from monitor providers) so TUI shows accurate lag even in external mode
   const statusTimer = setInterval(() => {
-    const getStatus = (hyperIndexMonitor as { getLastStatus?: () => { synced?: number; remote?: number; lag?: number; syncRate?: number; syncedBlock?: number; remoteBlock?: number } }).getLastStatus;
-    const st = getStatus ? getStatus() : { synced: 0, remote: 0, lag: 0, syncRate: 0 };
+    const monitorAny = hyperIndexMonitor as any;
+    let st: any = { synced: 0, remote: 0, lag: 0, syncRate: 0, syncedBlock: 0, remoteBlock: 0 };
+    try {
+      if (typeof monitorAny.getLastStatus === 'function') {
+        st = monitorAny.getLastStatus() || st;
+      }
+    } catch (e) {
+      // best effort for external monitor
+    }
     bus.emit({
       type: "hyperindex_status",
       status: "external",

@@ -60,7 +60,7 @@ Flash-loan-only, high-frequency DEX arbitrage engine optimized for Polygon. All 
 **Direct HyperSync client usage**
 
 - High-performance reads, trace fetching, receipt reconstruction.
-- Multi-token rotation and local rate limiting.
+- Local rate limiting and pacing for HyperSync/HyperIndex.
 - Used for both indexing bootstrap and execution-time intelligence.
 
 **State & Rates**

@@ -540,8 +540,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     }
     // If empty list, let the hyperindex rpc_client fall back to its internal default free public
 
-    // === SINGLE-KEY PASS-THROUGH ===
-    // Paid Envio starter plan = 200 rpm. No token rotation needed.
+    // Single ENVIO_API_TOKEN (configured via env or opts).
     // Priority: explicit opts > environment > .env files.
     const explicitToken = opts.envioApiToken || process.env.ENVIO_API_TOKEN;
     if (explicitToken) {
