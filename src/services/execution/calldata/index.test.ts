@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { decodeFunctionData } from "viem";
 import { encodeRoute, computeRouteHash, buildFlashParams } from "./index.ts";
+import { V3_POOL_SWAP_ABI } from "./abis.ts";
 
 describe("calldata module", () => {
   it("computeRouteHash produces deterministic 32-byte hash", () => {
@@ -64,6 +66,42 @@ describe("calldata module", () => {
     expect(calls).toHaveLength(2);
     expect(calls[0].target).toMatch(/^0x[0-9a-f]{40}$/);
     expect(calls[0].value).toBe(0n);
+  });
+
+  it("encodeRoute produces negative amountSpecified for V3 hops (exact-input mode)", () => {
+    const calls = encodeRoute(
+      {
+        path: {
+          edges: [
+            {
+              protocol: "UNISWAP_V3",
+              poolAddress: "0x0000000000000000000000000000000000000001",
+              tokenIn: "0x0000000000000000000000000000000000000002",
+              tokenOut: "0x0000000000000000000000000000000000000003",
+              zeroForOne: true,
+              fee: 3000,
+              stateRef: {
+                initialized: true,
+                sqrtPriceX96: 79228162514264337593543950336n,
+                liquidity: 1000000000000000000000000n,
+                tick: 0,
+                ticks: new Map(),
+              },
+            },
+          ],
+        },
+        result: { hopAmounts: [1000000000000000000n, 999000000000000000n] },
+      },
+      "0x0000000000000000000000000000000000000004",
+    );
+    expect(calls).toHaveLength(1);
+    const decoded = decodeFunctionData({
+      abi: V3_POOL_SWAP_ABI,
+      data: calls[0].data,
+    });
+    expect(decoded.functionName).toBe("swap");
+    const amountSpecified = decoded.args[2] as bigint;
+    expect(amountSpecified).toBeLessThan(0n);
   });
 
   it("encodeRoute throws on unsupported protocol", () => {

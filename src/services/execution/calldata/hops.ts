@@ -154,10 +154,10 @@ export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteC
 export function encodeV3Hop(hop: CalldataHop, recipient: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const pool = asAddress(hop.poolAddress);
   const { token0, token1 } = poolTokensFromHop(hop);
-  const amountSpecified = normalizePositiveUint(hop.amountIn, "encodeV3Hop amountIn");
+  const amountIn = normalizePositiveUint(hop.amountIn, "encodeV3Hop amountIn");
   const amountOut = normalizePositiveUint(hop.amountOut, "encodeV3Hop amountOut");
   const fee = normalizeUint24(hop.fee ?? 0, "encodeV3Hop fee");
-  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountSpecified, amountOut, fee, "encodeV3Hop", options);
+  const sqrtPriceLimitX96 = deriveTightV3PriceLimit(hop, amountIn, amountOut, fee, "encodeV3Hop", options);
   const callbackData = encodeAbiParameters(
     [
       {
@@ -179,7 +179,8 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string, options: RouteC
       data: encodeFunctionData({
         abi: V3_POOL_SWAP_ABI,
         functionName: "swap",
-        args: [asAddress(recipient), Boolean(hop.zeroForOne), amountSpecified, sqrtPriceLimitX96, callbackData],
+        // negative amountSpecified = exact-input mode
+        args: [asAddress(recipient), Boolean(hop.zeroForOne), -amountIn, sqrtPriceLimitX96, callbackData],
       }),
     },
   ];
@@ -188,13 +189,13 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string, options: RouteC
 export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
   const pool = asAddress(hop.poolAddress);
   const { token0, token1 } = poolTokensFromHop(hop);
-  const amountSpecified = normalizePositiveUint(hop.amountIn, "encodeKyberElasticHop amountIn");
+  const amountIn = normalizePositiveUint(hop.amountIn, "encodeKyberElasticHop amountIn");
   const isToken0 = Boolean(hop.zeroForOne);
   const swapFeePips = normalizeKyberSwapFeePips(hop);
-  const simulated = simulateV3Swap(hop.stateRef ?? {}, amountSpecified, isToken0, swapFeePips);
+  const simulated = simulateV3Swap(hop.stateRef ?? {}, amountIn, isToken0, swapFeePips);
   const sqrtPriceLimitX96 = deriveTightV3PriceLimit(
     hop,
-    amountSpecified,
+    amountIn,
     simulated.amountOut,
     swapFeePips,
     "encodeKyberElasticHop",
@@ -221,7 +222,8 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, optio
       data: encodeFunctionData({
         abi: KYBER_ELASTIC_POOL_SWAP_ABI,
         functionName: "swap",
-        args: [asAddress(recipient), amountSpecified, isToken0, sqrtPriceLimitX96, callbackData],
+        // negative swapQty = exact-input mode
+        args: [asAddress(recipient), -amountIn, isToken0, sqrtPriceLimitX96, callbackData],
       }),
     },
   ];
