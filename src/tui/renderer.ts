@@ -211,13 +211,23 @@ export class Renderer {
     }
     const bar = animator.progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 12);
     const mode = s.hiDiscoveryMode ?? "broad";
-    const keyPart = s.hiEnvioKeyPrefix ? dim(` [${s.hiEnvioKeyPrefix}]`) : "";
+
+    const ds = s.discoverySummary;
+    let summaryLine = ` Mode: ${mode}`;
+    if (ds) {
+      const protoBreakdown = Object.entries(ds.protocolBreakdown)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 2)
+        .map(([name, count]) => `${name}:${count}`)
+        .join(" ");
+      summaryLine = ` ${protoBreakdown} | Lag: ${color(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
+    }
 
     return [
       ` ${animator.sectionLabel("📡", "Index")}`,
       ` ${statusIcon} Block: ${color(blockStr, CYAN)} / ${remoteStr} ${dim(s.hiStatus)}`,
       ` ${bar} ${color(`${pct}%`, GREEN)} ${dim("lag:")}${color(String(lag), lagColor)}${s.hiSyncRate > 0 ? dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
-      ` Mode: ${mode}${keyPart}`,
+      summaryLine,
     ];
   }
 
@@ -228,7 +238,7 @@ export class Renderer {
     const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
     const now = Date.now();
     const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 2000);
-    const swapLines = activeSwaps.slice(0, 2).map((sw) => ` +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
+    const swapLines = activeSwaps.slice(0, 2).map((sw) => ` [${sw.traceId.slice(0, 8)}] +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
 
     return [
       ` ${animator.sectionLabel("🖄", "Mempool")}`,
@@ -308,11 +318,15 @@ export class Renderer {
     const pl = formatWei(m.totalProfitWei);
     const spark = animator.sparkline(s.profitSparkline, 10);
 
+    const bottomLine = s.lastRejectReason
+      ? ` Last Reject: ${color(s.lastRejectReason.slice(0, 24), RED)}`
+      : ` P/L: ${color(pl, m.totalProfitWei >= 0n ? GREEN : RED)} ${spark} win ${successRate}%`;
+
     return [
       ` ${animator.sectionLabel("⚡", "Execution")}`,
       ` ${spin} ${m.executed} att. ${color(`${m.successful} ✅`, GREEN)} ${m.failed > 0 ? color(`${m.failed} ❌`, RED) : "0 ❌"}`,
       lastLine,
-      ` P/L: ${color(pl, m.totalProfitWei >= 0n ? GREEN : RED)} ${spark} win ${successRate}%`,
+      bottomLine,
     ];
   }
 

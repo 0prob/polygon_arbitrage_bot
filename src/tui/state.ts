@@ -34,8 +34,6 @@ export interface SystemState {
   hiSyncRate: number;
   hiChain?: string;
   hiLastSeen: number;
-  /** Short prefix of currently active ENVIO_API_TOKEN for the HyperIndex process */
-  hiEnvioKeyPrefix?: string;
   poolsPerProtocol: Record<string, number>;
   maxHops: number;
   pipelineStage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING";
@@ -43,7 +41,9 @@ export interface SystemState {
   activeOpportunities: OpportunityEntry[];
   maticPriceUsd: number;
   mempoolFeedStatus: "connected" | "disconnected" | "error" | "unknown";
-  pendingSwaps: { path: string; value: string; txHash: string; timestamp: number }[];
+  pendingSwaps: { path: string; value: string; txHash: string; timestamp: number; traceId: string }[];
+  discoverySummary: { poolCount: number; protocolBreakdown: Record<string, number>; lagBlocks: number } | null;
+  lastRejectReason: string | null;
   cyclesByHop: Record<number, number>;
   enumerationTimeMs: number;
   protocolBreakdown: Record<string, number>;
@@ -97,7 +97,6 @@ export function createInitialState(): TuiState {
       hiLag: 0,
       hiSyncRate: 0,
       hiLastSeen: 0,
-      hiEnvioKeyPrefix: undefined,
       poolsPerProtocol: {},
       maxHops: 0,
       pipelineStage: "IDLE",
@@ -106,6 +105,8 @@ export function createInitialState(): TuiState {
       maticPriceUsd: 0.7,
       mempoolFeedStatus: "unknown",
       pendingSwaps: [],
+      discoverySummary: null,
+      lastRejectReason: null,
       cyclesByHop: {},
       enumerationTimeMs: 0,
       protocolBreakdown: {},
@@ -207,10 +208,12 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         state.metrics.totalProfitWei += event.profitWei ?? 0n;
         updateOpportunity(state, event.routeKey, { status: "Confirmed", profit: event.profitWei });
         appendLog(state, "Exec", `Confirmed ${event.txHash?.slice(0, 10) ?? ""}... (+${event.profitWei ?? 0n} wei)`);
+        state.system.lastRejectReason = null;
       } else {
         state.metrics.failed++;
         updateOpportunity(state, event.routeKey, { status: event.error?.includes("quarantine") ? "Quarantined" : "Failed" });
         appendLog(state, "Exec", `Failed: ${event.error ?? "unknown"}`);
+        state.system.lastRejectReason = event.error ?? "unknown";
       }
 
       if (event.protocolPath) {
@@ -242,11 +245,19 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
         value: event.value.toString(),
         txHash: event.txHash,
         timestamp: Date.now(),
+        traceId: event.traceId,
       });
       if (state.system.pendingSwaps.length > 3) state.system.pendingSwaps.length = 3;
-      appendLog(state, "Mempool", `Pending swap: ${event.poolPath}  ${event.value.toString()} wei`);
+      appendLog(state, "Mempool", `[${event.traceId}] Pending swap: ${event.poolPath}  ${event.value.toString()} wei`);
       break;
     }
+    case "discovery_summary":
+      state.system.discoverySummary = {
+        poolCount: event.poolCount,
+        protocolBreakdown: event.protocolBreakdown,
+        lagBlocks: event.lagBlocks,
+      };
+      break;
     case "gas_snapshot":
       state.system.gasPriceWei = event.gasPrice;
       break;
@@ -316,9 +327,6 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       }
       if (event.discoveryMode) {
         state.system.hiDiscoveryMode = event.discoveryMode;
-      }
-      if (event.envioKeyPrefix) {
-        state.system.hiEnvioKeyPrefix = event.envioKeyPrefix;
       }
 
       // Log important HyperIndex transitions and warnings
