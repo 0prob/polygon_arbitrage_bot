@@ -1,3 +1,0 @@
-#!/bin/bash
-export XDG_CONFIG_HOME=/home/x/arb/t
-exec lspmux client --server-path /home/x/arb/t/node_modules/.bin/taplo -- lsp stdio "$@"
