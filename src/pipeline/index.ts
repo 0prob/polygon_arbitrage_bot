@@ -9,7 +9,14 @@ export {
   DEFAULT_FEE_BPS,
 } from "./types.ts";
 export { buildGraph, createEdgesForPool } from "./graph.ts";
-export { findCycles, enumerateCycles, routeKeyFromEdges, getObscurityBonus, averageObscurity } from "./finder.ts";
+export {
+  findCycles,
+  enumerateCycles,
+  routeKeyFromEdges,
+  getObscurityBonus,
+  averageObscurity,
+  getDynamicSearchBounds,
+} from "./finder.ts";
 export {
   simulateRoute,
   simulateRouteMinimal,

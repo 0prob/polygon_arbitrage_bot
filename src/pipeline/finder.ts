@@ -1,4 +1,5 @@
 import type { Address } from "../core/types/common.ts";
+import { toBigInt } from "../core/utils/bigint.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
@@ -12,6 +13,76 @@ export function averageObscurity(edges: SwapEdge[]): number {
   let sum = 0;
   for (const e of edges) sum += getObscurityBonus(e.protocol);
   return sum / edges.length;
+}
+
+/**
+ * Calculate dynamic search bounds (low/high) based on route liquidity capacity.
+ *
+ * For each edge, we estimate the "safe principal capacity" in start-token units:
+ * - V2/Generic: the reserve of the input token.
+ * - V3/Elastic: liquidity / 1e12 (heuristic for depth per tick).
+ *
+ * The route's overall capacity is the minimum capacity along the path.
+ * We set the search range to [0.02% .. 10%] of this minimum capacity,
+ * clamped by a global MAX_FLASH_LOAN_USD cap.
+ */
+export function getDynamicSearchBounds(
+  cycle: FoundCycle,
+  stateCache: Map<string, unknown>,
+  tokenToMaticRates: Map<string, bigint>,
+  maxFlashLoanUsd: number = 50_000,
+): { low: bigint; high: bigint } {
+  const startRate = tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+
+  let minCapacity = -1n;
+
+  for (const edge of cycle.edges) {
+    const addr = edge.poolAddress.toLowerCase();
+    const state = stateCache.get(addr);
+    if (!state) continue;
+
+    // Default fallback: 1000 units (conservative)
+    let capacity = 1000n * 10n ** 18n;
+
+    const protocol = (edge.protocol || "").toUpperCase();
+    if (protocol.includes("V3") || protocol.includes("V4") || protocol.includes("ELASTIC")) {
+      const rawLiq = (state as Record<string, unknown>).liquidity;
+      const liq = toBigInt(rawLiq, 0n);
+      // V3 heuristic: liquidity / 1e12 is a very rough "depth per tick" equivalent for principal sizing
+      capacity = liq / 1_000_000_000_000n;
+    } else {
+      // V2, Curve, DODO, Balancer etc often have reserve0/reserve1 in their state snapshots
+      const r0 = toBigInt((state as any).reserve0, 0n);
+      const r1 = toBigInt((state as any).reserve1, 0n);
+      if (r0 > 0n && r1 > 0n) {
+        capacity = edge.zeroForOne ? r0 : r1;
+      }
+    }
+
+    if (minCapacity === -1n || capacity < minCapacity) {
+      minCapacity = capacity;
+    }
+  }
+
+  // Final fallback if no capacity could be determined from state: 100 units
+  if (minCapacity <= 0n) minCapacity = 100n * 10n ** 18n;
+
+  const low = minCapacity / 5000n; // 0.02%
+  let high = minCapacity / 10n; // 10%
+
+  // Clamp high to USD cap if we have an oracle rate.
+  // Formula: tokenUnits = (USD * 1e18 * 1e18) / startRate
+  // (Assuming 1 MATIC = $1 for the purpose of the cap if we don't have a MATIC/USD feed).
+  if (startRate > 0n) {
+    const maxWei = (BigInt(Math.floor(maxFlashLoanUsd)) * 10n ** 18n * 10n ** 18n) / startRate;
+    if (high > maxWei) high = maxWei;
+  }
+
+  // Sanity check: ensure low is at least 1 and high > low
+  const finalLow = low > 0n ? low : 1n;
+  const finalHigh = high > finalLow ? high : finalLow + 1n;
+
+  return { low: finalLow, high: finalHigh };
 }
 
 function feeLogWeight(feeBps: bigint): number {
