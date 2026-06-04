@@ -76,7 +76,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
   const { adjacency } = graph;
 
   const ENUM_START = Date.now();
-  const TIME_BUDGET_MS = 1400;
+  const TIME_BUDGET_MS = 3000;
 
   function overBudget(): boolean {
     return Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
@@ -125,7 +125,7 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
 
       cycles.push({
         startToken: startToken as Address,
-        edges: path as unknown as SwapEdge[], // enriched objects (obscurity prop) exactly as original produced
+        edges: [...path] as unknown as SwapEdge[], // clone to prevent mutations from affecting results
         hopCount: hops,
         logWeight,
         cumulativeFeeBps: cumFee,

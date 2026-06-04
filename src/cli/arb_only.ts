@@ -26,18 +26,11 @@ async function main() {
     logger = createRootLogger({ level: config.observability.logLevel });
   }
 
-  // Unlike main.ts, we do NOT create a HyperIndexMonitor here.
-  // We assume HyperIndex/Hasura is already running externally.
-  // bootApplication handles a missing hyperIndexMonitor gracefully:
-  // tierManager will get a healthy stub, and pass_loop guards all
-  // hyperIndexMonitor calls with optional chaining.
   logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only mode — assuming HyperIndex/Hasura is running externally");
 
   const ctx = await bootApplication(config, undefined, logger, undefined);
 
   // Health server requires a HyperIndexMonitor — skip in arb-only mode.
-  // The pass loop already handles missing hyperIndexMonitor gracefully
-  // (tierManager gets a healthy stub, and all calls use optional chaining).
 
   const tui = useTui ? createTui(bus) : null;
   if (tui) {

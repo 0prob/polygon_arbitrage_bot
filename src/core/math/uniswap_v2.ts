@@ -132,8 +132,13 @@ export function simulateV2Swap(
   }
 
   const pool = asPoolState(poolState);
-  const reserve0 = toBigInt(pool.reserve0);
-  const reserve1 = toBigInt(pool.reserve1);
+  let reserve0 = toBigInt(pool.reserve0);
+  let reserve1 = toBigInt(pool.reserve1);
+
+  // Apply 50 bps (0.5%) safety margin to reserves
+  reserve0 = (reserve0 * 9950n) / 10000n;
+  reserve1 = (reserve1 * 9950n) / 10000n;
+
   const reserveIn = zeroForOne ? reserve0 : reserve1;
   const reserveOut = zeroForOne ? reserve1 : reserve0;
 

@@ -13,6 +13,7 @@ import { performOneTimeGarbageCleanup } from "../infra/garbage/garbage-tracker.t
 import { HealthServer } from "../infra/observability/health_server.ts";
 import { filterArchivalRpcUrls } from "../infra/rpc/client_factory.ts";
 import { DEFAULTS } from "../config/defaults.ts";
+import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -129,31 +130,18 @@ async function main() {
     hyperIndexMonitor.setHyperSyncService(ctx.hyperSync);
   }
 
-  // Provide indexed height from Hasura using envio_chains.progress_block —
-  // the authoritative HyperIndex sync position (per Envio docs: "check envio_chains
-  // to see each chain's latest processed block"). Single row, always current,
-  // independent of whether handlers write state (which ours don't for live-tail perf).
+  // Provide indexed height from Hasura using the custom IndexerProgress entity (written by
+  // our block handlers in hyperindex/src/handlers/progress.ts with historical/realtime strides).
+  // This is the reliable source for "how far the indexer has processed" for our schema.
+  // Replaces the old envio_chains query (which no longer exists / is not populated in this setup).
+  // Accurate synced/lag is important for TUI display, degraded mode, and health.
   const hasuraUrl = config.hasuraUrl;
   const hasuraSecret = config.hasuraSecret;
   if (hasuraUrl) {
     const getIndexedHeight = async (): Promise<number> => {
       try {
-        // envio_chains.progress_block is the canonical "how far has HyperIndex processed"
-        // field. It advances on every batch regardless of entity writes in handlers.
-        const query = `{ envio_chains(where: {id: {_eq: 137}}) { progress_block } }`;
-
-        const resp = await fetch(hasuraUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(hasuraSecret ? { "x-hasura-admin-secret": hasuraSecret } : {}),
-          },
-          body: JSON.stringify({ query }),
-        });
-
-        const json = (await resp.json()) as any;
-        const block = json?.data?.envio_chains?.[0]?.progress_block;
-        return typeof block === "number" && block > 0 ? block : 0;
+        const prog = await fetchIndexerProgressFromHasura(hasuraUrl, hasuraSecret || "", undefined);
+        return prog?.lastProcessedBlock ?? 0;
       } catch {
         return 0;
       }

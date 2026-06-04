@@ -13,6 +13,7 @@ import type { SimulationEdge } from "./types.ts";
 import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
 import type { PoolState } from "../core/types/pool.ts";
+import type { PendingStateOverlay } from "../core/types/overlay.ts";
 
 /**
  * Pipeline evaluation (ternary search + profit assessment).
@@ -53,6 +54,7 @@ function evaluateAmount(
   minimalForSearch: boolean = false,
   prebuiltSimEdges?: SimulationEdge[],
   outHolder?: MinimalEvalHolder,
+  overlay?: PendingStateOverlay,
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
   try {
     let simProfit: bigint;
@@ -62,21 +64,20 @@ function evaluateAmount(
 
     if (minimalForSearch) {
       if (skipImpactCheck) {
-        // Minimal numeric path (no impact) — used e.g. for final? but typically probes use check
-        const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, prebuiltSimEdges);
+        const minimal = simulateRouteMinimal(cycle.edges, amount, stateCache, prebuiltSimEdges, overlay);
         simProfit = minimal.profit;
         simGas = minimal.totalGas;
       } else {
         // COMBINED PATH: impact check + simulation in a single pass.
         // Calls simulateHop once per edge instead of 3x (impact ×2 + simulation).
         const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-        const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact);
+        const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact, overlay);
         if (!combined.success) return { result: null, assessment: null, grossProfitMatic: null };
         simProfit = combined.profit;
         simGas = combined.totalGas;
       }
     } else {
-      fullResult = simulateRoute(cycle.edges, amount, stateCache, prebuiltSimEdges);
+      fullResult = simulateRoute(cycle.edges, amount, stateCache, prebuiltSimEdges, overlay);
       simProfit = fullResult.profit;
       simGas = fullResult.totalGas;
       simAmountIn = fullResult.amountIn;
@@ -194,6 +195,7 @@ export async function evaluatePipeline(
   cycles: FoundCycle[],
   stateCache: RouteStateCache,
   options: PipelineOptions,
+  overlay?: PendingStateOverlay,
 ): Promise<PipelineResult> {
   const profitable: PipelineResult["profitable"] = [];
   let attempted = 0;
@@ -222,21 +224,21 @@ export async function evaluatePipeline(
       batch.map(async (cycle) => {
         attempted++;
         try {
-          const tokens = [cycle.startToken, ...cycle.edges.map((e) => e.tokenOut)];
-          const hasAllRates = tokens.every((t) => (options.tokenToMaticRates.get(t.toLowerCase()) ?? 0n) > 0n);
-          if (!hasAllRates) return { type: "noRate" as const, cycle };
+          // Relaxed gate: only require rate for startToken (the flash principal and profit numeraire).
+          // This lets more cycles (with partial rate coverage on intermediates) reach ternary search + assessment
+          // while the rate map grows. Missing intermediate rates => 0 contrib to grossMatic (conservative under-estimate)
+          // and their extreme loss/gain checks are skipped (see earlier rateIn/rateOut guards).
+          const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+          if (startRate === 0n) return { type: "noRate" as const, cycle };
 
-          // Pre-build SimulationEdge templates once per cycle.
-          // This is the key allocation reduction for the entire ternary search:
-          // every simulate* call during probing now reuses these instead of allocating per hop.
-          const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache);
+          const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
 
           const baseAmount = getTestAmount(cycle.startToken, options.tokenMetas);
           const low = baseAmount / 5000n;
           if (low === 0n) return { type: "pruned" as const, cycle };
           const high = baseAmount;
           const ternaryIters = options.ternarySearchIterations ?? 15;
-          const evalLow = evaluateAmount(cycle, low, stateCache, options, false, true, prebuiltSimEdges); // minimal for initial probe
+          const evalLow = evaluateAmount(cycle, low, stateCache, options, false, true, prebuiltSimEdges, undefined, overlay);
           if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
             return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", cycle };
           }
@@ -265,7 +267,9 @@ export async function evaluatePipeline(
                 false,
                 true,
                 prebuiltSimEdges,
-              ); // minimal on convergence too
+                undefined,
+                overlay,
+              );
 
               if (grossProfitMatic && grossProfitMatic > bestGrossMatic) {
                 bestGrossMatic = grossProfitMatic;
@@ -282,8 +286,8 @@ export async function evaluatePipeline(
 
             const m1 = left + range / 3n;
             const m2 = right - range / 3n;
-            const eval1 = evaluateAmount(cycle, m1, stateCache, options, false, true, prebuiltSimEdges, probe1Holder); // minimal probe + pooled holder
-            const eval2 = evaluateAmount(cycle, m2, stateCache, options, false, true, prebuiltSimEdges, probe2Holder); // minimal probe + pooled holder
+            const eval1 = evaluateAmount(cycle, m1, stateCache, options, false, true, prebuiltSimEdges, probe1Holder, overlay);
+            const eval2 = evaluateAmount(cycle, m2, stateCache, options, false, true, prebuiltSimEdges, probe2Holder, overlay);
 
             if (eval1.grossProfitMatic && eval1.grossProfitMatic > bestGrossMatic) {
               bestGrossMatic = eval1.grossProfitMatic;
@@ -326,7 +330,7 @@ export async function evaluatePipeline(
           // to capture the rich RouteSimulationResult needed downstream. This is the key allocation win:
           // 20-30 cheap minimal probes + 1 full sim per cycle instead of 20-30 full simulations.
           if (bestResult === null && bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
-            const full = evaluateAmount(cycle, bestAmount, stateCache, options, true, false, prebuiltSimEdges);
+            const full = evaluateAmount(cycle, bestAmount, stateCache, options, true, false, prebuiltSimEdges, undefined, overlay);
             if (full.result && full.assessment) {
               bestResult = full.result;
               bestAssessment = full.assessment;

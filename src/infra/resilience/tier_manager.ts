@@ -1,16 +1,19 @@
 import type { CircuitBreaker } from "./circuit_breaker.ts";
-import type { HyperIndexMonitor } from "./hyperindex_monitor.ts";
 
 export type DegradationTier = "green" | "yellow" | "orange" | "red" | "black";
 
 export class TierManager {
   private current: DegradationTier = "green";
 
+  private hyperIndexMonitor: { isHealthy: () => boolean };
+
   constructor(
     private rpcCircuit: CircuitBreaker,
     private hasuraCircuit: CircuitBreaker,
-    private hyperIndexMonitor: HyperIndexMonitor,
-  ) {}
+    hyperIndexMonitor?: { isHealthy: () => boolean },
+  ) {
+    this.hyperIndexMonitor = hyperIndexMonitor ?? { isHealthy: () => true };
+  }
 
   assess(): DegradationTier {
     const rpcHealthy = this.rpcCircuit.isHealthy();

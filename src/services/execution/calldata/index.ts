@@ -18,6 +18,7 @@ import {
   encodeBalancerHop,
   encodeV4Hop,
 } from "./hops.ts";
+import { slippageAdjustedAmountOut } from "./utils.ts";
 import { EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI, EXECUTOR_AAVE_ABI } from "./abis.ts";
 import type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput } from "./types.ts";
 
@@ -36,7 +37,14 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
   const calls: ExecutorCall[] = [];
   for (let i = 0; i < path.edges.length; i++) {
     const edge = path.edges[i];
-    const amountIn = result.hopAmounts[i];
+    const rawAmountIn = result.hopAmounts[i];
+    // For intermediate hops (i>0), use the *slipped min* from previous hop's output as the
+    // committed transfer-in amount. Use *extra* conservative slip for the transfer amountIn
+    // (beyond the already-high build slip for minOuts) to further protect V2 chains against
+    // "ERC20: transfer amount exceeds balance" when actual delivered by prev < sim (even
+    // after high slip + rates focus). Swap minOuts stay at the build slip; final assert guards.
+    const transferSlipBps = (options.slippageBps ?? 50) + 500; // bumped further for multi-hop V2 chains (new 4-hop routes from focus still hit exceeds at call 2 on some transfers; main 2-hop still K at 3 on minOut even after prior +300 and minOut slip bump; assert still guards)
+    const amountIn = i === 0 ? rawAmountIn : slippageAdjustedAmountOut(rawAmountIn, transferSlipBps, `hop-${i}`);
     const amountOut = result.hopAmounts[i + 1];
     const proto = normalizeProtocolKey(edge.protocol);
     const meta = (edge.metadata ?? {}) as Record<string, unknown>;

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { TierManager } from "./tier_manager.ts";
 import type { CircuitBreaker } from "./circuit_breaker.ts";
-import type { HyperIndexMonitor } from "./hyperindex_monitor.ts";
 
 function healthyCB(): CircuitBreaker {
   return { isHealthy: () => true } as CircuitBreaker;
@@ -11,12 +10,12 @@ function unhealthyCB(): CircuitBreaker {
   return { isHealthy: () => false } as CircuitBreaker;
 }
 
-function healthyHI(): HyperIndexMonitor {
-  return { isHealthy: () => true } as HyperIndexMonitor;
+function healthyHI() {
+  return { isHealthy: () => true };
 }
 
-function unhealthyHI(): HyperIndexMonitor {
-  return { isHealthy: () => false } as HyperIndexMonitor;
+function unhealthyHI() {
+  return { isHealthy: () => false };
 }
 
 describe("TierManager", () => {

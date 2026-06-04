@@ -345,12 +345,6 @@ export class HyperIndexMonitor implements Lifecycle {
     }
   }
 
-  // kept for potential internal use / backward compat
-  // @ts-expect-error - intentionally unused for now
-  private _getLastSyncedBlock(): number {
-    return this.lastSyncedBlock;
-  }
-
   getLastStatus(): {
     status: string;
     synced: number;
@@ -360,7 +354,7 @@ export class HyperIndexMonitor implements Lifecycle {
     envioKeyPrefix?: string;
   } {
     const lag = this.getCurrentLag();
-    const keyPrefix = (this.proc as any).getCurrentEnvioKeyPrefix?.();
+    const keyPrefix = this.proc.getCurrentEnvioKeyPrefix?.();
     return {
       status: this._isHealthy ? "running" : "error",
       synced: this.lastSyncedBlock,

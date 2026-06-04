@@ -8,6 +8,7 @@ import { ReceiptPoller } from "../services/execution/receipt.ts";
 import { GasOracle, createGasFetcher, type GasOracleConfig } from "../services/execution/gas.ts";
 import { NonceManager } from "../services/execution/nonce.ts";
 import { MempoolService, type MempoolServiceOptions } from "../services/mempool/service.ts";
+import { InMemoryPendingStateOverlay } from "../core/types/overlay.ts";
 import { createExecutionClient } from "../infra/rpc/client_factory.ts";
 import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
@@ -40,6 +41,7 @@ export interface RuntimeContext {
   wsSubscriber?: WebSocketSubscriber;
   dryRunner?: MempoolAwareDryRunner;
   graphUpdater?: IncrementalGraphUpdater;
+  pendingStateOverlay?: InMemoryPendingStateOverlay;
 
   /**
    * Optional HyperRPC client (read-only, high performance).
@@ -209,19 +211,22 @@ export async function bootApplication(
     config.execution.quarantineMaxMs,
   );
 
+  const approxRawPerUsd = 10n ** 15n; // rough to map USD threshold to raw amount units (varies by token decimals/price)
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
-    largeSwapThresholdWei: 10n ** 18n,
+    largeSwapThresholdWei: BigInt(Math.floor(config.mempool.largeSwapThresholdUsd)) * approxRawPerUsd,
   };
-  const mempoolService = new MempoolService(logger, mempoolOptions);
+  const pendingStateOverlay = new InMemoryPendingStateOverlay();
+  const mempoolService = new MempoolService(logger, mempoolOptions, pendingStateOverlay);
 
-  // Wire mempool pending tx watcher if WebSocket URL is configured
+  // Wire mempool pending tx watcher if WebSocket URL is configured AND mempool enabled
   let mempoolWsClient: PublicClient | undefined;
-  if (config.mempool.websocketUrl) {
+  const mempoolWsUrl = config.mempool.enabled ? config.mempool.websocketUrl : "";
+  if (mempoolWsUrl) {
     try {
       const { createPublicClient, webSocket } = await import("viem");
       mempoolWsClient = createPublicClient({
-        transport: webSocket(config.mempool.websocketUrl),
+        transport: webSocket(mempoolWsUrl),
       });
       mempoolWsClient.watchPendingTransactions({
         onTransactions: async (hashes) => {
@@ -242,7 +247,7 @@ export async function bootApplication(
           }
         },
       });
-      logger.info({ url: config.mempool.websocketUrl }, "Mempool pending tx watcher started");
+      logger.info({ url: mempoolWsUrl }, "Mempool pending tx watcher started");
     } catch (err) {
       logger.warn({ err }, "Failed to start mempool WebSocket watcher");
     }
@@ -256,21 +261,13 @@ export async function bootApplication(
     failureThreshold: 5,
     cooldownMs: 60_000,
   });
-  const tierManager = new TierManager(
-    rpcCircuit,
-    hasuraCircuit,
-    hyperIndexMonitor ??
-      ({
-        isHealthy: () => true,
-        isRunning: () => true,
-      } as any),
-  );
+  const tierManager = new TierManager(rpcCircuit, hasuraCircuit, hyperIndexMonitor);
 
   // Reorg detector
   const reorgDetector = rpc.getReorgDetector();
 
-  // WebSocket subscriber
-  const wsSubscriber = config.mempool.websocketUrl ? rpc.addWebSocketSubscriber(config.mempool.websocketUrl) : undefined;
+  // WebSocket subscriber (provides newHeads for timing + pendingTx to mempool). Gated by mempool.enabled + url.
+  const wsSubscriber = mempoolWsUrl ? rpc.addWebSocketSubscriber(mempoolWsUrl) : undefined;
 
   // Mempool-aware dry runner
   const dryRunner = new MempoolAwareDryRunner(publicClient);
@@ -310,6 +307,7 @@ export async function bootApplication(
     wsSubscriber,
     dryRunner,
     graphUpdater,
+    pendingStateOverlay,
     hyperRpc: rpc.hyperRpc,
     hyperSync: rpc.hyperSync,
     hyperIndexMonitor,

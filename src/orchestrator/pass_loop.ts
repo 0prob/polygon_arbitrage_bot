@@ -181,7 +181,9 @@ async function runLfStateRefresh(
 ): Promise<{ lastRefreshTime: number; lastFullRefreshTime: number; ratesNeedFullRefresh: boolean; updated?: Set<string> }> {
   const now = Date.now();
   const LF_INTERVAL = 1000;
-  if (!(now - lastRefreshTime >= LF_INTERVAL && pools.length > 0)) {
+  const stateCacheEmpty = ctx.stateCache.size === 0;
+  const lfIntervalElapsed = now - lastRefreshTime >= LF_INTERVAL;
+  if (!lfIntervalElapsed && pools.length > 0 && !stateCacheEmpty) {
     return { lastRefreshTime, lastFullRefreshTime: 0, ratesNeedFullRefresh: false, updated: new Set<string>() };
   }
 
@@ -199,8 +201,7 @@ async function runLfStateRefresh(
         newEntries++;
       }
     }
-    const metas = await deps.fetchTokenMetasFromHasura(graphqlUrl, secret, ctx.logger);
-    ctx.logger.debug({ entries: gqlCache.size, metas: metas.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
+    ctx.logger.debug({ entries: gqlCache.size, newEntries }, "State and TokenMeta refreshed from HyperIndex");
 
     // New: lightweight progress signal from the block handler (see hyperindex/src/handlers/progress.ts)
     const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret, ctx.logger));
@@ -209,6 +210,11 @@ async function runLfStateRefresh(
         { chainId: progress.chainId, lastProcessedBlock: progress.lastProcessedBlock },
         "IndexerProgress from block handler",
       );
+      // Wire to monitor so TUI, logs, lag calc, and health checks see accurate synced/lag
+      // (the getIndexedHeight provider is best-effort; this pushes on every LF).
+      if (ctx.hyperIndexMonitor) {
+        ctx.hyperIndexMonitor.updateSyncedBlock(progress.lastProcessedBlock);
+      }
     }
   } catch (err) {
     // Suppress repeated "circuit open" noise: only warn on the first open event; debug thereafter.
@@ -222,8 +228,51 @@ async function runLfStateRefresh(
   }
 
   // Fetch state for pools in current cycles that are missing from cache.
-  // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline for 40-80s.
+  // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline.
+  // On first boot, any forceRefresh that IS needed is handled by the pre-fetch path.
   const updated = await fetchMissingPoolState(ctx.publicClient, stateCache, pools, currentCycles, false);
+
+  // Bootstrap: on first LF pass, pre-fetch V2/V3 state for a sensible number of pools.
+  // This lets rate propagation reach thousands of tokens on the very first pass
+  // instead of waiting for gradual state accumulation through pre-fetch cycles.
+  // BROADER: larger limit + prioritize pools touching major tokens (WMATIC + stables/WETH etc)
+  // so computeMaticRates (which seeds those majors) can propagate rates to far more tokens
+  // immediately. This increases # of rateSafeCycles, reduces noRate %, and surfaces more
+  // (and better) long-tail opportunities instead of only marginal hot V2 pairs.
+  if (stateCacheEmpty) {
+    const MAX_BOOTSTRAP_POOLS = 15000;
+    const stateAddrSet = new Set<string>();
+    for (const addr of stateCache.keys()) stateAddrSet.add(addr);
+    const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
+
+    // Prioritize majors so initial rate graph is well-connected (directly attacks high noRate
+    // and low coverage that starves assessment of rateSafe cycles).
+    const MAJOR_TOKENS = new Set([
+      "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
+      "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC
+      "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC.e (old)
+      "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
+      "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
+      "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
+      "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
+    ].map((t) => t.toLowerCase()));
+
+    const touchesMajor = (p: PoolMeta) => {
+      const ts = (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase());
+      return ts.some((t) => MAJOR_TOKENS.has(t));
+    };
+
+    const prioritized = [...missingPools].sort((a, b) => (touchesMajor(b) ? 1 : 0) - (touchesMajor(a) ? 1 : 0));
+    const toBootstrap = prioritized.slice(0, MAX_BOOTSTRAP_POOLS);
+
+    if (toBootstrap.length > 0) {
+      const majorCount = prioritized.filter(touchesMajor).length;
+      ctx.logger.info({ missingPools: toBootstrap.length, majorConnected: majorCount }, "Bootstrap: pre-fetching V2/V3 state for rate propagation");
+      const seedUpdated = await fetchMissingPoolState(ctx.publicClient, stateCache, toBootstrap, [], true);
+      for (const addr of seedUpdated) updated.add(addr);
+      ctx.logger.info({ seedFetched: seedUpdated.size }, "Bootstrap fetch complete");
+    }
+  }
 
   return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true, updated };
 }
@@ -262,12 +311,6 @@ async function runEnumerationPhase(
       const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
       const liq = toBigInt(rawLiq, 0n);
       if (liq < ctx.config.execution.minLiquidityV3Rate) {
-        if (addr === "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81") {
-          ctx.logger.debug(
-            { addr, liq: liq.toString(), floor: ctx.config.execution.minLiquidityV3Rate.toString() },
-            "Specifically filtered 0x56ff",
-          );
-        }
         return false;
       }
     }
@@ -348,6 +391,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         if (event.type === "newHead") {
           headTriggered = true;
           lastHeadTime = Date.now();
+          ctx.pendingStateOverlay?.clear();
         }
       });
     } catch (err) {
@@ -376,8 +420,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const TIER_CHECK_INTERVAL = 5000;
   let preFetchCounter = 0;
   let lastTierCheck = 0;
-
-  // ... rest of the setup ...
 
   const recentRouteTimestamps = new Map<string, number>();
   const ROUTE_COOLDOWN_MS = 5000;
@@ -461,6 +503,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           hasuraPoolsCache = newPools;
           cachedGraph = deps.buildGraph(newPools, stateCache);
           ctx.graphUpdater?.resetRebuildCounter();
+          if (newPools && newPools.length > 0) {
+            ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
+          }
         });
         hasuraPoolsCache = result.pools;
         lastDiscoveryTime = result.lastDiscoveryTime;
@@ -591,8 +636,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Priority: full refresh (LF) > incremental focus update (pre-fetch) > safety net.
       bus?.emit({ type: "pipeline_stage", stage: "RATES" });
       if (ratesNeedFullRefresh) {
+        // Seed from previous cached rates even on "full" refresh. This prevents coverage
+        // from dropping back to a few hundred on every LF tick (the bare compute only
+        // propagates from states present + WMATIC seeds). New stateCache entries will
+        // still expand the graph during the call. The subsequent cycle-focus boost
+        // will then only log "boosted" on *actual* growth.
         cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+          seedRates: cachedRates ?? undefined,
         });
         ratesNeedFullRefresh = false;
       } else if (pendingFocusTokens && cachedRates) {
@@ -607,7 +658,36 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
         });
       }
-      const tokenToMaticRates = cachedRates!;
+      let tokenToMaticRates = cachedRates!;
+
+      // Focused rate boost using the *current graph's cycles* (available early).
+      // Always prioritize the tokens in the current graph batch for propagation + targeted sweep.
+      // This ensures rateSafe/grossMatic see the best possible rates for exactly the cycles
+      // we're assessing this pass (directly addresses persistent low rates in surfacing even
+      // after polls). Log at info when it grows the set.
+      {
+        const focus = new Set<string>();
+        for (const c of currentCycles) {
+          focus.add(c.startToken.toLowerCase());
+          for (const e of c.edges) {
+            focus.add(e.tokenIn.toLowerCase());
+            focus.add(e.tokenOut.toLowerCase());
+          }
+        }
+        const before = tokenToMaticRates.size;
+        if (focus.size > 0) {
+          const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+            seedRates: tokenToMaticRates,
+            focusTokens: focus,
+          });
+          cachedRates = boosted;
+          tokenToMaticRates = boosted;
+          if (boosted.size > before) {
+            ctx.logger.info({ rates: tokenToMaticRates.size, focus: focus.size }, "Rate coverage boosted with assessment focus");
+          }
+        }
+      }
 
       // Filter out quarantined routes before simulation to avoid repetitive noise.
       // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
@@ -622,6 +702,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await sleep(HF_INTERVAL);
         continue;
       }
+
+      // (Focused rate boost already applied earlier using currentCycles + assessment tokens;
+      // see the block right after the consolidated computeMaticRates. This helps rateSafe
+      // and profit assessment for the exact cycles in this pass.)
 
       // Mempool-aware dry run: check pending state before submitting
       if (ctx.dryRunner) {
@@ -666,8 +750,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         );
       }
 
+      // Focus expensive simulation on cycles where the *start token* has a rate (flash principal is valued; profit asserted in startToken units).
+      // Intermediates without rates contribute 0 to gross (conservative) and extreme checks are skipped for them.
+      // This allows more of the graph to be evaluated as rate coverage grows slowly from WMATIC bootstrap + stateCache.
+      const rateSafeCycles = filteredCycles.filter((cycle) => {
+        const startRate = tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+        return startRate > 0n;
+      });
+
+      if (rateSafeCycles.length === 0 && filteredCycles.length > 0) {
+        ctx.logger.debug({ totalFiltered: filteredCycles.length, rates: tokenToMaticRates.size }, "No rate-covered cycles this pass (coverage still growing)");
+      }
+
       const simStartTime = Date.now();
-      const result = await deps.evaluatePipeline(filteredCycles, stateCache, options);
+      const result = await deps.evaluatePipeline(rateSafeCycles, stateCache, options, ctx.pendingStateOverlay);
       const simElapsed = Date.now() - simStartTime;
 
       ctx.metrics.opportunitiesFound += result.profitableCount;
@@ -691,6 +787,27 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           },
           "Cycle assessment complete",
         );
+
+        if (result.profitableCount > 0) {
+          ctx.logger.info(
+            {
+              profitable: result.profitableCount,
+              maxGrossMatic: result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
+              rates: tokenToMaticRates.size,
+            },
+            "Assessment found profitable candidates (pre-filter; may skip on cooldown/dry/quarantine)",
+          );
+        } else if (result.noRate > Math.floor(result.attempted * 0.8) && result.attempted > 50) {
+          ctx.logger.info(
+            {
+              attempted: result.attempted,
+              noRate: result.noRate,
+              rates: tokenToMaticRates.size,
+              cache: stateCache.size,
+            },
+            "Assessment: very high noRate fraction (rate propagation/coverage issue?)",
+          );
+        }
 
         if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
           ctx.logger.debug({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
@@ -751,7 +868,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
                 {
-                  slippageBps: Number(options.slippageBps ?? 50n) + Math.floor(obscurityRelax),
+                  slippageBps: Number(options.slippageBps ?? 400n) + Math.floor(obscurityRelax) + 500, // bumped further (+400 default / +500) based on 93.6s tailer data (K at call 3 persisted even after previous bump and "Starting" of new main with higher slip; even smaller minOut for V2 swaps to give K more headroom on thin/pending reserves with high gas ~445 (assert still guards net)
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
                   stateCache,
                 },
@@ -766,6 +883,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                       routeKey,
                       reason: dryRun.revertReason || dryRun.error,
                       revertData: dryRun.revertData,
+                      calldata: candidate.calldata,
+                      target: candidate.targetAddress,
                       profitable: {
                         roi: profitable.assessment.roi,
                         profit: profitable.assessment.netProfitAfterGas.toString(),
@@ -775,6 +894,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     },
                     "Dry-run against pending state failed, skipping",
                   );
+                  // Dump full calldata for AI debug (arb-tx-tools sim) - useful when running `bun run tui`
+                  // or headless to feed simulator/abicoder for exact re-runs of failing arbs.
+                  try {
+                    const { appendFileSync } = await import("node:fs");
+                    const dump = JSON.stringify({ ts: Date.now(), routeKey, calldata: candidate.calldata, target: candidate.targetAddress, revertData: dryRun.revertData }) + "\n";
+                    appendFileSync("data/failing-calldata.ndjson", dump);
+                  } catch {}
                   ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
                   continue;
                 }
@@ -890,7 +1016,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // If we ever regress and start doing heavy work in the 200 ms path, this will scream.
       const HF_BUDGET_MS = 160;
       if (elapsed > HF_BUDGET_MS) {
-        ctx.logger.warn(
+        ctx.logger.debug(
           { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles },
           "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)",
         );

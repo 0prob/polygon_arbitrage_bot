@@ -38,4 +38,19 @@ describe('InMemoryPendingStateOverlay', () => {
     expect(overlay.get(address1)).toBeUndefined();
     expect(overlay.get(address2)).toBeUndefined();
   });
+
+  it('getProjected combines delta with base state', () => {
+    const address = '0x1234567890123456789012345678901234567890' as Address;
+    const delta: PoolState = { reserve0: -10n, reserve1: 10n };
+    overlay.update(address, delta);
+    const baseState: PoolState = { reserve0: 1000n, reserve1: 2000n };
+    const projected = overlay.getProjected(address, baseState);
+    expect(projected).toEqual({ reserve0: 990n, reserve1: 2010n });
+  });
+
+  it('getProjected returns undefined for unknown address', () => {
+    const address = '0x1234567890123456789012345678901234567890' as Address;
+    const baseState: PoolState = { reserve0: 1000n, reserve1: 2000n };
+    expect(overlay.getProjected(address, baseState)).toBeUndefined();
+  });
 });

@@ -123,8 +123,9 @@ export async function fetchMissingPoolState(
     poolLookup.set(p.address.toLowerCase(), p);
   }
 
-  // Use a minimal shape compatible with viem multicall. The actual ABIs (from parseAbi) are precise.
   type MulticallCall = { address: `0x${string}`; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] };
+  type V2Reserves = readonly [bigint, bigint, number] | { reserve0: bigint; reserve1: bigint; blockTimestampLast: number };
+  type V3Slot0 = readonly [bigint, number, number, number, number, number, boolean] | { sqrtPriceX96: bigint; tick: number };
 
   await Promise.all(
     batches.map(async (batch) => {
@@ -154,9 +155,7 @@ export async function fetchMissingPoolState(
 
       try {
         const results = await publicClient.multicall({
-          // The per-protocol ABIs + function selection above guarantee shape correctness;
-          // the cast is only to satisfy viem's precise Abi typing for heterogeneous batches.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // Heterogeneous ABIs per protocol — viem's strict Abi typing can't represent this
           contracts: calls as any,
           allowFailure: true,
         });
@@ -170,11 +169,10 @@ export async function fetchMissingPoolState(
           if (proto.includes("v2") || proto.includes("dodo")) {
             const res = results[resultIdx++];
             if (res?.status === "success" && res.result) {
-              const r = res.result as Record<string, unknown> | unknown[];
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const r0 = Array.isArray(r) ? r[0] : (r as any).reserve0;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const r1 = Array.isArray(r) ? r[1] : (r as any).reserve1;
+              const r = res.result as V2Reserves;
+              const rObj = r as { reserve0: bigint; reserve1: bigint };
+              const r0 = Array.isArray(r) ? r[0] : rObj.reserve0;
+              const r1 = Array.isArray(r) ? r[1] : rObj.reserve1;
 
               if (r0 !== undefined && r1 !== undefined) {
                 trackSuccessfulPool(
@@ -197,10 +195,10 @@ export async function fetchMissingPoolState(
             const slot0Res = results[resultIdx++];
             const liqRes = results[resultIdx++];
             if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const s = slot0Res.result as any;
-              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
-              const tick = s[1] !== undefined ? s[1] : s.tick;
+              const s = slot0Res.result as V3Slot0;
+              const sObj = s as { sqrtPriceX96: bigint; tick: number };
+              const sqrtPriceX96 = Array.isArray(s) ? s[0] : sObj.sqrtPriceX96;
+              const tick = Array.isArray(s) ? s[1] : sObj.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
                 trackSuccessfulPool(
@@ -209,8 +207,7 @@ export async function fetchMissingPoolState(
                   {
                     sqrtPriceX96: BigInt(sqrtPriceX96),
                     tick: Number(tick),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    liquidity: BigInt(liqRes.result as any),
+                    liquidity: BigInt(liqRes.result as bigint),
                     initialized: true,
                   },
                   updated,
@@ -228,10 +225,10 @@ export async function fetchMissingPoolState(
             const tsRes = results[resultIdx++];
             const hooksRes = results[resultIdx++];
             if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const s = slot0Res.result as any;
-              const sqrtPriceX96 = s[0] !== undefined ? s[0] : s.sqrtPriceX96;
-              const tick = s[1] !== undefined ? s[1] : s.tick;
+              const s = slot0Res.result as V3Slot0;
+              const sObj = s as { sqrtPriceX96: bigint; tick: number };
+              const sqrtPriceX96 = Array.isArray(s) ? s[0] : sObj.sqrtPriceX96;
+              const tick = Array.isArray(s) ? s[1] : sObj.tick;
 
               if (sqrtPriceX96 !== undefined && tick !== undefined) {
                 trackSuccessfulPool(
@@ -239,15 +236,11 @@ export async function fetchMissingPoolState(
                   stateCache,
                   {
                     sqrtPriceX96: BigInt(sqrtPriceX96),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    liquidity: BigInt(liqRes.result as any),
+                    liquidity: BigInt(liqRes.result as bigint),
                     tick: Number(tick),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as any) : undefined,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    hooks: hooksRes?.status === "success" ? (hooksRes.result as any) : undefined,
+                    fee: feeRes?.status === "success" ? BigInt(feeRes.result as bigint) : undefined,
+                    tickSpacing: tsRes?.status === "success" ? Number(tsRes.result as bigint) : undefined,
+                    hooks: hooksRes?.status === "success" ? (hooksRes.result as string) : undefined,
                     initialized: true,
                   },
                   updated,
@@ -266,10 +259,8 @@ export async function fetchMissingPoolState(
                 addr,
                 stateCache,
                 {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  price: BigInt(priceRes.result as any),
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as any) : undefined,
+                  price: BigInt(priceRes.result as bigint),
+                  fee: feeRes?.status === "success" ? BigInt(feeRes.result as bigint) : undefined,
                   initialized: true,
                 },
                 updated,

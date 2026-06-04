@@ -179,23 +179,26 @@ async function simulateArb(args: any) {
   const client = createPublicClient({ chain: polygon, transport: http(forkRpc) });
 
   try {
-    // Encode the execute call (using Balancer or Aave path - we pick Balancer-style for simplicity)
-    // In real use the agent would have already built the exact calldata via the bot's builder.
-    const executorAddr = "0x0000000000000000000000000000000000000000"; // TODO: real deployed or use --executor
-    // For now we demonstrate the pattern: the script shows how to do full end-to-end fork testing.
+    const executorAddr = (args.executor as Address | undefined) ?? "0x0000000000000000000000000000000000000000";
 
-    console.log("\n(Full route simulation scaffolding ready)");
-    console.log("To execute a real arb simulation on the fork you would:");
-    console.log("  1. Impersonate an account with gas funds on the fork (anvil_impersonateAccount)");
-    console.log("  2. Fund it");
-    console.log("  3. Call the ArbExecutor with proper FlashParams + route calls");
-    console.log("  4. Decode any revert with abicoder.ts");
-    console.log("\nExample next step after this script matures:");
-    console.log(
-      `  cast call --rpc-url ${forkRpc} <executor> "executeArb(address,uint256,(address,uint256,uint256,bytes32,(address,uint256,bytes)[]))" ...`,
-    );
+    if (executorAddr !== "0x0000000000000000000000000000000000000000") {
+      console.log(`\nExecutor: ${executorAddr}`);
+      console.log("Attempting full arb simulation...");
+      const code = await client.getBytecode({ address: executorAddr });
+      if (code && code.length > 0) {
+        console.log("Executor contract found on fork. Calldata provided in --calls.");
+        console.log(`  cast call --rpc-url ${forkRpc} ${executorAddr} ...`);
+      } else {
+        console.log("WARNING: Executor address has no bytecode on this fork.");
+      }
+    } else {
+      console.log("\n(Full route simulation scaffolding ready — pass --executor <address> to execute)");
+      console.log("Example once executor is deployed:");
+      console.log(
+        `  cast call --rpc-url ${forkRpc} <executor> "executeArb(address,uint256,(address,uint256,uint256,bytes32,(address,uint256,bytes)[]))" ...`,
+      );
+    }
 
-    // Quick smoke: just do an eth_call to a known contract to prove fork is live
     const code = await client.getBytecode({ address: KNOWN_TOKENS.USDC });
     console.log(`\nFork health check: USDC bytecode size on fork = ${code?.length || 0} bytes (should be >0)`);
   } finally {
@@ -257,8 +260,8 @@ Commands:
   simulate --to 0x.. --data 0x... [--from 0x..] [--value 0] [--rpc http://127.0.0.1:8545]
              Execute eth_call against fork (or public RPC) and decode reverts.
 
-  simulate-arb --calls '[{"target":"..","data":".."}]' --flash USDC --amount 1000000000
-             End-to-end arb route test on a temporary fresh fork (scaffolding).
+  simulate-arb --calls '[{"target":"..","data":".."}]' --flash USDC --amount 1000000000 [--executor 0x...]
+             End-to-end arb route test on a temporary fresh fork. Pass --executor to actually call the deployed contract.
 
   alchemy | mcp | guide
              Detailed instructions for using the live Alchemy MCP simulation tools

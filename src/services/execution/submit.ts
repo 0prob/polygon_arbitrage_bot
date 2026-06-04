@@ -36,10 +36,7 @@ export class SubmissionStrategy {
     let adjustedFee = tx.maxFee;
     let priorityFee = snapshot?.priorityFee ?? 1n * 10n ** 9n;
     if (expectedProfit && expectedProfit > 0n && snapshot) {
-      const multiplier =
-        typeof (this.gasOracle as any).getEffectiveMaxBidMultiplier === "function"
-          ? (this.gasOracle as any).getEffectiveMaxBidMultiplier()
-          : (this.gasOracle.config?.maxBidMultiplier ?? 3);
+      const multiplier = this.gasOracle.getEffectiveMaxBidMultiplier();
       const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, multiplier);
       adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
       priorityFee = scaled;

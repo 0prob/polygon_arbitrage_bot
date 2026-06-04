@@ -41,6 +41,26 @@ export function computeMaticRates(
   const RATE_PRECISION = 1000000000000000000n;
   rates.set(WMATIC_LOWER, RATE_PRECISION);
 
+  // Additional bootstrap seeds for major bases to improve initial coverage and connected component.
+  // This addresses persistent low rates (9-15) / high noRate (~91% on 2546 attempted) even with focus 99,
+  // as seen across 128s/246s/448s-tailer/current runs. WMATIC alone + stateCache connects slowly;
+  // seeding stables/WETH connects more pools/tokens from the start, letting focus + propagation
+  // yield more rateSafe cycles and profitable variety sooner (higher gross ones less marginal for gas).
+  // Values are approximate MATIC-equivalents (stables ~2x if WMATIC ~0.5 USD; WETH rough 1000x);
+  // propagation will refine via real pools/state. Conservative to avoid extremes.
+  const USDC = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359".toLowerCase();
+  const USDC_OLD = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174".toLowerCase();
+  const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f".toLowerCase();
+  const WETH = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619".toLowerCase();
+  const DAI = "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063".toLowerCase();
+  const WBTC = "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6".toLowerCase();
+  rates.set(USDC, RATE_PRECISION * 2n);
+  rates.set(USDC_OLD, RATE_PRECISION * 2n);
+  rates.set(USDT, RATE_PRECISION * 2n);
+  rates.set(WETH, RATE_PRECISION * 1000n);
+  rates.set(DAI, RATE_PRECISION * 2n);
+  rates.set(WBTC, RATE_PRECISION * 30000n);
+
   const logs: string[] = [];
   if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);
 
@@ -177,10 +197,12 @@ export function computeMaticRates(
             }
           }
 
-          // Require at least 0.01 MATIC worth of known token to propagate rate.
-          // Lower threshold enables rate propagation to reach obscure/long-tail tokens
-          // connected via minimal liquidity (e.g. dfyn/ape pools with small reserves).
-          if (knownValueMatic < 10_000_000_000_000_000n) {
+          // Require at least ~0.001 MATIC worth of known token to propagate rate.
+          // (Lowered from 0.01 to help bootstrap + focus connect more long-tail tokens
+          // from the prioritized major pools without poisoning rates too much.)
+          // This helps rateSafeCycles and reduces noRate % for cycles whose startToken
+          // would otherwise be left without a usable MATIC rate.
+          if (knownValueMatic < 1_000_000_000_000_000n) {
             skippedLowLiquidity++;
             continue;
           }
@@ -266,7 +288,7 @@ export function computeMaticRates(
   }
 
   if (logger && rates.size > 1) {
-    logger.debug?.({ rates: rates.size, propagation: logs }, "Rate propagation complete");
+    logger.debug?.({ rates: rates.size, skippedNoState, skippedLowLiquidity, skippedExtremeRatio, propagation: logs }, "Rate propagation complete");
   } else if (logger) {
     logger.debug?.(
       {

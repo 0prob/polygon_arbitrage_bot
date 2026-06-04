@@ -38,8 +38,7 @@ export function buildExecutionCandidate(
       metadata: {},
       tokenInIdx: e.tokenInIdx,
       tokenOutIdx: e.tokenOutIdx,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      stateRef: (state as any) ?? e.stateRef,
+      stateRef: (state ?? e.stateRef ?? undefined) as Record<string, unknown> | undefined,
     };
   });
 

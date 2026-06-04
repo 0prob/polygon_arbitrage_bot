@@ -183,11 +183,11 @@ export class HyperSyncService {
   async getTransactionTraces(txHash: string, lookbackBlocks = 200): Promise<any[]> {
     try {
       const height = await this.getHeight();
-      const query: any = {
+      const query: Record<string, unknown> = {
         fromBlock: Math.max(0, height - lookbackBlocks),
         fieldSelection: {
-          trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error", "Value"] as any,
-          transaction: ["Hash"],
+          trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error", "Value"] as string[],
+          transaction: ["Hash"] as string[],
         },
         transactions: [{ hash: [txHash] }],
         traces: [{}],

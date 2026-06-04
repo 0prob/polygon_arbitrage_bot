@@ -1,6 +1,7 @@
 import type { PoolState } from "../core/types/pool.ts";
 import { isInvalidState } from "../core/types/pool.ts";
 import type { PendingStateOverlay } from "../core/types/overlay.ts";
+import type { Address } from "../core/types/common.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
 import { simulateV2Swap, resolveV2Fee } from "../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../core/math/uniswap_v3.ts";
@@ -82,7 +83,9 @@ export function simulateHop(
   overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
   const poolAddr = edge.poolAddress.toLowerCase();
-  const state = overlay?.get(edge.poolAddress) ?? stateCache.get(poolAddr) ?? edge.stateRef;
+  const baseState = stateCache.get(poolAddr) ?? edge.stateRef;
+  if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+  const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
   // Tax support removed (was un-wired dead code; added float math + map lookups in hot path with no config source).
@@ -147,7 +150,9 @@ export function simulateRoute(
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
     if (!prebuiltSimEdges) {
-      const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      const base = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      if (!base) throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
+      const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
       if (!state || isInvalidState(state)) {
         throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
       }
@@ -156,7 +161,7 @@ export function simulateRoute(
     const hop = simulateHop(simEdge, hopAmounts[i], stateCache, overlay);
     hopAmounts.push(hop.amountOut);
     totalGas += hop.gasEstimate;
-    poolPath.push(edges[i].poolAddress); // use original edges for original casing if needed
+    poolPath.push(edges[i].poolAddress);
     tokenPath.push(edges[i].tokenIn);
     protocols.push(edges[i].protocol);
   }
@@ -191,6 +196,7 @@ export function simulateRouteMinimal(
   amountIn: bigint,
   stateCache: RouteStateCache,
   prebuiltSimEdges?: SimulationEdge[],
+  overlay?: PendingStateOverlay,
 ): { profit: bigint; totalGas: number; amountOut: bigint } {
   let currentAmount = amountIn;
   let totalGas = 0;
@@ -199,15 +205,16 @@ export function simulateRouteMinimal(
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
-    // Basic validity check only if we built them ourselves (prebuilt are assumed valid)
     if (!prebuiltSimEdges) {
-      const state = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      const base = stateCache.get(simEdge.poolAddress as `0x${string}`) ?? simEdge.stateRef;
+      if (!base) throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
+      const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
       if (!state || isInvalidState(state)) {
         throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
       }
     }
 
-    const hop = simulateHop(simEdge, currentAmount, stateCache);
+    const hop = simulateHop(simEdge, currentAmount, stateCache, overlay);
     currentAmount = hop.amountOut;
     totalGas += hop.gasEstimate;
   }
@@ -223,13 +230,15 @@ export function simulateRouteMinimal(
  * This eliminates repeated object allocation inside every simulateRouteMinimal / simulateRoute call
  * during ternary search (the dominant hot-path allocation source).
  */
-export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCache): SimulationEdge[] {
+export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCache, overlay?: PendingStateOverlay): SimulationEdge[] {
   const simEdges: SimulationEdge[] = new Array(edges.length);
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
-    const poolAddr = edge.poolAddress.toLowerCase();
-    const state = stateCache.get(poolAddr) ?? edge.stateRef;
+  const poolAddr = edge.poolAddress.toLowerCase();
+  const baseState = stateCache.get(poolAddr) ?? (edge.stateRef as PoolState | undefined);
+  if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+  const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
 
     simEdges[i] = {
       poolAddress: poolAddr,
@@ -269,13 +278,17 @@ export function simulateMinimalWithImpactCheck(
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
     if (!prebuiltSimEdges) {
-      const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      const baseForEdge = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+      if (!baseForEdge) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
+      const state = overlay?.getProjected(simEdge.poolAddress as Address, baseForEdge) ?? baseForEdge;
       if (!state || isInvalidState(state)) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
     }
 
     const hop = simulateHop(simEdge, currentAmount, stateCache, overlay);
 
-    const state = overlay?.get(simEdge.poolAddress) ?? stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+    const base = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
+    if (!base) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
+    const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
     if (state) {
       const realizedPrice = Number(hop.amountOut) / Number(currentAmount);
       const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);

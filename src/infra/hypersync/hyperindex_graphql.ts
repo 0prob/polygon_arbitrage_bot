@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { isGarbagePool, KNOWN_INDEXED_FACTORIES } from "../../core/constants.ts";
 import { markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
@@ -21,17 +24,20 @@ interface PoolMetaRow {
 }
 interface V2StateRow {
   id: string;
+  address: string;
   reserve0: string;
   reserve1: string;
 }
 interface V3StateRow {
   id: string;
+  address: string;
   sqrtPriceX96: string;
   tick: string;
   liquidity: string;
 }
 interface V4StateRow {
   id: string;
+  address: string;
   sqrtPriceX96: string;
   liquidity: string;
   tick: string;
@@ -41,6 +47,7 @@ interface V4StateRow {
 }
 interface BalancerStateRow {
   id: string;
+  address: string;
   poolId: string;
   balances: unknown;
   weights: unknown;
@@ -50,6 +57,7 @@ interface BalancerStateRow {
 }
 interface CurveStateRow {
   id: string;
+  address: string;
   balances: unknown;
   A: string;
   fee: string;
@@ -57,6 +65,7 @@ interface CurveStateRow {
 }
 interface DodoStateRow {
   id: string;
+  address: string;
   baseReserve: string;
   quoteReserve: string;
   rStatus: number;
@@ -103,16 +112,19 @@ export function parseBigIntArray(arr: unknown): bigint[] {
 // best-effort pre-fetch / fallback list.
 let _staticAnchors: HasuraPoolMeta[] = [];
 try {
-  // @ts-expect-error - dynamic JSON import for optional pools.json (falls back gracefully)
-  const mod = await import("../../../scripts/pools.json", { with: { type: "json" } } as unknown as { default?: unknown });
-  const poolsJson = (mod.default ?? mod) as unknown[];
+  const __dirname = fileURLToPath(new URL(".", import.meta.url));
+  const poolsPath = join(__dirname, "../../../scripts/pools.json");
+  const raw = readFileSync(poolsPath, "utf-8");
+  const poolsJson = JSON.parse(raw) as unknown[];
   if (Array.isArray(poolsJson)) {
-    _staticAnchors = poolsJson.map((p: any) => ({
-      address: p?.address ?? "",
-      protocol: p?.protocol ?? "unknown",
-      tokens: Array.isArray(p?.tokens) ? p.tokens : [],
-      fee: p?.fee ?? 30,
-    }));
+    _staticAnchors = poolsJson.map((p) => {
+      const row = p as Record<string, unknown>;
+      return {
+      address: (row?.address ?? "") as string,
+      protocol: (row?.protocol ?? "unknown") as string,
+      tokens: Array.isArray(row?.tokens) ? (row.tokens as string[]) : [],
+      fee: (row?.fee ?? 30) as number,
+    }; });
   }
 } catch {
   // silent fallback - bot will rely entirely on Hasura discovery
@@ -211,12 +223,12 @@ export async function buildStateCacheFromGraphQL(
 
     // Optimize: Use single batched query instead of 6 separate requests
     const batchedQuery = `{
-      V2PoolState(limit: 15000) { id reserve0 reserve1 }
-      V3PoolState(limit: 15000) { id sqrtPriceX96 tick liquidity }
-      V4PoolState(limit: 5000) { id sqrtPriceX96 liquidity tick fee tickSpacing hooks }
-      BalancerPoolState(limit: 5000) { id poolId balances weights amp swapFee scalingFactors }
-      CurvePoolState(limit: 5000) { id balances A fee rates }
-      DodoPoolState(limit: 5000) { id baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
+      V2PoolState(limit: 15000) { id address reserve0 reserve1 }
+      V3PoolState(limit: 15000) { id address sqrtPriceX96 tick liquidity }
+      V4PoolState(limit: 5000) { id address sqrtPriceX96 liquidity tick fee tickSpacing hooks }
+      BalancerPoolState(limit: 5000) { id address poolId balances weights amp swapFee scalingFactors }
+      CurvePoolState(limit: 5000) { id address balances A fee rates }
+      DodoPoolState(limit: 5000) { id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
     }`;
 
     const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
@@ -232,7 +244,7 @@ export async function buildStateCacheFromGraphQL(
     // Process all state types efficiently
     const v2States = data.V2PoolState ?? [];
     for (const s of v2States) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         reserve0: BigInt(s.reserve0),
         reserve1: BigInt(s.reserve1),
       });
@@ -240,7 +252,7 @@ export async function buildStateCacheFromGraphQL(
 
     const v3States = data.V3PoolState ?? [];
     for (const s of v3States) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         tick: Number(s.tick),
         liquidity: BigInt(s.liquidity),
@@ -249,7 +261,7 @@ export async function buildStateCacheFromGraphQL(
 
     const v4States = data.V4PoolState ?? [];
     for (const s of v4States) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         liquidity: BigInt(s.liquidity),
         tick: Number(s.tick),
@@ -261,7 +273,7 @@ export async function buildStateCacheFromGraphQL(
 
     const balancerStates = data.BalancerPoolState ?? [];
     for (const s of balancerStates) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         poolId: s.poolId,
         balances: parseBigIntArray(s.balances),
         weights: parseBigIntArray(s.weights),
@@ -273,7 +285,7 @@ export async function buildStateCacheFromGraphQL(
 
     const curveStates = data.CurvePoolState ?? [];
     for (const s of curveStates) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         balances: parseBigIntArray(s.balances),
         A: BigInt(s.A),
         fee: BigInt(s.fee),
@@ -283,7 +295,7 @@ export async function buildStateCacheFromGraphQL(
 
     const dodoStates = data.DodoPoolState ?? [];
     for (const s of dodoStates) {
-      _cachedState.set(s.id.toLowerCase(), {
+      _cachedState.set((s.address ?? s.id).toLowerCase(), {
         baseReserve: BigInt(s.baseReserve),
         quoteReserve: BigInt(s.quoteReserve),
         rStatus: s.rStatus,

@@ -122,7 +122,7 @@ describe("runPassLoop", () => {
       },
       isRunning: true,
       stateCache: stateWithPool,
-      mempoolService: { start: vi.fn(), onSignal: vi.fn() },
+      mempoolService: { start: vi.fn(), onSignal: vi.fn(), setKnownPools: vi.fn() },
       executionService: {
         start: vi.fn(),
         execute: mockExecute,
@@ -313,7 +313,7 @@ describe("runPassLoop", () => {
       },
       isRunning: true,
       stateCache: new Map(),
-      mempoolService: { start: vi.fn(), onSignal: vi.fn() },
+      mempoolService: { start: vi.fn(), onSignal: vi.fn(), setKnownPools: vi.fn() },
       executionService: {
         start: vi.fn(),
         execute: vi.fn(),

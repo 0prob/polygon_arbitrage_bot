@@ -157,11 +157,9 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
     // Stop envio first
     execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 8000 });
 
-    // Force remove all envio containers (including stopped ones)
     const bulkRm = "docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true";
     execSync(bulkRm, { stdio: "ignore", timeout: 5000 });
 
-    // Individual container cleanup for stubborn cases
     const listCmd = `docker ps -a --filter name=envio- --format "{{.ID}}" 2>/dev/null || true`;
     const containerIds = execSync(listCmd, { encoding: "utf8", timeout: 4000 }).trim();
     if (containerIds) {
@@ -200,12 +198,12 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
   try {
     const [schemaStat, configStat] = await Promise.all([stat(schemaPath), stat(configPath)]);
 
-    let generatedStat: Awaited<ReturnType<typeof stat>> | undefined;
+    type StatLike = { mtimeMs: number };
+    let generatedStat: Awaited<ReturnType<typeof stat>> | StatLike | undefined;
     try {
       generatedStat = await stat(generatedTypesPath);
     } catch {
-      // No generated file yet → definitely need codegen
-      generatedStat = { mtimeMs: 0 } as any;
+      generatedStat = { mtimeMs: 0 };
     }
 
     const sourceMtime = Math.max(schemaStat.mtimeMs, configStat.mtimeMs);
@@ -218,11 +216,10 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
       });
       logger?.info("✅ HyperIndex codegen completed (types refreshed).");
     }
-  } catch (err: any) {
-    // Non-fatal: if files missing or codegen fails (e.g. no envio in path), just warn.
-    // Normal startup can still proceed; user will get TS errors later if types stale.
-    if (err.code !== "ENOENT") {
-      logger?.warn({ err: err.message }, "Could not auto-run HyperIndex codegen (non-fatal; run manually if types are stale)");
+  } catch (err: unknown) {
+    const nodeErr = err as { code?: string; message?: string };
+    if (nodeErr.code !== "ENOENT") {
+      logger?.warn({ err: nodeErr.message }, "Could not auto-run HyperIndex codegen (non-fatal; run manually if types are stale)");
     }
   }
 }

@@ -83,6 +83,7 @@ it("emits large_swap for generic indirect swap (heuristic)", () => {
     const overlay = {
       update: vi.fn(),
       get: vi.fn(),
+      getProjected: vi.fn(),
       clear: vi.fn(),
     };
     const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n }, overlay);
