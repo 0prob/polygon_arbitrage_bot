@@ -1,4 +1,5 @@
 import type { Address } from "../../core/types/common.ts";
+import type { PoolState } from "../../core/types/pool.ts";
 
 export interface LargeSwapSignal {
   txHash: string;
@@ -11,6 +12,11 @@ export interface LargeSwapSignal {
 
 export interface PoolStateInvalidatedSignal {
   addresses: Address[];
+}
+
+export interface PendingStateUpdateSignal {
+  poolAddress: Address;
+  state: PoolState;
 }
 
 export interface NewBlockSignal {
@@ -28,6 +34,7 @@ export interface NewPoolPendingSignal {
 export type MempoolSignal =
   | { type: "large_swap"; data: LargeSwapSignal }
   | { type: "pool_invalidated"; data: PoolStateInvalidatedSignal }
+  | { type: "pending_state_update"; data: PendingStateUpdateSignal }
   | { type: "new_block"; data: NewBlockSignal }
   | { type: "new_pool_pending"; data: NewPoolPendingSignal };
 
