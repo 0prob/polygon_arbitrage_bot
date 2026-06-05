@@ -57,9 +57,11 @@ export function createTui(bus?: EventBus): TuiInstance {
     }
     if (key === "p" || key === "P") {
       state.isPaused = !state.isPaused;
+      bus?.emit({ type: "pause_toggled", isPaused: state.isPaused });
     }
     if (key === "r" || key === "R") {
       Object.assign(state, createInitialState());
+      bus?.emit({ type: "pause_toggled", isPaused: false });
     }
     if (key >= "1" && key <= "6") {
       focusedSection = parseInt(key) - 1;

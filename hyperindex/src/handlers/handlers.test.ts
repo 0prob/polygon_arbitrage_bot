@@ -36,7 +36,7 @@ const POOL_ADDR = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const SIM_BLOCK = 5_100_000;
 
 describe("V2Factory.PairCreated", () => {
-  it("creates PoolMeta and TokenMeta for a valid pair", async (_t) => {
+  it("creates PoolMeta and TokenMeta for a valid pair", async () => {
     const indexer = createTestIndexer();
 
     const _result = await indexer.process({
@@ -162,7 +162,7 @@ describe("V2Factory.PairCreated", () => {
 });
 
 describe("V3Factory.PoolCreated", () => {
-  it("creates PoolMeta with fee and tickSpacing for a valid V3 pool", async (_t) => {
+  it("creates PoolMeta with fee and tickSpacing for a valid V3 pool", async () => {
     const indexer = createTestIndexer();
 
     const _result = await indexer.process({

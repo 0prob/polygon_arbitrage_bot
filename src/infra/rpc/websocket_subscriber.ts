@@ -84,6 +84,10 @@ export class WebSocketSubscriber {
     return this.running;
   }
 
+  isConnected(): boolean {
+    return !!this.ws && this.ws.readyState === WebSocket.OPEN;
+  }
+
   private connect(): void {
     if (!this.running) return;
     try {

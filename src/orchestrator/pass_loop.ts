@@ -544,6 +544,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   bus?.emit({ type: "pass_loop_started", intervalMs: 200 });
   ctx.logger.info({}, "Pass loop started with multi-frequency cycles");
 
+  let isPaused = false;
+  bus?.on((ev) => {
+    if (ev.type === "pause_toggled") {
+      isPaused = ev.isPaused;
+    }
+  });
+
   let cachedGraph: RoutingGraph | null = null;
   let cachedCycles: FoundCycle[] = [];
   let hasuraPoolsCache: PoolMeta[] | null = null;
@@ -607,6 +614,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastReorgCheck = 0;
 
   while (ctx.isRunning) {
+    if (isPaused) {
+      bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
+      await sleep(200);
+      continue;
+    }
     ctx.logger.info({}, "Pass loop cycle started");
     const now = Date.now();
     const startTime = now;
@@ -1266,6 +1278,29 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const trackerSummary = ctx.executionService.tracker.summary;
       ctx.metrics.executionReverts = trackerSummary.totalReverts;
       ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
+      // Calculate dynamic MATIC price in USD from tokenToMaticRates (derived from USDC / Bridged USDC / USDT / DAI)
+      let maticPriceUsd = 0.7;
+      if (tokenToMaticRates) {
+        const usdcAddress = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359".toLowerCase();
+        const usdceAddress = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174".toLowerCase();
+        const usdtAddress = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f".toLowerCase();
+        const daiAddress = "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063".toLowerCase();
+
+        const usdcRate = tokenToMaticRates.get(usdcAddress) || tokenToMaticRates.get(usdceAddress) || tokenToMaticRates.get(usdtAddress);
+        if (usdcRate && usdcRate > 0n) {
+          maticPriceUsd = 1e30 / Number(usdcRate);
+        } else {
+          const daiRate = tokenToMaticRates.get(daiAddress);
+          if (daiRate && daiRate > 0n) {
+            maticPriceUsd = 1e18 / Number(daiRate);
+          }
+        }
+      }
+
+      const isRpcConnected = ctx.rpcCircuit.isHealthy();
+      const isHasuraConnected = ctx.hasuraCircuit.isHealthy();
+      const isWsConnected = !!ctx.wsSubscriber && ctx.wsSubscriber.isConnected();
+
       bus?.emit({
         type: "heartbeat",
         elapsedMs: elapsed,
@@ -1273,13 +1308,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         totalErrors: ctx.metrics.totalErrors,
         indexerLag: currentIndexerLag,
         gasPrice: gasSnapshot?.gasPrice,
-        rpcConnected: !!ctx.publicClient,
-        hasuraConnected: !!ctx.config.hasuraUrl,
-        wsConnected: !!ctx.wsSubscriber,
+        rpcConnected: isRpcConnected,
+        hasuraConnected: isHasuraConnected,
+        wsConnected: isWsConnected,
+        maticPriceUsd,
       });
-      bus?.emit({ type: "connection_status", subsystem: "rpc", status: ctx.publicClient ? "connected" : "disconnected" });
-      bus?.emit({ type: "connection_status", subsystem: "hasura", status: ctx.config.hasuraUrl ? "connected" : "disconnected" });
-      bus?.emit({ type: "connection_status", subsystem: "ws", status: ctx.wsSubscriber ? "connected" : "disconnected" });
+      bus?.emit({ type: "connection_status", subsystem: "rpc", status: isRpcConnected ? "connected" : "disconnected" });
+      bus?.emit({ type: "connection_status", subsystem: "hasura", status: isHasuraConnected ? "connected" : "disconnected" });
+      bus?.emit({ type: "connection_status", subsystem: "ws", status: isWsConnected ? "connected" : "disconnected" });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
       // Hot-bias mode comes from the same env var the hyperindex sees.

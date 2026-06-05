@@ -6,8 +6,7 @@
   "main": "src/cli/main.ts",
   "packageManager": "bun@1.3.14",
   "workspaces": [
-    "hyperindex",
-    ".opencode"
+    "hyperindex"
   ],
   "engines": {
     "bun": ">=1.2.0"
@@ -30,6 +29,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@nomicfoundation/solidity-language-server": "0.8.25",
     "@taplo/cli": "0.7.0",
     "@types/node": "25.9.1",

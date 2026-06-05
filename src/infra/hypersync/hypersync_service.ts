@@ -157,8 +157,9 @@ export class HyperSyncService {
       const height = await this.getHeight();
       const query: any = {
         fromBlock: Math.max(0, height - lookbackBlocks),
+        joinMode: 1, // JoinAll to ensure logs are returned for the filtered transaction
         fieldSelection: {
-          log: ["BlockNumber", "TransactionHash", "Topics", "Data", "Address"],
+          log: ["BlockNumber", "TransactionHash", "Topic0", "Topic1", "Topic2", "Topic3", "Data", "Address"],
           transaction: ["Hash", "Status", "GasUsed"],
         },
         transactions: [{ hash: [txHash] }],
@@ -170,7 +171,13 @@ export class HyperSyncService {
           transactionHash: tx.hash,
           status: tx.status === 1 ? "0x1" : "0x0",
           gasUsed: tx.gasUsed,
-          logs: res.data.logs?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase()) ?? [],
+          logs:
+            res.data.logs
+              ?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase())
+              .map((l: any) => ({
+                ...l,
+                topics: (l.topics ?? []).filter((t: any) => t !== null && t !== undefined),
+              })) ?? [],
         };
       }
       return null;
@@ -185,6 +192,7 @@ export class HyperSyncService {
       const height = await this.getHeight();
       const query: Record<string, unknown> = {
         fromBlock: Math.max(0, height - lookbackBlocks),
+        joinMode: 1, // JoinAll to ensure correct joins
         fieldSelection: {
           trace: ["BlockNumber", "TransactionHash", "TraceAddress", "Action", "Result", "Error", "Value"] as string[],
           transaction: ["Hash"] as string[],

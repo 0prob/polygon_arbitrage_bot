@@ -29,6 +29,7 @@ export type ArbEvent =
       rpcConnected?: boolean;
       hasuraConnected?: boolean;
       wsConnected?: boolean;
+      maticPriceUsd?: number;
     }
   | {
       type: "hyperindex_status";
@@ -49,7 +50,8 @@ export type ArbEvent =
   | { type: "cycles_enumerated"; total: number; cyclesByHop: Record<number, number>; elapsedMs: number }
   | { type: "graph_stats"; poolCount: number; protocolBreakdown: Record<string, number>; edgeCount: number; cachedCount: number }
   | { type: "execution_attempt"; protocolPath: string; hopCount: number; expectedProfit: bigint; txHash?: string }
-  | { type: "connection_status"; subsystem: string; status: "connected" | "disconnected" | "error" };
+  | { type: "connection_status"; subsystem: string; status: "connected" | "disconnected" | "error" }
+  | { type: "pause_toggled"; isPaused: boolean };
 
 type EventHandler = (event: ArbEvent) => void;
 

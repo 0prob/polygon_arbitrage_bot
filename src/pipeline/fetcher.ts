@@ -19,6 +19,20 @@ const V4_ABI = parseAbi([
   "function hooks() external view returns (address)",
 ]);
 const WOOFI_PAIR_ABI = parseAbi(["function price() external view returns (uint256)", "function fee() external view returns (uint256)"]);
+const VAULT_ABI = parseAbi([
+  "function getPoolTokens(bytes32 poolId) external view returns (address[] tokens, uint256[] balances, uint256 lastChangeBlock)",
+]);
+const BALANCER_ABI = parseAbi([
+  "function getSwapFeePercentage() external view returns (uint256)",
+  "function getNormalizedWeights() external view returns (uint256[])",
+  "function getScalingFactors() external view returns (uint256[])",
+]);
+const CURVE_ABI = parseAbi([
+  "function A() external view returns (uint256)",
+  "function fee() external view returns (uint256)",
+  "function balances(uint256 i) external view returns (uint256)",
+  "function rates(uint256 i) external view returns (uint256)",
+]);
 
 const _failedPools = new Map<string, { count: number; lastTry: number }>();
 const FAILED_POOLS_MAX_SIZE = 10_000;
@@ -172,6 +186,35 @@ export async function fetchMissingPoolState(
           } else if (proto.includes("woofi")) {
             calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "price" });
             calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "fee" });
+          } else if (proto.includes("balancer")) {
+            const poolId = (meta as any).poolId;
+            if (poolId) {
+              calls.push({
+                address: "0xba12222222228d8ba445958a75a0704d566bf2c8",
+                abi: VAULT_ABI,
+                functionName: "getPoolTokens",
+                args: [poolId],
+              });
+              const existing = stateCache.get(addr);
+              if (!existing || existing.swapFee === undefined) {
+                calls.push({ address: addr as `0x${string}`, abi: BALANCER_ABI, functionName: "getSwapFeePercentage" });
+                calls.push({ address: addr as `0x${string}`, abi: BALANCER_ABI, functionName: "getNormalizedWeights" });
+                calls.push({ address: addr as `0x${string}`, abi: BALANCER_ABI, functionName: "getScalingFactors" });
+              }
+            }
+          } else if (proto.includes("curve")) {
+            const nCoins = meta.tokens.length;
+            for (let idx = 0; idx < nCoins; idx++) {
+              calls.push({ address: addr as `0x${string}`, abi: CURVE_ABI, functionName: "balances", args: [BigInt(idx)] });
+            }
+            const existing = stateCache.get(addr);
+            if (!existing || existing.A === undefined) {
+              calls.push({ address: addr as `0x${string}`, abi: CURVE_ABI, functionName: "A" });
+              calls.push({ address: addr as `0x${string}`, abi: CURVE_ABI, functionName: "fee" });
+              for (let idx = 0; idx < nCoins; idx++) {
+                calls.push({ address: addr as `0x${string}`, abi: CURVE_ABI, functionName: "rates", args: [BigInt(idx)] });
+              }
+            }
           }
         }
 
@@ -297,6 +340,87 @@ export async function fetchMissingPoolState(
                 );
               } else {
                 trackFailedPool(addr, "woofi-price-failed", stateCache, now);
+              }
+            } else if (proto.includes("balancer")) {
+              const poolId = (meta as any).poolId;
+              if (poolId) {
+                const getPoolTokensRes = results[resultIdx++];
+                const existing = stateCache.get(addr);
+                const hasStatic = existing && existing.swapFee !== undefined;
+
+                const swapFeeRes = hasStatic ? { status: "success" as const, result: existing.swapFee as bigint } : results[resultIdx++];
+                const weightsRes = hasStatic ? { status: "success" as const, result: existing.weights as bigint[] } : results[resultIdx++];
+                const scalingFactorsRes = hasStatic
+                  ? { status: "success" as const, result: existing.scalingFactors as bigint[] }
+                  : results[resultIdx++];
+
+                if (getPoolTokensRes?.status === "success" && getPoolTokensRes.result) {
+                  const [, balances] = getPoolTokensRes.result as [string[], bigint[]];
+                  trackSuccessfulPool(
+                    addr,
+                    stateCache,
+                    {
+                      poolId,
+                      balances: balances.map(BigInt),
+                      weights: weightsRes?.status === "success" ? (weightsRes.result as bigint[]).map(BigInt) : [],
+                      amp: existing?.amp as bigint | undefined,
+                      swapFee: swapFeeRes?.status === "success" ? BigInt(swapFeeRes.result as bigint) : 0n,
+                      scalingFactors: scalingFactorsRes?.status === "success" ? (scalingFactorsRes.result as bigint[]).map(BigInt) : [],
+                      initialized: true,
+                    },
+                    updated,
+                  );
+                } else {
+                  trackFailedPool(addr, "balancer-getPoolTokens-failed", stateCache, now);
+                }
+              }
+            } else if (proto.includes("curve")) {
+              const nCoins = meta.tokens.length;
+              const balanceResults = [];
+              for (let idx = 0; idx < nCoins; idx++) {
+                balanceResults.push(results[resultIdx++]);
+              }
+              const existing = stateCache.get(addr);
+              const hasStatic = existing && existing.A !== undefined;
+
+              const aRes = hasStatic ? { status: "success" as const, result: existing.A as bigint } : results[resultIdx++];
+              const feeRes = hasStatic ? { status: "success" as const, result: existing.fee as bigint } : results[resultIdx++];
+              const rateResults = [];
+              if (!hasStatic) {
+                for (let idx = 0; idx < nCoins; idx++) {
+                  rateResults.push(results[resultIdx++]);
+                }
+              }
+
+              const balances = [];
+              let success = true;
+              for (const r of balanceResults) {
+                if (r?.status === "success") {
+                  balances.push(BigInt(r.result as bigint));
+                } else {
+                  success = false;
+                }
+              }
+
+              if (success) {
+                const rates = hasStatic
+                  ? (existing.rates as bigint[])
+                  : rateResults.map((r) => (r?.status === "success" ? BigInt(r.result as bigint) : 10n ** 18n));
+
+                trackSuccessfulPool(
+                  addr,
+                  stateCache,
+                  {
+                    balances,
+                    A: aRes?.status === "success" ? BigInt(aRes.result as bigint) : 100n,
+                    fee: feeRes?.status === "success" ? BigInt(feeRes.result as bigint) : 0n,
+                    rates,
+                    initialized: true,
+                  },
+                  updated,
+                );
+              } else {
+                trackFailedPool(addr, "curve-balances-failed", stateCache, now);
               }
             }
           }

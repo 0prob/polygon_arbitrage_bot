@@ -179,7 +179,6 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
     case "opportunity_found":
       state.metrics.opportunitiesFound++;
-      state.metrics.totalProfitWei += event.profitWei ?? 0n;
       updateOpportunity(state, event.routeKey, {
         profit: event.profitWei,
         path: event.path,
@@ -306,10 +305,16 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       if (event.rpcConnected !== undefined) state.system.rpcConnected = event.rpcConnected;
       if (event.hasuraConnected !== undefined) state.system.hasuraConnected = event.hasuraConnected;
       if (event.wsConnected !== undefined) state.system.wsConnected = event.wsConnected;
+      if (event.maticPriceUsd !== undefined && event.maticPriceUsd > 0) {
+        state.system.maticPriceUsd = event.maticPriceUsd;
+      }
       if (state._startTime > 0) {
         const elapsedSec = (Date.now() - state._startTime) / 1000;
         state.metrics.profitPerSecond = elapsedSec > 0 ? Number(state.metrics.totalProfitWei) / elapsedSec : 0;
       }
+      break;
+    case "pause_toggled":
+      state.isPaused = event.isPaused;
       break;
     case "hyperindex_status": {
       // Don't downgrade from synced/syncing to running/starting if we already have block data
