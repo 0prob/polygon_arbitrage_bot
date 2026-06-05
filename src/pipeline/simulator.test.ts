@@ -27,4 +27,24 @@ describe('Simulator Verification', () => {
         const result = simulateHop(edge, 1n * 10n**18n, new Map());
         expect(result.amountOut).toBeGreaterThan(0n);
     });
+
+    const mockBalancerState: PoolState = {
+        balances: [1000n * 10n**18n, 1000n * 10n**18n],
+        weights: [500000000000000000n, 500000000000000000n],
+    } as unknown as PoolState;
+
+    it('simulates Balancer swap correctly', () => {
+        const edge: SimulationEdge = {
+            poolAddress: '0xbalancer',
+            protocol: 'BALANCER',
+            normalizedProtocol: 'BALANCER',
+            zeroForOne: true,
+            tokenInIdx: 0,
+            tokenOutIdx: 1,
+            stateRef: mockBalancerState,
+        } as SimulationEdge;
+        
+        const result = simulateHop(edge, 1n * 10n**18n, new Map());
+        expect(result.amountOut).toBeGreaterThan(0n);
+    });
 });
