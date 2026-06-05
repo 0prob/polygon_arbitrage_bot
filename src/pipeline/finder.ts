@@ -85,7 +85,12 @@ export function getDynamicSearchBounds(
   }
 
   // Sanity check: ensure low is at least 1 and high > low
-  const finalLow = low > 0n ? low : 1n;
+  // Minimum floor: 10_000 wei ensures V3 swaps can collect at least 1 unit of fee
+  // on 0.05% pools (min amount = feePips / 1_000_000 => 10_000 * 500 / 1_000_000 = 5 fee units).
+  // Without this floor, thin V3 pools produce dust low values (1-20 wei) that escape
+  // the low-bound gate and cause all cycles to fail the final full simulation + impact check.
+  const MIN_SWAP_FLOOR = 10_000n;
+  const finalLow = low > MIN_SWAP_FLOOR ? low : MIN_SWAP_FLOOR;
   const finalHigh = high > finalLow ? high : finalLow + 1n;
 
   return { low: finalLow, high: finalHigh };

@@ -1,6 +1,6 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { SignalHandler, MempoolSignal, LargeSwapSignal } from "./signals.ts";
-import { decodeSwapCalldata, SELECTORS } from "./decoder.ts";
+import { decodeSwapCalldata } from "./decoder.ts";
 import type { PendingStateOverlay } from "../../core/types/overlay.ts";
 
 export interface MempoolServiceOptions {
@@ -56,7 +56,7 @@ export class MempoolService {
 
     const traceId = "tx-" + tx.hash.slice(2, 8);
     const selector = tx.input.slice(0, 10).toLowerCase();
-    
+
     // Noise filter for common non-swap selectors
     const IGNORED_SELECTORS = new Set([
       "0xe3ee160e", // transferWithAuthorization (USDC)
@@ -65,6 +65,9 @@ export class MempoolService {
       "0x095ea7b3", // approve(address,uint256)
     ]);
     if (IGNORED_SELECTORS.has(selector)) return;
+
+    // Selectors that route through a vault/router (not pool-direct calls)
+    const ROUTER_SELECTORS = new Set(["0x52bbbe29", "0x5c11d795"]);
 
     // Log incoming transaction
     this.logger.debug({ hash: tx.hash, to: tx.to, selector }, "mempool: processing tx");
@@ -76,20 +79,21 @@ export class MempoolService {
       });
     }
 
-    const lcTo = tx.to.toLowerCase();
-    let isKnown = this.knownPools.has(lcTo);
-    
-    // Dynamic Pool Learning: If selector is known, tentatively trust the pool
-    if (!isKnown && SELECTORS[selector]) {
-      this.logger.debug({ pool: lcTo, selector }, "mempool: dynamically learned new pool");
-      this.knownPools.add(lcTo);
-      isKnown = true;
-    }
-
     const decoded = decodeSwapCalldata(tx.to as `0x${string}`, tx.input, this.knownPools);
     if (!decoded) {
+      // Dynamic Pool Learning: unknown to but known direct-pool selector — tentatively learn the target
+      if (!ROUTER_SELECTORS.has(selector) && tx.to && !this.knownPools.has(tx.to.toLowerCase())) {
+        this.logger.debug({ pool: tx.to.toLowerCase(), selector }, "mempool: dynamically learned new pool");
+        this.knownPools.add(tx.to.toLowerCase());
+      }
       console.debug(`mempool: ignored tx (no decoded swap for ${tx.hash}, selector: ${selector})`);
       return;
+    }
+
+    // Dynamic Pool Learning: after successful decode, ensure the resolved pool is known
+    if (!this.knownPools.has(decoded.poolAddress.toLowerCase())) {
+      this.logger.debug({ pool: decoded.poolAddress, selector }, "mempool: dynamically learned decoded pool");
+      this.knownPools.add(decoded.poolAddress.toLowerCase());
     }
 
     if (this.overlay && decoded.protocol === "UNISWAP_V2") {
@@ -106,7 +110,12 @@ export class MempoolService {
     const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
     if (!isIndirect && effectiveSize < this.options.largeSwapThresholdWei) {
       console.debug(
-        { pool: decoded.poolAddress, amount: decoded.amountIn.toString(), thresh: this.options.largeSwapThresholdWei.toString(), hash: tx.hash },
+        {
+          pool: decoded.poolAddress,
+          amount: decoded.amountIn.toString(),
+          thresh: this.options.largeSwapThresholdWei.toString(),
+          hash: tx.hash,
+        },
         "mempool: decoded swap below threshold",
       );
       return;

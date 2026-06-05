@@ -233,46 +233,18 @@ export async function evaluatePipeline(
 
         const ternaryIters = options.ternarySearchIterations ?? 15;
         const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
-        const minViableForLowGate = 1000000000000n; // ~0.000001 token (dust lows from low-liq V* often give 0 gross due to rounding/granularity even if spot arb exists at usable size)
-        if (evalLow.grossProfitMatic === null || (evalLow.grossProfitMatic <= 0n && low > minViableForLowGate)) {
-          if (attempted <= 5 && options.logger) {
-            // Sample diagnostics (first few per pass) to see if ever positive gross now with fresh state
-            let restrictiveEdgeInfo = "";
-            try {
-              const bounds = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
-              restrictiveEdgeInfo = `minCap: ${bounds.low * 5000n}`;
-            } catch {}
-
-            options.logger.info?.(
+        if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
+          if (attempted < 3 && evalLow.grossProfitMatic != null && options.logger) {
+            options.logger.warn?.(
               {
                 cycleId: cycle.id,
                 low: low.toString(),
-                grossProfitMatic: evalLow.grossProfitMatic?.toString(),
+                grossProfitMatic: evalLow.grossProfitMatic.toString(),
                 startRate: options.tokenToMaticRates.get(cycle.startToken.toLowerCase())?.toString(),
-                restrictiveEdgeInfo,
                 protocol: cycle.edges[0]?.protocol,
                 hop: cycle.hopCount,
               },
-              "Sample low-bound gross (debug to confirm >0 ever)",
-            );
-          }
-          if (attempted < 100 && evalLow.grossProfitMatic != null && evalLow.grossProfitMatic <= 0n && options.logger) {
-            let restrictiveEdgeInfo = "";
-            try {
-              const bounds = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
-              restrictiveEdgeInfo = `minCap: ${bounds.low * 5000n}`;
-            } catch {}
-
-            options.logger.debug?.(
-              {
-                cycleId: cycle.id,
-                low: low.toString(),
-                grossProfitMatic: evalLow.grossProfitMatic?.toString(),
-                startRate: options.tokenToMaticRates.get(cycle.startToken.toLowerCase())?.toString(),
-                restrictiveEdgeInfo,
-                protocol: cycle.edges[0].protocol,
-              },
-              "Cycle rejected: no gross profit at low bound (potential liquidity/fee bottleneck)",
+              "Cycle rejected: no gross profit at low bound",
             );
           }
           return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", reason: "noGrossProfit", cycle };
@@ -369,7 +341,6 @@ export async function evaluatePipeline(
             bestResult = final.result;
             bestAssessment = final.assessment;
           } else {
-            // Final check failed (likely price impact)
             return { type: "pruned" as const, reason: "finalCheckFailed", cycle };
           }
         }

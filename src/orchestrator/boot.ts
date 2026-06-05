@@ -270,33 +270,29 @@ export async function bootApplication(
   }
 
   logger.info("Ready — entering pass loop");
-  
-  logger.info("Initializing return object");
-  const result: any = {};
-  logger.info("Adding config"); result.config = config;
-  logger.info("Adding logger"); result.logger = logger;
-  logger.info("Adding stateCache"); result.stateCache = stateCache;
-  logger.info("Adding executionService"); result.executionService = executionService;
-  logger.info("Adding mempoolService"); result.mempoolService = mempoolService;
-  logger.info("Adding publicClient"); result.publicClient = publicClient;
-  logger.info("Adding stateClient"); result.stateClient = stateClient;
-  logger.info("Adding rpc"); result.rpc = rpc;
-  logger.info("Adding isRunning"); result.isRunning = true;
-  logger.info("Adding gasOracle"); result.gasOracle = gasOracle;
-  logger.info("Adding metrics"); result.metrics = metrics;
-  logger.info("Adding rpcCircuit"); result.rpcCircuit = rpcCircuit;
-  logger.info("Adding hasuraCircuit"); result.hasuraCircuit = hasuraCircuit;
-  logger.info("Adding tierManager"); result.tierManager = tierManager;
-  logger.info("Adding reorgDetector"); result.reorgDetector = reorgDetector;
-  logger.info("Adding wsSubscriber"); result.wsSubscriber = wsSubscriber;
-  logger.info("Adding dryRunner"); result.dryRunner = dryRunner;
-  logger.info("Adding graphUpdater"); result.graphUpdater = graphUpdater;
-  logger.info("Adding pendingStateOverlay"); result.pendingStateOverlay = pendingStateOverlay;
-  logger.info("Adding hyperRpc"); result.hyperRpc = rpc.hyperRpc;
-  logger.info("Adding hyperSync"); result.hyperSync = rpc.hyperSync;
-  logger.info("About to add hyperIndexMonitor"); 
-  result.hyperIndexMonitor = hyperIndexMonitor;
-  logger.info("Added hyperIndexMonitor");
-  logger.info("Returning result from bootApplication");
-  return result;
+
+  return {
+    config,
+    logger,
+    stateCache,
+    executionService,
+    mempoolService,
+    publicClient,
+    stateClient,
+    rpc,
+    isRunning: true,
+    gasOracle,
+    metrics,
+    rpcCircuit,
+    hasuraCircuit,
+    tierManager,
+    reorgDetector,
+    wsSubscriber,
+    dryRunner,
+    graphUpdater,
+    pendingStateOverlay,
+    hyperRpc: rpc.hyperRpc,
+    hyperSync: rpc.hyperSync,
+    hyperIndexMonitor,
+  };
 }

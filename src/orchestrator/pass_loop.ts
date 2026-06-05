@@ -103,7 +103,7 @@ async function runPoolDiscovery(
   lastDiscoveryTime: number,
   onNewPools: (pools: PoolMeta[]) => void,
 ): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number }> {
-  ctx.logger.info({}, "runPoolDiscovery called");
+  ctx.logger.debug({}, "runPoolDiscovery called");
   const now = Date.now();
   const DISCOVERY_INTERVAL = 60000;
   if (
@@ -734,7 +734,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       if (didEnumerateThisPass && currentCycles.length > 0 && (hasuraPoolsCache?.length ?? 0) > 0) {
         try {
           const sc = ctx.stateClient ?? ctx.publicClient;
-          const freshly = await fetchMissingPoolState(sc, stateCache, hasuraPoolsCache, currentCycles, [], false);
+          const cachePools = hasuraPoolsCache ?? [];
+          const freshly = await fetchMissingPoolState(sc, stateCache, cachePools, currentCycles, [], false);
           for (const a of freshly) updatedPools.add(a);
         } catch (e) {
           ctx.logger.debug?.({ err: e }, "post-enum cycle state refresh warn");
@@ -984,12 +985,25 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       if (result.attempted > 0) {
         const tier = ctx.tierManager.getCurrent();
+        const unaccounted =
+          result.attempted -
+          result.noRate -
+          result.prunedMissingState -
+          result.prunedInvalidBounds -
+          result.prunedNoGrossProfit -
+          result.prunedFinalCheckFailed -
+          (result.simulated > 0 ? result.simulated : 0);
         ctx.logger.info(
           {
             attempted: result.attempted,
             simulated: result.simulated,
             pruned: result.pruned,
+            prunedMissingState: result.prunedMissingState,
+            prunedInvalidBounds: result.prunedInvalidBounds,
+            prunedNoGrossProfit: result.prunedNoGrossProfit,
+            prunedFinalCheckFailed: result.prunedFinalCheckFailed,
             noRate: result.noRate,
+            unaccounted,
             profitable: result.profitableCount,
             maxGrossMatic:
               result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",

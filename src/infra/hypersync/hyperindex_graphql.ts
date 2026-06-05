@@ -359,8 +359,9 @@ export async function discoverPoolsFromHasura(
   const allRows: PoolMetaRow[] = [];
 
   // Paginate with offset to avoid silent truncation when >PAGE pools exist in Hasura
-  for (let offset = 0; offset < 50000; offset += PAGE) {
-    // hard safety cap (~20 pages)
+  // Safety cap of 150K covers all known pools (~123K in Hasura) with room for future growth.
+  // The loop terminates early when a page returns < PAGE rows (the last page).
+  for (let offset = 0; offset < 150000; offset += PAGE) {
     let pageResult: unknown = null;
     let ok = false;
     for (let attempt = 0; attempt < 3; attempt++) {

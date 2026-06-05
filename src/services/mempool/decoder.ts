@@ -22,7 +22,7 @@ export const SELECTORS: Record<string, string> = {
   "0xa694fc3a": "STAKE",
   "0x5638f1f3": "REDEEM_SILENCE",
   "0xd9f0f7f5": "UNSTAKE_PRINCIPAL",
-  "0x0a3c4405": "POLYMARKET_DEPOSIT"
+  "0x0a3c4405": "POLYMARKET_DEPOSIT",
 };
 
 export interface DecodedSwap {
@@ -99,8 +99,8 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   }
 
   // Generic for BALANCER_V2, CURVE_*, DODO_V2, WOOFI, KYBERSWAP_ELASTIC, and indirect V2/V3.
-  // Improved heuristic: The amount is likely to be a large value, but we need to avoid picking up 
-  // pool addresses or other large constants. Look for values in the calldata that 
+  // Improved heuristic: The amount is likely to be a large value, but we need to avoid picking up
+  // pool addresses or other large constants. Look for values in the calldata that
   // are likely to be amounts based on typical swap sizes.
   let amountIn = 0n;
   const dataHex = input.slice(10);
@@ -108,7 +108,7 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
     const w = dataHex.slice(j, j + 64);
     try {
       const v = BigInt("0x" + w);
-      // Heuristic: swap amounts are typically smaller than addresses (160 bits) 
+      // Heuristic: swap amounts are typically smaller than addresses (160 bits)
       // but large enough to be a meaningful swap (e.g., > 10^12 wei).
       if (v > 10n ** 12n && v < 1n << 160n) {
         // If we find multiple, we might want the most reasonable one.

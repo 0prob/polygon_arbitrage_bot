@@ -61,10 +61,10 @@ describe("getDynamicSearchBounds", () => {
     const bounds = getDynamicSearchBounds(cycle, stateCache, rates);
 
     // minCapacity = 1e18 / 1e12 = 1,000,000 units
-    // low = 1,000,000 / 5000 = 200
+    // low = 1,000,000 / 5000 = 200, floored to MIN_SWAP_FLOOR = 10,000
     // high = 1,000,000 / 10 = 100,000
 
-    expect(bounds.low).toBe(200n);
+    expect(bounds.low).toBe(10_000n);
     expect(bounds.high).toBe(100_000n);
   });
 
