@@ -103,6 +103,7 @@ async function runPoolDiscovery(
   lastDiscoveryTime: number,
   onNewPools: (pools: PoolMeta[]) => void,
 ): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number }> {
+  ctx.logger.info({}, "runPoolDiscovery called");
   const now = Date.now();
   const DISCOVERY_INTERVAL = 60000;
   if (
@@ -262,12 +263,18 @@ async function runLfStateRefresh(
     }
   }
 
-  // Fetch state for pools in current cycles that are missing from cache.
-  // Non-blocking to avoid stalling the pass loop. State accumulates incrementally.
+  // Refresh state for pools referenced by current cycles (and any missing anchors).
+  // This is critical: indexer *PoolState writes are no-ops (perf), so bot's RPC fetcher is the
+  // only source of live reserves/slot0/liquidity. Without re-fetch, states freeze after first touch
+  // and sims see stale prices => grossProfitMatic<=0 for all cycles => 100% prune.
+  // Await so enum + assessment in this LF use fresh data.
   const stateClient = ctx.stateClient ?? ctx.publicClient;
   const updated = new Set<string>();
   if (pools.length > 0 && currentCycles.length > 0) {
-    fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, [], false).catch(() => {});
+    try {
+      const fetched = await fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, [], false);
+      for (const a of fetched) updated.add(a);
+    } catch {}
   }
 
   // Bootstrap: on first LF pass, pre-fetch V2/V3 state for a sensible number of pools.
@@ -473,7 +480,7 @@ async function runEnumerationPhase(
   const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
   const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
   const lowForEnum = rpsForEnum <= 250;
-  const maxPaths = lowForEnum ? Math.floor(baseMaxPaths * 0.5) : baseMaxPaths;
+  const maxPaths = lowForEnum ? Math.min(4000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
   const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
 
@@ -497,6 +504,7 @@ async function runEnumerationPhase(
 }
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
+  ctx.logger.info({}, "runPassLoop started");
   const executorAddress = ctx.config.execution.executorAddress;
   const operatorAccount = privateKeyToAccount(ctx.config.execution.privateKey as `0x${string}`);
   const operatorAddress = operatorAccount.address;
@@ -597,6 +605,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastReorgCheck = 0;
 
   while (ctx.isRunning) {
+    ctx.logger.info({}, "Pass loop cycle started");
     const now = Date.now();
     const startTime = now;
     const currentPassTraceId = lastMempoolTraceId;
@@ -645,14 +654,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // Stage 1: Pool discovery (60s cadence)
       {
+        ctx.logger.info({}, "About to runPoolDiscovery");
         const result = await runPoolDiscovery(ctx, deps, bus, hasuraPoolsCache, lastDiscoveryTime, (newPools) => {
           hasuraPoolsCache = newPools;
           cachedGraph = deps.buildGraph(newPools, stateCache);
           ctx.graphUpdater?.resetRebuildCounter();
           if (newPools && newPools.length > 0) {
             ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
+            ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
           }
         });
+        ctx.logger.info({}, "runPoolDiscovery completed");
         hasuraPoolsCache = result.pools;
         lastDiscoveryTime = result.lastDiscoveryTime;
       }
@@ -674,6 +686,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       mark("lfRefresh");
 
       // Stage 3: Filter pools, rebuild graph, enumerate cycles
+      let didEnumerateThisPass = false;
       {
         const enumResult = await runEnumerationPhase(
           ctx,
@@ -689,6 +702,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedCycles = enumResult.cycles;
         lastRefreshTime = enumResult.lastRefreshTime;
         isLfPass = enumResult.didEnumerate;
+        didEnumerateThisPass = enumResult.didEnumerate;
       }
       mark("enumeration");
 
@@ -714,6 +728,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       mark("fetchMetas");
 
       const currentCycles = cachedCycles;
+
+      // Post-enum (only on LF enum passes): refresh states for *this pass's* cycles so rates + sim see current reserves/liquidity/slot0.
+      // (HF passes reuse the just-refreshed cache.) Critical for >0 grossProfit detections on non-stale data.
+      if (didEnumerateThisPass && currentCycles.length > 0 && (hasuraPoolsCache?.length ?? 0) > 0) {
+        try {
+          const sc = ctx.stateClient ?? ctx.publicClient;
+          const freshly = await fetchMissingPoolState(sc, stateCache, hasuraPoolsCache, currentCycles, [], false);
+          for (const a of freshly) updatedPools.add(a);
+        } catch (e) {
+          ctx.logger.debug?.({ err: e }, "post-enum cycle state refresh warn");
+        }
+      }
 
       if (currentCycles.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
@@ -753,7 +779,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           if (broadTokenPools.length > 0) {
             const rpsBroad = ctx.config.rpc.chainstackRps ?? 250;
             const lowBroad = rpsBroad <= 250;
-            const broadCap = lowBroad ? 700 : 2500;
+            const broadCap = lowBroad ? 2000 : 5000;
             const cap = broadTokenPools.slice(0, broadCap);
             fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, cap, [], [], true)
               .then((extra) => {

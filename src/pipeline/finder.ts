@@ -122,20 +122,21 @@ export function getObscurityBonus(protocol: string): number {
   // Low-infra tradeoff: use hot-bias (with expanded HOT_BASE) anyway to keep
   // volume/RPC/state manageable; you still get good obscure-within-hot-base paths.
   if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) {
-    return 1.4; // very obscure V2 factories
+    return 0.25; // lowered to parity with other v3 so that liquid V3/mixed paths (which do exhibit transient arbs) make it into the scored top-N
   }
   if (p.includes("dodo")) return 1.25;
   if (p.toLowerCase().includes("balancer")) return 1.1;
   if (p.toLowerCase().includes("curve")) return 1.0;
   if (p.toLowerCase().includes("woofi")) return 0.9;
 
-  // Mainstream high-competition (de-prioritize for speed races)
-  if (p.includes("uniswap")) return 0.15;
-  if (p.includes("quickswap") && !p.includes("_v2")) return 0.25; // V3 quickswap is competitive
-  if (p.includes("sushiswap") && !p.includes("_v2")) return 0.3;
+  // Boost liquid high-volume (V3 etc) so their cycles (where real transient price diffs from volume/flow actually occur) rank into top-N for assessment.
+  // (Obscure V2s often have synced/no-volume prices yielding zero gross in sim.)
+  if (p.includes("uniswap") && !p.includes("_v2")) return 1.0;
+  if (p.includes("quickswap") && !p.includes("_v2")) return 0.95;
+  if (p.includes("sushiswap") && !p.includes("_v2")) return 0.9;
 
-  // Other V2s are medium (still better than hot V3 usually)
-  if (p.includes("_v2")) return 0.7;
+  // Other V2s lower priority now (V3 liquid get top rank for real arb discovery)
+  if (p.includes("_v2")) return 0.2;
 
   return 0.5; // default mild bonus for anything non-pure-mainstream
 }

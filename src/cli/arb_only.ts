@@ -10,7 +10,10 @@ import { join } from "path";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
+console.log("src/cli/arb_only.ts loaded");
+
 async function main() {
+  console.log("main() started");
   const useTui = process.argv.includes("--tui");
   const config = loadConfig(process.env);
 
@@ -53,6 +56,7 @@ async function main() {
   }
 
   const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);
+  logger.info({}, "Application booted successfully");
 
   // Wire providers for real lag computation even in external/arb-only (enables degraded mode, accurate TUI lag, status)
   hyperIndexMonitor.setIndexedHeightProvider(async () => {
@@ -126,7 +130,9 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
+  logger.info({}, "Creating PassRunner");
   const runner = new PassRunner(ctx, undefined, tui?.bus);
+  logger.info({}, "Running runner");
   await runner.run();
 }
 

@@ -11,6 +11,18 @@ export const SELECTORS: Record<string, string> = {
   "0x6b5a7b77": "DODO_V2", // sellQuote(address,uint256,uint256,bytes)
   "0x9ba7e8a9": "WOOFI", // swap(address,uint256,uint256,address,address)
   "0x3b358e1b": "KYBERSWAP_ELASTIC", // swap(address,address,uint256,bytes)
+  "0x6c70970e": "UNISWAP_V4", // swap((address,address,uint24,int24,address),bool,int128,uint160,bytes)
+  "0x3c2b4399": "POLYMARKET_CTF", // matchOrders
+  "0x01b7037c": "OTHER",
+  "0xa00597a0": "OTHER",
+  "0x5c11d795": "UNISWAP_V2_ROUTER", // swapExactTokensForTokensSupportingFeeOnTransferTokens
+  "0x3829cab1": "CLAIM_INTEREST",
+  "0x6a761202": "GNOSIS_SAFE", // execTransaction
+  "0x46a73fb1": "SILENCE",
+  "0xa694fc3a": "STAKE",
+  "0x5638f1f3": "REDEEM_SILENCE",
+  "0xd9f0f7f5": "UNSTAKE_PRINCIPAL",
+  "0x0a3c4405": "POLYMARKET_DEPOSIT"
 };
 
 export interface DecodedSwap {
@@ -30,7 +42,10 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   if (!input || input.length < 10) return null;
   const selector = input.slice(0, 10).toLowerCase();
   const protocol = SELECTORS[selector];
-  if (!protocol) return null;
+  if (!protocol) {
+    console.debug(`mempool: ignored tx (unknown selector: ${selector})`);
+    return null;
+  }
 
   const lcTo = to.toLowerCase();
   let targetPool: string = lcTo;
@@ -43,7 +58,10 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
       targetPool = hit;
     }
   }
-  if (!isKnown) return null;
+  if (!isKnown) {
+    console.debug(`mempool: ignored tx (unknown pool: ${lcTo})`);
+    return null;
+  }
 
   const poolAddress = targetPool as Address;
   const isDirect = lcTo === targetPool; // protocol-specific fixed-offset parses only valid for direct-to-pool calls
@@ -81,24 +99,27 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   }
 
   // Generic for BALANCER_V2, CURVE_*, DODO_V2, WOOFI, KYBERSWAP_ELASTIC, and indirect V2/V3.
-  // Scan every byte offset for 32-byte words to find the largest "reasonable" amount-like value anywhere in calldata.
-  // This is robust to alignment shifts when pool addrs are embedded inside nested/offset-encoded router or vault calls.
+  // Improved heuristic: The amount is likely to be a large value, but we need to avoid picking up 
+  // pool addresses or other large constants. Look for values in the calldata that 
+  // are likely to be amounts based on typical swap sizes.
   let amountIn = 0n;
   const dataHex = input.slice(10);
   for (let j = 0; j + 64 <= dataHex.length; j += 2) {
     const w = dataHex.slice(j, j + 64);
     try {
       const v = BigInt("0x" + w);
-      if (v > amountIn && v < 1n << 160n && v > 1000n) {
-        amountIn = v;
+      // Heuristic: swap amounts are typically smaller than addresses (160 bits) 
+      // but large enough to be a meaningful swap (e.g., > 10^12 wei).
+      if (v > 10n ** 12n && v < 1n << 160n) {
+        // If we find multiple, we might want the most reasonable one.
+        // For now, take the largest valid one as it's likely the amountSpecified.
+        if (v > amountIn) {
+          amountIn = v;
+        }
       }
     } catch {}
   }
   if (amountIn === 0n) amountIn = 1n;
-  else {
-    // Optional: Log here if high verbosity is needed, but caution regarding performance
-    // console.debug(`mempool: heuristic scan found amountIn ${amountIn} in ${input.slice(0, 20)}...`);
-  }
   return { protocol, poolAddress, tokenIn: "" as Address, tokenOut: "" as Address, amountIn };
 }
 

@@ -111,11 +111,9 @@ export async function fetchMissingPoolState(
     for (const cycle of currentCycles) {
       for (const edge of cycle.edges) {
         const addr = edge.poolAddress.toLowerCase();
-        if (!stateCache.has(addr)) {
-          const fail = _failedPools.get(addr);
-          if (fail && fail.count >= 2 && now - fail.lastTry < 300_000) continue;
-          missingAddresses.add(addr);
-        }
+        const fail = _failedPools.get(addr);
+        if (fail && fail.count >= 2 && now - fail.lastTry < 300_000) continue;
+        missingAddresses.add(addr); // always (re)fetch for cycles to keep state fresh for sims (V* states not updated by indexer)
       }
     }
   }

@@ -49,28 +49,51 @@ export class MempoolService {
 
   /** Process a pending transaction from the mempool with coalescing. */
   processPendingTx(tx: { hash: string; to: string | null; input: string; value: string }): void {
-    if (!tx.to || !tx.input) return;
+    if (!tx.to || !tx.input) {
+      this.logger.debug({ hash: tx.hash }, "mempool: ignored tx (no to/input)");
+      return;
+    }
 
     const traceId = "tx-" + tx.hash.slice(2, 8);
     const selector = tx.input.slice(0, 10).toLowerCase();
-    if (SELECTORS[selector]) {
-      this.logger.info({ to: tx.to, selector, hash: tx.hash.slice(0, 10) + "..." }, "mempool: swap-like tx seen");
-    }
+    
+    // Noise filter for common non-swap selectors
+    const IGNORED_SELECTORS = new Set([
+      "0xe3ee160e", // transferWithAuthorization (USDC)
+      "0xd286f3cf", // claimInterest
+      "0xa9059cbb", // transfer(address,uint256)
+      "0x095ea7b3", // approve(address,uint256)
+    ]);
+    if (IGNORED_SELECTORS.has(selector)) return;
+
+    // Log incoming transaction
+    this.logger.debug({ hash: tx.hash, to: tx.to, selector }, "mempool: processing tx");
 
     if (tx.input.startsWith("0xc9c65396") || tx.input.startsWith("0xa1671295")) {
       this.emit({
         type: "new_pool_pending",
         data: { traceId, txHash: tx.hash, factoryAddress: tx.to as `0x${string}` },
       });
-      // We don't return here, might also be a swap if someone is being weird, though unlikely
+    }
+
+    const lcTo = tx.to.toLowerCase();
+    let isKnown = this.knownPools.has(lcTo);
+    
+    // Dynamic Pool Learning: If selector is known, tentatively trust the pool
+    if (!isKnown && SELECTORS[selector]) {
+      this.logger.debug({ pool: lcTo, selector }, "mempool: dynamically learned new pool");
+      this.knownPools.add(lcTo);
+      isKnown = true;
     }
 
     const decoded = decodeSwapCalldata(tx.to as `0x${string}`, tx.input, this.knownPools);
-    if (!decoded) return;
+    if (!decoded) {
+      console.debug(`mempool: ignored tx (no decoded swap for ${tx.hash}, selector: ${selector})`);
+      return;
+    }
 
     if (this.overlay && decoded.protocol === "UNISWAP_V2") {
-      // Heuristic state update for V2: Only update the input reserve since we don't know the exact output amount or price.
-      // Modifying the output reserve by -amount is mathematically incorrect and causes underflows across different decimals.
+      this.logger.debug({ pool: decoded.poolAddress, amount: decoded.amountIn.toString() }, "mempool: updating overlay");
       const amount = decoded.amountIn;
       if (decoded.zeroForOne) {
         this.overlay.update(decoded.poolAddress, { reserve0: amount });
@@ -82,8 +105,8 @@ export class MempoolService {
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
     const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
     if (!isIndirect && effectiveSize < this.options.largeSwapThresholdWei) {
-      this.logger.debug(
-        { pool: decoded.poolAddress, amount: decoded.amountIn.toString(), thresh: this.options.largeSwapThresholdWei.toString() },
+      console.debug(
+        { pool: decoded.poolAddress, amount: decoded.amountIn.toString(), thresh: this.options.largeSwapThresholdWei.toString(), hash: tx.hash },
         "mempool: decoded swap below threshold",
       );
       return;

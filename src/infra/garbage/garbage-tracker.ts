@@ -69,9 +69,16 @@ export async function markAsGarbage(address: string): Promise<void> {
  * Check if a pool is garbage (either because of its tokens or its own address).
  */
 export function isGarbagePool(pool: { address: string; tokens?: string[] }): boolean {
-  if (isGarbageAddress(pool.address)) return true;
+  if (isGarbageAddress(pool.address)) {
+    console.debug(`[garbage] Pool filtered: ${pool.address} is garbage address`);
+    return true;
+  }
   if (!pool.tokens || pool.tokens.length === 0) return false;
-  return pool.tokens.some((t) => isGarbageAddress(t));
+  const isGarbage = pool.tokens.some((t) => isGarbageAddress(t));
+  if (isGarbage) {
+    console.debug(`[garbage] Pool filtered: ${pool.address} contains garbage token`);
+  }
+  return isGarbage;
 }
 
 /**

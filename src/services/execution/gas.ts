@@ -287,10 +287,10 @@ export function scalePriorityFeeByProfitMargin(basePriorityFee: bigint, expected
 
   // Tiered multiplier strategy
   let multiplier = 1.1;
-  // If profit > 10 MATIC (assuming 1e18), bid more aggressively
-  if (expectedProfitWei > 10n ** 19n) multiplier = 2.0;
-  // If profit > 50 MATIC, go to max
-  if (expectedProfitWei > 5n * 10n ** 19n) multiplier = maxBidMultiplier;
+  // If profit >= 10 MATIC (assuming 1e18), bid more aggressively
+  if (expectedProfitWei >= 10n ** 19n) multiplier = 2.0;
+  // If profit >= 50 MATIC, go to max
+  if (expectedProfitWei >= 5n * 10n ** 19n) multiplier = maxBidMultiplier;
 
   const bid = (basePriorityFee * BigInt(Math.floor(multiplier * 100))) / 100n;
 

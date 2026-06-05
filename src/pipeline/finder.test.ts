@@ -92,4 +92,27 @@ describe("getDynamicSearchBounds", () => {
 
     expect(bounds.high).toBe(1000_000_000_000_000_000_000n);
   });
+
+  it("handles minCapacity <= 0n with fallback", () => {
+    const cycle: FoundCycle = {
+      startToken: WMATIC,
+      edges: [{ poolAddress: "0xpool1", protocol: "UNISWAP_V2", tokenIn: WMATIC, tokenOut: USDC, zeroForOne: true, feeBps: 30n }] as any,
+      hopCount: 1,
+      logWeight: 0,
+      cumulativeFeeBps: 30n,
+    };
+
+    // No state, so minCapacity falls through to -1n then to 100n*10n**18
+    const stateCache = new Map<string, any>();
+    const rates = new Map<string, bigint>();
+
+    const bounds = getDynamicSearchBounds(cycle, stateCache, rates);
+
+    // minCapacity = 100 * 1e18
+    // low = 100 * 1e18 / 5000 = 0.02 * 1e18 = 20 * 10^15
+    // high = 100 * 1e18 / 10 = 10 * 10^18
+
+    expect(bounds.low).toBe(20_000_000_000_000_000n);
+    expect(bounds.high).toBe(10_000_000_000_000_000_000n);
+  });
 });
