@@ -73,11 +73,11 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
       ),
     };
     if (V2_PROTOCOLS.has(proto)) {
-      calls.push(...encodeV2Hop(hop, executor, options));
+      calls.push(...encodeV2Hop(hop, executor, options, i > 0));
     } else if (proto === "KYBERSWAP_ELASTIC") {
       calls.push(...encodeKyberElasticHop(hop, executor));
     } else if (DODO_PROTOCOLS.has(proto)) {
-      calls.push(...encodeDodoHop(hop, executor));
+      calls.push(...encodeDodoHop(hop, executor, i > 0));
     } else if (WOOFI_PROTOCOLS.has(proto)) {
       calls.push(...encodeWoofiHop(hop, executor, options));
     } else if (proto.startsWith("UNISWAP_V3") || proto.startsWith("SUSHISWAP_V3") || proto.startsWith("QUICKSWAP_V3")) {

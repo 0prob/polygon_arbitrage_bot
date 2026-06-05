@@ -28,6 +28,7 @@ import {
   CURVE_EXCHANGE_INT128_RECEIVER_ABI,
   BALANCER_VAULT_SWAP_ABI,
   EXECUTOR_APPROVE_IF_NEEDED_ABI,
+  EXECUTOR_TRANSFER_ALL_ABI,
   POOL_MANAGER_LOCK_ABI,
 } from "./abis.ts";
 import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts";
@@ -119,6 +120,18 @@ function encodeDynamicApprovalCall(executor: string, token: string, spender: str
   };
 }
 
+function encodeDynamicTransferAllCall(executor: string, token: string, to: string): ExecutorCall {
+  return {
+    target: getAddress(executor),
+    value: 0n,
+    data: encodeFunctionData({
+      abi: EXECUTOR_TRANSFER_ALL_ABI,
+      functionName: "transferAll",
+      args: [getAddress(token), getAddress(to)],
+    }),
+  };
+}
+
 function normalizeKyberSwapFeePips(hop: CalldataHop): number {
   const metadata = (hop.metadata ?? {}) as Record<string, unknown>;
   const explicitBps = hop.swapFeeBps ?? hop.kyberSwapFeeBps ?? metadata.swapFeeBps;
@@ -136,7 +149,12 @@ function normalizeKyberSwapFeePips(hop: CalldataHop): number {
 
 // ─── Per-hop encoders ──────────────────────────────────────────
 
-export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteCalldataOptions = {}): ExecutorCall[] {
+export function encodeV2Hop(
+  hop: CalldataHop,
+  recipient: string,
+  options: RouteCalldataOptions = {},
+  useTransferAll: boolean = false,
+): ExecutorCall[] {
   const { slippageBps = 50 } = options;
   const pair = asAddress(hop.poolAddress);
   const tokenIn = asAddress(hop.tokenIn);
@@ -158,11 +176,15 @@ export function encodeV2Hop(hop: CalldataHop, recipient: string, options: RouteC
   }
   const minAmountOut = slippageAdjustedAmountOut(outForMin, slippageBps, "encodeV2Hop");
   const calls: ExecutorCall[] = [];
-  calls.push({
-    target: tokenIn,
-    value: 0n,
-    data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pair, amountIn] }),
-  });
+  if (useTransferAll) {
+    calls.push(encodeDynamicTransferAllCall(recipient, tokenIn, pair));
+  } else {
+    calls.push({
+      target: tokenIn,
+      value: 0n,
+      data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pair, amountIn] }),
+    });
+  }
   const amount0Out = hop.zeroForOne ? 0n : minAmountOut;
   const amount1Out = hop.zeroForOne ? minAmountOut : 0n;
   calls.push({
@@ -244,26 +266,30 @@ export function encodeKyberElasticHop(hop: CalldataHop, recipient: string, optio
   ];
 }
 
-export function encodeDodoHop(hop: CalldataHop, recipient: string): ExecutorCall[] {
+export function encodeDodoHop(hop: CalldataHop, recipient: string, useTransferAll: boolean = false): ExecutorCall[] {
   const pool = asAddress(hop.poolAddress);
   const tokenIn = asAddress(hop.tokenIn);
   const amountIn = normalizePositiveUint(hop.amountIn, "encodeDodoHop amountIn");
-  return [
-    {
+  const calls: ExecutorCall[] = [];
+  if (useTransferAll) {
+    calls.push(encodeDynamicTransferAllCall(recipient, tokenIn, pool));
+  } else {
+    calls.push({
       target: tokenIn,
       value: 0n,
       data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pool, amountIn] }),
-    },
-    {
-      target: pool,
-      value: 0n,
-      data: encodeFunctionData({
-        abi: hop.zeroForOne ? DODO_SELL_BASE_ABI : DODO_SELL_QUOTE_ABI,
-        functionName: hop.zeroForOne ? "sellBase" : "sellQuote",
-        args: [asAddress(recipient)],
-      }),
-    },
-  ];
+    });
+  }
+  calls.push({
+    target: pool,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: hop.zeroForOne ? DODO_SELL_BASE_ABI : DODO_SELL_QUOTE_ABI,
+      functionName: hop.zeroForOne ? "sellBase" : "sellQuote",
+      args: [asAddress(recipient)],
+    }),
+  });
+  return calls;
 }
 
 export function encodeWoofiHop(hop: CalldataHop, executor: string, options: RouteCalldataOptions = {}): ExecutorCall[] {

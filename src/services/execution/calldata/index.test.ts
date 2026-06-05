@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { decodeFunctionData } from "viem";
 import { encodeRoute, computeRouteHash, buildFlashParams } from "./index.ts";
-import { V3_POOL_SWAP_ABI } from "./abis.ts";
+import { V3_POOL_SWAP_ABI, EXECUTOR_TRANSFER_ALL_ABI } from "./abis.ts";
 
 describe("calldata module", () => {
   it("computeRouteHash produces deterministic 32-byte hash", () => {
@@ -66,6 +66,55 @@ describe("calldata module", () => {
     expect(calls).toHaveLength(2);
     expect(calls[0].target).toMatch(/^0x[0-9a-f]{40}$/);
     expect(calls[0].value).toBe(0n);
+  });
+
+  it("encodeRoute produces transferAll call for intermediate V2 hops (i > 0)", () => {
+    const calls = encodeRoute(
+      {
+        path: {
+          edges: [
+            {
+              protocol: "QUICKSWAP_V2",
+              poolAddress: "0x0000000000000000000000000000000000000001",
+              tokenIn: "0x0000000000000000000000000000000000000002",
+              tokenOut: "0x0000000000000000000000000000000000000003",
+              zeroForOne: true,
+              stateRef: {},
+            },
+            {
+              protocol: "SUSHISWAP_V2",
+              poolAddress: "0x0000000000000000000000000000000000000005",
+              tokenIn: "0x0000000000000000000000000000000000000003",
+              tokenOut: "0x0000000000000000000000000000000000000006",
+              zeroForOne: true,
+              stateRef: {},
+            },
+          ],
+        },
+        result: { hopAmounts: [1000n, 900n, 800n] },
+      },
+      "0x0000000000000000000000000000000000000004",
+    );
+    // 2 calls for first hop (transfer + swap)
+    // 2 calls for second hop (transferAll + swap)
+    expect(calls).toHaveLength(4);
+    // Check first hop transfer (to pool 1)
+    const decoded0 = decodeFunctionData({
+      abi: [{ name: "transfer", type: "function", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [] }],
+      data: calls[0].data,
+    });
+    expect(decoded0.functionName).toBe("transfer");
+    expect(decoded0.args![0]).toBe("0x0000000000000000000000000000000000000001");
+    expect(decoded0.args![1]).toBe(1000n);
+
+    // Check second hop transferAll (to pool 2)
+    const decoded2 = decodeFunctionData({
+      abi: EXECUTOR_TRANSFER_ALL_ABI,
+      data: calls[2].data,
+    });
+    expect(decoded2.functionName).toBe("transferAll");
+    expect(decoded2.args![0]).toBe("0x0000000000000000000000000000000000000003");
+    expect(decoded2.args![1]).toBe("0x0000000000000000000000000000000000000005");
   });
 
   it("encodeRoute produces negative amountSpecified for V3 hops (exact-input mode)", () => {

@@ -82,8 +82,7 @@ export async function decodeRevert(
 
   try {
     const { decodeAbiParameters } = await import("viem");
-    const types = errorDef.inputs.map((i) => i.type);
-    const args = decodeAbiParameters(types as any, `0x${data.slice(10)}` as `0x${string}`);
+    const args = decodeAbiParameters(errorDef.inputs as any, `0x${data.slice(10)}` as `0x${string}`);
     const named: Record<string, unknown> = {};
     errorDef.inputs.forEach((inp, i) => {
       named[inp.name || `arg${i}`] = args[i];

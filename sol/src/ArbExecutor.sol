@@ -246,6 +246,16 @@ contract ArbExecutor is IFlashLoanRecipient {
         _safeApproveMaxIfNeeded(token, spender, amount);
     }
 
+    function transferAll(address token, address to) external nonReentrant {
+        if (msg.sender != address(this) && msg.sender != owner) {
+            revert Unauthorized();
+        }
+        uint256 balance = IERC20Minimal(token).balanceOf(address(this));
+        if (balance > 0) {
+            _safeTransfer(token, to, balance);
+        }
+    }
+
     function rescueToken(address token, address to, uint256 amount) external onlyOwner nonReentrant {
         if (to == address(0)) revert ZeroAddress();
         _safeTransfer(token, to, amount);

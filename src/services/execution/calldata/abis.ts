@@ -282,6 +282,19 @@ export const EXECUTOR_APPROVE_IF_NEEDED_ABI = [
   },
 ];
 
+export const EXECUTOR_TRANSFER_ALL_ABI = [
+  {
+    name: "transferAll",
+    type: "function",
+    inputs: [
+      { name: "token", type: "address" },
+      { name: "to", type: "address" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+];
+
 export const EXECUTOR_AAVE_ABI = [
   {
     name: "executeArbWithAave",
