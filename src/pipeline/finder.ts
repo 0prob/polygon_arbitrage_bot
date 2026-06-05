@@ -84,13 +84,16 @@ export function getDynamicSearchBounds(
     if (high > maxWei) high = maxWei;
   }
 
-  // Sanity check: ensure low is at least 1 and high > low
-  // Minimum floor: 10_000 wei ensures V3 swaps can collect at least 1 unit of fee
-  // on 0.05% pools (min amount = feePips / 1_000_000 => 10_000 * 500 / 1_000_000 = 5 fee units).
-  // Without this floor, thin V3 pools produce dust low values (1-20 wei) that escape
-  // the low-bound gate and cause all cycles to fail the final full simulation + impact check.
-  const MIN_SWAP_FLOOR = 10_000n;
-  const finalLow = low > MIN_SWAP_FLOOR ? low : MIN_SWAP_FLOOR;
+  // Floor the low bound to at least 1% of the high bound (0.1% of capacity),
+  // but with an absolute floor of 1 to prevent low=0 for extremely thin pools.
+  // This prevents the test amount from being too small to overcome gas + fees for
+  // medium-sized pools, while still scaling proportionally so thin pools aren't
+  // forced into excessive-slippage territory by a rigid MATIC floor.
+  const RELATIVE_LOW_FLOOR = 100n; // 1 / 100 = 1% of high
+  const ABSOLUTE_FLOOR = 1n; // prevent low=0 for micro-pools
+  const floorLow = high / RELATIVE_LOW_FLOOR;
+  const effectiveFloor = floorLow > ABSOLUTE_FLOOR ? floorLow : ABSOLUTE_FLOOR;
+  const finalLow = low > effectiveFloor ? low : effectiveFloor;
   const finalHigh = high > finalLow ? high : finalLow + 1n;
 
   return { low: finalLow, high: finalHigh };
@@ -120,30 +123,23 @@ function feeLogWeight(feeBps: bigint): number {
 export function getObscurityBonus(protocol: string): number {
   const p = (protocol || "").toLowerCase();
 
-  // Highest priority long-tail / low-competition
-  // Note: This logic assumes the indexer is running in broad discovery mode
-  // (INDEXER_HOT_BIAS=false). Hot-bias mode in the indexer will starve this logic
-  // of the (very) obscure pools it is designed to favor.
-  // Low-infra tradeoff: use hot-bias (with expanded HOT_BASE) anyway to keep
-  // volume/RPC/state manageable; you still get good obscure-within-hot-base paths.
-  if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) {
-    return 0.25; // lowered to parity with other v3 so that liquid V3/mixed paths (which do exhibit transient arbs) make it into the scored top-N
-  }
+  // Unique AMMs (most likely to have stale/independent prices)
   if (p.includes("dodo")) return 1.25;
   if (p.toLowerCase().includes("balancer")) return 1.1;
   if (p.toLowerCase().includes("curve")) return 1.0;
   if (p.toLowerCase().includes("woofi")) return 0.9;
 
-  // Boost liquid high-volume (V3 etc) so their cycles (where real transient price diffs from volume/flow actually occur) rank into top-N for assessment.
-  // (Obscure V2s often have synced/no-volume prices yielding zero gross in sim.)
+  // V3 liquid – best for 2-hop cycles (0.05% fee tiers → only 0.1% combined)
   if (p.includes("uniswap") && !p.includes("_v2")) return 1.0;
   if (p.includes("quickswap") && !p.includes("_v2")) return 0.95;
   if (p.includes("sushiswap") && !p.includes("_v2")) return 0.9;
 
-  // Other V2s lower priority now (V3 liquid get top rank for real arb discovery)
-  if (p.includes("_v2")) return 0.2;
+  // V2 mainstream (liquid enough for arb)
+  if (p.includes("_v2")) return 0.35;
+  // Long-tail V2 (illiquid, rarely profitable but worth scanning)
+  if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) return 0.2;
 
-  return 0.5; // default mild bonus for anything non-pure-mainstream
+  return 0.5; // default mild bonus
 }
 
 export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getWinRate: (key: string) => number): number {
@@ -166,7 +162,7 @@ export function findCycles(
   const { adjacency } = graph;
 
   const ENUM_START = Date.now();
-  const TIME_BUDGET_MS = 3000;
+  const TIME_BUDGET_MS = 10000;
   let budgetExceededLogged = false;
 
   function overBudget(): boolean {
@@ -219,7 +215,7 @@ export function findCycles(
         logWeight += feeLogWeight(e.feeBps);
         cumFee += e.feeBps;
       }
-      logWeight -= obs * coef;
+      logWeight += obs * coef;
 
       cycles.push({
         startToken: startToken as Address,

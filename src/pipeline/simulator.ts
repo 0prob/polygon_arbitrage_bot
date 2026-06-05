@@ -9,6 +9,7 @@ import { simulateCurveSwap } from "../core/math/curve.ts";
 import { simulateBalancerSwap } from "../core/math/balancer.ts";
 import { simulateDodoSwap } from "../core/math/dodo.ts";
 import { simulateWoofiSwap } from "../core/math/woofi.ts";
+import { BPS_DENOM } from "../core/constants.ts";
 import type { SwapEdge, SimulationEdge } from "./types.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 
@@ -97,10 +98,13 @@ export function simulateHop(
       const feeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : edge.fee != null ? BigInt(edge.fee) : undefined;
       const { numerator, denominator } = resolveV2Fee(state, undefined, 10000n);
 
-      // If fee was explicitly provided in the edge, use it to derive numerator
+      // If fee was explicitly provided in the edge, use it to derive numerator.
+      // feeBps is in basis points (30 bps = 0.3%). The correct numerator is:
+      //   numerator = denominator - (feeBps * denominator) / BPS_DENOM
+      // For 30 bps with denominator = 1000: 1000 - (30 * 1000) / 10000 = 1000 - 3 = 997
       let finalNum = numerator;
       if (feeBps !== undefined) {
-        finalNum = feeBps < 500n ? denominator - feeBps : feeBps;
+        finalNum = feeBps < 500n ? denominator - (feeBps * denominator) / BPS_DENOM : feeBps;
       }
 
       result = simulateV2Swap(state, amountIn, edge.zeroForOne, finalNum, denominator);

@@ -274,7 +274,9 @@ async function runLfStateRefresh(
     try {
       const fetched = await fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, [], false);
       for (const a of fetched) updated.add(a);
-    } catch {}
+    } catch (err) {
+      ctx.logger.debug?.({ err }, "State refresh fetch failed (will retry next LF)");
+    }
   }
 
   // Bootstrap: on first LF pass, pre-fetch V2/V3 state for a sensible number of pools.
@@ -480,7 +482,7 @@ async function runEnumerationPhase(
   const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
   const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
   const lowForEnum = rpsForEnum <= 250;
-  const maxPaths = lowForEnum ? Math.min(4000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
+  const maxPaths = lowForEnum ? Math.min(12000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
   const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
 

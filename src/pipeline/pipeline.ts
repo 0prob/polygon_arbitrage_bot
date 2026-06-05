@@ -234,20 +234,38 @@ export async function evaluatePipeline(
         const ternaryIters = options.ternarySearchIterations ?? 15;
         const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
         if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
-          if (attempted < 3 && evalLow.grossProfitMatic != null && options.logger) {
-            options.logger.warn?.(
-              {
-                cycleId: cycle.id,
-                low: low.toString(),
-                grossProfitMatic: evalLow.grossProfitMatic.toString(),
-                startRate: options.tokenToMaticRates.get(cycle.startToken.toLowerCase())?.toString(),
-                protocol: cycle.edges[0]?.protocol,
-                hop: cycle.hopCount,
-              },
-              "Cycle rejected: no gross profit at low bound",
-            );
+          const evalHigh =
+            high > low ? evaluateAmount(cycle, high, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay) : null;
+          const highAlsoZero = !evalHigh || evalHigh.grossProfitMatic === null || evalHigh.grossProfitMatic <= 0n;
+          if (highAlsoZero) {
+            // Test a mid-point: maybe the profit function peaks between the extremes
+            // (low is too small to overcome fees, high has too much slippage).
+            const mid = low + (high - low) / 2n;
+            const evalMid = evaluateAmount(cycle, mid, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+            if (evalMid.grossProfitMatic === null || evalMid.grossProfitMatic <= 0n) {
+              if (attempted < 3 && evalLow.grossProfitMatic != null && options.logger) {
+                options.logger.warn?.(
+                  {
+                    cycleId: cycle.id,
+                    low: low.toString(),
+                    grossProfitMatic: evalLow.grossProfitMatic.toString(),
+                    mid: mid.toString(),
+                    midGrossProfitMatic: evalMid.grossProfitMatic?.toString(),
+                    startRate: options.tokenToMaticRates.get(cycle.startToken.toLowerCase())?.toString(),
+                    protocol: cycle.edges[0]?.protocol,
+                    hop: cycle.hopCount,
+                  },
+                  "Cycle rejected: no gross profit at low, high or mid",
+                );
+              }
+              return {
+                type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned",
+                reason: "noGrossProfit",
+                cycle,
+              };
+            }
+            // Mid-point has profit → continue ternary search with [low, high]
           }
-          return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", reason: "noGrossProfit", cycle };
         }
 
         let left = low;

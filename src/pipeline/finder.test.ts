@@ -30,12 +30,14 @@ describe("getDynamicSearchBounds", () => {
 
     // minCapacity = 1000n * 10**18 (pool1 reserve0)
     // low = 1000e18 / 5000 = 0.2e18
+    // minTestLow = 1e18 (MIN_TEST_WEI floor, up from 1e16)
+    // finalLow = max(0.2e18, 1e18) = 1e18
     // high = 1000e18 / 10 = 100e18
     // Clamped by $50k cap ($50k * 1e36 / 1e18 = 50k * 1e18)
     // high = 50000e18
     // Since 100e18 < 50000e18, high remains 100e18.
 
-    expect(bounds.low).toBe(200_000_000_000_000_000n);
+    expect(bounds.low).toBe(1_000_000_000_000_000_000n);
     expect(bounds.high).toBe(100_000_000_000_000_000_000n);
   });
 
@@ -61,10 +63,13 @@ describe("getDynamicSearchBounds", () => {
     const bounds = getDynamicSearchBounds(cycle, stateCache, rates);
 
     // minCapacity = 1e18 / 1e12 = 1,000,000 units
-    // low = 1,000,000 / 5000 = 200, floored to MIN_SWAP_FLOOR = 10,000
+    // low = 1,000,000 / 5000 = 200
     // high = 1,000,000 / 10 = 100,000
+    // floorLow = high / 100 = 1000
+    // finalLow = max(200, 1000) = 1000
+    // finalHigh = max(100000, 1001) = 100000
 
-    expect(bounds.low).toBe(10_000n);
+    expect(bounds.low).toBe(1000n);
     expect(bounds.high).toBe(100_000n);
   });
 
@@ -111,8 +116,10 @@ describe("getDynamicSearchBounds", () => {
     // minCapacity = 100 * 1e18
     // low = 100 * 1e18 / 5000 = 0.02 * 1e18 = 20 * 10^15
     // high = 100 * 1e18 / 10 = 10 * 10^18
+    // floorLow = high / 100 = 0.1 * 1e18 = 100 * 10^15
+    // finalLow = max(20e15, 100e15) = 100e15
 
-    expect(bounds.low).toBe(20_000_000_000_000_000n);
+    expect(bounds.low).toBe(100_000_000_000_000_000n);
     expect(bounds.high).toBe(10_000_000_000_000_000_000n);
   });
 });

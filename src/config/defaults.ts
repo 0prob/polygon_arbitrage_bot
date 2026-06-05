@@ -31,7 +31,7 @@ export const DEFAULTS = {
     spikePriorityFeeMultiplier: 1.6,
   },
   routing: {
-    maxHops: 5, // Increased for more discovery potential in long-tail / obscure paths. Hardware/time guarded in finder.
+    maxHops: 5, // 4-hop V3 0.05% cycles have 0.2% fee overhead which is viable for real arb spreads
     cycleRefreshIntervalMs: 1_000,
     liquidityFloorUsd: 100,
     enumerationMaxPaths: 5_000, // Raised for long-tail strategy: findCycles can emit 250k; 1k was too restrictive. On low-infra (see pass_loop lowInfra scaling) this gets halved automatically.

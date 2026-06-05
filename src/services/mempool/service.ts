@@ -96,7 +96,7 @@ export class MempoolService {
       this.knownPools.add(decoded.poolAddress.toLowerCase());
     }
 
-    if (this.overlay && decoded.protocol === "UNISWAP_V2") {
+    if (this.overlay && decoded.protocol.startsWith("UNISWAP_V2")) {
       this.logger.debug({ pool: decoded.poolAddress, amount: decoded.amountIn.toString() }, "mempool: updating overlay");
       const amount = decoded.amountIn;
       if (decoded.zeroForOne) {
