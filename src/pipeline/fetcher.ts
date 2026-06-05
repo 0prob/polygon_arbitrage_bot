@@ -7,6 +7,17 @@ import type { FoundCycle } from "./types.ts";
 import { markAsGarbage } from "../infra/garbage/garbage-tracker.ts";
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
+const DODO_ABI = parseAbi([
+  "function _I_() external view returns (uint256)",
+  "function _K_() external view returns (uint256)",
+  "function _BASE_RESERVE_() external view returns (uint256)",
+  "function _QUOTE_RESERVE_() external view returns (uint256)",
+  "function _BASE_TARGET_() external view returns (uint256)",
+  "function _QUOTE_TARGET_() external view returns (uint256)",
+  "function _R_STATUS_() external view returns (uint8)",
+  "function _LP_FEE_RATE_() external view returns (uint256)",
+  "function _MT_FEE_RATE_() external view returns (uint256)",
+]);
 const V3_ABI = parseAbi([
   "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function liquidity() external view returns (uint128)",
@@ -172,8 +183,21 @@ export async function fetchMissingPoolState(
           const meta = poolLookup.get(addr);
           if (!meta) continue;
           const proto = meta.protocol.toLowerCase();
-          if (proto.includes("v2") || proto.includes("dodo")) {
+          if (proto.includes("v2")) {
             calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
+          } else if (proto.includes("dodo")) {
+            calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_BASE_RESERVE_" });
+            calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_QUOTE_RESERVE_" });
+            calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_R_STATUS_" });
+            const existing = stateCache.get(addr);
+            if (!existing || (existing.targetBase === undefined && existing.baseTarget === undefined)) {
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_I_" });
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_K_" });
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_BASE_TARGET_" });
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_QUOTE_TARGET_" });
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_LP_FEE_RATE_" });
+              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_MT_FEE_RATE_" });
+            }
           } else if (proto.includes("v3") || proto.includes("elastic")) {
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
@@ -234,7 +258,7 @@ export async function fetchMissingPoolState(
             if (!meta) continue;
             const proto = meta.protocol.toLowerCase();
 
-            if (proto.includes("v2") || proto.includes("dodo")) {
+            if (proto.includes("v2")) {
               const res = results[resultIdx++];
               if (res?.status === "success" && res.result) {
                 const r = res.result as V2Reserves;
@@ -258,6 +282,48 @@ export async function fetchMissingPoolState(
                 }
               } else {
                 trackFailedPool(addr, "v2-reserves-failed", stateCache, now);
+              }
+            } else if (proto.includes("dodo")) {
+              const baseRes = results[resultIdx++];
+              const quoteRes = results[resultIdx++];
+              const rStatusRes = results[resultIdx++];
+
+              const existing = stateCache.get(addr);
+              const hasStatic = existing && (existing.targetBase !== undefined || existing.baseTarget !== undefined);
+
+              const iRes = hasStatic ? { status: "success" as const, result: (existing.i ?? existing.I) as bigint } : results[resultIdx++];
+              const kRes = hasStatic ? { status: "success" as const, result: (existing.k ?? existing.K) as bigint } : results[resultIdx++];
+              const baseTargetRes = hasStatic
+                ? { status: "success" as const, result: (existing.baseTarget ?? existing.targetBase ?? existing.B0) as bigint }
+                : results[resultIdx++];
+              const quoteTargetRes = hasStatic
+                ? { status: "success" as const, result: (existing.quoteTarget ?? existing.targetQuote ?? existing.Q0) as bigint }
+                : results[resultIdx++];
+              const lpFeeRateRes = hasStatic
+                ? { status: "success" as const, result: (existing.lpFeeRate ?? existing.feeRate) as bigint }
+                : results[resultIdx++];
+              const mtFeeRateRes = hasStatic ? { status: "success" as const, result: existing.mtFeeRate as bigint } : results[resultIdx++];
+
+              if (baseRes?.status === "success" && quoteRes?.status === "success" && rStatusRes?.status === "success") {
+                trackSuccessfulPool(
+                  addr,
+                  stateCache,
+                  {
+                    baseReserve: BigInt(baseRes.result as bigint),
+                    quoteReserve: BigInt(quoteRes.result as bigint),
+                    rStatus: Number(rStatusRes.result as number),
+                    i: iRes?.status === "success" ? BigInt(iRes.result as bigint) : 0n,
+                    k: kRes?.status === "success" ? BigInt(kRes.result as bigint) : 0n,
+                    baseTarget: baseTargetRes?.status === "success" ? BigInt(baseTargetRes.result as bigint) : 0n,
+                    quoteTarget: quoteTargetRes?.status === "success" ? BigInt(quoteTargetRes.result as bigint) : 0n,
+                    lpFeeRate: lpFeeRateRes?.status === "success" ? BigInt(lpFeeRateRes.result as bigint) : 0n,
+                    mtFeeRate: mtFeeRateRes?.status === "success" ? BigInt(mtFeeRateRes.result as bigint) : 0n,
+                    initialized: true,
+                  },
+                  updated,
+                );
+              } else {
+                trackFailedPool(addr, "dodo-reserves-failed", stateCache, now);
               }
             } else if (proto.includes("v3") || proto.includes("elastic")) {
               const slot0Res = results[resultIdx++];

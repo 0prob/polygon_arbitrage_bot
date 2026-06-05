@@ -118,13 +118,14 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
 
   try {
     const { graphQLQuery } = await import("../hypersync/hyperindex_graphql.ts");
-    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 5000) { id tokens } }`);
-    const data = (result as { data?: { PoolMeta?: Array<{ id?: string; tokens?: unknown }> } } | null)?.data;
+    const result = (await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 5000) { id tokens } }`)) as {
+      PoolMeta?: Array<{ id?: string; tokens?: unknown }>;
+    } | null;
 
-    if (!data?.PoolMeta) return 0;
+    if (!result?.PoolMeta) return 0;
 
     let newlyMarked = 0;
-    for (const pool of data.PoolMeta) {
+    for (const pool of result.PoolMeta) {
       let tokens: string[] = [];
       if (typeof pool.tokens === "string") {
         try {

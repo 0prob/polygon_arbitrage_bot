@@ -17,4 +17,20 @@ describe("simulateDodoSwap", () => {
     const result = simulateDodoSwap(state, 1_000_000n, true);
     expect(result.amountOut).toBeGreaterThan(0n);
   });
+
+  it("works with GraphQL/Hasura style state keys (targetBase and targetQuote)", () => {
+    const state = {
+      baseReserve: 1_000_000_000_000_000_000n,
+      quoteReserve: 1_000_000_000_000_000_000n,
+      targetBase: 1_000_000_000_000_000_000n,
+      targetQuote: 1_000_000_000_000_000_000n,
+      i: 1_000_000_000_000_000_000n,
+      k: 100_000_000_000_000_000n,
+      rState: DODO_RSTATE_ONE,
+      lpFeeRate: 0n,
+      mtFeeRate: 0n,
+    };
+    const result = simulateDodoSwap(state, 1_000_000n, true);
+    expect(result.amountOut).toBeGreaterThan(0n);
+  });
 });
