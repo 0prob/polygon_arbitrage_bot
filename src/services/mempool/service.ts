@@ -1,6 +1,6 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { SignalHandler, MempoolSignal, LargeSwapSignal } from "./signals.ts";
-import { decodeSwapCalldata } from "./decoder.ts";
+import { decodeSwapCalldata, SELECTORS } from "./decoder.ts";
 import type { PendingStateOverlay } from "../../core/types/overlay.ts";
 
 export interface MempoolServiceOptions {
@@ -88,14 +88,17 @@ export class MempoolService {
       });
     }
 
+    // Dynamic Pool Learning: unknown to but known direct-pool selector — tentatively learn the target before decoding.
+    // This ensures that decodeSwapCalldata succeeds for the current transaction rather than just future ones.
+    const isDirectPoolSelector = SELECTORS[selector] !== undefined && !ROUTER_SELECTORS.has(selector);
+    if (isDirectPoolSelector && tx.to && !this.knownPools.has(tx.to.toLowerCase())) {
+      this.logger.debug({ pool: tx.to.toLowerCase(), selector }, "mempool: dynamically learned new pool");
+      this.knownPools.add(tx.to.toLowerCase());
+    }
+
     const decoded = decodeSwapCalldata(tx.to as `0x${string}`, tx.input, this.knownPools);
     if (!decoded) {
-      // Dynamic Pool Learning: unknown to but known direct-pool selector — tentatively learn the target
-      if (!ROUTER_SELECTORS.has(selector) && tx.to && !this.knownPools.has(tx.to.toLowerCase())) {
-        this.logger.debug({ pool: tx.to.toLowerCase(), selector }, "mempool: dynamically learned new pool");
-        this.knownPools.add(tx.to.toLowerCase());
-      }
-      console.debug(`mempool: ignored tx (no decoded swap for ${tx.hash}, selector: ${selector})`);
+      this.logger.debug({ hash: tx.hash, selector }, "mempool: ignored tx (no decoded swap)");
       return;
     }
 
@@ -127,7 +130,7 @@ export class MempoolService {
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
     const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
     if (!isIndirect && effectiveSize < this.options.largeSwapThresholdWei) {
-      console.debug(
+      this.logger.debug(
         {
           pool: decoded.poolAddress,
           amount: decoded.amountIn.toString(),

@@ -145,7 +145,6 @@ export function computeMaticRates(
                 const yReserves = (liq * sq) >> 96n;
                 knownValueMatic = (knownRate * yReserves) / RATE_PRECISION;
               }
-              changed = true;
             }
           } else if (protocol.includes("balancer")) {
             const balances = state.balances as bigint[];

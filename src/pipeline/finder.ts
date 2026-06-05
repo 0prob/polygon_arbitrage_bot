@@ -59,7 +59,7 @@ export function getDynamicSearchBounds(
       if (sqrtPriceX96 > 0n && liq > 0n) {
         if (edge.zeroForOne) {
           // token0 = L * 2^96 / sqrtPriceX96
-          capacity = ((liq << 96n) / sqrtPriceX96) / 1000n;
+          capacity = (liq << 96n) / sqrtPriceX96 / 1000n;
         } else {
           // token1 = L * sqrtPriceX96 / 2^96
           capacity = ((liq * sqrtPriceX96) >> 96n) / 1000n;
@@ -259,7 +259,7 @@ export function findCycles(
         logWeight += feeLogWeight(e.feeBps);
         cumFee += e.feeBps;
       }
-      logWeight += obs * coef;
+      logWeight -= obs * coef;
 
       cycles.push({
         startToken: startToken as Address,
@@ -354,6 +354,7 @@ export function enumerateCycles(
   }
 
   const scored = allCycles.map((cycle) => {
+    cycle.id = routeKeyFromEdges(cycle.edges, cycle.startToken);
     let score = cycle.logWeight;
     if (MAJOR_TOKENS.has(cycle.startToken.toLowerCase())) {
       score -= 2.0;

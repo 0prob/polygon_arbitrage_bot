@@ -48,24 +48,12 @@ Sol: `sol/src/ArbExecutor.sol` (enforces flash only) + tests.
 
 See the dedicated **AI Tooling, Skills, MCPs & lspmux** section below (and AGENTS.md + skill.md + llms.txt + .grok/skills/arb-tx-tools/SKILL.md for the full arb-tx-tools loop, consolidated modules, and how to use `/graphify`, Context7, Alchemy MCP sims, etc.).
 
-## Quick Start (current)
+## Prerequisites
 
-```bash
-cp .env.example .env   # fill required (ENVIO, PRIVATE_KEY, EXECUTOR, RPCs)
-bun install
-bun run check
-
-bun run tui
-# or arb-only (you run HyperIndex externally via `bun run dev`): bun run arbt
-```
-
-See updated .env.example for all current options. No --cleanup flag anymore (dummy removed).
-
-## More
-
-- Full current commands and invariants: AGENTS.md
-- llms.txt for AI assistants
-- All changes audited for dead code, duplication, and single sources (see src/DUPLICATION_AUDIT.md).
+- Bun >= 1.2
+- Envio API token (for HyperIndex/HyperSync)
+- Polygon RPC(s) — archival preferred for discovery
+- Deployed ArbExecutor (flash-loan-only) + gas-funded key
 
 ## Supported Protocols
 
@@ -79,13 +67,6 @@ See updated .env.example for all current options. No --cleanup flag anymore (dum
 | DODO vPMM                        | `dodo.ts`       | DVM/DPP/DSP    |
 | WooFi SSLP                       | `woofi.ts`      | SSLP-based     |
 | Uniswap V4                       | `uniswap_v4.ts` | PoolManager    |
-
-## Prerequisites
-
-- Bun >= 1.2
-- Envio API token (for HyperIndex/HyperSync)
-- Polygon RPC(s) — archival preferred for discovery
-- Deployed ArbExecutor (flash-loan-only) + gas-funded key
 
 ## Quick Start
 

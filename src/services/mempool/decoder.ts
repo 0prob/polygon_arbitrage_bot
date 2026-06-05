@@ -98,7 +98,7 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   // are likely to be amounts based on typical swap sizes.
   let amountIn = 0n;
   const dataHex = input.slice(10);
-  for (let j = 0; j + 64 <= dataHex.length; j += 2) {
+  for (let j = 0; j + 64 <= dataHex.length; j += 64) {
     const w = dataHex.slice(j, j + 64);
     try {
       const v = BigInt("0x" + w);
@@ -124,9 +124,18 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
 export function extractEncodedAddresses(input: string): string[] {
   const addrs: string[] = [];
   if (!input || input.length < 42) return addrs;
-  for (let i = 2; i < input.length - 40; i += 64) {
+  // EVM word-aligned address extraction:
+  // The method selector is 4 bytes (8 hex characters) after "0x" (prefix).
+  // So the first word starts at index 10.
+  // Each subsequent word starts at 10 + k * 64.
+  // Addresses are right-aligned (padded with 12 bytes = 24 hex characters on the left).
+  // So they occupy the last 40 hex characters of the 64 hex character word.
+  // This corresponds to range: [10 + k * 64 + 24, 10 + k * 64 + 64].
+  for (let i = 10; i + 64 <= input.length; i += 64) {
     const chunk = "0x" + input.slice(i + 24, i + 64);
-    if (chunk.length === 42) addrs.push(chunk.toLowerCase());
+    if (chunk.length === 42) {
+      addrs.push(chunk.toLowerCase());
+    }
   }
   return addrs;
 }

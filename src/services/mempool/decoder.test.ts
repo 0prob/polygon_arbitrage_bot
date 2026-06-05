@@ -34,7 +34,7 @@ describe("decodeSwapCalldata", () => {
     const known = new Set(["0x0000000000000000000000000000000000000abc"]);
     // embed so that extractEncodedAddresses (samples +24 offsets) will pick the 20-byte addr
     const embedded = "0000000000000000000000000000000000000abc";
-    const input = "0x128acb08" + "0".repeat(16) + embedded + "0".repeat(40);
+    const input = "0x128acb08" + "0".repeat(24) + embedded + "0".repeat(64);
     const result = decodeSwapCalldata("0xrouter" as any, input, known);
     expect(result).not.toBeNull();
     expect(result!.poolAddress.toLowerCase()).toBe("0x0000000000000000000000000000000000000abc");

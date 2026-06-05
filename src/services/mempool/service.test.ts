@@ -56,16 +56,15 @@ describe("MempoolService", () => {
 
     // Indirect swap via a router calling a pool.
     // Selector (4 bytes) + padding.
-    // To be 32-byte aligned in `extractEncodedAddresses`, we need the address to start at (i + 24) where i is 2 + 64*n.
-    // i=2: 26. i=66: 90. i=130: 154.
-    // Let"s pick i=66, start address at 90. 90-2=88 chars of padding/selector.
+    // To be 32-byte aligned in `extractEncodedAddresses`, we need the address to start at 10 + 64*n + 24.
+    // For n = 0, address starts at index 34.
     // Input is 0x...
-    // 52bbbe29 is 8 chars (4 bytes).
-    // We need 88 - 8 = 80 chars of padding.
+    // 52bbbe29 is 8 chars (4 bytes) after "0x".
+    // We need 24 chars of padding to align the 40-char pool address in slot 1.
     const tx = {
       hash: "0xabc",
       to: "0xrouter",
-      input: "0x52bbbe29" + "0".repeat(80) + poolAddr.slice(2) + "0".repeat(64),
+      input: "0x52bbbe29" + "0".repeat(24) + poolAddr.slice(2) + "0".repeat(64),
       value: "0x0",
     };
     service.processPendingTx(tx);

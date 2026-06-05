@@ -42,11 +42,11 @@ console.log("SimulationEdge fee:", simEdges[0].fee);
 console.log("SimulationEdge fee type:", typeof simEdges[0].fee);
 
 try {
-  const result = simulateHop(simEdges[0], 10n * 10n**18n, stateCache, undefined);
+  const result = simulateHop(simEdges[0], 10n * 10n ** 18n, stateCache, undefined);
   console.log("\nSUCCESS: simulateHop returned:");
   console.log("  amountOut:", result.amountOut.toString());
   console.log("  gasEstimate:", result.gasEstimate);
-  
+
   if (result.amountOut === 0n) {
     console.log("\nBUG CONFIRMED: V3 swap returns 0 amountOut!");
   } else {
