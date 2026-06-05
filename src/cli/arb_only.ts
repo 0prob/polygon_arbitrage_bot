@@ -91,7 +91,7 @@ async function main() {
     const monitorAny = hyperIndexMonitor as any;
     let st: any = { synced: 0, remote: 0, lag: 0, syncRate: 0, syncedBlock: 0, remoteBlock: 0 };
     try {
-      if (typeof monitorAny.getLastStatus === 'function') {
+      if (typeof monitorAny.getLastStatus === "function") {
         st = monitorAny.getLastStatus() || st;
       }
     } catch (e) {
@@ -113,7 +113,9 @@ async function main() {
     if (shuttingDown) return;
     shuttingDown = true;
     clearInterval(statusTimer);
-    try { await hyperIndexMonitor.stop(); } catch {}
+    try {
+      await hyperIndexMonitor.stop();
+    } catch {}
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();

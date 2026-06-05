@@ -12,7 +12,7 @@ export interface SwapEdge {
   tokenIn: Address;
   tokenOut: Address;
   feeBps: bigint;
-  stateRef?: unknown;
+  stateRef?: PoolState | null;
   zeroForOne: boolean;
   tokenInIdx: number;
   tokenOutIdx: number;
@@ -21,7 +21,7 @@ export interface SwapEdge {
 export interface RoutingGraph {
   adjacency: Map<string, SwapEdge[]>;
   poolMeta: Map<string, PoolMeta>;
-  stateRefs: Map<string, unknown>;
+  stateRefs: Map<string, PoolState | null>;
   tokens: Set<string>;
 }
 
@@ -54,6 +54,7 @@ export interface PipelineOptions {
     debug?: (obj: Record<string, unknown>, msg?: string) => void;
     info?: (obj: Record<string, unknown>, msg?: string) => void;
     warn?: (obj: Record<string, unknown>, msg?: string) => void;
+    error?: (obj: Record<string, unknown>, msg?: string) => void;
   };
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
@@ -68,6 +69,10 @@ export interface PipelineResult {
   profitableCount: number;
   simulated: number;
   pruned: number;
+  prunedMissingState: number;
+  prunedInvalidBounds: number;
+  prunedNoGrossProfit: number;
+  prunedFinalCheckFailed: number;
   noRate: number;
   maxGrossProfitMatic?: bigint;
 }

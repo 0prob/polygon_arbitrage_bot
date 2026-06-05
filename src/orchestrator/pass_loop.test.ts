@@ -134,7 +134,10 @@ describe("runPassLoop", () => {
         isQuarantined: vi.fn().mockReturnValue(false),
         getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
       },
-      publicClient: { getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }) },
+      publicClient: {
+        getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
+        multicall: vi.fn().mockResolvedValue([]),
+      },
       services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
@@ -320,6 +323,10 @@ describe("runPassLoop", () => {
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
         getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+      },
+      publicClient: {
+        getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
+        multicall: vi.fn().mockResolvedValue([]),
       },
       services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
       rpcCircuit: mockCircuitBreaker(),

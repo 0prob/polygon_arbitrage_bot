@@ -42,10 +42,15 @@ export class GasOracle {
   private baseFeeHistory: bigint[] = [];
   private priorityFeeHistory: bigint[] = [];
   private emaBaseFee: bigint | null = null;
+  public failureCount: number = 0;
 
   constructor(
     public config: GasOracleConfig = DEFAULT_GAS_CONFIG,
     private fetchGas: () => Promise<{ baseFee: bigint; priorityFee: bigint }>,
+    private logger?: {
+      warn?: (obj: Record<string, unknown>, msg?: string) => void;
+      info?: (obj: Record<string, unknown>, msg?: string) => void;
+    },
   ) {}
 
   getSnapshot(): FeeSnapshot | null {
@@ -117,8 +122,12 @@ export class GasOracle {
         gasPrice: predictedBase + clampedPriority,
         timestamp: Date.now(),
       };
-    } catch {
-      // Keep last known values on fetch failure
+      this.failureCount = 0; // Reset on success
+    } catch (err) {
+      this.failureCount++;
+      if (this.logger) {
+        this.logger.warn?.({ err, failureCount: this.failureCount }, "GasOracle: failed to refresh gas fees");
+      }
     }
   }
 

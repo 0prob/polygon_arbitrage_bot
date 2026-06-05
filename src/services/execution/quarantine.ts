@@ -15,7 +15,6 @@ export function computeBackoff(attempt: number): number {
 
 export class QuarantineManager {
   private entries = new Map<string, QuarantineEntry>();
-  private queue: string[] = [];
   private baseMs: number;
   private maxMs: number;
 
@@ -28,29 +27,32 @@ export class QuarantineManager {
     const existing = this.entries.get(routeKey);
     const attempt = existing ? existing.attempt + 1 : 1;
     const delay = Math.min(this.baseMs * Math.pow(2, attempt - 1), this.maxMs);
+
+    // Re-insert to move to the end of Map (most recent for FIFO eviction)
+    if (existing) {
+      this.entries.delete(routeKey);
+    }
+
     this.entries.set(routeKey, {
       attempt,
       nextRetry: Date.now() + delay,
       lastError: error,
     });
-    if (existing) {
-      const idx = this.queue.indexOf(routeKey);
-      if (idx !== -1) this.queue.splice(idx, 1);
-    }
-    this.queue.push(routeKey);
-    if (this.queue.length > QUARANTINE_MAX_ENTRIES) {
-      const oldest = this.queue.shift();
-      if (oldest) this.entries.delete(oldest);
+
+    if (this.entries.size > QUARANTINE_MAX_ENTRIES) {
+      const oldestKey = this.entries.keys().next().value;
+      if (oldestKey !== undefined) {
+        this.entries.delete(oldestKey);
+      }
     }
   }
 
   isQuarantined(routeKey: string): boolean {
     const entry = this.entries.get(routeKey);
     if (!entry) return false;
+
     if (Date.now() >= entry.nextRetry) {
       this.entries.delete(routeKey);
-      const idx = this.queue.indexOf(routeKey);
-      if (idx !== -1) this.queue.splice(idx, 1);
       return false;
     }
     return true;
@@ -58,8 +60,6 @@ export class QuarantineManager {
 
   recordSuccess(routeKey: string): void {
     this.entries.delete(routeKey);
-    const idx = this.queue.indexOf(routeKey);
-    if (idx !== -1) this.queue.splice(idx, 1);
   }
 
   getEntry(routeKey: string): QuarantineEntry | undefined {
@@ -71,8 +71,6 @@ export class QuarantineManager {
     for (const [key, entry] of this.entries) {
       if (now >= entry.nextRetry) {
         this.entries.delete(key);
-        const idx = this.queue.indexOf(key);
-        if (idx !== -1) this.queue.splice(idx, 1);
       }
     }
   }

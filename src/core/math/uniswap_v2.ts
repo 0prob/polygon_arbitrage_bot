@@ -86,23 +86,30 @@ export function resolveV2Fee(
   feeNumerator?: bigint,
   feeDenominator?: bigint,
 ): { numerator: bigint; denominator: bigint } {
-  let resolvedFeeDenominator = feeDenominator ?? toBigInt(pool.feeDenominator, 10000n);
+  let resolvedFeeDenominator = feeDenominator ?? toBigInt(pool.feeDenominator, 1000n);
   let resolvedFeeNumerator = feeNumerator;
 
   if (resolvedFeeNumerator === undefined) {
     const feeRaw = pool.fee;
     if (feeRaw != null) {
       const feeBps = toBigInt(feeRaw);
-      // If fee is small (e.g. 30), assume it's BPS and calculate numerator
+      // If fee is small (e.g. 20 for ApeSwap), assume it's BPS and calculate numerator
       if (feeBps < 500n) {
-        resolvedFeeNumerator = resolvedFeeDenominator - feeBps;
+        resolvedFeeNumerator = resolvedFeeDenominator - (feeBps * resolvedFeeDenominator) / 10000n;
+        // Adjust if denominator is 1000 and BPS is e.g. 20 (0.2%)
+        if (resolvedFeeDenominator === 1000n) {
+          resolvedFeeNumerator = 1000n - (feeBps * 10n) / 100n; // rough
+          // better: just force 10000 denominator for BPS
+          resolvedFeeDenominator = 10000n;
+          resolvedFeeNumerator = 10000n - feeBps;
+        }
       } else {
         // Otherwise assume it's already a numerator
         resolvedFeeNumerator = feeBps;
       }
     } else {
-      resolvedFeeNumerator = 9970n;
-      resolvedFeeDenominator = 10000n;
+      resolvedFeeNumerator = 997n;
+      resolvedFeeDenominator = 1000n;
     }
   }
 
@@ -135,9 +142,10 @@ export function simulateV2Swap(
   let reserve0 = toBigInt(pool.reserve0);
   let reserve1 = toBigInt(pool.reserve1);
 
-  // Apply 50 bps (0.5%) safety margin to reserves
-  reserve0 = (reserve0 * 9950n) / 10000n;
-  reserve1 = (reserve1 * 9950n) / 10000n;
+  // Apply 10 bps (0.1%) safety margin to reserves
+  // Reduced from 50 bps to increase sensitivity for multi-hop arbs
+  reserve0 = (reserve0 * 9990n) / 10000n;
+  reserve1 = (reserve1 * 9990n) / 10000n;
 
   const reserveIn = zeroForOne ? reserve0 : reserve1;
   const reserveOut = zeroForOne ? reserve1 : reserve0;

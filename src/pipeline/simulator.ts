@@ -38,9 +38,11 @@ export function computeSpotPrice(
     }
   } else if (normalizedProtocol === "V3" || normalizedProtocol === "V4") {
     const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
-    if (sqrtPriceX96) {
+    if (sqrtPriceX96 && sqrtPriceX96 > 0n) {
       const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
-      return zeroForOne ? price : 1 / price;
+      if (price > 0) {
+        return zeroForOne ? price : 1 / price;
+      }
     }
   } else if (normalizedProtocol === "BALANCER") {
     const balances = state.balances as bigint[] | undefined;
@@ -88,9 +90,6 @@ export function simulateHop(
   const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
-  // Tax support removed (was un-wired dead code; added float math + map lookups in hot path with no config source).
-  const effectiveAmountIn = amountIn;
-
   let result: SimulatedHopResult;
 
   switch (edge.normalizedProtocol) {
@@ -104,22 +103,22 @@ export function simulateHop(
         finalNum = feeBps < 500n ? denominator - feeBps : feeBps;
       }
 
-      result = simulateV2Swap(state, effectiveAmountIn, edge.zeroForOne, finalNum, denominator);
+      result = simulateV2Swap(state, amountIn, edge.zeroForOne, finalNum, denominator);
       break;
     case "V3":
-      result = extractGasResult(simulateV3Swap(state, effectiveAmountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));
+      result = extractGasResult(simulateV3Swap(state, amountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));
       break;
     case "CURVE":
-      result = simulateCurveSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateCurveSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
       break;
     case "BALANCER":
-      result = simulateBalancerSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateBalancerSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
       break;
     case "DODO":
-      result = simulateDodoSwap(state, effectiveAmountIn, edge.zeroForOne);
+      result = simulateDodoSwap(state, amountIn, edge.zeroForOne);
       break;
     case "WOOFI":
-      result = simulateWoofiSwap(effectiveAmountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
+      result = simulateWoofiSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
       break;
     default:
       throw new Error(`Unknown protocol: ${edge.protocol}`);
@@ -146,6 +145,7 @@ export function simulateRoute(
   const protocols: string[] = [];
 
   const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
@@ -202,6 +202,7 @@ export function simulateRouteMinimal(
   let totalGas = 0;
 
   const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
@@ -230,15 +231,27 @@ export function simulateRouteMinimal(
  * This eliminates repeated object allocation inside every simulateRouteMinimal / simulateRoute call
  * during ternary search (the dominant hot-path allocation source).
  */
-export function buildSimulationEdges(edges: SwapEdge[], stateCache: RouteStateCache, overlay?: PendingStateOverlay): SimulationEdge[] {
+export function buildSimulationEdges(
+  edges: SwapEdge[],
+  stateCache: RouteStateCache,
+  overlay?: PendingStateOverlay,
+): SimulationEdge[] | null {
   const simEdges: SimulationEdge[] = new Array(edges.length);
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
     const poolAddr = edge.poolAddress.toLowerCase();
     const baseState = stateCache.get(poolAddr) ?? (edge.stateRef as PoolState | undefined);
-    if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+    if (!baseState) {
+      // console.warn(`Missing base state for pool ${poolAddr}`);
+      return null;
+    }
     const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
+
+    if (isInvalidState(state)) {
+      // console.warn(`Invalid state for pool ${poolAddr}`);
+      return null;
+    }
 
     simEdges[i] = {
       poolAddress: poolAddr,
@@ -272,6 +285,7 @@ export function simulateMinimalWithImpactCheck(
   overlay?: PendingStateOverlay,
 ): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
   const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  if (!simEdges) throw new Error("Missing state for simulation");
   let currentAmount = amountIn;
   let totalGas = 0;
 

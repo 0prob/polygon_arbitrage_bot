@@ -34,6 +34,13 @@ import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts
 
 // ─── Helpers ────────────────────────────────────────────────────
 
+let v3MismatchLogged = 0;
+
+/** Reset the V3 mismatch log counter (used for testing). */
+export function resetV3MismatchLogged(): void {
+  v3MismatchLogged = 0;
+}
+
 function callbackProtocolId(protocol: unknown): number {
   switch (protocol) {
     case "UNISWAP_V3":
@@ -76,9 +83,8 @@ function deriveTightV3PriceLimit(
     // (see encodeRoute transferSlipBps). The pipeline result used full amounts. Derive limit from the actual
     // amountIn we will encode/send. This unblocks V3 legs in multi-hop routes.
     // Also tolerates shallow V3 state (no ticks) or minor drift between sim and build snapshots.
-    if ((globalThis as any).__V3_MISMATCH_LOGGED__ == null) (globalThis as any).__V3_MISMATCH_LOGGED__ = 0;
-    if ((globalThis as any).__V3_MISMATCH_LOGGED__ < 5) {
-      (globalThis as any).__V3_MISMATCH_LOGGED__++;
+    if (v3MismatchLogged < 5) {
+      v3MismatchLogged++;
       console.warn(
         `[v3-limit] amountOut mismatch (using actual in for limit): label=${label} in=${amountIn} expectedOut=${expectedAmountOut} simOut=${simulated.amountOut} sqrtBefore=${sqrtBefore} pool=${hop.poolAddress}`,
       );

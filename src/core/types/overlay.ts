@@ -13,7 +13,19 @@ export class InMemoryPendingStateOverlay implements PendingStateOverlay {
   private TTL = 200; // ms
 
   update(poolAddress: Address, state: PoolState): void {
-    this.cache.set(poolAddress.toLowerCase(), { state, timestamp: Date.now() });
+    const key = poolAddress.toLowerCase();
+    const existing = this.cache.get(key);
+    if (existing && Date.now() - existing.timestamp <= this.TTL) {
+      const merged: PoolState = { ...existing.state };
+      for (const [k, v] of Object.entries(state)) {
+        const val = v as bigint;
+        const current = merged[k] as bigint | undefined;
+        merged[k] = current !== undefined ? current + val : val;
+      }
+      this.cache.set(key, { state: merged, timestamp: Date.now() });
+    } else {
+      this.cache.set(key, { state, timestamp: Date.now() });
+    }
   }
 
   get(poolAddress: Address): PoolState | undefined {

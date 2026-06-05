@@ -1,6 +1,7 @@
 import type { Address } from "../core/types/common.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
+import { MAJOR_TOKENS } from "../core/constants.ts";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
   const parts = edges.map((e) => e.poolAddress.toLowerCase()).sort();
@@ -48,10 +49,15 @@ export function getDynamicSearchBounds(
     if (protocol.includes("V3") || protocol.includes("V4") || protocol.includes("ELASTIC")) {
       const rawLiq = (state as Record<string, unknown>).liquidity;
       const liq = toBigInt(rawLiq, 0n);
-      // V3 heuristic: liquidity / 1e12 is a very rough "depth per tick" equivalent for principal sizing
       capacity = liq / 1_000_000_000_000n;
+    } else if (protocol.includes("BALANCER") || protocol.includes("CURVE")) {
+      const balances = (state as any).balances as bigint[] | undefined;
+      if (balances && balances.length >= 2) {
+        const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
+        if (balances[inIdx] > 0n) capacity = balances[inIdx];
+      }
     } else {
-      // V2, Curve, DODO, Balancer etc often have reserve0/reserve1 in their state snapshots
+      // V2, DODO, etc often have reserve0/reserve1 in their state snapshots
       const r0 = toBigInt((state as any).reserve0, 0n);
       const r1 = toBigInt((state as any).reserve1, 0n);
       if (r0 > 0n && r1 > 0n) {
@@ -143,16 +149,35 @@ export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getW
 
 const MAX_CYCLES_PER_PASS = 250_000;
 
-export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export function findCycles(
+  graph: RoutingGraph,
+  maxHops: number,
+  maxCycles: number = MAX_CYCLES_PER_PASS,
+  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
+): FoundCycle[] {
   const cycles: FoundCycle[] = [];
   const hopLimit = Math.min(maxHops, 5);
   const { adjacency } = graph;
 
   const ENUM_START = Date.now();
   const TIME_BUDGET_MS = 3000;
+  let budgetExceededLogged = false;
 
   function overBudget(): boolean {
-    return Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
+    const exceeded = Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
+    if (exceeded && !budgetExceededLogged && logger) {
+      logger.warn?.(
+        {
+          elapsedMs: Date.now() - ENUM_START,
+          cyclesFound: cycles.length,
+          maxCycles,
+          budgetMs: TIME_BUDGET_MS,
+        },
+        "Cycle enumeration over budget or max cycles reached",
+      );
+      budgetExceededLogged = true;
+    }
+    return exceeded;
   }
 
   // Pre-filter adjacency and pre-calculate obscurity for all edges (same as before for perf)
@@ -160,10 +185,10 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
   const activeAdjacency = new Map<string, EdgeWithObsc[]>();
   for (const [token, edges] of adjacency) {
     if (edges.length > 0) {
-      activeAdjacency.set(
-        token,
-        edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) }) as EdgeWithObsc),
-      );
+      const edgesWithObsc = edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) }) as EdgeWithObsc);
+      // Sort edges by obscurity (desc) to explore higher-alpha paths first
+      edgesWithObsc.sort((a, b) => b.obscurity - a.obscurity);
+      activeAdjacency.set(token, edgesWithObsc);
     }
   }
 
@@ -219,8 +244,21 @@ export function findCycles(graph: RoutingGraph, maxHops: number, maxCycles: numb
     }
   }
 
-  for (const [startToken, firstEdges] of activeAdjacency) {
+  // Prioritize starting from MAJOR_TOKENS to ensure cycles with reliable rates are explored first.
+  // This reduces 'noRate' skips in the evaluation phase.
+  const allStartTokens = Array.from(activeAdjacency.keys());
+  const prioritizedStartTokens = allStartTokens.sort((a, b) => {
+    const aIsMajor = MAJOR_TOKENS.has(a.toLowerCase());
+    const bIsMajor = MAJOR_TOKENS.has(b.toLowerCase());
+    if (aIsMajor && !bIsMajor) return -1;
+    if (!aIsMajor && bIsMajor) return 1;
+    return 0;
+  });
+
+  for (const startToken of prioritizedStartTokens) {
     if (overBudget()) break;
+    const firstEdges = activeAdjacency.get(startToken);
+    if (!firstEdges) continue;
 
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
@@ -241,8 +279,9 @@ export function enumerateCycles(
   maxHops = 5, // Default raised to 5 for increased long-tail discovery potential (see pass_loop strategy comments)
   maxCycles = MAX_CYCLES_PER_PASS,
   getWinRate?: (key: string) => number,
+  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
 ): FoundCycle[] {
-  const allCycles = findCycles(graph, maxHops, maxCycles);
+  const allCycles = findCycles(graph, maxHops, maxCycles, logger);
 
   if (getWinRate) {
     // Pre-compute scores to avoid O(N log N) string manipulation in sort.
@@ -252,7 +291,13 @@ export function enumerateCycles(
     const scored = allCycles.map((cycle) => {
       const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
       cycle.id = key;
-      const score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
+      let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
+
+      // Prioritize priceable tokens: bias score for MAJOR_TOKENS
+      if (MAJOR_TOKENS.has(cycle.startToken.toLowerCase())) {
+        score -= 2.0; // Significant bonus for major bases
+      }
+
       return { cycle, score };
     });
 
@@ -262,5 +307,16 @@ export function enumerateCycles(
       .map((s) => s.cycle);
   }
 
-  return allCycles.sort((a, b) => a.logWeight - b.logWeight).slice(0, maxCycles);
+  const scored = allCycles.map((cycle) => {
+    let score = cycle.logWeight;
+    if (MAJOR_TOKENS.has(cycle.startToken.toLowerCase())) {
+      score -= 2.0;
+    }
+    return { cycle, score };
+  });
+
+  return scored
+    .sort((a, b) => a.score - b.score)
+    .slice(0, maxCycles)
+    .map((s) => s.cycle);
 }

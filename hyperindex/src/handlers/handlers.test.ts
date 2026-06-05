@@ -292,7 +292,7 @@ describe("Multiple events in sequence", () => {
   it("processes V2 and V3 pool creation in same block", async () => {
     const indexer = createTestIndexer();
 
-    const _result = await indexer.process({
+    const result = await indexer.process({
       chains: {
         137: {
           simulate: [

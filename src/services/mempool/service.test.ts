@@ -121,6 +121,6 @@ describe("MempoolService", () => {
       value: "0x0",
     };
     service.processPendingTx(tx);
-    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: -10n, reserve1: 10n });
+    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve1: 10n });
   });
 });

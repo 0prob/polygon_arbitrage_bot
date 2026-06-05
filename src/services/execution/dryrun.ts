@@ -114,7 +114,9 @@ export class MempoolAwareDryRunner {
 
             const isLockError = revertData.includes("4c4f4b");
             if (isLockError && attempt < MAX_RETRIES - 1) {
-              await new Promise((r) => setTimeout(r, 50));
+              // Add jitter to LOCK retry to avoid synchronized retry storms
+              const jitter = Math.floor(Math.random() * 20);
+              await new Promise((r) => setTimeout(r, 50 + jitter));
               continue;
             }
 

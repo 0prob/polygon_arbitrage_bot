@@ -42,6 +42,7 @@ export class HyperIndexMonitor implements Lifecycle {
     this.checkIntervalMs = opts.checkIntervalMs ?? 10_000;
     this.maxStallMs = opts.maxStallMs ?? 30_000;
     this.maxLagBlocks = opts.maxLagBlocks ?? 200;
+    this.getLastStatus = this.getLastStatus.bind(this);
   }
 
   /** Tracks whether we started the HyperIndex process ourselves. If false, an external envio is managing it. */

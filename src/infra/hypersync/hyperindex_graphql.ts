@@ -1,19 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isAddress } from "viem";
+import type { PoolMeta } from "../../core/types/pool.ts";
 import { isGarbagePool, KNOWN_INDEXED_FACTORIES } from "../../core/constants.ts";
 import { markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
 
 // Use the single source of truth for indexed factories (re-exported via core/constants for convenience).
 const KNOWN_FACTORIES = KNOWN_INDEXED_FACTORIES;
-
-export interface HasuraPoolMeta {
-  address: string;
-  protocol: string;
-  tokens: string[];
-  fee: number;
-}
 
 // Narrow response shapes for the specific GraphQL queries we issue (reduces `any` + tsc noise on data)
 interface PoolMetaRow {
@@ -110,7 +105,7 @@ export function parseBigIntArray(arr: unknown): bigint[] {
 // missing in some environments (gitignored, generated, or minimal checkout).
 // We fall back to empty; discoverPoolsFromHasura and fetcher already treat anchors as
 // best-effort pre-fetch / fallback list.
-let _staticAnchors: HasuraPoolMeta[] = [];
+let _staticAnchors: PoolMeta[] = [];
 try {
   const __dirname = fileURLToPath(new URL(".", import.meta.url));
   const poolsPath = join(__dirname, "../../../scripts/pools.json");
@@ -119,10 +114,13 @@ try {
   if (Array.isArray(poolsJson)) {
     _staticAnchors = poolsJson.map((p) => {
       const row = p as Record<string, unknown>;
+      const tokens: string[] = Array.isArray(row?.tokens) ? (row.tokens as string[]) : [];
       return {
-        address: (row?.address ?? "") as string,
+        address: (row?.address ?? "") as `0x${string}`,
         protocol: (row?.protocol ?? "unknown") as string,
-        tokens: Array.isArray(row?.tokens) ? (row.tokens as string[]) : [],
+        token0: (tokens[0] ?? "") as `0x${string}`,
+        token1: (tokens[1] ?? "") as `0x${string}`,
+        tokens: tokens as `0x${string}`[],
         fee: (row?.fee ?? 30) as number,
       };
     });
@@ -145,7 +143,7 @@ for (const p of _staticAnchors) {
   }
 }
 
-export const STATIC_ANCHORS: HasuraPoolMeta[] = _staticAnchors;
+export const STATIC_ANCHORS: PoolMeta[] = _staticAnchors;
 
 const GRAPHQL_TIMEOUT = 10_000;
 
@@ -224,12 +222,12 @@ export async function buildStateCacheFromGraphQL(
 
     // Optimize: Use single batched query instead of 6 separate requests
     const batchedQuery = `{
-      V2PoolState(limit: 15000) { id address reserve0 reserve1 }
-      V3PoolState(limit: 15000) { id address sqrtPriceX96 tick liquidity }
-      V4PoolState(limit: 5000) { id address sqrtPriceX96 liquidity tick fee tickSpacing hooks }
-      BalancerPoolState(limit: 5000) { id address poolId balances weights amp swapFee scalingFactors }
-      CurvePoolState(limit: 5000) { id address balances A fee rates }
-      DodoPoolState(limit: 5000) { id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
+      V2PoolState(limit: 25000) { id address reserve0 reserve1 }
+      V3PoolState(limit: 20000) { id address sqrtPriceX96 tick liquidity }
+      V4PoolState(limit: 10000) { id address sqrtPriceX96 liquidity tick fee tickSpacing hooks }
+      BalancerPoolState(limit: 10000) { id address poolId balances weights amp swapFee scalingFactors }
+      CurvePoolState(limit: 10000) { id address balances A fee rates }
+      DodoPoolState(limit: 10000) { id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
     }`;
 
     const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
@@ -257,6 +255,7 @@ export async function buildStateCacheFromGraphQL(
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         tick: Number(s.tick),
         liquidity: BigInt(s.liquidity),
+        initialized: true,
       });
     }
 
@@ -269,6 +268,7 @@ export async function buildStateCacheFromGraphQL(
         fee: BigInt(s.fee),
         tickSpacing: Number(s.tickSpacing),
         hooks: s.hooks,
+        initialized: true,
       });
     }
 
@@ -281,6 +281,7 @@ export async function buildStateCacheFromGraphQL(
         amp: s.amp ? BigInt(s.amp) : undefined,
         swapFee: BigInt(s.swapFee),
         scalingFactors: parseBigIntArray(s.scalingFactors),
+        initialized: true,
       });
     }
 
@@ -291,6 +292,7 @@ export async function buildStateCacheFromGraphQL(
         A: BigInt(s.A),
         fee: BigInt(s.fee),
         rates: parseBigIntArray(s.rates),
+        initialized: true,
       });
     }
 
@@ -307,6 +309,7 @@ export async function buildStateCacheFromGraphQL(
         targetQuote: BigInt(s.targetQuote),
         lpFeeRate: BigInt(s.lpFeeRate),
         mtFeeRate: BigInt(s.mtFeeRate),
+        initialized: true,
       });
     }
   } catch (err) {
@@ -317,11 +320,40 @@ export async function buildStateCacheFromGraphQL(
   return _cachedState;
 }
 
+export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
+  return rows
+    .filter((pm) => pm && pm.id && pm.protocol)
+    .map((pm) => {
+      let tokens: string[];
+      if (typeof pm.tokens === "string") {
+        try {
+          tokens = JSON.parse(pm.tokens) as string[];
+        } catch {
+          tokens = [];
+        }
+      } else if (Array.isArray(pm.tokens)) {
+        tokens = pm.tokens.map((t: unknown) => String(t));
+      } else {
+        tokens = [];
+      }
+      tokens = tokens.map((t) => t.toLowerCase());
+      return {
+        address: pm.id.toLowerCase() as `0x${string}`,
+        protocol: pm.protocol,
+        token0: (tokens[0] ?? "") as `0x${string}`,
+        token1: (tokens[1] ?? "") as `0x${string}`,
+        tokens: tokens as `0x${string}`[],
+        fee: pm.fee ?? 30,
+      };
+    })
+    .filter((p) => isAddress(p.address) && p.tokens.length >= 2 && !isGarbagePool(p));
+}
+
 export async function discoverPoolsFromHasura(
   graphqlUrl: string,
   adminSecret: string,
   logger?: Pick<Logger, "warn" | "error">,
-): Promise<HasuraPoolMeta[]> {
+): Promise<PoolMeta[]> {
   const anchors = STATIC_ANCHORS;
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
@@ -360,30 +392,7 @@ export async function discoverPoolsFromHasura(
   }
 
   try {
-    const discovered = allRows
-      .filter((pm) => pm && pm.id && pm.protocol)
-      .map((pm) => {
-        let tokens: string[];
-        if (typeof pm.tokens === "string") {
-          try {
-            tokens = JSON.parse(pm.tokens) as string[];
-          } catch {
-            tokens = [];
-          }
-        } else if (Array.isArray(pm.tokens)) {
-          tokens = pm.tokens.map((t: unknown) => String(t));
-        } else {
-          tokens = [];
-        }
-        return {
-          address: pm.id.toLowerCase(),
-          protocol: pm.protocol,
-          tokens: tokens.map((t) => t.toLowerCase()),
-          fee: pm.fee ?? 30,
-        };
-      })
-      .filter((p) => p.address.startsWith("0x") && p.tokens.length >= 2 && !isGarbagePool(p));
-
+    const discovered = parsePoolMetaRows(allRows);
     const combined = [...anchors].filter((p) => !isGarbagePool(p));
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));
     for (const p of discovered) {

@@ -2,6 +2,7 @@ import type { RpcManager } from "../../rpc/manager.ts";
 import type { HyperRpcClient } from "../../infra/rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../../infra/hypersync/hypersync_service.ts";
 import { safeParseTraces, type ParsedTraceSummary } from "../../infra/hypersync/trace_parser.ts";
+import type { Logger } from "../../infra/observability/logger.ts";
 
 interface RawReceipt {
   status?: string | boolean;
@@ -29,6 +30,7 @@ function normalizeReceipt(receipt: RawReceipt): ReceiptData {
 
 export class ReceiptPoller {
   constructor(
+    private logger: Logger,
     private rpc: RpcManager,
     private timeoutMs: number,
     private pollMs: number,
@@ -36,6 +38,8 @@ export class ReceiptPoller {
 
   async wait(txHash: string): Promise<ReceiptData | null> {
     const deadline = Date.now() + this.timeoutMs;
+    let hardErrorCount = 0;
+
     while (Date.now() < deadline) {
       try {
         const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
@@ -70,8 +74,22 @@ export class ReceiptPoller {
             traceSummary,
           };
         }
-      } catch {
-        // Receipt not yet available
+
+        hardErrorCount = 0; // Successful poll (even if no receipt found yet)
+      } catch (err: any) {
+        const msg = err?.message?.toLowerCase() || "";
+        const isNotFound =
+          msg.includes("not found") || msg.includes("could not be found") || err?.name === "TransactionReceiptNotFoundError";
+
+        if (!isNotFound) {
+          hardErrorCount++;
+          if (hardErrorCount >= 5) {
+            this.logger.error({ txHash, error: err?.message, hardErrorCount }, "Persistent RPC error in ReceiptPoller — giving up");
+            return null;
+          }
+        } else {
+          hardErrorCount = 0; // Receipt not yet available is expected
+        }
       }
       await new Promise((r) => setTimeout(r, this.pollMs));
     }

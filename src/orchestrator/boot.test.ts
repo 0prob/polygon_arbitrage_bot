@@ -1,6 +1,31 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { bootApplication } from "./boot";
 import type { AppConfig } from "../config/schema";
+
+vi.mock("viem", async () => {
+  const actual = await vi.importActual<typeof import("viem")>("viem");
+  return {
+    ...actual,
+    createPublicClient: vi.fn().mockReturnValue({
+      getTransactionCount: vi.fn().mockResolvedValue(0),
+      getBytecode: vi.fn().mockResolvedValue("0x1234"),
+      getBlock: vi.fn().mockResolvedValue({ number: 1n, hash: "0xabc" }),
+      chain: { id: 137 },
+      transport: { type: "http" },
+    }),
+    createWalletClient: vi.fn().mockReturnValue({
+      account: { address: "0x123" },
+      chain: { id: 137 },
+      transport: { type: "http" },
+      sendTransaction: vi.fn().mockResolvedValue("0xhash"),
+    }),
+    http: vi.fn(),
+    getAddress: actual.getAddress,
+    parseAbi: actual.parseAbi,
+    decodeEventLog: actual.decodeEventLog,
+    encodeFunctionData: actual.encodeFunctionData,
+  };
+});
 
 describe("bootApplication", () => {
   it("should instantiate multiple submitters if multiple private relays are provided", async () => {

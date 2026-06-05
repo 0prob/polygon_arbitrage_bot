@@ -263,10 +263,12 @@ async function runLfStateRefresh(
   }
 
   // Fetch state for pools in current cycles that are missing from cache.
-  // Avoid force-refresh of ALL pools (47k+) which blocks the pipeline.
-  // On first boot, any forceRefresh that IS needed is handled by the pre-fetch path.
+  // Non-blocking to avoid stalling the pass loop. State accumulates incrementally.
   const stateClient = ctx.stateClient ?? ctx.publicClient;
-  const updated = await fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, false);
+  const updated = new Set<string>();
+  if (pools.length > 0 && currentCycles.length > 0) {
+    fetchMissingPoolState(stateClient, stateCache, pools, currentCycles, [], false).catch(() => {});
+  }
 
   // Bootstrap: on first LF pass, pre-fetch V2/V3 state for a sensible number of pools.
   // This lets rate propagation reach thousands of tokens on the very first pass
@@ -282,7 +284,10 @@ async function runLfStateRefresh(
   const lowInfra = rps <= 250;
   const indexerHotBiasEarly = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
   if (lowInfra && !indexerHotBiasEarly && !warnedLowInfra) {
-    ctx.logger.warn({ rps }, "Low infra (RPS<=250) + no INDEXER_HOT_BIAS: recommend INDEXER_HOT_BIAS=true (pairs with our expanded HOT_BASE list) to limit discovery volume while retaining long-tail coverage on alt+base pairs. Otherwise expect higher noRate and more RPC pressure on limited infra.");
+    ctx.logger.warn(
+      { rps },
+      "Low infra (RPS<=250) + no INDEXER_HOT_BIAS: recommend INDEXER_HOT_BIAS=true (pairs with our expanded HOT_BASE list) to limit discovery volume while retaining long-tail coverage on alt+base pairs. Otherwise expect higher noRate and more RPC pressure on limited infra.",
+    );
     warnedLowInfra = true;
   }
 
@@ -329,12 +334,12 @@ async function runLfStateRefresh(
       const majorCount = prioritized.filter(touchesMajor).length;
       ctx.logger.info(
         { missingPools: toBootstrap.length, majorConnected: majorCount, lowInfra },
-        "Bootstrap: pre-fetching V2/V3 state for rate propagation",
+        "Bootstrap: pre-fetching V2/V3 state for rate propagation (non-blocking)",
       );
-      // Force-refresh the critical (major-connected) pools; remaining ~37k accumulate gradually.
-      const seedUpdated = await fetchMissingPoolState(stateClient, stateCache, toBootstrap, [], true);
-      for (const addr of seedUpdated) updated.add(addr);
-      ctx.logger.info({ seedFetched: seedUpdated.size, stillMissing: toBootstrap.length - seedUpdated.size }, "Bootstrap fetch complete");
+      // Non-blocking: state accumulates into shared ctx.stateCache as batches complete.
+      runBootstrapInBackground(ctx, stateClient, toBootstrap, updated).catch((err) =>
+        ctx.logger.warn({ err }, "Background bootstrap failed"),
+      );
     }
   }
 
@@ -343,24 +348,63 @@ async function runLfStateRefresh(
   // so it doesn't compete with the hot path.
   _lfStateRefreshCount++;
   const CACHE_TARGET = 30000;
+  // Fire-and-forget: state accumulates into shared ctx.stateCache as batches complete.
   if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
     const BASE_EXP = 4000;
     const EXPANSION_BATCH = lowInfra ? Math.floor(BASE_EXP * 0.4) : BASE_EXP;
     const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
     if (uncached.length > 0) {
       const batch = uncached.slice(0, EXPANSION_BATCH);
-      const expanded = await fetchMissingPoolState(stateClient, stateCache, batch, [], true);
-      if (expanded.size > 0) {
-        for (const addr of expanded) updated.add(addr);
-        ctx.logger.info(
-          { expanded: expanded.size, totalCached: stateCache.size, remaining: uncached.length - expanded.size, lowInfra },
-          "Gradual cache expansion batch complete",
-        );
-      }
+      const uncachedLen = uncached.length;
+      fetchMissingPoolState(stateClient, stateCache, batch, [], [], true)
+        .then((expanded) => {
+          if (expanded.size > 0) {
+            for (const addr of expanded) updated.add(addr);
+            ctx.logger.info(
+              { expanded: expanded.size, totalCached: stateCache.size, remaining: uncachedLen - expanded.size, lowInfra },
+              "Gradual cache expansion batch complete (background)",
+            );
+          }
+        })
+        .catch((err) => ctx.logger.warn({ err }, "Background gradual expansion failed"));
     }
   }
 
   return { lastRefreshTime: now, lastFullRefreshTime: now, ratesNeedFullRefresh: true, updated };
+}
+
+/**
+ * Fire-and-forget background bootstrap: fetched state accumulates into the shared
+ * ctx.stateCache so enumeration and subsequent passes can use it incrementally.
+ */
+async function runBootstrapInBackground(
+  ctx: RuntimeContext,
+  stateClient: import("viem").PublicClient,
+  toBootstrap: PoolMeta[],
+  updated: Set<string>,
+): Promise<void> {
+  const stateCache = ctx.stateCache;
+  const BATCH_SIZE_BS = 5000;
+  const batches: PoolMeta[][] = [];
+  for (let i = 0; i < toBootstrap.length; i += BATCH_SIZE_BS) {
+    batches.push(toBootstrap.slice(i, i + BATCH_SIZE_BS));
+  }
+  const CONCURRENCY_BS = 4;
+  const localUpdated = new Set<string>();
+  for (let i = 0; i < batches.length; i += CONCURRENCY_BS) {
+    const chunk = batches.slice(i, i + CONCURRENCY_BS);
+    const results = await Promise.all(chunk.map((batch) => fetchMissingPoolState(stateClient, stateCache, batch, [], [], true)));
+    for (const res of results) {
+      for (const addr of res) {
+        localUpdated.add(addr);
+        updated.add(addr);
+      }
+    }
+  }
+  ctx.logger.info(
+    { seedFetched: localUpdated.size, stillMissing: toBootstrap.length - localUpdated.size },
+    "Background bootstrap fetch complete",
+  );
 }
 
 /**
@@ -430,9 +474,7 @@ async function runEnumerationPhase(
   const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
   const lowForEnum = rpsForEnum <= 250;
   const maxPaths = lowForEnum ? Math.floor(baseMaxPaths * 0.5) : baseMaxPaths;
-  const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) =>
-    ctx.executionService.tracker.getWinRate(key),
-  );
+  const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
 
   const cyclesByHop: Record<number, number> = {};
@@ -680,38 +722,18 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       // High-frequency pre-fetch: Only for pools in current cycles
-      // Skip if we just did a full refresh in the same pass
+      // Skip if we just did a full refresh in the same pass.
+      // Non-blocking: state accumulates into ctx.stateCache, subsequent cycles benefit.
       preFetchCounter++;
       if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
-        const justUpdated = await fetchMissingPoolState(
-          ctx.stateClient ?? ctx.publicClient,
-          stateCache,
-          hasuraPoolsCache ?? [],
-          currentCycles,
-          false,
+
+        // Fire-and-forget cycle pool state fetch.
+        fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, hasuraPoolsCache ?? [], currentCycles, [], false).catch(
+          () => {},
         );
-        if (justUpdated.size > 0) {
-          for (const addr of justUpdated) updatedPools.add(addr);
-        }
 
-        // Build focus tokens from the pools we actually refreshed this round.
-        // O(1) lookup via address map instead of O(N) pools.find() per updated address.
-        const focusTokens = new Set<string>();
-        if (justUpdated.size > 0) {
-          const poolByAddr = new Map<string, `0x${string}`[] | undefined>();
-          for (const p of hasuraPoolsCache ?? []) poolByAddr.set(p.address.toLowerCase(), p.tokens);
-          for (const addr of justUpdated) {
-            const tokens = poolByAddr.get(addr);
-            if (tokens) {
-              for (const t of tokens) focusTokens.add(t.toLowerCase());
-            }
-          }
-        }
-
-        // Improvement: also pre-fetch state for *all* pools touching tokens from currentCycles (not just cycle edges).
-        // Direct edges may not be enough for rate propagation paths (token may need sibling pools to link to majors).
-        // This reduces high noRate / low rate coverage for exactly the cycles under assessment.
+        // Fire-and-forget broad token pool pre-fetch.
         {
           const cycleTokens = new Set<string>();
           for (const c of currentCycles) {
@@ -722,7 +744,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }
           }
           const broadTokenPools: PoolMeta[] = [];
-          for (const p of (hasuraPoolsCache ?? [])) {
+          for (const p of hasuraPoolsCache ?? []) {
             const pts = (p.tokens ?? [p.token0, p.token1]).map((t: string) => t.toLowerCase());
             if (pts.some((t: string) => cycleTokens.has(t)) && !stateCache.has(p.address.toLowerCase())) {
               broadTokenPools.push(p);
@@ -733,23 +755,31 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             const lowBroad = rpsBroad <= 250;
             const broadCap = lowBroad ? 700 : 2500;
             const cap = broadTokenPools.slice(0, broadCap);
-            const extra = await fetchMissingPoolState(
-              ctx.stateClient ?? ctx.publicClient,
-              stateCache,
-              cap,
-              [],
-              true,
-            );
-            if (extra.size > 0) {
-              for (const addr of extra) updatedPools.add(addr);
-              ctx.logger.info({ broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size, lowInfra: lowBroad }, "Broad state pre-fetch for cycle tokens (improves rate path coverage)");
-            }
+            fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, cap, [], [], true)
+              .then((extra) => {
+                if (extra.size > 0) {
+                  ctx.logger.info(
+                    { broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size, lowInfra: lowBroad },
+                    "Broad state pre-fetch for cycle tokens (improves rate path coverage)",
+                  );
+                }
+              })
+              .catch(() => {});
           }
         }
 
-        // Signal incremental rate update for the consolidated ensureRates block below.
-        // Using seed + focus gives cheap dirty-token propagation (P3 optimization).
-        pendingFocusTokens = focusTokens.size > 0 ? focusTokens : null;
+        // Signal incremental rate update with focus tokens derived from current cycles.
+        {
+          const ft = new Set<string>();
+          for (const c of currentCycles) {
+            ft.add(c.startToken.toLowerCase());
+            for (const e of c.edges) {
+              ft.add(e.tokenIn.toLowerCase());
+              ft.add(e.tokenOut.toLowerCase());
+            }
+          }
+          pendingFocusTokens = ft.size > 0 ? ft : null;
+        }
         if (!cachedMetas) {
           cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
         }
@@ -869,9 +899,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Apply graceful degradation if indexer lag is high
       const isDegraded = currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS;
       const baseConc = ctx.config.routing.concurrency ?? 50;
-      let effectiveConcurrency = isDegraded
-        ? Math.max(10, Math.floor(baseConc * 0.4))
-        : baseConc;
+      let effectiveConcurrency = isDegraded ? Math.max(10, Math.floor(baseConc * 0.4)) : baseConc;
       const rpsConc = ctx.config.rpc.chainstackRps ?? 250;
       if (rpsConc <= 250) {
         effectiveConcurrency = Math.max(5, Math.floor(effectiveConcurrency * 0.5));

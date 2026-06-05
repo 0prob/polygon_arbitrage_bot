@@ -17,6 +17,11 @@ export class PassRunner {
   }
 
   async run(): Promise<void> {
-    await runPassLoop(this.ctx, this.deps, this.bus);
+    try {
+      await runPassLoop(this.ctx, this.deps, this.bus);
+    } catch (err) {
+      this.ctx.logger.error({ err }, "Fatal error in pass loop");
+      throw err; // Re-throw after logging to ensure it doesn't just hang
+    }
   }
 }

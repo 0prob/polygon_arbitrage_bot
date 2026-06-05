@@ -238,7 +238,9 @@ export class Renderer {
     const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
     const now = Date.now();
     const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 2000);
-    const swapLines = activeSwaps.slice(0, 2).map((sw) => ` [${sw.traceId.slice(0, 8)}] +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
+    const swapLines = activeSwaps
+      .slice(0, 2)
+      .map((sw) => ` [${sw.traceId.slice(0, 8)}] +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
 
     return [
       ` ${animator.sectionLabel("🖄", "Mempool")}`,

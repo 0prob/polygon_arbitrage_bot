@@ -28,7 +28,7 @@ describe("ExecutionService", () => {
 
   const makeService = () => {
     const strategy = new SubmissionStrategy(mockLogger, mockGasOracle, [mockSubmitTx], {});
-    const poller = new ReceiptPoller(mockRpc, 30_000, 500);
+    const poller = new ReceiptPoller(mockLogger, mockRpc, 30_000, 500);
     return new ExecutionService(mockLogger, strategy, poller, mockGasOracle, mockNonceManager);
   };
 

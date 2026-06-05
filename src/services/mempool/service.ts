@@ -69,12 +69,13 @@ export class MempoolService {
     if (!decoded) return;
 
     if (this.overlay && decoded.protocol === "UNISWAP_V2") {
-      // Heuristic state update for V2
+      // Heuristic state update for V2: Only update the input reserve since we don't know the exact output amount or price.
+      // Modifying the output reserve by -amount is mathematically incorrect and causes underflows across different decimals.
       const amount = decoded.amountIn;
       if (decoded.zeroForOne) {
-        this.overlay.update(decoded.poolAddress, { reserve0: amount, reserve1: -amount });
+        this.overlay.update(decoded.poolAddress, { reserve0: amount });
       } else {
-        this.overlay.update(decoded.poolAddress, { reserve0: -amount, reserve1: amount });
+        this.overlay.update(decoded.poolAddress, { reserve1: amount });
       }
     }
 
@@ -92,6 +93,9 @@ export class MempoolService {
     const now = Date.now();
     const lastEmit = this.lastEmitByPool.get(poolKey);
     if (lastEmit != null && now - lastEmit < this.options.coalesceTtlMs) return;
+
+    // Delete first to ensure it's moved to the end of the Map's insertion order (LRU behavior)
+    this.lastEmitByPool.delete(poolKey);
     this.lastEmitByPool.set(poolKey, now);
 
     if (this.lastEmitByPool.size > this.MAX_EMIT_CACHE) {

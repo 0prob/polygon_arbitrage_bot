@@ -80,7 +80,8 @@ export interface PoolMeta {
   protocol: string;
   token0: Address;
   token1: Address;
-  tokens?: Address[];
+  /** Required array of token addresses. Every pool has at least 2 tokens. Use `[]` if truly unknown. */
+  tokens: Address[];
   fee?: number;
   tickSpacing?: number;
   poolType?: string;

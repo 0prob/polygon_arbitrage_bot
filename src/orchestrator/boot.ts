@@ -97,6 +97,20 @@ export async function bootApplication(
 
   const stateCache: RouteStateCache = new Map();
 
+  // Basic validation: ensure executorAddress is a contract
+  const executorCode = await publicClient.getBytecode({ address: config.execution.executorAddress as `0x${string}` });
+  if (!executorCode || executorCode === "0x") {
+    logger.error(
+      { executorAddress: config.execution.executorAddress },
+      "Executor address is not a deployed contract! Bot will fail to execute.",
+    );
+  } else {
+    logger.info(
+      { executorAddress: config.execution.executorAddress, flashLoanSource: config.execution.flashLoanSource },
+      "Executor contract validated",
+    );
+  }
+
   const gasOracleConfig: GasOracleConfig = {
     pollIntervalMs: config.gas.pollIntervalMs,
     priorityFeeFloorGwei: config.gas.priorityFeeFloorGwei,
@@ -116,31 +130,12 @@ export async function bootApplication(
     feeHistoryBlockCount: 2,
   });
 
-  const gasOracle = new GasOracle(gasOracleConfig, fetchGas);
+  const gasOracle = new GasOracle(gasOracleConfig, fetchGas, logger);
 
   const nonceFetcher = async (address: string): Promise<number> => {
     const count = await publicClient.getTransactionCount({ address: address as `0x${string}`, blockTag: "pending" });
     return Number(count);
   };
-
-  const stuckTxHandler = async (nonce: number, maxFee: bigint): Promise<void> => {
-    if (walletClients.length === 0) return;
-    const wc = walletClients[0];
-    await wc
-      .sendTransaction({
-        account: wc.account!,
-        chain: wc.chain,
-        to: wc.account!.address,
-        value: 0n,
-        data: "0x",
-        nonce,
-        maxFeePerGas: maxFee,
-        maxPriorityFeePerGas: maxFee / 2n,
-      })
-      .catch(() => {});
-  };
-
-  const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
 
   const walletClients =
     config.execution.privateRelayUrls.length > 0
@@ -152,6 +147,29 @@ export async function bootApplication(
       throw new Error("Execution client is not configured with an account.");
     }
   });
+
+  const stuckTxHandler = async (nonce: number, maxFee: bigint): Promise<void> => {
+    if (walletClients.length === 0) return;
+    // Broadcast cancellation to all relays to ensure the stuck nonce is cleared everywhere.
+    await Promise.allSettled(
+      walletClients.map((wc) =>
+        wc
+          .sendTransaction({
+            account: wc.account!,
+            chain: wc.chain,
+            to: wc.account!.address,
+            value: 0n,
+            data: "0x",
+            nonce,
+            maxFeePerGas: maxFee,
+            maxPriorityFeePerGas: maxFee / 2n,
+          })
+          .catch(() => {}),
+      ),
+    );
+  };
+
+  const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
 
   const submitters = walletClients.map((walletClient) => {
     return async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
@@ -195,7 +213,7 @@ export async function bootApplication(
     privateSubmitter,
   });
 
-  const receiptPoller = new ReceiptPoller(rpc, config.execution.receiptTimeoutMs, config.execution.receiptPollMs);
+  const receiptPoller = new ReceiptPoller(logger, rpc, config.execution.receiptTimeoutMs, config.execution.receiptPollMs);
 
   const executionService = new ExecutionService(
     logger,

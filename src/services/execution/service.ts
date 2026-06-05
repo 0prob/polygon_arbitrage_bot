@@ -57,8 +57,11 @@ export interface ExecutionResult {
   traceMessages?: string[];
 }
 
+const EVM_ADDRESS_LENGTH = 42;
+const EVM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+
 function poolsFromRouteKey(routeKey: string): string[] {
-  return routeKey.split(":").filter((p) => p.length === 42);
+  return routeKey.split(":").filter((p) => p.length === EVM_ADDRESS_LENGTH && EVM_ADDRESS_REGEX.test(p));
 }
 
 export function areCandidatesCompatible(a: CandidateExecution, b: CandidateExecution): boolean {
@@ -148,6 +151,7 @@ export class ExecutionService {
       return { success: false, error: "route already in-flight (same calldata pending)" };
     }
 
+    let nonce: number | undefined;
     try {
       const fee = this.gasOracle.getSnapshot();
       if (!fee) {
@@ -156,7 +160,7 @@ export class ExecutionService {
       }
 
       this.markInFlight(candidate.routeKey);
-      const nonce = this.nonceManager.getNextNonce();
+      nonce = this.nonceManager.getNextNonce();
       this.nonceManager.markInFlight(nonce);
       const { txHash, endpoint } = await this.submissionStrategy.submit(
         {
@@ -209,6 +213,7 @@ export class ExecutionService {
       return { success, txHash, gasUsed, traceMessages };
     } catch (err: any) {
       this.inFlightRouteHashes.delete(candidate.routeKey);
+      if (nonce !== undefined) this.nonceManager.markStale(nonce);
       if (err instanceof AggregateError) {
         const msg = err.errors[0]?.message || String(err);
         this.logger.warn({ routeKey: candidate.routeKey, error: msg }, "Transaction submission failed");
@@ -252,22 +257,32 @@ export class ExecutionService {
       this.nonceManager.markInFlight(nonce);
 
       try {
-        const { txHash, endpoint } = await this.submissionStrategy.submit(
-          {
-            to: candidate.targetAddress,
-            data: candidate.calldata,
-            value: candidate.value,
-            nonce,
-            maxFee: fee.maxFee,
-          },
-          candidate.expectedProfit,
-        );
+        let timeoutId: any;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("submission timeout (5s)")), 5000);
+        });
+
+        const { txHash, endpoint } = await Promise.race([
+          this.submissionStrategy.submit(
+            {
+              to: candidate.targetAddress,
+              data: candidate.calldata,
+              value: candidate.value,
+              nonce,
+              maxFee: fee.maxFee,
+            },
+            candidate.expectedProfit,
+          ),
+          timeoutPromise,
+        ]);
+        clearTimeout(timeoutId);
 
         this.nonceManager.confirmNonce(nonce);
         this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Batch tx submitted");
         receiptPromises.push({ index: i, txHash, nonce, candidate });
       } catch (err: any) {
         this.inFlightRouteHashes.delete(candidate.routeKey);
+        this.nonceManager.markStale(nonce);
         const msg = err?.message || String(err);
         this.logger.warn({ routeKey: candidate.routeKey, error: msg, nonce }, "Batch submission failed");
         this.quarantine.add(candidate.routeKey, msg);

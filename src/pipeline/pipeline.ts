@@ -1,4 +1,4 @@
-import type { FoundCycle, PipelineOptions } from "./types.ts";
+import type { FoundCycle, PipelineOptions, PipelineResult, SimulationEdge } from "./types.ts";
 import type { RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
 import {
   simulateRoute,
@@ -9,7 +9,6 @@ import {
   computeSpotPrice,
 } from "./simulator.ts";
 import { getDynamicSearchBounds } from "./finder.ts";
-import type { SimulationEdge } from "./types.ts";
 import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
 import type { PoolState } from "../core/types/pool.ts";
@@ -23,20 +22,6 @@ import type { PendingStateOverlay } from "../core/types/overlay.ts";
  */
 
 const CONVERGENCE_DIVISOR = 10000n;
-
-export interface PipelineResult {
-  profitable: Array<{
-    cycle: FoundCycle;
-    result: RouteSimulationResult;
-    assessment: ProfitAssessment;
-  }>;
-  attempted: number;
-  profitableCount: number;
-  simulated: number;
-  pruned: number;
-  noRate: number;
-  maxGrossProfitMatic?: bigint;
-}
 
 // Reusable holder to reduce per-probe allocations during ternary search
 interface MinimalEvalHolder {
@@ -201,6 +186,10 @@ export async function evaluatePipeline(
   let attempted = 0;
   let simulated = 0;
   let pruned = 0;
+  let prunedMissingState = 0;
+  let prunedInvalidBounds = 0;
+  let prunedNoGrossProfit = 0;
+  let prunedFinalCheckFailed = 0;
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
 
@@ -220,131 +209,165 @@ export async function evaluatePipeline(
       await new Promise((r) => setTimeout(r, 0));
     }
 
-    const results = await Promise.all(
-      batch.map(async (cycle) => {
-        attempted++;
-        try {
-          // Relaxed gate: only require rate for startToken (the flash principal and profit numeraire).
-          // This lets more cycles (with partial rate coverage on intermediates) reach ternary search + assessment
-          // while the rate map grows. Missing intermediate rates => 0 contrib to grossMatic (conservative under-estimate)
-          // and their extreme loss/gain checks are skipped (see earlier rateIn/rateOut guards).
-          const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-          if (startRate === 0n) return { type: "noRate" as const, cycle };
+    const results = batch.map((cycle) => {
+      attempted++;
+      try {
+        // ... (the rest of the mapping logic remains)
+        // Relaxed gate: only require rate for startToken (the flash principal and profit numeraire).
+        // This lets more cycles (with partial rate coverage on intermediates) reach ternary search + assessment
+        // while the rate map grows. Missing intermediate rates => 0 contrib to grossMatic (conservative under-estimate)
+        // and their extreme loss/gain checks are skipped (see earlier rateIn/rateOut guards).
+        const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+        if (startRate === 0n) return { type: "noRate" as const, cycle };
 
-          const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
-
-          const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
-
-          if (low === 0n || low >= high) return { type: "pruned" as const, cycle };
-
-          const ternaryIters = options.ternarySearchIterations ?? 15;
-          const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
-          if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
-            return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", cycle };
-          }
-
-          let left = low;
-          let right = high;
-          let bestResult: RouteSimulationResult | null = null;
-          let bestAssessment: ProfitAssessment | null = null;
-          let bestProfit = -1_000_000_000_000_000_000_000_000_000_000n;
-          let bestGrossMatic = 0n;
-          let bestAmount: bigint = low; // track the amount that produced the current best (for final full sim)
-
-          // Object pooling: two reusable holders for the m1/m2 probes to cut per-iteration allocations
-          const probe1Holder: MinimalEvalHolder = { grossProfitMatic: null, netProfitAfterGasMaticWei: 0n };
-          const probe2Holder: MinimalEvalHolder = { grossProfitMatic: null, netProfitAfterGasMaticWei: 0n };
-
-          for (let iter = 0; iter < ternaryIters; iter++) {
-            const range = right - left;
-            if (range <= high / CONVERGENCE_DIVISOR) {
-              const mid = left + range / 2n;
-              const { result, assessment, grossProfitMatic } = evaluateAmount(
-                cycle,
-                mid,
-                stateCache,
-                options,
-                true, // skipImpactCheck=true during search
-                true, // minimalForSearch=true
-                prebuiltSimEdges,
-                undefined,
-                overlay,
-              );
-
-              if (grossProfitMatic && grossProfitMatic > bestGrossMatic) {
-                bestGrossMatic = grossProfitMatic;
-              }
-
-              if (assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
-                bestResult = result; // will be null in minimal mode — final full sim handles it
-                bestAssessment = assessment;
-                bestProfit = assessment.netProfitAfterGasMaticWei;
-                bestAmount = mid;
-              }
-              break;
-            }
-
-            const m1 = left + range / 3n;
-            const m2 = right - range / 3n;
-            const eval1 = evaluateAmount(cycle, m1, stateCache, options, true, true, prebuiltSimEdges, probe1Holder, overlay);
-            const eval2 = evaluateAmount(cycle, m2, stateCache, options, true, true, prebuiltSimEdges, probe2Holder, overlay);
-
-            if (eval1.grossProfitMatic && eval1.grossProfitMatic > bestGrossMatic) {
-              bestGrossMatic = eval1.grossProfitMatic;
-            }
-            if (eval2.grossProfitMatic && eval2.grossProfitMatic > bestGrossMatic) {
-              bestGrossMatic = eval2.grossProfitMatic;
-            }
-
-            const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
-            const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
-
-            if (profit1 > bestProfit && eval1.assessment) {
-              bestResult = eval1.result; // null in minimal mode
-              bestAssessment = eval1.assessment;
-              bestProfit = profit1;
-              bestAmount = m1;
-            }
-            if (profit2 > bestProfit && eval2.assessment) {
-              bestResult = eval2.result; // null in minimal mode
-              bestAssessment = eval2.assessment;
-              bestProfit = profit2;
-              bestAmount = m2;
-            }
-
-            if (profit1 < 0 && profit2 < 0) {
-              if (eval1.assessment === null && eval2.assessment === null) {
-                right = m1;
-              } else {
-                if (profit1 > profit2) right = m2;
-                else left = m1;
-              }
-            } else if (profit1 > profit2) {
-              right = m2;
-            } else {
-              left = m1;
-            }
-          }
-
-          // After search: do one final FULL simulation with impact check enabled.
-          // This verifies spot-price integrity before promoting to profitable.
-          if (bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
-            const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay);
-            if (final.result && final.assessment && final.assessment.shouldExecute) {
-              bestResult = final.result;
-              bestAssessment = final.assessment;
-            } else {
-              // Final check failed (likely price impact)
-              return { type: "pruned" as const, cycle };
-            }
-          }
-
-          return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic, cycle };
-        } catch {
-          return { type: "error" as const, cycle };
+        const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
+        if (!prebuiltSimEdges) {
+          return { type: "pruned" as const, reason: "missingState", cycle };
         }
-      }),
-    );
+
+        const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
+
+        if (low === 0n || low >= high) {
+          return { type: "pruned" as const, reason: "invalidBounds", cycle };
+        }
+
+        const ternaryIters = options.ternarySearchIterations ?? 15;
+        const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+        if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
+          if (attempted < 100 && options.logger) {
+            // Enhanced diagnostic for low-bound rejection
+            let restrictiveEdgeInfo = "";
+            try {
+              const bounds = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
+              restrictiveEdgeInfo = `minCap: ${bounds.low * 5000n}`; // re-derive roughly from bounds logic
+            } catch {}
+
+            options.logger.debug?.(
+              {
+                cycleId: cycle.id,
+                low: low.toString(),
+                grossProfitMatic: evalLow.grossProfitMatic?.toString(),
+                startRate: options.tokenToMaticRates.get(cycle.startToken.toLowerCase())?.toString(),
+                restrictiveEdgeInfo,
+                protocol: cycle.edges[0].protocol,
+              },
+              "Cycle rejected: no gross profit at low bound (potential liquidity/fee bottleneck)",
+            );
+          }
+          return { type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned", reason: "noGrossProfit", cycle };
+        }
+
+        let left = low;
+        let right = high;
+        let bestResult: RouteSimulationResult | null = null;
+        let bestAssessment: ProfitAssessment | null = null;
+        let bestProfit = -1_000_000_000_000_000_000_000_000_000_000n;
+        let bestGrossMatic = 0n;
+        let bestAmount: bigint = low; // track the amount that produced the current best (for final full sim)
+
+        // Object pooling: two reusable holders for the m1/m2 probes to cut per-iteration allocations
+        const probe1Holder: MinimalEvalHolder = { grossProfitMatic: null, netProfitAfterGasMaticWei: 0n };
+        const probe2Holder: MinimalEvalHolder = { grossProfitMatic: null, netProfitAfterGasMaticWei: 0n };
+
+        for (let iter = 0; iter < ternaryIters; iter++) {
+          const range = right - left;
+          if (range <= high / CONVERGENCE_DIVISOR) {
+            const mid = left + range / 2n;
+            const { result, assessment, grossProfitMatic } = evaluateAmount(
+              cycle,
+              mid,
+              stateCache,
+              options,
+              true, // skipImpactCheck=true during search
+              true, // minimalForSearch=true
+              prebuiltSimEdges,
+              undefined,
+              overlay,
+            );
+
+            if (grossProfitMatic && grossProfitMatic > bestGrossMatic) {
+              bestGrossMatic = grossProfitMatic;
+            }
+
+            if (assessment && assessment.netProfitAfterGasMaticWei > bestProfit) {
+              bestResult = result; // will be null in minimal mode — final full sim handles it
+              bestAssessment = assessment;
+              bestProfit = assessment.netProfitAfterGasMaticWei;
+              bestAmount = mid;
+            }
+            break;
+          }
+
+          const m1 = left + range / 3n;
+          const m2 = right - range / 3n;
+          const eval1 = evaluateAmount(cycle, m1, stateCache, options, true, true, prebuiltSimEdges, probe1Holder, overlay);
+          const eval2 = evaluateAmount(cycle, m2, stateCache, options, true, true, prebuiltSimEdges, probe2Holder, overlay);
+
+          if (eval1.grossProfitMatic && eval1.grossProfitMatic > bestGrossMatic) {
+            bestGrossMatic = eval1.grossProfitMatic;
+          }
+          if (eval2.grossProfitMatic && eval2.grossProfitMatic > bestGrossMatic) {
+            bestGrossMatic = eval2.grossProfitMatic;
+          }
+
+          const profit1 = eval1.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
+          const profit2 = eval2.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
+
+          if (profit1 > bestProfit && eval1.assessment) {
+            bestResult = eval1.result; // null in minimal mode
+            bestAssessment = eval1.assessment;
+            bestProfit = profit1;
+            bestAmount = m1;
+          }
+          if (profit2 > bestProfit && eval2.assessment) {
+            bestResult = eval2.result; // null in minimal mode
+            bestAssessment = eval2.assessment;
+            bestProfit = profit2;
+            bestAmount = m2;
+          }
+
+          if (profit1 < 0 && profit2 < 0) {
+            if (eval1.assessment === null && eval2.assessment === null) {
+              right = m1;
+            } else {
+              if (profit1 > profit2) right = m2;
+              else left = m1;
+            }
+          } else if (profit1 > profit2) {
+            right = m2;
+          } else {
+            left = m1;
+          }
+        }
+
+        // After search: do one final FULL simulation with impact check enabled.
+        // This verifies spot-price integrity before promoting to profitable.
+        if (bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
+          const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay);
+          if (final.result && final.assessment && final.assessment.shouldExecute) {
+            bestResult = final.result;
+            bestAssessment = final.assessment;
+          } else {
+            // Final check failed (likely price impact)
+            return { type: "pruned" as const, reason: "finalCheckFailed", cycle };
+          }
+        }
+
+        return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic, cycle };
+      } catch (err) {
+        if (options.logger) {
+          options.logger.error?.(
+            {
+              err,
+              cycleId: cycle.id,
+              path: cycle.edges.map((e) => e.poolAddress).join(" -> "),
+            },
+            "Unexpected error evaluating pipeline cycle",
+          );
+        }
+        return { type: "error" as const, cycle };
+      }
+    });
 
     type EvalSuccess = {
       type: "success";
@@ -380,8 +403,13 @@ export async function evaluatePipeline(
 
     for (const res of results) {
       if (res.type === "noRate") noRate++;
-      else if (res.type === "pruned") pruned++;
-      else if (res.type === "success" && "cycle" in res) {
+      else if (res.type === "pruned") {
+        pruned++;
+        if (res.reason === "missingState") prunedMissingState++;
+        else if (res.reason === "invalidBounds") prunedInvalidBounds++;
+        else if (res.reason === "noGrossProfit") prunedNoGrossProfit++;
+        else if (res.reason === "finalCheckFailed") prunedFinalCheckFailed++;
+      } else if (res.type === "success" && "cycle" in res) {
         simulated++;
         const cycleForRes = res.cycle;
         if (res.bestGrossMatic > 0n && (maxGrossMatic === undefined || res.bestGrossMatic > maxGrossMatic)) {
@@ -415,6 +443,10 @@ export async function evaluatePipeline(
     profitableCount: profitable.length,
     simulated,
     pruned,
+    prunedMissingState,
+    prunedInvalidBounds,
+    prunedNoGrossProfit,
+    prunedFinalCheckFailed,
     noRate,
     maxGrossProfitMatic: maxGrossMatic,
   };
