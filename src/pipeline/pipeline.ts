@@ -289,7 +289,7 @@ export async function evaluatePipeline(
               mid,
               stateCache,
               options,
-              true, // skipImpactCheck=true during search
+              true, // skipImpactCheck=true: search probes skip impact to find optimal
               true, // minimalForSearch=true
               prebuiltSimEdges,
               undefined,

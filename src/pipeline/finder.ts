@@ -49,7 +49,24 @@ export function getDynamicSearchBounds(
     if (protocol.includes("V3") || protocol.includes("V4") || protocol.includes("ELASTIC")) {
       const rawLiq = (state as Record<string, unknown>).liquidity;
       const liq = toBigInt(rawLiq, 0n);
-      capacity = liq / 1_000_000_000_000n;
+      const rawSqrt = (state as Record<string, unknown>).sqrtPriceX96;
+      const sqrtPriceX96 = toBigInt(rawSqrt, 0n);
+      // V3 liquidity L is in virtual sqrt-k units. Convert to real token
+      // depth based on swap direction. sqrtPriceX96 encodes ratio of
+      // token1/token0 (raw amounts). For zeroForOne (sell token0) we
+      // need token0 depth: L * 2^96 / sqrtPriceX96. For !zeroForOne
+      // (sell token1) we need token1 depth: L * sqrtPriceX96 / 2^96.
+      if (sqrtPriceX96 > 0n && liq > 0n) {
+        if (edge.zeroForOne) {
+          // token0 = L * 2^96 / sqrtPriceX96
+          capacity = ((liq << 96n) / sqrtPriceX96) / 1000n;
+        } else {
+          // token1 = L * sqrtPriceX96 / 2^96
+          capacity = ((liq * sqrtPriceX96) >> 96n) / 1000n;
+        }
+      } else {
+        capacity = liq; // bare L as fallback
+      }
     } else if (protocol.includes("BALANCER") || protocol.includes("CURVE")) {
       const balances = (state as any).balances as bigint[] | undefined;
       if (balances && balances.length >= 2) {
@@ -65,16 +82,43 @@ export function getDynamicSearchBounds(
       }
     }
 
+    // Normalize capacity to start token units so minCapacity compares
+    // apples-to-apples. Without normalization, a USDC edge (6 decimals)
+    // vs a WMATIC edge (18 decimals) would produce wildly different raw
+    // numbers for the same economic value, breaking the min comparison.
+    if (startRate > 0n) {
+      const tokenInAddr = edge.tokenIn.toLowerCase();
+      const tokenInRate = tokenToMaticRates.get(tokenInAddr);
+      if (tokenInRate && tokenInRate > 0n) {
+        capacity = (capacity * tokenInRate) / startRate;
+      }
+    }
+
     if (minCapacity === -1n || capacity < minCapacity) {
       minCapacity = capacity;
     }
   }
 
-  // Final fallback if no capacity could be determined from state: 100 units
-  if (minCapacity <= 0n) minCapacity = 100n * 10n ** 18n;
+  // If capacity is zero or NaN (from zero-liquidity V3 pool), fall back.
+  if (minCapacity <= 0n) {
+    minCapacity = 100n * 10n ** 18n;
+  }
 
-  const low = minCapacity / 5000n; // 0.02%
+  let low = minCapacity / 5000n; // 0.02%
   let high = minCapacity / 10n; // 10%
+
+  // Minimum economic low bound: amounts below this cannot overcome gas costs.
+  // Even a 1% net spread on 0.01 MATIC = 1e-4 MATIC profit, far below gas (~0.06).
+  // We need the initial search point to be large enough that a reasonable spread
+  // (0.1-1%) generates gross profit > gas. For WMATIC ($0.70) that's ~1-10 MATIC.
+  // Use 1 MATIC worth (1e18 MATIC wei) as the absolute economic floor.
+  const MIN_ECONOMIC_VALUE_MATIC_WEI = 10n ** 18n; // 1 MATIC
+  if (startRate > 0n) {
+    const minEconomicInToken = (MIN_ECONOMIC_VALUE_MATIC_WEI * 10n ** 18n) / startRate;
+    if (low < minEconomicInToken) {
+      low = minEconomicInToken;
+    }
+  }
 
   // Clamp high to USD cap if we have an oracle rate.
   // Formula: tokenUnits = (USD * 1e18 * 1e18) / startRate

@@ -122,7 +122,7 @@ export async function fetchMissingPoolState(
 
   const toFetch = Array.from(missingAddresses);
 
-  const BATCH_SIZE = 300;
+  const BATCH_SIZE = 500;
   const batches: string[][] = [];
   for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
     batches.push(toFetch.slice(i, i + BATCH_SIZE));
@@ -143,7 +143,7 @@ export async function fetchMissingPoolState(
   type V2Reserves = readonly [bigint, bigint, number] | { reserve0: bigint; reserve1: bigint; blockTimestampLast: number };
   type V3Slot0 = readonly [bigint, number, number, number, number, number, boolean] | { sqrtPriceX96: bigint; tick: number };
 
-  const CONCURRENCY_LIMIT = 3;
+  const CONCURRENCY_LIMIT = 5;
   for (let i = 0; i < batches.length; i += CONCURRENCY_LIMIT) {
     const chunk = batches.slice(i, i + CONCURRENCY_LIMIT);
     await Promise.all(

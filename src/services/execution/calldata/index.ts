@@ -43,7 +43,7 @@ export function encodeRoute(route: CalldataRoute, executorAddress: string, optio
     // (beyond the already-high build slip for minOuts) to further protect V2 chains against
     // "ERC20: transfer amount exceeds balance" when actual delivered by prev < sim (even
     // after high slip + rates focus). Swap minOuts stay at the build slip; final assert guards.
-    const transferSlipBps = (options.slippageBps ?? 50) + 500; // bumped further for multi-hop V2 chains (new 4-hop routes from focus still hit exceeds at call 2 on some transfers; main 2-hop still K at 3 on minOut even after prior +300 and minOut slip bump; assert still guards)
+    const transferSlipBps = (options.slippageBps ?? 50) + 100; // intermediate hop buffer for state drift (100bp = 1% safety)
     const amountIn = i === 0 ? rawAmountIn : slippageAdjustedAmountOut(rawAmountIn, transferSlipBps, `hop-${i}`);
     const amountOut = result.hopAmounts[i + 1];
     const proto = normalizeProtocolKey(edge.protocol);

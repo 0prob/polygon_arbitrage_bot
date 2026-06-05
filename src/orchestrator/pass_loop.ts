@@ -302,7 +302,7 @@ async function runLfStateRefresh(
 
   if (stateCacheEmpty) {
     const BASE_MAX = 12000;
-    const MAX_BOOTSTRAP_POOLS = lowInfra ? Math.floor(BASE_MAX * 0.4) : BASE_MAX;
+    const MAX_BOOTSTRAP_POOLS = lowInfra ? Math.floor(BASE_MAX * 0.7) : BASE_MAX;
     const stateAddrSet = new Set<string>();
     for (const addr of stateCache.keys()) stateAddrSet.add(addr);
     const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
@@ -359,8 +359,8 @@ async function runLfStateRefresh(
   const CACHE_TARGET = 30000;
   // Fire-and-forget: state accumulates into shared ctx.stateCache as batches complete.
   if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
-    const BASE_EXP = 4000;
-    const EXPANSION_BATCH = lowInfra ? Math.floor(BASE_EXP * 0.4) : BASE_EXP;
+    const BASE_EXP = 6000;
+    const EXPANSION_BATCH = lowInfra ? Math.floor(BASE_EXP * 0.5) : BASE_EXP;
     const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
     if (uncached.length > 0) {
       const batch = uncached.slice(0, EXPANSION_BATCH);
@@ -398,7 +398,7 @@ async function runBootstrapInBackground(
   for (let i = 0; i < toBootstrap.length; i += BATCH_SIZE_BS) {
     batches.push(toBootstrap.slice(i, i + BATCH_SIZE_BS));
   }
-  const CONCURRENCY_BS = 4;
+  const CONCURRENCY_BS = 6;
   const localUpdated = new Set<string>();
   for (let i = 0; i < batches.length; i += CONCURRENCY_BS) {
     const chunk = batches.slice(i, i + CONCURRENCY_BS);
@@ -1099,7 +1099,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
                 {
-                  slippageBps: Number(options.slippageBps ?? 400n) + Math.floor(obscurityRelax) + 500, // bumped further (+400 default / +500) based on 93.6s tailer data (K at call 3 persisted even after previous bump and "Starting" of new main with higher slip; even smaller minOut for V2 swaps to give K more headroom on thin/pending reserves with high gas ~445 (assert still guards net)
+                  slippageBps: Number(options.slippageBps ?? 50n) + Math.floor(obscurityRelax) * 2, // base from config + obscurity relaxation up to 50bp; removed prior +500 blanket that caused cascading K errors
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
                   stateCache,
                 },

@@ -1,6 +1,8 @@
 import type { Address } from "../../core/types/common.ts";
 
-// Known function selectors for swap methods
+// DEX swap function selectors only.
+// Non-swap selectors (Polymarket, ClaimInterest, Governance, etc.) are filtered
+// before this map is consulted — see IGNORED_SELECTORS in service.ts.
 export const SELECTORS: Record<string, string> = {
   "0x022c0d9f": "UNISWAP_V2", // swap(uint256,uint256,address,bytes)
   "0x128acb08": "UNISWAP_V3", // swap(address,bool,int256,uint160,bytes)
@@ -12,17 +14,9 @@ export const SELECTORS: Record<string, string> = {
   "0x9ba7e8a9": "WOOFI", // swap(address,uint256,uint256,address,address)
   "0x3b358e1b": "KYBERSWAP_ELASTIC", // swap(address,address,uint256,bytes)
   "0x6c70970e": "UNISWAP_V4", // swap((address,address,uint24,int24,address),bool,int128,uint160,bytes)
-  "0x3c2b4399": "POLYMARKET_CTF", // matchOrders
   "0x01b7037c": "OTHER",
   "0xa00597a0": "OTHER",
   "0x5c11d795": "UNISWAP_V2_ROUTER", // swapExactTokensForTokensSupportingFeeOnTransferTokens
-  "0x3829cab1": "CLAIM_INTEREST",
-  "0x6a761202": "GNOSIS_SAFE", // execTransaction
-  "0x46a73fb1": "SILENCE",
-  "0xa694fc3a": "STAKE",
-  "0x5638f1f3": "REDEEM_SILENCE",
-  "0xd9f0f7f5": "UNSTAKE_PRINCIPAL",
-  "0x0a3c4405": "POLYMARKET_DEPOSIT",
 };
 
 export interface DecodedSwap {

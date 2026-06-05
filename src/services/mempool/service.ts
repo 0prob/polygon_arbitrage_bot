@@ -57,12 +57,21 @@ export class MempoolService {
     const traceId = "tx-" + tx.hash.slice(2, 8);
     const selector = tx.input.slice(0, 10).toLowerCase();
 
-    // Noise filter for common non-swap selectors
+    // Noise filter for common non-swap selectors (checked BEFORE decoder).
+    // These are not DEX swaps even if they interact with known pools.
     const IGNORED_SELECTORS = new Set([
       "0xe3ee160e", // transferWithAuthorization (USDC)
       "0xd286f3cf", // claimInterest
       "0xa9059cbb", // transfer(address,uint256)
       "0x095ea7b3", // approve(address,uint256)
+      "0x3c2b4399", // POLYMARKET_CTF matchOrders
+      "0x3829cab1", // CLAIM_INTEREST
+      "0x6a761202", // GNOSIS_SAFE execTransaction
+      "0x46a73fb1", // SILENCE
+      "0xa694fc3a", // STAKE
+      "0x5638f1f3", // REDEEM_SILENCE
+      "0xd9f0f7f5", // UNSTAKE_PRINCIPAL
+      "0x0a3c4405", // POLYMARKET_DEPOSIT
     ]);
     if (IGNORED_SELECTORS.has(selector)) return;
 
@@ -96,13 +105,22 @@ export class MempoolService {
       this.knownPools.add(decoded.poolAddress.toLowerCase());
     }
 
-    if (this.overlay && decoded.protocol.startsWith("UNISWAP_V2")) {
-      this.logger.debug({ pool: decoded.poolAddress, amount: decoded.amountIn.toString() }, "mempool: updating overlay");
-      const amount = decoded.amountIn;
-      if (decoded.zeroForOne) {
-        this.overlay.update(decoded.poolAddress, { reserve0: amount });
-      } else {
-        this.overlay.update(decoded.poolAddress, { reserve1: amount });
+    if (this.overlay) {
+      if (decoded.protocol.startsWith("UNISWAP_V2")) {
+        this.logger.debug({ pool: decoded.poolAddress, amount: decoded.amountIn.toString() }, "mempool: updating V2 overlay");
+        const amount = decoded.amountIn;
+        if (decoded.zeroForOne) {
+          this.overlay.update(decoded.poolAddress, { reserve0: amount });
+        } else {
+          this.overlay.update(decoded.poolAddress, { reserve1: amount });
+        }
+      } else if (decoded.protocol.startsWith("UNISWAP_V3") && decoded.zeroForOne !== undefined) {
+        // V3 overlay: mark state dirty for the dry runner by setting a sentinel.
+        // The exact sqrtPriceX96 projection requires running the swap math, which
+        // is deferred to the dry runner. Setting { pendingV3: true } triggers a
+        // fresh RPC read for this pool before the dry run.
+        this.logger.debug({ pool: decoded.poolAddress }, "mempool: marking V3 pool dirty for overlay");
+        this.overlay.update(decoded.poolAddress, { pendingV3: true });
       }
     }
 

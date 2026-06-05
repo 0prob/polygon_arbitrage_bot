@@ -62,15 +62,14 @@ describe("getDynamicSearchBounds", () => {
 
     const bounds = getDynamicSearchBounds(cycle, stateCache, rates);
 
-    // minCapacity = 1e18 / 1e12 = 1,000,000 units
-    // low = 1,000,000 / 5000 = 200
-    // high = 1,000,000 / 10 = 100,000
-    // floorLow = high / 100 = 1000
-    // finalLow = max(200, 1000) = 1000
-    // finalHigh = max(100000, 1001) = 100000
-
-    expect(bounds.low).toBe(1000n);
-    expect(bounds.high).toBe(100_000n);
+    // V3 fallback capacity = liq = 1e18 (no sqrtPriceX96 in test state)
+    // low = 1e18 / 5000 = 2e14
+    // high = 1e18 / 10 = 1e17
+    // min economic floor: 1e18 * 1e18 / 1e18 (WMATIC rate) = 1e18
+    // finalLow = max(1e18, max(2e14, 1e15)) = 1e18
+    // finalHigh = max(1e17, 1e18 + 1) = 1e18 + 1
+    expect(bounds.low).toBe(1_000_000_000_000_000_000n);
+    expect(bounds.high).toBe(1_000_000_000_000_000_001n);
   });
 
   it("clamps high bound based on USD cap", () => {

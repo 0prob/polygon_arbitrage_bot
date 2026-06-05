@@ -37,7 +37,7 @@ export const DEFAULTS = {
     enumerationMaxPaths: 5_000, // Raised for long-tail strategy: findCycles can emit 250k; 1k was too restrictive. On low-infra (see pass_loop lowInfra scaling) this gets halved automatically.
     concurrency: 75,
     ternarySearchIterations: 12, // Slightly fewer iterations, more cycles (pairs with higher enumerationMaxPaths)
-    maxPriceImpactThreshold: 0.05,
+    maxPriceImpactThreshold: 0.10,
     graphFullRebuildInterval: 100,
   },
   execution: {
