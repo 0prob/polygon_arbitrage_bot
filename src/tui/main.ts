@@ -1,7 +1,10 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { EventBus, type ArbEvent } from "./events.ts";
 import { createInitialState, applyEvent } from "./state.ts";
 import { computeLayout } from "./layout.ts";
 import { Renderer } from "./renderer.ts";
+import type { Logger } from "../infra/observability/logger.ts";
+import util from "util";
 
 export interface TuiInstance {
   bus: EventBus;
@@ -9,7 +12,7 @@ export interface TuiInstance {
   stop(): void;
 }
 
-export function createTui(bus?: EventBus): TuiInstance {
+export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
   if (!bus) bus = new EventBus();
   const state = createInitialState();
   const renderer = new Renderer(process.stdout);
@@ -19,6 +22,13 @@ export function createTui(bus?: EventBus): TuiInstance {
   let frameCount = 0;
   let focusedSection = -1; // -1 = none, 0-5 = section index
   let started = false;
+  let originalConsole: {
+    log: typeof console.log;
+    info: typeof console.info;
+    warn: typeof console.warn;
+    error: typeof console.error;
+    debug: typeof console.debug;
+  } | null = null;
 
   function handleResize(): void {
     layout = computeLayout(process.stdout.columns, process.stdout.rows);
@@ -44,6 +54,15 @@ export function createTui(bus?: EventBus): TuiInstance {
       process.stdin.off("data", stdinHandler);
       process.stdin.setRawMode(false);
       stdinHandler = null;
+    }
+
+    if (originalConsole) {
+      console.log = originalConsole.log;
+      console.info = originalConsole.info;
+      console.warn = originalConsole.warn;
+      console.error = originalConsole.error;
+      console.debug = originalConsole.debug;
+      originalConsole = null;
     }
 
     renderer.exit();
@@ -86,6 +105,38 @@ export function createTui(bus?: EventBus): TuiInstance {
     start() {
       if (started) return;
       started = true;
+
+      // Hijack console to prevent stdout pollution and flickering
+      originalConsole = {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+        debug: console.debug,
+      };
+
+      const redirectConsole = (type: "log" | "info" | "warn" | "error" | "debug") => {
+        return (...args: any[]) => {
+          const formatted = util.format(...args);
+          if (logger) {
+            if (type === "error") logger.error({ source: "console" }, formatted);
+            else if (type === "warn") logger.warn({ source: "console" }, formatted);
+            else if (type === "debug") logger.debug({ source: "console" }, formatted);
+            else logger.info({ source: "console" }, formatted);
+          }
+          bus?.emit({
+            type: "error",
+            component: "Console",
+            message: formatted,
+          });
+        };
+      };
+
+      console.log = redirectConsole("log");
+      console.info = redirectConsole("info");
+      console.warn = redirectConsole("warn");
+      console.error = redirectConsole("error");
+      console.debug = redirectConsole("debug");
 
       renderer.enter();
 

@@ -17,8 +17,15 @@
     "arb": "bun --env-file=.env run src/cli/arb_only.ts",
     "arbt": "bun --env-file=.env run src/cli/arb_only.ts --tui",
     "dev": "bun --env-file=.env --env-file=hyperindex/.env scripts/dev-hyperindex.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "check": "bunx tsc --noEmit && bunx eslint src/ && bunx prettier --check .",
-    "fix": "bunx eslint src/ --fix && bunx prettier --write ."
+    "fix": "bunx eslint src/ --fix && bunx prettier --write .",
+    "resolve-selectors": "bun scripts/resolve-selectors.ts",
+    "decode-failing": "bun scripts/decode-failing.ts",
+    "hyperindex:generate-tokens": "bun --cwd hyperindex run generate-tokens",
+    "hyperindex:dev:reset": "bun --cwd hyperindex run dev:reset"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "1.3.0",

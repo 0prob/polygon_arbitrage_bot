@@ -122,4 +122,45 @@ describe("MempoolService", () => {
     service.processPendingTx(tx);
     expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve1: 10n });
   });
+
+  it("tracks unknown selectors and saves them to a file", async () => {
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const fs = await import("node:fs");
+    const testDir = "./data/test-mempool";
+    if (!fs.existsSync(testDir)) {
+      fs.mkdirSync(testDir, { recursive: true });
+    }
+    const service = new MempoolService(logger, {
+      coalesceTtlMs: 100,
+      largeSwapThresholdWei: 1n,
+      dataDir: testDir,
+    });
+
+    await service.start();
+
+    // Process a tx with an unknown selector (not ignored, not in SELECTORS)
+    const unknownSelector = "0x99999999";
+    service.processPendingTx({
+      hash: "0xunknownhash",
+      to: "0xunknownpool",
+      input: unknownSelector + "0".repeat(64),
+      value: "0x0",
+    });
+
+    // Stop to force flushing changes to disk
+    service.stop();
+
+    const filePath = `${testDir}/unknown-selectors.json`;
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    const content = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    expect(content[unknownSelector]).toBeDefined();
+    expect(content[unknownSelector].selector).toBe(unknownSelector);
+    expect(content[unknownSelector].count).toBe(1);
+    expect(content[unknownSelector].sampleTx).toBe("0xunknownhash");
+
+    // Clean up
+    fs.unlinkSync(filePath);
+    fs.rmdirSync(testDir);
+  });
 });

@@ -73,7 +73,7 @@ export function buildExecutionCandidate(
     targetAddress: built.to,
     value: built.value,
     profitToken: profitable.cycle.startToken,
-    expectedProfit: profitable.assessment.netProfitAfterGas,
+    expectedProfit: profitable.assessment.netProfitAfterGasMaticWei,
     traceId,
   };
 }

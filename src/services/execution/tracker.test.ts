@@ -73,4 +73,22 @@ describe("ExecutionTracker", () => {
     expect(tracker.getRouteStats("stale")).toBeUndefined();
     expect(tracker.getRouteStats("fresh")).toBeDefined();
   });
+
+  it("recalculates stats correctly when a route is partially pruned", () => {
+    const now = Date.now();
+    tracker.record(makeRecord({ routeKey: "partial", timestamp: now, profit: 100n }));
+    tracker.record(makeRecord({ routeKey: "partial", timestamp: now - 100_000, profit: 50n }));
+
+    // Before prune: 2 attempts, total profit 150n
+    let stats = tracker.getRouteStats("partial");
+    expect(stats?.totalAttempts).toBe(2);
+    expect(stats?.totalProfit).toBe(150n);
+
+    tracker.prune(50_000);
+
+    // After prune: only the fresh record should remain, total profit 100n
+    stats = tracker.getRouteStats("partial");
+    expect(stats?.totalAttempts).toBe(1);
+    expect(stats?.totalProfit).toBe(100n);
+  });
 });

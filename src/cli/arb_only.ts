@@ -85,7 +85,7 @@ async function main() {
   });
   await hyperIndexMonitor.start().catch((e) => logger.warn({ e }, "monitor start warn"));
 
-  const tui = useTui ? createTui(bus) : null;
+  const tui = useTui ? createTui(bus, logger) : null;
   if (tui) {
     tui.start();
   }

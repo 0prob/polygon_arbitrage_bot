@@ -163,7 +163,7 @@ async function main() {
     logger.warn({ err, port: 9090 }, "Failed to start health server");
   }
 
-  const tui = useTui ? createTui(bus) : null;
+  const tui = useTui ? createTui(bus, logger) : null;
   if (tui) {
     tui.start();
   }

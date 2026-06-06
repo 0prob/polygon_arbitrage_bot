@@ -230,6 +230,7 @@ export async function bootApplication(
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
     largeSwapThresholdWei: BigInt(Math.floor(config.mempool.largeSwapThresholdUsd)) * approxRawPerUsd,
+    dataDir: config.paths.dataDir,
   };
   const pendingStateOverlay = new InMemoryPendingStateOverlay();
   const mempoolService = new MempoolService(logger, mempoolOptions, pendingStateOverlay);

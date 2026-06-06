@@ -91,9 +91,19 @@ export class ExecutionTracker {
     const removed = before - this.records.length;
 
     if (removed > 0) {
-      const stale = new Set(this.records.map((r) => r.routeKey));
-      for (const [key] of this.routeStats) {
-        if (!stale.has(key)) this.routeStats.delete(key);
+      this.routeStats.clear();
+      for (const entry of this.records) {
+        let stats = this.routeStats.get(entry.routeKey);
+        if (!stats) {
+          stats = { totalAttempts: 0, totalSuccesses: 0, totalReverts: 0, totalProfit: 0n, lastSeen: 0, winRate: 0 };
+          this.routeStats.set(entry.routeKey, stats);
+        }
+        stats.totalAttempts++;
+        if (entry.success) stats.totalSuccesses++;
+        else stats.totalReverts++;
+        stats.totalProfit += entry.profit;
+        stats.lastSeen = entry.timestamp;
+        stats.winRate = stats.totalAttempts > 0 ? stats.totalSuccesses / stats.totalAttempts : 0;
       }
     }
   }

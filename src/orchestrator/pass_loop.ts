@@ -1094,7 +1094,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             bus?.emit({
               type: "opportunity_found",
               routeKey,
-              profitWei: profitable.assessment.netProfitAfterGas,
+              profitWei: profitable.assessment.netProfitAfterGasMaticWei,
               path,
               roi: profitable.assessment.roi,
             });
@@ -1190,7 +1190,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                   type: "execution_attempt",
                   protocolPath: c.profitable.cycle.edges.map((e: SwapEdge) => e.protocol).join("→"),
                   hopCount: c.profitable.cycle.hopCount,
-                  expectedProfit: c.profitable.assessment.netProfitAfterGas,
+                  expectedProfit: c.profitable.assessment.netProfitAfterGasMaticWei,
                   txHash: undefined,
                 });
               }
@@ -1211,9 +1211,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
                   // Try to get actual profit from tracker if available
                   const tracked = ctx.executionService.tracker.getRecentRecords(10).find((e) => e.txHash === execResult.txHash);
-                  const profitWei = tracked
-                    ? tracked.profit
-                    : candidates.find((c) => c.routeKey === routeKey)?.profitable.assessment.netProfitAfterGas;
+                  const cand = candidates.find((c) => c.routeKey === routeKey);
+                  let profitWei = 0n;
+                  if (cand) {
+                    const startRate = tokenToMaticRates.get(cand.profitable.cycle.startToken.toLowerCase()) ?? 0n;
+                    const profitInTokens = tracked ? tracked.profit : cand.profitable.assessment.netProfitAfterGas;
+                    if (startRate > 0n) {
+                      profitWei = (profitInTokens * startRate) / 1000000000000000000n;
+                    } else {
+                      profitWei = cand.profitable.assessment.netProfitAfterGasMaticWei;
+                    }
+                  }
 
                   bus?.emit({
                     type: "execution_result",

@@ -1,4 +1,4 @@
-import { indexer } from "envio";
+import { indexer, Effect } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
@@ -6,7 +6,7 @@ import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 interface DodoHandlerContext {
-  effect: (effect: unknown, input: unknown) => Promise<unknown>;
+  effect: <I, O>(effect: Effect<I, O>, input: I extends undefined ? undefined : I) => Promise<O>;
   isPreload: boolean;
   PoolMeta: { set: (entity: unknown) => void };
   DodoPoolState: { set: (entity: unknown) => void };

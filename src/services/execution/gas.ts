@@ -216,7 +216,7 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
       let priorityFromHistory: bigint | null = null;
       if (feeHistory?.reward && feeHistory.reward.length > 0) {
         // Most recent block's reward array for the requested percentile(s)
-        const latestRewards = feeHistory.reward[0];
+        const latestRewards = feeHistory.reward[feeHistory.reward.length - 1];
         if (latestRewards && latestRewards.length > 0) {
           const v = latestRewards[0];
           if (typeof v === "bigint" && v > 0n) {
