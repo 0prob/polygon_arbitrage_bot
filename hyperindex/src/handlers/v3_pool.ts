@@ -1,15 +1,52 @@
 import { indexer } from "envio";
 
 /**
- * Live debug / discovery-only profile for V3 (see v2_pool.ts for full rationale).
+ * Uniswap V3 Pool Event Handlers
  *
- * We keep the wildcard registration so that contractRegister from V3Factory works,
- * but we emit zero entity writes on the hot path (Swap is extremely high volume on Polygon).
+ * Optimizations applied (Envio v3 Best Practices):
+ * 1. Preload Optimization: Batched database reads (V3PoolState and PoolMeta) are executed
+ *    concurrently using Promise.all in Phase 1 (Preload).
+ * 2. Early Exit: Exit early on `context.isPreload === true` to prevent any writes in the preload phase.
+ * 3. Consistently lowercased addressing is automatically supported via address_format: lowercase in config.yaml.
  */
-indexer.onEvent({ contract: "UniswapV3Pool", event: "Initialize" }, async () => {
-  // Creation metadata already handled in V3Factory.PoolCreated
+indexer.onEvent({ contract: "UniswapV3Pool", event: "Initialize" }, async ({ event, context }) => {
+  const poolAddr = event.srcAddress;
+
+  // Concurrently fetch V3 pool state and pool metadata in preload pass.
+  const [existing, meta] = await Promise.all([context.V3PoolState.get(poolAddr), context.PoolMeta.get(poolAddr)]);
+
+  // Skip writes during preload phase
+  if (context.isPreload) return;
+
+  context.V3PoolState.set({
+    id: poolAddr,
+    address: poolAddr,
+    lastUpdatedBlock: Number(event.block.number),
+    sqrtPriceX96: event.params.sqrtPriceX96,
+    liquidity: existing?.liquidity ?? 0n,
+    tick: Number(event.params.tick),
+    fee: existing?.fee ?? meta?.fee ?? undefined,
+    tickSpacing: existing?.tickSpacing ?? meta?.tickSpacing ?? undefined,
+  });
 });
 
-indexer.onEvent({ contract: "UniswapV3Pool", event: "Swap" }, async () => {
-  // No-op — state comes from bot's RPC fetcher instead.
+indexer.onEvent({ contract: "UniswapV3Pool", event: "Swap" }, async ({ event, context }) => {
+  const poolAddr = event.srcAddress;
+
+  // Concurrently fetch V3 pool state and pool metadata in preload pass.
+  const [existing, meta] = await Promise.all([context.V3PoolState.get(poolAddr), context.PoolMeta.get(poolAddr)]);
+
+  // Skip writes during preload phase
+  if (context.isPreload) return;
+
+  context.V3PoolState.set({
+    id: poolAddr,
+    address: poolAddr,
+    lastUpdatedBlock: Number(event.block.number),
+    sqrtPriceX96: event.params.sqrtPriceX96,
+    liquidity: event.params.liquidity,
+    tick: Number(event.params.tick),
+    fee: existing?.fee ?? meta?.fee ?? undefined,
+    tickSpacing: existing?.tickSpacing ?? meta?.tickSpacing ?? undefined,
+  });
 });

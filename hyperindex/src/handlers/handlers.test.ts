@@ -16,6 +16,21 @@ process.env.INDEXER_PROGRESS_REALTIME_START = "5024576";
 
 import { describe, it, expect } from "vitest";
 import { createTestIndexer } from "envio";
+import { publicClient } from "../effects/rpc_client";
+
+(publicClient as any).readContract = async ({ functionName }: any) => {
+  if (functionName === "_I_") return 1n;
+  if (functionName === "_K_") return 1n;
+  if (functionName === "_BASE_RESERVE_") return 100n;
+  if (functionName === "_QUOTE_RESERVE_") return 200n;
+  if (functionName === "_BASE_TARGET_") return 100n;
+  if (functionName === "_QUOTE_TARGET_") return 200n;
+  if (functionName === "_R_STATUS_") return 0;
+  if (functionName === "_LP_FEE_RATE_") return 10n;
+  if (functionName === "_MT_FEE_RATE_") return 20n;
+  if (functionName === "decimals") return 18;
+  return 0n;
+};
 
 // Well-known Quickswap V2 factory address (registered in config.yaml)
 const QUICKSWAP_V2 = "0x5757371414417b8c6caad45baef941abc7d3ab32";
@@ -324,5 +339,155 @@ describe("Multiple events in sequence", () => {
     // Total events across all change entries should be 2
     const totalEvents = result.changes.reduce((sum, c) => sum + c.eventsProcessed, 0);
     expect(totalEvents).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("UniswapV2Pool.Sync", () => {
+  it("updates V2PoolState", async () => {
+    const indexer = createTestIndexer();
+
+    await indexer.process({
+      chains: {
+        137: {
+          simulate: [
+            {
+              contract: "V2Factory",
+              event: "PairCreated",
+              srcAddress: QUICKSWAP_V2,
+              block: { number: SIM_BLOCK },
+              params: {
+                token0: WMATIC,
+                token1: USDC,
+                pair: PAIR_ADDR,
+                _3: 1n,
+              },
+            },
+            {
+              contract: "UniswapV2Pool",
+              event: "Sync",
+              srcAddress: PAIR_ADDR,
+              block: { number: SIM_BLOCK + 1 },
+              params: {
+                reserve0: 1000n,
+                reserve1: 2000n,
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const state = await indexer.V2PoolState.get(PAIR_ADDR);
+    expect(state).toBeDefined();
+    expect(state?.reserve0).toBe(1000n);
+    expect(state?.reserve1).toBe(2000n);
+    expect(state?.lastUpdatedBlock).toBe(SIM_BLOCK + 1);
+  });
+});
+
+describe("UniswapV3Pool.Initialize & Swap", () => {
+  it("updates V3PoolState", async () => {
+    const indexer = createTestIndexer();
+
+    await indexer.process({
+      chains: {
+        137: {
+          simulate: [
+            {
+              contract: "V3Factory",
+              event: "PoolCreated",
+              srcAddress: UNISWAP_V3,
+              block: { number: SIM_BLOCK },
+              params: {
+                token0: WETH,
+                token1: USDC,
+                fee: 500n,
+                tickSpacing: 10n,
+                pool: POOL_ADDR,
+              },
+            },
+            {
+              contract: "UniswapV3Pool",
+              event: "Initialize",
+              srcAddress: POOL_ADDR,
+              block: { number: SIM_BLOCK + 1 },
+              params: {
+                sqrtPriceX96: 12345n,
+                tick: 100n,
+              },
+            },
+            {
+              contract: "UniswapV3Pool",
+              event: "Swap",
+              srcAddress: POOL_ADDR,
+              block: { number: SIM_BLOCK + 2 },
+              params: {
+                sender: POOL_ADDR,
+                recipient: POOL_ADDR,
+                amount0: -100n,
+                amount1: 100n,
+                sqrtPriceX96: 12346n,
+                liquidity: 5000n,
+                tick: 101n,
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const state = await indexer.V3PoolState.get(POOL_ADDR);
+    expect(state).toBeDefined();
+    expect(state?.sqrtPriceX96).toBe(12346n);
+    expect(state?.liquidity).toBe(5000n);
+    expect(state?.tick).toBe(101);
+  });
+});
+
+describe("DodoPool.Sync", () => {
+  it("updates DodoPoolState base and quote reserves", async () => {
+    const indexer = createTestIndexer();
+    const DODO_POOL = "0xdddddddddddddddddddddddddddddddddddddddd";
+
+    // Seed the state database directly, bypassing DVMDeployed factory event and RPC fetches
+    indexer.DodoPoolState.set({
+      id: DODO_POOL,
+      address: DODO_POOL,
+      lastUpdatedBlock: SIM_BLOCK,
+      baseReserve: 0n,
+      quoteReserve: 0n,
+      targetBase: 0n,
+      targetQuote: 0n,
+      rStatus: 0,
+      k: 0n,
+      fee: 0n,
+      i: 0n,
+      lpFeeRate: 0n,
+      mtFeeRate: 0n,
+    });
+
+    await indexer.process({
+      chains: {
+        137: {
+          simulate: [
+            {
+              contract: "DodoPool",
+              event: "Sync",
+              srcAddress: DODO_POOL,
+              block: { number: SIM_BLOCK + 1 },
+              params: {
+                reserve0: 1000000000000000000n, // base
+                reserve1: 1000000n, // quote
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const state = await indexer.DodoPoolState.get(DODO_POOL);
+    expect(state).toBeDefined();
+    expect(state?.baseReserve).toBe(1000000000000000000n);
+    expect(state?.quoteReserve).toBe(1000000n);
   });
 });

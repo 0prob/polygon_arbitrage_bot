@@ -1,11 +1,26 @@
 import { indexer } from "envio";
 
 /**
- * Live debug indexer: per-Sync DodoPoolState writes removed.
+ * DODO Pool Sync Event Handler
  *
- * Initial DodoPoolState is written once at deploy time in dodo_factory.ts (handleDodoPool).
- * Repeated Sync updates were causing unnecessary DB writes for live tail.
+ * Optimizations applied (Envio v3 Best Practices):
+ * 1. Preload Optimization: Batched database reads (DodoPoolState) are executed
+ *    in Phase 1 (Preload).
+ * 2. Early Exit: Exit early on `context.isPreload === true` to prevent any writes in the preload phase.
+ * 3. Consistently lowercased addressing is automatically supported via address_format: lowercase in config.yaml.
  */
-indexer.onEvent({ contract: "DodoPool", event: "Sync" }, async () => {
-  // No-op. Creation-time state from factory; live updates via bot RPC fetcher.
+indexer.onEvent({ contract: "DodoPool", event: "Sync" }, async ({ event, context }) => {
+  const poolAddr = event.srcAddress;
+  const existing = await context.DodoPoolState.get(poolAddr);
+  if (!existing) return;
+
+  // Skip writes during preload phase
+  if (context.isPreload) return;
+
+  context.DodoPoolState.set({
+    ...existing,
+    lastUpdatedBlock: Number(event.block.number),
+    baseReserve: event.params.reserve0,
+    quoteReserve: event.params.reserve1,
+  });
 });

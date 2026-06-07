@@ -2,10 +2,11 @@ import type { Address } from "../core/types/common.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
 import { MAJOR_TOKENS } from "../core/constants.ts";
+import { normalizeProtocol, computeSpotPrice } from "./simulator.ts";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
-  const parts = edges.map((e) => e.poolAddress.toLowerCase()).sort();
-  parts.push(startToken.toLowerCase());
+  const parts = edges.map((e) => e.poolAddress).sort();
+  parts.push(startToken);
   return parts.join(":");
 }
 
@@ -33,12 +34,12 @@ export function getDynamicSearchBounds(
   tokenToMaticRates: Map<string, bigint>,
   maxFlashLoanUsd: number = 50_000,
 ): { low: bigint; high: bigint } {
-  const startRate = tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+  const startRate = tokenToMaticRates.get(cycle.startToken) ?? 0n;
 
   let minCapacity = -1n;
 
   for (const edge of cycle.edges) {
-    const addr = edge.poolAddress.toLowerCase();
+    const addr = edge.poolAddress;
     const state = stateCache.get(addr);
     if (!state) continue;
 
@@ -87,7 +88,7 @@ export function getDynamicSearchBounds(
     // vs a WMATIC edge (18 decimals) would produce wildly different raw
     // numbers for the same economic value, breaking the min comparison.
     if (startRate > 0n) {
-      const tokenInAddr = edge.tokenIn.toLowerCase();
+      const tokenInAddr = edge.tokenIn;
       const tokenInRate = tokenToMaticRates.get(tokenInAddr);
       if (tokenInRate && tokenInRate > 0n) {
         capacity = (capacity * tokenInRate) / startRate;
@@ -143,10 +144,15 @@ export function getDynamicSearchBounds(
   return { low: finalLow, high: finalHigh };
 }
 
+const feeLogWeightCache = new Map<bigint, number>();
 function feeLogWeight(feeBps: bigint): number {
+  const cached = feeLogWeightCache.get(feeBps);
+  if (cached !== undefined) return cached;
   const feeNum = Math.min(Number(feeBps), 9999);
   const factor = Math.max(1, 10000 - feeNum) / 10000;
-  return -Math.log(factor);
+  const val = -Math.log(factor);
+  feeLogWeightCache.set(feeBps, val);
+  return val;
 }
 
 /**
@@ -226,7 +232,7 @@ export function findCycles(
     return exceeded;
   }
 
-  // Pre-filter adjacency and pre-calculate obscurity for all edges (same as before for perf)
+  // Pre-filter adjacency and pre-calculate obscurity for all edges
   type EdgeWithObsc = SwapEdge & { obscurity: number };
   const activeAdjacency = new Map<string, EdgeWithObsc[]>();
   for (const [token, edges] of adjacency) {
@@ -239,34 +245,31 @@ export function findCycles(
   }
 
   // Recursive DFS to find cycles of length 2..hopLimit.
-  // Matches original unrolled logic exactly:
-  // - pool reuse prevention via usedPools (by poolAddress)
-  // - early close at depth d prevents extension to d+1 for that prefix (via return after collect)
-  // - obs avg + length-specific coefs (0.8,1.1,1.4,1.7) + fee log weights + cum fees
-  // - budget + maxCycles respected with early exits
-  // - reuses the pre-enriched edge objects in results (same as original)
-  function dfs(startToken: string, currToken: string, path: EdgeWithObsc[], usedPools: Set<string>, hops: number): void {
+  // Avoids path reduction loops by incrementally accumulating obscurity, log weight, and fee
+  function dfs(
+    startToken: string,
+    currToken: string,
+    path: EdgeWithObsc[],
+    usedPools: Set<string>,
+    hops: number,
+    currentObscuritySum: number,
+    currentLogWeight: number,
+    currentCumFee: bigint,
+  ): void {
     if (overBudget() || cycles.length >= maxCycles) return;
 
     if (hops >= 2 && currToken === startToken) {
       // Collect closing cycle at this exact depth (2..hopLimit)
-      const obsSum = path.reduce((s, e) => s + e.obscurity, 0);
-      const obs = obsSum / hops;
+      const obs = currentObscuritySum / hops;
       const coef = 0.8 + (hops - 2) * 0.3; // 0.8 for 2h, 1.1 for 3h, 1.4 for 4h, 1.7 for 5h
-      let logWeight = 0;
-      let cumFee = 0n;
-      for (const e of path) {
-        logWeight += feeLogWeight(e.feeBps);
-        cumFee += e.feeBps;
-      }
-      logWeight -= obs * coef;
+      const logWeight = currentLogWeight - obs * coef;
 
       cycles.push({
         startToken: startToken as Address,
         edges: [...path] as unknown as SwapEdge[], // clone to prevent mutations from affecting results
         hopCount: hops,
         logWeight,
-        cumulativeFeeBps: cumFee,
+        cumulativeFeeBps: currentCumFee,
       });
       return; // do not extend a just-closed cycle (prevents bogus longer cycles from shallower prefixes)
     }
@@ -277,12 +280,21 @@ export function findCycles(
     if (!nextEdges) return;
 
     for (const e of nextEdges) {
-      const pAddr = e.poolAddress.toLowerCase();
+      const pAddr = e.poolAddress;
       if (usedPools.has(pAddr)) continue;
 
       path.push(e);
       usedPools.add(pAddr);
-      dfs(startToken, e.tokenOut, path, usedPools, hops + 1);
+      dfs(
+        startToken,
+        e.tokenOut,
+        path,
+        usedPools,
+        hops + 1,
+        currentObscuritySum + e.obscurity,
+        currentLogWeight + feeLogWeight(e.feeBps),
+        currentCumFee + e.feeBps,
+      );
       path.pop();
       usedPools.delete(pAddr);
 
@@ -290,16 +302,17 @@ export function findCycles(
     }
   }
 
-  // Prioritize starting from MAJOR_TOKENS to ensure cycles with reliable rates are explored first.
-  // This reduces 'noRate' skips in the evaluation phase.
-  const allStartTokens = Array.from(activeAdjacency.keys());
-  const prioritizedStartTokens = allStartTokens.sort((a, b) => {
-    const aIsMajor = MAJOR_TOKENS.has(a.toLowerCase());
-    const bIsMajor = MAJOR_TOKENS.has(b.toLowerCase());
-    if (aIsMajor && !bIsMajor) return -1;
-    if (!aIsMajor && bIsMajor) return 1;
-    return 0;
-  });
+  // Prioritize starting from MAJOR_TOKENS using O(N) partitioning
+  const majorTokens: string[] = [];
+  const otherTokens: string[] = [];
+  for (const token of activeAdjacency.keys()) {
+    if (MAJOR_TOKENS.has(token)) {
+      majorTokens.push(token);
+    } else {
+      otherTokens.push(token);
+    }
+  }
+  const prioritizedStartTokens = majorTokens.concat(otherTokens);
 
   for (const startToken of prioritizedStartTokens) {
     if (overBudget()) break;
@@ -308,8 +321,9 @@ export function findCycles(
 
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
-      const used = new Set<string>([e1.poolAddress.toLowerCase()]);
-      dfs(startToken, e1.tokenOut, [e1], used, 1);
+      const used = new Set<string>([e1.poolAddress]);
+      const e1LogWeight = feeLogWeight(e1.feeBps);
+      dfs(startToken, e1.tokenOut, [e1], used, 1, e1.obscurity, e1LogWeight, e1.feeBps);
     }
   }
 
@@ -340,7 +354,7 @@ export function enumerateCycles(
       let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
 
       // Prioritize priceable tokens: bias score for MAJOR_TOKENS
-      if (MAJOR_TOKENS.has(cycle.startToken.toLowerCase())) {
+      if (MAJOR_TOKENS.has(cycle.startToken)) {
         score -= 2.0; // Significant bonus for major bases
       }
 
@@ -356,7 +370,179 @@ export function enumerateCycles(
   const scored = allCycles.map((cycle) => {
     cycle.id = routeKeyFromEdges(cycle.edges, cycle.startToken);
     let score = cycle.logWeight;
-    if (MAJOR_TOKENS.has(cycle.startToken.toLowerCase())) {
+    if (MAJOR_TOKENS.has(cycle.startToken)) {
+      score -= 2.0;
+    }
+    return { cycle, score };
+  });
+
+  return scored
+    .sort((a, b) => a.score - b.score)
+    .slice(0, maxCycles)
+    .map((s) => s.cycle);
+}
+
+export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+  const cycles: FoundCycle[] = [];
+  const foundKeys = new Set<string>();
+
+  const sourceTokens = Array.from(graph.adjacency.keys()).filter((t) => MAJOR_TOKENS.has(t));
+  if (sourceTokens.length === 0) {
+    sourceTokens.push(Array.from(graph.adjacency.keys())[0]);
+  }
+
+  for (const sourceToken of sourceTokens) {
+    if (cycles.length >= maxCycles) break;
+
+    const dist = new Map<string, number>();
+    const parent = new Map<string, SwapEdge>();
+    dist.set(sourceToken, 0);
+
+    // Relax up to maxHops times
+    for (let iter = 0; iter < maxHops; iter++) {
+      let relaxed = false;
+      for (const [u, edges] of graph.adjacency) {
+        const uDist = dist.get(u);
+        if (uDist === undefined || uDist === Infinity) continue;
+
+        for (const edge of edges) {
+          const v = edge.tokenOut;
+          const state = graph.stateRefs.get(edge.poolAddress);
+          if (!state) continue;
+
+          const normalizedProtocol = normalizeProtocol(edge.protocol);
+          const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
+          if (spotPrice <= 0) continue;
+
+          const feePct = Number(edge.feeBps) / 10000;
+          const weight = -Math.log(spotPrice * (1 - feePct));
+
+          const vDist = dist.get(v) ?? Infinity;
+          if (uDist + weight < vDist - 1e-9) {
+            dist.set(v, uDist + weight);
+            parent.set(v, edge);
+            relaxed = true;
+          }
+        }
+      }
+      if (!relaxed) break;
+    }
+
+    // Check for negative cycles
+    for (const [u, edges] of graph.adjacency) {
+      if (cycles.length >= maxCycles) break;
+      const uDist = dist.get(u);
+      if (uDist === undefined || uDist === Infinity) continue;
+
+      for (const edge of edges) {
+        const v = edge.tokenOut;
+        const state = graph.stateRefs.get(edge.poolAddress);
+        if (!state) continue;
+
+        const normalizedProtocol = normalizeProtocol(edge.protocol);
+        const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
+        if (spotPrice <= 0) continue;
+
+        const feePct = Number(edge.feeBps) / 10000;
+        const weight = -Math.log(spotPrice * (1 - feePct));
+
+        const vDist = dist.get(v) ?? Infinity;
+        if (uDist + weight < vDist - 1e-9) {
+          // Trace back to reconstruct negative cycle
+          const visited = new Set<string>();
+          let curr = v;
+          while (!visited.has(curr)) {
+            visited.add(curr);
+            const parentEdge = parent.get(curr);
+            if (!parentEdge) break;
+            curr = parentEdge.tokenIn;
+          }
+
+          const cycleEdges: SwapEdge[] = [];
+          let trace = curr;
+          const traceVisited = new Set<string>();
+          while (!traceVisited.has(trace)) {
+            traceVisited.add(trace);
+            const parentEdge = parent.get(trace);
+            if (!parentEdge) break;
+            cycleEdges.unshift(parentEdge);
+            trace = parentEdge.tokenIn;
+          }
+
+          if (cycleEdges.length >= 2 && cycleEdges.length <= maxHops) {
+            const firstEdge = cycleEdges[0];
+            const lastEdge = cycleEdges[cycleEdges.length - 1];
+            if (firstEdge.tokenIn === lastEdge.tokenOut) {
+              const startToken = firstEdge.tokenIn;
+              const key = routeKeyFromEdges(cycleEdges, startToken);
+              if (!foundKeys.has(key)) {
+                foundKeys.add(key);
+
+                let logWeight = 0;
+                let cumFee = 0n;
+                for (const e of cycleEdges) {
+                  const fNum = Math.min(Number(e.feeBps), 9999);
+                  const factor = Math.max(1, 10000 - fNum) / 10000;
+                  logWeight += -Math.log(factor);
+                  cumFee += e.feeBps;
+                }
+
+                let obsSum = 0;
+                for (const e of cycleEdges) {
+                  obsSum += getObscurityBonus(e.protocol);
+                }
+                const obs = obsSum / cycleEdges.length;
+                const coef = 0.8 + (cycleEdges.length - 2) * 0.3;
+                logWeight -= obs * coef;
+
+                cycles.push({
+                  id: key,
+                  startToken: startToken as Address,
+                  edges: cycleEdges,
+                  hopCount: cycleEdges.length,
+                  logWeight,
+                  cumulativeFeeBps: cumFee,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return cycles;
+}
+
+export function enumerateCyclesBellmanFord(
+  graph: RoutingGraph,
+  maxHops = 5,
+  maxCycles = MAX_CYCLES_PER_PASS,
+  getWinRate?: (key: string) => number,
+): FoundCycle[] {
+  const allCycles = findCyclesBellmanFord(graph, maxHops, maxCycles);
+
+  if (getWinRate) {
+    const scored = allCycles.map((cycle) => {
+      const key = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
+      cycle.id = key;
+      let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
+      if (MAJOR_TOKENS.has(cycle.startToken)) {
+        score -= 2.0;
+      }
+      return { cycle, score };
+    });
+
+    return scored
+      .sort((a, b) => a.score - b.score)
+      .slice(0, maxCycles)
+      .map((s) => s.cycle);
+  }
+
+  const scored = allCycles.map((cycle) => {
+    cycle.id = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
+    let score = cycle.logWeight;
+    if (MAJOR_TOKENS.has(cycle.startToken)) {
       score -= 2.0;
     }
     return { cycle, score };

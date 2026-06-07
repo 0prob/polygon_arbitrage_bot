@@ -53,19 +53,17 @@ const MULTICALL_BATCH_SIZE = veryLow ? 8 : low ? 12 : 16;
 const MULTICALL_WAIT_MS = veryLow ? 100 : low ? 75 : 50;
 
 const rpcUrls = getRpcUrls();
+console.log("[rpc_client] Initializing with RPC URLs:", rpcUrls);
 
 const transports: HttpTransport[] = rpcUrls.map((url) =>
   http(url, {
-    batch: false, // Disabled JSON-RPC batching entirely for better compatibility. Multicall remains enabled on the client.
-    timeout: 12_000, // Raised for effects (token meta + curve/balancer/dodo) which can be slow on first-seen during catchup bursts.
-    retryCount: 3, // More retries for transient HTTP failures on effect RPCs (seen live as "ContractFunctionExecutionError: HTTP request failed" + SLOW_EFFECT + "Network error fetching decimals").
-    retryDelay: 200,
-    fetchOptions: {
-      headers: {
-        Connection: "keep-alive",
-        "Keep-Alive": "timeout=60, max=1000",
-      },
+    batch: {
+      batchSize: 8, // Safe standard JSON-RPC batching size
+      wait: 20,
     },
+    timeout: 15_000, // Slightly raised for catchup bursts
+    retryCount: 3,
+    retryDelay: 500,
   }),
 );
 
@@ -74,12 +72,6 @@ const transport = transports.length > 1 ? fallback(transports, { rank: true }) :
 export const publicClient: PublicClient = createPublicClient({
   chain: polygon,
   transport,
-  batch: {
-    multicall: {
-      wait: MULTICALL_WAIT_MS,
-      batchSize: MULTICALL_BATCH_SIZE,
-    },
-  },
 });
 
 // Re-export for convenience in effects

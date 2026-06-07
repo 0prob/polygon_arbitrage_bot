@@ -39,6 +39,7 @@ export const DEFAULTS = {
     ternarySearchIterations: 12, // Slightly fewer iterations, more cycles (pairs with higher enumerationMaxPaths)
     maxPriceImpactThreshold: 0.1,
     graphFullRebuildInterval: 100,
+    cycleFinder: "dfs" as const,
   },
   execution: {
     minProfitWei: 100_000_000_000_000_000n, // 0.1 MATIC (~$0.10)

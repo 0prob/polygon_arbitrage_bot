@@ -13,15 +13,20 @@ import { BPS_DENOM } from "../core/constants.ts";
 import type { SwapEdge, SimulationEdge } from "./types.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 
+const protocolCache = new Map<string, string>();
 export function normalizeProtocol(raw: string): string {
+  const cached = protocolCache.get(raw);
+  if (cached !== undefined) return cached;
   const u = raw.toUpperCase();
-  if (u.startsWith("CURVE")) return "CURVE";
-  if (u.startsWith("BALANCER")) return "BALANCER";
-  if (u.startsWith("DODO")) return "DODO";
-  if (u.startsWith("WOOFI")) return "WOOFI";
-  if (u.includes("V3") || u === "KYBERSWAP_ELASTIC" || u === "UNISWAP_V4") return "V3";
-  if (u.includes("V2")) return "V2";
-  return u;
+  let res = u;
+  if (u.startsWith("CURVE")) res = "CURVE";
+  else if (u.startsWith("BALANCER")) res = "BALANCER";
+  else if (u.startsWith("DODO")) res = "DODO";
+  else if (u.startsWith("WOOFI")) res = "WOOFI";
+  else if (u.includes("V3") || u === "KYBERSWAP_ELASTIC" || u === "UNISWAP_V4") res = "V3";
+  else if (u.includes("V2")) res = "V2";
+  protocolCache.set(raw, res);
+  return res;
 }
 
 export function computeSpotPrice(
@@ -85,7 +90,7 @@ export function simulateHop(
   stateCache: RouteStateCache,
   overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
-  const poolAddr = edge.poolAddress.toLowerCase();
+  const poolAddr = edge.poolAddress;
   const baseState = stateCache.get(poolAddr) ?? edge.stateRef;
   if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
   const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
@@ -244,7 +249,7 @@ export function buildSimulationEdges(
 
   for (let i = 0; i < edges.length; i++) {
     const edge = edges[i];
-    const poolAddr = edge.poolAddress.toLowerCase();
+    const poolAddr = edge.poolAddress;
     const baseState = stateCache.get(poolAddr) ?? (edge.stateRef as PoolState | undefined);
     if (!baseState) {
       // console.warn(`Missing base state for pool ${poolAddr}`);

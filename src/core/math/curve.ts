@@ -66,6 +66,9 @@ function getD(xp: bigint[], A: bigint) {
 
   let D = S;
   const Ann = A * n; // A * n (already in A_PRECISION units)
+  const AnnS = (Ann * S) / A_PRECISION;
+  const AnnMinusP = Ann - A_PRECISION;
+  const nPlus1 = n + 1n;
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     let D_P = D;
@@ -74,8 +77,8 @@ function getD(xp: bigint[], A: bigint) {
     }
 
     const Dprev = D;
-    // D = (Ann * S / A_PRECISION + D_P * n) * D / ((Ann / A_PRECISION - 1) * D + (n + 1) * D_P)
-    D = (((Ann * S) / A_PRECISION + D_P * n) * D) / (((Ann - A_PRECISION) * D) / A_PRECISION + (n + 1n) * D_P);
+    // D = (AnnS + D_P * n) * D / ((AnnMinusP * D) / A_PRECISION + (n + 1n) * D_P)
+    D = ((AnnS + D_P * n) * D) / ((AnnMinusP * D) / A_PRECISION + nPlus1 * D_P);
 
     const diff = D > Dprev ? D - Dprev : Dprev - D;
     if (diff <= 1n) return D;
@@ -123,11 +126,12 @@ function getY(x: bigint, i: number, j: number, xp: bigint[], A: bigint, D: bigin
 
   C = (C * D * A_PRECISION) / (Ann * n);
   const b = S_ + (D * A_PRECISION) / Ann;
+  const bMinusD = b - D;
 
   let y = D;
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
     const yprev = y;
-    y = (y * y + C) / (2n * y + b - D);
+    y = (y * y + C) / (2n * y + bMinusD);
     const diff = y > yprev ? y - yprev : yprev - y;
     if (diff <= 1n) return y;
   }

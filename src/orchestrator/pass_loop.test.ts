@@ -363,4 +363,116 @@ describe("runPassLoop", () => {
 
     expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 5, 5000, expect.any(Function));
   });
+
+  it("uses Bellman-Ford cycle enumeration if cycleFinder is configured to 'bellman-ford'", async () => {
+    const mockContext = {
+      config: {
+        routing: {
+          cycleRefreshIntervalMs: 0,
+          maxHops: 5,
+          enumerationMaxPaths: 5000,
+          liquidityFloorUsd: 50,
+          cycleFinder: "bellman-ford",
+        },
+        execution: {
+          minProfitWei: 0n,
+          executorAddress: VALID_ADDR_A,
+          privateKey: `0x${"1".repeat(64)}`,
+          slippageBps: 50,
+          revertRiskBps: 10,
+        },
+        gas: {
+          pollIntervalMs: 1000,
+          priorityFeeFloorGwei: 1,
+          priorityFeeCeilingGwei: 100,
+          maxBidMultiplier: 2,
+          eip1559Enabled: true,
+          feeHistoryPercentile: 50,
+          emaAlpha: 0.3,
+          baseFeeBufferMultiplier: 1.1,
+          maxPriorityFeePercentile: 75,
+          historySize: 20,
+          spikePriorityFeeMultiplier: 1.6,
+        },
+        rpc: { requestTimeoutMs: 5000, batchSize: 10, batchWaitMs: 10, polygonRpcUrls: [], chainstackRps: 1000 },
+        mempool: { coalesceTtlMs: 100 },
+        paths: { dataDir: "/tmp", perfJsonFile: "perf.json" },
+        observability: { logLevel: "silent" },
+        envioApiToken: "",
+        hasuraUrl: "http://localhost:8080/v1/graphql",
+        hasuraSecret: "testing",
+      },
+      metrics: {
+        cycles: 0,
+        lastCycleDurationMs: 0,
+        totalErrors: 0,
+        lastErrorTime: null,
+        lastErrorMessage: null,
+        opportunitiesFound: 0,
+        executionsAttempted: 0,
+        executionsSuccessful: 0,
+        executionsFailed: 0,
+        executionReverts: 0,
+        trackedRoutes: 0,
+        startTime: Date.now(),
+        peakCyclesPerMinute: 0,
+        currentCyclesPerMinute: 0,
+      },
+      logger: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
+      gasOracle: {
+        getSnapshot: vi.fn().mockReturnValue({
+          gasPrice: 30n * 10n ** 9n,
+          baseFee: 30n * 10n ** 9n,
+          priorityFee: 1n * 10n ** 9n,
+          maxFee: 40n * 10n ** 9n,
+          timestamp: Date.now(),
+        }),
+        getEffectiveMaxBidMultiplier: vi.fn().mockReturnValue(2),
+      },
+      isRunning: true,
+      stateCache: new Map(),
+      mempoolService: { start: vi.fn(), onSignal: vi.fn(), setKnownPools: vi.fn() },
+      executionService: {
+        start: vi.fn(),
+        execute: vi.fn(),
+        tracker: mockTracker(),
+        isQuarantined: vi.fn().mockReturnValue(false),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+      },
+      publicClient: {
+        getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
+        multicall: vi.fn().mockResolvedValue([]),
+      },
+      services: { register: vi.fn(), resolve: vi.fn(), has: vi.fn(), prepareAll: vi.fn(), startAll: vi.fn(), stopAll: vi.fn() },
+      rpcCircuit: mockCircuitBreaker(),
+      hasuraCircuit: mockCircuitBreaker(),
+      tierManager: mockTierManager(),
+    } as unknown as RuntimeContext;
+
+    const deps: PassLoopDeps = {
+      buildGraph: vi.fn().mockReturnValue({
+        adjacency: new Map(),
+        poolMeta: new Map(),
+        stateRefs: new Map(),
+        tokens: new Set(),
+      }),
+      findCycles: vi.fn().mockReturnValue([]),
+      enumerateCycles: vi.fn(),
+      evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
+      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
+      routeKeyFromEdges: vi.fn(),
+      buildExecutionCandidate: vi.fn(),
+      instrumenter: { captureTrace: vi.fn() } as any,
+      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
+      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
+      discoverPoolsFromHasura: vi.fn().mockImplementation(() => {
+        mockContext.isRunning = false;
+        return [{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }];
+      }),
+    };
+
+    await runPassLoop(mockContext, deps);
+
+    expect(deps.enumerateCycles).not.toHaveBeenCalled();
+  });
 });

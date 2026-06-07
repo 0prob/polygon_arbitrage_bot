@@ -35,8 +35,6 @@ while [ $restart_count -lt $MAX_RESTARTS ]; do
   last_start_time=$current_time
   echo -e "${GREEN}[restart_loop] Starting envio (attempt $restart_count/${MAX_RESTARTS}) $(date '+%H:%M:%S')${NC}"
 
-  ENVIO_POLYGON_START_BLOCK=87830000 \
-  POLYGON_START_BLOCK=87830000 \
   ENVIO_FULL_BATCH_SIZE=4500 \
   ENVIO_LOG_LEVEL=info \
   bunx envio start 2>&1

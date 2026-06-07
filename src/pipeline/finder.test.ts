@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getDynamicSearchBounds } from "./finder.ts";
+import { getDynamicSearchBounds, findCyclesBellmanFord } from "./finder.ts";
 import type { FoundCycle } from "./types.ts";
 import type { Address } from "../core/types/common.ts";
 
@@ -120,5 +120,79 @@ describe("getDynamicSearchBounds", () => {
 
     expect(bounds.low).toBe(100_000_000_000_000_000n);
     expect(bounds.high).toBe(10_000_000_000_000_000_000n);
+  });
+});
+
+describe("findCyclesBellmanFord", () => {
+  const WMATIC = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270" as Address;
+  const USDC = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" as Address;
+  const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f" as Address;
+
+  it("successfully detects a negative cycle (profitable arbitrage cycle)", () => {
+    const graph: any = {
+      adjacency: new Map([
+        [
+          WMATIC,
+          [
+            {
+              poolAddress: "0xpool1",
+              protocol: "UNISWAP_V2",
+              tokenIn: WMATIC,
+              tokenOut: USDC,
+              zeroForOne: true,
+              feeBps: 0n,
+              tokenInIdx: 0,
+              tokenOutIdx: 1,
+            } as any,
+          ],
+        ],
+        [
+          USDC,
+          [
+            {
+              poolAddress: "0xpool2",
+              protocol: "UNISWAP_V2",
+              tokenIn: USDC,
+              tokenOut: USDT,
+              zeroForOne: true,
+              feeBps: 0n,
+              tokenInIdx: 0,
+              tokenOutIdx: 1,
+            } as any,
+          ],
+        ],
+        [
+          USDT,
+          [
+            {
+              poolAddress: "0xpool3",
+              protocol: "UNISWAP_V2",
+              tokenIn: USDT,
+              tokenOut: WMATIC,
+              zeroForOne: true,
+              feeBps: 0n,
+              tokenInIdx: 0,
+              tokenOutIdx: 1,
+            } as any,
+          ],
+        ],
+      ]),
+      poolMeta: new Map(),
+      stateRefs: new Map([
+        ["0xpool1", { reserve0: 1000n, reserve1: 1000n }], // ratio = 1.0
+        ["0xpool2", { reserve0: 1000n, reserve1: 1000n }], // ratio = 1.0
+        ["0xpool3", { reserve0: 1000n, reserve1: 1100n }], // ratio = 1.1
+      ]),
+      tokens: new Set([WMATIC, USDC, USDT]),
+    };
+
+    const cycles = findCyclesBellmanFord(graph, 3);
+    expect(cycles.length).toBeGreaterThan(0);
+    const cycle = cycles[0];
+    expect(cycle.edges.length).toBe(3);
+    const poolAddresses = cycle.edges.map((e) => e.poolAddress);
+    expect(poolAddresses).toContain("0xpool1");
+    expect(poolAddresses).toContain("0xpool2");
+    expect(poolAddresses).toContain("0xpool3");
   });
 });

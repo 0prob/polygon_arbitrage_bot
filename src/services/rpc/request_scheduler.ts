@@ -50,7 +50,7 @@ export class RequestScheduler {
       this.totalRequests++;
       if (!this.processing) {
         this.processing = true;
-        setTimeout(() => this.processQueue(), 0);
+        queueMicrotask(() => this.processQueue());
       }
     });
   }
@@ -67,15 +67,11 @@ export class RequestScheduler {
 
       if (this.tokens >= 1) {
         this.tokens -= 1;
-        try {
-          const result = await req.execute();
-          req.resolve(result);
-        } catch (error) {
-          req.reject(error as Error);
-        }
+        req.execute().then(req.resolve).catch(req.reject);
       } else {
         this.queues[req.priority].unshift(req);
-        const waitMs = Math.max(1, Math.ceil((1 / this.refillRate) * 1000));
+        const needed = 1 - this.tokens;
+        const waitMs = Math.max(1, Math.ceil((needed / this.refillRate) * 1000));
         await new Promise((r) => setTimeout(r, waitMs));
       }
     }

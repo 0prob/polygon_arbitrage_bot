@@ -70,10 +70,10 @@ export function getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96: bigint, liquidit
  */
 export function getNextSqrtPriceFromAmount1RoundingDown(sqrtPX96: bigint, liquidity: bigint, amount: bigint, add: boolean): bigint {
   if (add) {
-    const quotient = mulDiv(amount, Q96, liquidity);
+    const quotient = (amount << 96n) / liquidity;
     return sqrtPX96 + quotient;
   } else {
-    const quotient = mulDivRoundingUp(amount, Q96, liquidity);
+    const quotient = ((amount << 96n) + liquidity - 1n) / liquidity;
     if (sqrtPX96 <= quotient) {
       throw new Error("SqrtPriceMath: price underflow");
     }
@@ -169,9 +169,10 @@ export function getAmount1Delta(sqrtRatioAX96: bigint, sqrtRatioBX96: bigint, li
     [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96];
   }
 
+  const delta = sqrtRatioBX96 - sqrtRatioAX96;
   if (roundUp) {
-    return mulDivRoundingUp(liquidity, sqrtRatioBX96 - sqrtRatioAX96, Q96);
+    return (liquidity * delta + (Q96 - 1n)) >> 96n;
   } else {
-    return mulDiv(liquidity, sqrtRatioBX96 - sqrtRatioAX96, Q96);
+    return (liquidity * delta) >> 96n;
   }
 }

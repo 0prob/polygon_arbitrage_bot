@@ -1,20 +1,50 @@
 [
   {
-    "address": "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81",
-    "protocol": "UniswapV3",
-    "tokens": ["0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", "0x7ceb23fd6bc0ad59e62ac25578270cff1b9f619"],
-    "fee": 500
-  },
-  {
     "address": "0x4cb3442e6253b311ae847b7afb6a5b1e7c06c170",
     "protocol": "UniswapV3",
-    "tokens": ["0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"],
+    "token0": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "token1": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+    "tokens": ["0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"],
     "fee": 100
+  },
+  {
+    "address": "0x56ff3a6fa5476c5fd28af7616d8bb35e50a47a81",
+    "protocol": "UniswapV3",
+    "token0": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "token1": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+    "tokens": ["0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6"],
+    "fee": 10000
   },
   {
     "address": "0x45dda9cb7c25131df268515131f647d726f50608",
     "protocol": "UniswapV3",
+    "token0": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+    "token1": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+    "tokens": ["0x2791bca1f2de4661ed88a30c99a7a9449aa84174", "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"],
+    "fee": 500
+  },
+  {
+    "address": "0xa374094527e1673a86de625aa59517c5de346d32",
+    "protocol": "UniswapV3",
+    "token0": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "token1": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
     "tokens": ["0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", "0x2791bca1f2de4661ed88a30c99a7a9449aa84174"],
-    "fee": 100
+    "fee": 500
+  },
+  {
+    "address": "0x86f1d8390222a3691c28938ec7404a1661e618e0",
+    "protocol": "UniswapV3",
+    "token0": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "token1": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+    "tokens": ["0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"],
+    "fee": 500
+  },
+  {
+    "address": "0x50eaedb835021e4a108b7290636d62e9765cc6d7",
+    "protocol": "UniswapV3",
+    "token0": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
+    "token1": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+    "tokens": ["0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"],
+    "fee": 500
   }
 ]

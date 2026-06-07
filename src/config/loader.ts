@@ -36,6 +36,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   TERNARY_SEARCH_ITERATIONS: ["routing", "ternarySearchIterations"],
   MAX_PRICE_IMPACT_THRESHOLD: ["routing", "maxPriceImpactThreshold"],
   GRAPH_FULL_REBUILD_INTERVAL: ["routing", "graphFullRebuildInterval"],
+  ROUTING_CYCLE_FINDER: ["routing", "cycleFinder"],
 
   MIN_PROFIT_WEI: ["execution", "minProfitWei"],
   SLIPPAGE_BPS: ["execution", "slippageBps"],

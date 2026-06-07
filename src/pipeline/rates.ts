@@ -6,6 +6,29 @@ import { MAJOR_TOKEN_APPROX_RATES, RATE_PRECISION } from "../core/constants.ts";
 
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
+interface NormalizedPool {
+  addressLower: string;
+  protocolLower: string;
+  tokensLower: string[];
+  pool: PoolMeta;
+}
+
+const normalizedPoolsCache = new WeakMap<PoolMeta[], NormalizedPool[]>();
+
+function getNormalizedPools(pools: PoolMeta[]): NormalizedPool[] {
+  let cached = normalizedPoolsCache.get(pools);
+  if (!cached) {
+    cached = pools.map((p) => ({
+      addressLower: p.address.toLowerCase(),
+      protocolLower: p.protocol.toLowerCase(),
+      tokensLower: (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase()),
+      pool: p,
+    }));
+    normalizedPoolsCache.set(pools, cached);
+  }
+  return cached;
+}
+
 export interface ComputeMaticRatesOptions {
   minLiquidityV3?: bigint;
   /** When provided, start from these rates instead of a fresh empty map.
@@ -58,22 +81,38 @@ export function computeMaticRates(
 
   const focus = options.focusTokens;
 
-  function touchesFocus(pool: PoolMeta): boolean {
-    if (!focus || focus.size === 0) return true;
-    const ts = pool.tokens ?? [pool.token0, pool.token1];
-    return ts.some((t) => focus.has(t.toLowerCase()));
-  }
+  const normalizedPools = getNormalizedPools(pools);
 
-  // Pre-compute focus-ordered list once; re-sorting on every BFS iteration is wasted work.
-  // When focusTokens are supplied we process "dirty" pools first for faster convergence on what matters.
-  const orderedPools = focus && focus.size > 0 ? [...pools].sort((a, b) => (touchesFocus(b) ? 1 : 0) - (touchesFocus(a) ? 1 : 0)) : pools;
+  // Partition pools touching focus to the front instead of sorting (O(N) instead of O(N log N))
+  let orderedPools: NormalizedPool[];
+  if (focus && focus.size > 0) {
+    const primary: NormalizedPool[] = [];
+    const secondary: NormalizedPool[] = [];
+    for (const np of normalizedPools) {
+      let touches = false;
+      for (const t of np.tokensLower) {
+        if (focus.has(t)) {
+          touches = true;
+          break;
+        }
+      }
+      if (touches) {
+        primary.push(np);
+      } else {
+        secondary.push(np);
+      }
+    }
+    orderedPools = primary.concat(secondary);
+  } else {
+    orderedPools = normalizedPools;
+  }
 
   // Use a more thorough BFS-style propagation.
   for (let i = 0; i < 15; i++) {
     let changed = false;
 
-    for (const pool of orderedPools) {
-      const addr = pool.address.toLowerCase();
+    for (const np of orderedPools) {
+      const addr = np.addressLower;
       const state = stateCache.get(addr);
       if (!state) {
         skippedNoState++;
@@ -84,33 +123,54 @@ export function computeMaticRates(
         continue;
       }
 
-      const tokens = pool.tokens.map((t) => t.toLowerCase());
+      const tokens = np.tokensLower;
       if (tokens.length < 2) continue;
 
       // Find which tokens already have a rate
-      const knownIndices: number[] = [];
-      const unknownIndices: number[] = [];
-      for (let j = 0; j < tokens.length; j++) {
-        if (rates.has(tokens[j])) {
-          knownIndices.push(j);
+      const isTwoTokens = tokens.length === 2;
+      let knownIdx = -1;
+      let singleUnknownIdx = -1;
+      let unknownIndices: number[] | null = null;
+
+      if (isTwoTokens) {
+        const has0 = rates.has(tokens[0]);
+        const has1 = rates.has(tokens[1]);
+        if (has0 && !has1) {
+          knownIdx = 0;
+          singleUnknownIdx = 1;
+        } else if (!has0 && has1) {
+          knownIdx = 1;
+          singleUnknownIdx = 0;
         } else {
-          unknownIndices.push(j);
+          continue;
         }
+      } else {
+        const knownIndices: number[] = [];
+        const localUnknownIndices: number[] = [];
+        for (let j = 0; j < tokens.length; j++) {
+          if (rates.has(tokens[j])) {
+            knownIndices.push(j);
+          } else {
+            localUnknownIndices.push(j);
+          }
+        }
+        if (knownIndices.length === 0 || localUnknownIndices.length === 0) continue;
+        knownIdx = knownIndices[0];
+        unknownIndices = localUnknownIndices;
       }
 
-      if (knownIndices.length === 0 || unknownIndices.length === 0) continue;
-
       // Propagate from the first known token to all unknown tokens
-      const knownIdx = knownIndices[0];
       const knownToken = tokens[knownIdx];
       const knownRate = rates.get(knownToken)!;
 
-      for (const unknownIdx of unknownIndices) {
+      const numUnknown = isTwoTokens ? 1 : unknownIndices!.length;
+      for (let u = 0; u < numUnknown; u++) {
+        const unknownIdx = isTwoTokens ? singleUnknownIdx : unknownIndices![u];
         const unknownToken = tokens[unknownIdx];
 
         try {
           // Protocol-specific spot price calculation
-          const protocol = pool.protocol.toLowerCase();
+          const protocol = np.protocolLower;
           let newRate = 0n;
           let knownValueMatic = 0n;
 
@@ -157,7 +217,7 @@ export function computeMaticRates(
                 newRate = (knownRate * balances[knownIdx]) / balances[unknownIdx];
               }
             }
-          } else if (protocol.toLowerCase().includes("curve")) {
+          } else if (protocol.includes("curve")) {
             const balances = state.balances as bigint[];
             if (balances && balances[knownIdx] > 0n && balances[unknownIdx] > 0n) {
               knownValueMatic = (knownRate * balances[knownIdx]) / RATE_PRECISION;
@@ -191,18 +251,12 @@ export function computeMaticRates(
           }
 
           // Require at least ~0.001 MATIC worth of known token to propagate rate.
-          // (Lowered from 0.01 to help bootstrap + focus connect more long-tail tokens
-          // from the prioritized major pools without poisoning rates too much.)
-          // This helps rateSafeCycles and reduces noRate % for cycles whose startToken
-          // would otherwise be left without a usable MATIC rate.
           if (knownValueMatic < 1_000_000_000_000_000n) {
             skippedLowLiquidity++;
             continue;
           }
 
           // SANITY CHECK: If newRate is astronomical (> 10^36), it's likely poisoned.
-          // 10^36 = 1,000,000,000,000,000,000 MATIC per token unit (for 18-dec token).
-          // For USDC (6 dec), 10^30 is normal (1 MATIC/USDC). 10^36 allows for 1,000,000x deviation.
           if (newRate > 10n ** 36n) {
             skippedExtremeRatio++;
             continue;
@@ -224,7 +278,7 @@ export function computeMaticRates(
           if (newRate > 0n && (!rates.has(unknownToken) || rates.get(unknownToken)! < newRate)) {
             rates.set(unknownToken, newRate);
             changed = true;
-            if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${pool.address} [${protocol}])`);
+            if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${np.pool.address} [${protocol}])`);
           }
         } catch {
           continue;
@@ -237,13 +291,20 @@ export function computeMaticRates(
   // Final targeted sweep when we have explicit focus tokens (the real P3 incremental win).
   // One extra cheap pass restricted only to pools that touch the dirty tokens.
   if (focus && focus.size > 0) {
-    for (const pool of pools) {
-      if (!touchesFocus(pool)) continue;
-      const addr = pool.address.toLowerCase();
+    for (const np of normalizedPools) {
+      let touches = false;
+      for (const t of np.tokensLower) {
+        if (focus.has(t)) {
+          touches = true;
+          break;
+        }
+      }
+      if (!touches) continue;
+      const addr = np.addressLower;
       const state = stateCache.get(addr);
       if (!state) continue;
 
-      const tokens = pool.tokens.map((t) => t.toLowerCase());
+      const tokens = np.tokensLower;
       if (tokens.length < 2) continue;
 
       const known = tokens.find((t) => rates.has(t));
@@ -251,9 +312,7 @@ export function computeMaticRates(
 
       if (!known || !unknown) continue;
 
-      // Very lightweight one-shot derivation for the dominant protocols (V2/V3).
-      // Full correctness is already guaranteed by the preceding seeded propagation.
-      const protocol = pool.protocol.toLowerCase();
+      const protocol = np.protocolLower;
       try {
         if (protocol.includes("v2")) {
           const r0 = toBigInt((state as Record<string, unknown>).reserve0, 0n);

@@ -79,6 +79,12 @@ raw_events: false
 field_selection:
   transaction_fields:
     - hash
+    - from
+    - to
+    - value
+    - input
+    - gasUsed
+    - gasPrice
 
 # Polygon optimization: 3000-8000 range for Polygon (very high log volume from 1000s of DEX pools).
 # This is one of the most important config knobs for "events per second" during historical backfill.
@@ -171,6 +177,12 @@ contracts:
     abi_file_path: abis/dodo_pool.json
     events:
       - event: Sync
+
+  # WOOFi
+  - name: WooPPV2
+    abi_file_path: abis/woofi_pool.json
+    events:
+      - event: WooSwap
 
 # === Chains ===
 chains:
@@ -289,3 +301,8 @@ chains:
 
       - name: DodoPool
         start_block: ${ENVIO_POLYGON_START_BLOCK:-14722979}
+
+      # WOOFi
+      - name: WooPPV2
+        start_block: ${ENVIO_POLYGON_START_BLOCK:-30000000}
+        address: "0x5520385bfcf07ec87c4c53a7d8d65595dff69fa4"

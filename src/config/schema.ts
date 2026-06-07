@@ -69,6 +69,7 @@ export const RoutingConfigSchema = z.object({
   ternarySearchIterations: numberFromString.int().min(5).max(50).default(12),
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.1),
   graphFullRebuildInterval: numberFromString.int().positive().default(100),
+  cycleFinder: z.enum(["dfs", "bellman-ford"]).default("dfs"),
 });
 export type RoutingConfig = z.infer<typeof RoutingConfigSchema>;
 

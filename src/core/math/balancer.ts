@@ -74,9 +74,10 @@ function ln(a: bigint): bigint {
   if (a <= 0n) throw new Error("Balancer: ln undefined for non-positive");
   if (a === ONE) return 0n;
 
-  // Use identity: ln(a) = -ln(1/a) for a < 1
+  let isNeg = false;
   if (a < ONE) {
-    return -ln((ONE * ONE) / a);
+    a = (ONE * ONE) / a;
+    isNeg = true;
   }
 
   // Reduce: find k such that 2^k <= a/1e18 < 2^(k+1)
@@ -110,7 +111,8 @@ function ln(a: bigint): bigint {
     if (term < 100n) break;
   }
 
-  return k * LN2 + sum;
+  const result = k * LN2 + sum;
+  return isNeg ? -result : result;
 }
 
 /**
@@ -123,9 +125,10 @@ function ln(a: bigint): bigint {
 function exp(x: bigint): bigint {
   if (x === 0n) return ONE;
 
-  // Handle negative exponent: e^(-x) = 1/e^x
+  let isNeg = false;
   if (x < 0n) {
-    return (ONE * ONE) / exp(-x);
+    x = -x;
+    isNeg = true;
   }
 
   let sum = ONE;
@@ -137,7 +140,7 @@ function exp(x: bigint): bigint {
     if (term < 10n) break;
   }
 
-  return sum;
+  return isNeg ? (ONE * ONE) / sum : sum;
 }
 
 /**

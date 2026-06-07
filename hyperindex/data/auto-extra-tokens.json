@@ -1,0 +1,22 @@
+[
+  {
+    "address": "0xeba31364878832fcf69f71efa378a3be6dbcb485",
+    "decimals": 18
+  },
+  {
+    "address": "0x381d67ec52e1dae162c340f8edacbf10386233ff",
+    "decimals": 6
+  },
+  {
+    "address": "0x701e8f44322390c9dffa0beb327731d3df39ae5d",
+    "decimals": 18
+  },
+  {
+    "address": "0x54185d64a42c39da120927b5663d58200b0030b4",
+    "decimals": 18
+  },
+  {
+    "address": "0xdf93ce78d2373103fd55d87439dcb75f2915443a",
+    "decimals": 18
+  }
+]

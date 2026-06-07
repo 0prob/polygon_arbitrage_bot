@@ -34,6 +34,7 @@ enum Protocol {
   BALANCER_V2
   DODO_V2
   UNISWAP_V4
+  WOOFI
   UNKNOWN_V2
   UNKNOWN_V3
 }

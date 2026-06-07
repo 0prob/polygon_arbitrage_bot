@@ -169,14 +169,18 @@ export const fetchTokenMeta = createEffect(
       return { address: addr, decimals: staticCached };
     }
 
-    await loadDiscoveredDecimals();
+    if (!discoveredLoaded) {
+      await loadDiscoveredDecimals();
+    }
     const discovered = discoveredDecimals[addr];
     if (discovered !== undefined) {
       return { address: addr, decimals: discovered };
     }
 
     // Layer 2: Permanent blocklist — non-ERC20 contracts never become valid
-    await loadFailedTokens();
+    if (!failedLoaded) {
+      await loadFailedTokens();
+    }
     if (failedTokens.has(addr)) {
       return { address: addr, decimals: 18 };
     }

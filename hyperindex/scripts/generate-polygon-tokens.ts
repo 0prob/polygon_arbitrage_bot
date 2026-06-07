@@ -40,8 +40,8 @@ const LISTS = [
   // Trust Wallet assets for Polygon (good additional coverage)
   "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json",
 
-  // 1inch Token List — excellent broad coverage across chains including Polygon
-  "https://raw.githubusercontent.com/1inch/token-list/master/tokenlist.json",
+  // ViaProtocol Polygon Token List — excellent broad coverage of many lists including 1inch, Li.Fi, sushiswap, etc.
+  "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json",
 
   // === Official Polygon Token Lists (highest value for our use case) ===
   // These are curated by the Polygon team and focus on actually bridged / popular tokens.
@@ -49,11 +49,15 @@ const LISTS = [
   "https://api-polygon-tokens.polygon.technology/tokenlists/mapped.tokenlist.json", // Mapped/bridged tokens
   "https://api-polygon-tokens.polygon.technology/tokenlists/popular.tokenlist.json", // Top used tokens
 
-  // QuickSwap community/maintained list (good for Polygon DEX-specific tokens)
-  "https://raw.githubusercontent.com/QuickSwap/QuickSwap-token-list/master/quickswap.tokenlist.json",
+  // Official Polygon dev branch mapped/bridged lists
+  "https://raw.githubusercontent.com/0xPolygon/polygon-token-list/dev/src/tokens/mappedTokens.json",
+  "https://raw.githubusercontent.com/0xPolygon/polygon-token-list/dev/src/tokens/defaultTokens.json",
 
-  // Official Polygon (maticnetwork) token list — good source of bridged and ecosystem tokens
-  "https://raw.githubusercontent.com/maticnetwork/polygon-token-list/main/src/tokens/polygonTokens.json",
+  // QuickSwap community/maintained list (good for Polygon DEX-specific tokens)
+  "https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json",
+
+  // LI.FI active token list for chain 137 (excellent aggregator list)
+  "https://li.quest/v1/tokens?chains=137",
 ];
 
 async function fetchList(url: string): Promise<TokenListToken[]> {
@@ -65,24 +69,36 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
     }
     const json = await res.json();
 
-    // Handle both { tokens: [...] } and direct array formats
-    let tokens: any[] = Array.isArray(json) ? json : (json.tokens ?? []);
+    // Handle { tokens: [...] }, { tokens: { "137": [...] } }, and direct array formats
+    let tokens: any[] = Array.isArray(json)
+      ? json
+      : Array.isArray(json.tokens)
+        ? json.tokens
+        : typeof json.tokens === "object" && json.tokens !== null
+          ? Object.values(json.tokens).flat()
+          : [];
+
+    // Helper to validate hex address format and reject the zero address
+    const isValidHexAddress = (a: string) => /^0x[a-f0-9]{40}$/i.test(a) && a !== "0x0000000000000000000000000000000000000000";
 
     // Only apply chainId=137 filtering for known multi-chain lists.
     const MULTI_CHAIN_LISTS = [
-      "https://raw.githubusercontent.com/1inch/token-list/master/tokenlist.json",
       "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json",
+      "https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json",
+      "https://li.quest/v1/tokens?chains=137",
     ];
     if (MULTI_CHAIN_LISTS.includes(url) && tokens.length > 0 && tokens[0]?.chainId !== undefined) {
       tokens = tokens.filter((t: any) => t.chainId === 137 || t.chainId === "137");
     }
 
     // Special handling for official Polygon hosted token lists
-    // (mapped.tokenlist.json / popular.tokenlist.json).
+    // (mapped.tokenlist.json / popular.tokenlist.json / mappedTokens.json / defaultTokens.json).
     // These use a richer format with `wrappedTokens` containing the actual Polygon addresses.
     const POLYGON_OFFICIAL_LISTS = [
       "https://api-polygon-tokens.polygon.technology/tokenlists/mapped.tokenlist.json",
       "https://api-polygon-tokens.polygon.technology/tokenlists/popular.tokenlist.json",
+      "https://raw.githubusercontent.com/0xPolygon/polygon-token-list/dev/src/tokens/mappedTokens.json",
+      "https://raw.githubusercontent.com/0xPolygon/polygon-token-list/dev/src/tokens/defaultTokens.json",
     ];
 
     if (POLYGON_OFFICIAL_LISTS.includes(url)) {
@@ -91,7 +107,7 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
         // Look for wrapped tokens on Polygon (chain -1 or 137 in this schema often means Polygon)
         const wrapped = t.wrappedTokens || [];
         for (const w of wrapped) {
-          if (w.wrappedTokenAddress && typeof t.decimals === "number") {
+          if (w.wrappedTokenAddress && typeof t.decimals === "number" && isValidHexAddress(w.wrappedTokenAddress)) {
             extracted.push({
               address: w.wrappedTokenAddress.toLowerCase(),
               decimals: Number(t.decimals),
@@ -101,7 +117,7 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
           }
         }
         // Also include if the top-level token is already on Polygon (chainId 137)
-        if ((t.chainId === 137 || t.chainId === -1) && t.address && typeof t.decimals === "number") {
+        if ((t.chainId === 137 || t.chainId === -1) && t.address && typeof t.decimals === "number" && isValidHexAddress(t.address)) {
           extracted.push({
             address: t.address.toLowerCase(),
             decimals: Number(t.decimals),
@@ -113,7 +129,6 @@ async function fetchList(url: string): Promise<TokenListToken[]> {
       return extracted;
     }
 
-    const isValidHexAddress = (a: string) => /^0x[a-f0-9]{40}$/i.test(a);
     return tokens
       .filter((t) => t.address && typeof t.decimals === "number" && isValidHexAddress(t.address))
       .map((t) => ({

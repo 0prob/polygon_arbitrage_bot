@@ -1,30 +1,35 @@
 import { indexer } from "envio";
 
 /**
- * Live debug / discovery-only indexer profile (Envio v3 recommended pattern).
+ * Uniswap V2 Pool Sync Event Handler
  *
- * High-volume events (Sync, Swap, etc.) are intentionally no-op at the handler level.
- * This keeps DB writes near zero during live tail (see pipeline split metrics).
- *
- * Discovery of new pools still flows through the factory events (PairCreated / PoolCreated)
- * which write only PoolMeta + TokenMeta.
- *
- * The arbitrage bot relies on:
- *   - Its own RPC fetcher (`fetchMissingPoolState`) for hot state
- *   - Periodic pool discovery from Hasura
- *
- * References:
- *   - https://docs.envio.dev/docs/HyperIndex/preload-optimization
- *   - https://docs.envio.dev/docs/HyperIndex/event-handlers#performance-considerations
+ * Optimizations applied (Envio v3 Best Practices):
+ * 1. Preload Optimization: Batched database reads (V2PoolState and PoolMeta) are executed
+ *    concurrently using Promise.all in Phase 1 (Preload).
+ * 2. Early Exit: Exit early on `context.isPreload === true` to prevent any writes in the preload phase.
+ * 3. Consistently lowercased addressing is automatically supported via address_format: lowercase in config.yaml.
  */
 indexer.onEvent(
   {
     contract: "UniswapV2Pool",
     event: "Sync",
-    // No `where` needed here — contractRegister from the factory already limits
-    // this wildcard to only addresses we actually care about.
   },
-  async () => {
-    // Deliberate no-op. This is the key optimization for the bot's live-debug use case.
+  async ({ event, context }) => {
+    const poolAddr = event.srcAddress;
+
+    // Concurrently fetch V2 pool state and pool metadata in preload pass.
+    const [existing, meta] = await Promise.all([context.V2PoolState.get(poolAddr), context.PoolMeta.get(poolAddr)]);
+
+    // Skip writes during preload phase
+    if (context.isPreload) return;
+
+    context.V2PoolState.set({
+      id: poolAddr,
+      address: poolAddr,
+      lastUpdatedBlock: Number(event.block.number),
+      reserve0: event.params.reserve0,
+      reserve1: event.params.reserve1,
+      fee: existing?.fee ?? meta?.fee ?? undefined,
+    });
   },
 );

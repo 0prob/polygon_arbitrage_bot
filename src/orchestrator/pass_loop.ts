@@ -3,6 +3,7 @@ import {
   type FoundCycle,
   findCycles,
   enumerateCycles,
+  enumerateCyclesBellmanFord,
   routeKeyFromEdges,
   type RoutingGraph,
   buildGraph,
@@ -483,7 +484,8 @@ async function runEnumerationPhase(
   const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
   const lowForEnum = rpsForEnum <= 250;
   const maxPaths = lowForEnum ? Math.min(12000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
-  const cycles = deps.enumerateCycles(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
+  const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
+  const cycles = finderFn(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
 
   const cyclesByHop: Record<number, number> = {};
