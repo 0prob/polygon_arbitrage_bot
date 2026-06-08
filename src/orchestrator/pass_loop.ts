@@ -485,7 +485,7 @@ async function runEnumerationPhase(
   const lowForEnum = rpsForEnum <= 250;
   const maxPaths = lowForEnum ? Math.min(12000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
   const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
-  const cycles = finderFn(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
+  const cycles = await finderFn(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
 
   const cyclesByHop: Record<number, number> = {};
@@ -614,6 +614,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
   let cycleWindowStart = Date.now();
   let lastReorgCheck = 0;
+  let lastStatusWriteTime = 0;
 
   while (ctx.isRunning) {
     if (isPaused) {
@@ -764,6 +765,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         continue;
       }
 
+      // Compute once to avoid redundant O(N) loops and .toLowerCase() calls which stress GC
+      const cycleTokens = new Set<string>();
+      for (const c of currentCycles) {
+        cycleTokens.add(c.startToken.toLowerCase());
+        for (const e of c.edges) {
+          cycleTokens.add(e.tokenIn.toLowerCase());
+          cycleTokens.add(e.tokenOut.toLowerCase());
+        }
+      }
+
       // High-frequency pre-fetch: Only for pools in current cycles
       // Skip if we just did a full refresh in the same pass.
       // Non-blocking: state accumulates into ctx.stateCache, subsequent cycles benefit.
@@ -778,14 +789,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
         // Fire-and-forget broad token pool pre-fetch.
         {
-          const cycleTokens = new Set<string>();
-          for (const c of currentCycles) {
-            cycleTokens.add(c.startToken.toLowerCase());
-            for (const e of c.edges) {
-              cycleTokens.add(e.tokenIn.toLowerCase());
-              cycleTokens.add(e.tokenOut.toLowerCase());
-            }
-          }
           const broadTokenPools: PoolMeta[] = [];
           for (const p of hasuraPoolsCache ?? []) {
             const pts = (p.tokens ?? [p.token0, p.token1]).map((t: string) => t.toLowerCase());
@@ -813,15 +816,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
         // Signal incremental rate update with focus tokens derived from current cycles.
         {
-          const ft = new Set<string>();
-          for (const c of currentCycles) {
-            ft.add(c.startToken.toLowerCase());
-            for (const e of c.edges) {
-              ft.add(e.tokenIn.toLowerCase());
-              ft.add(e.tokenOut.toLowerCase());
-            }
-          }
-          pendingFocusTokens = ft.size > 0 ? ft : null;
+          pendingFocusTokens = cycleTokens.size > 0 ? cycleTokens : null;
         }
         if (!cachedMetas) {
           cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
@@ -891,25 +886,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // we're assessing this pass (directly addresses persistent low rates in surfacing even
       // after polls). Log at info when it grows the set.
       {
-        const focus = new Set<string>();
-        for (const c of currentCycles) {
-          focus.add(c.startToken.toLowerCase());
-          for (const e of c.edges) {
-            focus.add(e.tokenIn.toLowerCase());
-            focus.add(e.tokenOut.toLowerCase());
-          }
-        }
         const before = tokenToMaticRates.size;
-        if (focus.size > 0) {
+        if (cycleTokens.size > 0) {
           const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
             minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
             seedRates: tokenToMaticRates,
-            focusTokens: focus,
+            focusTokens: cycleTokens,
           });
           cachedRates = boosted;
           tokenToMaticRates = boosted;
           if (boosted.size > before) {
-            ctx.logger.info({ rates: tokenToMaticRates.size, focus: focus.size }, "Rate coverage boosted with assessment focus");
+            ctx.logger.info({ rates: tokenToMaticRates.size, focus: cycleTokens.size }, "Rate coverage boosted with assessment focus");
           }
         }
       }
@@ -1351,7 +1338,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }
           : undefined,
       );
-      writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
+      if (now - lastStatusWriteTime > 1000) {
+        lastStatusWriteTime = now;
+        writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
+      }
 
       // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
       // Previously this (plus checkReorg's serial getBlocks) ran every 200ms — major hot-path violation.

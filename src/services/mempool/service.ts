@@ -50,7 +50,7 @@ export class MempoolService {
 
   async start(): Promise<void> {
     this.logger.info({}, "MempoolService started");
-    this.loadUnknownSelectors();
+    await this.loadUnknownSelectors();
   }
 
   stop(): void {
@@ -67,19 +67,20 @@ export class MempoolService {
     return join(dataDir, "unknown-selectors.json");
   }
 
-  private loadUnknownSelectors(): void {
+  private async loadUnknownSelectors(): Promise<void> {
     const filePath = this.getUnknownSelectorsFilePath();
-    if (!existsSync(filePath)) return;
-
+    const { readFile } = await import("node:fs/promises");
     try {
-      const raw = readFileSync(filePath, "utf8");
+      const raw = await readFile(filePath, "utf8");
       const data = JSON.parse(raw);
       for (const [key, val] of Object.entries(data)) {
         this.unknownSelectors.set(key, val as any);
       }
       this.logger.info({ count: this.unknownSelectors.size }, "Loaded unknown selectors from file");
-    } catch (err) {
-      this.logger.warn({ err, filePath }, "Failed to load unknown selectors file");
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        this.logger.warn({ err, filePath }, "Failed to load unknown selectors file");
+      }
     }
   }
 
@@ -91,11 +92,12 @@ export class MempoolService {
     }, 5000);
   }
 
-  private writeUnknownSelectors(): void {
+  private async writeUnknownSelectors(): Promise<void> {
     const filePath = this.getUnknownSelectorsFilePath();
     try {
       const data = Object.fromEntries(this.unknownSelectors.entries());
-      writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+      const { writeFile } = await import("node:fs/promises");
+      await writeFile(filePath, JSON.stringify(data, null, 2), "utf8");
     } catch (err) {
       this.logger.warn({ err, filePath }, "Failed to write unknown selectors file");
     }

@@ -32,6 +32,7 @@ export interface FoundCycle {
   hopCount: number;
   logWeight: number;
   cumulativeFeeBps: bigint;
+  score?: number;
 }
 
 export interface PipelineOptions {

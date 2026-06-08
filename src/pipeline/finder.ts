@@ -231,12 +231,12 @@ export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getW
 
 const MAX_CYCLES_PER_PASS = 250_000;
 
-export function findCycles(
+export async function findCycles(
   graph: RoutingGraph,
   maxHops: number,
   maxCycles: number = MAX_CYCLES_PER_PASS,
   logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
-): FoundCycle[] {
+): Promise<FoundCycle[]> {
   const cycles: FoundCycle[] = [];
   const hopLimit = Math.min(maxHops, 5);
   const { adjacency } = graph;
@@ -245,7 +245,9 @@ export function findCycles(
   const TIME_BUDGET_MS = 10000;
   let budgetExceededLogged = false;
 
+  let dfsCount = 0;
   function overBudget(): boolean {
+    if ((++dfsCount % 1000) !== 0) return false;
     const exceeded = Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
     if (exceeded && !budgetExceededLogged && logger) {
       logger.warn?.(
@@ -344,8 +346,17 @@ export function findCycles(
   }
   const prioritizedStartTokens = majorTokens.concat(otherTokens);
 
+  let lastYield = Date.now();
   for (const startToken of prioritizedStartTokens) {
     if (overBudget()) break;
+    
+    // Yield to event loop every 50ms to prevent WS/RPC starvation
+    const now = Date.now();
+    if (now - lastYield > 50) {
+      await new Promise(r => setTimeout(r, 0));
+      lastYield = Date.now();
+    }
+
     const firstEdges = activeAdjacency.get(startToken);
     if (!firstEdges) continue;
 
@@ -364,21 +375,19 @@ export function findCycles(
   return cycles;
 }
 
-export function enumerateCycles(
+export async function enumerateCycles(
   graph: RoutingGraph,
   maxHops = 5, // Default raised to 5 for increased long-tail discovery potential (see pass_loop strategy comments)
   maxCycles = MAX_CYCLES_PER_PASS,
   getWinRate?: (key: string) => number,
   logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
-): FoundCycle[] {
-  const allCycles = findCycles(graph, maxHops, maxCycles, logger);
+): Promise<FoundCycle[]> {
+  const allCycles = await findCycles(graph, maxHops, maxCycles, logger);
 
   if (getWinRate) {
     // Pre-compute scores to avoid O(N log N) string manipulation in sort.
-    // NOTE: We deliberately mutate cycle.id here as a performance cache for downstream
-    // callers (quarantine, execution, logging). FoundCycle objects are short-lived per
-    // enumeration pass and this avoids repeated routeKeyFromEdges work.
-    const scored = allCycles.map((cycle) => {
+    for (let i = 0; i < allCycles.length; i++) {
+      const cycle = allCycles[i];
       const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
       cycle.id = key;
       let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
@@ -387,34 +396,27 @@ export function enumerateCycles(
       if (MAJOR_TOKENS.has(cycle.startToken)) {
         score -= 2.0; // Significant bonus for major bases
       }
-
-      return { cycle, score };
-    });
-
-    scored.sort((a, b) => a.score - b.score);
-    const limit = Math.min(scored.length, maxCycles);
-    const result: FoundCycle[] = new Array(limit);
-    for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
-    return result;
+      cycle.score = score;
+    }
+  } else {
+    for (let i = 0; i < allCycles.length; i++) {
+      const cycle = allCycles[i];
+      cycle.id = routeKeyFromEdges(cycle.edges, cycle.startToken);
+      let score = cycle.logWeight;
+      if (MAJOR_TOKENS.has(cycle.startToken)) {
+        score -= 2.0;
+      }
+      cycle.score = score;
+    }
   }
 
-  const scored = allCycles.map((cycle) => {
-    cycle.id = routeKeyFromEdges(cycle.edges, cycle.startToken);
-    let score = cycle.logWeight;
-    if (MAJOR_TOKENS.has(cycle.startToken)) {
-      score -= 2.0;
-    }
-    return { cycle, score };
-  });
-
-  scored.sort((a, b) => a.score - b.score);
-  const limit = Math.min(scored.length, maxCycles);
-  const result: FoundCycle[] = new Array(limit);
-  for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
-  return result;
+  allCycles.sort((a, b) => a.score! - b.score!);
+  const limit = Math.min(allCycles.length, maxCycles);
+  allCycles.length = limit;
+  return allCycles;
 }
 
-export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
+export async function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, maxCycles: number = MAX_CYCLES_PER_PASS): Promise<FoundCycle[]> {
   const cycles: FoundCycle[] = [];
   const foundKeys = new Set<string>();
 
@@ -446,8 +448,15 @@ export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, 
     sourceTokens.push(Array.from(graph.adjacency.keys())[0]);
   }
 
+  let lastYield = Date.now();
   for (const sourceToken of sourceTokens) {
     if (cycles.length >= maxCycles) break;
+
+    const now = Date.now();
+    if (now - lastYield > 50) {
+      await new Promise(r => setTimeout(r, 0));
+      lastYield = Date.now();
+    }
 
     const dist = new Map<string, number>();
     const parent = new Map<string, SwapEdge>();
@@ -549,44 +558,39 @@ export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, 
   return cycles;
 }
 
-export function enumerateCyclesBellmanFord(
+export async function enumerateCyclesBellmanFord(
   graph: RoutingGraph,
   maxHops = 5,
   maxCycles = MAX_CYCLES_PER_PASS,
   getWinRate?: (key: string) => number,
-): FoundCycle[] {
-  const allCycles = findCyclesBellmanFord(graph, maxHops, maxCycles);
+): Promise<FoundCycle[]> {
+  const allCycles = await findCyclesBellmanFord(graph, maxHops, maxCycles);
 
   if (getWinRate) {
-    const scored = allCycles.map((cycle) => {
+    for (let i = 0; i < allCycles.length; i++) {
+      const cycle = allCycles[i];
       const key = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
       cycle.id = key;
       let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
       if (MAJOR_TOKENS.has(cycle.startToken)) {
         score -= 2.0;
       }
-      return { cycle, score };
-    });
-
-    scored.sort((a, b) => a.score - b.score);
-    const limit = Math.min(scored.length, maxCycles);
-    const result: FoundCycle[] = new Array(limit);
-    for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
-    return result;
+      cycle.score = score;
+    }
+  } else {
+    for (let i = 0; i < allCycles.length; i++) {
+      const cycle = allCycles[i];
+      cycle.id = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
+      let score = cycle.logWeight;
+      if (MAJOR_TOKENS.has(cycle.startToken)) {
+        score -= 2.0;
+      }
+      cycle.score = score;
+    }
   }
 
-  const scored = allCycles.map((cycle) => {
-    cycle.id = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
-    let score = cycle.logWeight;
-    if (MAJOR_TOKENS.has(cycle.startToken)) {
-      score -= 2.0;
-    }
-    return { cycle, score };
-  });
-
-  scored.sort((a, b) => a.score - b.score);
-  const limit = Math.min(scored.length, maxCycles);
-  const result: FoundCycle[] = new Array(limit);
-  for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
-  return result;
+  allCycles.sort((a, b) => a.score! - b.score!);
+  const limit = Math.min(allCycles.length, maxCycles);
+  allCycles.length = limit;
+  return allCycles;
 }

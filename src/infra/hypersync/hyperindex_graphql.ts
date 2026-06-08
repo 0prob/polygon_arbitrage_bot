@@ -249,6 +249,8 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
+    await new Promise((r) => setTimeout(r, 0));
+
     const v3States = data.V3PoolState ?? [];
     for (const s of v3States) {
       _cachedState.set((s.address ?? s.id).toLowerCase(), {
@@ -258,6 +260,8 @@ export async function buildStateCacheFromGraphQL(
         initialized: true,
       });
     }
+
+    await new Promise((r) => setTimeout(r, 0));
 
     const v4States = data.V4PoolState ?? [];
     for (const s of v4States) {
@@ -272,6 +276,8 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
+    await new Promise((r) => setTimeout(r, 0));
+
     const balancerStates = data.BalancerPoolState ?? [];
     for (const s of balancerStates) {
       _cachedState.set((s.address ?? s.id).toLowerCase(), {
@@ -285,6 +291,8 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
+    await new Promise((r) => setTimeout(r, 0));
+
     const curveStates = data.CurvePoolState ?? [];
     for (const s of curveStates) {
       _cachedState.set((s.address ?? s.id).toLowerCase(), {
@@ -295,6 +303,8 @@ export async function buildStateCacheFromGraphQL(
         initialized: true,
       });
     }
+
+    await new Promise((r) => setTimeout(r, 0));
 
     const dodoStates = data.DodoPoolState ?? [];
     for (const s of dodoStates) {
@@ -396,7 +406,11 @@ export async function discoverPoolsFromHasura(
     const discovered = parsePoolMetaRows(allRows);
     const combined = [...anchors].filter((p) => !isGarbagePool(p));
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));
-    for (const p of discovered) {
+    for (let i = 0; i < discovered.length; i++) {
+      if (i > 0 && i % 10000 === 0) {
+        await new Promise((r) => setTimeout(r, 0));
+      }
+      const p = discovered[i];
       if (!seen.has(p.address.toLowerCase())) {
         combined.push(p);
         seen.add(p.address.toLowerCase());

@@ -91,7 +91,18 @@ export interface ComputeProfitOptions {
  * for diagnostic purposes.
  */
 export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
-  const core = computeProfitCore(opts);
+  const core = computeProfitCore(
+    opts.grossProfitInTokens,
+    opts.amountInTokens,
+    opts.gasUnits,
+    opts.gasPriceWei,
+    opts.tokenToMaticRate,
+    opts.hopCount,
+    opts.flashLoanSource,
+    opts.slippageBps,
+    opts.revertRiskBps,
+    opts.flashLoanFeeBps
+  );
 
   const { grossProfitInTokens, amountInTokens: _amountInTokensUnusedInPublicWrapper, minProfitMaticWei, roiSafetyCap = 10.0 } = opts;
 
@@ -161,22 +172,33 @@ export interface ProfitCoreNumbers {
   revert: bigint;
 }
 
-export function computeProfitCore(opts: ComputeProfitOptions): ProfitCoreNumbers {
-  const {
-    grossProfitInTokens,
-    amountInTokens: _amountInTokens, // only needed for flash fee in full path
-    gasUnits,
-    gasPriceWei,
-    tokenToMaticRate,
-    hopCount,
-    slippageBps = 50n,
-    revertRiskBps: baseRiskBps = 500n,
-    flashLoanSource,
-    flashLoanFeeBps,
-  } = opts;
-
+export function computeProfitCore(
+  grossProfitInTokens: bigint,
+  amountInTokens: bigint,
+  gasUnits: number,
+  gasPriceWei: bigint,
+  tokenToMaticRate: bigint,
+  hopCount: number,
+  flashLoanSource: FlashLoanSource,
+  slippageBps: bigint = 50n,
+  revertRiskBps: bigint = 500n,
+  flashLoanFeeBps?: bigint,
+  out?: ProfitCoreNumbers
+): ProfitCoreNumbers {
   if (tokenToMaticRate <= 0n) {
-    // Return zeros for search safety (search will treat this as unprofitable)
+    if (out) {
+      out.netProfitInTokens = 0n;
+      out.gasCostWei = 0n;
+      out.netProfitMaticWei = 0n;
+      out.netProfitAfterGasMaticWei = -1n;
+      out.gasCostInTokens = 0n;
+      out.netProfitAfterGasInTokens = 0n;
+      out.roi = 0;
+      out.flashFee = 0n;
+      out.slippage = 0n;
+      out.revert = 0n;
+      return out;
+    }
     return {
       netProfitInTokens: 0n,
       gasCostWei: 0n,
@@ -192,8 +214,8 @@ export function computeProfitCore(opts: ComputeProfitOptions): ProfitCoreNumbers
   }
 
   const slippage = slippageDeduction(grossProfitInTokens, slippageBps);
-  const revert = revertPenalty(grossProfitInTokens, hopCount, baseRiskBps);
-  const flashFee = flashLoanFee(_amountInTokens, flashLoanSource, flashLoanFeeBps);
+  const revert = revertPenalty(grossProfitInTokens, hopCount, revertRiskBps);
+  const flashFee = flashLoanFee(amountInTokens, flashLoanSource, flashLoanFeeBps);
 
   const netProfitInTokens = grossProfitInTokens - slippage - revert - flashFee;
   const gasCostWei = gasCostMaticWei(gasUnits, gasPriceWei);
@@ -203,7 +225,21 @@ export function computeProfitCore(opts: ComputeProfitOptions): ProfitCoreNumbers
   const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);
   const netProfitAfterGasInTokens = netProfitInTokens - gasCostInTokens;
 
-  const roi = roiMicroUnits(netProfitAfterGasInTokens, _amountInTokens);
+  const roi = roiMicroUnits(netProfitAfterGasInTokens, amountInTokens);
+
+  if (out) {
+    out.netProfitInTokens = netProfitInTokens;
+    out.gasCostWei = gasCostWei;
+    out.netProfitMaticWei = netProfitMaticWei;
+    out.netProfitAfterGasMaticWei = netProfitAfterGasMaticWei;
+    out.gasCostInTokens = gasCostInTokens;
+    out.netProfitAfterGasInTokens = netProfitAfterGasInTokens;
+    out.roi = roi;
+    out.flashFee = flashFee;
+    out.slippage = slippage;
+    out.revert = revert;
+    return out;
+  }
 
   return {
     netProfitInTokens,

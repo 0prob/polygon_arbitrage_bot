@@ -1,6 +1,9 @@
-import { spawn, execSync, type ChildProcess } from "child_process";
+import { spawn, exec, type ChildProcess } from "child_process";
+import { promisify } from "util";
 import path from "path";
 import { readFile, stat } from "fs/promises";
+
+const execAsync = promisify(exec);
 import type { Logger } from "../observability/logger.ts";
 import { EnvioLineParser, type EnvioLineParsedInfo } from "./envio_line_parser.ts";
 
@@ -118,7 +121,7 @@ async function needsAggressiveCleanup(): Promise<boolean> {
   try {
     // Check for containers marked for removal or in error states
     const listCmd = `docker ps -a --filter name=envio- --format "{{.Status}}" 2>/dev/null || true`;
-    const output = execSync(listCmd, { encoding: "utf8", timeout: 3000 });
+    const { stdout: output } = await execAsync(listCmd, { encoding: "utf8", timeout: 3000 });
 
     // Look for problematic states
     const lines = output.trim().split("\n").filter(Boolean);
@@ -139,11 +142,11 @@ async function needsAggressiveCleanup(): Promise<boolean> {
 async function performLightweightDockerCleanup(hiDir: string): Promise<void> {
   try {
     // Just stop envio and clean running containers
-    execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 6000 });
+    await execAsync("bunx envio stop", { cwd: hiDir, timeout: 6000 });
 
     // Remove any still-running envio containers
     const bulkRm = "docker rm -f $(docker ps -q --filter name=envio- 2>/dev/null) 2>/dev/null || true";
-    execSync(bulkRm, { stdio: "ignore", timeout: 3000 });
+    await execAsync(bulkRm, { timeout: 3000 });
   } catch {
     // Errors are non-critical for lightweight cleanup
   }
@@ -155,17 +158,17 @@ async function performLightweightDockerCleanup(hiDir: string): Promise<void> {
 async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boolean): Promise<void> {
   try {
     // Stop envio first
-    execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 8000 });
+    await execAsync("bunx envio stop", { cwd: hiDir, timeout: 8000 });
 
     const bulkRm = "docker rm -f $(docker ps -aq --filter name=envio- 2>/dev/null) 2>/dev/null || true";
-    execSync(bulkRm, { stdio: "ignore", timeout: 5000 });
+    await execAsync(bulkRm, { timeout: 5000 });
 
     const listCmd = `docker ps -a --filter name=envio- --format "{{.ID}}" 2>/dev/null || true`;
-    const containerIds = execSync(listCmd, { encoding: "utf8", timeout: 4000 }).trim();
-    if (containerIds) {
-      for (const id of containerIds.split("\n").filter(Boolean)) {
+    const { stdout: containerIds } = await execAsync(listCmd, { encoding: "utf8", timeout: 4000 });
+    if (containerIds.trim()) {
+      for (const id of containerIds.trim().split("\n").filter(Boolean)) {
         try {
-          execSync(`docker rm -f ${id}`, { stdio: "ignore", timeout: 2000 });
+          await execAsync(`docker rm -f ${id}`, { timeout: 2000 });
         } catch {
           // Individual failures are not critical
         }
@@ -174,8 +177,7 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
 
     // Clean volumes only on force reset
     if (forceFullReset) {
-      execSync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", {
-        stdio: "ignore",
+      await execAsync("docker volume rm $(docker volume ls -q --filter name=envio- 2>/dev/null) 2>/dev/null || true", {
         timeout: 5000,
       });
     }
@@ -209,9 +211,8 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
     const sourceMtime = Math.max(schemaStat.mtimeMs, configStat.mtimeMs);
     if (!generatedStat || sourceMtime > generatedStat.mtimeMs) {
       logger?.info("HyperIndex schema.graphql or config.yaml is newer than generated types — running `envio codegen` automatically...");
-      execSync("bunx envio codegen", {
+      await execAsync("bunx envio codegen", {
         cwd: hiDir,
-        stdio: "inherit", // Show output so user sees it happened
         timeout: 30000,
       });
       logger?.info("✅ HyperIndex codegen completed (types refreshed).");

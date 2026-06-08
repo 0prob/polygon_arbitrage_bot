@@ -216,7 +216,6 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   const selector = input.slice(0, 10).toLowerCase();
   const protocol = SELECTORS[selector];
   if (!protocol) {
-    console.debug(`mempool: ignored tx (unknown selector: ${selector})`);
     return null;
   }
 
@@ -232,7 +231,6 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
     }
   }
   if (!isKnown) {
-    console.debug(`mempool: ignored tx (unknown pool: ${lcTo})`);
     return null;
   }
 

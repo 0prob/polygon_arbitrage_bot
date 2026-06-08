@@ -29,6 +29,7 @@ interface MinimalEvalHolder {
   netProfitAfterGasMaticWei: bigint;
   assessment: ProfitAssessment | null;
   result: RouteSimulationResult | null;
+  core?: any;
 }
 
 function evaluateAmount(
@@ -120,35 +121,54 @@ function evaluateAmount(
 
     if (minimalForSearch) {
       // Numeric-only path: avoid full ProfitAssessment allocation during every ternary probe
-      const core = computeProfitCore({
-        grossProfitInTokens: simProfit,
-        amountInTokens: simAmountIn,
-        gasUnits: simGas,
-        gasPriceWei: options.gasPriceWei,
-        tokenToMaticRate: startRate,
-        hopCount: cycle.edges.length,
-        minProfitMaticWei: options.minProfitMaticWei ?? 0n,
-        flashLoanSource: options.flashLoanSource,
-        slippageBps: options.slippageBps,
-        revertRiskBps: options.revertRiskBps,
-      });
+      if (outHolder && !outHolder.core) {
+        outHolder.core = {} as any;
+      }
+      const core = computeProfitCore(
+        simProfit,
+        simAmountIn,
+        simGas,
+        options.gasPriceWei,
+        startRate,
+        cycle.edges.length,
+        options.flashLoanSource,
+        options.slippageBps,
+        options.revertRiskBps,
+        undefined,
+        outHolder?.core
+      );
       netProfitAfterGasMaticWei = core.netProfitAfterGasMaticWei;
 
       // We still need a minimal assessment object for the "best" tracking logic.
       // This is much smaller pressure than the full object every single iteration.
-      assessment = {
-        shouldExecute: netProfitAfterGasMaticWei >= (options.minProfitMaticWei ?? 0n),
-        grossProfit: simProfit,
-        gasCostWei: core.gasCostWei,
-        gasCostInTokens: core.gasCostInTokens,
-        flashLoanFee: core.flashFee,
-        slippageDeduction: core.slippage,
-        revertPenalty: core.revert,
-        netProfit: core.netProfitInTokens,
-        netProfitAfterGas: core.netProfitAfterGasInTokens,
-        netProfitAfterGasMaticWei,
-        roi: core.roi,
-      } as ProfitAssessment;
+      if (outHolder && outHolder.assessment) {
+        assessment = outHolder.assessment;
+        assessment.shouldExecute = netProfitAfterGasMaticWei >= (options.minProfitMaticWei ?? 0n);
+        assessment.grossProfit = simProfit;
+        assessment.gasCostWei = core.gasCostWei;
+        assessment.gasCostInTokens = core.gasCostInTokens;
+        assessment.flashLoanFee = core.flashFee;
+        assessment.slippageDeduction = core.slippage;
+        assessment.revertPenalty = core.revert;
+        assessment.netProfit = core.netProfitInTokens;
+        assessment.netProfitAfterGas = core.netProfitAfterGasInTokens;
+        assessment.netProfitAfterGasMaticWei = netProfitAfterGasMaticWei;
+        assessment.roi = core.roi;
+      } else {
+        assessment = {
+          shouldExecute: netProfitAfterGasMaticWei >= (options.minProfitMaticWei ?? 0n),
+          grossProfit: simProfit,
+          gasCostWei: core.gasCostWei,
+          gasCostInTokens: core.gasCostInTokens,
+          flashLoanFee: core.flashFee,
+          slippageDeduction: core.slippage,
+          revertPenalty: core.revert,
+          netProfit: core.netProfitInTokens,
+          netProfitAfterGas: core.netProfitAfterGasInTokens,
+          netProfitAfterGasMaticWei,
+          roi: core.roi,
+        } as ProfitAssessment;
+      }
     } else {
       assessment = computeProfit({
         grossProfitInTokens: simProfit,
@@ -206,9 +226,9 @@ export async function evaluatePipeline(
     const batch = batches[batchIdx];
     if (profitable.length >= 10) break;
 
-    // Yield to event loop every 10 batches to prevent starvation of
+    // Yield to event loop every 2 batches to prevent starvation of
     // mempool signals, WebSocket newHead events, etc.
-    if (batchIdx > 0 && batchIdx % 10 === 0) {
+    if (batchIdx > 0 && batchIdx % 2 === 0) {
       await new Promise((r) => setTimeout(r, 0));
     }
 
@@ -301,14 +321,22 @@ export async function evaluatePipeline(
             }
           }
 
+          const holder: MinimalEvalHolder = {
+            grossProfitMatic: null,
+            netProfitAfterGasMaticWei: 0n,
+            assessment: null,
+            result: null,
+            core: {} as any,
+          };
+
           const evaluateBrent = (amount: bigint) => {
-            const res = evaluateAmount(cycle, amount, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+            const res = evaluateAmount(cycle, amount, stateCache, options, true, true, prebuiltSimEdges, holder, overlay);
             if (res.grossProfitMatic && res.grossProfitMatic > bestGrossMatic) {
               bestGrossMatic = res.grossProfitMatic;
             }
             if (res.assessment && res.assessment.netProfitAfterGasMaticWei > bestProfit) {
               bestResult = res.result;
-              bestAssessment = res.assessment;
+              bestAssessment = { ...res.assessment }; // clone the reused assessment object to preserve it
               bestProfit = res.assessment.netProfitAfterGasMaticWei;
               bestAmount = amount;
             }
