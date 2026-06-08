@@ -195,26 +195,31 @@ function feeLogWeight(feeBps: bigint): number {
  * These are exactly the areas where this bot's strengths (rich math coverage
  * + HyperIndex historical state + broad V2 factory coverage) give it an edge.
  */
+const obscurityCache = new Map<string, number>();
+
 export function getObscurityBonus(protocol: string): number {
+  const cached = obscurityCache.get(protocol);
+  if (cached !== undefined) return cached;
   const p = (protocol || "").toLowerCase();
 
   // Unique AMMs (most likely to have stale/independent prices)
-  if (p.includes("dodo")) return 1.25;
-  if (p.includes("balancer")) return 1.1;
-  if (p.includes("curve")) return 1.0;
-  if (p.includes("woofi")) return 0.9;
-
+  let result: number;
+  if (p.includes("dodo")) result = 1.25;
+  else if (p.includes("balancer")) result = 1.1;
+  else if (p.includes("curve")) result = 1.0;
+  else if (p.includes("woofi")) result = 0.9;
   // V3 liquid – best for 2-hop cycles (0.05% fee tiers → only 0.1% combined)
-  if (p.includes("uniswap") && !p.includes("_v2")) return 1.0;
-  if (p.includes("quickswap") && !p.includes("_v2")) return 0.95;
-  if (p.includes("sushiswap") && !p.includes("_v2")) return 0.9;
-
+  else if (p.includes("uniswap") && !p.includes("_v2")) result = 1.0;
+  else if (p.includes("quickswap") && !p.includes("_v2")) result = 0.95;
+  else if (p.includes("sushiswap") && !p.includes("_v2")) result = 0.9;
   // V2 mainstream (liquid enough for arb)
-  if (p.includes("_v2")) return 0.35;
+  else if (p.includes("_v2")) result = 0.35;
   // Long-tail V2 (illiquid, rarely profitable but worth scanning)
-  if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) return 0.2;
+  else if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) result = 0.2;
+  else result = 0.5; // default mild bonus
 
-  return 0.5; // default mild bonus
+  obscurityCache.set(protocol, result);
+  return result;
 }
 
 export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getWinRate: (key: string) => number): number {
@@ -386,10 +391,11 @@ export function enumerateCycles(
       return { cycle, score };
     });
 
-    return scored
-      .sort((a, b) => a.score - b.score)
-      .slice(0, maxCycles)
-      .map((s) => s.cycle);
+    scored.sort((a, b) => a.score - b.score);
+    const limit = Math.min(scored.length, maxCycles);
+    const result: FoundCycle[] = new Array(limit);
+    for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
+    return result;
   }
 
   const scored = allCycles.map((cycle) => {
@@ -401,10 +407,11 @@ export function enumerateCycles(
     return { cycle, score };
   });
 
-  return scored
-    .sort((a, b) => a.score - b.score)
-    .slice(0, maxCycles)
-    .map((s) => s.cycle);
+  scored.sort((a, b) => a.score - b.score);
+  const limit = Math.min(scored.length, maxCycles);
+  const result: FoundCycle[] = new Array(limit);
+  for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
+  return result;
 }
 
 export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, maxCycles: number = MAX_CYCLES_PER_PASS): FoundCycle[] {
@@ -561,10 +568,11 @@ export function enumerateCyclesBellmanFord(
       return { cycle, score };
     });
 
-    return scored
-      .sort((a, b) => a.score - b.score)
-      .slice(0, maxCycles)
-      .map((s) => s.cycle);
+    scored.sort((a, b) => a.score - b.score);
+    const limit = Math.min(scored.length, maxCycles);
+    const result: FoundCycle[] = new Array(limit);
+    for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
+    return result;
   }
 
   const scored = allCycles.map((cycle) => {
@@ -576,8 +584,9 @@ export function enumerateCyclesBellmanFord(
     return { cycle, score };
   });
 
-  return scored
-    .sort((a, b) => a.score - b.score)
-    .slice(0, maxCycles)
-    .map((s) => s.cycle);
+  scored.sort((a, b) => a.score - b.score);
+  const limit = Math.min(scored.length, maxCycles);
+  const result: FoundCycle[] = new Array(limit);
+  for (let i = 0; i < limit; i++) result[i] = scored[i].cycle;
+  return result;
 }

@@ -5,6 +5,8 @@ import {Script} from "forge-std/Script.sol";
 import {console2} from "forge-std/console2.sol";
 import {ArbExecutor} from "../src/ArbExecutor.sol";
 
+import {HuffDeployer} from "../test/HuffDeployer.sol";
+
 contract ArbExecutorScript is Script {
     address internal constant DEFAULT_BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
     address internal constant DEFAULT_UNISWAP_V3_FACTORY = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
@@ -26,16 +28,26 @@ contract ArbExecutorScript is Script {
 
         vm.startBroadcast();
 
-        executor = new ArbExecutor(
-            owner,
-            balancerVault,
-            uniswapV3Factory,
-            sushiV3Factory,
-            quickswapV3Factory,
-            kyberElasticFactory,
-            aavePool,
-            poolManager
+        bytes memory bytecode = abi.encodePacked(
+            HuffDeployer.BYTECODE,
+            abi.encode(
+                owner,
+                balancerVault,
+                uniswapV3Factory,
+                sushiV3Factory,
+                quickswapV3Factory,
+                kyberElasticFactory,
+                aavePool,
+                poolManager
+            )
         );
+
+        address addr;
+        assembly {
+            addr := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+        require(addr != address(0), "deploy failed");
+        executor = ArbExecutor(payable(addr));
 
         vm.stopBroadcast();
 

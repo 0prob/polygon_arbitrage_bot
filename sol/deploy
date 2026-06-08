@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${RPC_URL:?RPC_URL not set. Usage: RPC_URL=<url> PRIVATE_KEY=<key> ./d}"
-: "${PRIVATE_KEY:?PRIVATE_KEY not set. Usage: RPC_URL=<url> PRIVATE_KEY=<key> ./d}"
+: "${RPC_URL:?RPC_URL not set. Usage: RPC_URL=<url> PRIVATE_KEY=<key> ./deploy}"
+: "${PRIVATE_KEY:?PRIVATE_KEY not set. Usage: RPC_URL=<url> PRIVATE_KEY=<key> ./deploy}"
+: "${OWNER:?OWNER not set. Please set the OWNER env variable.}"
 
-exec forge script script/ArbExecutor.s.sol \
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+echo "Compiling Huff contract..."
+bun "$ROOT_DIR/scripts/compile-huff.ts"
+
+echo "Broadcasting Huff ArbExecutor contract..."
+exec forge script "$SCRIPT_DIR/script/ArbExecutor.s.sol" \
   --rpc-url "$RPC_URL" \
   --private-key "$PRIVATE_KEY" \
   --broadcast
-

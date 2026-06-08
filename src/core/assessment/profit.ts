@@ -4,6 +4,8 @@ import { revertPenalty, slippageDeduction, flashLoanFee } from "./risk.ts";
 import { FlashLoanSource } from "../types/execution.ts";
 import type { ProfitAssessment } from "../types/execution.ts";
 
+const WEI_PRECISION = 1_000_000_000_000_000_000n; // 1e18
+
 /**
  * Profit & risk assessment for flash-loan-only arbitrage.
  * The bot has no capital-backed execution mode. Every profitable cycle is funded 100%
@@ -20,7 +22,7 @@ import type { ProfitAssessment } from "../types/execution.ts";
 export function tokensToMaticWei(amountInTokens: bigint, tokenToMaticRate: bigint): bigint {
   if (amountInTokens <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
-  return (amountInTokens * tokenToMaticRate) / 1000000000000000000n;
+  return (amountInTokens * tokenToMaticRate) / WEI_PRECISION;
 }
 
 /**
@@ -30,7 +32,7 @@ export function tokensToMaticWei(amountInTokens: bigint, tokenToMaticRate: bigin
 export function maticWeiToTokens(amountInMaticWei: bigint, tokenToMaticRate: bigint): bigint {
   if (amountInMaticWei <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
-  return divRoundingUp(amountInMaticWei * 1000000000000000000n, tokenToMaticRate);
+  return divRoundingUp(amountInMaticWei * WEI_PRECISION, tokenToMaticRate);
 }
 
 /** Compute gas cost in MATIC wei from gas units and gas price. */

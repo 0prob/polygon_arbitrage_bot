@@ -6,6 +6,8 @@ import {ArbExecutor} from "../src/ArbExecutor.sol";
 
 import {console} from "forge-std/console.sol";
 
+import {HuffDeployer} from "./HuffDeployer.sol";
+
 contract ArbExecutorDebug is Test {
     ArbExecutor public executor;
     
@@ -21,17 +23,25 @@ contract ArbExecutorDebug is Test {
         string memory rpc = vm.envOr("POLYGON_RPC_URL", string("https://polygon-mainnet.core.chainstack.com/03efdc1db374a4df08d42e72b1408637"));
         vm.createSelectFork(rpc);
         
-        ArbExecutor deployed = new ArbExecutor(
-            OWNER,
-            BALANCER_VAULT,
-            UNISWAP_V3_FACTORY,
-            SUSHISWAP_V3_FACTORY,
-            QUICKSWAP_V3_FACTORY,
-            KYBER_ELASTIC_FACTORY,
-            AAVE_POOL,
-            address(0x1006)
+        bytes memory bytecode = abi.encodePacked(
+            HuffDeployer.BYTECODE,
+            abi.encode(
+                OWNER,
+                BALANCER_VAULT,
+                UNISWAP_V3_FACTORY,
+                SUSHISWAP_V3_FACTORY,
+                QUICKSWAP_V3_FACTORY,
+                KYBER_ELASTIC_FACTORY,
+                AAVE_POOL,
+                address(0x1006)
+            )
         );
-        vm.etch(OWNER, address(deployed).code);
+        address addr;
+        assembly {
+            addr := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+        require(addr != address(0), "deploy failed");
+        vm.etch(OWNER, addr.code);
         
         vm.store(OWNER, bytes32(uint256(0)), bytes32(uint256(uint160(OWNER))));
         vm.store(OWNER, bytes32(uint256(6)), bytes32(uint256(1)));

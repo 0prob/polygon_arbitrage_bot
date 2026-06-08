@@ -4,6 +4,8 @@ pragma solidity ^0.8.34;
 import {ArbExecutor} from "../src/ArbExecutor.sol";
 import {Test} from "forge-std/Test.sol";
 
+import {HuffDeployer} from "./HuffDeployer.sol";
+
 contract ArbExecutorAaveForkTest is Test {
     ArbExecutor public executor;
 
@@ -21,16 +23,25 @@ contract ArbExecutorAaveForkTest is Test {
         string memory rpc = vm.envOr("POLYGON_RPC_URL", string("https://polygon-mainnet.core.chainstack.com/03efdc1db374a4df08d42e72b1408637"));
         vm.createSelectFork(rpc);
 
-        executor = new ArbExecutor(
-            address(this),
-            BALANCER_VAULT,
-            UNISWAP_V3_FACTORY,
-            SUSHISWAP_V3_FACTORY,
-            QUICKSWAP_V3_FACTORY,
-            KYBER_ELASTIC_FACTORY,
-            AAVE_POOL,
-            address(0x1006)
+        bytes memory bytecode = abi.encodePacked(
+            HuffDeployer.BYTECODE,
+            abi.encode(
+                address(this),
+                BALANCER_VAULT,
+                UNISWAP_V3_FACTORY,
+                SUSHISWAP_V3_FACTORY,
+                QUICKSWAP_V3_FACTORY,
+                KYBER_ELASTIC_FACTORY,
+                AAVE_POOL,
+                address(0x1006)
+            )
         );
+        address addr;
+        assembly {
+            addr := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+        require(addr != address(0), "deploy failed");
+        executor = ArbExecutor(payable(addr));
     }
 
     function testAavePoolAddress() public {

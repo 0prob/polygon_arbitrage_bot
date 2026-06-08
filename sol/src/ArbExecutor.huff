@@ -1,1350 +1,869 @@
-// SPDX-License-Identifier: MIT
-
-// Define interface for errors
-#define error Unauthorized()
-#define error DeadlineExpired()
-#define error EmptyRoute()
-#define error TooManyCalls()
-#define error FlashLoanRequired()
-#define error InvalidRouteHash()
-#define error FlashLoanOnly()
-#define error InvalidFlashLoanContext()
-#define error CallbackOnly()
-#define error InvalidCallbackSource()
-#define error UnsupportedProtocol(uint8)
-#define error InvalidPoolCaller(address expected, address actual)
-#define error ExternalCallFailed(uint256 index, address target, bytes reason)
-#define error InsufficientProfit(uint256 finalBalance, uint256 requiredBalance)
-#define error TransferFailed(address token, address to, uint256 amount)
-#define error ApproveFailed(address token, address spender)
-#define error ZeroAddress()
-
-// Storage Slots
-#define constant OWNER_SLOT = 0x00
-#define constant BALANCER_VAULT_SLOT = 0x01
-#define constant UNISWAP_V3_FACTORY_SLOT = 0x02
-#define constant SUSHISWAP_V3_FACTORY_SLOT = 0x03
-#define constant QUICKSWAP_V3_FACTORY_SLOT = 0x04
-#define constant KYBER_ELASTIC_FACTORY_SLOT = 0x05
-#define constant AAVE_POOL_SLOT = 0x06
-#define constant POOL_MANAGER_SLOT = 0x07
-#define constant PHASE_SLOT = 0x08
-#define constant ACTIVE_ROUTE_HASH_SLOT = 0x09
-#define constant ACTIVE_PROFIT_TOKEN_SLOT = 0x0a
-#define constant ACTIVE_MIN_PROFIT_SLOT = 0x0b
-#define constant ACTIVE_INITIAL_PROFIT_BALANCE_SLOT = 0x0c
-#define constant LOCKED_SLOT = 0x0d
-
-// Function Selector Constants
-#define constant SELECTOR_owner = 0x8da5cb5b
-#define constant SELECTOR_transferOwnership = 0xf2fde38b
-#define constant SELECTOR_preApprove = 0xb4656158
-#define constant SELECTOR_approveIfNeeded = 0xfad6b994
-#define constant SELECTOR_transferAll = 0x4b14e003
-#define constant SELECTOR_rescueToken = 0xe5711e8b
-#define constant SELECTOR_rescueNative = 0x1291f79d
-#define constant SELECTOR_executeArb = 0x491e69d3
-#define constant SELECTOR_executeArbWithAave = 0xb8efd6fe
-#define constant SELECTOR_receiveFlashLoan = 0xf04f2707
-#define constant SELECTOR_executeOperation = 0x1b11d0ff
-#define constant SELECTOR_uniswapV3SwapCallback = 0xfa461e33
-#define constant SELECTOR_algebraSwapCallback = 0x2c8958f6
-#define constant SELECTOR_swapCallback = 0xfa483e72
-#define constant SELECTOR_lockAcquired = 0xab6291fe
-
-// Immutables Getters
-#define constant SELECTOR_balancerVault = 0x158274a5
-#define constant SELECTOR_uniswapV3Factory = 0x5b549182
-#define constant SELECTOR_sushiV3Factory = 0x669d6be2
-#define constant SELECTOR_quickswapV3Factory = 0x4dad71d5
-#define constant SELECTOR_kyberElasticFactory = 0x78ed1c8c
-#define constant SELECTOR_aavePool = 0xa03e4bc3
-#define constant SELECTOR_poolManager = 0xdc4c90d3
-
-// --- Constructor ---
-#define macro CONSTRUCTOR() = takes (0) returns (0) {
-    // Constructor args size is 8 * 32 = 256 bytes
-    0x100                   // [size]
-    0x100 codesize sub      // [offset, size]
-    0x00                    // [destOffset, offset, size]
-    codecopy                // []
-
-    // Validate constructor arguments are not zero
-    0x00 mload iszero zero_addr jumpi
-    0x20 mload iszero zero_addr jumpi
-    0x40 mload iszero zero_addr jumpi
-    0x60 mload iszero zero_addr jumpi
-    0x80 mload iszero zero_addr jumpi
-    0xa0 mload iszero zero_addr jumpi
-    0xc0 mload iszero zero_addr jumpi
-    0xe0 mload iszero zero_addr jumpi
-
-    // Store constructor arguments
-    0x00 mload [OWNER_SLOT] sstore
-    0x20 mload [BALANCER_VAULT_SLOT] sstore
-    0x40 mload [UNISWAP_V3_FACTORY_SLOT] sstore
-    0x60 mload [SUSHISWAP_V3_FACTORY_SLOT] sstore
-    0x80 mload [QUICKSWAP_V3_FACTORY_SLOT] sstore
-    0xa0 mload [KYBER_ELASTIC_FACTORY_SLOT] sstore
-    0xc0 mload [AAVE_POOL_SLOT] sstore
-    0xe0 mload [POOL_MANAGER_SLOT] sstore
-
-    // Set locked = 1
-    0x01 [LOCKED_SLOT] sstore
-
-    // Emit OwnershipTransferred(address(0), owner)
-    0x00 mload              // [owner]
-    0x00                    // [previousOwner (0), owner]
-    0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0 // [topic0, previousOwner, owner]
-    0x00 0x00               // [0, 0, topic0, previousOwner, owner]
-    log3
-
-    finish jump
-
-    zero_addr:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
-
-    finish:
-}
-
-// --- Auth Macros ---
-#define macro ONLY_OWNER(is_auth) = takes (0) returns (0) {
-    caller                  // [caller]
-    [OWNER_SLOT] sload      // [owner, caller]
-    eq                      // [eq]
-    <is_auth> jumpi     // []
-    // Revert with Unauthorized()
-    __ERROR(Unauthorized) 0x00 mstore
-    0x04 0x00 revert
-}
-
-#define macro ONLY_AUTHORIZED(is_auth) = takes (0) returns (0) {
-    caller address eq       // [caller == address(this)]
-    caller [OWNER_SLOT] sload eq // [caller == owner, caller == address(this)]
-    or                      // [authorized]
-    <is_auth> jumpi
-    __ERROR(Unauthorized) 0x00 mstore
-    0x04 0x00 revert
-}
-
-#define macro NON_REENTRANT(is_unlocked) = takes (0) returns (0) {
-    [LOCKED_SLOT] sload     // [locked]
-    0x01 eq                 // [locked == 1]
-    <is_unlocked> jumpi
-    __ERROR(Unauthorized) 0x00 mstore
-    0x04 0x00 revert
-}
-
-#define macro UNLOCK() = takes (0) returns (0) {
-    0x01 [LOCKED_SLOT] sstore
-}
-
-// --- Getter Macros ---
-#define macro OWNER_GETTER() = takes (0) returns (0) {
-    [OWNER_SLOT] sload 0x00 mstore
+#define macro GET_SLOT(slot) = takes (0) returns (0) {
+    <slot> sload
+    0x00 mstore
     0x20 0x00 return
 }
 
-// --- Admin Macros ---
+#define macro ONLY_OWNER() = takes (0) returns (0) {
+    0x00 sload
+    caller eq is_owner jumpi
+    0x82b42900 0x00 mstore
+    0x04 0x1c revert
+is_owner:
+}
+
+#define macro NON_REENTRANT() = takes (0) returns (0) {
+    0x06 sload
+    0x01 eq is_unlocked jumpi
+    0x82b42900 0x00 mstore
+    0x04 0x1c revert
+is_unlocked:
+    0x02 0x06 sstore
+}
+
+#define macro REENTRANCY_GUARD_RELEASE() = takes (0) returns (0) {
+    0x01 0x06 sstore
+}
+
+#define macro SAFE_TRANSFER() = takes (3) returns (0) {
+    // stack: [amount, to, token]
+    0xa9059cbb00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    dup1 0x24 mstore
+    0x20 0x00 0x44 0x00 0x00 dup8 gas call
+    iszero transfer_failed jumpi
+    returndatasize iszero transfer_success jumpi
+    0x00 mload iszero transfer_failed jumpi
+transfer_success:
+    pop pop pop
+    transfer_end jump
+transfer_failed:
+    0xbf182be800000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup3 0x04 mstore
+    dup2 0x24 mstore
+    dup1 0x44 mstore
+    0x64 0x00 revert
+transfer_end:
+}
+
+#define macro SAFE_ALLOWANCE() = takes (2) returns (1) {
+    // stack: [spender, token]
+    0xdd62ed3e00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    address 0x04 mstore
+    dup2 0x24 mstore
+    0x20 0x00 0x44 0x00 dup5 gas staticcall
+    iszero allowance_failed jumpi
+    returndatasize 0x20 lt allowance_failed jumpi
+    0x00 mload
+    swap2 pop pop
+    allowance_end jump
+allowance_failed:
+    0x1b6c83ab00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    dup1 0x24 mstore
+    0x44 0x00 revert
+allowance_end:
+}
+
+#define macro SAFE_APPROVE() = takes (3) returns (0) {
+    // stack: [amount, spender, token]
+    0x095fc61500000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    dup1 0x24 mstore
+    0x20 0x00 0x44 0x00 0x00 dup8 gas call
+    iszero approve_failed jumpi
+    returndatasize iszero approve_success jumpi
+    0x00 mload iszero approve_failed jumpi
+approve_success:
+    pop pop pop
+    approve_end jump
+approve_failed:
+    0x1b6c83ab00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup3 0x04 mstore
+    dup2 0x24 mstore
+    0x44 0x00 revert
+approve_end:
+}
+
+#define macro SAFE_APPROVE_MAX_IF_NEEDED() = takes (3) returns (0) {
+    // stack: [amount, spender, token]
+    dup2 dup4 SAFE_ALLOWANCE()
+    dup2 dup2 lt iszero approve_max_needed_end jumpi
+    dup2 iszero approve_zero_done jumpi
+    dup4 dup4 0x00 SAFE_APPROVE()
+approve_zero_done:
+    dup4 dup4 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff SAFE_APPROVE()
+approve_max_needed_end:
+    pop pop pop pop
+}
+
 #define macro TRANSFER_OWNERSHIP() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    0x04 calldataload       // [newOwner]
-    dup1 iszero zero_address_to jumpi
-    
-    [OWNER_SLOT] sload      // [oldOwner, newOwner]
-    dup2                    // [newOwner, oldOwner, newOwner]
-    [OWNER_SLOT] sstore     // [oldOwner, newOwner]
-    
-    0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0
-    log3
-    
-    0x00 0x00 return
-    
-    zero_address_to:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
+    ONLY_OWNER()
+    0x04 calldataload
+    dup1 iszero is_zero_revert jumpi
+    0x00 sload
+    dup2 0x00 sstore
+    dup2 dup2
+    0x8be0079c530c1b4141206c881090c54aec7decddc7d19f41692804f326b14eec
+    0x00 0x00 log3
+    pop pop
+    stop
 }
 
 #define macro PRE_APPROVE() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    is_unlocked NON_REENTRANT(is_unlocked)
-    is_unlocked:
-        0x02 [LOCKED_SLOT] sstore
-
-    0x04 calldataload       // [token]
-    0x24 calldataload       // [spender, token]
-    0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff // [max, spender, token]
-    
-    // Call safe_approve subroutine
-    ret_pa
-    safe_approve jump
-    ret_pa:
-    
-    0x24 calldataload       // [spender]
-    0x04 calldataload       // [token, spender]
-    0x8d936a3b74312b60e024ee1b476014e8bd0523e8355d93ff5a0787567fe92f5f // [topic0, token, spender]
-    0x00 0x00               // [0, 0, topic0, token, spender]
-    log3
-    
-    UNLOCK()
-    0x00 0x00 return
+    ONLY_OWNER()
+    0x04 calldataload
+    0x24 calldataload
+    0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    dup3 dup3
+    SAFE_APPROVE_MAX_IF_NEEDED()
+    dup2 dup2
+    0x0ca6fb6c483a93664d4b31a89c925828b8bb9b1285dbad851f503f8a4f91ef38
+    0x00 0x00 log3
+    pop pop
+    stop
 }
 
 #define macro APPROVE_IF_NEEDED() = takes (0) returns (0) {
-    is_auth ONLY_AUTHORIZED(is_auth)
-    is_auth:
-    is_unlocked NON_REENTRANT(is_unlocked)
-    is_unlocked:
-        0x02 [LOCKED_SLOT] sstore
-
-    0x24 calldataload       // [spender]
-    0x04 calldataload       // [token, spender]
-    0x44 calldataload       // [amount, token, spender]
-    swap2 swap1             // [spender, token, amount]
-    
-    // Call safe_approve subroutine
-    ret_ain
-    safe_approve jump
-    ret_ain:
-    
-    UNLOCK()
-    0x00 0x00 return
+    caller address eq auth_ok jumpi
+    caller 0x00 sload eq auth_ok jumpi
+    0x82b42900 0x00 mstore
+    0x04 0x1c revert
+auth_ok:
+    0x04 calldataload
+    0x24 calldataload
+    0x44 calldataload
+    dup3 dup3 dup3
+    SAFE_APPROVE_MAX_IF_NEEDED()
+    pop pop pop
+    stop
 }
 
 #define macro TRANSFER_ALL() = takes (0) returns (0) {
-    is_auth ONLY_AUTHORIZED(is_auth)
-    is_auth:
-    is_unlocked NON_REENTRANT(is_unlocked)
-    is_unlocked:
-        0x02 [LOCKED_SLOT] sstore
-
-    0x04 calldataload       // [token]
-    0x24 calldataload       // [to, token]
-    
+    caller address eq transfer_all_auth_ok jumpi
+    caller 0x00 sload eq transfer_all_auth_ok jumpi
+    0x82b42900 0x00 mstore
+    0x04 0x1c revert
+transfer_all_auth_ok:
+    0x04 calldataload
+    0x24 calldataload
     0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
     address 0x04 mstore
-    0x20 0x00
-    0x24 0x00
-    dup5
-    gas staticcall
-    iszero transfer_failed_revert_0 jumpi
-    returndatasize 0x20 lt transfer_failed_revert_0 jumpi
-    0x00 mload // [balance]
-    
-    dup1 iszero balance_zero jumpi
-    
-    // Call safe_transfer subroutine
-    swap2                   // [token, to, balance]
-    ret_ta
-    safe_transfer jump
-    ret_ta:
-    
-    UNLOCK()
-    0x00 0x00 return
-
-    balance_zero:
-        pop pop pop
-        UNLOCK()
-        0x00 0x00 return
-
-    transfer_failed_revert_0:
-        __ERROR(TransferFailed) 0x00 mstore
-        0x04 calldataload 0x04 mstore
-        0x24 calldataload 0x24 mstore
-        0x00 0x44 mstore
-        0x64 0x00 revert
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
+    iszero transfer_all_balance_failed jumpi
+    returndatasize 0x20 lt transfer_all_balance_failed jumpi
+    0x00 mload
+    dup1 iszero transfer_all_zero jumpi
+    dup2 dup4 SAFE_TRANSFER()
+    pop pop
+    stop
+transfer_all_zero:
+    pop pop pop
+    stop
+transfer_all_balance_failed:
+    0x00 0x00 revert
 }
 
 #define macro RESCUE_TOKEN() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    is_unlocked NON_REENTRANT(is_unlocked)
-    is_unlocked:
-        0x02 [LOCKED_SLOT] sstore
-
-    0x24 calldataload       // [to]
-    dup1 iszero zero_address_rt jumpi
-    
-    0x04 calldataload       // [token, to]
-    0x44 calldataload       // [amount, token, to]
-    
-    // Rearrange: [token, to, amount]
-    swap1                   // [token, amount, to]
-    swap2                   // [to, amount, token]
-    swap1                   // [amount, to, token]
-    swap2                   // [token, to, amount]
-    
-    ret_rt
-    safe_transfer jump
-    ret_rt:
-    
-    // Emit TokenRescued(token, to, amount)
-    0x44 calldataload 0x00 mstore
-    0x24 calldataload
+    ONLY_OWNER()
+    NON_REENTRANT()
     0x04 calldataload
+    0x24 calldataload
+    0x44 calldataload
+    dup2 iszero is_zero_revert jumpi
+    dup3 dup3 dup3 SAFE_TRANSFER()
+    dup3 0x00 mstore
+    dup2 dup2
     0x4143f7b5cb6ea007914c32b8a3e64cebc051d7f493fa0755454da1e47701e125
-    0x20 0x00
-    log3
-    UNLOCK()
-    0x00 0x00 return
-    
-    zero_address_rt:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
+    0x20 0x00 log3
+    pop pop pop
+    REENTRANCY_GUARD_RELEASE()
+    stop
 }
 
 #define macro RESCUE_NATIVE() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    is_unlocked NON_REENTRANT(is_unlocked)
-    is_unlocked:
-        0x02 [LOCKED_SLOT] sstore
-
-    0x04 calldataload       // [to]
-    dup1 iszero zero_address_rn jumpi
-    
-    0x24 calldataload       // [amount, to]
-    0x00 0x00 0x00 0x00     // [0, 0, 0, 0, amount, to]
-    dup5 gas call
-    iszero rescue_failed_rn jumpi
-    
-    0x24 calldataload 0x00 mstore
+    ONLY_OWNER()
+    NON_REENTRANT()
     0x04 calldataload
-    0xe3eb98b7fe2a0c1d490b92af73eeae611e9b00ab3c3f70b20bd7bb43f67a0f43
-    0x20 0x00
-    log2
-    UNLOCK()
-    0x00 0x00 return
-
-    zero_address_rn:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
-
-    rescue_failed_rn:
-        __ERROR(TransferFailed) 0x00 mstore
-        0x00 0x04 mstore
-        0x04 calldataload 0x24 mstore
-        0x24 calldataload 0x44 mstore
-        0x64 0x00 revert
-}
-
-// --- Arb Execution Macros ---
-#define macro EXECUTE_ARB() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    
-    [PHASE_SLOT] sload iszero phase_ok_arb jumpi
-    __ERROR(InvalidFlashLoanContext) 0x00 mstore
-    0x04 0x00 revert
-    
-    phase_ok_arb:
-        0x44 calldataload 0x04 add // [struct_offset]
-        dup1 0x40 add calldataload // [deadline, struct_offset]
-        timestamp gt expired_arb jumpi
-        
-        0x04 calldataload iszero zero_addr_arb jumpi
-        dup1 calldataload iszero zero_addr_arb jumpi
-        
-        0x24 calldataload iszero flash_zero_arb jumpi
-        
-        dup1 0x80 add calldataload // [c, struct_offset]
-        dup2 add                   // [calls_offset, struct_offset]
-        dup1 calldataload          // [callsLen, calls_offset, struct_offset]
-        
-        dup1 iszero empty_route_arb jumpi
-        0x0c lt too_many_calls_arb jumpi
-        
-        dup1
-        calldatasize swap1 sub     // [size, calls_offset, struct_offset]
-        dup1 dup3 0x20 calldatacopy
-        0x20 0x00 mstore           // Prepend dynamic array offset = 0x20
-        0x20 add 0x00 sha3         // [routeHash, calls_offset, struct_offset]
-        
-        dup3 0x60 add calldataload // [routeHashFromParams, routeHash, calls_offset, struct_offset]
-        dup2 dup2 eq is_route_ok_arb jumpi
-        __ERROR(InvalidRouteHash) 0x00 mstore
-        0x04 0x00 revert
-        
-    is_route_ok_arb:
-        pop // pop routeHashFromParams. Stack: [routeHash, calls_offset, struct_offset]
-        dup1 [ACTIVE_ROUTE_HASH_SLOT] sstore
-        0x01 [PHASE_SLOT] sstore
-        pop // pop routeHash. Stack: [calls_offset, struct_offset]
-        dup2 calldataload dup1 [ACTIVE_PROFIT_TOKEN_SLOT] sstore // [profitToken, calls_offset, struct_offset]
-        dup3 0x20 add calldataload [ACTIVE_MIN_PROFIT_SLOT] sstore
-        
-        0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore
-        0x20 0x00 0x24 0x00
-        dup5 gas staticcall
-        iszero balance_failed_arb jumpi
-        returndatasize 0x20 lt balance_failed_arb jumpi
-        0x00 mload [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sstore
-        
-        pop pop // clear calls_offset, struct_offset
-        
-        // Balancer Vault Call
-        0x04 calldataload // flashToken
-        0x24 calldataload // flashAmount
-        0x44 calldataload 0x04 add // [struct_offset, flashAmount, flashToken]
-        
-        0x5c38449e00000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore
-        0x80 0x24 mstore
-        0xc0 0x44 mstore
-        0x100 0x64 mstore
-        
-        0x01 0x84 mstore
-        dup3 0xa4 mstore
-        0x01 0xc4 mstore
-        dup2 0xe4 mstore
-        
-        calldatasize dup2 sub
-        dup1 0x20 add 0x104 mstore
-        0x20 0x124 mstore
-        
-        calldatasize dup2 sub 0x144 calldatacopy
-        
-        0x00 // retSize
-        0x00 // retOffset
-        calldatasize dup4 sub 0x144 add // argsSize
-        0x00 // argsOffset
-        0x00 // value
-        [BALANCER_VAULT_SLOT] sload // addr
-        gas // gas
-        call
-        iszero flash_failed_arb jumpi
-        
-        [PHASE_SLOT] sload iszero phase_idle_ok_arb jumpi
-        __ERROR(InvalidFlashLoanContext) 0x00 mstore
-        0x04 0x00 revert
-        
-    phase_idle_ok_arb:
-        [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sload
-        [ACTIVE_MIN_PROFIT_SLOT] sload
-        [ACTIVE_PROFIT_TOKEN_SLOT] sload
-        
-        0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore
-        0x20 0x00 0x24 0x00
-        dup5 gas staticcall
-        iszero balance_failed_arb jumpi
-        returndatasize 0x20 lt balance_failed_arb jumpi
-        0x00 mload // [finalProfitBalance, profitToken, minProfit, initialProfitBalance]
-        
-        0x00
-        dup5 dup3 lt iszero ge_profit_arb jumpi
-        pop 0x00
-        calc_profit_done_arb jump
-        
-    ge_profit_arb:
-        pop dup1 dup4 sub
-        
-    calc_profit_done_arb:
-        dup5 dup5 add dup3 lt insufficient_profit_arb jumpi
-        
-        dup1 0x00 mstore
-        [BALANCER_VAULT_SLOT] sload 0x20 mstore
-        [ACTIVE_ROUTE_HASH_SLOT] sload
-        dup5 caller
-        0x2790eac69d46d24bb29b55a23b12e2e49076dc2a9fdcb340e641de33fca2c5dd
-        0x40 0x00
-        log4
-        
-        0x00 [PHASE_SLOT] sstore
-        0x00 [ACTIVE_ROUTE_HASH_SLOT] sstore
-        0x00 [ACTIVE_PROFIT_TOKEN_SLOT] sstore
-        0x00 [ACTIVE_MIN_PROFIT_SLOT] sstore
-        0x00 [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sstore
-        0x00 0x00 return
-        
-    expired_arb:
-        __ERROR(DeadlineExpired) 0x00 mstore
-        0x04 0x00 revert
-    zero_addr_arb:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
-    flash_zero_arb:
-        __ERROR(FlashLoanRequired) 0x00 mstore
-        0x04 0x00 revert
-    empty_route_arb:
-        __ERROR(EmptyRoute) 0x00 mstore
-        0x04 0x00 revert
-    too_many_calls_arb:
-        __ERROR(TooManyCalls) 0x00 mstore
-        0x04 0x00 revert
-    balance_failed_arb:
-        __ERROR(TransferFailed) 0x00 mstore
-        0x00 0x04 mstore
-        0x00 0x24 mstore
-        0x00 0x44 mstore
-        0x64 0x00 revert
-    flash_failed_arb:
-        returndatasize iszero flash_failed_no_reason_arb jumpi
-        returndatasize 0x00 0x00 returndatacopy
-        returndatasize 0x00 revert
-    flash_failed_no_reason_arb:
-        __ERROR(ExternalCallFailed) 0x00 mstore
-        0x00 0x04 mstore
-        [BALANCER_VAULT_SLOT] sload 0x24 mstore
-        0x60 0x44 mstore
-        0x00 0x64 mstore
-        0x84 0x00 revert
-    insufficient_profit_arb:
-        __ERROR(InsufficientProfit) 0x00 mstore
-        dup2 0x04 mstore
-        dup5 dup5 add 0x24 mstore
-        0x44 0x00 revert
-}
-
-#define macro EXECUTE_ARB_WITH_AAVE() = takes (0) returns (0) {
-    is_owner ONLY_OWNER(is_owner)
-    is_owner:
-    
-    [PHASE_SLOT] sload iszero phase_ok_aave jumpi
-    __ERROR(InvalidFlashLoanContext) 0x00 mstore
-    0x04 0x00 revert
-    
-    phase_ok_aave:
-        0x44 calldataload 0x04 add // [struct_offset]
-        dup1 0x40 add calldataload // [deadline, struct_offset]
-        timestamp gt expired_aave jumpi
-        
-        0x04 calldataload iszero zero_addr_aave jumpi
-        dup1 calldataload iszero zero_addr_aave jumpi
-        
-        0x24 calldataload iszero flash_zero_aave jumpi
-        
-        dup1 0x80 add calldataload // [c, struct_offset]
-        dup2 add                   // [calls_offset, struct_offset]
-        dup1 calldataload          // [callsLen, calls_offset, struct_offset]
-        
-        dup1 iszero empty_route_aave jumpi
-        0x0c lt too_many_calls_aave jumpi
-        
-        dup1
-        calldatasize swap1 sub     // [size, calls_offset, struct_offset]
-        dup1 dup3 0x20 calldatacopy
-        0x20 0x00 mstore           // Prepend dynamic array offset = 0x20
-        0x20 add 0x00 sha3         // [routeHash, calls_offset, struct_offset]
-        
-        dup3 0x60 add calldataload // [routeHashFromParams, routeHash, calls_offset, struct_offset]
-        dup2 dup2 eq is_route_ok_aave jumpi
-        __ERROR(InvalidRouteHash) 0x00 mstore
-        0x04 0x00 revert
-        
-    is_route_ok_aave:
-        pop // pop routeHashFromParams. Stack: [routeHash, calls_offset, struct_offset]
-        dup1 [ACTIVE_ROUTE_HASH_SLOT] sstore
-        0x01 [PHASE_SLOT] sstore
-        pop // pop routeHash. Stack: [calls_offset, struct_offset]
-        dup2 calldataload dup1 [ACTIVE_PROFIT_TOKEN_SLOT] sstore // [profitToken, calls_offset, struct_offset]
-        dup3 0x20 add calldataload [ACTIVE_MIN_PROFIT_SLOT] sstore
-        
-        0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore
-        0x20 0x00 0x24 0x00
-        dup5 gas staticcall
-        iszero balance_failed_aave jumpi
-        returndatasize 0x20 lt balance_failed_aave jumpi
-        0x00 mload [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sstore
-        
-        pop pop // clear calls_offset, struct_offset
-        
-        // Aave Call Setup
-        0x04 calldataload // flashToken
-        0x24 calldataload // flashAmount
-        0x44 calldataload 0x04 add // [struct_offset, flashAmount, flashToken]
-        
-        0xab9c4b5d00000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore     // receiverAddress
-        0xe0 0x24 mstore        // assets offset
-        0x120 0x44 mstore       // amounts offset
-        0x160 0x64 mstore       // modes offset
-        address 0x84 mstore     // onBehalfOf
-        0x1a0 0xa4 mstore       // params offset
-        0x00 0xc4 mstore        // referralCode
-        
-        0x01 0xe4 mstore
-        dup3 0x104 mstore       // assets[0] = flashToken
-        
-        0x01 0x124 mstore
-        dup2 0x144 mstore       // amounts[0] = flashAmount
-        
-        0x01 0x164 mstore
-        0x00 0x184 mstore       // modes[0] = 0
-        
-        calldatasize dup2 sub
-        dup1 0x20 add 0x1a4 mstore
-        0x20 0x1c4 mstore
-        
-        calldatasize dup2 sub 0x1e4 calldatacopy
-        
-        0x00 // retSize
-        0x00 // retOffset
-        calldatasize dup4 sub 0x1e4 add // argsSize
-        0x00 // argsOffset
-        0x00 // value
-        [AAVE_POOL_SLOT] sload // addr
-        gas // gas
-        call
-        iszero flash_failed_aave jumpi
-        
-        [PHASE_SLOT] sload iszero phase_idle_ok_aave jumpi
-        __ERROR(InvalidFlashLoanContext) 0x00 mstore
-        0x04 0x00 revert
-        
-    phase_idle_ok_aave:
-        [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sload
-        [ACTIVE_MIN_PROFIT_SLOT] sload
-        [ACTIVE_PROFIT_TOKEN_SLOT] sload
-        
-        0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
-        address 0x04 mstore
-        0x20 0x00 0x24 0x00
-        dup5 gas staticcall
-        iszero balance_failed_aave jumpi
-        returndatasize 0x20 lt balance_failed_aave jumpi
-        0x00 mload // [finalProfitBalance, profitToken, minProfit, initialProfitBalance]
-        
-        0x00
-        dup5 dup3 lt iszero ge_profit_aave jumpi
-        pop 0x00
-        calc_profit_done_aave jump
-        
-    ge_profit_aave:
-        pop dup1 dup4 sub
-        
-    calc_profit_done_aave:
-        dup5 dup5 add dup3 lt insufficient_profit_aave jumpi
-        
-        dup1 0x00 mstore
-        [AAVE_POOL_SLOT] sload 0x20 mstore
-        [ACTIVE_ROUTE_HASH_SLOT] sload
-        dup5 caller
-        0xcf310e875090b29d50540b311226f96c6d78f2cdd5265f1481c9772c59620f4e
-        0x40 0x00
-        log4
-        
-        0x00 [PHASE_SLOT] sstore
-        0x00 [ACTIVE_ROUTE_HASH_SLOT] sstore
-        0x00 [ACTIVE_PROFIT_TOKEN_SLOT] sstore
-        0x00 [ACTIVE_MIN_PROFIT_SLOT] sstore
-        0x00 [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sstore
-        0x00 0x00 return
-        
-    expired_aave:
-        __ERROR(DeadlineExpired) 0x00 mstore
-        0x04 0x00 revert
-    zero_addr_aave:
-        __ERROR(ZeroAddress) 0x00 mstore
-        0x04 0x00 revert
-    flash_zero_aave:
-        __ERROR(FlashLoanRequired) 0x00 mstore
-        0x04 0x00 revert
-    empty_route_aave:
-        __ERROR(EmptyRoute) 0x00 mstore
-        0x04 0x00 revert
-    too_many_calls_aave:
-        __ERROR(TooManyCalls) 0x00 mstore
-        0x04 0x00 revert
-    balance_failed_aave:
-        __ERROR(TransferFailed) 0x00 mstore
-        0x00 0x04 mstore
-        0x00 0x24 mstore
-        0x00 0x44 mstore
-        0x64 0x00 revert
-    flash_failed_aave:
-        returndatasize iszero flash_failed_no_reason_aave jumpi
-        returndatasize 0x00 0x00 returndatacopy
-        returndatasize 0x00 revert
-    flash_failed_no_reason_aave:
-        __ERROR(ExternalCallFailed) 0x00 mstore
-        0x00 0x04 mstore
-        [AAVE_POOL_SLOT] sload 0x24 mstore
-        0x60 0x44 mstore
-        0x00 0x64 mstore
-        0x84 0x00 revert
-    insufficient_profit_aave:
-        __ERROR(InsufficientProfit) 0x00 mstore
-        dup2 0x04 mstore
-        dup5 dup5 add 0x24 mstore
-        0x44 0x00 revert
-}
-
-#define macro RECEIVE_FLASH_LOAN() = takes (0) returns (0) {
-    caller [BALANCER_VAULT_SLOT] sload eq iszero invalid_caller_refl jumpi
-    [PHASE_SLOT] sload 0x01 eq iszero invalid_phase_refl jumpi
-    
-    0x04 calldataload 0x04 add // [tokens_start]
-    0x24 calldataload 0x04 add // [amounts_start, tokens_start]
-    0x44 calldataload 0x04 add // [feeAmounts_start, amounts_start, tokens_start]
-    0x64 calldataload 0x04 add // [userData_start, feeAmounts_start, amounts_start, tokens_start]
-    
-    dup1 0xa0 add calldataload [ACTIVE_ROUTE_HASH_SLOT] sload eq iszero invalid_route_refl jumpi
-    dup1 0x40 add calldataload [ACTIVE_PROFIT_TOKEN_SLOT] sload eq iszero invalid_phase_refl jumpi
-    dup1 0x60 add calldataload [ACTIVE_MIN_PROFIT_SLOT] sload eq iszero invalid_phase_refl jumpi
-    dup1 0x80 add calldataload timestamp gt expired_refl jumpi
-    
-    0x02 [PHASE_SLOT] sstore
-    
-    dup1 0xc0 add calldataload
-    dup2 0x40 add add          // [calls_start, userData_start, ...]
-    
-    // Call execute_calls subroutine
-    ret_ec_refl
-    dup2                       // copy calls_start
-    execute_calls jump
-ret_ec_refl:
-    
-    pop // clear userData_start
-    0x00 // index i
-    
-    tokens_loop:
-        dup1
-        dup5 calldataload // tokens length
-        lt tokens_loop_continue jumpi
-        pop
-        tokens_loop_done jump
-        
-    tokens_loop_continue:
-        dup1 0x20 mul dup5 add 0x20 add calldataload // [token]
-        dup2 0x20 mul dup5 add 0x20 add calldataload // [amount, token]
-        dup3 0x20 mul dup5 add 0x20 add calldataload // [fee, amount, token]
-        add // [total = amount + fee, token]
-        
-        swap1
-        [BALANCER_VAULT_SLOT] sload
-        swap1 // [token, balancerVault, total]
-        
-        // Call safe_transfer subroutine
-        ret_refl
-        safe_transfer jump
-    ret_refl:
-    
-        0x01 add
-        tokens_loop jump
-        
-    tokens_loop_done:
-        pop pop pop // clear feeAmounts_start, amounts_start, tokens_start
-        0x00 [PHASE_SLOT] sstore
-        
-        // Call assert_profit subroutine
-        ret_ap_refl
-        assert_profit jump
-    ret_ap_refl:
-        
-        0x00 0x00 return
-        
-    invalid_caller_refl:
-        __ERROR(FlashLoanOnly) 0x00 mstore
-        0x04 0x00 revert
-    invalid_phase_refl:
-        __ERROR(InvalidFlashLoanContext) 0x00 mstore
-        0x04 0x00 revert
-    invalid_route_refl:
-        __ERROR(InvalidRouteHash) 0x00 mstore
-        0x04 0x00 revert
-    expired_refl:
-        __ERROR(DeadlineExpired) 0x00 mstore
-        0x04 0x00 revert
-}
-
-#define macro EXECUTE_OPERATION() = takes (0) returns (0) {
-    caller [AAVE_POOL_SLOT] sload eq iszero invalid_caller_execop jumpi
-    [PHASE_SLOT] sload 0x01 eq iszero invalid_phase_execop jumpi
-    0x64 calldataload address eq iszero unauthorized_execop jumpi
-    
-    0x84 calldataload 0x04 add // [params_start]
-    
-    dup1 0xa0 add calldataload [ACTIVE_ROUTE_HASH_SLOT] sload eq iszero invalid_route_execop jumpi
-    dup1 0x40 add calldataload [ACTIVE_PROFIT_TOKEN_SLOT] sload eq iszero invalid_phase_execop jumpi
-    dup1 0x60 add calldataload [ACTIVE_MIN_PROFIT_SLOT] sload eq iszero invalid_phase_execop jumpi
-    dup1 0x80 add calldataload timestamp gt expired_execop jumpi
-    
-    0x02 [PHASE_SLOT] sstore
-    
-    dup1 0xc0 add calldataload
-    dup2 0x40 add add          // [calls_start, params_start]
-    
-    // Call execute_calls subroutine
-    ret_ec_execop
-    dup2
-    execute_calls jump
-ret_ec_execop:
-    
-    pop // clear params_start
-    
-    0x24 calldataload 0x44 calldataload add // [totalRepay = amount + premium]
-    
-    // safe_transfer expects: [token, to, amount]
-    [AAVE_POOL_SLOT] sload
-    0x04 calldataload 0x24 add calldataload // [assets[0], pool, totalRepay]
-    
-    ret_execop
-    safe_transfer jump
-    ret_execop:
-    
-    0x00 [PHASE_SLOT] sstore
-    
-    // Call assert_profit subroutine
-    ret_ap_execop
-    assert_profit jump
-ret_ap_execop:
-    
-    0x01 0x00 mstore
-    0x20 0x00 return
-    
-    invalid_caller_execop:
-        __ERROR(FlashLoanOnly) 0x00 mstore
-        0x04 0x00 revert
-    invalid_phase_execop:
-        __ERROR(InvalidFlashLoanContext) 0x00 mstore
-        0x04 0x00 revert
-    invalid_route_execop:
-        __ERROR(InvalidRouteHash) 0x00 mstore
-        0x04 0x00 revert
-    expired_execop:
-        __ERROR(DeadlineExpired) 0x00 mstore
-        0x04 0x00 revert
-    unauthorized_execop:
-        __ERROR(Unauthorized) 0x00 mstore
-        0x04 0x00 revert
-}
-
-#define macro _RESOLVE_EXPECTED_POOL() = takes (4) returns (1) {
-    // Stack: [fee, token1, token0, cbProtocolId]
-    dup4 0x01 eq is_v3_rep jumpi
-    dup4 0x02 eq is_sushi_rep jumpi
-    dup4 0x03 eq is_quick_rep jumpi
-    dup4 0x04 eq is_kyber_rep jumpi
-    pop pop pop pop 0x00 finish_rep jump
-    
-    is_v3_rep:
-        [UNISWAP_V3_FACTORY_SLOT] sload
-        ret_cgp_v3
-        call_get_pool jump
-    ret_cgp_v3:
-        finish_rep jump
-        
-    is_sushi_rep:
-        [SUSHISWAP_V3_FACTORY_SLOT] sload
-        ret_cgp_sushi
-        call_get_pool jump
-    ret_cgp_sushi:
-        finish_rep jump
-        
-    is_quick_rep:
-        [QUICKSWAP_V3_FACTORY_SLOT] sload
-        ret_cpbp_quick
-        call_pool_by_pair jump
-    ret_cpbp_quick:
-        finish_rep jump
-        
-    is_kyber_rep:
-        [KYBER_ELASTIC_FACTORY_SLOT] sload
-        ret_cgp_kyber
-        call_get_pool jump
-    ret_cgp_kyber:
-        finish_rep jump
-        
-    finish_rep:
-}
-
-// --- Callback Macros ---
-#define macro UNISWAP_V3_SWAP_CALLBACK() = takes (0) returns (0) {
-    ret_cb_v3
-    0x01
-    handle_callback jump
-    ret_cb_v3:
-}
-
-#define macro ALGEBRA_SWAP_CALLBACK() = takes (0) returns (0) {
-    ret_cb_alg
-    0x03
-    handle_callback jump
-    ret_cb_alg:
-}
-
-#define macro SWAP_CALLBACK() = takes (0) returns (0) {
-    ret_cb_swap
-    0x04
-    handle_callback jump
-    ret_cb_swap:
-}
-
-#define macro LOCK_ACQUIRED() = takes (0) returns (0) {
-    caller [POOL_MANAGER_SLOT] sload eq iszero callback_only_la jumpi
-    [PHASE_SLOT] sload 0x02 eq iszero callback_only_la jumpi
-    
-    0x04 calldataload 0x04 add // [data_start]
-    
-    0x6c70970e00000000000000000000000000000000000000000000000000000000 0x00 mstore
-    0x04 dup2 0x20 add 0x100 calldatacopy
-    0x120 0x104 mstore
-    0x00 0x124 mstore
-    
-    0x40 0x00 0x144 0x00 [POOL_MANAGER_SLOT] sload gas call
-    iszero swap_failed_la jumpi
-    
-    0x00 mload // [delta0, data_start]
-    0x20 mload // [delta1, delta0, data_start]
-    
-    dup2 0x00 sgt iszero skip_settle0_la jumpi
-    0x6a256b2900000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup3 0x20 add calldataload 0x04 mstore
-    0x00 0x00 0x24 0x00 [POOL_MANAGER_SLOT] sload gas call
-    iszero settle_failed_la jumpi
-    
-    skip_settle0_la:
-        dup1 0x00 sgt iszero skip_settle1_la jumpi
-        0x6a256b2900000000000000000000000000000000000000000000000000000000 0x00 mstore
-        dup3 0x40 add calldataload 0x04 mstore
-        0x00 0x00 0x24 0x00 [POOL_MANAGER_SLOT] sload gas call
-        iszero settle_failed_la jumpi
-        
-    skip_settle1_la:
-        dup2 0x00 slt iszero skip_take0_la jumpi
-        0x0b0d9c0900000000000000000000000000000000000000000000000000000000 0x00 mstore
-        dup3 0x20 add calldataload 0x04 mstore
-        address 0x24 mstore
-        0x00 dup5 sub 0x44 mstore
-        0x00 0x00 0x64 0x00 [POOL_MANAGER_SLOT] sload gas call
-        iszero take_failed_la jumpi
-        
-    skip_take0_la:
-        dup1 0x00 slt iszero skip_take1_la jumpi
-        0x0b0d9c0900000000000000000000000000000000000000000000000000000000 0x00 mstore
-        dup3 0x40 add calldataload 0x04 mstore
-        address 0x24 mstore
-        0x00 dup3 sub 0x44 mstore
-        0x00 0x00 0x64 0x00 [POOL_MANAGER_SLOT] sload gas call
-        iszero take_failed_la jumpi
-        
-    skip_take1_la:
-        pop pop pop
-        0x20 0x00 mstore
-        0x00 0x20 mstore
-        0x40 0x00 return
-        
-    callback_only_la:
-        __ERROR(CallbackOnly) 0x00 mstore
-        0x04 0x00 revert
-    swap_failed_la:
-        returndatasize iszero swap_failed_no_reason_la jumpi
-        returndatasize 0x00 0x00 returndatacopy
-        returndatasize 0x00 revert
-    swap_failed_no_reason_la:
-        __ERROR(ExternalCallFailed) 0x00 mstore
-        0x00 0x04 mstore
-        [POOL_MANAGER_SLOT] sload 0x24 mstore
-        0x60 0x44 mstore
-        0x00 0x64 mstore
-        0x84 0x00 revert
-    settle_failed_la:
-        returndatasize iszero settle_failed_no_reason_la jumpi
-        returndatasize 0x00 0x00 returndatacopy
-        returndatasize 0x00 revert
-    settle_failed_no_reason_la:
-        __ERROR(ExternalCallFailed) 0x00 mstore
-        0x00 0x04 mstore
-        [POOL_MANAGER_SLOT] sload 0x24 mstore
-        0x60 0x44 mstore
-        0x00 0x64 mstore
-        0x84 0x00 revert
-    take_failed_la:
-        returndatasize iszero take_failed_no_reason_la jumpi
-        returndatasize 0x00 0x00 returndatacopy
-        returndatasize 0x00 revert
-    take_failed_no_reason_la:
-        __ERROR(ExternalCallFailed) 0x00 mstore
-        0x00 0x04 mstore
-        [POOL_MANAGER_SLOT] sload 0x24 mstore
-        0x60 0x44 mstore
-        0x00 0x64 mstore
-        0x84 0x00 revert
-}
-
-// --- Main Dispatcher ---
-#define macro MAIN() = takes (0) returns (0) {
-    0x00 calldataload 0xe0 shr           // [selector]
-
-    dup1 [SELECTOR_owner] eq owner_dest jumpi
-    dup1 [SELECTOR_transferOwnership] eq transferOwnership_dest jumpi
-    dup1 [SELECTOR_preApprove] eq preApprove_dest jumpi
-    dup1 [SELECTOR_approveIfNeeded] eq approveIfNeeded_dest jumpi
-    dup1 [SELECTOR_transferAll] eq transferAll_dest jumpi
-    dup1 [SELECTOR_rescueToken] eq rescueToken_dest jumpi
-    dup1 [SELECTOR_rescueNative] eq rescueNative_dest jumpi
-    dup1 [SELECTOR_executeArb] eq executeArb_dest jumpi
-    dup1 [SELECTOR_executeArbWithAave] eq executeArbWithAave_dest jumpi
-    dup1 [SELECTOR_receiveFlashLoan] eq receiveFlashLoan_dest jumpi
-    dup1 [SELECTOR_executeOperation] eq executeOperation_dest jumpi
-    dup1 [SELECTOR_uniswapV3SwapCallback] eq uniswapV3SwapCallback_dest jumpi
-    dup1 [SELECTOR_algebraSwapCallback] eq algebraSwapCallback_dest jumpi
-    dup1 [SELECTOR_swapCallback] eq swapCallback_dest jumpi
-    dup1 [SELECTOR_lockAcquired] eq lockAcquired_dest jumpi
-
-    // Immutables getters
-    dup1 [SELECTOR_balancerVault] eq balancerVault_dest jumpi
-    dup1 [SELECTOR_uniswapV3Factory] eq uniswapV3Factory_dest jumpi
-    dup1 [SELECTOR_sushiV3Factory] eq sushiV3Factory_dest jumpi
-    dup1 [SELECTOR_quickswapV3Factory] eq quickswapV3Factory_dest jumpi
-    dup1 [SELECTOR_kyberElasticFactory] eq kyberElasticFactory_dest jumpi
-    dup1 [SELECTOR_aavePool] eq aavePool_dest jumpi
-    dup1 [SELECTOR_poolManager] eq poolManager_dest jumpi
-
-    // Fallback/Receive
-    0x00 0x00 return
-
-owner_dest:
-    OWNER_GETTER()
-transferOwnership_dest:
-    TRANSFER_OWNERSHIP()
-preApprove_dest:
-    PRE_APPROVE()
-approveIfNeeded_dest:
-    APPROVE_IF_NEEDED()
-transferAll_dest:
-    TRANSFER_ALL()
-rescueToken_dest:
-    RESCUE_TOKEN()
-rescueNative_dest:
-    RESCUE_NATIVE()
-executeArb_dest:
-    EXECUTE_ARB()
-executeArbWithAave_dest:
-    EXECUTE_ARB_WITH_AAVE()
-receiveFlashLoan_dest:
-    RECEIVE_FLASH_LOAN()
-executeOperation_dest:
-    EXECUTE_OPERATION()
-uniswapV3SwapCallback_dest:
-    UNISWAP_V3_SWAP_CALLBACK()
-algebraSwapCallback_dest:
-    ALGEBRA_SWAP_CALLBACK()
-swapCallback_dest:
-    SWAP_CALLBACK()
-lockAcquired_dest:
-    LOCK_ACQUIRED()
-
-balancerVault_dest:
-    [BALANCER_VAULT_SLOT] sload 0x00 mstore 0x20 0x00 return
-uniswapV3Factory_dest:
-    [UNISWAP_V3_FACTORY_SLOT] sload 0x00 mstore 0x20 0x00 return
-sushiV3Factory_dest:
-    [SUSHISWAP_V3_FACTORY_SLOT] sload 0x00 mstore 0x20 0x00 return
-quickswapV3Factory_dest:
-    [QUICKSWAP_V3_FACTORY_SLOT] sload 0x00 mstore 0x20 0x00 return
-kyberElasticFactory_dest:
-    [KYBER_ELASTIC_FACTORY_SLOT] sload 0x00 mstore 0x20 0x00 return
-aavePool_dest:
-    [AAVE_POOL_SLOT] sload 0x00 mstore 0x20 0x00 return
-poolManager_dest:
-    [POOL_MANAGER_SLOT] sload 0x00 mstore 0x20 0x00 return
-
-// ==========================================
-// SUBROUTINES / COMMON LOGIC DEFINITIONS
-// ==========================================
-
-safe_transfer:
-    // Stack: [ret_pc, token, to, amount]
-    0xa9059cbb00000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup3 0x04 mstore           // to
-    dup4 0x24 mstore           // amount
-    0x20 0x00                  // [outSize, outOffset, ret_pc, token, to, amount]
-    0x44 0x00                  // [inSize, inOffset, outSize, outOffset, ret_pc, token, to, amount]
-    dup7                       // [token, inSize, ... ]
-    gas call                   // [success, ret_pc, token, to, amount]
-    
-    iszero transfer_failed jumpi
-    
-    returndatasize iszero transfer_success jumpi
-    returndatasize 0x20 lt transfer_failed jumpi
-    0x00 mload iszero transfer_failed jumpi
-
-transfer_success:
-    swap3 pop swap2 pop swap1 pop // [ret_pc]
-    jump
-
-transfer_failed:
-    __ERROR(TransferFailed) 0x00 mstore
-    dup2 0x04 mstore           // token
-    dup3 0x24 mstore           // to
-    dup4 0x44 mstore           // amount
-    0x64 0x00 revert
-
-safe_approve:
-    // Stack: [ret_pc, spender, token, amount]
-    // 1. Get current allowance: allowance(address(this), spender)
-    0xdd62ed3e00000000000000000000000000000000000000000000000000000000 0x00 mstore
-    address 0x04 mstore
-    dup2 0x24 mstore           // spender
-    0x20 0x00 0x44 0x00
-    dup7                       // token
-    gas staticcall
-    iszero approve_failed jumpi
-    returndatasize 0x20 lt approve_failed jumpi
-    0x00 mload                 // [allowance, ret_pc, spender, token, amount]
-    
-    dup5                       // [amount, allowance, ret_pc, spender, token, amount]
-    dup2                       // [allowance, amount, allowance, ... ]
-    lt iszero approve_not_needed jumpi // if allowance >= amount, finish!
-    
-    // If allowance < amount:
-    iszero approve_nonzero jumpi
-    
-    // approve(spender, 0)
-    0x095ea7b300000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup3 0x04 mstore           // spender
-    0x00 0x24 mstore           // 0
-    0x20 0x00 0x44 0x00
-    dup7                       // token
-    gas call
-    iszero approve_failed jumpi
-    returndatasize iszero approve_zero_ok jumpi
-    returndatasize 0x20 lt approve_failed jumpi
-    0x00 mload iszero approve_failed jumpi
-
-approve_zero_ok:
-approve_nonzero:
-    // approve(spender, type(uint256).max)
-    0x095ea7b300000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup3 0x04 mstore           // spender
-    0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff 0x24 mstore // max
-    0x20 0x00 0x44 0x00
-    dup7                       // token
-    gas call
-    iszero approve_failed jumpi
-    returndatasize iszero approve_success jumpi
-    returndatasize 0x20 lt approve_failed jumpi
-    0x00 mload iszero approve_failed jumpi
-
-approve_success:
-    swap3 pop swap2 pop swap1 pop // [ret_pc]
-    jump
-
-approve_not_needed:
-    pop                        // pop allowance
-    swap3 pop swap2 pop swap1 pop // [ret_pc]
-    jump
-
-approve_failed:
-    __ERROR(ApproveFailed) 0x00 mstore
-    dup3 0x04 mstore           // token
-    dup2 0x24 mstore           // spender
-    0x44 0x00 revert
-
-execute_calls:
-    // Stack: [ret_pc, calls_start]
-    0x00                       // [i, ret_pc, calls_start]
-execute_calls_loop:
-    dup3                       // [calls_start, i, ret_pc, calls_start]
-    dup2                       // [i, calls_start, i, ... ]
-    dup2 calldataload          // [callsLen, i, calls_start, i, ... ]
-    lt execute_calls_continue jumpi
-    pop pop pop                // clean i, ret_pc, calls_start
-    jump                       // jump back to ret_pc
-
-execute_calls_continue:
-    dup1 0x20 mul 0x20 add dup4 add calldataload // [offset]
-    dup3 add                   // [call_offset]
-    
-    dup1 calldataload          // [target]
-    dup2 0x20 add calldataload // [value, target]
-    dup3 0x40 add calldataload // [d, value, target]
-    dup4 add                   // [data_start, value, target]
-    dup1 calldataload          // [data_len, data_start, value, target]
-    
+    0x24 calldataload
+    dup2 iszero is_zero_revert jumpi
+    0x00 0x00 0x00 0x00 dup5 dup5 gas call
+    iszero native_rescue_failed jumpi
+    dup2 0x00 mstore
     dup1
-    dup3 0x20 add
+    0xe3eb98b7fe2a0c1d490b92af73eeae611e9b00ab3c3f70b20bd7bb43f67a0f43
+    0x20 0x00 log2
+    pop pop
+    REENTRANCY_GUARD_RELEASE()
+    stop
+native_rescue_failed:
+    0xbf182be800000000000000000000000000000000000000000000000000000000 0x00 mstore
+    0x00 0x04 mstore
+    dup2 0x24 mstore
+    dup1 0x44 mstore
+    0x64 0x00 revert
+}
+
+#define macro EXECUTE_CALLS() = takes (1) returns (0) {
+    // stack: [calls_ptr]
+    dup1 calldataload
     0x00
-    calldatacopy
-    
-    0x00 // retSize
-    0x00 // retOffset
-    dup3 // argsSize
-    0x00 // argsOffset
-    dup7 // value
-    dup9 // target
-    gas // gas
-    call
-    
-    execute_calls_success jumpi
-    
-    __ERROR(ExternalCallFailed) 0x00 mstore
+execute_calls_loop:
+    dup2 dup2 eq execute_calls_done jumpi
+    dup1 0x20 mul 0x20 add dup4 add calldataload
+    dup4 0x20 add add
+    dup1 calldataload
+    dup2 0x20 add calldataload
+    dup3 0x40 add calldataload
+    dup4 add
+    dup1 calldataload
+    dup1 dup3 0x20 add 0x100 calldatacopy
+    0x00 0x00 dup3 0x100 dup7 dup9 gas call
+    iszero execute_call_failed jumpi
+    pop pop pop pop pop
+    0x01 add
+    execute_calls_loop jump
+execute_call_failed:
+    0x0f43457300000000000000000000000000000000000000000000000000000000 0x00 mstore
     dup6 0x04 mstore
     dup4 0x24 mstore
     0x60 0x44 mstore
     returndatasize 0x64 mstore
-    0x84 0x00 returndatasize returndatacopy
+    returndatasize 0x00 0x84 returndatacopy
     returndatasize 0x84 add 0x00 revert
-    
-execute_calls_success:
-    pop pop pop pop pop        // clear data_len, data_start, value, target, call_offset
-    0x01 add
-    execute_calls_loop jump
+execute_calls_done:
+    pop pop pop
+}
 
-assert_profit:
-    // Stack: [ret_pc]
-    [ACTIVE_PROFIT_TOKEN_SLOT] sload
-    [ACTIVE_MIN_PROFIT_SLOT] sload
-    [ACTIVE_INITIAL_PROFIT_BALANCE_SLOT] sload
-    
+#define macro ASSERT_PROFIT() = takes (0) returns (0) {
+    0x03 sload
     0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
     address 0x04 mstore
-    0x20 0x00 0x24 0x00
-    dup5 gas staticcall
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
     iszero assert_balance_failed jumpi
     returndatasize 0x20 lt assert_balance_failed jumpi
-    0x00 mload                 // [finalBalance, initialBalance, minProfit, profitToken]
-    
-    dup2 dup4 add
-    dup2 lt assert_insufficient jumpi
-    
-    pop pop pop pop
-    jump
-
-assert_balance_failed:
-    __ERROR(TransferFailed) 0x00 mstore
-    0x00 0x04 mstore
-    0x00 0x24 mstore
-    0x00 0x44 mstore
-    0x64 0x00 revert
-    
-assert_insufficient:
-    __ERROR(InsufficientProfit) 0x00 mstore
-    dup1 0x04 mstore
-    dup2 dup4 add 0x24 mstore
+    0x00 mload
+    0x05 sload 0x04 sload add
+    dup2 dup2 gt iszero assert_profit_ok jumpi
+    0x4e88422a00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    swap1 0x04 mstore
+    0x24 mstore
     0x44 0x00 revert
+assert_profit_ok:
+    pop pop
+    assert_profit_end jump
+assert_balance_failed:
+    0x00 0x00 revert
+assert_profit_end:
+}
 
-call_get_pool:
-    // Stack: [ret_pc, factory, fee, token1, token0, cbProtocolId]
-    0x1698ee8200000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup5 0x04 mstore           // token0
-    dup4 0x24 mstore           // token1
-    dup3 0x44 mstore           // fee
-    
-    0x20 0x00 0x64 0x00
-    dup6                       // factory
-    gas staticcall
-    iszero get_pool_failed jumpi
-    returndatasize 0x20 lt get_pool_failed jumpi
-    0x00 mload                 // [pool, ret_pc, factory, ... ]
-    
-    swap5 pop swap4 pop swap3 pop swap2 pop swap1 pop
-    swap1
-    jump
+#define macro EXECUTE_ARB() = takes (0) returns (0) {
+    ONLY_OWNER()
+    0x01 sload iszero phase_idle_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_idle_ok:
+    0x44 calldataload 0x04 add // [params_ptr]
+    dup1 0x40 add calldataload timestamp gt deadline_expired jumpi
+    dup1 0x80 add calldataload dup2 add
+    dup1 calldataload
+    dup1 iszero empty_route jumpi
+    0x0c lt too_many_calls jumpi
+    0x24 calldataload iszero flash_loan_required jumpi
+    0x04 calldataload iszero zero_address jumpi
+    dup2 calldataload iszero zero_address jumpi
 
-get_pool_failed:
-    pop pop pop pop pop
-    0x00
-    swap1
-    jump
-
-call_pool_by_pair:
-    // Stack: [ret_pc, factory, fee, token1, token0, cbProtocolId]
-    0xd9a641e100000000000000000000000000000000000000000000000000000000 0x00 mstore
-    dup5 0x04 mstore           // token0
-    dup4 0x24 mstore           // token1
+    0x20 0x80 mstore
+    dup1 calldatasize sub
+    dup1 dup3 0xa0 calldatacopy
+    0x20 add 0x80 sha3
     
-    0x20 0x00 0x44 0x00
-    dup6                       // factory
-    gas staticcall
-    iszero pool_by_pair_failed jumpi
-    returndatasize 0x20 lt pool_by_pair_failed jumpi
+    dup3 0x60 add calldataload
+    eq route_hash_ok jumpi
+    0xc858adff 0x00 mstore
+    0x04 0x1c revert
+route_hash_ok:
+    dup2 calldataload
+    0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
+    address 0x04 mstore
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
+    iszero balance_failed jumpi
+    returndatasize 0x20 lt balance_failed jumpi
+    0x00 mload
+
+    0x01 0x01 sstore
+    dup4 0x60 add calldataload 0x02 sstore
+    dup4 calldataload 0x03 sstore
+    dup4 0x20 add calldataload 0x04 sstore
+    dup1 0x05 sstore
+
+    0x5c38449e00000000000000000000000000000000000000000000000000000000 0x80 mstore
+    address 0x84 mstore
+    0x80 0xa4 mstore
+    0xc0 0xc4 mstore
+    0x100 0xe4 mstore
+    0x01 0x104 mstore
+    0x04 calldataload 0x124 mstore
+    0x01 0x144 mstore
+    0x24 calldataload 0x164 mstore
+
+    dup4 calldatasize sub
+    dup1 0x184 mstore
+    dup1 dup6 0x1a4 calldatacopy
+    0x124 add
+    0x00 0x00 swap2 0x80 0x00 0x07 sload gas call
+    iszero balancer_call_failed jumpi
+
+    0x01 sload iszero phase_idle_after_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_idle_after_ok:
+    dup2
+    0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
+    address 0x04 mstore
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
+    iszero balance_failed jumpi
+    returndatasize 0x20 lt balance_failed jumpi
     0x00 mload
     
-    swap5 pop swap4 pop swap3 pop swap2 pop swap1 pop
-    swap1
-    jump
-
-pool_by_pair_failed:
-    pop pop pop pop pop
+    dup2 dup2 lt iszero profit_calc jumpi
     0x00
-    swap1
-    jump
+    profit_done jump
+profit_calc:
+    dup2 dup2 sub
+profit_done:
+    0x00 0x01 sstore
+    0x00 0x02 sstore
+    0x00 0x03 sstore
+    0x00 0x04 sstore
+    0x00 0x05 sstore
 
-handle_callback:
-    // Stack: [protocolId, ret_pc]
-    [PHASE_SLOT] sload 0x02 eq iszero callback_only_hpsc jumpi
+    dup1 0x80 mstore
+    0x07 sload 0xa0 mstore
+
+    dup6 0x60 add calldataload
+    dup5
+    caller
+    0x2790eac69d46d24bb29b55a23b12e2e49076dc2a9fdcb340e641de33fca2c5dd
+    0x40 0x80
+    log4
+    pop pop pop pop pop
+    stop
+deadline_expired:
+    0x1ab7da6b 0x00 mstore
+    0x04 0x1c revert
+empty_route:
+    0xea60ab1d 0x00 mstore
+    0x04 0x1c revert
+too_many_calls:
+    0xf5dedbff 0x00 mstore
+    0x04 0x1c revert
+flash_loan_required:
+    0x946302fe 0x00 mstore
+    0x04 0x1c revert
+zero_address:
+    0xd92e233d 0x00 mstore
+    0x04 0x1c revert
+balance_failed:
+    0x00 0x00 revert
+balancer_call_failed:
+    returndatasize 0x00 0x00 returndatacopy
+    returndatasize 0x00 revert
+}
+
+#define macro EXECUTE_ARB_WITH_AAVE() = takes (0) returns (0) {
+    ONLY_OWNER()
+    0x01 sload iszero phase_idle_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_idle_ok:
+    0x44 calldataload 0x04 add
+    dup1 0x40 add calldataload timestamp gt deadline_expired jumpi
+    dup1 0x80 add calldataload dup2 add
+    dup1 calldataload
+    dup1 iszero empty_route jumpi
+    0x0c lt too_many_calls jumpi
+    0x24 calldataload iszero flash_loan_required jumpi
+    0x04 calldataload iszero zero_address jumpi
+    dup2 calldataload iszero zero_address jumpi
+
+    0x20 0x80 mstore
+    dup1 calldatasize sub
+    dup1 dup3 0xa0 calldatacopy
+    0x20 add 0x80 sha3
     
-    0x44 calldataload 0x04 add // [data_start, protocolId, ret_pc]
-    dup1 0x20 add calldataload // [cbProtocolId, data_start, protocolId, ret_pc]
+    dup3 0x60 add calldataload
+    eq route_hash_ok jumpi
+    0xc858adff 0x00 mstore
+    0x04 0x1c revert
+route_hash_ok:
+    dup2 calldataload
+    0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
+    address 0x04 mstore
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
+    iszero balance_failed jumpi
+    returndatasize 0x20 lt balance_failed jumpi
+    0x00 mload
+
+    0x01 0x01 sstore
+    dup4 0x60 add calldataload 0x02 sstore
+    dup4 calldataload 0x03 sstore
+    dup4 0x20 add calldataload 0x04 sstore
+    dup1 0x05 sstore
+
+    0xab9c4b5d00000000000000000000000000000000000000000000000000000000 0x80 mstore
+    address 0x84 mstore
+    0xe0 0xa4 mstore
+    0x120 0xc4 mstore
+    0x160 0xe4 mstore
+    address 0x104 mstore
+    0x1a0 0x124 mstore
+    0x00 0x144 mstore
+
+    0x01 0x164 mstore
+    0x04 calldataload 0x184 mstore
+    0x01 0x1a4 mstore
+    0x24 calldataload 0x1c4 mstore
+    0x01 0x1e4 mstore
+    0x00 0x204 mstore
+
+    dup4 calldatasize sub
+    dup1 0x224 mstore
+    dup1 dup6 0x244 calldatacopy
+    0x1c4 add
+    0x00 0x00 swap2 0x80 0x00 0x0c sload gas call
+    iszero aave_call_failed jumpi
+
+    0x01 sload iszero phase_idle_after_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_idle_after_ok:
+    dup2
+    0x70a0823100000000000000000000000000000000000000000000000000000000 0x00 mstore
+    address 0x04 mstore
+    0x20 0x00 0x24 0x00 dup5 gas staticcall
+    iszero balance_failed jumpi
+    returndatasize 0x20 lt balance_failed jumpi
+    0x00 mload
     
-    // Check protocol ID matches
-    0x01 dup3 eq is_v3_case_hpsc jumpi
-    dup1 dup4 eq is_protocol_ok_hpsc jumpi
-    unsupported_proto_hpsc jump
-    
-is_v3_case_hpsc:
-    dup1 0x01 eq is_protocol_ok_hpsc jumpi
-    dup1 0x02 eq is_protocol_ok_hpsc jumpi
-    unsupported_proto_hpsc jump
-    
-is_protocol_ok_hpsc:
-    pop // pop cbProtocolId
-    
-    // Resolve expected pool
+    dup2 dup2 lt iszero profit_calc jumpi
+    0x00
+    profit_done jump
+profit_calc:
+    dup2 dup2 sub
+profit_done:
+    0x00 0x01 sstore
+    0x00 0x02 sstore
+    0x00 0x03 sstore
+    0x00 0x04 sstore
+    0x00 0x05 sstore
+
+    dup1 0x80 mstore
+    0x0c sload 0xa0 mstore
+
+    dup6 0x60 add calldataload
+    dup5
+    caller
+    0xcf310e875090b29d50540b311226f96c6d78f2cdd5265f1481c9772c59620f4e
+    0x40 0x80
+    log4
+    pop pop pop pop pop
+    stop
+deadline_expired:
+    0x1ab7da6b 0x00 mstore
+    0x04 0x1c revert
+empty_route:
+    0xea60ab1d 0x00 mstore
+    0x04 0x1c revert
+too_many_calls:
+    0xf5dedbff 0x00 mstore
+    0x04 0x1c revert
+flash_loan_required:
+    0x946302fe 0x00 mstore
+    0x04 0x1c revert
+zero_address:
+    0xd92e233d 0x00 mstore
+    0x04 0x1c revert
+balance_failed:
+    0x00 0x00 revert
+aave_call_failed:
+    returndatasize 0x00 0x00 returndatacopy
+    returndatasize 0x00 revert
+}
+
+#define macro RECEIVE_FLASH_LOAN() = takes (0) returns (0) {
+    caller 0x07 sload eq balancer_sender_ok jumpi
+    0xfc305329 0x00 mstore
+    0x04 0x1c revert
+balancer_sender_ok:
+    0x01 sload 0x01 eq phase_flashloan_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_flashloan_ok:
+    0x64 calldataload 0x04 add
+    0x20 add
+    dup1 0x60 add calldataload 0x02 sload eq route_hash_ok jumpi
+    0xc858adff 0x00 mstore
+    0x04 0x1c revert
+route_hash_ok:
+    dup1 calldataload 0x03 sload eq profit_token_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+profit_token_ok:
+    dup1 0x20 add calldataload 0x04 sload eq min_profit_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+min_profit_ok:
+    dup1 0x40 add calldataload timestamp gt deadline_expired jumpi
+
+    0x02 0x01 sstore
+    dup1 0x80 add calldataload add
+    EXECUTE_CALLS()
+
+    0x04 calldataload 0x04 add
+    0x24 calldataload 0x04 add
+    0x44 calldataload 0x04 add
+    dup3 calldataload
+    0x00
+repay_loop:
+    dup2 dup2 eq repay_done jumpi
+    dup1 0x20 mul 0x20 add
+    dup6 dup2 add calldataload
+    dup6 dup3 add calldataload
+    dup6 dup4 add calldataload
+    add
+    0x07 sload
+    swap1
+    SAFE_TRANSFER()
+    pop
+    0x01 add
+    repay_loop jump
+repay_done:
+    pop pop pop pop pop
+    0x00 0x01 sstore
+    ASSERT_PROFIT()
+    stop
+deadline_expired:
+    0x1ab7da6b 0x00 mstore
+    0x04 0x1c revert
+}
+
+#define macro EXECUTE_OPERATION() = takes (0) returns (0) {
+    caller 0x0c sload eq aave_sender_ok jumpi
+    0xfc305329 0x00 mstore
+    0x04 0x1c revert
+aave_sender_ok:
+    0x01 sload 0x01 eq phase_flashloan_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+phase_flashloan_ok:
+    0x64 calldataload address eq initiator_ok jumpi
+    0x82b42900 0x00 mstore
+    0x04 0x1c revert
+initiator_ok:
+    0x84 calldataload 0x04 add
+    0x20 add
+    dup1 0x60 add calldataload 0x02 sload eq route_hash_ok jumpi
+    0xc858adff 0x00 mstore
+    0x04 0x1c revert
+route_hash_ok:
+    dup1 calldataload 0x03 sload eq profit_token_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+profit_token_ok:
+    dup1 0x20 add calldataload 0x04 sload eq min_profit_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+min_profit_ok:
+    dup1 0x40 add calldataload timestamp gt deadline_expired jumpi
+
+    0x02 0x01 sstore
+    dup1 0x80 add calldataload add
+    EXECUTE_CALLS()
+
+    0x04 calldataload 0x24 add calldataload
+    0x0c sload
+    0x24 calldataload 0x24 add calldataload
+    0x44 calldataload 0x24 add calldataload
+    add
+    SAFE_TRANSFER()
+
+    0x00 0x01 sstore
+    ASSERT_PROFIT()
+    0x01 0x00 mstore
+    0x20 0x00 return
+deadline_expired:
+    0x1ab7da6b 0x00 mstore
+    0x04 0x1c revert
+}
+
+#define macro RESOLVE_EXPECTED_POOL() = takes (4) returns (1) {
+    // stack: [protocolId_val, token0, token1, fee]
+    dup1 0x01 eq is_uni_v3 jumpi
+    dup1 0x02 eq is_sushi_v3 jumpi
+    dup1 0x03 eq is_quick_v3 jumpi
+    dup1 0x04 eq is_kyber jumpi
+    0xf850442b00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup1 0x04 mstore
+    0x24 0x00 revert
+is_uni_v3:
+    0x08 sload
+    uni_sushi_kyber_call jump
+is_sushi_v3:
+    0x09 sload
+    uni_sushi_kyber_call jump
+is_kyber:
+    0x0b sload
+    uni_sushi_kyber_call jump
+uni_sushi_kyber_call:
+    0x1698ee8200000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup3 0x04 mstore
+    dup4 0x24 mstore
+    dup5 0x44 mstore
+    0x20 0x00 0x64 0x00 dup5 gas staticcall
+    iszero resolve_failed jumpi
+    returndatasize 0x20 lt resolve_failed jumpi
+    0x00 mload
+    swap5 pop pop pop pop pop
+    resolve_end jump
+is_quick_v3:
+    0xd9a641e100000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    dup3 0x24 mstore
+    0x20 0x00 0x44 0x00 0x0a sload gas staticcall
+    iszero resolve_failed jumpi
+    returndatasize 0x20 lt resolve_failed jumpi
+    0x00 mload
+    swap4 pop pop pop pop
+    resolve_end jump
+resolve_failed:
+    0x936198e900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    0x04 0x1c revert
+resolve_end:
+}
+
+#define macro HANDLE_POOL_SWAP_CALLBACK(protocolId) = takes (0) returns (0) {
+    0x01 sload 0x02 eq callback_phase_ok jumpi
+    0xc21d53e8 0x00 mstore
+    0x04 0x1c revert
+callback_phase_ok:
+    0x44 calldataload 0x04 add
     dup1 0x20 add calldataload
+    <protocolId> 0x01 eq is_v3_proto_check jumpi
+    dup1 <protocolId> eq proto_ok jumpi
+    0xf850442b00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    0x24 0x00 revert
+is_v3_proto_check:
+    dup1 0x01 eq proto_ok jumpi
+    dup1 0x02 eq proto_ok jumpi
+    0xf850442b00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    0x24 0x00 revert
+proto_ok:
     dup2 0x40 add calldataload
     dup3 0x60 add calldataload
     dup4 0x80 add calldataload
-    
-    _RESOLVE_EXPECTED_POOL()   // [expectedPool, data_start, protocolId, ret_pc]
-    
-    dup1 iszero invalid_caller_hpsc jumpi
-    dup1 caller eq iszero invalid_caller_with_expected_hpsc jumpi
-    
-    // Check amount0Delta
-    0x04 calldataload          // [amount0Delta, expectedPool, data_start, protocolId, ret_pc]
-    0x00 sgt iszero skip_amount0_hpsc jumpi
-    
-    // Transfer amount0Delta
-    dup3 0x40 add calldataload // token0
-    dup3                       // expectedPool
-    dup3                       // amount0Delta
-    swap2
-    
-    ret_amount0
-    safe_transfer jump
-ret_amount0:
-    
-skip_amount0_hpsc:
-    // Check amount1Delta
-    0x24 calldataload          // [amount1Delta, expectedPool, data_start, protocolId, ret_pc]
-    0x00 sgt iszero skip_amount1_hpsc jumpi
-    
-    // Transfer amount1Delta
-    dup3 0x60 add calldataload // token1
-    dup3                       // expectedPool
-    dup3                       // amount1Delta
-    swap2
-    
-    ret_amount1
-    safe_transfer jump
-ret_amount1:
-    
-skip_amount1_hpsc:
-    pop pop pop pop            // [ret_pc]
-    jump
-
-callback_only_hpsc:
-    __ERROR(CallbackOnly) 0x00 mstore
-    0x04 0x00 revert
-unsupported_proto_hpsc:
-    __ERROR(UnsupportedProtocol) 0x00 mstore
-    0x04 mstore
-    0x00 0x24 revert
-invalid_caller_hpsc:
-    __ERROR(InvalidCallbackSource) 0x00 mstore
-    0x04 0x00 revert
-invalid_caller_with_expected_hpsc:
-    __ERROR(InvalidPoolCaller) 0x00 mstore
-    dup1 0x04 mstore           // expectedPool
+    dup4 dup4 dup4 dup4
+    swap3
+    RESOLVE_EXPECTED_POOL()
+    caller dup2 eq caller_ok jumpi
+    0xf206255900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    swap1 0x04 mstore
     caller 0x24 mstore
     0x44 0x00 revert
+caller_ok:
+    pop
+    0x04 calldataload
+    dup1 0x00 gt send_token0 jumpi
+    pop
+    token0_done jump
+send_token0:
+    caller dup5 swap2 SAFE_TRANSFER()
+token0_done:
+    0x24 calldataload
+    dup1 0x00 gt send_token1 jumpi
+    pop
+    token1_done jump
+send_token1:
+    caller dup4 swap2 SAFE_TRANSFER()
+token1_done:
+    pop pop pop pop pop
+    stop
+}
+
+#define macro LOCK_ACQUIRED() = takes (0) returns (0) {
+    caller 0x0d sload eq lock_sender_ok jumpi
+    0xc21d53e8 0x00 mstore
+    0x04 0x1c revert
+lock_sender_ok:
+    0x01 sload 0x02 eq lock_phase_ok jumpi
+    0xadd4adc0 0x00 mstore
+    0x04 0x1c revert
+lock_phase_ok:
+    0x04 calldataload 0x04 add
+    0x20 add
+    0x6c70970e00000000000000000000000000000000000000000000000000000000 0x80 mstore
+    0x100 dup2 0x84 calldatacopy
+    0x120 0x184 mstore
+    0x00 0x1a4 mstore
+    0x40 0x80 0x1c4 0x80 0x00 0x0d sload gas call
+    iszero swap_call_failed jumpi
+    
+    0x80 mload
+    0xa0 mload
+    dup3 calldataload
+    dup4 0x20 add calldataload
+
+    dup4 iszero delta0_zero jumpi
+    dup4 0x00 slt delta0_negative jumpi
+    0x6a256b2900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    0x00 0x00 0x24 0x00 0x00 0x0d sload gas call pop
+    delta0_zero jump
+delta0_negative:
+    0x00 dup5 sub
+    0x0b0d9c0900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup3 0x04 mstore
+    address 0x24 mstore
+    swap1 0x44 mstore
+    0x00 0x00 0x64 0x00 0x00 0x0d sload gas call pop
+delta0_zero:
+
+    dup3 iszero delta1_zero jumpi
+    dup3 0x00 slt delta1_negative jumpi
+    0x6a256b2900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup1 0x04 mstore
+    0x00 0x00 0x24 0x00 0x00 0x0d sload gas call pop
+    delta1_zero jump
+delta1_negative:
+    0x00 dup4 sub
+    0x0b0d9c0900000000000000000000000000000000000000000000000000000000 0x00 mstore
+    dup2 0x04 mstore
+    address 0x24 mstore
+    swap1 0x44 mstore
+    0x00 0x00 0x64 0x00 0x00 0x0d sload gas call pop
+delta1_zero:
+    pop pop pop pop pop
+    0x20 0x00 mstore
+    0x00 0x20 mstore
+    0x40 0x00 return
+swap_call_failed:
+    0x00 0x00 revert
+}
+
+#define macro CONSTRUCTOR() = takes (0) returns (0) {
+    0x100
+    0x100 codesize sub
+    0x00
+    codecopy
+
+    0x00 mload iszero is_zero_revert jumpi
+    0x20 mload iszero is_zero_revert jumpi
+    0x40 mload iszero is_zero_revert jumpi
+    0x60 mload iszero is_zero_revert jumpi
+    0x80 mload iszero is_zero_revert jumpi
+    0xa0 mload iszero is_zero_revert jumpi
+    0xc0 mload iszero is_zero_revert jumpi
+    0xe0 mload iszero is_zero_revert jumpi
+
+    0x00 mload 0x00 sstore
+    0x20 mload 0x07 sstore
+    0x40 mload 0x08 sstore
+    0x60 mload 0x09 sstore
+    0x80 mload 0x0a sstore
+    0xa0 mload 0x0b sstore
+    0xc0 mload 0x0c sstore
+    0xe0 mload 0x0d sstore
+
+    0x01 0x06 sstore
+
+    constructor_end jump
+is_zero_revert:
+    0xd92e233d00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    0x04 0x00 revert
+constructor_end:
+}
+
+#define macro MAIN() = takes (0) returns (0) {
+    calldatasize iszero accept_payment jumpi
+    0x00 calldataload 0xe0 shr
+
+    dup1 0x8da5cb5b eq owner_dest jumpi
+    dup1 0xf2fde38b eq transfer_ownership_dest jumpi
+    dup1 0xb4656158 eq pre_approve_dest jumpi
+    dup1 0xfad6b994 eq approve_if_needed_dest jumpi
+    dup1 0x4b14e003 eq transfer_all_dest jumpi
+    dup1 0xe5711e8b eq rescue_token_dest jumpi
+    dup1 0x1291f79d eq rescue_native_dest jumpi
+    dup1 0x491e69d3 eq execute_arb_dest jumpi
+    dup1 0xb8efd6fe eq execute_arb_with_aave_dest jumpi
+    dup1 0xf04f2707 eq receive_flash_loan_dest jumpi
+    dup1 0x1b11d0ff eq execute_operation_dest jumpi
+    dup1 0xfa461e33 eq uniswap_v3_callback_dest jumpi
+    dup1 0x2c8958f6 eq algebra_callback_dest jumpi
+    dup1 0xfa483e72 eq swap_callback_dest jumpi
+    dup1 0xab6291fe eq lock_acquired_dest jumpi
+
+    dup1 0x158274a5 eq balancer_vault_dest jumpi
+    dup1 0x5b549182 eq uniswap_v3_factory_dest jumpi
+    dup1 0x669d6be2 eq sushi_v3_factory_dest jumpi
+    dup1 0x4dad71d5 eq quickswap_v3_factory_dest jumpi
+    dup1 0x78ed1c8c eq kyber_elastic_factory_dest jumpi
+    dup1 0xa03e4bc3 eq aave_pool_dest jumpi
+    dup1 0xdc4c90d3 eq pool_manager_dest jumpi
+
+    0x00 0x00 revert
+
+accept_payment:
+    stop
+is_zero_revert:
+    0xd92e233d00000000000000000000000000000000000000000000000000000000 0x00 mstore
+    0x04 0x00 revert
+
+owner_dest:
+    GET_SLOT(0x00)
+transfer_ownership_dest:
+    TRANSFER_OWNERSHIP()
+pre_approve_dest:
+    PRE_APPROVE()
+approve_if_needed_dest:
+    APPROVE_IF_NEEDED()
+transfer_all_dest:
+    TRANSFER_ALL()
+rescue_token_dest:
+    RESCUE_TOKEN()
+rescue_native_dest:
+    RESCUE_NATIVE()
+execute_arb_dest:
+    EXECUTE_ARB()
+execute_arb_with_aave_dest:
+    EXECUTE_ARB_WITH_AAVE()
+receive_flash_loan_dest:
+    RECEIVE_FLASH_LOAN()
+execute_operation_dest:
+    EXECUTE_OPERATION()
+uniswap_v3_callback_dest:
+    HANDLE_POOL_SWAP_CALLBACK(0x01)
+algebra_callback_dest:
+    HANDLE_POOL_SWAP_CALLBACK(0x03)
+swap_callback_dest:
+    HANDLE_POOL_SWAP_CALLBACK(0x04)
+lock_acquired_dest:
+    LOCK_ACQUIRED()
+
+balancer_vault_dest:
+    GET_SLOT(0x07)
+uniswap_v3_factory_dest:
+    GET_SLOT(0x08)
+sushi_v3_factory_dest:
+    GET_SLOT(0x09)
+quickswap_v3_factory_dest:
+    GET_SLOT(0x0a)
+kyber_elastic_factory_dest:
+    GET_SLOT(0x0b)
+aave_pool_dest:
+    GET_SLOT(0x0c)
+pool_manager_dest:
+    GET_SLOT(0x0d)
 }

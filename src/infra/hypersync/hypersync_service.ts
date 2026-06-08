@@ -1,7 +1,7 @@
 import type { Logger } from "../observability/logger.ts";
 
 // Dynamic import so the rest of the app doesn't break if the native package isn't installed yet.
-let HypersyncClient: any;
+let HypersyncClient: typeof import("@envio-dev/hypersync-client").HypersyncClient | undefined;
 try {
   HypersyncClient = (await import("@envio-dev/hypersync-client")).HypersyncClient;
 } catch {
@@ -17,7 +17,12 @@ try {
  * See: https://docs.envio.dev/docs/HyperSync/overview
  */
 export class HyperSyncService {
-  private client: any;
+  private client: {
+    get: (query: Record<string, unknown>) => Promise<any>;
+    waitForRateLimit?: () => Promise<void>;
+    getHeight: () => Promise<number>;
+    getChainId: () => Promise<number>;
+  } | undefined;
   private token: string;
   private logger?: Logger;
 
@@ -51,7 +56,7 @@ export class HyperSyncService {
     }
   }
 
-  rateLimitInfo(): any | null {
+  rateLimitInfo(): unknown | null {
     return this.client?.rateLimitInfo?.() ?? null;
   }
 
@@ -74,7 +79,7 @@ export class HyperSyncService {
    */
   async getBlock(numberOrTag: number | "latest" | bigint): Promise<any | null> {
     const from = typeof numberOrTag === "string" ? 0 : Number(numberOrTag);
-    const query: any = {
+    const query: Record<string, unknown> = {
       fromBlock: from,
       toBlock: typeof numberOrTag === "string" ? undefined : from + 1,
       fieldSelection: {
@@ -103,7 +108,7 @@ export class HyperSyncService {
       targetBlock = Number(blockNumber);
     }
 
-    const query: any = {
+    const query: Record<string, unknown> = {
       fromBlock: targetBlock,
       toBlock: targetBlock + 1,
       fieldSelection: {
@@ -126,7 +131,7 @@ export class HyperSyncService {
     address?: string | string[];
     topics?: (string | string[] | null)[];
   }): Promise<any[]> {
-    const query: any = {
+    const query: Record<string, unknown> = {
       fromBlock: params.fromBlock ? Number(params.fromBlock) : 0,
       toBlock: params.toBlock ? Number(params.toBlock) : undefined,
       logs:
@@ -155,7 +160,7 @@ export class HyperSyncService {
   async getTransactionReceipt(txHash: string, lookbackBlocks = 100): Promise<any | null> {
     try {
       const height = await this.getHeight();
-      const query: any = {
+      const query: Record<string, unknown> = {
         fromBlock: Math.max(0, height - lookbackBlocks),
         joinMode: 1, // JoinAll to ensure logs are returned for the filtered transaction
         fieldSelection: {
@@ -173,11 +178,18 @@ export class HyperSyncService {
           gasUsed: tx.gasUsed,
           logs:
             res.data.logs
-              ?.filter((l: any) => l.transactionHash?.toLowerCase() === txHash.toLowerCase())
-              .map((l: any) => ({
-                ...l,
-                topics: (l.topics ?? []).filter((t: any) => t !== null && t !== undefined),
-              })) ?? [],
+              ?.filter((l: unknown) => {
+                if (typeof l !== "object" || l === null) return false;
+                const txHashField = (l as any).transactionHash;
+                return typeof txHashField === "string" && txHashField.toLowerCase() === txHash.toLowerCase();
+              })
+              .map((l: unknown) => {
+                const obj = l as Record<string, unknown>;
+                return {
+                  ...obj,
+                  topics: (obj.topics as unknown[] ?? []).filter((t) => t != null),
+                };
+              }) ?? [],
         };
       }
       return null;
@@ -208,7 +220,7 @@ export class HyperSyncService {
     }
   }
 
-  async queryLogsAdvanced(query: any): Promise<any> {
+  async queryLogsAdvanced(query: Record<string, unknown>): Promise<unknown> {
     try {
       const res = await this.client.get(query);
       return res.data;

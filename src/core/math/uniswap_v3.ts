@@ -14,6 +14,10 @@ import { getSqrtRatioAtTick, getTickAtSqrtRatioInRange, MIN_TICK, MAX_TICK, MIN_
 import { computeSwapStep } from "./swap_math.ts";
 import { toBigIntOrNull } from "../utils/bigint.ts";
 
+// Pre-computed price limits to avoid BigInt allocation in hot path
+const SQRT_PRICE_LIMIT_ZERO_FOR_ONE = MIN_SQRT_RATIO + 1n;
+const SQRT_PRICE_LIMIT_ONE_FOR_ZERO = MAX_SQRT_RATIO - 1n;
+
 // ─── Optimized Tick Navigation ──────────────────────────────────
 
 type V3PoolStateLike = Record<string, unknown>;
@@ -164,7 +168,7 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   }
 
   // Price limit: min or max sqrt ratio depending on direction
-  const sqrtPriceLimitX96 = zeroForOne ? getSqrtRatioAtTick(MIN_TICK) + 1n : getSqrtRatioAtTick(MAX_TICK) - 1n;
+  const sqrtPriceLimitX96 = zeroForOne ? SQRT_PRICE_LIMIT_ZERO_FOR_ONE : SQRT_PRICE_LIMIT_ONE_FOR_ZERO;
 
   const sortedTicks = getSortedTicks(pool);
   const ticks = pool.ticks instanceof Map ? pool.ticks : null;

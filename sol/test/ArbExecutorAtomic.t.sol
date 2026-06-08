@@ -2,6 +2,7 @@
 pragma solidity ^0.8.34;
 
 import {ArbExecutor, IERC20Minimal, IFlashLoanRecipient} from "../src/ArbExecutor.sol";
+import {HuffDeployer} from "./HuffDeployer.sol";
 
 contract MockToken is IERC20Minimal {
     mapping(address => uint256) public balances;
@@ -68,16 +69,25 @@ contract ArbExecutorAtomicTest {
     RevertingTarget internal reverter;
 
     function _deployExecutor(address vault) internal returns (ArbExecutor) {
-        return new ArbExecutor(
-            address(this),
-            vault,
-            address(0x1001),
-            address(0x1002),
-            address(0x1003),
-            address(0x1004),
-            address(0x1005),
-            address(0x1006)
+        bytes memory bytecode = abi.encodePacked(
+            HuffDeployer.BYTECODE,
+            abi.encode(
+                address(this),
+                vault,
+                address(0x1001),
+                address(0x1002),
+                address(0x1003),
+                address(0x1004),
+                address(0x1005),
+                address(0x1006)
+            )
         );
+        address addr;
+        assembly {
+            addr := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+        require(addr != address(0), "deploy failed");
+        return ArbExecutor(payable(addr));
     }
 
     function _baseCalls(uint256 count) internal view returns (ArbExecutor.Call[] memory calls) {

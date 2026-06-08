@@ -31,7 +31,7 @@ export class IncrementalGraphUpdater {
         const edges = graph.adjacency.get(token.toLowerCase());
         if (edges) {
           for (const edge of edges) {
-            if (edge.poolAddress.toLowerCase() === addr) {
+            if (edge.poolAddress === addr) {
               edge.stateRef = newState;
             }
           }
@@ -72,7 +72,7 @@ export class IncrementalGraphUpdater {
         const tLower = token.toLowerCase();
         const edges = graph.adjacency.get(tLower);
         if (edges) {
-          const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
+          const filtered = edges.filter((e) => e.poolAddress !== addr);
           if (filtered.length === 0) {
             graph.adjacency.delete(tLower);
           } else {
@@ -83,7 +83,7 @@ export class IncrementalGraphUpdater {
     } else {
       // Fallback in case metadata is missing
       for (const [token, edges] of graph.adjacency) {
-        const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
+        const filtered = edges.filter((e) => e.poolAddress !== addr);
         if (filtered.length === 0) {
           graph.adjacency.delete(token);
         } else {
