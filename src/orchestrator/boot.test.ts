@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { bootApplication } from "./boot";
 import type { AppConfig } from "../config/schema";
 
-vi.mock("viem", async () => {
-  const actual = await vi.importActual<typeof import("viem")>("viem");
+vi.mock("viem", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("viem")>();
   return {
     ...actual,
     createPublicClient: vi.fn().mockReturnValue({

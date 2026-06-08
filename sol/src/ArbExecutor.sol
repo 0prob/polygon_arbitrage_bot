@@ -3,7 +3,14 @@ pragma solidity ^0.8.34;
 
 /**
  * @title ArbExecutor
- * @notice Flash-loan-only arbitrage executor rewritten in gas-optimized EVM assembly.
+ * @notice Flash-loan-only arbitrage executor.
+ *         All arbitrage is performed using atomic Balancer V2 or Aave V3 flash loans.
+ *         There is no support for pre-funded capital, contract balance usage as principal,
+ *         or non-flash execution. Both entrypoints (executeArb / executeArbWithAave) require
+ *         flashAmount > 0 and will revert with FlashLoanRequired otherwise.
+ *         Callbacks enforce that repayment happens inside the flash context (FlashLoanOnly).
+ *
+ *         The bot TS architecture mirrors this: amountIn from cycle simulation == flash principal.
  */
 
 interface IERC20Minimal {
@@ -174,6 +181,23 @@ contract ArbExecutor is IFlashLoanRecipient {
 
     uint256 private _locked = 1;
 
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert Unauthorized();
+        _;
+    }
+
+    modifier onlyAuthorized() {
+        if (msg.sender != owner) revert Unauthorized();
+        _;
+    }
+
+    modifier nonReentrant() {
+        if (_locked != 1) revert Unauthorized(); // generic error to save bytes
+        _locked = 2;
+        _;
+        _locked = 1;
+    }
+
     constructor(
         address owner_,
         address balancerVault_,
@@ -198,367 +222,80 @@ contract ArbExecutor is IFlashLoanRecipient {
         kyberElasticFactory = kyberElasticFactory_;
         aavePool = aavePool_;
         poolManager = poolManager_;
-        
-        assembly {
-            // emit OwnershipTransferred(address(0), owner_)
-            log3(0, 0, 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0, 0, owner_)
-        }
+        emit OwnershipTransferred(address(0), owner_);
     }
 
     receive() external payable {}
 
-    function transferOwnership(address newOwner) external {
-        assembly {
-            // onlyOwner check
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // ZeroAddress check
-            if iszero(newOwner) {
-                mstore(0, 0xd92e233d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // Update owner
-            let slotVal := sload(owner.slot)
-            let mask := not(shl(mul(owner.offset, 8), 0xffffffffffffffffffffffffffffffffffffffff))
-            let newSlotVal := or(and(slotVal, mask), shl(mul(owner.offset, 8), and(newOwner, 0xffffffffffffffffffffffffffffffffffffffff)))
-            sstore(owner.slot, newSlotVal)
-            
-            // emit OwnershipTransferred(previousOwner, newOwner)
-            log3(0, 0, 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0, currentOwner, newOwner)
-        }
+    function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert ZeroAddress();
+        address previousOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
     }
 
-    function preApprove(address token, address spender) external {
-        assembly {
-            // onlyAuthorized (msg.sender == owner)
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // nonReentrant (check _locked)
-            let lockVal := sload(_locked.slot)
-            if iszero(eq(lockVal, 1)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            sstore(_locked.slot, 2)
-        }
-        
+    function preApprove(address token, address spender) external onlyAuthorized nonReentrant {
         _safeApproveMaxIfNeeded(token, spender, type(uint256).max);
-        
-        assembly {
-            // emit PreApproved(token, spender)
-            log3(0, 0, 0x8d936a3b74312b60e024ee1b476014e8bd0523e8355d93ff5a0787567fe92f5f, token, spender)
-            
-            // Unlock
-            sstore(_locked.slot, 1)
-        }
+        emit PreApproved(token, spender);
     }
 
-    function approveIfNeeded(address token, address spender, uint256 amount) external {
-        assembly {
-            // authorized: msg.sender == address(this) || msg.sender == owner
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if and(iszero(eq(caller(), address())), iszero(eq(caller(), currentOwner))) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // nonReentrant (check _locked)
-            let lockVal := sload(_locked.slot)
-            if iszero(eq(lockVal, 1)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            sstore(_locked.slot, 2)
+    function approveIfNeeded(address token, address spender, uint256 amount) external nonReentrant {
+        if (msg.sender != address(this) && msg.sender != owner) {
+            revert Unauthorized();
         }
-        
         _safeApproveMaxIfNeeded(token, spender, amount);
-        
-        assembly {
-            // Unlock
-            sstore(_locked.slot, 1)
-        }
     }
 
-    function transferAll(address token, address to) external {
-        assembly {
-            // authorized: msg.sender == address(this) || msg.sender == owner
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if and(iszero(eq(caller(), address())), iszero(eq(caller(), currentOwner))) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // nonReentrant (check _locked)
-            let lockVal := sload(_locked.slot)
-            if iszero(eq(lockVal, 1)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            sstore(_locked.slot, 2)
-            
-            // balance = balanceOf(address(this))
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), token, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, token)
-                mstore(36, to)
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            let bal := mload(0)
-            
-            if gt(bal, 0) {
-                // transfer(to, bal)
-                mstore(0, 0xa9059cbb00000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(to, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, bal)
-                let success2 := call(gas(), token, 0, 0, 68, 0, 32)
-                let valid2 := 0
-                switch success2
-                case 1 {
-                    switch returndatasize()
-                    case 0 { valid2 := 1 }
-                    case 32 { if mload(0) { valid2 := 1 } }
-                }
-                if iszero(valid2) {
-                    mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                    mstore(4, token)
-                    mstore(36, to)
-                    mstore(68, bal)
-                    revert(0, 100)
-                }
-            }
-            
-            // Unlock
-            sstore(_locked.slot, 1)
-        }
+    function rescueToken(address token, address to, uint256 amount) external onlyOwner nonReentrant {
+        if (to == address(0)) revert ZeroAddress();
+        _safeTransfer(token, to, amount);
+        emit TokenRescued(token, to, amount);
     }
 
-    function rescueToken(address token, address to, uint256 amount) external {
-        assembly {
-            // onlyOwner check
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // ZeroAddress check
-            if iszero(to) {
-                mstore(0, 0xd92e233d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // nonReentrant (check _locked)
-            let lockVal := sload(_locked.slot)
-            if iszero(eq(lockVal, 1)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            sstore(_locked.slot, 2)
-            
-            // transfer(to, amount)
-            mstore(0, 0xa9059cbb00000000000000000000000000000000000000000000000000000000)
-            mstore(4, and(to, 0xffffffffffffffffffffffffffffffffffffffff))
-            mstore(36, amount)
-            let success2 := call(gas(), token, 0, 0, 68, 0, 32)
-            let valid2 := 0
-            switch success2
-            case 1 {
-                switch returndatasize()
-                case 0 { valid2 := 1 }
-                case 32 { if mload(0) { valid2 := 1 } }
-            }
-            if iszero(valid2) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, token)
-                mstore(36, to)
-                mstore(68, amount)
-                revert(0, 100)
-            }
-            
-            // emit TokenRescued(token, to, amount)
-            mstore(0, amount)
-            log3(0, 32, 0x4143f7b5cb6ea007914c32b8a3e64cebc051d7f493fa0755454da1e47701e125, token, to)
-            
-            // Unlock
-            sstore(_locked.slot, 1)
-        }
+    function rescueNative(address payable to, uint256 amount) external onlyOwner nonReentrant {
+        if (to == address(0)) revert ZeroAddress();
+        (bool ok,) = to.call{value: amount}("");
+        if (!ok) revert TransferFailed(address(0), to, amount);
+        emit NativeRescued(to, amount);
     }
 
-    function rescueNative(address payable to, uint256 amount) external {
-        assembly {
-            // onlyOwner check
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // ZeroAddress check
-            if iszero(to) {
-                mstore(0, 0xd92e233d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // nonReentrant (check _locked)
-            let lockVal := sload(_locked.slot)
-            if iszero(eq(lockVal, 1)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            sstore(_locked.slot, 2)
-            
-            let ok := call(gas(), to, amount, 0, 0, 0, 0)
-            if iszero(ok) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, 0)
-                mstore(36, to)
-                mstore(68, amount)
-                revert(0, 100)
-            }
-            
-            // emit NativeRescued(to, amount)
-            mstore(0, amount)
-            log2(0, 32, 0xe3eb98b7fe2a0c1d490b92af73eeae611e9b00ab3c3f70b20bd7bb43f67a0f43, to)
-            
-            // Unlock
-            sstore(_locked.slot, 1)
-        }
-    }
-
-    function executeArb(address flashToken, uint256 flashAmount, FlashParams calldata params) external {
-        address vault = balancerVault;
-        uint256 deadline = params.deadline;
-        uint256 minProfit = params.minProfit;
-        address profitToken = params.profitToken;
-        bytes32 routeHashFromParams = params.routeHash;
-        bytes32 routeHash = keccak256(abi.encode(params.calls));
+    function executeArb(address flashToken, uint256 flashAmount, FlashParams calldata params) external onlyAuthorized {
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
+        if (block.timestamp > params.deadline) revert DeadlineExpired();
         uint256 callsLen = params.calls.length;
-        uint256 initialProfitBalance;
+        if (callsLen == 0) revert EmptyRoute();
+        if (callsLen > MAX_CALLS) revert TooManyCalls();
+        if (flashAmount == 0) revert FlashLoanRequired();
+        if (flashToken == address(0) || params.profitToken == address(0)) revert ZeroAddress();
 
-        assembly {
-            // onlyAuthorized
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // _phase != PHASE_IDLE
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 0)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // block.timestamp > deadline
-            if gt(timestamp(), deadline) {
-                mstore(0, 0x1ab7da6b00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // routeHash check
-            if iszero(eq(routeHash, routeHashFromParams)) {
-                mstore(0, 0xc858adff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // callsLen check
-            if iszero(callsLen) {
-                mstore(0, 0xea60ab1d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if gt(callsLen, 12) {
-                mstore(0, 0xf5dedbff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if iszero(flashAmount) {
-                mstore(0, 0x946302fe00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if or(iszero(flashToken), iszero(profitToken)) {
-                mstore(0, 0xd92e233d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
+        bytes32 routeHash = keccak256(abi.encode(params.calls));
+        if (routeHash != params.routeHash) revert InvalidRouteHash();
 
-            // initial profit balance
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), profitToken, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, profitToken)
-                mstore(36, address())
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            initialProfitBalance := mload(0)
-            
-            // Set state
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := or(and(slotVal, mask), shl(mul(_phase.offset, 8), 1))
-            sstore(_phase.slot, newSlotVal)
-            
-            sstore(_activeRouteHash.slot, routeHash)
-            sstore(_activeProfitToken.slot, profitToken)
-            sstore(_activeMinProfit.slot, minProfit)
-            sstore(_activeInitialProfitBalance.slot, initialProfitBalance)
-        }
+        uint256 initialProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
+
+        _phase = PHASE_FLASHLOAN;
+        _activeRouteHash = routeHash;
+        _activeProfitToken = params.profitToken;
+        _activeMinProfit = params.minProfit;
+        _activeInitialProfitBalance = initialProfitBalance;
 
         IERC20Minimal[] memory tokens = new IERC20Minimal[](1);
         tokens[0] = IERC20Minimal(flashToken);
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = flashAmount;
 
-        IBalancerVault(vault).flashLoan(this, tokens, amounts, abi.encode(params));
+        IBalancerVault(balancerVault).flashLoan(this, tokens, amounts, abi.encode(params));
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
 
+        uint256 finalProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
         uint256 profitAmount;
-        assembly {
-            // check _phase == PHASE_IDLE
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 0)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // final balance
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), profitToken, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, profitToken)
-                mstore(36, address())
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            let finalProfitBalance := mload(0)
-            
-            if iszero(lt(finalProfitBalance, initialProfitBalance)) {
-                profitAmount := sub(finalProfitBalance, initialProfitBalance)
-            }
-            
-            // clear context
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := and(slotVal, mask)
-            sstore(_phase.slot, newSlotVal)
-            
-            sstore(_activeRouteHash.slot, 0)
-            sstore(_activeProfitToken.slot, 0)
-            sstore(_activeMinProfit.slot, 0)
-            sstore(_activeInitialProfitBalance.slot, 0)
-            
-            // emit ArbitrageExecuted(msg.sender, params.profitToken, profitAmount, routeHash, balancerVault)
-            mstore(0, profitAmount)
-            mstore(32, vault)
-            log4(0, 64, 0x2790eac69d46d24bb29b55a23b12e2e49076dc2a9fdcb340e641de33fca2c5dd, caller(), profitToken, routeHash)
+        unchecked {
+            profitAmount = finalProfitBalance >= initialProfitBalance ? finalProfitBalance - initialProfitBalance : 0;
         }
+
+        _clearExecutionContext();
+
+        emit ArbitrageExecuted(msg.sender, params.profitToken, profitAmount, routeHash, balancerVault);
     }
 
     function receiveFlashLoan(
@@ -567,154 +304,52 @@ contract ArbExecutor is IFlashLoanRecipient {
         uint256[] memory feeAmounts,
         bytes memory userData
     ) external override {
-        address vault = balancerVault;
-        if (msg.sender != vault) revert FlashLoanOnly();
-        
-        assembly {
-            // _phase != PHASE_FLASHLOAN (1)
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 1)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-        }
+        if (msg.sender != balancerVault) revert FlashLoanOnly();
+        if (_phase != PHASE_FLASHLOAN) revert InvalidFlashLoanContext();
 
         FlashParams memory params = abi.decode(userData, (FlashParams));
-        
-        uint256 deadline = params.deadline;
-        address profitToken = params.profitToken;
-        uint256 minProfit = params.minProfit;
-        bytes32 routeHash = params.routeHash;
-        
-        assembly {
-            let activeRouteHash := sload(_activeRouteHash.slot)
-            if iszero(eq(routeHash, activeRouteHash)) {
-                mstore(0, 0xc858adff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            let activeProfitToken := sload(_activeProfitToken.slot)
-            if iszero(eq(profitToken, activeProfitToken)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            let activeMinProfit := sload(_activeMinProfit.slot)
-            if iszero(eq(minProfit, activeMinProfit)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            if gt(timestamp(), deadline) {
-                mstore(0, 0x1ab7da6b00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // set _phase = PHASE_CALLBACK (2)
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := or(and(slotVal, mask), shl(mul(_phase.offset, 8), 2))
-            sstore(_phase.slot, newSlotVal)
-        }
-        
+        if (params.routeHash != _activeRouteHash) revert InvalidRouteHash();
+        if (params.profitToken != _activeProfitToken) revert InvalidFlashLoanContext();
+        if (params.minProfit != _activeMinProfit) revert InvalidFlashLoanContext();
+        if (block.timestamp > params.deadline) revert DeadlineExpired();
+
+        _phase = PHASE_CALLBACK;
         _executeCalls(params.calls);
-        
+
         uint256 len = tokens.length;
         for (uint256 i; i < len;) {
-            _safeTransfer(address(tokens[i]), vault, amounts[i] + feeAmounts[i]);
+            _safeTransfer(address(tokens[i]), balancerVault, amounts[i] + feeAmounts[i]);
             unchecked {
                 ++i;
             }
         }
-        
-        assembly {
-            // set _phase = PHASE_IDLE (0)
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := and(slotVal, mask)
-            sstore(_phase.slot, newSlotVal)
-        }
-        
+
+        _phase = PHASE_IDLE;
         _assertProfit();
     }
 
     function executeArbWithAave(address flashToken, uint256 flashAmount, FlashParams calldata params)
         external
+        onlyAuthorized
     {
-        address pool = aavePool;
-        uint256 deadline = params.deadline;
-        uint256 minProfit = params.minProfit;
-        address profitToken = params.profitToken;
-        bytes32 routeHashFromParams = params.routeHash;
-        bytes32 routeHash = keccak256(abi.encode(params.calls));
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
+        if (block.timestamp > params.deadline) revert DeadlineExpired();
         uint256 callsLen = params.calls.length;
-        uint256 initialProfitBalance;
+        if (callsLen == 0) revert EmptyRoute();
+        if (callsLen > MAX_CALLS) revert TooManyCalls();
+        if (flashAmount == 0) revert FlashLoanRequired();
+        if (flashToken == address(0) || params.profitToken == address(0)) revert ZeroAddress();
 
-        assembly {
-            // onlyAuthorized
-            let currentOwner := and(shr(mul(owner.offset, 8), sload(owner.slot)), 0xffffffffffffffffffffffffffffffffffffffff)
-            if iszero(eq(caller(), currentOwner)) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // _phase != PHASE_IDLE
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 0)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // block.timestamp > deadline
-            if gt(timestamp(), deadline) {
-                mstore(0, 0x1ab7da6b00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // routeHash check
-            if iszero(eq(routeHash, routeHashFromParams)) {
-                mstore(0, 0xc858adff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // callsLen check
-            if iszero(callsLen) {
-                mstore(0, 0xea60ab1d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if gt(callsLen, 12) {
-                mstore(0, 0xf5dedbff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if iszero(flashAmount) {
-                mstore(0, 0x946302fe00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if or(iszero(flashToken), iszero(profitToken)) {
-                mstore(0, 0xd92e233d00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
+        bytes32 routeHash = keccak256(abi.encode(params.calls));
+        if (routeHash != params.routeHash) revert InvalidRouteHash();
 
-            // initial profit balance
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), profitToken, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, profitToken)
-                mstore(36, address())
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            initialProfitBalance := mload(0)
-            
-            // Set state
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := or(and(slotVal, mask), shl(mul(_phase.offset, 8), 1))
-            sstore(_phase.slot, newSlotVal)
-            
-            sstore(_activeRouteHash.slot, routeHash)
-            sstore(_activeProfitToken.slot, profitToken)
-            sstore(_activeMinProfit.slot, minProfit)
-            sstore(_activeInitialProfitBalance.slot, initialProfitBalance)
-        }
+        uint256 initialProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
+
+        _phase = PHASE_FLASHLOAN;
+        _activeRouteHash = routeHash;
+        _activeProfitToken = params.profitToken;
+        _activeMinProfit = params.minProfit;
+        _activeInitialProfitBalance = initialProfitBalance;
 
         address[] memory assets = new address[](1);
         assets[0] = flashToken;
@@ -723,50 +358,19 @@ contract ArbExecutor is IFlashLoanRecipient {
         uint256[] memory modes = new uint256[](1);
         modes[0] = 0;
 
-        IAavePool(pool).flashLoan(address(this), assets, amounts, modes, address(this), abi.encode(params), 0);
+        IAavePool(aavePool).flashLoan(address(this), assets, amounts, modes, address(this), abi.encode(params), 0);
 
+        if (_phase != PHASE_IDLE) revert InvalidFlashLoanContext();
+
+        uint256 finalProfitBalance = IERC20Minimal(params.profitToken).balanceOf(address(this));
         uint256 profitAmount;
-        assembly {
-            // check _phase == PHASE_IDLE
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 0)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // final balance
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), profitToken, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, profitToken)
-                mstore(36, address())
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            let finalProfitBalance := mload(0)
-            
-            if iszero(lt(finalProfitBalance, initialProfitBalance)) {
-                profitAmount := sub(finalProfitBalance, initialProfitBalance)
-            }
-            
-            // clear context
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := and(slotVal, mask)
-            sstore(_phase.slot, newSlotVal)
-            
-            sstore(_activeRouteHash.slot, 0)
-            sstore(_activeProfitToken.slot, 0)
-            sstore(_activeMinProfit.slot, 0)
-            sstore(_activeInitialProfitBalance.slot, 0)
-            
-            // emit ArbitrageExecutedWithAave(msg.sender, params.profitToken, profitAmount, routeHash, aavePool)
-            mstore(0, profitAmount)
-            mstore(32, pool)
-            log4(0, 64, 0xcf310e875090b29d50540b311226f96c6d78f2cdd5265f1481c9772c59620f4e, caller(), profitToken, routeHash)
+        unchecked {
+            profitAmount = finalProfitBalance >= initialProfitBalance ? finalProfitBalance - initialProfitBalance : 0;
         }
+
+        _clearExecutionContext();
+
+        emit ArbitrageExecutedWithAave(msg.sender, params.profitToken, profitAmount, routeHash, aavePool);
     }
 
     function executeOperation(address asset, uint256 amount, uint256 premium, address initiator, bytes calldata params)
@@ -774,72 +378,22 @@ contract ArbExecutor is IFlashLoanRecipient {
         returns (bool)
     {
         if (msg.sender != aavePool) revert FlashLoanOnly();
-        
-        assembly {
-            // _phase != PHASE_FLASHLOAN (1)
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 1)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            // initiator != address(this)
-            if iszero(eq(initiator, address())) {
-                mstore(0, 0x82b4290000000000000000000000000000000000000000000000000000000000) // Unauthorized
-                revert(0, 4)
-            }
-        }
+        if (_phase != PHASE_FLASHLOAN) revert InvalidFlashLoanContext();
+        if (initiator != address(this)) revert Unauthorized();
 
         FlashParams memory decodedParams = abi.decode(params, (FlashParams));
-        
-        uint256 deadline = decodedParams.deadline;
-        address profitToken = decodedParams.profitToken;
-        uint256 minProfit = decodedParams.minProfit;
-        bytes32 routeHash = decodedParams.routeHash;
-        
-        assembly {
-            let activeRouteHash := sload(_activeRouteHash.slot)
-            if iszero(eq(routeHash, activeRouteHash)) {
-                mstore(0, 0xc858adff00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            let activeProfitToken := sload(_activeProfitToken.slot)
-            if iszero(eq(profitToken, activeProfitToken)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            let activeMinProfit := sload(_activeMinProfit.slot)
-            if iszero(eq(minProfit, activeMinProfit)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            if gt(timestamp(), deadline) {
-                mstore(0, 0x1ab7da6b00000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            
-            // set _phase = PHASE_CALLBACK (2)
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := or(and(slotVal, mask), shl(mul(_phase.offset, 8), 2))
-            sstore(_phase.slot, newSlotVal)
-        }
-        
+        if (decodedParams.routeHash != _activeRouteHash) revert InvalidRouteHash();
+        if (decodedParams.profitToken != _activeProfitToken) revert InvalidFlashLoanContext();
+        if (decodedParams.minProfit != _activeMinProfit) revert InvalidFlashLoanContext();
+        if (block.timestamp > decodedParams.deadline) revert DeadlineExpired();
+
+        _phase = PHASE_CALLBACK;
         _executeCalls(decodedParams.calls);
-        
+
         uint256 totalRepay = amount + premium;
         _safeTransfer(asset, aavePool, totalRepay);
-        
-        assembly {
-            // set _phase = PHASE_IDLE (0)
-            let slotVal := sload(_phase.slot)
-            let mask := not(shl(mul(_phase.offset, 8), 0xff))
-            let newSlotVal := and(slotVal, mask)
-            sstore(_phase.slot, newSlotVal)
-        }
-        
+
+        _phase = PHASE_IDLE;
         _assertProfit();
         return true;
     }
@@ -857,76 +411,19 @@ contract ArbExecutor is IFlashLoanRecipient {
     }
 
     function lockAcquired(bytes calldata data) external returns (bytes memory) {
-        address manager = poolManager;
-        if (msg.sender != manager) revert CallbackOnly();
-        
-        assembly {
-            // _phase != PHASE_CALLBACK (2)
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 2)) {
-                mstore(0, 0xadd4adc000000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-        }
+        if (msg.sender != poolManager) revert CallbackOnly();
+        if (_phase != PHASE_CALLBACK) revert InvalidFlashLoanContext();
 
         (PoolKey memory key, bool zeroForOne, int128 amountSpecified, uint160 sqrtPriceLimitX96) =
             abi.decode(data, (PoolKey, bool, int128, uint160));
 
         (int256 delta0, int256 delta1) =
-            IPoolManager(manager).swap(key, zeroForOne, amountSpecified, sqrtPriceLimitX96, "");
+            IPoolManager(poolManager).swap(key, zeroForOne, amountSpecified, sqrtPriceLimitX96, "");
 
-        assembly {
-            // if (delta0 > 0)
-            if sgt(delta0, 0) {
-                let currency0 := mload(key)
-                mstore(0, 0x6a256b2900000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(currency0, 0xffffffffffffffffffffffffffffffffffffffff))
-                let success := call(gas(), manager, 0, 0, 36, 0, 0)
-                if iszero(success) {
-                    returndatacopy(0, 0, returndatasize())
-                    revert(0, returndatasize())
-                }
-            }
-            // if (delta1 > 0)
-            if sgt(delta1, 0) {
-                let currency1 := mload(add(key, 32))
-                mstore(0, 0x6a256b2900000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(currency1, 0xffffffffffffffffffffffffffffffffffffffff))
-                let success := call(gas(), manager, 0, 0, 36, 0, 0)
-                if iszero(success) {
-                    returndatacopy(0, 0, returndatasize())
-                    revert(0, returndatasize())
-                }
-            }
-            // if (delta0 < 0)
-            if slt(delta0, 0) {
-                let currency0 := mload(key)
-                let val := sub(0, delta0)
-                mstore(0, 0x0b0d9c0900000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(currency0, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, address())
-                mstore(68, val)
-                let success := call(gas(), manager, 0, 0, 100, 0, 0)
-                if iszero(success) {
-                    returndatacopy(0, 0, returndatasize())
-                    revert(0, returndatasize())
-                }
-            }
-            // if (delta1 < 0)
-            if slt(delta1, 0) {
-                let currency1 := mload(add(key, 32))
-                let val := sub(0, delta1)
-                mstore(0, 0x0b0d9c0900000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(currency1, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, address())
-                mstore(68, val)
-                let success := call(gas(), manager, 0, 0, 100, 0, 0)
-                if iszero(success) {
-                    returndatacopy(0, 0, returndatasize())
-                    revert(0, returndatasize())
-                }
-            }
-        }
+        if (delta0 > 0) IPoolManager(poolManager).settle(key.currency0);
+        if (delta1 > 0) IPoolManager(poolManager).settle(key.currency1);
+        if (delta0 < 0) IPoolManager(poolManager).take(key.currency0, address(this), uint256(-delta0));
+        if (delta1 < 0) IPoolManager(poolManager).take(key.currency1, address(this), uint256(-delta1));
 
         return "";
     }
@@ -934,296 +431,109 @@ contract ArbExecutor is IFlashLoanRecipient {
     function _handlePoolSwapCallback(uint8 protocolId, int256 amount0Delta, int256 amount1Delta, bytes calldata data)
         internal
     {
-        assembly {
-            // if (_phase != PHASE_CALLBACK) revert CallbackOnly();
-            let phaseVal := and(shr(mul(_phase.offset, 8), sload(_phase.slot)), 0xff)
-            if iszero(eq(phaseVal, 2)) {
-                mstore(0, 0xc21d53e800000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-        }
+        if (_phase != PHASE_CALLBACK) revert CallbackOnly();
 
         CallbackData memory callbackData = abi.decode(data, (CallbackData));
-        
-        uint8 cbProtocolId = callbackData.protocolId;
-        address token0 = callbackData.token0;
-        address token1 = callbackData.token1;
-        
-        assembly {
-            let validProtocol := 0
-            switch protocolId
-            case 1 { // PROTOCOL_UNISWAP_V3
-                if or(eq(cbProtocolId, 1), eq(cbProtocolId, 2)) {
-                    validProtocol := 1
-                }
+        // Accept both native Uniswap V3 and SushiSwap V3 — both fork the
+        // same V3 callback interface and differ only by pool factory address.
+        if (protocolId == PROTOCOL_UNISWAP_V3) {
+            if (callbackData.protocolId != PROTOCOL_UNISWAP_V3 && callbackData.protocolId != PROTOCOL_SUSHISWAP_V3) {
+                revert UnsupportedProtocol(callbackData.protocolId);
             }
-            default {
-                if eq(cbProtocolId, protocolId) {
-                    validProtocol := 1
-                }
-            }
-            
-            if iszero(validProtocol) {
-                mstore(0, 0xf850442b00000000000000000000000000000000000000000000000000000000)
-                mstore(4, cbProtocolId)
-                revert(0, 36)
-            }
+        } else if (callbackData.protocolId != protocolId) {
+            revert UnsupportedProtocol(callbackData.protocolId);
         }
-        
+
         address expectedPool = _resolveExpectedPool(callbackData);
-        
-        assembly {
-            if iszero(expectedPool) {
-                mstore(0, 0x936198e900000000000000000000000000000000000000000000000000000000)
-                revert(0, 4)
-            }
-            if iszero(eq(caller(), expectedPool)) {
-                mstore(0, 0xf206255900000000000000000000000000000000000000000000000000000000)
-                mstore(4, expectedPool)
-                mstore(36, caller())
-                revert(0, 68)
-            }
-            
-            if sgt(amount0Delta, 0) {
-                mstore(0, 0xa9059cbb00000000000000000000000000000000000000000000000000000000)
-                mstore(4, expectedPool)
-                mstore(36, amount0Delta)
-                let success2 := call(gas(), token0, 0, 0, 68, 0, 32)
-                let valid2 := 0
-                switch success2
-                case 1 {
-                    switch returndatasize()
-                    case 0 { valid2 := 1 }
-                    case 32 { if mload(0) { valid2 := 1 } }
-                }
-                if iszero(valid2) {
-                    mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                    mstore(4, token0)
-                    mstore(36, expectedPool)
-                    mstore(68, amount0Delta)
-                    revert(0, 100)
-                }
-            }
-            
-            if sgt(amount1Delta, 0) {
-                mstore(0, 0xa9059cbb00000000000000000000000000000000000000000000000000000000)
-                mstore(4, expectedPool)
-                mstore(36, amount1Delta)
-                let success2 := call(gas(), token1, 0, 0, 68, 0, 32)
-                let valid2 := 0
-                switch success2
-                case 1 {
-                    switch returndatasize()
-                    case 0 { valid2 := 1 }
-                    case 32 { if mload(0) { valid2 := 1 } }
-                }
-                if iszero(valid2) {
-                    mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                    mstore(4, token1)
-                    mstore(36, expectedPool)
-                    mstore(68, amount1Delta)
-                    revert(0, 100)
-                }
-            }
+        if (expectedPool == address(0)) revert InvalidCallbackSource();
+        if (msg.sender != expectedPool) revert InvalidPoolCaller(expectedPool, msg.sender);
+
+        if (amount0Delta > 0) {
+            _safeTransfer(callbackData.token0, msg.sender, uint256(amount0Delta));
+        }
+        if (amount1Delta > 0) {
+            _safeTransfer(callbackData.token1, msg.sender, uint256(amount1Delta));
         }
     }
 
-    function _resolveExpectedPool(CallbackData memory callbackData) internal view returns (address pool) {
-        uint8 protocolId = callbackData.protocolId;
-        address token0 = callbackData.token0;
-        address token1 = callbackData.token1;
-        uint24 fee = callbackData.fee;
-        
-        address v3Factory = uniswapV3Factory;
-        address sV3Factory = sushiV3Factory;
-        address qV3Factory = quickswapV3Factory;
-        address keFactory = kyberElasticFactory;
-        
-        assembly {
-            let success := 0
-            switch protocolId
-            case 1 { // PROTOCOL_UNISWAP_V3
-                mstore(0, 0x1698ee8200000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(token0, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, and(token1, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(68, fee)
-                success := staticcall(gas(), v3Factory, 0, 100, 0, 32)
-                if and(success, iszero(lt(returndatasize(), 32))) {
-                    pool := mload(0)
-                }
-            }
-            case 2 { // PROTOCOL_SUSHISWAP_V3
-                mstore(0, 0x1698ee8200000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(token0, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, and(token1, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(68, fee)
-                success := staticcall(gas(), sV3Factory, 0, 100, 0, 32)
-                if and(success, iszero(lt(returndatasize(), 32))) {
-                    pool := mload(0)
-                }
-            }
-            case 3 { // PROTOCOL_QUICKSWAP_V3
-                mstore(0, 0xd9a641e100000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(token0, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, and(token1, 0xffffffffffffffffffffffffffffffffffffffff))
-                success := staticcall(gas(), qV3Factory, 0, 68, 0, 32)
-                if and(success, iszero(lt(returndatasize(), 32))) {
-                    pool := mload(0)
-                }
-            }
-            case 4 { // PROTOCOL_KYBER_ELASTIC
-                mstore(0, 0x1698ee8200000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(token0, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, and(token1, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(68, fee)
-                success := staticcall(gas(), keFactory, 0, 100, 0, 32)
-                if and(success, iszero(lt(returndatasize(), 32))) {
-                    pool := mload(0)
-                }
-            }
-            default {
-                mstore(0, 0xf850442b00000000000000000000000000000000000000000000000000000000)
-                mstore(4, protocolId)
-                revert(0, 36)
-            }
+    function _resolveExpectedPool(CallbackData memory callbackData) internal view returns (address) {
+        if (callbackData.protocolId == PROTOCOL_UNISWAP_V3) {
+            return
+                IUniswapV3FactoryLike(uniswapV3Factory)
+                    .getPool(callbackData.token0, callbackData.token1, callbackData.fee);
         }
+        if (callbackData.protocolId == PROTOCOL_SUSHISWAP_V3) {
+            return
+                IUniswapV3FactoryLike(sushiV3Factory)
+                    .getPool(callbackData.token0, callbackData.token1, callbackData.fee);
+        }
+        if (callbackData.protocolId == PROTOCOL_QUICKSWAP_V3) {
+            return IAlgebraFactoryLike(quickswapV3Factory).poolByPair(callbackData.token0, callbackData.token1);
+        }
+        if (callbackData.protocolId == PROTOCOL_KYBER_ELASTIC) {
+            return IKyberElasticFactoryLike(kyberElasticFactory)
+                .getPool(callbackData.token0, callbackData.token1, callbackData.fee);
+        }
+        revert UnsupportedProtocol(callbackData.protocolId);
     }
 
     function _executeCalls(Call[] memory calls) internal {
-        assembly {
-            let len := mload(calls)
-            for { let i := 0 } lt(i, len) { i := add(i, 1) } {
-                let callPtr := mload(add(calls, add(32, mul(i, 32))))
-                let target := mload(callPtr)
-                let value := mload(add(callPtr, 32))
-                let dataPtr := mload(add(callPtr, 64))
-                let dataLen := mload(dataPtr)
-                let dataStart := add(dataPtr, 32)
-                
-                let ok := call(gas(), target, value, dataStart, dataLen, 0, 0)
-                if iszero(ok) {
-                    let freeMem := mload(0x40)
-                    mstore(freeMem, 0x0f43457300000000000000000000000000000000000000000000000000000000)
-                    mstore(add(freeMem, 4), i)
-                    mstore(add(freeMem, 36), and(target, 0xffffffffffffffffffffffffffffffffffffffff))
-                    mstore(add(freeMem, 68), 96)
-                    
-                    let retSz := returndatasize()
-                    mstore(add(freeMem, 100), retSz)
-                    returndatacopy(add(freeMem, 132), 0, retSz)
-                    
-                    let totalRevertSize := add(132, retSz)
-                    revert(freeMem, totalRevertSize)
-                }
+        uint256 len = calls.length;
+        for (uint256 i; i < len;) {
+            Call memory call_ = calls[i];
+            (bool ok, bytes memory result) = call_.target.call{value: call_.value}(call_.data);
+            if (!ok) revert ExternalCallFailed(i, call_.target, result);
+            unchecked {
+                ++i;
             }
         }
     }
 
     function _assertProfit() internal view {
-        address profitToken = _activeProfitToken;
-        uint256 minProfit = _activeMinProfit;
-        uint256 initialBalance = _activeInitialProfitBalance;
-        
-        assembly {
-            mstore(0, 0x70a0823100000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            let success := staticcall(gas(), profitToken, 0, 36, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, profitToken)
-                mstore(36, address())
-                mstore(68, 0)
-                revert(0, 100)
-            }
-            let finalBalance := mload(0)
-            
-            let requiredBalance := add(initialBalance, minProfit)
-            if lt(finalBalance, requiredBalance) {
-                mstore(0, 0x4e88422a00000000000000000000000000000000000000000000000000000000)
-                mstore(4, finalBalance)
-                mstore(36, requiredBalance)
-                revert(0, 68)
-            }
+        uint256 finalBalance = IERC20Minimal(_activeProfitToken).balanceOf(address(this));
+        uint256 requiredBalance = _activeInitialProfitBalance + _activeMinProfit;
+        if (finalBalance < requiredBalance) {
+            revert InsufficientProfit(finalBalance, requiredBalance);
         }
     }
 
+    function _clearExecutionContext() internal {
+        _phase = PHASE_IDLE;
+        _activeRouteHash = bytes32(0);
+        _activeProfitToken = address(0);
+        _activeMinProfit = 0;
+        _activeInitialProfitBalance = 0;
+    }
+
     function _safeTransfer(address token, address to, uint256 amount) internal {
-        assembly {
-            mstore(0, 0xa9059cbb00000000000000000000000000000000000000000000000000000000)
-            mstore(4, and(to, 0xffffffffffffffffffffffffffffffffffffffff))
-            mstore(36, amount)
-            let success := call(gas(), token, 0, 0, 68, 0, 32)
-            let valid := 0
-            switch success
-            case 1 {
-                switch returndatasize()
-                case 0 { valid := 1 }
-                case 32 { if mload(0) { valid := 1 } }
-            }
-            if iszero(valid) {
-                mstore(0, 0xbf182be800000000000000000000000000000000000000000000000000000000)
-                mstore(4, token)
-                mstore(36, to)
-                mstore(68, amount)
-                revert(0, 100)
-            }
+        (bool ok, bytes memory result) = token.call(abi.encodeWithSelector(IERC20Minimal.transfer.selector, to, amount));
+        if (!ok || (result.length != 0 && !abi.decode(result, (bool)))) {
+            revert TransferFailed(token, to, amount);
+        }
+    }
+
+    function _safeAllowance(address token, address owner_, address spender) internal view returns (uint256) {
+        (bool ok, bytes memory result) =
+            token.staticcall(abi.encodeWithSelector(IERC20AllowanceMinimal.allowance.selector, owner_, spender));
+        if (!ok || result.length < 32) revert ApproveFailed(token, spender);
+        return abi.decode(result, (uint256));
+    }
+
+    function _safeApprove(address token, address spender, uint256 amount) internal {
+        (bool ok, bytes memory result) =
+            token.call(abi.encodeWithSelector(IERC20Minimal.approve.selector, spender, amount));
+        if (!ok || (result.length != 0 && !abi.decode(result, (bool)))) {
+            revert ApproveFailed(token, spender);
         }
     }
 
     function _safeApproveMaxIfNeeded(address token, address spender, uint256 amount) internal {
-        assembly {
-            mstore(0, 0xdd62ed3e00000000000000000000000000000000000000000000000000000000)
-            mstore(4, address())
-            mstore(36, and(spender, 0xffffffffffffffffffffffffffffffffffffffff))
-            let success := staticcall(gas(), token, 0, 68, 0, 32)
-            if or(iszero(success), lt(returndatasize(), 32)) {
-                mstore(0, 0x1b6c83ab00000000000000000000000000000000000000000000000000000000)
-                mstore(4, token)
-                mstore(36, spender)
-                revert(0, 68)
-            }
-            let current := mload(0)
-            
-            if lt(current, amount) {
-                if iszero(iszero(current)) {
-                    mstore(0, 0x095ea7b300000000000000000000000000000000000000000000000000000000)
-                    mstore(4, and(spender, 0xffffffffffffffffffffffffffffffffffffffff))
-                    mstore(36, 0)
-                    let success2 := call(gas(), token, 0, 0, 68, 0, 32)
-                    let valid2 := 0
-                    switch success2
-                    case 1 {
-                        switch returndatasize()
-                        case 0 { valid2 := 1 }
-                        case 32 { if mload(0) { valid2 := 1 } }
-                    }
-                    if iszero(valid2) {
-                        mstore(0, 0x1b6c83ab00000000000000000000000000000000000000000000000000000000)
-                        mstore(4, token)
-                        mstore(36, spender)
-                        revert(0, 68)
-                    }
-                }
-                
-                mstore(0, 0x095ea7b300000000000000000000000000000000000000000000000000000000)
-                mstore(4, and(spender, 0xffffffffffffffffffffffffffffffffffffffff))
-                mstore(36, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
-                let success3 := call(gas(), token, 0, 0, 68, 0, 32)
-                let valid3 := 0
-                switch success3
-                case 1 {
-                    switch returndatasize()
-                    case 0 { valid3 := 1 }
-                    case 32 { if mload(0) { valid3 := 1 } }
-                }
-                if iszero(valid3) {
-                    mstore(0, 0x1b6c83ab00000000000000000000000000000000000000000000000000000000)
-                    mstore(4, token)
-                    mstore(36, spender)
-                    revert(0, 68)
-                }
-            }
+        uint256 current = _safeAllowance(token, address(this), spender);
+        if (current >= amount) return;
+
+        if (current != 0) {
+            _safeApprove(token, spender, 0);
         }
+        _safeApprove(token, spender, type(uint256).max);
     }
 }
-

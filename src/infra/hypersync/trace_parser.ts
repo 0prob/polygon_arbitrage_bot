@@ -75,9 +75,10 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
     // Track call depth
     maxDepth = Math.max(maxDepth, traceAddress.length);
 
-    // Detect flashloans (common patterns)
+    // Detect flashloans and swaps (common patterns)
     const to = (action.to || "").toLowerCase();
-    const inputData = (action.input || "").toLowerCase();
+    const inputHex = action.input || "";
+    const selector = inputHex.slice(0, 10).toLowerCase();
 
     // Native value transfer (from blog: call_type=call with value)
     const value = action.value ? BigInt(action.value) : 0n;
@@ -87,25 +88,33 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
 
     if (to.includes("ba12222222228d8ba445958a75a0704d566bf2c8")) {
       // Balancer Vault
-      if (inputData.includes("23b872dd") || inputData.includes("flashloan")) {
+      if (selector === "0x23b872dd") {
         sawBalancerFlash = true;
       }
     }
 
     if (to.includes("794a61358d6845594f94dc1db02a252b5b4814ad")) {
       // Aave V3 Pool
-      if (inputData.includes("flashloan")) {
+      if (selector === "0xab92ee1b" || selector === "0xe3dec11b") {
         sawAaveFlash = true;
       }
     }
 
-    // Count swaps (very rough heuristic)
-    if (inputData.includes("swap") || inputData.includes("exactinput")) {
+    // Count swaps (using actual 4-byte selectors instead of text strings that never match hex!)
+    const isSwap =
+      selector === "0x022c0d9f" || // V2 swap
+      selector === "0x128acb08" || // V3 swap
+      selector === "0x04e45503" || // V3 exactInputSingle
+      selector === "0xc04b8d59" || // V3 exactInput
+      selector === "0x52bbbe29" || // Balancer swap
+      selector === "0x945bcec9";    // Balancer batchSwap
+
+    if (isSwap) {
       swapCount++;
     }
 
     // Protocol fingerprinting (extend as needed)
-    if (to.includes("1f98431c8ad98523631ae4a59f267346ea31f984") || to.includes("uniswap")) {
+    if (to.includes("1f98431c8ad98523631ae4a59f267346ea31f984")) {
       protocolSet.add("UNISWAP");
     }
     if (to.includes("ba12222222228d8ba445958a75a0704d566bf2c8")) {

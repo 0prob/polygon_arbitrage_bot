@@ -5,7 +5,32 @@ import { MAJOR_TOKENS } from "../core/constants.ts";
 import { normalizeProtocol, computeSpotPrice } from "./simulator.ts";
 
 export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
-  const parts = edges.map((e) => e.poolAddress).sort();
+  const len = edges.length;
+  if (len === 2) {
+    const a = edges[0].poolAddress;
+    const b = edges[1].poolAddress;
+    return a < b ? `${a}:${b}:${startToken}` : `${b}:${a}:${startToken}`;
+  }
+  if (len === 3) {
+    const a = edges[0].poolAddress;
+    const b = edges[1].poolAddress;
+    const c = edges[2].poolAddress;
+    if (a < b) {
+      if (b < c) return `${a}:${b}:${c}:${startToken}`;
+      if (a < c) return `${a}:${c}:${b}:${startToken}`;
+      return `${c}:${a}:${b}:${startToken}`;
+    } else {
+      if (a < c) return `${b}:${a}:${c}:${startToken}`;
+      if (b < c) return `${b}:${c}:${a}:${startToken}`;
+      return `${c}:${b}:${a}:${startToken}`;
+    }
+  }
+  // Fallback for longer cycles (4 or 5 hops):
+  const parts = new Array<string>(len);
+  for (let i = 0; i < len; i++) {
+    parts[i] = edges[i].poolAddress;
+  }
+  parts.sort();
   parts.push(startToken);
   return parts.join(":");
 }
@@ -175,9 +200,9 @@ export function getObscurityBonus(protocol: string): number {
 
   // Unique AMMs (most likely to have stale/independent prices)
   if (p.includes("dodo")) return 1.25;
-  if (p.toLowerCase().includes("balancer")) return 1.1;
-  if (p.toLowerCase().includes("curve")) return 1.0;
-  if (p.toLowerCase().includes("woofi")) return 0.9;
+  if (p.includes("balancer")) return 1.1;
+  if (p.includes("curve")) return 1.0;
+  if (p.includes("woofi")) return 0.9;
 
   // V3 liquid – best for 2-hop cycles (0.05% fee tiers → only 0.1% combined)
   if (p.includes("uniswap") && !p.includes("_v2")) return 1.0;
@@ -386,6 +411,29 @@ export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, 
   const cycles: FoundCycle[] = [];
   const foundKeys = new Set<string>();
 
+  // Pre-calculate weights for all valid edges in the graph
+  type EdgeWithWeight = SwapEdge & { weight: number };
+  const weightedAdjacency = new Map<string, EdgeWithWeight[]>();
+
+  for (const [u, edges] of graph.adjacency) {
+    const list: EdgeWithWeight[] = [];
+    for (const edge of edges) {
+      const state = graph.stateRefs.get(edge.poolAddress);
+      if (!state) continue;
+
+      const normalizedProtocol = normalizeProtocol(edge.protocol);
+      const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
+      if (spotPrice <= 0) continue;
+
+      const feePct = Number(edge.feeBps) / 10000;
+      const weight = -Math.log(spotPrice * (1 - feePct));
+      list.push({ ...edge, weight });
+    }
+    if (list.length > 0) {
+      weightedAdjacency.set(u, list);
+    }
+  }
+
   const sourceTokens = Array.from(graph.adjacency.keys()).filter((t) => MAJOR_TOKENS.has(t));
   if (sourceTokens.length === 0) {
     sourceTokens.push(Array.from(graph.adjacency.keys())[0]);
@@ -401,25 +449,15 @@ export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, 
     // Relax up to maxHops times
     for (let iter = 0; iter < maxHops; iter++) {
       let relaxed = false;
-      for (const [u, edges] of graph.adjacency) {
+      for (const [u, edges] of weightedAdjacency) {
         const uDist = dist.get(u);
         if (uDist === undefined || uDist === Infinity) continue;
 
         for (const edge of edges) {
           const v = edge.tokenOut;
-          const state = graph.stateRefs.get(edge.poolAddress);
-          if (!state) continue;
-
-          const normalizedProtocol = normalizeProtocol(edge.protocol);
-          const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
-          if (spotPrice <= 0) continue;
-
-          const feePct = Number(edge.feeBps) / 10000;
-          const weight = -Math.log(spotPrice * (1 - feePct));
-
           const vDist = dist.get(v) ?? Infinity;
-          if (uDist + weight < vDist - 1e-9) {
-            dist.set(v, uDist + weight);
+          if (uDist + edge.weight < vDist - 1e-9) {
+            dist.set(v, uDist + edge.weight);
             parent.set(v, edge);
             relaxed = true;
           }
@@ -429,25 +467,15 @@ export function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, 
     }
 
     // Check for negative cycles
-    for (const [u, edges] of graph.adjacency) {
+    for (const [u, edges] of weightedAdjacency) {
       if (cycles.length >= maxCycles) break;
       const uDist = dist.get(u);
       if (uDist === undefined || uDist === Infinity) continue;
 
       for (const edge of edges) {
         const v = edge.tokenOut;
-        const state = graph.stateRefs.get(edge.poolAddress);
-        if (!state) continue;
-
-        const normalizedProtocol = normalizeProtocol(edge.protocol);
-        const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
-        if (spotPrice <= 0) continue;
-
-        const feePct = Number(edge.feeBps) / 10000;
-        const weight = -Math.log(spotPrice * (1 - feePct));
-
         const vDist = dist.get(v) ?? Infinity;
-        if (uDist + weight < vDist - 1e-9) {
+        if (uDist + edge.weight < vDist - 1e-9) {
           // Trace back to reconstruct negative cycle
           const visited = new Set<string>();
           let curr = v;

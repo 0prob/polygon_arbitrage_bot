@@ -87,13 +87,10 @@ export function computeSpotPrice(
 export function simulateHop(
   edge: SimulationEdge,
   amountIn: bigint,
-  stateCache: RouteStateCache,
+  stateCache?: RouteStateCache,
   overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
-  const poolAddr = edge.poolAddress;
-  const baseState = stateCache.get(poolAddr) ?? edge.stateRef;
-  if (!baseState) throw new Error(`No valid state for pool ${edge.poolAddress}`);
-  const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
+  const state = edge.stateRef;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
 
   let result: SimulatedHopResult;
@@ -153,19 +150,11 @@ export function simulateRoute(
   const tokenPath: string[] = [];
   const protocols: string[] = [];
 
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
   if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
-    if (!prebuiltSimEdges) {
-      const base = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
-      if (!base) throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
-      const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
-      if (!state || isInvalidState(state)) {
-        throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
-      }
-    }
 
     const hop = simulateHop(simEdge, hopAmounts[i], stateCache, overlay);
     hopAmounts.push(hop.amountOut);
@@ -210,19 +199,11 @@ export function simulateRouteMinimal(
   let currentAmount = amountIn;
   let totalGas = 0;
 
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
   if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
-    if (!prebuiltSimEdges) {
-      const base = stateCache.get(simEdge.poolAddress as `0x${string}`) ?? simEdge.stateRef;
-      if (!base) throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
-      const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
-      if (!state || isInvalidState(state)) {
-        throw new Error(`No valid state for pool ${simEdge.poolAddress}`);
-      }
-    }
 
     const hop = simulateHop(simEdge, currentAmount, stateCache, overlay);
     currentAmount = hop.amountOut;
@@ -293,25 +274,16 @@ export function simulateMinimalWithImpactCheck(
   maxImpactThreshold: number,
   overlay?: PendingStateOverlay,
 ): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
   if (!simEdges) throw new Error("Missing state for simulation");
   let currentAmount = amountIn;
   let totalGas = 0;
 
   for (let i = 0; i < simEdges.length; i++) {
     const simEdge = simEdges[i];
-    if (!prebuiltSimEdges) {
-      const baseForEdge = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
-      if (!baseForEdge) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
-      const state = overlay?.getProjected(simEdge.poolAddress as Address, baseForEdge) ?? baseForEdge;
-      if (!state || isInvalidState(state)) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
-    }
+    const state = simEdge.stateRef;
 
     const hop = simulateHop(simEdge, currentAmount, stateCache, overlay);
-
-    const base = stateCache.get(simEdge.poolAddress) ?? simEdge.stateRef;
-    if (!base) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
-    const state = overlay?.getProjected(simEdge.poolAddress as Address, base) ?? base;
     if (state) {
       const realizedPrice = Number(hop.amountOut) / Number(currentAmount);
       const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);

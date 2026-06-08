@@ -63,15 +63,32 @@ export class IncrementalGraphUpdater {
 
   removePool(graph: RoutingGraph, poolAddress: string): void {
     const addr = poolAddress.toLowerCase();
+    const meta = graph.poolMeta.get(addr);
     graph.poolMeta.delete(addr);
     graph.stateRefs.delete(addr);
 
-    for (const [token, edges] of graph.adjacency) {
-      const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
-      if (filtered.length === 0) {
-        graph.adjacency.delete(token);
-      } else {
-        graph.adjacency.set(token, filtered);
+    if (meta && meta.tokens) {
+      for (const token of meta.tokens) {
+        const tLower = token.toLowerCase();
+        const edges = graph.adjacency.get(tLower);
+        if (edges) {
+          const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
+          if (filtered.length === 0) {
+            graph.adjacency.delete(tLower);
+          } else {
+            graph.adjacency.set(tLower, filtered);
+          }
+        }
+      }
+    } else {
+      // Fallback in case metadata is missing
+      for (const [token, edges] of graph.adjacency) {
+        const filtered = edges.filter((e) => e.poolAddress.toLowerCase() !== addr);
+        if (filtered.length === 0) {
+          graph.adjacency.delete(token);
+        } else {
+          graph.adjacency.set(token, filtered);
+        }
       }
     }
   }
