@@ -293,8 +293,12 @@ export async function findCycles(
     if (hops >= 2 && currToken === startToken) {
       // Collect closing cycle at this exact depth (2..hopLimit)
       const obs = currentObscuritySum / hops;
-      const coef = 0.8 + (hops - 2) * 0.3; // 0.8 for 2h, 1.1 for 3h, 1.4 for 4h, 1.7 for 5h
-      const logWeight = currentLogWeight - obs * coef;
+      
+      // With poor infra, each additional hop introduces significant execution risk and gas costs.
+      // Instead of artificially boosting longer routes, we penalize them slightly to favor shorter, 
+      // more reliable paths with high average obscurity.
+      const hopPenalty = hops * 0.05; 
+      const logWeight = currentLogWeight - obs + hopPenalty;
 
       cycles.push({
         startToken: startToken as Address,
@@ -536,8 +540,8 @@ export async function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number
                   obsSum += getObscurityBonus(e.protocol);
                 }
                 const obs = obsSum / cycleEdges.length;
-                const coef = 0.8 + (cycleEdges.length - 2) * 0.3;
-                logWeight -= obs * coef;
+                const hopPenalty = cycleEdges.length * 0.05;
+                logWeight = logWeight - obs + hopPenalty;
 
                 cycles.push({
                   id: key,
