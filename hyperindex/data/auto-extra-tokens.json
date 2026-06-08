@@ -1,18 +1,22 @@
 [
   {
-    "address": "0x23fb2c7cb0727d20f8dda9263ba8109bc37be624",
+    "address": "0xd506c498a44cebdb780d7eb752ec254aab19ea2a",
+    "decimals": 8
+  },
+  {
+    "address": "0x0ecf338080ea4a2cf154145734b7df7d0d927cc7",
     "decimals": 18
   },
   {
-    "address": "0x5b652532456b369ac082e8da87f63b9983b4548c",
+    "address": "0x6343728d4c53c99ff9974b4688c32ef5e92106fe",
     "decimals": 18
   },
   {
-    "address": "0xa1555a6ed76ab65f5b0fc6b2f56654620db17f91",
-    "decimals": 18
+    "address": "0xab7074218b27490536a382fcb3861d52ec8af4e6",
+    "decimals": 8
   },
   {
-    "address": "0xe5485f8f4576480b5f6c263c900d06ec97fcf3d0",
-    "decimals": 18
+    "address": "0xfba8a2028b41ea5dd01fffcd79aaeed52987211a",
+    "decimals": 8
   }
 ]

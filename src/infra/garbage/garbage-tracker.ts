@@ -46,23 +46,34 @@ export function isGarbageAddress(address: string): boolean {
   return garbageAddresses.has(address.toLowerCase());
 }
 
+let flushPromise: Promise<void> | null = null;
+
 /**
  * Mark an address (token or pool) as garbage and persist it to disk.
- * Safe to call multiple times for the same address.
+ * Writes are batched automatically to prevent concurrent file corruption and I/O bottlenecks.
  */
-export async function markAsGarbage(address: string): Promise<void> {
+export function markAsGarbage(address: string): Promise<void> {
   const lower = address.toLowerCase();
-  if (garbageAddresses.has(lower)) return;
+  if (garbageAddresses.has(lower)) return flushPromise || Promise.resolve();
 
   garbageAddresses.add(lower);
 
-  // Ensure data directory exists
-  const dir = path.dirname(GARBAGE_FILE);
-  await mkdir(dir, { recursive: true });
+  if (!flushPromise) {
+    flushPromise = Promise.resolve().then(async () => {
+      // Small delay to allow batching of consecutive synchronous or rapid async calls
+      await new Promise((r) => setTimeout(r, 50));
+      
+      const dir = path.dirname(GARBAGE_FILE);
+      await mkdir(dir, { recursive: true });
 
-  // Write the full current set (simple and safe for this use case)
-  const list = Array.from(garbageAddresses).sort();
-  await writeFile(GARBAGE_FILE, JSON.stringify(list, null, 2), "utf8");
+      const list = Array.from(garbageAddresses).sort();
+      await writeFile(GARBAGE_FILE, JSON.stringify(list, null, 2), "utf8");
+      
+      flushPromise = null;
+    });
+  }
+
+  return flushPromise;
 }
 
 /**
@@ -125,6 +136,7 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
     if (!result?.PoolMeta) return 0;
 
     let newlyMarked = 0;
+    const promises: Promise<void>[] = [];
     for (const pool of result.PoolMeta) {
       let tokens: string[] = [];
       if (typeof pool.tokens === "string") {
@@ -138,11 +150,14 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
       for (const token of tokens) {
         const lower = token.toLowerCase();
         if (knownFactories.has(lower) && !isGarbageAddress(lower)) {
-          await markAsGarbage(lower);
+          promises.push(markAsGarbage(lower));
           console.warn(`[garbage] One-time historical cleanup discovered new garbage address: ${lower}`);
           newlyMarked++;
         }
       }
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
     }
     return newlyMarked;
   } catch (err) {
