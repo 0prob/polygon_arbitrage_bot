@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.34;
 
+import {Test, console} from "forge-std/Test.sol";
 import {ArbExecutor, IERC20Minimal, IFlashLoanRecipient} from "../src/ArbExecutor.sol";
+import {HuffDeployer} from "./HuffDeployer.sol";
 
 contract MockToken is IERC20Minimal {
     mapping(address => uint256) public balances;
@@ -62,21 +64,32 @@ contract RevertingTarget {
     }
 }
 
-contract ArbExecutorAtomicTest {
+contract ArbExecutorAtomicTest is Test {
     MockToken internal token;
     RecorderTarget internal recorder;
     RevertingTarget internal reverter;
 
+    function testOwner() public {
+        ArbExecutor executor = _deployExecutor(address(0x1234));
+        address owner = executor.owner();
+        console.log("Owner is:", owner);
+        require(owner == address(this), "Owner mismatch");
+    }
+
     function _deployExecutor(address vault) internal returns (ArbExecutor) {
-        return new ArbExecutor(
-            address(this),
-            vault,
-            address(0x1001),
-            address(0x1002),
-            address(0x1003),
-            address(0x1004),
-            address(0x1005),
-            address(0x1006)
+        return ArbExecutor(
+            payable(
+                HuffDeployer.deploy(
+                    address(this),
+                    vault,
+                    address(0x1001),
+                    address(0x1002),
+                    address(0x1003),
+                    address(0x1004),
+                    address(0x1005),
+                    address(0x1006)
+                )
+            )
         );
     }
 

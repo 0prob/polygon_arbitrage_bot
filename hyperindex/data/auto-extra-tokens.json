@@ -1,22 +1,94 @@
 [
   {
-    "address": "0xeba31364878832fcf69f71efa378a3be6dbcb485",
+    "address": "0x1a28cd05aecf99f7759c1eb25b5edaafaec40253",
     "decimals": 18
   },
   {
-    "address": "0x381d67ec52e1dae162c340f8edacbf10386233ff",
-    "decimals": 6
-  },
-  {
-    "address": "0x701e8f44322390c9dffa0beb327731d3df39ae5d",
+    "address": "0x88c0896b734bdb6ebe6eb06dae044192936769df",
     "decimals": 18
   },
   {
-    "address": "0x54185d64a42c39da120927b5663d58200b0030b4",
+    "address": "0xed0eb9da0c20ef6e8fd3ab5ca28bade541dc6103",
     "decimals": 18
   },
   {
-    "address": "0xdf93ce78d2373103fd55d87439dcb75f2915443a",
+    "address": "0x43b6d2a0a91c311e10671790842f4b41fc7e42ea",
     "decimals": 18
+  },
+  {
+    "address": "0x206c6ef2d2a23df09b3bb5a8e52f89624d9dddc7",
+    "decimals": 18
+  },
+  {
+    "address": "0x3cd307092cc43d0eb4763f16383abef1b4858a29",
+    "decimals": 18
+  },
+  {
+    "address": "0x4e34b3a96fd9b9dea23875eaa404ef2d6cf271c1",
+    "decimals": 9
+  },
+  {
+    "address": "0x4f7551eb4611bfa1325c4047d97c01dcbd63abc0",
+    "decimals": 18
+  },
+  {
+    "address": "0x9d9cdc5e87909e6e7bf959fa0bbdbc41b2ecab20",
+    "decimals": 18
+  },
+  {
+    "address": "0xc113ab91e0b7bb2ce9ac3ef197e612af76b9f95b",
+    "decimals": 18
+  },
+  {
+    "address": "0x7ceaff3ae27588d09e67ca877c9eee2773ee3e3a",
+    "decimals": 18
+  },
+  {
+    "address": "0xbb6e571f1754462a3d693f550d97e718a975300d",
+    "decimals": 18
+  },
+  {
+    "address": "0x160a1c7d0269d2b3a4de3e3df85429f8f798a9be",
+    "decimals": 18
+  },
+  {
+    "address": "0x3c1d2d089e77fb979cfd077793ad214c4d48fbe0",
+    "decimals": 18
+  },
+  {
+    "address": "0xd9d53849a6bfec9831b11884d7d2844705473af7",
+    "decimals": 18
+  },
+  {
+    "address": "0xb1525504b587f4306690bb88b6b0a163f67f69a6",
+    "decimals": 18
+  },
+  {
+    "address": "0x0cee1d3efcb914a3c4a314c21c9b6dded5ec13cf",
+    "decimals": 18
+  },
+  {
+    "address": "0xba74014e2a8ab23b14f7d6d067494a0bf1567bb2",
+    "decimals": 18
+  },
+  {
+    "address": "0xe71b2c45888f0a94e8157c5d0a04f3f810a9b276",
+    "decimals": 18
+  },
+  {
+    "address": "0xc494143e4b32eda00e134678c14388c65fd5c970",
+    "decimals": 18
+  },
+  {
+    "address": "0x3ce03aeccd58042f068527ae663539fa500ebb2d",
+    "decimals": 18
+  },
+  {
+    "address": "0x8ef23b03d96674554875c46ea78b28d18fcf466e",
+    "decimals": 18
+  },
+  {
+    "address": "0xf7b5991c676929bf98bf3e2e2e386789bb16912a",
+    "decimals": 8
   }
 ]

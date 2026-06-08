@@ -3,6 +3,7 @@ pragma solidity ^0.8.34;
 
 import {Test} from "forge-std/Test.sol";
 import {ArbExecutor} from "../src/ArbExecutor.sol";
+import {HuffDeployer} from "./HuffDeployer.sol";
 
 contract ArbExecutorAuthTest is Test {
     ArbExecutor public executor;
@@ -11,15 +12,19 @@ contract ArbExecutorAuthTest is Test {
 
     function setUp() public {
         vm.prank(owner);
-        executor = new ArbExecutor(
-            owner,
-            address(0x1000),
-            address(0x1001),
-            address(0x1002),
-            address(0x1003),
-            address(0x1004),
-            address(0x1005),
-            address(0x1006)
+        executor = ArbExecutor(
+            payable(
+                HuffDeployer.deploy(
+                    owner,
+                    address(0x1000),
+                    address(0x1001),
+                    address(0x1002),
+                    address(0x1003),
+                    address(0x1004),
+                    address(0x1005),
+                    address(0x1006)
+                )
+            )
         );
     }
 
