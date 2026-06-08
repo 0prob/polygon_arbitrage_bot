@@ -41,24 +41,18 @@ function protocolClass(protocol: string): OverrideProtocol {
 
 function computeV4PoolId(key: V4PoolKey): `0x${string}` {
   return keccak256(
-    encodeAbiParameters(
-      [
-        { type: "address" },
-        { type: "address" },
-        { type: "uint24" },
-        { type: "int24" },
-        { type: "address" },
-      ],
-      [key.currency0, key.currency1, key.fee, key.tickSpacing, key.hooks] as [any, any, any, any, any],
-    ),
+    encodeAbiParameters([{ type: "address" }, { type: "address" }, { type: "uint24" }, { type: "int24" }, { type: "address" }], [
+      key.currency0,
+      key.currency1,
+      key.fee,
+      key.tickSpacing,
+      key.hooks,
+    ] as [any, any, any, any, any]),
   );
 }
 
 function computeV4StorageSlot(poolId: `0x${string}`, mappingSlot: bigint, offset: bigint): `0x${string}` {
-  const encoded = encodeAbiParameters(
-    [{ type: "bytes32" }, { type: "uint256" }],
-    [poolId, mappingSlot],
-  );
+  const encoded = encodeAbiParameters([{ type: "bytes32" }, { type: "uint256" }], [poolId, mappingSlot]);
   const base = keccak256(encoded);
   if (offset === 0n) return base;
   const sum = (BigInt(base) + offset) & ((1n << 256n) - 1n);
@@ -114,7 +108,7 @@ function buildV3Override(input: BuildOverrideInput): StateOverride | null {
     (unlocked << 240n) |
     (observationCardinalityNext << 216n) |
     (observationCardinality << 200n) |
-    ((BigInt(swap.tickAfter) & 0xFFFFFFn) << 160n) |
+    ((BigInt(swap.tickAfter) & 0xffffffn) << 160n) |
     swap.sqrtPriceX96After;
   const override: StateOverride = {};
   override[input.poolAddress] = {
@@ -154,9 +148,7 @@ function buildV4Override(input: BuildOverrideInput): StateOverride | null {
   const liqStorage = computeV4StorageSlot(poolId, V4_POOLS_MAPPING_SLOT, 1n);
 
   const poolManagerAddress = (input.poolManagerAddress ?? DEFAULT_POOL_MANAGER_ADDRESS) as Address;
-  const slot0Packed =
-    ((BigInt(swap.tickAfter) & 0xFFFFFFn) << 160n) |
-    swap.sqrtPriceX96After;
+  const slot0Packed = ((BigInt(swap.tickAfter) & 0xffffffn) << 160n) | swap.sqrtPriceX96After;
 
   const override: StateOverride = {};
   override[poolManagerAddress] = {

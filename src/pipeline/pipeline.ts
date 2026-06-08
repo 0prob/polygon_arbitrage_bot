@@ -23,8 +23,6 @@ import { solveBrentOptimal } from "../core/math/hybrid_solver.ts";
  * inside computeProfit based on the explicitly-provided flashLoanSource.
  */
 
-const CONVERGENCE_DIVISOR = 10000n;
-
 // Reusable holder to reduce per-probe allocations during ternary search
 interface MinimalEvalHolder {
   grossProfitMatic: bigint | null;

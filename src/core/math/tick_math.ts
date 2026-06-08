@@ -90,7 +90,65 @@ export function getTickAtSqrtRatio(sqrtPriceX96: bigint): number {
     throw new Error(`TickMath: sqrtPriceX96 ${sqrtPriceX96} out of range [${MIN_SQRT_RATIO}, ${MAX_SQRT_RATIO})`);
   }
 
-  return getTickAtSqrtRatioInRange(sqrtPriceX96, MIN_TICK, MAX_TICK);
+  const ratio = sqrtPriceX96 << 32n;
+
+  let r = ratio;
+  let msb = 0n;
+
+  if (r >= 0x100000000000000000000000000000000n) {
+    r >>= 128n;
+    msb += 128n;
+  }
+  if (r >= 0x10000000000000000n) {
+    r >>= 64n;
+    msb += 64n;
+  }
+  if (r >= 0x100000000n) {
+    r >>= 32n;
+    msb += 32n;
+  }
+  if (r >= 0x10000n) {
+    r >>= 16n;
+    msb += 16n;
+  }
+  if (r >= 0x100n) {
+    r >>= 8n;
+    msb += 8n;
+  }
+  if (r >= 0x10n) {
+    r >>= 4n;
+    msb += 4n;
+  }
+  if (r >= 0x4n) {
+    r >>= 2n;
+    msb += 2n;
+  }
+  if (r >= 0x2n) {
+    msb += 1n;
+  }
+
+  if (msb >= 128n) {
+    r = ratio >> (msb - 127n);
+  } else {
+    r = ratio << (127n - msb);
+  }
+
+  let log_2 = (msb - 128n) << 64n;
+
+  for (let i = 0n; i < 14n; i++) {
+    r = (r * r) >> 127n;
+    const f = r >> 128n;
+    log_2 = log_2 | (f << (63n - i));
+    r >>= f;
+  }
+
+  const log_sqrt10001 = log_2 * 255738958999603826347141n;
+
+  // Uniswap V3 exact constants
+  const tickLow = Number((log_sqrt10001 - 3402992956809132418596140100660247210n) >> 128n);
+  const tickHigh = Number((log_sqrt10001 + 291339464771989622907027621153398088495n) >> 128n);
+
+  return tickLow === tickHigh ? tickLow : getSqrtRatioAtTick(tickHigh) <= sqrtPriceX96 ? tickHigh : tickLow;
 }
 
 /**
@@ -110,24 +168,6 @@ export function getTickAtSqrtRatioInRange(sqrtPriceX96: bigint, minTick: number,
     throw new Error(`TickMath: sqrtPriceX96 ${sqrtPriceX96} out of range [${MIN_SQRT_RATIO}, ${MAX_SQRT_RATIO})`);
   }
 
-  let { lo, hi } = normaliseTickSearchBounds(minTick, maxTick);
-
-  const sqrtAtLo = getSqrtRatioAtTick(lo);
-  const sqrtAtHi = getSqrtRatioAtTick(hi);
-  if (sqrtPriceX96 < sqrtAtLo || sqrtPriceX96 > sqrtAtHi) {
-    return getTickAtSqrtRatio(sqrtPriceX96);
-  }
-
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const sqrtAtMid = getSqrtRatioAtTick(mid);
-
-    if (sqrtAtMid <= sqrtPriceX96) {
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-
-  return hi;
+  const tick = getTickAtSqrtRatio(sqrtPriceX96);
+  return tick < minTick ? minTick : tick > maxTick ? maxTick : tick;
 }

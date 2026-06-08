@@ -87,8 +87,8 @@ export function computeSpotPrice(
 export function simulateHop(
   edge: SimulationEdge,
   amountIn: bigint,
-  stateCache?: RouteStateCache,
-  overlay?: PendingStateOverlay,
+  _stateCache?: RouteStateCache,
+  _overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
   const state = edge.stateRef;
   if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);

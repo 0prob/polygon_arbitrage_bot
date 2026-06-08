@@ -13,6 +13,7 @@
 ### Task 1: Update ArbExecutor.sol
 
 **Files:**
+
 - Modify: `src/ArbExecutor.sol`
 
 - [ ] **Step 1: Establish baseline by running tests**
@@ -102,6 +103,7 @@ git commit -m "refactor: remove operator role from ArbExecutor"
 ### Task 2: Update Deployment Scripts
 
 **Files:**
+
 - Modify: `script/ArbExecutor.s.sol`
 - Modify: `script/DeployAmoy.s.sol`
 

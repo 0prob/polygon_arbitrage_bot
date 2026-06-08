@@ -23,9 +23,7 @@ describe("State Override - Formatting and Merging", () => {
     expect(viemFormat).toHaveLength(1);
     expect(viemFormat[0]).toEqual({
       address: "0xpool",
-      stateDiff: [
-        { slot: "0x1", value: "0x2" },
-      ],
+      stateDiff: [{ slot: "0x1", value: "0x2" }],
       balance: 0n,
       nonce: 0,
       code: "0x1234",
@@ -193,8 +191,8 @@ describe("State Override Builder - Manual Construction", () => {
     // tick: bits 160..183
     // unlocked: bit 240 (value: 1)
     const sqrtPriceX96 = slot0Value & ((1n << 160n) - 1n);
-    const tickRaw = (slot0Value >> 160n) & 0xFFFFFFn;
-    const tick = tickRaw > 0x7FFFFFn ? Number(tickRaw - 0x1000000n) : Number(tickRaw);
+    const tickRaw = (slot0Value >> 160n) & 0xffffffn;
+    const tick = tickRaw > 0x7fffffn ? Number(tickRaw - 0x1000000n) : Number(tickRaw);
     const unlocked = (slot0Value >> 240n) & 1n;
 
     expect(unlocked).toBe(1n); // MUST be unlocked (true / 1)
@@ -284,7 +282,8 @@ describe("State Override - Trace Fallback", () => {
   });
 
   it("debugTraceCallBatch merges consecutive tx traces", async () => {
-    const mockRequest = vi.fn()
+    const mockRequest = vi
+      .fn()
       .mockResolvedValueOnce({
         stateDiff: {
           "0xpool": {

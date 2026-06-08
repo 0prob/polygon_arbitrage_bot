@@ -6,6 +6,16 @@
 export function solveBrentOptimal(low: bigint, high: bigint, evaluate: (amount: bigint) => bigint, maxIterations: number = 8): bigint {
   if (low >= high) return low;
 
+  const cache = new Map<bigint, bigint>();
+  const cachedEvaluate = (amount: bigint): bigint => {
+    let cached = cache.get(amount);
+    if (cached === undefined) {
+      cached = evaluate(amount);
+      cache.set(amount, cached);
+    }
+    return cached;
+  };
+
   const goldenRatio = 382n; // (3 - sqrt(5))/2 * 1000 approx 382
   const CONVERGENCE_DIVISOR = 1000n; // Stop if interval is less than 0.1% of high
 
@@ -19,7 +29,7 @@ export function solveBrentOptimal(low: bigint, high: bigint, evaluate: (amount: 
   let w = x;
   let v = x;
 
-  let fx = evaluate(x);
+  let fx = cachedEvaluate(x);
   let fw = fx;
   let fv = fx;
 
@@ -81,7 +91,7 @@ export function solveBrentOptimal(low: bigint, high: bigint, evaluate: (amount: 
     if (u < low) u = low;
     if (u > high) u = high;
 
-    const fu = evaluate(u);
+    const fu = cachedEvaluate(u);
 
     if (fu >= fx) {
       if (u >= x) {
@@ -114,8 +124,8 @@ export function solveBrentOptimal(low: bigint, high: bigint, evaluate: (amount: 
   }
 
   // Compare final result against exact boundaries to support boundary maxima
-  const flow = evaluate(low);
-  const fhigh = evaluate(high);
+  const flow = cachedEvaluate(low);
+  const fhigh = cachedEvaluate(high);
   if (flow > fx && flow >= fhigh) {
     return low;
   }

@@ -24,12 +24,15 @@ interface CallTransaction {
 }
 
 interface TraceCallResult {
-  stateDiff?: Record<string, {
-    balance?: { from: string; to: string };
-    nonce?: { from: string; to: string };
-    code?: { from: string; to: string };
-    storage?: Record<string, { from: string; to: string }>;
-  }>;
+  stateDiff?: Record<
+    string,
+    {
+      balance?: { from: string; to: string };
+      nonce?: { from: string; to: string };
+      code?: { from: string; to: string };
+      storage?: Record<string, { from: string; to: string }>;
+    }
+  >;
   gasUsed?: number;
   [key: string]: unknown;
 }
@@ -54,7 +57,7 @@ export async function debugTraceCall(
     const tracer = opts?.tracer ?? "prestateTracer";
     const tracerConfig = tracer === "prestateTracer" ? { diffMode: true } : undefined;
 
-    const result = await (client as any).request({
+    const result = (await (client as any).request({
       method: "debug_traceCall",
       params: [
         callTx,
@@ -65,7 +68,7 @@ export async function debugTraceCall(
           timeout: opts?.timeout ?? "5s",
         },
       ],
-    }) as TraceCallResult;
+    })) as TraceCallResult;
 
     if (!result || !result.stateDiff) {
       return { success: false, affectedPools: [], error: "No stateDiff in trace result" };

@@ -107,7 +107,7 @@ export function parseTransactionTraces(txHash: string, traces: any[], logger?: L
       selector === "0x04e45503" || // V3 exactInputSingle
       selector === "0xc04b8d59" || // V3 exactInput
       selector === "0x52bbbe29" || // Balancer swap
-      selector === "0x945bcec9";    // Balancer batchSwap
+      selector === "0x945bcec9"; // Balancer batchSwap
 
     if (isSwap) {
       swapCount++;

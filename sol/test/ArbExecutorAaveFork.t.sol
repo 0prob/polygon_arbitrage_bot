@@ -18,7 +18,7 @@ contract ArbExecutorAaveForkTest is Test {
     address constant USDC = 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359;
 
     function setUp() public {
-        string memory rpc = vm.envOr("ETH_RPC_URL", string("https://polygon-mainnet.g.alchemy.com/v2/demo"));
+        string memory rpc = vm.envOr("POLYGON_RPC_URL", string("https://polygon-mainnet.core.chainstack.com/03efdc1db374a4df08d42e72b1408637"));
         vm.createSelectFork(rpc);
 
         executor = new ArbExecutor(

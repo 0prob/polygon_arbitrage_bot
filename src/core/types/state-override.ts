@@ -106,12 +106,42 @@ export interface BuildOverrideInput {
 }
 
 export interface StateOverrideBuilderDeps {
-  simulateV2Swap: (state: PoolState, amountIn: bigint, zeroForOne: boolean, numerator: bigint, denominator: bigint) => { amountOut: bigint; newReserve0: bigint; newReserve1: bigint };
-  simulateV3Swap: (state: PoolState, amountIn: bigint, zeroForOne: boolean, fee?: number) => { amountOut: bigint; sqrtPriceX96: bigint; liquidity: bigint; tick: number };
-  simulateBalancerSwap: (amountIn: bigint, state: PoolState, tokenInIdx: number, tokenOutIdx: number) => { amountOut: bigint; newBalances: bigint[] };
-  simulateCurveSwap: (amountIn: bigint, state: PoolState, tokenInIdx: number, tokenOutIdx: number) => { amountOut: bigint; newBalances: bigint[] };
-  simulateDodoSwap: (state: PoolState, amountIn: bigint, zeroForOne: boolean) => { amountOut: bigint; newBaseReserve: bigint; newQuoteReserve: bigint };
-  simulateWoofiSwap: (amountIn: bigint, state: PoolState, tokenInIdx: number, tokenOutIdx: number) => { amountOut: bigint; newPrice: bigint; newBaseAmount: bigint; newQuoteAmount: bigint };
+  simulateV2Swap: (
+    state: PoolState,
+    amountIn: bigint,
+    zeroForOne: boolean,
+    numerator: bigint,
+    denominator: bigint,
+  ) => { amountOut: bigint; newReserve0: bigint; newReserve1: bigint };
+  simulateV3Swap: (
+    state: PoolState,
+    amountIn: bigint,
+    zeroForOne: boolean,
+    fee?: number,
+  ) => { amountOut: bigint; sqrtPriceX96: bigint; liquidity: bigint; tick: number };
+  simulateBalancerSwap: (
+    amountIn: bigint,
+    state: PoolState,
+    tokenInIdx: number,
+    tokenOutIdx: number,
+  ) => { amountOut: bigint; newBalances: bigint[] };
+  simulateCurveSwap: (
+    amountIn: bigint,
+    state: PoolState,
+    tokenInIdx: number,
+    tokenOutIdx: number,
+  ) => { amountOut: bigint; newBalances: bigint[] };
+  simulateDodoSwap: (
+    state: PoolState,
+    amountIn: bigint,
+    zeroForOne: boolean,
+  ) => { amountOut: bigint; newBaseReserve: bigint; newQuoteReserve: bigint };
+  simulateWoofiSwap: (
+    amountIn: bigint,
+    state: PoolState,
+    tokenInIdx: number,
+    tokenOutIdx: number,
+  ) => { amountOut: bigint; newPrice: bigint; newBaseAmount: bigint; newQuoteAmount: bigint };
 }
 
 /** V4 PoolManager storage slot for the _pools mapping (mapping(bytes32 => Pool.State)) */

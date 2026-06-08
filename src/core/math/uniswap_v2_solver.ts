@@ -8,7 +8,21 @@ import type { SimulationEdge } from "../../pipeline/types.ts";
 export function bigintSqrt(value: bigint): bigint {
   if (value < 0n) throw new Error("sqrt of negative number");
   if (value < 2n) return value;
-  let x = value / 2n;
+  
+  // Estimate bit length using binary checks to avoid expensive string conversions
+  let bitLength = 0;
+  let temp = value;
+  if (temp >= 1n << 128n) { temp >>= 128n; bitLength += 128; }
+  if (temp >= 1n << 64n) { temp >>= 64n; bitLength += 64; }
+  if (temp >= 1n << 32n) { temp >>= 32n; bitLength += 32; }
+  if (temp >= 1n << 16n) { temp >>= 16n; bitLength += 16; }
+  if (temp >= 1n << 8n) { temp >>= 8n; bitLength += 8; }
+  if (temp >= 1n << 4n) { temp >>= 4n; bitLength += 4; }
+  if (temp >= 1n << 2n) { temp >>= 2n; bitLength += 2; }
+  if (temp >= 1n << 1n) { temp >>= 1n; bitLength += 1; }
+  if (temp > 0n) { bitLength += 1; }
+
+  let x = 1n << BigInt(Math.floor(bitLength / 2) + 1);
   let y = (x + value / x) / 2n;
   while (y < x) {
     x = y;
