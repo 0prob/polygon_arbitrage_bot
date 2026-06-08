@@ -182,7 +182,7 @@ export class HyperSyncService {
                 const obj = l as Record<string, unknown>;
                 return {
                   ...obj,
-                  topics: (obj.topics as unknown[] ?? []).filter((t) => t != null),
+                  topics: ((obj.topics as unknown[]) ?? []).filter((t) => t != null),
                 };
               }) ?? [],
         };

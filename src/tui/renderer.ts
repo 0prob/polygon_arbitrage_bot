@@ -20,35 +20,35 @@ const C = {
 };
 
 // Named colour codes
-const GREEN  = 32;
+const GREEN = 32;
 const YELLOW = 33;
-const RED    = 31;
-const CYAN   = 36;
-const WHITE  = 37;
+const RED = 31;
+const CYAN = 36;
+const WHITE = 37;
 const MAGENTA = 35;
-const BLUE   = 34;
+const BLUE = 34;
 
 // Component → colour mapping for the log panel
 const COMP_COLORS: Record<string, number> = {
-  Index:     CYAN,
-  Indexer:   CYAN,
-  Mempool:   YELLOW,
-  Routing:   WHITE,
-  Graph:     CYAN,
-  Opps:      GREEN,
-  Exec:      GREEN,
-  System:    WHITE,
-  Stage:     CYAN,
-  Status:    YELLOW,
+  Index: CYAN,
+  Indexer: CYAN,
+  Mempool: YELLOW,
+  Routing: WHITE,
+  Graph: CYAN,
+  Opps: GREEN,
+  Exec: GREEN,
+  System: WHITE,
+  Stage: CYAN,
+  Status: YELLOW,
   Discovery: MAGENTA,
-  Pipeline:  GREEN,
-  Trace:     GREEN,
+  Pipeline: GREEN,
+  Trace: GREEN,
   TraceWarn: YELLOW,
-  Log:       WHITE,
-  Info:      CYAN,
-  Warn:      YELLOW,
-  Error:     RED,
-  Debug:     BLUE,
+  Log: WHITE,
+  Info: CYAN,
+  Warn: YELLOW,
+  Error: RED,
+  Debug: BLUE,
 };
 
 // ─── String utilities ─────────────────────────────────────────────────────────
@@ -66,7 +66,11 @@ function visTrunc(s: string, width: number): string {
   while (i < s.length && len < width) {
     if (s[i] === "\x1b") {
       const m = s.slice(i).match(/^\x1b\[[0-9;]*[a-zA-Z]/);
-      if (m) { result += m[0]; i += m[0].length; continue; }
+      if (m) {
+        result += m[0];
+        i += m[0].length;
+        continue;
+      }
     }
     result += s[i];
     len++;
@@ -104,9 +108,7 @@ function sparkline(values: number[], width: number): string {
   const CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
   const recent = values.slice(-width);
   const max = Math.max(...recent.map(Math.abs), 1);
-  return recent
-    .map((v) => CHARS[Math.min(Math.floor((Math.abs(v) / max) * (CHARS.length - 1)), CHARS.length - 1)])
-    .join("");
+  return recent.map((v) => CHARS[Math.min(Math.floor((Math.abs(v) / max) * (CHARS.length - 1)), CHARS.length - 1)]).join("");
 }
 
 // ─── Format helpers ────────────────────────────────────────────────────────────
@@ -115,7 +117,7 @@ function fmtWeiMatic(wei: bigint): string {
   const n = Number(wei) / 1e18;
   if (n === 0) return "0";
   if (Math.abs(n) < 0.0001) return n.toFixed(6);
-  if (Math.abs(n) < 0.01)   return n.toFixed(5);
+  if (Math.abs(n) < 0.01) return n.toFixed(5);
   return n.toFixed(4);
 }
 
@@ -123,13 +125,13 @@ function fmtUsd(wei: bigint, maticUsd: number): string {
   const usd = (Number(wei) / 1e18) * maticUsd;
   if (usd === 0) return "$0";
   if (Math.abs(usd) < 0.01) return `$${usd.toFixed(4)}`;
-  if (Math.abs(usd) < 100)  return `$${usd.toFixed(2)}`;
+  if (Math.abs(usd) < 100) return `$${usd.toFixed(2)}`;
   return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function fmtBlock(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
 
@@ -207,16 +209,14 @@ export class Renderer {
 
   private _header(layout: TuiLayout, state: TuiState): RenderedPanel {
     const m = state.metrics;
-    const running = state.isRunning
-      ? (state.isPaused ? C.fg("[⏸ PAUSED]", YELLOW) : C.fg("[● RUNNING]", GREEN))
-      : C.fg("[○ STOPPED]", RED);
+    const running = state.isRunning ? (state.isPaused ? C.fg("[⏸ PAUSED]", YELLOW) : C.fg("[● RUNNING]", GREEN)) : C.fg("[○ STOPPED]", RED);
     const uptime = fmtUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
     const profit = fmtWeiMatic(m.totalProfitWei);
-    const usd    = fmtUsd(m.totalProfitWei, state.system.maticPriceUsd);
+    const usd = fmtUsd(m.totalProfitWei, state.system.maticPriceUsd);
     const winRate = fmtPct(m.successful, m.executed);
     const cpm = m.cyclesPerMin > 0 ? `${m.cyclesPerMin}cpm` : "—";
 
-    const left  = ` ${C.bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
+    const left = ` ${C.bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
     const right = ` ⏱ ${uptime} | P/L: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${profit} MATIC`, m.totalProfitWei >= 0n ? GREEN : RED)} (${usd}) | Win: ${winRate} | ${cpm} | Err: ${m.totalErrors} `;
 
     const gap = Math.max(0, layout.header.width - visLen(left) - visLen(right));
@@ -234,14 +234,12 @@ export class Renderer {
     const isSyncing = s.hiStatus === "syncing";
     const spin = spinner(frame, isSyncing);
     const statusColor = s.hiStatus === "synced" ? GREEN : s.hiStatus === "error" ? RED : YELLOW;
-    const blockStr  = s.hiSyncedBlock > 0 ? fmtBlock(s.hiSyncedBlock) : "—";
+    const blockStr = s.hiSyncedBlock > 0 ? fmtBlock(s.hiSyncedBlock) : "—";
     const remoteStr = s.hiRemoteBlock > 0 ? fmtBlock(s.hiRemoteBlock) : "—";
-    const lag = s.hiLag > 0 ? s.hiLag : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0);
+    const lag = s.hiLag > 0 ? s.hiLag : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0;
     const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
-    const pct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0
-      ? Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100))
-      : 0;
-    const bar  = progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 10);
+    const pct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100)) : 0;
+    const bar = progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 10);
     const mode = s.hiDiscoveryMode ?? "broad";
 
     const ds = s.discoverySummary;
@@ -268,9 +266,7 @@ export class Renderer {
   private _panelMempool(_rect: PanelRect, state: TuiState, _frame: number): string[] {
     const s = state.system;
     const feedIcon =
-      s.mempoolFeedStatus === "connected"    ? C.fg("●", GREEN)
-      : s.mempoolFeedStatus === "disconnected" ? C.fg("⊗", RED)
-      : C.dim("○");
+      s.mempoolFeedStatus === "connected" ? C.fg("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? C.fg("⊗", RED) : C.dim("○");
     const feedLabel = s.mempoolFeedStatus;
 
     const now = Date.now();
@@ -317,12 +313,7 @@ export class Renderer {
       : ` ${C.dim("★ No profitable opportunities yet")}`;
     const countLine = ` Found: ${C.fg(String(m.opportunitiesFound), GREEN)} | ${best ? best.path.slice(0, 28) : "—"}`;
 
-    return [
-      ` ${C.bold("💰 Opportunities")}`,
-      simLine,
-      bestLine,
-      countLine,
-    ];
+    return [` ${C.bold("💰 Opportunities")}`, simLine, bestLine, countLine];
   }
 
   // ── Panel 4: Routing ────────────────────────────────────────────────────────
@@ -336,21 +327,14 @@ export class Renderer {
 
     // Rate coverage line from last sim stats
     const ss = s.lastSimStats;
-    const rateStr = ss
-      ? `rates:${ss.ratesCovered} safe:${ss.rateSafeCycles}/${ss.totalCycles}`
-      : C.dim("rates: warming up");
+    const rateStr = ss ? `rates:${ss.ratesCovered} safe:${ss.rateSafeCycles}/${ss.totalCycles}` : C.dim("rates: warming up");
 
     const hopParts = Object.entries(s.cyclesByHop)
       .sort(([a], [b]) => Number(a) - Number(b))
       .map(([hop, count]) => `${count}×${hop}h`);
     const hopLine = hopParts.length > 0 ? hopParts.join(" ") : C.dim("—");
 
-    return [
-      ` ${C.bold("🔀 Routing")}`,
-      ` ${spin} ${cycleStr}${enumTime}`,
-      ` ${hopLine}`,
-      ` ${rateStr}`,
-    ];
+    return [` ${C.bold("🔀 Routing")}`, ` ${spin} ${cycleStr}${enumTime}`, ` ${hopLine}`, ` ${rateStr}`];
   }
 
   // ── Panel 5: Graph ─────────────────────────────────────────────────────────
@@ -367,9 +351,7 @@ export class Renderer {
       .join(" ");
     const protoLine = protoTop.length > 0 ? protoTop : C.dim("—");
 
-    const cacheStr = s.cachedStateCount > 0
-      ? `cache:${s.cachedStateCount.toLocaleString()}`
-      : C.dim("cache: warming");
+    const cacheStr = s.cachedStateCount > 0 ? `cache:${s.cachedStateCount.toLocaleString()}` : C.dim("cache: warming");
 
     return [
       ` ${C.bold("🔗 Graph")}`,
@@ -408,13 +390,7 @@ export class Renderer {
       ? ` ⚠ ${C.fg(s.lastRejectReason.slice(0, 32), YELLOW)}`
       : ` ${C.dim(`p/s: ${m.profitPerSecond > 0 ? m.profitPerSecond.toFixed(6) : "0"} MATIC/s`)}`;
 
-    return [
-      ` ${C.bold("⚡ Execution")}`,
-      countsLine,
-      lastLine,
-      plLine,
-      rejectLine,
-    ];
+    return [` ${C.bold("⚡ Execution")}`, countsLine, lastLine, plLine, rejectLine];
   }
 
   // ── Log panel ──────────────────────────────────────────────────────────────
@@ -447,16 +423,16 @@ export class Renderer {
     const rect = layout.statusBar;
 
     const dot = (ok: boolean) => (ok ? C.fg("●", GREEN) : C.fg("○", RED));
-    const rpcIcon    = dot(s.rpcConnected);
+    const rpcIcon = dot(s.rpcConnected);
     const hasuraIcon = dot(s.hasuraConnected);
-    const wsIcon     = dot(s.wsConnected);
+    const wsIcon = dot(s.wsConnected);
     const hiBlock = s.hiSyncedBlock > 0 ? fmtBlock(s.hiSyncedBlock) : "—";
     const gas = s.gasPriceWei > 0n ? `${fmtGwei(s.gasPriceWei)}gw` : "—";
     const cpm = m.cyclesPerMin > 0 ? `${m.cyclesPerMin}cpm` : "—";
     const maxHp = m.maxHotPathMs > 0 ? `max:${m.maxHotPathMs}ms` : "";
     const cramped = layout.cramped ? C.fg(" ⚠ Terminal too small", YELLOW) : "";
 
-    const left  = ` RPC${rpcIcon} Hasura${hasuraIcon} WS${wsIcon} idx:${hiBlock} gas:${gas} ${cpm} ${maxHp}${cramped}`;
+    const left = ` RPC${rpcIcon} Hasura${hasuraIcon} WS${wsIcon} idx:${hiBlock} gas:${gas} ${cpm} ${maxHp}${cramped}`;
     const right = C.dim(" 1-6:focus  Tab:cycle  P:pause  R:reset  Q:quit ");
     const gap = Math.max(0, rect.width - visLen(left) - visLen(right));
 

@@ -267,12 +267,11 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
 
     case "execution_attempt": {
-      const profitStr = event.expectedProfit > 0n ? `+${(Number(event.expectedProfit) / 1e18).toFixed(6)}` : `${(Number(event.expectedProfit) / 1e18).toFixed(6)}`;
-      appendLog(
-        state,
-        "Exec",
-        `Attempt ${event.protocolPath} (${event.hopCount}-hop) ${profitStr} MATIC`,
-      );
+      const profitStr =
+        event.expectedProfit > 0n
+          ? `+${(Number(event.expectedProfit) / 1e18).toFixed(6)}`
+          : `${(Number(event.expectedProfit) / 1e18).toFixed(6)}`;
+      appendLog(state, "Exec", `Attempt ${event.protocolPath} (${event.hopCount}-hop) ${profitStr} MATIC`);
       break;
     }
 

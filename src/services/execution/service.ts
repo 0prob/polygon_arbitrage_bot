@@ -46,6 +46,7 @@ export interface CandidateExecution {
   profitToken?: string;
   expectedProfit?: bigint;
   traceId?: string;
+  gasLimit?: bigint;
 }
 
 export interface ExecutionResult {
@@ -171,6 +172,7 @@ export class ExecutionService {
           maxFee: fee.maxFee,
         },
         candidate.expectedProfit,
+        candidate.gasLimit,
       );
 
       this.nonceManager.confirmNonce(nonce);
@@ -272,6 +274,7 @@ export class ExecutionService {
               maxFee: fee.maxFee,
             },
             candidate.expectedProfit,
+            candidate.gasLimit,
           ),
           timeoutPromise,
         ]);

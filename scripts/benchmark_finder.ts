@@ -23,13 +23,13 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
   for (let i = 0; i < tokens.length; i++) {
     const tokenIn = tokens[i];
     const edges: SwapEdge[] = [];
-    
+
     // Add edges to other tokens to form cycles
     for (let j = 1; j <= edgesPerToken; j++) {
       const targetIndex = (i + j) % tokens.length;
       const tokenOut = tokens[targetIndex];
       const poolAddress = `0xpool_${i}_to_${targetIndex}` as Address;
-      
+
       edges.push({
         poolAddress,
         protocol: "uniswap_v3",
@@ -42,7 +42,7 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
         tokenOutIdx: 1,
       });
     }
-    
+
     adjacency.set(tokenIn, edges);
   }
 
@@ -58,7 +58,7 @@ async function runBenchmark() {
   console.log("Generating mock graph...");
   // 100 tokens, 10 edges per token = 1000 edges total
   const graph = createMockGraph(100, 10);
-  
+
   console.log("Warming up...");
   for (let i = 0; i < 5; i++) {
     await findCycles(graph, 4, 50000);
@@ -68,12 +68,12 @@ async function runBenchmark() {
   const start = performance.now();
   const iterations = 50;
   let totalCycles = 0;
-  
+
   for (let i = 0; i < iterations; i++) {
     const cycles = await findCycles(graph, 4, 100000);
     totalCycles += cycles.length;
   }
-  
+
   const end = performance.now();
   const avgTime = (end - start) / iterations;
   console.log(`Average execution time: ${avgTime.toFixed(2)} ms`);

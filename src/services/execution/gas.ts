@@ -278,7 +278,12 @@ function clampPriorityFee(priorityFee: bigint, config: GasOracleConfig): bigint 
  * @param expectedProfitWei The expected net profit in token-wei
  * @param maxBidMultiplier Maximum multiplier to apply to the base fee
  */
-export function scalePriorityFeeByProfitMargin(basePriorityFee: bigint, expectedProfitWei: bigint, maxBidMultiplier: number = 3): bigint {
+export function scalePriorityFeeByProfitMargin(
+  basePriorityFee: bigint,
+  expectedProfitWei: bigint,
+  maxBidMultiplier: number = 3,
+  gasLimit?: bigint,
+): bigint {
   if (expectedProfitWei <= 0n) return basePriorityFee;
 
   // We are willing to spend a portion of the expected profit on priority fees
@@ -294,6 +299,10 @@ export function scalePriorityFeeByProfitMargin(basePriorityFee: bigint, expected
 
   const bid = (basePriorityFee * BigInt(Math.floor(multiplier * 100))) / 100n;
 
-  // Final safety check: Never bid more than 50% of our expected profit
-  return bid > maxBidFromProfit ? maxBidFromProfit : bid;
+  // Final safety check: Never bid more in total priority fee than 50% of our expected profit.
+  // To avoid dimensional mismatch (comparing per-gas price to total profit), we divide by the gasLimit.
+  const effectiveGasLimit = gasLimit && gasLimit > 0n ? gasLimit : 280_000n;
+  const maxPriorityFeePerGas = maxBidFromProfit / effectiveGasLimit;
+
+  return bid > maxPriorityFeePerGas ? maxPriorityFeePerGas : bid;
 }

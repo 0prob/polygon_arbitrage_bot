@@ -75,5 +75,6 @@ export function buildExecutionCandidate(
     profitToken: profitable.cycle.startToken,
     expectedProfit: profitable.assessment.netProfitAfterGasMaticWei,
     traceId,
+    gasLimit: profitable.result.totalGas != null ? BigInt(profitable.result.totalGas) : undefined,
   };
 }

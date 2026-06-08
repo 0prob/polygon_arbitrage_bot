@@ -62,13 +62,13 @@ export function markAsGarbage(address: string): Promise<void> {
     flushPromise = Promise.resolve().then(async () => {
       // Small delay to allow batching of consecutive synchronous or rapid async calls
       await new Promise((r) => setTimeout(r, 50));
-      
+
       const dir = path.dirname(GARBAGE_FILE);
       await mkdir(dir, { recursive: true });
 
       const list = Array.from(garbageAddresses).sort();
       await writeFile(GARBAGE_FILE, JSON.stringify(list, null, 2), "utf8");
-      
+
       flushPromise = null;
     });
   }

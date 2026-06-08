@@ -135,7 +135,7 @@ function evaluateAmount(
         options.slippageBps,
         options.revertRiskBps,
         undefined,
-        outHolder?.core
+        outHolder?.core,
       );
       netProfitAfterGasMaticWei = core.netProfitAfterGasMaticWei;
 

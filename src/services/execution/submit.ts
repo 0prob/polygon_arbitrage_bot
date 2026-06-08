@@ -3,7 +3,14 @@ import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { GasOracle } from "./gas.ts";
 import { SubmissionStrategy as SubmissionStrategyEnum } from "../../config/schema.ts";
 
-export type SubmitTxFn = (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }) => Promise<string>;
+export type SubmitTxFn = (tx: {
+  to: string;
+  data: string;
+  value: bigint;
+  nonce: number;
+  maxFee: bigint;
+  maxPriorityFee: bigint;
+}) => Promise<string>;
 
 export interface SubmissionStrategyOptions {
   submissionStrategy?: SubmissionStrategyEnum;
@@ -27,16 +34,19 @@ export class SubmissionStrategy {
   async submit(
     tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint },
     expectedProfit?: bigint,
+    gasLimit?: bigint,
   ): Promise<{ txHash: string; endpoint: string }> {
     const snapshot = this.gasOracle.getSnapshot();
     let adjustedFee = tx.maxFee;
+    let maxPriorityFee = snapshot ? snapshot.priorityFee : 1_000_000_000n; // fallback to 1 Gwei
     if (expectedProfit && expectedProfit > 0n && snapshot) {
       const multiplier = this.gasOracle.getEffectiveMaxBidMultiplier();
-      const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, multiplier);
+      const scaled = scalePriorityFeeByProfitMargin(snapshot.priorityFee, expectedProfit, multiplier, gasLimit);
+      maxPriorityFee = scaled;
       adjustedFee = (this.gasOracle.getPredictedBaseFee() ?? snapshot.baseFee) * 2n + scaled;
     }
 
-    const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee });
+    const submit = async (fn: SubmitTxFn) => fn({ ...tx, maxFee: adjustedFee, maxPriorityFee });
 
     if (this.strategy === "private" && this.privateSubmitter) {
       const txHash = await submit(this.privateSubmitter);

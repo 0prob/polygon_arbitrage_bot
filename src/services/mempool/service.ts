@@ -77,7 +77,7 @@ export class MempoolService {
       }
       this.logger.info({ count: this.unknownSelectors.size }, "Loaded unknown selectors from file");
     } catch (err: any) {
-      if (err.code !== 'ENOENT') {
+      if (err.code !== "ENOENT") {
         this.logger.warn({ err, filePath }, "Failed to load unknown selectors file");
       }
     }
@@ -87,7 +87,7 @@ export class MempoolService {
     if (this.saveTimeout) return;
     this.saveTimeout = setTimeout(() => {
       this.saveTimeout = null;
-      this.writeUnknownSelectors();
+      void this.writeUnknownSelectors();
     }, 5000);
   }
 

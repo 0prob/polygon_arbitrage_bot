@@ -31,11 +31,34 @@ export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): strin
     let c = edges[2].poolAddress;
     let d = edges[3].poolAddress;
     let tmp;
-    if (a > b) { tmp = a; a = b; b = tmp; }
-    if (c > d) { tmp = c; c = d; d = tmp; }
-    if (a > c) { tmp = a; a = c; c = tmp; tmp = b; b = d; d = tmp; }
-    if (b > d) { tmp = b; b = d; d = tmp; }
-    if (b > c) { tmp = b; b = c; c = tmp; }
+    if (a > b) {
+      tmp = a;
+      a = b;
+      b = tmp;
+    }
+    if (c > d) {
+      tmp = c;
+      c = d;
+      d = tmp;
+    }
+    if (a > c) {
+      tmp = a;
+      a = c;
+      c = tmp;
+      tmp = b;
+      b = d;
+      d = tmp;
+    }
+    if (b > d) {
+      tmp = b;
+      b = d;
+      d = tmp;
+    }
+    if (b > c) {
+      tmp = b;
+      b = c;
+      c = tmp;
+    }
     return `${a}:${b}:${c}:${d}:${startToken}`;
   }
   if (len === 5) {
@@ -46,16 +69,56 @@ export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): strin
     let e = edges[4].poolAddress;
     let tmp;
     // Selection sort
-    if (a > b) { tmp = a; a = b; b = tmp; }
-    if (a > c) { tmp = a; a = c; c = tmp; }
-    if (a > d) { tmp = a; a = d; d = tmp; }
-    if (a > e) { tmp = a; a = e; e = tmp; }
-    if (b > c) { tmp = b; b = c; c = tmp; }
-    if (b > d) { tmp = b; b = d; d = tmp; }
-    if (b > e) { tmp = b; b = e; e = tmp; }
-    if (c > d) { tmp = c; c = d; d = tmp; }
-    if (c > e) { tmp = c; c = e; e = tmp; }
-    if (d > e) { tmp = d; d = e; e = tmp; }
+    if (a > b) {
+      tmp = a;
+      a = b;
+      b = tmp;
+    }
+    if (a > c) {
+      tmp = a;
+      a = c;
+      c = tmp;
+    }
+    if (a > d) {
+      tmp = a;
+      a = d;
+      d = tmp;
+    }
+    if (a > e) {
+      tmp = a;
+      a = e;
+      e = tmp;
+    }
+    if (b > c) {
+      tmp = b;
+      b = c;
+      c = tmp;
+    }
+    if (b > d) {
+      tmp = b;
+      b = d;
+      d = tmp;
+    }
+    if (b > e) {
+      tmp = b;
+      b = e;
+      e = tmp;
+    }
+    if (c > d) {
+      tmp = c;
+      c = d;
+      d = tmp;
+    }
+    if (c > e) {
+      tmp = c;
+      c = e;
+      e = tmp;
+    }
+    if (d > e) {
+      tmp = d;
+      d = e;
+      e = tmp;
+    }
     return `${a}:${b}:${c}:${d}:${e}:${startToken}`;
   }
   // Fallback for longer cycles (>=6 hops):
@@ -292,32 +355,23 @@ export async function findCycles(
   const ENUM_START = Date.now();
   const TIME_BUDGET_MS = 10000;
   let budgetExceededLogged = false;
+  let isOverBudget = false;
 
   let dfsCount = 0;
-  function overBudget(): boolean {
-    if ((++dfsCount % 1000) !== 0) return false;
-    const exceeded = Date.now() - ENUM_START > TIME_BUDGET_MS || cycles.length >= maxCycles;
-    if (exceeded && !budgetExceededLogged && logger) {
-      logger.warn?.(
-        {
-          elapsedMs: Date.now() - ENUM_START,
-          cyclesFound: cycles.length,
-          maxCycles,
-          budgetMs: TIME_BUDGET_MS,
-        },
-        "Cycle enumeration over budget or max cycles reached",
-      );
-      budgetExceededLogged = true;
-    }
-    return exceeded;
-  }
 
-  // Pre-filter adjacency and pre-calculate obscurity for all edges
-  type EdgeWithObsc = SwapEdge & { obscurity: number };
+  // Pre-filter adjacency and pre-calculate obscurity & weight for all edges
+  type EdgeWithObsc = SwapEdge & { obscurity: number; weight: number };
   const activeAdjacency = new Map<string, EdgeWithObsc[]>();
   for (const [token, edges] of adjacency) {
     if (edges.length > 0) {
-      const edgesWithObsc = edges.map((e) => ({ ...e, obscurity: getObscurityBonus(e.protocol) }) as EdgeWithObsc);
+      const edgesWithObsc = edges.map(
+        (e) =>
+          ({
+            ...e,
+            obscurity: getObscurityBonus(e.protocol),
+            weight: feeLogWeight(e.feeBps),
+          }) as EdgeWithObsc,
+      );
       // Sort edges by obscurity (desc) to explore higher-alpha paths first
       edgesWithObsc.sort((a, b) => b.obscurity - a.obscurity);
       activeAdjacency.set(token, edgesWithObsc);
@@ -336,30 +390,33 @@ export async function findCycles(
     currentLogWeight: number,
     currentCumFee: bigint,
   ): void {
-    if (overBudget() || cycles.length >= maxCycles) return;
+    if (isOverBudget || cycles.length >= maxCycles) return;
+
+    if ((++dfsCount & 1023) === 0) {
+      if (Date.now() - ENUM_START > TIME_BUDGET_MS) {
+        isOverBudget = true;
+        if (!budgetExceededLogged && logger) {
+          logger.warn?.(
+            {
+              elapsedMs: Date.now() - ENUM_START,
+              cyclesFound: cycles.length,
+              maxCycles,
+              budgetMs: TIME_BUDGET_MS,
+            },
+            "Cycle enumeration over budget or max cycles reached",
+          );
+          budgetExceededLogged = true;
+        }
+        return;
+      }
+    }
 
     if (hops >= 2 && currToken === startToken) {
       // Collect closing cycle at this exact depth (2..hopLimit)
       const obs = currentObscuritySum / hops;
 
       // Non-linear hop penalty calibrated for poor-infra operation:
-      //   2 hops: 0.00 — optimal, minimal gas + revert risk
-      //   3 hops: 0.10 — small premium required for the extra hop
-      //   4 hops: 0.30 — meaningful penalty; need high obscurity to justify
-      //   5 hops: 0.70 — very expensive in gas; only extremely obscure paths should rank here
-      // This replaces the flat 0.05*hops penalty which was too lenient on 4-5 hop paths.
-      //
-      // AGENT: DO NOT flatten or reduce these penalties.
-      // On poor infrastructure, each additional hop multiplies both gas cost and revert probability:
-      //   - Gas: each hop adds ~80k–150k gas; at Polygon priority fees this is significant
-      //     relative to typical arbitrage profit on thin long-tail pools.
-      //   - Revert: state staleness compounds per hop. A 3-hop path requires all 3 pools
-      //     to still be in a profitable state at execution time. At 250 RPS the state
-      //     refresh lag is higher, so the joint probability of all pools remaining profitable
-      //     drops sharply with each additional hop.
-      // The steep 4-hop (0.30) and 5-hop (0.70) values ensure only paths with DODO/Balancer/Curve
-      // legs (obscurity > 1.2) can overcome the penalty — exactly the paths where the bot wins.
-      const HOP_PENALTIES = [0, 0, 0.0, 0.10, 0.30, 0.70] as const;
+      const HOP_PENALTIES = [0, 0, 0.0, 0.1, 0.3, 0.7] as const;
       const hopPenalty = HOP_PENALTIES[hops as 2 | 3 | 4 | 5] ?? hops * 0.15;
       const logWeight = currentLogWeight - obs + hopPenalty;
 
@@ -391,13 +448,13 @@ export async function findCycles(
         usedPools,
         hops + 1,
         currentObscuritySum + e.obscurity,
-        currentLogWeight + feeLogWeight(e.feeBps),
+        currentLogWeight + e.weight,
         currentCumFee + e.feeBps,
       );
       path.pop();
       usedPools.delete(pAddr);
 
-      if (cycles.length >= maxCycles || overBudget()) break;
+      if (cycles.length >= maxCycles || isOverBudget) break;
     }
   }
 
@@ -416,12 +473,12 @@ export async function findCycles(
   const usedPools = new Set<string>();
   let lastYield = Date.now();
   for (const startToken of prioritizedStartTokens) {
-    if (overBudget()) break;
-    
+    if (isOverBudget || Date.now() - ENUM_START > TIME_BUDGET_MS) break;
+
     // Yield to event loop every 50ms to prevent WS/RPC starvation
     const now = Date.now();
     if (now - lastYield > 50) {
-      await new Promise(r => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
       lastYield = Date.now();
     }
 
@@ -431,14 +488,10 @@ export async function findCycles(
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       usedPools.add(e1.poolAddress);
-      const e1LogWeight = feeLogWeight(e1.feeBps);
+      const e1LogWeight = e1.weight;
       dfs(startToken, e1.tokenOut, [e1], usedPools, 1, e1.obscurity, e1LogWeight, e1.feeBps);
       usedPools.delete(e1.poolAddress);
     }
-  }
-
-  if (overBudget() && cycles.length > 0) {
-    // Silent for normal operation; the caller will log total cycles found
   }
 
   return cycles;
@@ -485,7 +538,11 @@ export async function enumerateCycles(
   return allCycles;
 }
 
-export async function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number = 5, maxCycles: number = MAX_CYCLES_PER_PASS): Promise<FoundCycle[]> {
+export async function findCyclesBellmanFord(
+  graph: RoutingGraph,
+  maxHops: number = 5,
+  maxCycles: number = MAX_CYCLES_PER_PASS,
+): Promise<FoundCycle[]> {
   const cycles: FoundCycle[] = [];
   const foundKeys = new Set<string>();
 
@@ -523,7 +580,7 @@ export async function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number
 
     const now = Date.now();
     if (now - lastYield > 50) {
-      await new Promise(r => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
       lastYield = Date.now();
     }
 
@@ -605,7 +662,7 @@ export async function findCyclesBellmanFord(graph: RoutingGraph, maxHops: number
                   obsSum += getObscurityBonus(e.protocol);
                 }
                 const obs = obsSum / cycleEdges.length;
-                const HOP_PENALTIES_BF = [0, 0, 0.0, 0.10, 0.30, 0.70] as const;
+                const HOP_PENALTIES_BF = [0, 0, 0.0, 0.1, 0.3, 0.7] as const;
                 const hopPenalty = HOP_PENALTIES_BF[cycleEdges.length as 2 | 3 | 4 | 5] ?? cycleEdges.length * 0.15;
                 logWeight = logWeight - obs + hopPenalty;
 

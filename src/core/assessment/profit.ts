@@ -101,7 +101,7 @@ export function computeProfit(opts: ComputeProfitOptions): ProfitAssessment {
     opts.flashLoanSource,
     opts.slippageBps,
     opts.revertRiskBps,
-    opts.flashLoanFeeBps
+    opts.flashLoanFeeBps,
   );
 
   const { grossProfitInTokens, amountInTokens: _amountInTokensUnusedInPublicWrapper, minProfitMaticWei, roiSafetyCap = 10.0 } = opts;
@@ -183,7 +183,7 @@ export function computeProfitCore(
   slippageBps: bigint = 50n,
   revertRiskBps: bigint = 500n,
   flashLoanFeeBps?: bigint,
-  out?: ProfitCoreNumbers
+  out?: ProfitCoreNumbers,
 ): ProfitCoreNumbers {
   if (tokenToMaticRate <= 0n) {
     if (out) {

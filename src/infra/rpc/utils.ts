@@ -6,7 +6,10 @@ export function toHexTag(value: bigint | number | string): string {
 }
 
 export class RpcError extends Error {
-  constructor(message: string, public cause?: unknown) {
+  constructor(
+    message: string,
+    public cause?: unknown,
+  ) {
     super(message);
     this.name = "RpcError";
   }

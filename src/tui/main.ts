@@ -155,7 +155,8 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
        * This does NOT inflate the metrics.totalErrors counter — that is driven
        * solely by explicit ctx.metrics.totalErrors++ in the pass loop.
        */
-      const makeRedirect = (level: "log" | "info" | "warn" | "error" | "debug") =>
+      const makeRedirect =
+        (level: "log" | "info" | "warn" | "error" | "debug") =>
         (...args: any[]) => {
           const formatted = util.format(...args);
           // Forward to file logger at the right severity
@@ -167,7 +168,8 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
           }
           // Route into TUI log panel. Use the level as the component so the renderer
           // can apply a distinct color per severity.
-          const component = level === "log" ? "Log" : level === "info" ? "Info" : level === "warn" ? "Warn" : level === "error" ? "Error" : "Debug";
+          const component =
+            level === "log" ? "Log" : level === "info" ? "Info" : level === "warn" ? "Warn" : level === "error" ? "Error" : "Debug";
           bus?.emit({ type: "error", component, message: formatted });
         };
 

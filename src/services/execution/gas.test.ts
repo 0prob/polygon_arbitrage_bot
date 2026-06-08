@@ -115,6 +115,24 @@ describe("scalePriorityFeeByProfitMargin", () => {
     const scaled = scalePriorityFeeByProfitMargin(fee, 60n * 10n ** 18n, 3);
     expect(scaled).toBe(fee * 3n);
   });
+
+  it("caps the priority fee when profit is extremely small (default gasLimit)", () => {
+    const fee = 30n * 10n ** 9n; // 30 Gwei
+    // 0.0001 MATIC profit (10^14 Wei)
+    // maxBidFromProfit = 5 * 10^13 Wei
+    // For default gas limit 280,000, max priority fee per gas is 5 * 10^13 / 280,000 = 178,571,428 Wei = ~0.178 Gwei
+    const scaled = scalePriorityFeeByProfitMargin(fee, 10n ** 14n, 3);
+    expect(scaled).toBe(178_571_428n);
+  });
+
+  it("caps the priority fee when profit is extremely small (custom gasLimit)", () => {
+    const fee = 30n * 10n ** 9n; // 30 Gwei
+    // 0.0001 MATIC profit (10^14 Wei)
+    // maxBidFromProfit = 5 * 10^13 Wei
+    // For gas limit 250,000, max priority fee per gas is 5 * 10^13 / 250,000 = 200,000,000 Wei = 0.2 Gwei
+    const scaled = scalePriorityFeeByProfitMargin(fee, 10n ** 14n, 3, 250_000n);
+    expect(scaled).toBe(200_000_000n);
+  });
 });
 
 describe("GasOracle.getEffectiveMaxBidMultiplier", () => {

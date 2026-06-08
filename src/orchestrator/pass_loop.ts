@@ -1361,9 +1361,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // Enrich heartbeat with profitability & performance metrics for TUI
       const trackerSummary2 = ctx.executionService.tracker.summary;
-      const successRateVal = trackerSummary2.totalAttempts > 0
-        ? Math.round((trackerSummary2.totalSuccesses / trackerSummary2.totalAttempts) * 100)
-        : 0;
+      const successRateVal =
+        trackerSummary2.totalAttempts > 0 ? Math.round((trackerSummary2.totalSuccesses / trackerSummary2.totalAttempts) * 100) : 0;
 
       bus?.emit({
         type: "heartbeat",

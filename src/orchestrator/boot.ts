@@ -173,7 +173,14 @@ export async function bootApplication(
   const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
 
   const submitters = walletClients.map((walletClient) => {
-    return async (tx: { to: string; data: string; value: bigint; nonce: number; maxFee: bigint }): Promise<string> => {
+    return async (tx: {
+      to: string;
+      data: string;
+      value: bigint;
+      nonce: number;
+      maxFee: bigint;
+      maxPriorityFee: bigint;
+    }): Promise<string> => {
       const hash = await walletClient.sendTransaction({
         account: walletClient.account!,
         chain: walletClient.chain,
@@ -182,7 +189,7 @@ export async function bootApplication(
         value: tx.value,
         nonce: tx.nonce,
         maxFeePerGas: tx.maxFee,
-        maxPriorityFeePerGas: tx.maxFee / 2n,
+        maxPriorityFeePerGas: tx.maxPriorityFee,
       });
       return hash;
     };
@@ -195,17 +202,19 @@ export async function bootApplication(
       if (!wc.account) throw new Error("Private relay client is not configured with an account.");
     });
     privateSubmitter = async (tx) => {
-      const hash = await privateClients[0].sendTransaction({
-        account: privateClients[0].account!,
-        chain: privateClients[0].chain,
-        to: tx.to as `0x${string}`,
-        data: tx.data as `0x${string}`,
-        value: tx.value,
-        nonce: tx.nonce,
-        maxFeePerGas: tx.maxFee,
-        maxPriorityFeePerGas: tx.maxFee / 2n,
-      });
-      return hash;
+      const promises = privateClients.map((client) =>
+        client.sendTransaction({
+          account: client.account!,
+          chain: client.chain,
+          to: tx.to as `0x${string}`,
+          data: tx.data as `0x${string}`,
+          value: tx.value,
+          nonce: tx.nonce,
+          maxFeePerGas: tx.maxFee,
+          maxPriorityFeePerGas: tx.maxPriorityFee,
+        }),
+      );
+      return Promise.any(promises);
     };
   }
 
