@@ -1,9 +1,8 @@
 import type { Logger } from "../../infra/observability/logger.ts";
 import type { SignalHandler, MempoolSignal, LargeSwapSignal } from "./signals.ts";
 import { decodeSwapCalldata, SELECTORS } from "./decoder.ts";
-import type { PendingStateOverlay } from "../../core/types/overlay.ts";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import type { PendingStateOverlay } from "../../core/types/overlay.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
@@ -53,13 +52,13 @@ export class MempoolService {
     await this.loadUnknownSelectors();
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     this.logger.info({}, "MempoolService stopped");
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
       this.saveTimeout = null;
     }
-    this.writeUnknownSelectors();
+    await this.writeUnknownSelectors();
   }
 
   private getUnknownSelectorsFilePath(): string {

@@ -258,7 +258,7 @@ async function main() {
     "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18, // BAL
     "0x172370d5cd63279efa6d502dab29171933a610af": 18, // CRV
     "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18, // AAVE
-    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST
+    "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7": 18, // GHST
     "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK
     "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK (old)
     "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO
@@ -283,7 +283,7 @@ async function main() {
     "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18, // BAL
     "0x172370d5cd63279efa6d502dab29171933a610af": 18, // CRV
     "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18, // AAVE
-    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST
+    "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7": 18, // GHST
     "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK (new)
     "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK (old)
     "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO
@@ -307,7 +307,7 @@ async function main() {
     "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": 18, // WETH (dup safe)
     "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": 18, // LINK (dup safe)
     "0xb33eaad8d922b1083446dc23f610c2567fb5180f": 18, // UNI (dup safe)
-    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST (dup safe)
+    "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7": 18, // GHST (dup safe)
     "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK (dup safe)
     "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK old (dup safe)
     "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO (dup safe)
@@ -327,7 +327,7 @@ async function main() {
     "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3": 18, // BAL
     "0x172370d5cd63279efa6d502dab29171933a610af": 18, // CRV
     "0xd6df932a45c0f255f85145f286ea0b292b21c90b": 18, // AAVE
-    "0x385eeac5cb85a38a5a3a36474f0b0a5110ecf57b": 18, // GHST
+    "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7": 18, // GHST
     "0xb5c064f955d8e7f38fe0460c556a72987494ee17": 18, // QUICK
     "0x831753dd7087cac61ab5644b308642cc1c33dc13": 18, // QUICK (old)
     "0x0b048d6e01a6b9002c291060bf2179938fd8264c": 18, // WOO

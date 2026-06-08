@@ -17,12 +17,7 @@ try {
  * See: https://docs.envio.dev/docs/HyperSync/overview
  */
 export class HyperSyncService {
-  private client: {
-    get: (query: Record<string, unknown>) => Promise<any>;
-    waitForRateLimit?: () => Promise<void>;
-    getHeight: () => Promise<number>;
-    getChainId: () => Promise<number>;
-  } | undefined;
+  private client: any;
   private token: string;
   private logger?: Logger;
 
@@ -56,7 +51,7 @@ export class HyperSyncService {
     }
   }
 
-  rateLimitInfo(): unknown | null {
+  rateLimitInfo(): any {
     return this.client?.rateLimitInfo?.() ?? null;
   }
 

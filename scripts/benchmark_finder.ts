@@ -54,14 +54,14 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
   };
 }
 
-function runBenchmark() {
+async function runBenchmark() {
   console.log("Generating mock graph...");
   // 100 tokens, 10 edges per token = 1000 edges total
   const graph = createMockGraph(100, 10);
   
   console.log("Warming up...");
   for (let i = 0; i < 5; i++) {
-    findCycles(graph, 4, 50000);
+    await findCycles(graph, 4, 50000);
   }
 
   console.log("Running timing trials...");
@@ -70,7 +70,7 @@ function runBenchmark() {
   let totalCycles = 0;
   
   for (let i = 0; i < iterations; i++) {
-    const cycles = findCycles(graph, 4, 100000);
+    const cycles = await findCycles(graph, 4, 100000);
     totalCycles += cycles.length;
   }
   

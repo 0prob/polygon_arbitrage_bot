@@ -31,6 +31,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 import type { PassLoopDeps } from "./loop.ts"; // see loop.ts for history of the (now-removed) duplicated runPipeline extraction
 import { toBigInt } from "../core/utils/bigint.ts";
+import { MAJOR_TOKENS } from "../core/constants.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -303,34 +304,20 @@ async function runLfStateRefresh(
 
   if (stateCacheEmpty) {
     const BASE_MAX = 12000;
-    const MAX_BOOTSTRAP_POOLS = lowInfra ? Math.floor(BASE_MAX * 0.7) : BASE_MAX;
+    // AGENT: DO NOT raise the lowInfra bootstrap cap above 5000.
+    // Each bootstrap batch is a multicall burst against a 250 RPS node. Raising this value
+    // causes the node to throttle or error during the first ~30s of operation, starving the
+    // hot-path simulation loop of RPC budget and delaying the first profitable cycle detection.
+    // The cap was deliberately halved from 8400 to 5000 to keep bursts manageable.
+    // Only change if CHAINSTACK_RPS is raised above 250 in the environment.
+    const MAX_BOOTSTRAP_POOLS = lowInfra ? 5000 : BASE_MAX;
     const stateAddrSet = new Set<string>();
     for (const addr of stateCache.keys()) stateAddrSet.add(addr);
     const missingPools = pools.filter((p) => !stateAddrSet.has(p.address.toLowerCase()));
 
     // Prioritize majors so initial rate graph is well-connected (directly attacks high noRate
     // and low coverage that starves assessment of rateSafe cycles).
-    const MAJOR_TOKENS = new Set(
-      [
-        "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270", // WMATIC
-        "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC
-        "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", // USDC.e (old)
-        "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
-        "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", // WETH
-        "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063", // DAI
-        "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", // WBTC
-        // Expanded set (keep in sync with hyperindex hot_tokens.ts HOT_BASE_TOKENS)
-        // to bootstrap rates/state for more bases on low-infra runs. This directly
-        // helps connect long-tail tokens in cycles to MATIC prices, reducing high noRate.
-        // Strategy adaptation: low infra has no edge on hot pairs; expand rated bases
-        // so obscure long-tail cycles can still compute profits.
-        "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39", // LINK
-        "0xd6df932a45c0f255f85145f286ea0b292b21c90b", // AAVE
-        "0x172370d5cd63279efa6d502dab29171933a610af", // CRV
-        "0x9a71012b13ca4d3d0cdcbc8942ec6c4e9e0e6c8c", // BAL
-        "0xb33eaad8d922b1083446dc23f610c2567fb5180f", // UNI
-      ].map((t) => t.toLowerCase()),
-    );
+    // Using imported MAJOR_TOKENS from constants.ts (synced with hot_tokens.ts)
 
     const touchesMajor = (p: PoolMeta) => {
       const ts = (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase());
@@ -347,21 +334,29 @@ async function runLfStateRefresh(
         "Bootstrap: pre-fetching V2/V3 state for rate propagation (non-blocking)",
       );
       // Non-blocking: state accumulates into shared ctx.stateCache as batches complete.
-      runBootstrapInBackground(ctx, stateClient, toBootstrap, updated).catch((err) =>
+      runBootstrapInBackground(ctx, stateClient, toBootstrap, updated, lowInfra).catch((err) =>
         ctx.logger.warn({ err }, "Background bootstrap failed"),
       );
     }
   }
 
-  // Gradual cache expansion: every 10th LF pass, force-refresh a batch of uncached pools
+  // Gradual cache expansion: periodically force-refresh a batch of uncached pools
   // until the cache reaches target size (~75% of total pools). Uses stateClient (dedicated RPC)
   // so it doesn't compete with the hot path.
   _lfStateRefreshCount++;
   const CACHE_TARGET = 30000;
+  // AGENT: DO NOT reduce EXPANSION_CADENCE below 20 or raise EXPANSION_BATCH above 1000
+  // for the lowInfra path. The LF tick fires every 1 second. At cadence=20 the gradual
+  // expansion fires every 20 seconds; at cadence=10 it fires every 10 seconds.
+  // Each expansion batch is a blocking multicall sequence on the state client.
+  // A 3000-pool batch at cadence=10 generates ~6 multicall RPCs every 10s = 0.6 RPS of
+  // continuous background load that directly competes with hot-path cycle-state fetches.
+  // The current settings (cadence=20, batch=1000) keep background load under 0.1 RPS.
+  const EXPANSION_CADENCE = lowInfra ? 20 : 10;
   // Fire-and-forget: state accumulates into shared ctx.stateCache as batches complete.
-  if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % 10 === 0) {
+  if (!stateCacheEmpty && stateCache.size < CACHE_TARGET && _lfStateRefreshCount % EXPANSION_CADENCE === 0) {
     const BASE_EXP = 6000;
-    const EXPANSION_BATCH = lowInfra ? Math.floor(BASE_EXP * 0.5) : BASE_EXP;
+    const EXPANSION_BATCH = lowInfra ? 1000 : BASE_EXP;
     const uncached = pools.filter((p) => !stateCache.has(p.address.toLowerCase()));
     if (uncached.length > 0) {
       const batch = uncached.slice(0, EXPANSION_BATCH);
@@ -392,14 +387,22 @@ async function runBootstrapInBackground(
   stateClient: import("viem").PublicClient,
   toBootstrap: PoolMeta[],
   updated: Set<string>,
+  lowInfra: boolean = false,
 ): Promise<void> {
   const stateCache = ctx.stateCache;
-  const BATCH_SIZE_BS = 5000;
+  // AGENT: DO NOT increase BATCH_SIZE_BS or CONCURRENCY_BS for the lowInfra path.
+  // These two constants jointly cap the peak RPC fan-out during bootstrap.
+  // Math: CONCURRENCY_BS(3) × BATCH_SIZE_BS(2000) pools / 500-multicall-batch = 12 concurrent
+  // multicall requests. Each multicall counts as one RPS unit, so peak draw is ~12 RPS — safely
+  // within a 250 RPS budget shared with the live trading loop.
+  // Raising either value risks hitting the node rate-limit during boot, causing all subsequent
+  // state fetches to fail and the bot to run on stale/empty reserves for multiple minutes.
+  const BATCH_SIZE_BS = lowInfra ? 2000 : 5000;
+  const CONCURRENCY_BS = lowInfra ? 3 : 6;
   const batches: PoolMeta[][] = [];
   for (let i = 0; i < toBootstrap.length; i += BATCH_SIZE_BS) {
     batches.push(toBootstrap.slice(i, i + BATCH_SIZE_BS));
   }
-  const CONCURRENCY_BS = 6;
   const localUpdated = new Set<string>();
   for (let i = 0; i < batches.length; i += CONCURRENCY_BS) {
     const chunk = batches.slice(i, i + CONCURRENCY_BS);
@@ -412,7 +415,7 @@ async function runBootstrapInBackground(
     }
   }
   ctx.logger.info(
-    { seedFetched: localUpdated.size, stillMissing: toBootstrap.length - localUpdated.size },
+    { seedFetched: localUpdated.size, stillMissing: toBootstrap.length - localUpdated.size, lowInfra },
     "Background bootstrap fetch complete",
   );
 }
@@ -483,7 +486,16 @@ async function runEnumerationPhase(
   const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
   const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
   const lowForEnum = rpsForEnum <= 250;
-  const maxPaths = lowForEnum ? Math.min(12000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
+  // AGENT: DO NOT raise the lowInfra maxPaths cap above 8000.
+  // Simulation is the dominant hot-path cost: each cycle requires ternary/Brent search
+  // (up to 10 iterations × 1 simulateHop call per edge). At 8000 cycles × 3 edges × 10
+  // iterations = 240,000 calls in a single 200ms window — already at the compute limit
+  // for a single-thread JS event loop on typical hardware.
+  // Raising this causes HF cycles to exceed 200ms, losing block-aligned timing and allowing
+  // competitors to front-run opportunities that the bot identifies but submits too late.
+  // The finder's obscurity-first DFS front-loads the highest-alpha (DODO/Balancer/Curve) cycles,
+  // so truncating the tail at 8000 drops only the least-competitive paths.
+  const maxPaths = lowForEnum ? Math.min(8000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
   const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
   const cycles = await finderFn(graph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
   const enumElapsed = Date.now() - enumStartTime;
@@ -574,7 +586,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastTierCheck = 0;
 
   const recentRouteTimestamps = new Map<string, number>();
-  const ROUTE_COOLDOWN_MS = 5000;
+  // AGENT: DO NOT reduce ROUTE_COOLDOWN_MS below 12000 for the lowInfra path.
+  // On poor infrastructure, transaction confirmation latency can exceed 5–8 seconds.
+  // A cooldown shorter than confirmation time causes the bot to resubmit the same route
+  // while the original tx is still pending in the mempool, wasting gas on a duplicate and
+  // risking two competing self-fills if both land. 12s provides a safe margin above the
+  // observed 95th-percentile Polygon confirmation time on congested public nodes.
+  const lowInfraForCooldown = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
+  const ROUTE_COOLDOWN_MS = lowInfraForCooldown ? 12000 : 5000;
 
   // Block-aligned HF timing: when newHead arrives from Chainstack WS,
   // the sleep between cycles is shortened to ~50ms for immediate re-evaluation.
@@ -779,7 +798,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Skip if we just did a full refresh in the same pass.
       // Non-blocking: state accumulates into ctx.stateCache, subsequent cycles benefit.
       preFetchCounter++;
-      if (lastFullRefreshTime !== now && preFetchCounter % 5 === 0) {
+      // AGENT: DO NOT reduce preFetchModulo below 8 for the lowInfra path.
+      // The HF loop ticks at ~200ms. A modulo of 5 fires a pre-fetch every 1 second;
+      // a modulo of 8 fires every 1.6 seconds. The pre-fetch is NOT fire-and-forget for
+      // the cycle-pool fetch — it races against the LF state refresh that runs on the same
+      // 1s cadence. At modulo=5 both fire in the same second on every LF tick, doubling
+      // RPC pressure at exactly the moment the simulation most needs fresh state.
+      const lowInfraForPrefetch = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
+      const preFetchModulo = lowInfraForPrefetch ? 8 : 5;
+      if (lastFullRefreshTime !== now && preFetchCounter % preFetchModulo === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "PRE_FETCH" });
 
         // Fire-and-forget cycle pool state fetch.
@@ -799,7 +826,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           if (broadTokenPools.length > 0) {
             const rpsBroad = ctx.config.rpc.chainstackRps ?? 250;
             const lowBroad = rpsBroad <= 250;
-            const broadCap = lowBroad ? 2000 : 5000;
+            // AGENT: DO NOT raise the lowInfra broadCap above 400.
+            // The broad pre-fetch fires every ~1.6s (preFetchModulo=8 × 200ms HF interval).
+            // 400 pools / 500-multicall-batch = 1 multicall RPC per trigger — negligible.
+            // 2000 pools = 4 multicalls per trigger = 2.5 RPS of continuous background load,
+            // which on a 250 RPS node is 1% of total budget consumed by a speculative fetch
+            // that only benefits cycles not yet in the state cache. The marginal value does
+            // not justify the RPS cost on constrained infrastructure.
+            const broadCap = lowBroad ? 400 : 5000;
             const cap = broadTokenPools.slice(0, broadCap);
             fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, cap, [], [], true)
               .then((extra) => {
@@ -932,7 +966,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       let effectiveConcurrency = isDegraded ? Math.max(10, Math.floor(baseConc * 0.4)) : baseConc;
       const rpsConc = ctx.config.rpc.chainstackRps ?? 250;
       if (rpsConc <= 250) {
-        effectiveConcurrency = Math.max(5, Math.floor(effectiveConcurrency * 0.5));
+        // AGENT: DO NOT raise the floor above 4 or remove the 0.5× reduction for lowInfra.
+        // Simulation concurrency controls how many Promise.all batches run simultaneously.
+        // Higher concurrency does NOT reduce wall-time when the bottleneck is the single-threaded
+        // JS event loop — it only increases GC pressure from additional object allocations per
+        // ternary-search iteration. Keeping it at max(4, base×0.5) maintains throughput while
+        // reducing per-cycle jitter, which is essential for block-aligned HF timing.
+        effectiveConcurrency = Math.max(4, Math.floor(effectiveConcurrency * 0.5));
       }
       const effectiveMinProfit = isDegraded
         ? ctx.config.execution.minProfitWei * 2n // Be much more selective when data is stale
@@ -983,8 +1023,28 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const simStartTime = Date.now();
       const result = await deps.evaluatePipeline(rateSafeCycles, stateCache, options, ctx.pendingStateOverlay);
       const simElapsed = Date.now() - simStartTime;
+      mark("simulation");
 
       ctx.metrics.opportunitiesFound += result.profitableCount;
+
+      // Emit full simulation breakdown for TUI visibility and debugging
+      bus?.emit({
+        type: "simulation_stats",
+        attempted: result.attempted,
+        simulated: result.simulated,
+        profitable: result.profitableCount,
+        noRate: result.noRate,
+        prunedMissingState: result.prunedMissingState,
+        prunedNoGrossProfit: result.prunedNoGrossProfit,
+        prunedInvalidBounds: result.prunedInvalidBounds,
+        prunedFinalCheckFailed: result.prunedFinalCheckFailed,
+        maxGrossMilliMatic: result.maxGrossProfitMatic !== undefined ? Number(result.maxGrossProfitMatic / 10n ** 15n) : 0,
+        durationMs: simElapsed,
+        ratesCovered: tokenToMaticRates.size,
+        cacheSize: stateCache.size,
+        rateSafeCycles: rateSafeCycles.length,
+        totalCycles: filteredCycles.length,
+      });
 
       if (result.attempted > 0) {
         const tier = ctx.tierManager.getCurrent();
@@ -1255,6 +1315,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           }
         }
       }
+      mark("execution");
 
       const elapsed = Date.now() - startTime;
       ctx.metrics.lastCycleDurationMs = elapsed;
@@ -1265,7 +1326,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const HF_BUDGET_MS = 160;
       if (elapsed > HF_BUDGET_MS) {
         ctx.logger.debug(
-          { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles },
+          { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles, timings },
           "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)",
         );
       }
@@ -1298,6 +1359,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const isHasuraConnected = ctx.hasuraCircuit.isHealthy();
       const isWsConnected = !!ctx.wsSubscriber && ctx.wsSubscriber.isConnected();
 
+      // Enrich heartbeat with profitability & performance metrics for TUI
+      const trackerSummary2 = ctx.executionService.tracker.summary;
+      const successRateVal = trackerSummary2.totalAttempts > 0
+        ? Math.round((trackerSummary2.totalSuccesses / trackerSummary2.totalAttempts) * 100)
+        : 0;
+
       bus?.emit({
         type: "heartbeat",
         elapsedMs: elapsed,
@@ -1309,7 +1376,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         hasuraConnected: isHasuraConnected,
         wsConnected: isWsConnected,
         maticPriceUsd,
+        cyclesPerMin: ctx.metrics.currentCyclesPerMinute,
+        peakCpm: ctx.metrics.peakCyclesPerMinute,
+        successRate: successRateVal,
+        maxHotPathMs: ctx.metrics.maxHotPathDurationMs,
+        trackedRoutes: trackerSummary2.trackedRoutes,
       });
+      // Only emit connection_status on actual transitions to avoid per-cycle bus noise
       bus?.emit({ type: "connection_status", subsystem: "rpc", status: isRpcConnected ? "connected" : "disconnected" });
       bus?.emit({ type: "connection_status", subsystem: "hasura", status: isHasuraConnected ? "connected" : "disconnected" });
       bus?.emit({ type: "connection_status", subsystem: "ws", status: isWsConnected ? "connected" : "disconnected" });

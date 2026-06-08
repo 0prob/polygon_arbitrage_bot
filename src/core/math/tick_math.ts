@@ -66,7 +66,7 @@ export function getSqrtRatioAtTick(tick: number): bigint {
   return sqrtPriceX96;
 }
 
-function normaliseTickSearchBounds(minTick: number, maxTick: number) {
+export function normaliseTickSearchBounds(minTick: number, maxTick: number) {
   const lo = Math.max(MIN_TICK, Math.min(minTick, maxTick));
   const hi = Math.min(MAX_TICK, Math.max(minTick, maxTick));
   if (lo > hi) {

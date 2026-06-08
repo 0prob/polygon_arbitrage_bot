@@ -65,11 +65,11 @@ export const MAJOR_TOKEN_DATA = {
     approxMaticRate: RATE_PRECISION * 5n,
   },
   GHST: {
-    address: "0x385a6061f584773ed407383f5e353b3f11e6030c",
+    address: "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7",
     approxMaticRate: RATE_PRECISION * 3n,
   },
   QUICK: {
-    address: "0xb5c064f9c0cc61e67bfe5653fe16934e9ec6476e",
+    address: "0xb5c064f955d8e7f38fe0460c556a72987494ee17",
     approxMaticRate: RATE_PRECISION * 100n,
   },
   TEL: {

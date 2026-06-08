@@ -1,4 +1,4 @@
-import { spawn, exec, type ChildProcess } from "child_process";
+import { spawn, exec, execSync, type ChildProcess } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import { readFile, stat } from "fs/promises";

@@ -243,15 +243,14 @@ export async function evaluatePipeline(
         const startRate = options.tokenToMaticRates.get(cycle.startToken) ?? 0n;
         if (startRate === 0n) return { type: "noRate" as const, cycle };
 
+        const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
+        if (low === 0n || low >= high) {
+          return { type: "pruned" as const, reason: "invalidBounds", cycle };
+        }
+
         const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
         if (!prebuiltSimEdges) {
           return { type: "pruned" as const, reason: "missingState", cycle };
-        }
-
-        const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
-
-        if (low === 0n || low >= high) {
-          return { type: "pruned" as const, reason: "invalidBounds", cycle };
         }
         let bestResult: RouteSimulationResult | null = null;
         let bestAssessment: ProfitAssessment | null = null;

@@ -128,7 +128,7 @@ describe("findCyclesBellmanFord", () => {
   const USDC = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" as Address;
   const USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f" as Address;
 
-  it("successfully detects a negative cycle (profitable arbitrage cycle)", () => {
+  it("successfully detects a negative cycle (profitable arbitrage cycle)", async () => {
     const graph: any = {
       adjacency: new Map([
         [
@@ -186,7 +186,7 @@ describe("findCyclesBellmanFord", () => {
       tokens: new Set([WMATIC, USDC, USDT]),
     };
 
-    const cycles = findCyclesBellmanFord(graph, 3);
+    const cycles = await findCyclesBellmanFord(graph, 3);
     expect(cycles.length).toBeGreaterThan(0);
     const cycle = cycles[0];
     expect(cycle.edges.length).toBe(3);

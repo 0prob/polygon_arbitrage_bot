@@ -1,124 +1,158 @@
 import type { TuiLayout, PanelRect } from "./layout.ts";
 import type { TuiState } from "./state.ts";
 
+// ─── ANSI helpers ────────────────────────────────────────────────────────────
+
 const ESC = "\x1b";
 
-function cursor(row: number, col: number): string {
-  return `${ESC}[${row + 1};${col + 1}H`;
+const C = {
+  reset: `${ESC}[0m`,
+  bold: (s: string) => `${ESC}[1m${s}${ESC}[22m`,
+  dim: (s: string) => `${ESC}[2m${s}${ESC}[22m`,
+  fg: (s: string, code: number) => `${ESC}[${code}m${s}${ESC}[0m`,
+  bg: (s: string, fgCode: number, bgCode: number) => `${ESC}[${fgCode};${bgCode}m${s}${ESC}[0m`,
+  cursor: (row: number, col: number) => `${ESC}[${row + 1};${col + 1}H`,
+  hideCursor: () => `${ESC}[?25l`,
+  showCursor: () => `${ESC}[?25h`,
+  altOn: () => `${ESC}[?1049h`,
+  altOff: () => `${ESC}[?1049l`,
+  clearScreen: () => `${ESC}[2J`,
+};
+
+// Named colour codes
+const GREEN  = 32;
+const YELLOW = 33;
+const RED    = 31;
+const CYAN   = 36;
+const WHITE  = 37;
+const MAGENTA = 35;
+const BLUE   = 34;
+
+// Component → colour mapping for the log panel
+const COMP_COLORS: Record<string, number> = {
+  Index:     CYAN,
+  Indexer:   CYAN,
+  Mempool:   YELLOW,
+  Routing:   WHITE,
+  Graph:     CYAN,
+  Opps:      GREEN,
+  Exec:      GREEN,
+  System:    WHITE,
+  Stage:     CYAN,
+  Status:    YELLOW,
+  Discovery: MAGENTA,
+  Pipeline:  GREEN,
+  Trace:     GREEN,
+  TraceWarn: YELLOW,
+  Log:       WHITE,
+  Info:      CYAN,
+  Warn:      YELLOW,
+  Error:     RED,
+  Debug:     BLUE,
+};
+
+// ─── String utilities ─────────────────────────────────────────────────────────
+
+/** Strip ANSI escape sequences to get visible character count */
+function visLen(s: string): number {
+  return s.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").length;
 }
 
-function hideCursor(): string {
-  return `${ESC}[?25l`;
-}
-
-function showCursor(): string {
-  return `${ESC}[?25h`;
-}
-
-function enterAltScreen(): string {
-  return `${ESC}[?1049h`;
-}
-
-function exitAltScreen(): string {
-  return `${ESC}[?1049l`;
-}
-
-function bold(text: string): string {
-  return `${ESC}[1m${text}${ESC}[22m`;
-}
-
-function dim(text: string): string {
-  return `${ESC}[2m${text}${ESC}[22m`;
-}
-
-function color(text: string, code: number): string {
-  return `${ESC}[${code}m${text}${ESC}[0m`;
-}
-
-function visibleLength(str: string): number {
-  return str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").length;
-}
-
-function visibleSlice(str: string, width: number): string {
+/** Slice a string to `width` *visible* characters, preserving and closing ANSI codes */
+function visTrunc(s: string, width: number): string {
   let result = "";
   let len = 0;
   let i = 0;
-  while (i < str.length && len < width) {
-    if (str[i] === "\x1b") {
-      const match = str.slice(i).match(/^\x1b\[[0-9;]*[a-zA-Z]/);
-      if (match) {
-        result += match[0];
-        i += match[0].length;
-        continue;
-      }
+  while (i < s.length && len < width) {
+    if (s[i] === "\x1b") {
+      const m = s.slice(i).match(/^\x1b\[[0-9;]*[a-zA-Z]/);
+      if (m) { result += m[0]; i += m[0].length; continue; }
     }
-    result += str[i];
+    result += s[i];
     len++;
     i++;
   }
-  // Ensure we reset any open color tags if we truncated
-  if (i < str.length) {
-    result += "\x1b[0m";
-  }
+  if (i < s.length) result += "\x1b[0m"; // close open tags
   return result;
 }
 
-function padRight(str: string, width: number): string {
-  const len = visibleLength(str);
-  if (len >= width) return visibleSlice(str, width);
-  return str + " ".repeat(width - len);
+/** Pad/truncate to exactly `width` visible chars */
+function padR(s: string, width: number): string {
+  const l = visLen(s);
+  if (l >= width) return visTrunc(s, width);
+  return s + " ".repeat(width - l);
 }
 
-const GREEN = 32;
-const YELLOW = 33;
-const RED = 31;
-const CYAN = 36;
-const WHITE = 37;
+// ─── Animation helpers ────────────────────────────────────────────────────────
 
-const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-const SPINNER_MOD = 3;
+const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const SPIN_DIV = 3; // frames per spinner tick
 
-const SECTION_COLORS: Record<string, number> = {
-  Index: CYAN,
-  Mempool: YELLOW,
-  Routing: WHITE,
-  Graph: CYAN,
-  Opps: GREEN,
-  Exec: GREEN,
-  System: WHITE,
-  Stage: CYAN,
-  Status: YELLOW,
-};
-
-class Animator {
-  constructor(private _frame: number = 0) {}
-
-  spinner(active: boolean): string {
-    if (!active) return "●";
-    return SPINNER_FRAMES[Math.floor(this._frame / SPINNER_MOD) % SPINNER_FRAMES.length];
-  }
-
-  progressBar(current: number, total: number, width: number): string {
-    if (total <= 0) return "";
-    const filled = Math.round((current / total) * width);
-    return "█".repeat(filled) + "░".repeat(width - filled);
-  }
-
-  sparkline(values: number[], width: number): string {
-    if (values.length < 2) return "";
-    const chars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-    const recent = values.slice(-width);
-    const max = Math.max(...recent.map(Math.abs), 1);
-    return recent.map((v) => chars[Math.min(Math.floor((Math.abs(v) / max) * (chars.length - 1)), chars.length - 1)]).join("");
-  }
-
-  sectionLabel(emoji: string, label: string): string {
-    return bold(`${emoji} ${label}`);
-  }
+function spinner(frame: number, active: boolean): string {
+  if (!active) return "●";
+  return SPINNER[Math.floor(frame / SPIN_DIV) % SPINNER.length];
 }
+
+function progressBar(current: number, total: number, width: number): string {
+  if (total <= 0 || width <= 0) return "░".repeat(width);
+  const filled = Math.min(width, Math.round((current / total) * width));
+  return "█".repeat(filled) + "░".repeat(width - filled);
+}
+
+function sparkline(values: number[], width: number): string {
+  if (values.length < 2) return "";
+  const CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+  const recent = values.slice(-width);
+  const max = Math.max(...recent.map(Math.abs), 1);
+  return recent
+    .map((v) => CHARS[Math.min(Math.floor((Math.abs(v) / max) * (CHARS.length - 1)), CHARS.length - 1)])
+    .join("");
+}
+
+// ─── Format helpers ────────────────────────────────────────────────────────────
+
+function fmtWeiMatic(wei: bigint): string {
+  const n = Number(wei) / 1e18;
+  if (n === 0) return "0";
+  if (Math.abs(n) < 0.0001) return n.toFixed(6);
+  if (Math.abs(n) < 0.01)   return n.toFixed(5);
+  return n.toFixed(4);
+}
+
+function fmtUsd(wei: bigint, maticUsd: number): string {
+  const usd = (Number(wei) / 1e18) * maticUsd;
+  if (usd === 0) return "$0";
+  if (Math.abs(usd) < 0.01) return `$${usd.toFixed(4)}`;
+  if (Math.abs(usd) < 100)  return `$${usd.toFixed(2)}`;
+  return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function fmtBlock(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function fmtUptime(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+}
+
+function fmtGwei(wei: bigint): string {
+  const gwei = Number(wei) / 1e9;
+  return gwei < 10 ? gwei.toFixed(2) : gwei.toFixed(1);
+}
+
+function fmtPct(n: number, d: number): string {
+  return d > 0 ? `${Math.round((n / d) * 100)}%` : "—";
+}
+
+// ─── Renderer ─────────────────────────────────────────────────────────────────
 
 interface RenderedPanel {
-  y: number;
   content: string;
 }
 
@@ -131,275 +165,316 @@ export class Renderer {
   }
 
   enter(): void {
-    let buf = "";
-    buf += enterAltScreen();
-    buf += hideCursor();
-    buf += `${ESC}[2J`; // clear entire screen once on enter
-    this.stdout.write(buf);
+    this.stdout.write(C.altOn() + C.hideCursor() + C.clearScreen());
     this.initialized = true;
   }
 
   exit(): void {
     if (!this.initialized) return;
-    let buf = "";
-    buf += showCursor();
-    buf += exitAltScreen();
-    this.stdout.write(buf);
+    this.stdout.write(C.showCursor() + C.altOff());
     this.initialized = false;
   }
 
-  render(layout: TuiLayout, state: TuiState, frameCount: number = 0, focusedSection: number = -1): void {
-    const animator = new Animator(frameCount);
+  render(layout: TuiLayout, state: TuiState, frameCount = 0, focusedSection = -1): void {
+    const frame = frameCount;
+    const panels: RenderedPanel[] = [];
+
+    panels.push(this._header(layout, state));
+
     const renderFns = [
-      this.renderIndexPanel.bind(this),
-      this.renderMempoolPanel.bind(this),
-      this.renderOpportunitiesPanel.bind(this),
-      this.renderRoutingPanel.bind(this),
-      this.renderGraphPanel.bind(this),
-      this.renderExecutionPanel.bind(this),
+      this._panelIndex.bind(this),
+      this._panelMempool.bind(this),
+      this._panelOpportunities.bind(this),
+      this._panelRouting.bind(this),
+      this._panelGraph.bind(this),
+      this._panelExecution.bind(this),
     ];
 
-    const panels: RenderedPanel[] = [];
-    panels.push(this.renderHeader(layout, state));
     for (let i = 0; i < 6; i++) {
-      const lines = renderFns[i](layout.panels[i], state, animator);
-      panels.push(this.panelBox(lines, layout.panels[i], i === focusedSection));
+      const lines = renderFns[i](layout.panels[i], state, frame);
+      panels.push(this._box(lines, layout.panels[i], i === focusedSection));
     }
-    panels.push(this.renderLog(layout, state));
-    panels.push(this.renderStatusBar(layout, state));
+
+    panels.push(this._log(layout, state));
+    panels.push(this._statusBar(layout, state));
 
     let buf = "";
-    for (const panel of panels) {
-      buf += panel.content;
-    }
+    for (const p of panels) buf += p.content;
     this.stdout.write(buf);
   }
 
-  private renderHeader(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const running = state.isRunning ? color("[● RUNNING]", GREEN) : color("[○ PAUSED]", RED);
-    const uptime = formatUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
+  // ── Header ─────────────────────────────────────────────────────────────────
+
+  private _header(layout: TuiLayout, state: TuiState): RenderedPanel {
     const m = state.metrics;
-    const profit = formatWei(m.totalProfitWei);
-    const usd = formatUsd(m.totalProfitWei, state.system.maticPriceUsd);
+    const running = state.isRunning
+      ? (state.isPaused ? C.fg("[⏸ PAUSED]", YELLOW) : C.fg("[● RUNNING]", GREEN))
+      : C.fg("[○ STOPPED]", RED);
+    const uptime = fmtUptime(state._startTime > 0 ? Date.now() - state._startTime : 0);
+    const profit = fmtWeiMatic(m.totalProfitWei);
+    const usd    = fmtUsd(m.totalProfitWei, state.system.maticPriceUsd);
+    const winRate = fmtPct(m.successful, m.executed);
+    const cpm = m.cyclesPerMin > 0 ? `${m.cyclesPerMin}cpm` : "—";
 
-    const leftText = ` ${bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
-    const rightText = ` Uptime: ${uptime} | Total P/L: +${profit} MATIC (${usd}) | Errors: ${m.totalErrors} `;
+    const left  = ` ${C.bold("Polygon Arb Bot")} (Chain 137)  ${running} `;
+    const right = ` ⏱ ${uptime} | P/L: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${profit} MATIC`, m.totalProfitWei >= 0n ? GREEN : RED)} (${usd}) | Win: ${winRate} | ${cpm} | Err: ${m.totalErrors} `;
 
-    const rawLeftLen = visibleLength(leftText);
-    const rawRightLen = visibleLength(rightText);
-    const padding = Math.max(0, layout.header.width - rawLeftLen - rawRightLen);
-
-    const line = leftText + " ".repeat(padding) + rightText;
+    const gap = Math.max(0, layout.header.width - visLen(left) - visLen(right));
+    const line = left + " ".repeat(gap) + right;
 
     return {
-      y: layout.header.y,
-      content: cursor(layout.header.y, layout.header.x) + padRight(line, layout.header.width),
+      content: C.cursor(layout.header.y, layout.header.x) + padR(line, layout.header.width),
     };
   }
 
-  private renderIndexPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
-    const s = state.system;
-    const statusIcon = s.hiStatus === "syncing" ? "⠋" : s.hiStatus === "synced" ? "●" : "○";
-    const blockStr = s.hiSyncedBlock > 0 ? formatBlock(s.hiSyncedBlock) : "—";
-    const remoteStr = s.hiRemoteBlock > 0 ? formatBlock(s.hiRemoteBlock) : "—";
-    const lag = s.hiLag > 0 ? s.hiLag : s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0;
-    const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
+  // ── Panel 1: Index (HyperIndex / indexer health) ───────────────────────────
 
-    let pct = 0;
-    if (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0) {
-      pct = Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100));
-    }
-    const bar = animator.progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 12);
+  private _panelIndex(_rect: PanelRect, state: TuiState, frame: number): string[] {
+    const s = state.system;
+    const isSyncing = s.hiStatus === "syncing";
+    const spin = spinner(frame, isSyncing);
+    const statusColor = s.hiStatus === "synced" ? GREEN : s.hiStatus === "error" ? RED : YELLOW;
+    const blockStr  = s.hiSyncedBlock > 0 ? fmtBlock(s.hiSyncedBlock) : "—";
+    const remoteStr = s.hiRemoteBlock > 0 ? fmtBlock(s.hiRemoteBlock) : "—";
+    const lag = s.hiLag > 0 ? s.hiLag : (s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? s.hiRemoteBlock - s.hiSyncedBlock : 0);
+    const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
+    const pct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0
+      ? Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100))
+      : 0;
+    const bar  = progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 10);
     const mode = s.hiDiscoveryMode ?? "broad";
 
     const ds = s.discoverySummary;
-    let summaryLine = ` Mode: ${mode}`;
+    let summaryLine = ` Mode: ${C.fg(mode, mode === "broad" ? CYAN : YELLOW)}`;
     if (ds) {
-      const protoBreakdown = Object.entries(ds.protocolBreakdown)
+      const top2 = Object.entries(ds.protocolBreakdown)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 2)
         .map(([name, count]) => `${name}:${count}`)
         .join(" ");
-      summaryLine = ` ${protoBreakdown} | Lag: ${color(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
+      summaryLine = ` ${top2} | Lag:${C.fg(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
     }
 
     return [
-      ` ${animator.sectionLabel("📡", "Index")}`,
-      ` ${statusIcon} Block: ${color(blockStr, CYAN)} / ${remoteStr} ${dim(s.hiStatus)}`,
-      ` ${bar} ${color(`${pct}%`, GREEN)} ${dim("lag:")}${color(String(lag), lagColor)}${s.hiSyncRate > 0 ? dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
+      ` ${C.bold(`📡 Index`)}`,
+      ` ${spin} ${C.fg(s.hiStatus, statusColor)} ${C.fg(blockStr, CYAN)}/${remoteStr}`,
+      ` [${bar}] ${C.fg(`${pct}%`, GREEN)} lag:${C.fg(String(lag), lagColor)}${s.hiSyncRate > 0 ? C.dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
       summaryLine,
     ];
   }
 
-  private renderMempoolPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+  // ── Panel 2: Mempool ────────────────────────────────────────────────────────
+
+  private _panelMempool(_rect: PanelRect, state: TuiState, _frame: number): string[] {
     const s = state.system;
     const feedIcon =
-      s.mempoolFeedStatus === "connected" ? color("●", GREEN) : s.mempoolFeedStatus === "disconnected" ? color("⊗", RED) : "○";
-    const feedLabel = s.mempoolFeedStatus === "connected" ? "active" : s.mempoolFeedStatus;
+      s.mempoolFeedStatus === "connected"    ? C.fg("●", GREEN)
+      : s.mempoolFeedStatus === "disconnected" ? C.fg("⊗", RED)
+      : C.dim("○");
+    const feedLabel = s.mempoolFeedStatus;
+
     const now = Date.now();
-    const activeSwaps = s.pendingSwaps.filter((sw) => now - sw.timestamp < 2000);
-    const swapLines = activeSwaps
-      .slice(0, 2)
-      .map((sw) => ` [${sw.traceId.slice(0, 8)}] +${sw.path} ${color(formatWei(BigInt(sw.value)), YELLOW)}`);
+    const fresh = s.pendingSwaps.filter((sw) => now - sw.timestamp < 3000);
+    const swapLines = fresh.slice(0, 3).map((sw) => {
+      const val = (Number(sw.value) / 1e18).toFixed(3);
+      return ` ${C.dim(`[${sw.traceId.slice(0, 6)}]`)} ${sw.path.slice(0, 16)} ${C.fg(val + " M", YELLOW)}`;
+    });
 
     return [
-      ` ${animator.sectionLabel("🖄", "Mempool")}`,
-      ` ${feedIcon} Subscribed: 1 feed ${dim(feedLabel)}`,
-      ...(swapLines.length > 0 ? swapLines : [` ${dim("No pending activity")}`]),
+      ` ${C.bold("🖄 Mempool")}`,
+      ` ${feedIcon} ${C.dim(feedLabel)}`,
+      ...(swapLines.length > 0 ? swapLines : [` ${C.dim("No recent activity")}`]),
     ];
   }
 
-  private renderOpportunitiesPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+  // ── Panel 3: Opportunities ─────────────────────────────────────────────────
+
+  private _panelOpportunities(_rect: PanelRect, state: TuiState, frame: number): string[] {
     const s = state.system;
+    const m = state.metrics;
     const isSim = s.pipelineStage === "SIMULATING";
-    const spin = animator.spinner(isSim);
-    const bar = isSim && s.simProgress.total > 0 ? animator.progressBar(s.simProgress.current, s.simProgress.total, 12) : "";
-    const pct = s.simProgress.total > 0 ? ` ${Math.floor((s.simProgress.current / s.simProgress.total) * 100)}%` : "";
-    const simLine = isSim ? ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}]${pct}` : ` ● ${dim("Idle")}`;
+    const spin = spinner(frame, isSim);
 
-    const best =
-      state.metrics.opportunitiesFound > 0 && state.system.activeOpportunities.length > 0 ? state.system.activeOpportunities[0] : null;
-    const topPath = best ? ` ${best.path.padEnd(24)} ${color(formatWei(best.profit), GREEN)}` : dim(" Waiting for opportunities");
+    // Sim progress line
+    let simLine: string;
+    if (isSim && s.simProgress.total > 0) {
+      const bar = progressBar(s.simProgress.current, s.simProgress.total, 10);
+      const pct = Math.floor((s.simProgress.current / s.simProgress.total) * 100);
+      simLine = ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}] ${pct}% ✦${s.simProgress.profitable}`;
+    } else {
+      const ss = s.lastSimStats;
+      if (ss) {
+        const noRatePct = ss.attempted > 0 ? Math.round((ss.noRate / ss.attempted) * 100) : 0;
+        simLine = ` ● ${C.dim(`last: ${ss.attempted}att ${ss.simulated}sim noRate:${noRatePct}% ${ss.durationMs}ms`)}`;
+      } else {
+        simLine = ` ${C.dim("● Idle — awaiting simulation")}`;
+      }
+    }
 
-    const profitableCount = state.metrics.opportunitiesFound;
-    const bestProfit = best ? ` Best: ${color(formatWei(best.profit), GREEN)}` : "";
+    const best = m.opportunitiesFound > 0 && s.activeOpportunities.length > 0 ? s.activeOpportunities[0] : null;
+    const bestLine = best
+      ? ` ★ Best: ${C.fg(fmtWeiMatic(best.profit), GREEN)} MATIC  ROI:${(best.roi / 10000).toFixed(2)}%`
+      : ` ${C.dim("★ No profitable opportunities yet")}`;
+    const countLine = ` Found: ${C.fg(String(m.opportunitiesFound), GREEN)} | ${best ? best.path.slice(0, 28) : "—"}`;
 
-    return [` ${animator.sectionLabel("💰", "Opportunities")}`, simLine, ` ★ ${profitableCount} profitable${bestProfit}`, topPath];
+    return [
+      ` ${C.bold("💰 Opportunities")}`,
+      simLine,
+      bestLine,
+      countLine,
+    ];
   }
 
-  private renderRoutingPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+  // ── Panel 4: Routing ────────────────────────────────────────────────────────
+
+  private _panelRouting(_rect: PanelRect, state: TuiState, frame: number): string[] {
     const s = state.system;
     const isEnum = s.pipelineStage === "ENUMERATING";
-    const spin = animator.spinner(isEnum);
-    const cycleInfo = s.cycleCount > 0 ? `${s.cycleCount.toLocaleString()} cycles` : dim("—");
-    const enumTime = s.enumerationTimeMs > 0 ? dim(` (${s.enumerationTimeMs}ms)`) : "";
+    const spin = spinner(frame, isEnum);
+    const cycleStr = s.cycleCount > 0 ? C.fg(s.cycleCount.toLocaleString(), WHITE) + " cycles" : C.dim("—");
+    const enumTime = s.enumerationTimeMs > 0 ? C.dim(` (${s.enumerationTimeMs}ms)`) : "";
+
+    // Rate coverage line from last sim stats
+    const ss = s.lastSimStats;
+    const rateStr = ss
+      ? `rates:${ss.ratesCovered} safe:${ss.rateSafeCycles}/${ss.totalCycles}`
+      : C.dim("rates: warming up");
 
     const hopParts = Object.entries(s.cyclesByHop)
       .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([hop, count]) => `${count} ${hop}-hop`);
-    const hopLine = hopParts.length > 0 ? hopParts.join(" | ") : dim("No cycles yet");
+      .map(([hop, count]) => `${count}×${hop}h`);
+    const hopLine = hopParts.length > 0 ? hopParts.join(" ") : C.dim("—");
 
     return [
-      ` ${animator.sectionLabel("🔀", "Routing")}`,
-      ` ${spin} ${cycleInfo}${enumTime}`,
+      ` ${C.bold("🔀 Routing")}`,
+      ` ${spin} ${cycleStr}${enumTime}`,
       ` ${hopLine}`,
-      ` ${s.cycleCount > 0 ? `${Object.keys(s.cyclesByHop).length} hop types` : dim("Waiting for enumeration")}`,
+      ` ${rateStr}`,
     ];
   }
 
-  private renderGraphPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+  // ── Panel 5: Graph ─────────────────────────────────────────────────────────
+
+  private _panelGraph(_rect: PanelRect, state: TuiState, frame: number): string[] {
     const s = state.system;
     const isBuild = s.pipelineStage === "LF_REFRESH" || s.pipelineStage === "DISCOVERY";
-    const spin = animator.spinner(isBuild);
-    const protoParts = Object.entries(s.protocolBreakdown)
+    const spin = spinner(frame, isBuild);
+
+    const protoTop = Object.entries(s.protocolBreakdown)
       .sort(([, a], [, b]) => b - a)
-      .slice(0, 2)
-      .map(([name, count]) => `${name}:${count}`);
-    const protoLine = protoParts.length > 0 ? protoParts.join(" ") : dim("—");
+      .slice(0, 3)
+      .map(([name, count]) => `${name}:${count}`)
+      .join(" ");
+    const protoLine = protoTop.length > 0 ? protoTop : C.dim("—");
+
+    const cacheStr = s.cachedStateCount > 0
+      ? `cache:${s.cachedStateCount.toLocaleString()}`
+      : C.dim("cache: warming");
 
     return [
-      ` ${animator.sectionLabel("🔗", "Graph")}`,
-      ` ${spin} ${color(String(s.poolCount), WHITE)} pools | ${s.edgeCount} edges`,
+      ` ${C.bold("🔗 Graph")}`,
+      ` ${spin} ${C.fg(String(s.poolCount), WHITE)} pools  ${s.edgeCount > 0 ? s.edgeCount.toLocaleString() + " edges" : ""}`,
       ` ${protoLine}`,
-      ` ${s.cachedStateCount > 0 ? `${s.cachedStateCount} state cached` : dim("No cached state")}`,
+      ` ${cacheStr}`,
     ];
   }
 
-  private renderExecutionPanel(_rect: PanelRect, state: TuiState, animator: Animator): string[] {
+  // ── Panel 6: Execution ─────────────────────────────────────────────────────
+
+  private _panelExecution(_rect: PanelRect, state: TuiState, frame: number): string[] {
     const m = state.metrics;
     const s = state.system;
     const isExec = s.pipelineStage === "EXECUTING";
-    const spin = animator.spinner(isExec);
-    const successRate = m.executed > 0 ? Math.round((m.successful / m.executed) * 100) : 0;
+    const spin = spinner(frame, isExec);
 
-    const lastExec = s.lastExecution;
-    const lastLine = lastExec
-      ? ` ${lastExec.path} ${color(lastExec.txHash.slice(0, 8), CYAN)} ${color(formatWei(lastExec.profit), lastExec.success ? GREEN : RED)}`
-      : dim(" No executions yet");
+    // Attempt / result counts
+    const successRate = fmtPct(m.successful, m.executed);
+    const revertStr = m.reverts > 0 ? C.fg(` rev:${m.reverts}`, YELLOW) : "";
+    const countsLine = ` ${spin} ${m.executed} att  ${C.fg(`${m.successful}✅`, GREEN)} ${C.fg(`${m.failed}❌`, m.failed > 0 ? RED : WHITE)}${revertStr}  win:${successRate}`;
 
-    const pl = formatWei(m.totalProfitWei);
-    const spark = animator.sparkline(s.profitSparkline, 10);
+    // Last execution
+    const le = s.lastExecution;
+    const lastLine = le
+      ? ` ${le.path.slice(0, 18)} ${C.fg(le.txHash.slice(0, 8), CYAN)} ${C.fg((le.profit >= 0n ? "+" : "") + fmtWeiMatic(le.profit) + "M", le.success ? GREEN : RED)}`
+      : C.dim(" No executions yet");
 
-    const bottomLine = s.lastRejectReason
-      ? ` Last Reject: ${color(s.lastRejectReason.slice(0, 24), RED)}`
-      : ` P/L: ${color(pl, m.totalProfitWei >= 0n ? GREEN : RED)} ${spark} win ${successRate}%`;
+    // P/L + sparkline
+    const pl = fmtWeiMatic(m.totalProfitWei);
+    const spark = sparkline(s.profitSparkline, 20);
+    const plLine = ` P/L: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${pl}`, m.totalProfitWei >= 0n ? GREEN : RED)} MATIC ${spark}`;
+
+    // Reject reason on its own line (won't stomp P/L)
+    const rejectLine = s.lastRejectReason
+      ? ` ⚠ ${C.fg(s.lastRejectReason.slice(0, 32), YELLOW)}`
+      : ` ${C.dim(`p/s: ${m.profitPerSecond > 0 ? m.profitPerSecond.toFixed(6) : "0"} MATIC/s`)}`;
 
     return [
-      ` ${animator.sectionLabel("⚡", "Execution")}`,
-      ` ${spin} ${m.executed} att. ${color(`${m.successful} ✅`, GREEN)} ${m.failed > 0 ? color(`${m.failed} ❌`, RED) : "0 ❌"}`,
+      ` ${C.bold("⚡ Execution")}`,
+      countsLine,
       lastLine,
-      bottomLine,
+      plLine,
+      rejectLine,
     ];
   }
 
-  private renderLog(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const visibleCount = Math.max(0, layout.log.height - 1);
-    const startIdx = Math.max(0, state.log.length - visibleCount);
-    const visible = state.log.slice(startIdx, startIdx + visibleCount);
-    const lines: string[] = [bold("📋 Event Log")];
+  // ── Log panel ──────────────────────────────────────────────────────────────
+
+  private _log(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const rect = layout.log;
+    const headerLine = C.bold("📋 Event Log");
+    const visibleRows = Math.max(0, rect.height - 1);
+    const startIdx = Math.max(0, state.log.length - visibleRows);
+    const visible = state.log.slice(startIdx);
+
+    const lines: string[] = [headerLine];
     for (const entry of visible) {
       const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
-      const compColor = SECTION_COLORS[entry.component] ?? WHITE;
-      const comp = color(entry.component.padEnd(8).slice(0, 8), compColor);
-      lines.push(` ${dim(time)} ${comp} ${entry.message}`);
+      const compCode = COMP_COLORS[entry.component] ?? WHITE;
+      const comp = C.fg(entry.component.padEnd(9).slice(0, 9), compCode);
+      lines.push(` ${C.dim(time)} ${comp} ${entry.message}`);
     }
-    while (lines.length < layout.log.height) {
-      lines.push("");
-    }
-    return this.panelBox(lines, layout.log);
+    // Pad to fill
+    while (lines.length < rect.height) lines.push("");
+
+    return this._box(lines, rect);
   }
 
-  private renderStatusBar(layout: TuiLayout, state: TuiState): RenderedPanel {
-    const s = state.system;
-    const rpcIcon = s.rpcConnected ? color("●", GREEN) : color("○", RED);
-    const hasuraIcon = s.hasuraConnected ? color("●", GREEN) : color("○", RED);
-    const wsIcon = s.wsConnected ? color("●", GREEN) : color("○", RED);
-    const hiBlock = s.hiSyncedBlock > 0 ? formatBlock(s.hiSyncedBlock) : "—";
+  // ── Status bar ─────────────────────────────────────────────────────────────
 
-    const left = ` RPC ${rpcIcon} Hasura ${hasuraIcon} WS ${wsIcon} Index:${hiBlock}`;
-    const right = ` ${dim("1-6:Tab Focus Q:Quit P:Pause R:Reset")}`;
-    const padding = Math.max(0, layout.statusBar.width - visibleLength(left) - visibleLength(right));
+  private _statusBar(layout: TuiLayout, state: TuiState): RenderedPanel {
+    const s = state.system;
+    const m = state.metrics;
+    const rect = layout.statusBar;
+
+    const dot = (ok: boolean) => (ok ? C.fg("●", GREEN) : C.fg("○", RED));
+    const rpcIcon    = dot(s.rpcConnected);
+    const hasuraIcon = dot(s.hasuraConnected);
+    const wsIcon     = dot(s.wsConnected);
+    const hiBlock = s.hiSyncedBlock > 0 ? fmtBlock(s.hiSyncedBlock) : "—";
+    const gas = s.gasPriceWei > 0n ? `${fmtGwei(s.gasPriceWei)}gw` : "—";
+    const cpm = m.cyclesPerMin > 0 ? `${m.cyclesPerMin}cpm` : "—";
+    const maxHp = m.maxHotPathMs > 0 ? `max:${m.maxHotPathMs}ms` : "";
+    const cramped = layout.cramped ? C.fg(" ⚠ Terminal too small", YELLOW) : "";
+
+    const left  = ` RPC${rpcIcon} Hasura${hasuraIcon} WS${wsIcon} idx:${hiBlock} gas:${gas} ${cpm} ${maxHp}${cramped}`;
+    const right = C.dim(" 1-6:focus  Tab:cycle  P:pause  R:reset  Q:quit ");
+    const gap = Math.max(0, rect.width - visLen(left) - visLen(right));
+
     return {
-      y: layout.statusBar.y,
-      content: cursor(layout.statusBar.y, layout.statusBar.x) + padRight(left + " ".repeat(padding) + right, layout.statusBar.width),
+      content: C.cursor(rect.y, rect.x) + padR(left + " ".repeat(gap) + right, rect.width),
     };
   }
 
-  private panelBox(lines: string[], rect: PanelRect, focused: boolean = false): RenderedPanel {
+  // ── Panel box renderer ─────────────────────────────────────────────────────
+
+  private _box(lines: string[], rect: PanelRect, focused = false): RenderedPanel {
     let content = "";
     for (let i = 0; i < rect.height; i++) {
-      const rawLine = lines[i] ?? "";
-      const line = focused ? color(rawLine, CYAN) : rawLine;
-      content += cursor(rect.y + i, rect.x);
-      content += padRight(line, rect.width);
+      const raw = lines[i] ?? "";
+      const line = focused ? C.fg(raw, CYAN) : raw;
+      content += C.cursor(rect.y + i, rect.x);
+      content += padR(line, rect.width);
     }
-    return { y: rect.y, content };
+    return { content };
   }
-}
-
-function formatWei(wei: bigint): string {
-  const eth = Number(wei) / 1e18;
-  return eth < 0.001 ? eth.toFixed(6) : eth.toFixed(4);
-}
-
-function formatUsd(wei: bigint, maticPriceUsd: number): string {
-  const matic = Number(wei) / 1e18;
-  const usd = matic * maticPriceUsd;
-  if (usd < 0.01) return `$${usd.toFixed(4)}`;
-  if (usd < 100) return `$${usd.toFixed(2)}`;
-  return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function formatBlock(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
-}
-
-function formatUptime(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }

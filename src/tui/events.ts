@@ -30,6 +30,16 @@ export type ArbEvent =
       hasuraConnected?: boolean;
       wsConnected?: boolean;
       maticPriceUsd?: number;
+      /** Cycles per minute (current rolling window) */
+      cyclesPerMin?: number;
+      /** Peak cycles per minute observed */
+      peakCpm?: number;
+      /** Overall execution success rate 0-100 */
+      successRate?: number;
+      /** Max HF cycle duration seen */
+      maxHotPathMs?: number;
+      /** Tracked routes with win-rate data */
+      trackedRoutes?: number;
     }
   | {
       type: "hyperindex_status";
@@ -46,6 +56,26 @@ export type ArbEvent =
       stage: "IDLE" | "DISCOVERY" | "LF_REFRESH" | "ENUMERATING" | "PRE_FETCH" | "RATES" | "SIMULATING" | "EXECUTING";
     }
   | { type: "simulation_progress"; current: number; total: number; profitable: number }
+  | {
+      /** Emitted once per pass after simulation completes — full breakdown for debugging */
+      type: "simulation_stats";
+      attempted: number;
+      simulated: number;
+      profitable: number;
+      noRate: number;
+      prunedMissingState: number;
+      prunedNoGrossProfit: number;
+      prunedInvalidBounds: number;
+      prunedFinalCheckFailed: number;
+      /** Max gross profit in mMATIC this pass */
+      maxGrossMilliMatic: number;
+      durationMs: number;
+      ratesCovered: number;
+      cacheSize: number;
+      /** Were cycles rate-safe before sim? */
+      rateSafeCycles: number;
+      totalCycles: number;
+    }
   | { type: "mempool_pending_swap"; poolPath: string; value: bigint; txHash: string; traceId: string }
   | { type: "cycles_enumerated"; total: number; cyclesByHop: Record<number, number>; elapsedMs: number }
   | { type: "graph_stats"; poolCount: number; protocolBreakdown: Record<string, number>; edgeCount: number; cachedCount: number }
