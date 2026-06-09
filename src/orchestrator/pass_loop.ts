@@ -240,7 +240,11 @@ async function runLfStateRefresh(
   try {
     const graphqlUrl = ctx.config.hasuraUrl;
     const secret = ctx.config.hasuraSecret;
-    const gqlCache = await ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret, ctx.logger));
+    const [gqlCache, fetchedProgress] = await Promise.all([
+      ctx.hasuraCircuit.execute(() => deps.buildStateCacheFromGraphQL(graphqlUrl, secret, ctx.logger)),
+      ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret, ctx.logger))
+    ]);
+    const progress = fetchedProgress;
     let newEntries = 0;
     let skippedStale = 0;
     for (const [addr, state] of gqlCache.entries()) {
@@ -264,7 +268,6 @@ async function runLfStateRefresh(
     ctx.logger.debug({ entries: gqlCache.size, newEntries, skippedStale }, "State and TokenMeta refreshed from HyperIndex");
 
     // New: lightweight progress signal from the block handler (see hyperindex/src/handlers/progress.ts)
-    const progress = await ctx.hasuraCircuit.execute(() => deps.fetchIndexerProgressFromHasura(graphqlUrl, secret, ctx.logger));
     if (progress) {
       ctx.logger.debug(
         { chainId: progress.chainId, lastProcessedBlock: progress.lastProcessedBlock },
@@ -538,8 +541,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   const operatorAccount = privateKeyToAccount(ctx.config.execution.privateKey as `0x${string}`);
   const operatorAddress = operatorAccount.address;
 
-  await ctx.executionService.start();
-  await ctx.mempoolService.start();
+  await Promise.all([ctx.executionService.start(), ctx.mempoolService.start()]);
 
   // Start WebSocket subscriber if configured
   if (ctx.wsSubscriber) {
@@ -1140,7 +1142,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                   // Dump full calldata for AI debug (arb-tx-tools sim) - useful when running `bun run tui`
                   // or headless to feed simulator/abicoder for exact re-runs of failing arbs.
                   try {
-                    const { appendFileSync } = await import("node:fs");
+                    const { appendFile } = await import("node:fs/promises");
                     const dump =
                       JSON.stringify({
                         ts: Date.now(),
@@ -1149,7 +1151,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                         target: candidate.targetAddress,
                         revertData: dryRun.revertData,
                       }) + "\n";
-                    appendFileSync("data/failing-calldata.ndjson", dump);
+                    await appendFile("data/failing-calldata.ndjson", dump);
                   } catch {}
                   ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
                   return null;

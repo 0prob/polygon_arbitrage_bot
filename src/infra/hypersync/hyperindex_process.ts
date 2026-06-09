@@ -264,9 +264,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     });
   }
 
-  function freePort(port: number): void {
+  async function freePort(port: number): Promise<void> {
     try {
-      const pid = execSync(`lsof -ti :${port}`, { encoding: "utf8", timeout: 2000 }).trim();
+      const { stdout } = await execAsync(`lsof -ti :${port}`, { encoding: "utf8", timeout: 2000 });
+      const pid = stdout.trim();
       if (pid) {
         try {
           process.kill(Number(pid), "SIGKILL");
@@ -275,7 +276,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         }
       }
     } catch {
-      // port is free
+      // port is free or lsof failed
     }
   }
 
@@ -493,9 +494,9 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       await performLightweightDockerCleanup(hiDir);
     }
 
-    freePort(9898);
+    await freePort(9898);
     if (!opts.hasuraUrl) {
-      freePort(8080);
+      await freePort(8080);
     }
     _stderrBuffer = [];
 
