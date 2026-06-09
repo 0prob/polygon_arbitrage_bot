@@ -1,0 +1,83 @@
+export const DODO_FACTORY_ABI = [
+  {
+    "name": "DVMDeployed",
+    "type": "event",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "baseToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "quoteToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "dvm",
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "name": "DPPDeployed",
+    "type": "event",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "baseToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "quoteToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "dpp",
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "name": "DSPDeployed",
+    "type": "event",
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "baseToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "quoteToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "dsp",
+        "type": "address"
+      }
+    ]
+  }
+] as const;
