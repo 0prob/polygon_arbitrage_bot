@@ -20,7 +20,6 @@ const WEI_PRECISION = 1_000_000_000_000_000_000n; // 1e18
  * of the token, SCALED by 1e18.
  */
 export function tokensToMaticWei(amountInTokens: bigint, tokenToMaticRate: bigint): bigint {
-  if (amountInTokens <= 0n) return 0n;
   if (tokenToMaticRate <= 0n) throw new Error("tokenToMaticRate must be > 0");
   return (amountInTokens * tokenToMaticRate) / WEI_PRECISION;
 }
@@ -219,7 +218,7 @@ export function computeProfitCore(
 
   const netProfitInTokens = grossProfitInTokens - slippage - revert - flashFee;
   const gasCostWei = gasCostMaticWei(gasUnits, gasPriceWei);
-  const netProfitMaticWei = tokensToMaticWei(netProfitInTokens > 0n ? netProfitInTokens : 0n, tokenToMaticRate);
+  const netProfitMaticWei = tokensToMaticWei(netProfitInTokens, tokenToMaticRate);
   const netProfitAfterGasMaticWei = netProfitMaticWei - gasCostWei;
 
   const gasCostInTokens = maticWeiToTokens(gasCostWei, tokenToMaticRate);

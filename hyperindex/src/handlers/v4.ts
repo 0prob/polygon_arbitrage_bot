@@ -1,6 +1,5 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -8,7 +7,6 @@ indexer.onEvent(
   {
     contract: "PoolManager",
     event: "Initialize",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS, ["currency0", "currency1"]),
   },
   async ({ event, context }) => {
     const poolId = event.params.id;

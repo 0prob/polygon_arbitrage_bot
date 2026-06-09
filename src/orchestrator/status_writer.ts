@@ -27,8 +27,6 @@ export interface StatusPayload {
     lag: number;
     syncRate: number;
     healthy: boolean;
-    /** Whether the indexer is running in hot-bias mode (limits discovery to major tokens) or broad long-tail mode */
-    discoveryMode?: "broad" | "hot-bias";
     /** Last block processed by handlers (from the IndexerProgress block handler entity) */
     progressBlock?: number;
   };
@@ -50,7 +48,6 @@ export function buildStatusPayload(
     lag: number;
     syncRate: number;
     healthy: boolean;
-    discoveryMode?: "broad" | "hot-bias";
     progressBlock?: number;
   },
 ): StatusPayload {

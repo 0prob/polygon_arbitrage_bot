@@ -1,6 +1,6 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { isLikelyGarbagePair } from "../utils/guards";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -38,7 +38,6 @@ indexer.contractRegister(
   {
     contract: "V3Factory",
     event: "PoolCreated",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS),
   },
   async ({ event, context }) => {
     context.chain.UniswapV3Pool.add(event.params.pool);
@@ -53,7 +52,6 @@ indexer.onEvent(
   {
     contract: "V3Factory",
     event: "PoolCreated",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS),
   },
   async ({ event, context }) => {
     const t0 = event.params.token0;

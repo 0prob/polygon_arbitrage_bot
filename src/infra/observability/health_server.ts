@@ -118,9 +118,6 @@ export class HealthServer implements Lifecycle {
         running: this.deps.hyperIndexMonitor.isRunning(),
         healthy: this.deps.hyperIndexMonitor.isHealthy(),
         ...this.deps.hyperIndexMonitor.getLastStatus(),
-        ...(process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1"
-          ? { discoveryMode: "hot-bias" as const }
-          : { discoveryMode: "broad" as const }),
       },
       rpc: { healthy: this.deps.rpcCircuit.isHealthy() },
       hasura: { healthy: this.deps.hasuraCircuit.isHealthy() },

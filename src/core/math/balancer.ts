@@ -100,15 +100,18 @@ function ln(a: bigint): bigint {
   let sum = 0n;
   let neg = false;
 
-  for (let i = 1n; i <= 20n; i++) {
+  for (let i = 1n; i <= 100n; i++) {
+    const nextTerm = term / i;
+    if (nextTerm === 0n) break;
+    
     if (!neg) {
-      sum += term / i;
+      sum += nextTerm;
     } else {
-      sum -= term / i;
+      sum -= nextTerm;
     }
     neg = !neg;
     term = (term * u) / ONE;
-    if (term < 100n) break;
+    if (term === 0n) break;
   }
 
   const result = k * LN2 + sum;

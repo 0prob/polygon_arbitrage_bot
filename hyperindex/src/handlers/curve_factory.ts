@@ -1,7 +1,6 @@
 import { indexer } from "envio";
 import { fetchCurveMetadata } from "../effects/curve_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -36,12 +35,6 @@ indexer.onEvent(
     const tEffCurve = Date.now();
     const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4, blockNumber: BigInt(blockNumber) });
     logEffectTime("fetchCurveMetadata", Date.now() - tEffCurve, blockNumber);
-
-    // Hot bias filtering for Curve now primarily happens in the async contractRegister
-    // (see above). This remains as a backstop / for the non-hot-bias case.
-    if (INDEXER_HOT_BIAS && !meta.coins.some((coin) => involvesHotBase(coin, coin))) {
-      return;
-    }
 
     // Schedule + await coin token metadata effects *early* (right after curve meta, before isPreload guard)
     // so the full set of effects for this event participates in preload-phase parallel batching

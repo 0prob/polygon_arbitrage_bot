@@ -68,7 +68,6 @@ function sleep(ms: number): Promise<void> {
  *
  * Indexer Interaction:
  * The Envio indexer (hyperindex/) should default to broad discovery.
- * See hyperindex/src/utils/hot_tokens.ts and `INDEXER_HOT_BIAS` env var.
  * Enabling hot-bias in the indexer reduces long-tail pool discovery and should
  * be considered a conservative deviation from this strategy.
  */
@@ -123,13 +122,10 @@ async function runPoolDiscovery(
   const graphqlUrl = ctx.config.hasuraUrl;
   const secret = ctx.config.hasuraSecret;
 
-  const indexerHotBias = ctx.config.routing.indexerHotBias ?? false;
-  const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
-
   if (!currentPools || currentPools.length === 0) {
-    ctx.logger.info({ discoveryMode }, "No pools — discovering from Hasura");
+    ctx.logger.info({}, "No pools — discovering from Hasura");
   } else {
-    ctx.logger.info({ discoveryMode, lastDiscoveredBlock }, "Polling Hasura for new pools");
+    ctx.logger.info({ lastDiscoveredBlock }, "Polling Hasura for new pools");
   }
 
   const newLastDiscoveryTime = now;
@@ -138,7 +134,6 @@ async function runPoolDiscovery(
     const result = await ctx.rpcCircuit.execute(
       () =>
         deps.discoverPoolsFromHasura(graphqlUrl, secret, ctx.logger, {
-          discoveryMode,
           lastDiscoveredBlock,
         }),
       async () => {
@@ -317,17 +312,8 @@ async function runLfStateRefresh(
   // (and better) long-tail opportunities instead of only marginal hot V2 pairs.
 
   // Low infra detection must precede bootstrap/gradual/etc uses of lowInfra.
-  let warnedLowInfra = false;
   const rps = ctx.config.rpc.chainstackRps ?? 250;
   const lowInfra = rps <= 250;
-  const indexerHotBiasEarly = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
-  if (lowInfra && !indexerHotBiasEarly && !warnedLowInfra) {
-    ctx.logger.warn(
-      { rps },
-      "Low infra (RPS<=250) + no INDEXER_HOT_BIAS: recommend INDEXER_HOT_BIAS=true (pairs with our expanded HOT_BASE list) to limit discovery volume while retaining long-tail coverage on alt+base pairs. Otherwise expect higher noRate and more RPC pressure on limited infra.",
-    );
-    warnedLowInfra = true;
-  }
 
   if (stateCacheEmpty) {
     const BASE_MAX = 12000;
@@ -865,14 +851,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             const broadCap = lowBroad ? 400 : 5000;
             const cap = broadTokenPools.slice(0, broadCap);
             fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, cap, [], [], true)
-              .then((extra) => {
-                if (extra.size > 0) {
-                  ctx.logger.info(
-                    { broadTokenPoolsFetched: extra.size, cycleTokens: cycleTokens.size, lowInfra: lowBroad },
-                    "Broad state pre-fetch for cycle tokens (improves rate path coverage)",
-                  );
-                }
-              })
               .catch(() => {});
           }
         }
@@ -1365,14 +1343,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       bus?.emit({ type: "connection_status", subsystem: "ws", status: isWsConnected ? "connected" : "disconnected" });
       const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
-      // Hot-bias mode comes from the same env var the hyperindex sees.
-      // When true, the indexer limits pool discovery to "hot" major tokens (conservative mode).
-      // Default (false) = broad long-tail discovery (primary strategy).
-      // Low-infra: enable hot-bias (with our expanded HOT_BASE list) to cut discovery
-      // volume while preserving rate coverage on more bases (fights high noRate).
-      const indexerHotBias = process.env.INDEXER_HOT_BIAS === "true" || process.env.INDEXER_HOT_BIAS === "1";
-      const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
-
       const payload = buildStatusPayload(
         ctx.metrics,
         gasSnapshot.gasPrice,
@@ -1384,7 +1354,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               lag: hiStatus.lag,
               syncRate: hiStatus.syncRate,
               healthy: ctx.hyperIndexMonitor!.isHealthy(),
-              discoveryMode,
             }
           : undefined,
       );

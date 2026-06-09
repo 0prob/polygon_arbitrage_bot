@@ -178,5 +178,25 @@
   {
     "address": "0xfde4c484c3eae3c2000a5ef79ded65d6bfe10c37",
     "decimals": 18
+  },
+  {
+    "address": "0x1e9909f1c7051ad4bf4496a345736dcedc2a3cfd",
+    "decimals": 18
+  },
+  {
+    "address": "0xddd872b27df54bcbfcd904a9240440019744cec8",
+    "decimals": 18
+  },
+  {
+    "address": "0x64692595cb8e717047bebd3eccddaa118dca9cc2",
+    "decimals": 18
+  },
+  {
+    "address": "0xb1bbb3af4b1d11fc2194dad2345f6eaa5218c594",
+    "decimals": 18
+  },
+  {
+    "address": "0x35570778613c4fb89bec73c6f97fa4ee6ecf2e1b",
+    "decimals": 18
   }
 ]

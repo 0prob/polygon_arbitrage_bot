@@ -29,6 +29,7 @@ const sortedTicksCache = new Map<
   {
     tickVersion: number;
     ticksRef: Map<unknown, unknown>;
+    ticksSize: number;
     sortedTicks: number[];
   }
 >();
@@ -100,7 +101,7 @@ function getSortedTicks(state: V3PoolStateLike) {
   const key = poolCacheKey(state);
   if (key) {
     const cached = sortedTicksCache.get(key);
-    if (cached && cached.ticksRef === ticks && cached.tickVersion === tickVersion) {
+    if (cached && cached.ticksRef === ticks && cached.tickVersion === tickVersion && cached.ticksSize === ticks.size) {
       return cached.sortedTicks;
     }
   }
@@ -122,6 +123,7 @@ function getSortedTicks(state: V3PoolStateLike) {
     sortedTicksCache.set(key, {
       tickVersion,
       ticksRef: ticks,
+      ticksSize: ticks.size,
       sortedTicks,
     });
   }

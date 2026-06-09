@@ -13,6 +13,9 @@ describe("tokensToMaticWei", () => {
   it("returns 0 for zero amount", () => {
     expect(tokensToMaticWei(0n, 1_000_000n)).toBe(0n);
   });
+  it("preserves negative amount", () => {
+    expect(tokensToMaticWei(-1_000_000n, 500_000_000_000_000_000_000_000_000_000n)).toBe(-500_000_000_000_000_000n);
+  });
   it("throws for zero rate", () => {
     expect(() => tokensToMaticWei(100n, 0n)).toThrow();
   });

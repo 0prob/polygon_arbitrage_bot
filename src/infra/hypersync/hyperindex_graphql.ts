@@ -360,7 +360,6 @@ export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
 }
 
 export interface DiscoverPoolsOptions {
-  discoveryMode?: "broad" | "hot-bias";
   lastDiscoveredBlock?: number;
 }
 
@@ -373,28 +372,13 @@ export async function discoverPoolsFromHasura(
   const anchors = STATIC_ANCHORS;
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
-  let maxBlock = options.lastDiscoveredBlock ?? 0;
-
-  const { discoveryMode = "broad", lastDiscoveredBlock = 0 } = options;
+  const lastDiscoveredBlock = options.lastDiscoveredBlock ?? 0;
+  let maxBlock = lastDiscoveredBlock;
 
   // Build where clause
   let whereClauses: string[] = [];
   if (lastDiscoveredBlock > 0) {
     whereClauses.push(`createdBlock: { _gt: ${lastDiscoveredBlock} }`);
-  }
-
-  if (discoveryMode === "hot-bias") {
-    // In Hasura/Envio, tokens is [String!]. We want pools where ANY token is in HOT_BASE_TOKENS.
-    // However, Hasura _in filter for arrays usually checks for inclusion.
-    // If it's a simple jsonb or array, we might need a more complex filter or multiple queries.
-    // For now, we'll fetch them and filter locally if a simple _in isn't supported, 
-    // but Envio's Hasura usually supports _contains or similar.
-    // Given we want "any token in hot list", and tokens is [String!], 
-    // we'll try to use a filter that works for this. 
-    // Optimization: If broad, we fetch all. If hot-bias, we can significantly reduce rows.
-    // For simplicity and correctness across Envio versions, we'll use a broad fetch if 
-    // incremental, and only apply hot-bias locally if not incremental, OR try a basic filter.
-    // Let's try to use the `tokens` filter if we can.
   }
 
   const where = whereClauses.length > 0 ? `where: { ${whereClauses.join(", ")} }` : "";
@@ -435,12 +419,6 @@ export async function discoverPoolsFromHasura(
 
   try {
     let discovered = parsePoolMetaRows(allRows);
-
-    // Apply hot-bias filter locally if requested (more reliable than complex GraphQL array filters)
-    if (discoveryMode === "hot-bias") {
-      const { HOT_BASE_SET } = await import("../../../hyperindex/src/utils/hot_tokens.ts");
-      discovered = discovered.filter((p) => p.tokens.some((t) => HOT_BASE_SET.has(t.toLowerCase())));
-    }
 
     const combined = lastDiscoveredBlock > 0 ? [] : [...anchors].filter((p) => !isGarbagePool(p));
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));

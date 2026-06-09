@@ -24,7 +24,11 @@ for (const line of lines) {
         data: data.revertData
       });
       console.log(`Time: ${new Date(data.ts).toISOString()} | Route: ${data.routeKey}`);
-      console.log(`Error: ${decoded.errorName} | Token: ${decoded.args[0]} | To: ${decoded.args[1]} | Amount: ${decoded.args[2]}`);
+      if (decoded.args) {
+        console.log(`Error: ${decoded.errorName} | Token: ${decoded.args[0]} | To: ${decoded.args[1]} | Amount: ${decoded.args[2]}`);
+      } else {
+        console.log(`Error: ${decoded.errorName}`);
+      }
       console.log("---");
     } catch (e) {
       console.log(`Failed to decode: ${data.revertData}`);

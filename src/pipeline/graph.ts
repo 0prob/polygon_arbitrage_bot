@@ -38,14 +38,16 @@ export function createEdgesForPool(pool: PoolMeta, state: Record<string, unknown
   return edges;
 }
 
+const edgesCache = new Map<string, SwapEdge[]>();
+// Optional adjacency cache to avoid Map re-allocation for the same pool set
+const adjacencyCache = new Map<string, SwapEdge[]>();
+
 export function buildGraph(
   pools: PoolMeta[],
   stateCache: Map<string, unknown>,
   tokenToMaticRates?: Map<string, bigint>,
   liquidityFloorUsd?: number,
 ): RoutingGraph {
-  // Final safety net: drop any garbage pools that somehow made it this far
-  // (e.g. historical data from before the indexer filter, or bad static anchors).
   const cleanPools = pools.filter((p) => !isGarbagePool(p));
 
   const adjacency = new Map<string, SwapEdge[]>();
@@ -53,47 +55,55 @@ export function buildGraph(
   const stateRefs = new Map<string, PoolState | null>();
   const tokens = new Set<string>();
 
-  // Use a rough MATIC price for liquidity filtering if rates provided.
-  // 1 MATIC ~ 0.5 USD for thresholding purposes.
   const maticPerUsd = 2n;
 
-  for (const pool of cleanPools) {
+  for (let pIdx = 0; pIdx < cleanPools.length; pIdx++) {
+    const pool = cleanPools[pIdx];
     const addr = pool.address.toLowerCase();
     const state = stateCache.get(addr) as Record<string, unknown> | undefined;
 
-    // Optional: aggressive liquidity filtering if we have state and rates.
     if (state && !isInvalidState(state) && tokenToMaticRates && liquidityFloorUsd != null && liquidityFloorUsd > 0) {
       const proto = normalizeProtocol(pool.protocol);
-      let poolLiquidityMatic = 0n;
-
       if (proto === "V2") {
         const r0 = state.reserve0 as bigint | undefined;
         const r1 = state.reserve1 as bigint | undefined;
         const rate0 = tokenToMaticRates.get(pool.token0.toLowerCase());
         const rate1 = tokenToMaticRates.get(pool.token1.toLowerCase());
-
+        let poolLiquidityMatic = 0n;
         if (r0 != null && rate0 != null) poolLiquidityMatic += tokensToMaticWei(r0, rate0);
         if (r1 != null && rate1 != null) poolLiquidityMatic += tokensToMaticWei(r1, rate1);
-      }
-
-      const floorMatic = BigInt(Math.floor(liquidityFloorUsd)) * maticPerUsd * 10n ** 18n;
-      if (poolLiquidityMatic > 0n && poolLiquidityMatic < floorMatic) {
-        continue; // Skip dust pool
+        const floorMatic = BigInt(Math.floor(liquidityFloorUsd)) * maticPerUsd * 10n ** 18n;
+        if (poolLiquidityMatic > 0n && poolLiquidityMatic < floorMatic) continue;
       }
     }
 
     poolMeta.set(addr, pool);
-    stateRefs.set(addr, state ?? null);
+    stateRefs.set(addr, (state as PoolState) ?? null);
+    
     const t = pool.tokens ?? [];
     for (let i = 0; i < t.length; i++) {
-      const tILower = t[i].toLowerCase();
-      tokens.add(tILower);
+      tokens.add(t[i].toLowerCase());
     }
-    const poolEdges = createEdgesForPool(pool, state);
-    for (const edge of poolEdges) {
-      const from = edge.tokenIn; // already lowercased Address
-      if (!adjacency.has(from)) adjacency.set(from, []);
-      adjacency.get(from)!.push(edge);
+
+    let poolEdges = edgesCache.get(addr);
+    if (!poolEdges) {
+      poolEdges = createEdgesForPool(pool, state);
+      edgesCache.set(addr, poolEdges);
+    } else {
+      for (let i = 0; i < poolEdges.length; i++) {
+        poolEdges[i].stateRef = state;
+      }
+    }
+
+    for (let eIdx = 0; eIdx < poolEdges.length; eIdx++) {
+      const edge = poolEdges[eIdx];
+      const from = edge.tokenIn;
+      let adj = adjacency.get(from);
+      if (!adj) {
+        adj = [];
+        adjacency.set(from, adj);
+      }
+      adj.push(edge);
     }
   }
   return { adjacency, poolMeta, stateRefs, tokens };

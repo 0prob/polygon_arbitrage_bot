@@ -35,5 +35,30 @@ export const UNISWAP_V3_FACTORY_ABI = [
     ],
     "name": "PoolCreated",
     "type": "event"
+  },
+  {
+    "type": "function",
+    "name": "getPool",
+    "inputs": [
+      {
+        "name": "tokenA",
+        "type": "address"
+      },
+      {
+        "name": "tokenB",
+        "type": "address"
+      },
+      {
+        "name": "fee",
+        "type": "uint24"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pool",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view"
   }
 ] as const;

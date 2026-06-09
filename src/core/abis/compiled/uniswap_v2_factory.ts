@@ -29,5 +29,26 @@ export const UNISWAP_V2_FACTORY_ABI = [
     ],
     "name": "PairCreated",
     "type": "event"
+  },
+  {
+    "type": "function",
+    "name": "createPair",
+    "inputs": [
+      {
+        "name": "tokenA",
+        "type": "address"
+      },
+      {
+        "name": "tokenB",
+        "type": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pair",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
   }
 ] as const;

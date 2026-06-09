@@ -107,7 +107,6 @@ async function main() {
       remoteBlock: st.remote || st.remoteBlock || 0,
       lag: st.lag || 0,
       syncRate: st.syncRate || 0,
-      discoveryMode: "broad",
     });
   }, 10000);
 

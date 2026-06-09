@@ -46,7 +46,6 @@ async function main() {
       remoteBlock: 0,
       lag: 0,
       syncRate: 0,
-      discoveryMode: "broad",
     });
   }, 10000);
 

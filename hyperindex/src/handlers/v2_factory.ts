@@ -1,6 +1,6 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { isLikelyGarbagePair, createHotBiasWhere, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
+import { isLikelyGarbagePair } from "../utils/guards";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -44,7 +44,6 @@ indexer.contractRegister(
   {
     contract: "V2Factory",
     event: "PairCreated",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS),
   },
   async ({ event, context }) => {
     // Use context.chain for the modern v3 way to register dynamic contracts.
@@ -60,7 +59,6 @@ indexer.onEvent(
   {
     contract: "V2Factory",
     event: "PairCreated",
-    where: createHotBiasWhere(INDEXER_HOT_BIAS),
   },
   async ({ event, context }) => {
     const t0 = event.params.token0;

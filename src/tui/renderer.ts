@@ -240,10 +240,9 @@ export class Renderer {
     const lagColor = lag > 500 ? RED : lag > 50 ? YELLOW : GREEN;
     const pct = s.hiRemoteBlock > 0 && s.hiSyncedBlock > 0 ? Math.min(100, Math.floor((s.hiSyncedBlock / s.hiRemoteBlock) * 100)) : 0;
     const bar = progressBar(s.hiSyncedBlock, s.hiRemoteBlock, 10);
-    const mode = s.hiDiscoveryMode ?? "broad";
 
     const ds = s.discoverySummary;
-    let summaryLine = ` Mode: ${C.fg(mode, mode === "broad" ? CYAN : YELLOW)}`;
+    let summaryLine = ``;
     if (ds) {
       const top2 = Object.entries(ds.protocolBreakdown)
         .sort(([, a], [, b]) => b - a)

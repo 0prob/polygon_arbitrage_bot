@@ -15,22 +15,26 @@ import {
   ZERO_ADDRESS,
   BPS_DENOMINATOR,
 } from "./constants.ts";
+import { ERC20_ABI } from "../../../core/abis/common.ts";
+import { ARB_EXECUTOR_ABI } from "../../../core/abis/executor.ts";
 import {
-  ERC20_TRANSFER_ABI,
-  V2_PAIR_SWAP_ABI,
-  V3_POOL_SWAP_ABI,
+  UNISWAP_V2_POOL_ABI,
+  UNISWAP_V3_POOL_ABI,
+  DODO_POOL_ABI,
+  WOOFI_POOL_ABI,
+  CURVE_POOL_ABI,
+  BALANCER_VAULT_ABI,
+  UNISWAP_V4_POOL_MANAGER_ABI,
+} from "../../../core/abis/compiled/index.ts";
+import {
   KYBER_ELASTIC_POOL_SWAP_ABI,
-  DODO_SELL_BASE_ABI,
-  DODO_SELL_QUOTE_ABI,
-  WOOFI_ROUTER_SWAP_ABI,
+  POOL_MANAGER_LOCK_ABI,
   CURVE_EXCHANGE_INT128_ABI,
   CURVE_EXCHANGE_UINT256_ABI,
   CURVE_EXCHANGE_INT128_RECEIVER_ABI,
-  BALANCER_VAULT_SWAP_ABI,
-  EXECUTOR_APPROVE_IF_NEEDED_ABI,
-  EXECUTOR_TRANSFER_ALL_ABI,
-  POOL_MANAGER_LOCK_ABI,
-} from "./abis.ts";
+  DODO_SELL_BASE_ABI,
+  DODO_SELL_QUOTE_ABI,
+} from "../../../core/abis/protocols/custom.ts";
 import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts";
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -113,7 +117,7 @@ function encodeDynamicApprovalCall(executor: string, token: string, spender: str
     target: getAddress(executor),
     value: 0n,
     data: encodeFunctionData({
-      abi: EXECUTOR_APPROVE_IF_NEEDED_ABI,
+      abi: ARB_EXECUTOR_ABI,
       functionName: "approveIfNeeded",
       args: [getAddress(token), getAddress(spender), normalizeUint(amount, "approval amount")],
     }),
@@ -125,7 +129,7 @@ function encodeDynamicTransferAllCall(executor: string, token: string, to: strin
     target: getAddress(executor),
     value: 0n,
     data: encodeFunctionData({
-      abi: EXECUTOR_TRANSFER_ALL_ABI,
+      abi: ARB_EXECUTOR_ABI,
       functionName: "transferAll",
       args: [getAddress(token), getAddress(to)],
     }),
@@ -182,7 +186,7 @@ export function encodeV2Hop(
     calls.push({
       target: tokenIn,
       value: 0n,
-      data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pair, amountIn] }),
+      data: encodeFunctionData({ abi: ERC20_ABI, functionName: "transfer", args: [pair, amountIn] }),
     });
   }
   const amount0Out = hop.zeroForOne ? 0n : minAmountOut;
@@ -190,7 +194,7 @@ export function encodeV2Hop(
   calls.push({
     target: pair,
     value: 0n,
-    data: encodeFunctionData({ abi: V2_PAIR_SWAP_ABI, functionName: "swap", args: [amount0Out, amount1Out, asAddress(recipient), "0x"] }),
+    data: encodeFunctionData({ abi: UNISWAP_V2_POOL_ABI, functionName: "swap", args: [amount0Out, amount1Out, asAddress(recipient), "0x"] }),
   });
   return calls;
 }
@@ -221,7 +225,7 @@ export function encodeV3Hop(hop: CalldataHop, recipient: string, options: RouteC
       target: pool,
       value: 0n,
       data: encodeFunctionData({
-        abi: V3_POOL_SWAP_ABI,
+        abi: UNISWAP_V3_POOL_ABI,
         functionName: "swap",
         // negative amountSpecified = exact-input mode
         args: [asAddress(recipient), Boolean(hop.zeroForOne), -amountIn, sqrtPriceLimitX96, callbackData],
@@ -277,7 +281,7 @@ export function encodeDodoHop(hop: CalldataHop, recipient: string, useTransferAl
     calls.push({
       target: tokenIn,
       value: 0n,
-      data: encodeFunctionData({ abi: ERC20_TRANSFER_ABI, functionName: "transfer", args: [pool, amountIn] }),
+      data: encodeFunctionData({ abi: ERC20_ABI, functionName: "transfer", args: [pool, amountIn] }),
     });
   }
   calls.push({
@@ -306,7 +310,7 @@ export function encodeWoofiHop(hop: CalldataHop, executor: string, options: Rout
       target: router,
       value: 0n,
       data: encodeFunctionData({
-        abi: WOOFI_ROUTER_SWAP_ABI,
+        abi: WOOFI_POOL_ABI,
         functionName: "swap",
         args: [tokenIn, tokenOut, amountIn, minToAmount, exec, ZERO_ADDRESS],
       }),
@@ -378,7 +382,7 @@ export function encodeBalancerHop(hop: CalldataHop, executor: string, options: R
       target: vault,
       value: 0n,
       data: encodeFunctionData({
-        abi: BALANCER_VAULT_SWAP_ABI,
+        abi: BALANCER_VAULT_ABI,
         functionName: "swap",
         args: [
           { poolId, kind: 0, assetIn: tokenIn, assetOut: tokenOut, amount: amountIn, userData: "0x" },
@@ -438,7 +442,7 @@ export function encodeV4Hop(hop: CalldataHop, executor: string): ExecutorCall[] 
       target: poolManager,
       value: 0n,
       data: encodeFunctionData({
-        abi: POOL_MANAGER_LOCK_ABI,
+        abi: UNISWAP_V4_POOL_MANAGER_ABI,
         functionName: "lock",
         args: [lockData],
       }),

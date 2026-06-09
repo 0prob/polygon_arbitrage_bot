@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { decodeFunctionData } from "viem";
 import { encodeRoute, computeRouteHash, buildFlashParams } from "./index.ts";
-import { V3_POOL_SWAP_ABI, EXECUTOR_TRANSFER_ALL_ABI } from "./abis.ts";
+import { UNISWAP_V3_POOL_ABI } from "../../../core/abis/compiled/index.ts";
+import { ARB_EXECUTOR_ABI } from "../../../core/abis/executor.ts";
 
 describe("calldata module", () => {
   it("computeRouteHash produces deterministic 32-byte hash", () => {
@@ -109,7 +110,7 @@ describe("calldata module", () => {
 
     // Check second hop transferAll (to pool 2)
     const decoded2 = decodeFunctionData({
-      abi: EXECUTOR_TRANSFER_ALL_ABI,
+      abi: ARB_EXECUTOR_ABI,
       data: calls[2].data,
     });
     expect(decoded2.functionName).toBe("transferAll");
@@ -145,7 +146,7 @@ describe("calldata module", () => {
     );
     expect(calls).toHaveLength(1);
     const decoded = decodeFunctionData({
-      abi: V3_POOL_SWAP_ABI,
+      abi: UNISWAP_V3_POOL_ABI,
       data: calls[0].data,
     });
     expect(decoded.functionName).toBe("swap");

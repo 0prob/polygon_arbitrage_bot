@@ -19,7 +19,7 @@ import {
   encodeV4Hop,
 } from "./hops.ts";
 import { slippageAdjustedAmountOut } from "./utils.ts";
-import { EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI, EXECUTOR_AAVE_ABI } from "./abis.ts";
+import { ARB_EXECUTOR_ABI, CALL_STRUCT_ARRAY_ABI } from "../../../core/abis/executor.ts";
 import type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput } from "./types.ts";
 
 export type { ExecutorCall, CalldataHop, CalldataRoute, RouteCalldataOptions, FlashParamsInput, ExecuteArbInput };
@@ -135,7 +135,7 @@ export function buildFlashParams(input: FlashParamsInput) {
 export function encodeExecuteArb(input: ExecuteArbInput) {
   const flashParams = buildFlashParams(input);
   const data = encodeFunctionData({
-    abi: EXECUTOR_ABI,
+    abi: ARB_EXECUTOR_ABI,
     functionName: "executeArb",
     args: [getAddress(input.flashToken), input.flashAmount, flashParams],
   });
@@ -145,7 +145,7 @@ export function encodeExecuteArb(input: ExecuteArbInput) {
 export function encodeExecuteArbWithAave(input: ExecuteArbInput) {
   const flashParams = buildFlashParams(input);
   const data = encodeFunctionData({
-    abi: EXECUTOR_AAVE_ABI,
+    abi: ARB_EXECUTOR_ABI,
     functionName: "executeArbWithAave",
     args: [getAddress(input.flashToken), input.flashAmount, flashParams],
   });

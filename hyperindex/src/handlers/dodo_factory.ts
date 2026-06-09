@@ -1,7 +1,6 @@
 import { indexer, Effect } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -21,11 +20,6 @@ async function handleDodoPool(
   blockNumber: number,
   txHash: string | undefined,
 ) {
-  // Manual JS-level filter for hot bias mode because baseToken/quoteToken are not indexed
-  if (INDEXER_HOT_BIAS && !involvesHotBase(base, quote)) {
-    return;
-  }
-
   // Schedule ALL effects at the top (after cheap hot filter) so DODO + token metadata
   // participate in Envio preload batching + memoization. PoolMeta write moved after guard.
   // See https://docs.envio.dev/docs/HyperIndex/event-handlers#preload-optimization
@@ -85,9 +79,6 @@ const DODO_POOL_EVENTS = [
 function registerDodoEvent(cfg: (typeof DODO_POOL_EVENTS)[number]): void {
   indexer.contractRegister({ contract: "DodoFactory", event: cfg.event }, async ({ event: ev, context }: any) => {
     // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (INDEXER_HOT_BIAS && !involvesHotBase(ev.params.baseToken, ev.params.quoteToken)) {
-      return;
-    }
     context.chain.DodoPool.add(ev.params[cfg.poolField]);
     if (context.log) {
       context.log.info(`Registered dynamic DODO pool (${cfg.label})`, { pool: ev.params[cfg.poolField] });

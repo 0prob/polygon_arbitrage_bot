@@ -49,7 +49,6 @@ export type ArbEvent =
       chain?: string;
       lag?: number;
       syncRate?: number;
-      discoveryMode?: "broad" | "hot-bias";
     }
   | {
       type: "pipeline_stage";

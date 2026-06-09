@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { MempoolService } from "./service.ts";
 import type { MempoolSignal } from "./signals.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
+import { encodeFunctionData } from "viem";
+import { UNISWAP_V2_POOL_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V2_FACTORY_ABI } from "../../core/abis/compiled/index.ts";
 
 describe("MempoolService", () => {
   it("emits large_swap signal for matching V2 swap", () => {
@@ -11,11 +13,15 @@ describe("MempoolService", () => {
     service.setKnownPools(["0xpool1"]);
     service.onSignal((s) => signals.push(s));
 
-    // V2 swap selector + amount0Out > threshold
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [100n, 0n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
     const tx = {
       hash: "0xabc",
       to: "0xpool1",
-      input: "0x022c0d9f" + "1".repeat(64) + "0".repeat(64) + "0".repeat(64) + "0".repeat(64),
+      input,
       value: "0x0",
     };
     service.processPendingTx(tx);
@@ -30,22 +36,22 @@ describe("MempoolService", () => {
     service.setKnownPools(["0xpoolv3"]);
     service.onSignal((s) => signals.push(s));
 
-    // V3 swap: selector (10), recipient (64), zfo (64), amount (64), price (64), data (any)
+    const input = encodeFunctionData({
+      abi: UNISWAP_V3_POOL_ABI,
+      functionName: "swap",
+      args: ["0x0000000000000000000000000000000000000000", true, 10n, 0n, "0x"],
+    });
     const tx = {
       hash: "0xabc",
       to: "0xpoolv3",
-      input:
-        "0x128acb08" +
-        "0".repeat(64) +
-        "1".repeat(64) +
-        "000000000000000000000000000000000000000000000000000000000000000a" +
-        "0".repeat(64),
+      input,
       value: "0x0",
     };
     service.processPendingTx(tx);
     expect(signals.length).toBe(1);
     expect((signals[0] as any).data.estimatedSwapSize).toBe(10n);
   });
+
   it("emits large_swap for generic indirect swap (heuristic)", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
@@ -54,17 +60,15 @@ describe("MempoolService", () => {
     service.setKnownPools([poolAddr]);
     service.onSignal((s) => signals.push(s));
 
-    // Indirect swap via a router calling a pool.
-    // Selector (4 bytes) + padding.
-    // To be 32-byte aligned in `extractEncodedAddresses`, we need the address to start at 10 + 64*n + 24.
-    // For n = 0, address starts at index 34.
-    // Input is 0x...
-    // 52bbbe29 is 8 chars (4 bytes) after "0x".
-    // We need 24 chars of padding to align the 40-char pool address in slot 1.
+    const input = encodeFunctionData({
+      abi: UNISWAP_V3_POOL_ABI,
+      functionName: "swap",
+      args: [poolAddr, true, 1n, 0n, "0x"],
+    });
     const tx = {
       hash: "0xabc",
       to: "0xrouter",
-      input: "0x52bbbe29" + "0".repeat(24) + poolAddr.slice(2) + "0".repeat(64),
+      input,
       value: "0x0",
     };
     service.processPendingTx(tx);
@@ -79,7 +83,12 @@ describe("MempoolService", () => {
     const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
     service.onSignal((s) => signals.push(s));
 
-    service.processPendingTx({ hash: "0xabc", to: "0xunknown", input: "0x022c0d9f" + "0".repeat(200), value: "0x0" });
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [0n, 0n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
+    service.processPendingTx({ hash: "0xabc", to: "0xunknown", input, value: "0x0" });
     expect(signals.length).toBe(0);
   });
 
@@ -89,10 +98,15 @@ describe("MempoolService", () => {
     const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
     service.onSignal((s) => signals.push(s));
 
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_FACTORY_ABI,
+      functionName: "createPair",
+      args: ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"],
+    });
     const tx = {
       hash: "0x1234567890",
       to: "0xfactory",
-      input: "0xc9c65396" + "0".repeat(64),
+      input,
       value: "0x0",
     };
     service.processPendingTx(tx);
@@ -112,15 +126,20 @@ describe("MempoolService", () => {
     const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n }, overlay);
     service.setKnownPools(["0xpool1"]);
 
-    // V2 swap selector + amount0Out = 10 (no zeroForOne, so reserve0 increases)
+    // V2 swap: pool sends 10 of token1, so it received token0.
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [0n, 10n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
     const tx = {
       hash: "0xabc",
       to: "0xpool1",
-      input: "0x022c0d9f" + "000000000000000000000000000000000000000000000000000000000000000a" + "0".repeat(64 * 3),
+      input,
       value: "0x0",
     };
     service.processPendingTx(tx);
-    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve1: 10n });
+    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: 10n });
   });
 
   it("tracks unknown selectors and saves them to a file", async () => {
@@ -146,6 +165,7 @@ describe("MempoolService", () => {
       });
 
       await service.start();
+      service.setKnownPools(["0xunknownpool"]);
 
       // Process a tx with an unknown selector (not ignored, not in SELECTORS)
       const unknownSelector = "0x99999999";

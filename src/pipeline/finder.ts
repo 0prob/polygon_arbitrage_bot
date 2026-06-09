@@ -241,16 +241,20 @@ export async function findCycles(
   // Pre-filter adjacency and pre-calculate obscurity & weight for all edges
   type EdgeWithObsc = SwapEdge & { obscurity: number; weight: number };
   const activeAdjacency = new Map<string, EdgeWithObsc[]>();
-  for (const [token, edges] of adjacency) {
+  const tokens = Array.from(adjacency.keys());
+  for (let tIdx = 0; tIdx < tokens.length; tIdx++) {
+    const token = tokens[tIdx];
+    const edges = adjacency.get(token)!;
     if (edges.length > 0) {
-      const edgesWithObsc = edges.map(
-        (e) =>
-          ({
-            ...e,
-            obscurity: getObscurityBonus(e.protocol),
-            weight: feeLogWeight(e.feeBps),
-          }) as EdgeWithObsc,
-      );
+      const edgesWithObsc = new Array(edges.length);
+      for (let eIdx = 0; eIdx < edges.length; eIdx++) {
+        const e = edges[eIdx];
+        edgesWithObsc[eIdx] = {
+          ...e,
+          obscurity: getObscurityBonus(e.protocol),
+          weight: feeLogWeight(e.feeBps),
+        };
+      }
       // Sort edges by obscurity (desc) to explore higher-alpha paths first
       edgesWithObsc.sort((a, b) => b.obscurity - a.obscurity);
       activeAdjacency.set(token, edgesWithObsc);

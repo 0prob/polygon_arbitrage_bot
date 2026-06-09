@@ -45,8 +45,30 @@ for (const file of files) {
       ],
       stateMutability: "nonpayable"
     });
+  } else if (protocol === "uniswap_v2_factory") {
+    content.push({
+      type: "function",
+      name: "createPair",
+      inputs: [
+        { name: "tokenA", type: "address" },
+        { name: "tokenB", type: "address" }
+      ],
+      outputs: [{ name: "pair", type: "address" }],
+      stateMutability: "nonpayable"
+    });
+  } else if (protocol === "uniswap_v3_factory") {
+    content.push({
+      type: "function",
+      name: "getPool",
+      inputs: [
+        { name: "tokenA", type: "address" },
+        { name: "tokenB", type: "address" },
+        { name: "fee", type: "uint24" }
+      ],
+      outputs: [{ name: "pool", type: "address" }],
+      stateMutability: "view"
+    });
   }
-  
   const constantName = protocol.toUpperCase() + "_ABI";
   const tsContent = `export const ${constantName} = ${JSON.stringify(content, null, 2)} as const;\n`;
   writeFileSync(join(outputDir, `${protocol}.ts`), tsContent, "utf-8");

@@ -4,45 +4,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema, McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 
 import { loadEnv, polygonChain } from "./arb-tx-tools/utils.ts";
-import { buildAbiRegistry, decodeRevert, AbiRegistry } from "./arb-tx-tools/abi-registry.ts";
+import { AbiRegistry } from "../src/core/abis/registry.ts";
+import { COMPILED_ABIS } from "../src/core/abis/compiled/index.ts";
+import { ARB_EXECUTOR_ABI } from "../src/core/abis/executor.ts";
 import { AnvilManager } from "./arb-tx-tools/anvil-manager.ts";
 import { LogCapture } from "./arb-tx-tools/log-capture.ts";
-import { readFileSync, existsSync } from "fs";
-import { createPublicClient, http } from "viem";
+import { existsSync } from "fs";
+import { createPublicClient, http, type Hex } from "viem";
 
 loadEnv();
 
-const HYPERINDEX_ABI_DIR = "hyperindex/abis";
-const SOL_ABI = "sol/out/ArbExecutor.sol/ArbExecutor.json";
-
-let abiRegistry: AbiRegistry = { functions: {}, errors: {} };
-
-async function loadAllAbis(): Promise<AbiRegistry> {
-  const extraAbis: Record<string, unknown>[] = [];
-  try {
-    if (existsSync(SOL_ABI)) {
-      const foundryOut = JSON.parse(readFileSync(SOL_ABI, "utf-8"));
-      if (foundryOut.abi) extraAbis.push(foundryOut.abi);
-    }
-  } catch {
-    /* ignore */
-  }
-
-  try {
-    const abisModule = await import("../src/services/execution/calldata/abis.ts");
-    for (const val of Object.values(abisModule)) {
-      if (Array.isArray(val) && val.length > 0) {
-        extraAbis.push(val as unknown as Record<string, unknown>);
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-
-  return buildAbiRegistry(HYPERINDEX_ABI_DIR, extraAbis);
-}
-
-abiRegistry = await loadAllAbis();
+const registry = new AbiRegistry();
+Object.entries(COMPILED_ABIS).forEach(([tag, abi]) => registry.registerAbi(abi, tag));
+registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 
 let publicClient: ReturnType<typeof createPublicClient> | null = null;
 
@@ -256,21 +230,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (json.error) {
           const revertData = json.error.data ?? json.error.message?.match(/0x[a-fA-F0-9]{8,}/)?.[0];
           if (revertData) {
-            const decoded = await decodeRevert(revertData as `0x${string}`, abiRegistry);
+            const decoded = registry.decodeError(revertData as Hex);
             if (decoded) {
               return { content: [{ type: "text", text: JSON.stringify({ success: false, revert: decoded }, null, 2) }] };
-            }
-            if (revertData.startsWith("0x08c379a0")) {
-              const { decodeAbiParameters } = await import("viem");
-              const [msg] = decodeAbiParameters([{ type: "string" }], `0x${revertData.slice(10)}` as `0x${string}`);
-              return {
-                content: [
-                  {
-                    type: "text",
-                    text: JSON.stringify({ success: false, revert: { name: "Error(string)", args: { message: msg } } }, null, 2),
-                  },
-                ],
-              };
             }
           }
           return { content: [{ type: "text", text: JSON.stringify({ success: false, error: json.error.message }, null, 2) }] };
@@ -308,25 +270,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "decode-revert": {
-        const data = (args as any).data as string;
-        const decoded = await decodeRevert(data as `0x${string}`, abiRegistry);
+        const data = (args as any).data as Hex;
+        const decoded = registry.decodeError(data);
         if (decoded) {
           return { content: [{ type: "text", text: JSON.stringify(decoded, null, 2) }] };
         }
-
-        if (data.startsWith("0x08c379a0")) {
-          const { decodeAbiParameters } = await import("viem");
-          const [msg] = decodeAbiParameters([{ type: "string" }], `0x${data.slice(10)}` as `0x${string}`);
-          return { content: [{ type: "text", text: JSON.stringify({ name: "Error(string)", args: { message: msg } }, null, 2) }] };
-        }
-
-        if (data.startsWith("0x4e487b71")) {
-          const { decodeAbiParameters } = await import("viem");
-          const [code] = decodeAbiParameters([{ type: "uint256" }], `0x${data.slice(10)}` as `0x${string}`);
-          return { content: [{ type: "text", text: JSON.stringify({ name: "Panic(uint256)", args: { code: Number(code) } }, null, 2) }] };
-        }
-
-        return { content: [{ type: "text", text: JSON.stringify({ name: "UnknownError", args: {}, signature: data.slice(0, 10) }) }] };
+        return { content: [{ type: "text", text: JSON.stringify({ name: "UnknownError", args: {}, selector: data.slice(0, 10) }) }] };
       }
 
       case "decode-receipt": {
@@ -349,14 +298,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               account: tx.from,
               blockNumber: receipt.blockNumber,
             });
-            if (callResult?.data) {
-              const decoded = await decodeRevert(callResult.data, abiRegistry);
+            if (callResult) {
+              const decoded = registry.decodeError(callResult as Hex);
               if (decoded) result.revert = decoded;
             }
           } catch (e: any) {
             const match = e.message?.match?.(/0x[a-fA-F0-9]{8,}/);
             if (match) {
-              const decoded = await decodeRevert(match[0] as `0x${string}`, abiRegistry);
+              const decoded = registry.decodeError(match[0] as Hex);
               if (decoded) result.revert = decoded;
             }
           }
@@ -370,10 +319,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         result.logs = logs;
 
         if (tx.input && tx.input !== "0x") {
-          const selector = tx.input.slice(0, 10);
-          const func = abiRegistry.functions[selector];
-          if (func) {
-            (result as any).function = func.name;
+          const decoded = registry.decodeCall(tx.input as Hex);
+          if (decoded) {
+            (result as any).function = decoded.functionName;
           }
         }
 
@@ -381,7 +329,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "decode-input": {
-        let inputData: string;
+        let inputData: Hex;
         if ((args as any).hash) {
           const client = getClient();
           if (!client) throw new McpError(ErrorCode.InvalidRequest, "POLYGON_RPC_URL not set");
@@ -393,24 +341,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new McpError(ErrorCode.InvalidParams, "Provide either 'hash' or 'data'");
         }
 
-        const selector = inputData.slice(0, 10);
-        const func = abiRegistry.functions[selector];
-        if (!func) {
-          return { content: [{ type: "text", text: JSON.stringify({ selector, function: "Unknown", args: {} }) }] };
+        const decoded = registry.decodeCall(inputData);
+        if (!decoded) {
+          return { content: [{ type: "text", text: JSON.stringify({ selector: inputData.slice(0, 10), function: "Unknown", args: {} }) }] };
         }
-
-        try {
-          const { decodeAbiParameters } = await import("viem");
-          const types = func.inputs.map((i) => i.type);
-          const values = decodeAbiParameters(types as any, `0x${inputData.slice(10)}` as `0x${string}`);
-          const named: Record<string, unknown> = {};
-          func.inputs.forEach((inp, i) => {
-            named[inp.name || `arg${i}`] = values[i];
-          });
-          return { content: [{ type: "text", text: JSON.stringify({ selector, function: func.name, args: named }) }] };
-        } catch (e: any) {
-          return { content: [{ type: "text", text: JSON.stringify({ selector, function: func.name, args: {}, error: e.message }) }] };
-        }
+        return { content: [{ type: "text", text: JSON.stringify({ selector: inputData.slice(0, 10), function: decoded.functionName, args: decoded.args }) }] };
       }
 
       case "get-logs": {

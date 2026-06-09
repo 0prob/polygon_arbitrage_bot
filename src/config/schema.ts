@@ -70,7 +70,6 @@ export const RoutingConfigSchema = z.object({
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.1),
   graphFullRebuildInterval: numberFromString.int().positive().default(100),
   cycleFinder: z.enum(["dfs", "bellman-ford"]).default("dfs"),
-  indexerHotBias: z.coerce.boolean().default(false),
 });
 export type RoutingConfig = z.infer<typeof RoutingConfigSchema>;
 

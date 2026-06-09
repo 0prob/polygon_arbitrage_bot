@@ -1,6 +1,8 @@
-import { decodeErrorResult, type PublicClient, BaseError, type Hex } from "viem";
+import { type PublicClient, BaseError, type Hex } from "viem";
 import type { CandidateExecution } from "./service.ts";
-import { EXECUTOR_ABI, EXECUTOR_AAVE_ABI, V2_PAIR_SWAP_ABI, V3_POOL_SWAP_ABI, BALANCER_VAULT_SWAP_ABI } from "./calldata/abis.ts";
+import { UNISWAP_V3_POOL_ABI, COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
+import { ARB_EXECUTOR_ABI } from "../../core/abis/executor.ts";
+import { AbiRegistry } from "../../core/abis/registry.ts";
 
 export interface DryRunResult {
   success: boolean;
@@ -15,7 +17,9 @@ export interface PendingState {
   blockHash: string;
 }
 
-const DECODABLE_ABIS = [...EXECUTOR_ABI, ...EXECUTOR_AAVE_ABI, ...V2_PAIR_SWAP_ABI, ...V3_POOL_SWAP_ABI, ...BALANCER_VAULT_SWAP_ABI];
+const registry = new AbiRegistry();
+Object.entries(COMPILED_ABIS).forEach(([tag, abi]) => registry.registerAbi(abi, tag));
+registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 
 type Slot0 = readonly [bigint, number, number, number, number, number, boolean];
 
@@ -121,8 +125,13 @@ export class MempoolAwareDryRunner {
             }
 
             try {
-              const decoded = decodeErrorResult({ abi: DECODABLE_ABIS, data: revertData });
-              reason = `${decoded.errorName}(${decoded.args?.join(", ") || ""})`;
+              const decoded = registry.decodeError(revertData);
+              if (decoded) {
+                const argsStr = decoded.args ? (Array.isArray(decoded.args) ? decoded.args.join(", ") : JSON.stringify(decoded.args)) : "";
+                reason = `${decoded.errorName}(${argsStr})`;
+              } else {
+                reason = error.shortMessage || error.message || "Unknown revert";
+              }
             } catch {
               reason = error.shortMessage || error.message || "Unknown revert";
             }

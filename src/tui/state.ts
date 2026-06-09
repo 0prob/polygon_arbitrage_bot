@@ -60,8 +60,6 @@ export interface SystemState {
   lastCycleTimeMs: number;
   hiStatus: string;
   hiSyncedBlock: number;
-  /** Indexer discovery mode */
-  hiDiscoveryMode?: "broad" | "hot-bias";
   hiRemoteBlock: number;
   hiLag: number;
   hiSyncRate: number;
@@ -136,7 +134,6 @@ export function createInitialState(): TuiState {
       lastCycleTimeMs: 0,
       hiStatus: "starting",
       hiSyncedBlock: 0,
-      hiDiscoveryMode: undefined,
       hiRemoteBlock: 0,
       hiLag: 0,
       hiSyncRate: 0,
@@ -434,7 +431,6 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       if (event.lag !== undefined) state.system.hiLag = event.lag;
       if (event.syncRate !== undefined) state.system.hiSyncRate = event.syncRate;
       if (event.chain) state.system.hiChain = event.chain;
-      if (event.discoveryMode) state.system.hiDiscoveryMode = event.discoveryMode;
 
       if (event.status === "error") {
         appendLog(state, "Indexer", `ERROR — restarting`);

@@ -17,6 +17,8 @@ const Q96 = 1n << 96n;
 
 // ─── Next sqrt price from token0 delta ────────────────────────
 
+const MAX_UINT256 = (1n << 256n) - 1n;
+
 /**
  * Gets the next sqrt price given a delta of token0.
  * Always rounds up.
@@ -37,14 +39,17 @@ export function getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96: bigint, liquidit
 
   if (add) {
     const product = amount * sqrtPX96;
-    const denominator = numerator1 + product;
-    if (denominator >= numerator1) {
-      return mulDivRoundingUp(numerator1, sqrtPX96, denominator);
+    if (product / amount === sqrtPX96) {
+      const denominator = numerator1 + product;
+      if (denominator >= numerator1 && denominator <= MAX_UINT256) {
+        return mulDivRoundingUp(numerator1, sqrtPX96, denominator);
+      }
     }
     // Overflow fallback
     return divRoundingUp(numerator1, numerator1 / sqrtPX96 + amount);
   } else {
     const product = amount * sqrtPX96;
+    if (product / amount !== sqrtPX96) throw new Error("SqrtPriceMath: product overflow");
     if (numerator1 <= product) {
       throw new Error("SqrtPriceMath: denominator underflow");
     }

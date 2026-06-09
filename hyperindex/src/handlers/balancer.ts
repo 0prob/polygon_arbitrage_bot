@@ -1,7 +1,6 @@
 import { indexer } from "envio";
 import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { involvesHotBase, INDEXER_HOT_BIAS } from "../utils/hot_tokens";
 import { logEffectTime } from "../utils/instrumentation";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
@@ -23,11 +22,6 @@ indexer.onEvent(
     const tEffBal = Date.now();
     const meta = await context.effect(fetchBalancerMetadata, { pool, poolId, blockNumber: BigInt(blockNumber) });
     logEffectTime("fetchBalancerMetadata", Date.now() - tEffBal, blockNumber);
-
-    // Manual JS-level filter for hot bias mode because tokens are not in event params
-    if (INDEXER_HOT_BIAS && !meta.tokens.some((token) => involvesHotBase(token, token))) {
-      return;
-    }
 
     // Schedule token metadata effects early (after balancer meta which provides the token list)
     // so they run in the preload phase for batching/memoization.
@@ -84,10 +78,6 @@ indexer.onEvent({ contract: "BalancerVault", event: "TokensRegistered" }, async 
   const rawTokens = event.params.tokens;
   const tokens = [...rawTokens]; // copy to mutable array to satisfy PoolMeta/cache types + runWithConcurrency
   const blockNumber = Number(event.block.number);
-
-  if (INDEXER_HOT_BIAS && !tokens.some((token) => involvesHotBase(token, token))) {
-    return;
-  }
 
   // Schedule token effects early (tokens come from event params; no extra meta needed)
   // so they get preload batching. DB gets below also benefit from preload.

@@ -81,9 +81,9 @@ export function solveV2Optimal(edges: SimulationEdge[]): bigint {
     let r1 = toBigInt(pool.reserve1);
     if (r0 <= 0n || r1 <= 0n) return 0n;
 
-    // Apply the same 10 bps safety margin as simulateV2Swap
-    r0 = (r0 * 9990n) / 10000n;
-    r1 = (r1 * 9990n) / 10000n;
+    // Apply the same 1 bps safety margin as simulateV2Swap
+    r0 = (r0 * 9999n) / 10000n;
+    r1 = (r1 * 9999n) / 10000n;
 
     const rIn = edge.zeroForOne ? r0 : r1;
     const rOut = edge.zeroForOne ? r1 : r0;
