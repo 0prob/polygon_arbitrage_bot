@@ -3,8 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isAddress } from "viem";
 import type { PoolMeta } from "../../core/types/pool.ts";
-import { isGarbagePool, KNOWN_INDEXED_FACTORIES } from "../../core/constants.ts";
-import { markAsGarbage } from "../garbage/garbage-tracker.ts";
+import { isGarbagePool, KNOWN_INDEXED_FACTORIES, markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
 
 // Use the single source of truth for indexed factories (re-exported via core/constants for convenience).

@@ -10,10 +10,9 @@ import { join } from "path";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
-console.log("src/cli/arb_only.ts loaded");
 
 async function main() {
-  console.log("main() started");
+
   const useTui = process.argv.includes("--tui");
   const config = loadConfig(process.env);
 

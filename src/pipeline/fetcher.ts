@@ -5,6 +5,7 @@ import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
 import { markAsGarbage } from "../infra/garbage/garbage-tracker.ts";
+const ERC20_ABI = parseAbi(["function balanceOf(address account) external view returns (uint256)"]);
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
 const DODO_ABI = parseAbi([
@@ -77,7 +78,7 @@ function trackFailedPool(addr: string, reason: string, stateCache: Map<string, R
   // Only mark as invalid if it fails 3 times in a row
   if (newCount >= 3) {
     if (newCount === 3) {
-      console.debug(`[fetcher] Marking pool ${addr} as INVALID after 3 failures (Reason: ${reason})`);
+      console.warn(`[fetcher] Marking pool ${addr} as INVALID after 3 failures (Reason: ${reason})`);
     }
     stateCache.set(addr, INVALID_POOL_STATE);
   }
@@ -201,6 +202,8 @@ export async function fetchMissingPoolState(
           } else if (proto.includes("v3") || proto.includes("elastic")) {
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
+            calls.push({ address: meta.token0 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
+            calls.push({ address: meta.token1 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
           } else if (proto.includes("v4")) {
             calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "slot0" });
             calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "liquidity" });
@@ -328,6 +331,8 @@ export async function fetchMissingPoolState(
             } else if (proto.includes("v3") || proto.includes("elastic")) {
               const slot0Res = results[resultIdx++];
               const liqRes = results[resultIdx++];
+              const bal0Res = results[resultIdx++];
+              const bal1Res = results[resultIdx++];
               if (slot0Res?.status === "success" && slot0Res.result && liqRes?.status === "success") {
                 const s = slot0Res.result as V3Slot0;
                 const sObj = s as { sqrtPriceX96: bigint; tick: number };
@@ -342,6 +347,8 @@ export async function fetchMissingPoolState(
                       sqrtPriceX96: BigInt(sqrtPriceX96),
                       tick: Number(tick),
                       liquidity: BigInt(liqRes.result as bigint),
+                      token0Balance: bal0Res?.status === "success" ? BigInt(bal0Res.result as bigint) : undefined,
+                      token1Balance: bal1Res?.status === "success" ? BigInt(bal1Res.result as bigint) : undefined,
                       initialized: true,
                     },
                     updated,
@@ -351,7 +358,7 @@ export async function fetchMissingPoolState(
                 }
               } else {
                 const error = slot0Res?.error || liqRes?.error;
-                console.debug(`[fetcher] V3 fetch failed for ${addr}: ${JSON.stringify(error)}`);
+                console.warn(`[fetcher] V3 fetch failed for ${addr}: ${JSON.stringify(error)}`);
                 if ((error as any)?.name === "ContractFunctionExecutionError") {
                   markAsGarbage(addr).catch(() => {});
                 }

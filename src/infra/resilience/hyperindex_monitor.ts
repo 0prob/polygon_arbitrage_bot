@@ -81,6 +81,10 @@ export class HyperIndexMonitor implements Lifecycle {
   }
 
   async start(): Promise<void> {
+    if (this.healthTimer) {
+      this.opts.logger.debug({}, 'HyperIndexMonitor already running — skipping start');
+      return;
+    }
     this.healthTimer = setInterval(() => this.checkHealth(), this.checkIntervalMs);
   }
 

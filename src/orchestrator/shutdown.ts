@@ -18,6 +18,9 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
   await stopService("execution", ctx.executionService, ctx.logger);
   await stopService("mempool", ctx.mempoolService, ctx.logger);
   await stopService("wsSubscriber", { stop: () => ctx.wsSubscriber?.stop() }, ctx.logger);
+  await stopService("hyperIndexMonitor", { stop: () => ctx.hyperIndexMonitor?.stop() }, ctx.logger);
+  // Ensure gas oracle is stopped (ExecutionService.stop already calls it, but be explicit)
+  ctx.gasOracle.stop();
 
   const finalPayload: StatusPayload = {
     status: "stopped",

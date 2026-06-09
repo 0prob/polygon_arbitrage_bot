@@ -29,6 +29,8 @@ function normalizeReceipt(receipt: RawReceipt): ReceiptData {
 }
 
 export class ReceiptPoller {
+  private abortController = new AbortController();
+
   constructor(
     private logger: Logger,
     private rpc: RpcManager,
@@ -36,11 +38,21 @@ export class ReceiptPoller {
     private pollMs: number,
   ) {}
 
+  // Allows external cancellation (used during shutdown)
+  public cancel(): void {
+    this.abortController.abort();
+  }
+
   async wait(txHash: string): Promise<ReceiptData | null> {
     const deadline = Date.now() + this.timeoutMs;
+    const signal = this.abortController.signal;
     let hardErrorCount = 0;
 
     while (Date.now() < deadline) {
+      if (signal.aborted) {
+        this.logger.debug({ txHash }, "ReceiptPoller cancelled");
+        return null;
+      }
       try {
         const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
         const hyperRpc = this.rpc.hyperRpc as HyperRpcClient | undefined;

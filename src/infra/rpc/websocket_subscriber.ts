@@ -46,6 +46,7 @@ export class WebSocketSubscriber {
   private running = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
+  private reconnectAttempts = 0;
   private requestId = 0;
 
   constructor(private options: WebSocketSubscriberOptions) {}
@@ -92,7 +93,7 @@ export class WebSocketSubscriber {
     if (!this.running) return;
     try {
       this.ws = new WebSocket(this.options.url);
-
+      this.reconnectAttempts = 0;
       this.ws.onopen = () => {
         this.emit({ type: "newHead", blockNumber: 0, blockHash: "", parentHash: "", timestamp: Date.now() } as NewHeadEvent);
         this.subscribeNewHeads();
@@ -142,7 +143,13 @@ export class WebSocketSubscriber {
 
   private scheduleReconnect(): void {
     if (!this.running) return;
-    const delay = this.options.reconnectDelayMs ?? 5_000;
+    if (this.reconnectAttempts >= 10) {
+      console.warn(`WebSocket reconnect limit reached after ${this.reconnectAttempts} attempts, giving up`);
+      return;
+    }
+    const base = this.options.reconnectDelayMs ?? 5_000;
+    const delay = Math.min(base * Math.pow(2, this.reconnectAttempts), 60_000);
+    this.reconnectAttempts++;
     this.reconnectTimer = setTimeout(() => this.connect(), delay);
   }
 

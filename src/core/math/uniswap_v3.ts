@@ -262,8 +262,21 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   // Previous value of 130k base understated cost by ~40–50k, inflating net profit projections.
   const gasEstimate = 185_000 + ticksCrossed * 25_000;
 
+  let amountOut = amountCalculated;
+  if (zeroForOne) {
+    const bal1 = pool.token1Balance;
+    if (typeof bal1 === "bigint" && amountOut > bal1) {
+      amountOut = bal1;
+    }
+  } else {
+    const bal0 = pool.token0Balance;
+    if (typeof bal0 === "bigint" && amountOut > bal0) {
+      amountOut = bal0;
+    }
+  }
+
   return {
-    amountOut: amountCalculated,
+    amountOut,
     sqrtPriceX96After: sqrtPriceX96,
     tickAfter: tick,
     gasEstimate,

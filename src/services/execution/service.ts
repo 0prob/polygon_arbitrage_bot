@@ -139,6 +139,10 @@ export class ExecutionService {
 
   stop(): void {
     this.gasOracle.stop();
+    // Cancel any pending receipt polls to avoid lingering loops
+    if (typeof (this.receiptPoller as any).cancel === 'function') {
+      (this.receiptPoller as any).cancel();
+    }
     this.logger.info({}, "ExecutionService stopped");
   }
 

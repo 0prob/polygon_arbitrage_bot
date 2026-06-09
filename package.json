@@ -21,6 +21,7 @@
     "rs": "bun scripts/resolve-selectors.ts",
     "dfail": "bun scripts/decode-failing.ts",
     "gentok": "bun run --cwd hyperindex generate-tokens",
+    "test": "npx vitest run --coverage",
     "devr": "bun run --cwd hyperindex dev:reset"
   },
   "dependencies": {

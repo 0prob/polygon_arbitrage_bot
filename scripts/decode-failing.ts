@@ -84,7 +84,6 @@ for (let i = 0; i < lines.length; i++) {
           flashAmtStr = (Number(flashAmount) / 1e18).toFixed(4);
           tokensInfo = `FlashToken: ${flashToken.slice(0, 8)} | ProfitToken: ${params.profitToken.slice(0, 8)}`;
 
-          if (i === 665) {
             detailedCalls.push(`Function: ${decodedInput.functionName}`);
             detailedCalls.push(`Flash Token: ${flashToken}, Flash Amount: ${flashAmount}`);
             detailedCalls.push(`Min Profit: ${params.minProfit}, Deadline: ${params.deadline}`);
@@ -105,7 +104,6 @@ for (let i = 0; i < lines.length; i++) {
               }
               detailedCalls.push("  " + decodedCallDesc);
             }
-          }
 
           if (params.calls && params.calls.length > 0) {
             try {

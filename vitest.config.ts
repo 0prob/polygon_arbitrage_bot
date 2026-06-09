@@ -6,6 +6,9 @@ export default defineConfig({
       provider: "istanbul",
       include: ["src/**"],
       exclude: ["src/**/*.test.ts", "src/**/*.d.ts"],
+      reporter: ["text", "html"],
+      reportsDirectory: "./coverage",
     },
+    reporters: ["default"],
   },
 });

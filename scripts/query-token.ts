@@ -1,13 +1,14 @@
 import { createPublicClient, http } from "viem";
 import { polygon } from "viem/chains";
 
-const rpcUrl = process.env.POLYGON_RPC_URL || "https://polygon-rpc.com";
+const rpcUrl = process.env.EXECUTION_RPC || process.env.POLYGON_RPC_URLS?.split(",")[0] || "https://polygon-rpc.com";
 const client = createPublicClient({
   chain: polygon,
   transport: http(rpcUrl),
 });
 
-const tokens = ["0x1d74a8ead6e711fc022f29f7219a48f6ec454284", "0x7dd7912c1b0e0cc6a584fe850bd2c1dbc2cc9461"];
+const cliTokens = process.argv.slice(2).filter(a => a.startsWith("0x"));
+const tokens = cliTokens.length > 0 ? cliTokens : ["0x1d74a8ead6e711fc022f29f7219a48f6ec454284"];
 
 for (const tokenAddress of tokens) {
   try {

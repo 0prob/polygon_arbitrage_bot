@@ -23,10 +23,8 @@ export class InMemoryPendingStateOverlay implements PendingStateOverlay {
         merged[k] = current !== undefined ? current + val : val;
       }
       this.cache.set(key, { state: merged, timestamp: Date.now() });
-      console.debug(`overlay: updated existing entry for ${key}`, { newState: merged });
     } else {
       this.cache.set(key, { state, timestamp: Date.now() });
-      console.debug(`overlay: created new entry for ${key}`, { state });
     }
   }
 
@@ -34,10 +32,8 @@ export class InMemoryPendingStateOverlay implements PendingStateOverlay {
     const key = poolAddress.toLowerCase();
     const entry = this.cache.get(key);
     if (!entry || Date.now() - entry.timestamp > this.TTL) {
-      if (entry) console.debug(`overlay: entry expired for ${key}`);
       return undefined;
     }
-    console.debug(`overlay: retrieved entry for ${key}`, { state: entry.state });
     return entry.state;
   }
 

@@ -1,13 +1,14 @@
 import { createPublicClient, http } from "viem";
 import { polygon } from "viem/chains";
 
-const rpcUrl = process.env.POLYGON_RPC_URL || "https://polygon-rpc.com";
+const rpcUrl = process.env.EXECUTION_RPC || process.env.POLYGON_RPC_URLS?.split(",")[0] || "https://polygon-rpc.com";
 const client = createPublicClient({
   chain: polygon,
   transport: http(rpcUrl),
 });
 
-const pools = [
+const cliPools = process.argv.slice(2).filter(a => a.startsWith("0x"));
+const pools = cliPools.length > 0 ? cliPools : [
   "0xbcFc55307F969a0fD99D9B6cb4a5bD8AD42c812E",
   "0x82ca29f73e05d60a7beff48790390b6e91181c86",
   "0xcd72ef8ea618508a4ed54cd6a4124b15fe204350",

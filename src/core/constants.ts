@@ -1,15 +1,7 @@
-/**
- * Global constants and centralized token lists for the arbitrage engine.
- */
-
-import { isGarbagePool, KNOWN_INDEXED_FACTORIES } from "../infra/garbage/garbage-tracker.ts";
-
+/** Global constants for the arbitrage engine. */
 export const RATE_PRECISION = 10n ** 18n;
 export const BPS_DENOM = 10000n;
 export const BPS_DENOMINATOR = 10000;
-
-export { isGarbagePool, KNOWN_INDEXED_FACTORIES };
-
 /**
  * Major high-liquidity tokens on the network.
  * These are used as "bases" for rate propagation and for prioritizing pool discovery.

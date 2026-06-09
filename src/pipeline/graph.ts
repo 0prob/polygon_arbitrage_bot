@@ -2,7 +2,7 @@ import type { Address } from "../core/types/common.ts";
 import type { PoolMeta, PoolState } from "../core/types/pool.ts";
 import type { SwapEdge, RoutingGraph } from "./types.ts";
 import { DEFAULT_FEE_BPS } from "./types.ts";
-import { isGarbagePool } from "../core/constants.ts";
+import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 import { isInvalidState } from "../core/types/pool.ts";
 import { normalizeProtocol } from "./simulator.ts";
 import { tokensToMaticWei } from "../core/assessment/profit.ts";

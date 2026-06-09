@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { bootApplication } from "./boot";
 import type { AppConfig } from "../config/schema";
 
-vi.mock("viem", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("viem")>();
+vi.mock("viem", async () => {
+  const actual = await import("viem");
   return {
     ...actual,
     createPublicClient: vi.fn().mockReturnValue({
@@ -91,5 +91,12 @@ describe("bootApplication", () => {
 
     expect(context.executionService).toBeDefined();
     expect(context.executionService.isQuarantined("test")).toBe(false);
+
+    // Graceful shutdown of services to avoid lingering intervals/timers
+    context.gasOracle.stop();
+    if (context.wsSubscriber) context.wsSubscriber.stop();
+    if (context.hyperIndexMonitor) void context.hyperIndexMonitor.stop();
+    if (context.mempoolService) void context.mempoolService.stop();
+    if (context.executionService) context.executionService.stop();
   });
 });
