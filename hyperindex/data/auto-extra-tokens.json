@@ -198,5 +198,9 @@
   {
     "address": "0x35570778613c4fb89bec73c6f97fa4ee6ecf2e1b",
     "decimals": 18
+  },
+  {
+    "address": "0x1f71b8a4fb30fa261924b53fadd5873b8f62ccb9",
+    "decimals": 18
   }
 ]

@@ -142,11 +142,6 @@ export function simulateV2Swap(
   let reserve0 = toBigInt(pool.reserve0);
   let reserve1 = toBigInt(pool.reserve1);
 
-  // Apply 1 bps (0.01%) safety margin to reserves
-  // Reduced from 10 bps to improve accuracy while maintaining a small buffer for stale state
-  reserve0 = (reserve0 * 9999n) / 10000n;
-  reserve1 = (reserve1 * 9999n) / 10000n;
-
   const reserveIn = zeroForOne ? reserve0 : reserve1;
   const reserveOut = zeroForOne ? reserve1 : reserve0;
 

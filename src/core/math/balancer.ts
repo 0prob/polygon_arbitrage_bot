@@ -300,6 +300,7 @@ export function getBalancerAmountIn(amountOut: bigint, poolState: unknown, inIdx
         satisfied = true;
         break;
       }
+      if (quotedOut === 0n) break; // Optimization: Trade size limit reached
       low = high;
       high *= 2n;
       // Safety: Cap expansion at a reasonable multiple of pool balance to prevent overflow/infinite loop

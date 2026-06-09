@@ -41,6 +41,19 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
         tokenInIdx: 0,
         tokenOutIdx: 1,
       });
+
+      // Also add reverse edge so cycles are possible in short hops
+      edges.push({
+        poolAddress,
+        protocol: "uniswap_v3",
+        tokenIn: tokenOut,
+        tokenOut: tokenIn,
+        feeBps: 30n,
+        stateRef: {},
+        zeroForOne: i >= targetIndex,
+        tokenInIdx: 1,
+        tokenOutIdx: 0,
+      });
     }
 
     adjacency.set(tokenIn, edges);

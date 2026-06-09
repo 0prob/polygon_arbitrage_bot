@@ -60,10 +60,10 @@ export function getDynamicSearchBounds(
       if (sqrtPriceX96 > 0n && liq > 0n) {
         if (edge.zeroForOne) {
           // token0 = L * 2^96 / sqrtPriceX96
-          capacity = (liq << 96n) / sqrtPriceX96 / 1000n;
+          capacity = (liq << 96n) / sqrtPriceX96;
         } else {
           // token1 = L * sqrtPriceX96 / 2^96
-          capacity = ((liq * sqrtPriceX96) >> 96n) / 1000n;
+          capacity = ((liq * sqrtPriceX96) >> 96n);
         }
       } else {
         capacity = liq; // bare L as fallback

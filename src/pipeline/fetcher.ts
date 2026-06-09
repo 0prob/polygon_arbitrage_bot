@@ -23,6 +23,10 @@ const V3_ABI = parseAbi([
   "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function liquidity() external view returns (uint128)",
 ]);
+const ELASTIC_ABI = parseAbi([
+  "function getPoolState() external view returns (uint160 sqrtP, int24 currentTick, int24 nearestCurrentTick, bool locked)",
+  "function liquidity() external view returns (uint128)",
+]);
 const V4_ABI = parseAbi([
   "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function liquidity() external view returns (uint128)",
@@ -190,16 +194,21 @@ export async function fetchMissingPoolState(
             calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_BASE_RESERVE_" });
             calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_QUOTE_RESERVE_" });
             calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_R_STATUS_" });
+            calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_BASE_TARGET_" });
+            calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_QUOTE_TARGET_" });
             const existing = stateCache.get(addr);
-            if (!existing || (existing.targetBase === undefined && existing.baseTarget === undefined)) {
+            if (!existing || existing.i === undefined || existing.k === undefined) {
               calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_I_" });
               calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_K_" });
-              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_BASE_TARGET_" });
-              calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_QUOTE_TARGET_" });
               calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_LP_FEE_RATE_" });
               calls.push({ address: addr as `0x${string}`, abi: DODO_ABI, functionName: "_MT_FEE_RATE_" });
             }
-          } else if (proto.includes("v3") || proto.includes("elastic")) {
+          } else if (proto.includes("elastic")) {
+            calls.push({ address: addr as `0x${string}`, abi: ELASTIC_ABI, functionName: "getPoolState" });
+            calls.push({ address: addr as `0x${string}`, abi: ELASTIC_ABI, functionName: "liquidity" });
+            calls.push({ address: meta.token0 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
+            calls.push({ address: meta.token1 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
+          } else if (proto.includes("v3")) {
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "slot0" });
             calls.push({ address: addr as `0x${string}`, abi: V3_ABI, functionName: "liquidity" });
             calls.push({ address: meta.token0 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
@@ -290,18 +299,14 @@ export async function fetchMissingPoolState(
               const baseRes = results[resultIdx++];
               const quoteRes = results[resultIdx++];
               const rStatusRes = results[resultIdx++];
+              const baseTargetRes = results[resultIdx++];
+              const quoteTargetRes = results[resultIdx++];
 
               const existing = stateCache.get(addr);
-              const hasStatic = existing && (existing.targetBase !== undefined || existing.baseTarget !== undefined);
+              const hasStatic = existing && existing.i !== undefined && existing.k !== undefined;
 
               const iRes = hasStatic ? { status: "success" as const, result: (existing.i ?? existing.I) as bigint } : results[resultIdx++];
               const kRes = hasStatic ? { status: "success" as const, result: (existing.k ?? existing.K) as bigint } : results[resultIdx++];
-              const baseTargetRes = hasStatic
-                ? { status: "success" as const, result: (existing.baseTarget ?? existing.targetBase ?? existing.B0) as bigint }
-                : results[resultIdx++];
-              const quoteTargetRes = hasStatic
-                ? { status: "success" as const, result: (existing.quoteTarget ?? existing.targetQuote ?? existing.Q0) as bigint }
-                : results[resultIdx++];
               const lpFeeRateRes = hasStatic
                 ? { status: "success" as const, result: (existing.lpFeeRate ?? existing.feeRate) as bigint }
                 : results[resultIdx++];
@@ -328,7 +333,38 @@ export async function fetchMissingPoolState(
               } else {
                 trackFailedPool(addr, "dodo-reserves-failed", stateCache, now);
               }
-            } else if (proto.includes("v3") || proto.includes("elastic")) {
+            } else if (proto.includes("elastic")) {
+              const stateRes = results[resultIdx++];
+              const liqRes = results[resultIdx++];
+              const bal0Res = results[resultIdx++];
+              const bal1Res = results[resultIdx++];
+              if (stateRes?.status === "success" && stateRes.result && liqRes?.status === "success") {
+                const s = stateRes.result as [bigint, number, number, boolean] | { sqrtP: bigint; currentTick: number };
+                const sObj = s as { sqrtP: bigint; currentTick: number };
+                const sqrtPriceX96 = Array.isArray(s) ? s[0] : sObj.sqrtP;
+                const tick = Array.isArray(s) ? s[1] : sObj.currentTick;
+
+                if (sqrtPriceX96 !== undefined && tick !== undefined) {
+                  trackSuccessfulPool(
+                    addr,
+                    stateCache,
+                    {
+                      sqrtPriceX96: BigInt(sqrtPriceX96),
+                      tick: Number(tick),
+                      liquidity: BigInt(liqRes.result as bigint),
+                      reserve0: bal0Res?.status === "success" ? BigInt(bal0Res.result as bigint) : 0n,
+                      reserve1: bal1Res?.status === "success" ? BigInt(bal1Res.result as bigint) : 0n,
+                      initialized: true,
+                    },
+                    updated,
+                  );
+                } else {
+                  trackFailedPool(addr, "elastic-state-undefined", stateCache, now);
+                }
+              } else {
+                trackFailedPool(addr, "elastic-state-failed", stateCache, now);
+              }
+            } else if (proto.includes("v3")) {
               const slot0Res = results[resultIdx++];
               const liqRes = results[resultIdx++];
               const bal0Res = results[resultIdx++];
@@ -478,20 +514,24 @@ export async function fetchMissingPoolState(
               if (success) {
                 const rates = hasStatic
                   ? (existing.rates as bigint[])
-                  : rateResults.map((r) => (r?.status === "success" ? BigInt(r.result as bigint) : 10n ** 18n));
+                  : rateResults.map((r) => (r?.status === "success" ? BigInt(r.result as bigint) : null));
 
-                trackSuccessfulPool(
-                  addr,
-                  stateCache,
-                  {
-                    balances,
-                    A: aRes?.status === "success" ? BigInt(aRes.result as bigint) : 100n,
-                    fee: feeRes?.status === "success" ? BigInt(feeRes.result as bigint) : 0n,
-                    rates,
-                    initialized: true,
-                  },
-                  updated,
-                );
+                if (!hasStatic && rates.includes(null)) {
+                  trackFailedPool(addr, "curve-rates-failed", stateCache, now);
+                } else {
+                  trackSuccessfulPool(
+                    addr,
+                    stateCache,
+                    {
+                      balances,
+                      A: aRes?.status === "success" ? BigInt(aRes.result as bigint) : 100n,
+                      fee: feeRes?.status === "success" ? BigInt(feeRes.result as bigint) : 0n,
+                      rates: rates as bigint[],
+                      initialized: true,
+                    },
+                    updated,
+                  );
+                }
               } else {
                 trackFailedPool(addr, "curve-balances-failed", stateCache, now);
               }

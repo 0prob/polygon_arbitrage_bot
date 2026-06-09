@@ -237,8 +237,8 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
         // When moving right (!zeroForOne), we add liquidityNet
         liquidity = zeroForOne ? liquidity - liquidityNet : liquidity + liquidityNet;
         ticksCrossed++;
-      } else if (!hasTicks) {
-        // If we crossed an artificial boundary and have no tick data,
+      } else {
+        // If we crossed an initialized boundary and have no tick data,
         // we must assume liquidity drops to 0 to prevent infinite liquidity exploit.
         liquidity = 0n;
       }
