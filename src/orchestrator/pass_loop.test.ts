@@ -235,7 +235,7 @@ describe("runPassLoop", () => {
         profitableCount: 2,
       }),
       buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
-      routeKeyFromEdges: vi.fn((_edges: any, _start: any) => "mocked-route-key"),
+      routeKeyFromEdges: vi.fn((_edges: any) => "mocked-route-key"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
       fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),

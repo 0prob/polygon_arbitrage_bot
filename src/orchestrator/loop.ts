@@ -33,7 +33,7 @@ export interface PassLoopDeps {
   fetchTokenMetasFromHasura: typeof fetchTokenMetasFromHasura;
   fetchIndexerProgressFromHasura: typeof fetchIndexerProgressFromHasura;
   averageObscurity?: (edges: SwapEdge[]) => number; // optional for long-tail risk relaxation (uses SwapEdge from pipeline)
-  routeKeyFromEdges: (edges: SwapEdge[], startToken: Address) => string;
+  routeKeyFromEdges: (edges: SwapEdge[]) => string;
   buildExecutionCandidate: typeof buildExecutionCandidate;
   instrumenter: ArbInstrumenter;
 }

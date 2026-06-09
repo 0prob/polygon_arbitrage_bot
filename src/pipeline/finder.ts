@@ -4,131 +4,10 @@ import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
 import { MAJOR_TOKENS } from "../core/constants.ts";
 import { normalizeProtocol, computeSpotPrice } from "./simulator.ts";
 
-export function routeKeyFromEdges(edges: SwapEdge[], startToken: Address): string {
-  const len = edges.length;
-  if (len === 2) {
-    const a = edges[0].poolAddress;
-    const b = edges[1].poolAddress;
-    return a < b ? `${a}:${b}:${startToken}` : `${b}:${a}:${startToken}`;
-  }
-  if (len === 3) {
-    const a = edges[0].poolAddress;
-    const b = edges[1].poolAddress;
-    const c = edges[2].poolAddress;
-    if (a < b) {
-      if (b < c) return `${a}:${b}:${c}:${startToken}`;
-      if (a < c) return `${a}:${c}:${b}:${startToken}`;
-      return `${c}:${a}:${b}:${startToken}`;
-    } else {
-      if (a < c) return `${b}:${a}:${c}:${startToken}`;
-      if (b < c) return `${b}:${c}:${a}:${startToken}`;
-      return `${c}:${b}:${a}:${startToken}`;
-    }
-  }
-  if (len === 4) {
-    let a = edges[0].poolAddress;
-    let b = edges[1].poolAddress;
-    let c = edges[2].poolAddress;
-    let d = edges[3].poolAddress;
-    let tmp;
-    if (a > b) {
-      tmp = a;
-      a = b;
-      b = tmp;
-    }
-    if (c > d) {
-      tmp = c;
-      c = d;
-      d = tmp;
-    }
-    if (a > c) {
-      tmp = a;
-      a = c;
-      c = tmp;
-      tmp = b;
-      b = d;
-      d = tmp;
-    }
-    if (b > d) {
-      tmp = b;
-      b = d;
-      d = tmp;
-    }
-    if (b > c) {
-      tmp = b;
-      b = c;
-      c = tmp;
-    }
-    return `${a}:${b}:${c}:${d}:${startToken}`;
-  }
-  if (len === 5) {
-    let a = edges[0].poolAddress;
-    let b = edges[1].poolAddress;
-    let c = edges[2].poolAddress;
-    let d = edges[3].poolAddress;
-    let e = edges[4].poolAddress;
-    let tmp;
-    // Selection sort
-    if (a > b) {
-      tmp = a;
-      a = b;
-      b = tmp;
-    }
-    if (a > c) {
-      tmp = a;
-      a = c;
-      c = tmp;
-    }
-    if (a > d) {
-      tmp = a;
-      a = d;
-      d = tmp;
-    }
-    if (a > e) {
-      tmp = a;
-      a = e;
-      e = tmp;
-    }
-    if (b > c) {
-      tmp = b;
-      b = c;
-      c = tmp;
-    }
-    if (b > d) {
-      tmp = b;
-      b = d;
-      d = tmp;
-    }
-    if (b > e) {
-      tmp = b;
-      b = e;
-      e = tmp;
-    }
-    if (c > d) {
-      tmp = c;
-      c = d;
-      d = tmp;
-    }
-    if (c > e) {
-      tmp = c;
-      c = e;
-      e = tmp;
-    }
-    if (d > e) {
-      tmp = d;
-      d = e;
-      e = tmp;
-    }
-    return `${a}:${b}:${c}:${d}:${e}:${startToken}`;
-  }
-  // Fallback for longer cycles (>=6 hops):
-  const parts = new Array<string>(len);
-  for (let i = 0; i < len; i++) {
-    parts[i] = edges[i].poolAddress;
-  }
-  parts.sort();
-  parts.push(startToken);
-  return parts.join(":");
+export function routeKeyFromEdges(edges: SwapEdge[]): string {
+  const pools = edges.map((e) => e.poolAddress);
+  pools.sort();
+  return pools.join(":");
 }
 
 export function averageObscurity(edges: SwapEdge[]): number {
@@ -506,36 +385,35 @@ export async function enumerateCycles(
 ): Promise<FoundCycle[]> {
   const allCycles = await findCycles(graph, maxHops, maxCycles, logger);
 
-  if (getWinRate) {
-    // Pre-compute scores to avoid O(N log N) string manipulation in sort.
-    for (let i = 0; i < allCycles.length; i++) {
-      const cycle = allCycles[i];
-      const key = routeKeyFromEdges(cycle.edges, cycle.startToken);
-      cycle.id = key;
-      let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
+  // Use a map to deduplicate by cycle ID (pools only).
+  // If multiple entry points (startTokens) exist for the same set of pools,
+  // we keep the one with the best (lowest) score.
+  const deduped = new Map<string, FoundCycle>();
 
-      // Prioritize priceable tokens: bias score for MAJOR_TOKENS
-      if (MAJOR_TOKENS.has(cycle.startToken)) {
-        score -= 2.0; // Significant bonus for major bases
-      }
-      cycle.score = score;
+  for (let i = 0; i < allCycles.length; i++) {
+    const cycle = allCycles[i];
+    const key = routeKeyFromEdges(cycle.edges);
+    cycle.id = key;
+
+    let score = getWinRate ? scoreCycleWithFeedback(cycle.logWeight, key, getWinRate) : cycle.logWeight;
+
+    // Prioritize priceable tokens: bias score for MAJOR_TOKENS
+    if (MAJOR_TOKENS.has(cycle.startToken)) {
+      score -= 2.0; // Significant bonus for major bases
     }
-  } else {
-    for (let i = 0; i < allCycles.length; i++) {
-      const cycle = allCycles[i];
-      cycle.id = routeKeyFromEdges(cycle.edges, cycle.startToken);
-      let score = cycle.logWeight;
-      if (MAJOR_TOKENS.has(cycle.startToken)) {
-        score -= 2.0;
-      }
-      cycle.score = score;
+    cycle.score = score;
+
+    const existing = deduped.get(key);
+    if (!existing || score < (existing.score ?? Infinity)) {
+      deduped.set(key, cycle);
     }
   }
 
-  allCycles.sort((a, b) => a.score! - b.score!);
-  const limit = Math.min(allCycles.length, maxCycles);
-  allCycles.length = limit;
-  return allCycles;
+  const result = Array.from(deduped.values());
+  result.sort((a, b) => a.score! - b.score!);
+  const limit = Math.min(result.length, maxCycles);
+  result.length = limit;
+  return result;
 }
 
 export async function findCyclesBellmanFord(
@@ -644,7 +522,7 @@ export async function findCyclesBellmanFord(
             const lastEdge = cycleEdges[cycleEdges.length - 1];
             if (firstEdge.tokenIn === lastEdge.tokenOut) {
               const startToken = firstEdge.tokenIn;
-              const key = routeKeyFromEdges(cycleEdges, startToken);
+              const key = routeKeyFromEdges(cycleEdges);
               if (!foundKeys.has(key)) {
                 foundKeys.add(key);
 
@@ -696,7 +574,7 @@ export async function enumerateCyclesBellmanFord(
   if (getWinRate) {
     for (let i = 0; i < allCycles.length; i++) {
       const cycle = allCycles[i];
-      const key = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
+      const key = cycle.id || routeKeyFromEdges(cycle.edges);
       cycle.id = key;
       let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
       if (MAJOR_TOKENS.has(cycle.startToken)) {
@@ -707,7 +585,7 @@ export async function enumerateCyclesBellmanFord(
   } else {
     for (let i = 0; i < allCycles.length; i++) {
       const cycle = allCycles[i];
-      cycle.id = cycle.id || routeKeyFromEdges(cycle.edges, cycle.startToken);
+      cycle.id = cycle.id || routeKeyFromEdges(cycle.edges);
       let score = cycle.logWeight;
       if (MAJOR_TOKENS.has(cycle.startToken)) {
         score -= 2.0;

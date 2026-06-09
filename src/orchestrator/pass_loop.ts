@@ -978,7 +978,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
       // to avoid redundant O(N log N) routeKeyFromEdges work.
       const filteredCycles = currentCycles.filter((cycle) => {
-        const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges, cycle.startToken);
+        const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges);
         return !ctx.executionService.isQuarantined(routeKey);
       });
 
@@ -1119,7 +1119,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         );
 
         if (result.profitableCount > 0) {
-          ctx.logger.info(
+          ctx.logger.debug(
             {
               profitable: result.profitableCount,
               maxGrossMatic:
@@ -1148,7 +1148,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           const candidatePromises = result.profitable.map(async (profitable) => {
             if (!ctx.isRunning) return null;
 
-            const routeKey = profitable.cycle.id ?? deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+            const routeKey = profitable.cycle.id ?? deps.routeKeyFromEdges(profitable.cycle.edges);
 
             const lastSubmit = recentRouteTimestamps.get(routeKey);
             if (lastSubmit && now - lastSubmit < ROUTE_COOLDOWN_MS) {

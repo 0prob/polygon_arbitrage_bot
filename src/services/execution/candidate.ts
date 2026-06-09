@@ -65,7 +65,7 @@ export function buildExecutionCandidate(
   // Use cycle-derived identity key (not the calldata hash) for quarantine/inflight/tracker/poolsFromRouteKey.
   // The hash is an internal on-chain guard; bot state keys on the route identity for consistency with
   // pre-filters, cooldowns, and pool-disjoint batching.
-  const identityKey = profitable.cycle.id ?? routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
+  const identityKey = profitable.cycle.id ?? routeKeyFromEdges(profitable.cycle.edges);
 
   return {
     routeKey: identityKey,
