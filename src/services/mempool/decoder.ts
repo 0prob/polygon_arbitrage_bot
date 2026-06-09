@@ -162,7 +162,7 @@ export const SELECTORS: Record<string, string> = {
   "0xe3ead59e": "OTHER", // swapExactAmountIn(address,(address,address,uint256,uint256,uint256,bytes32,address),uint256,bytes,bytes)
   "0x9871efa4": "OTHER", // unxswapByOrderId(uint256,uint256,uint256,bytes32[])
   "0x1679c792": "OTHER", // exactInputSingle((address,address,address,address,uint256,uint256,uint256,uint160))
-  "0xdb3e2198": "OTHER", // exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
+  "0xdb3e2198": "UNISWAP_V3", // exactOutputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))
   "0x14d08fca": "OTHER", // onChainSwaps((address,address,address,uint256,uint256,uint256,uint256,address,uint256,bool,uint16,string),(address,address,address,address,bool,uint256,bytes)[],address)
   "0x34fcd5be": "OTHER", // executeBatch((address,uint256,bytes)[])
   "0xde2980fc": "OTHER", // execute3((bytes,address,bool)[],address,address)
@@ -185,6 +185,8 @@ export const SELECTORS: Record<string, string> = {
   "0x38ed1739": "OTHER", // swapExactTokensForTokens(uint256,uint256,address[],address,uint256)
   "0x022c0d9f": "UNISWAP_V2", // swap(uint256,uint256,address,bytes)
   "0x128acb08": "UNISWAP_V3", // swap(address,bool,int256,uint160,bytes)
+  "0xac9650d8": "MULTICALL", // multicall(bytes[])
+  "0x5ae401dc": "MULTICALL", // multicall(uint256,bytes[])
   "0x52bbbe29": "BALANCER_V2", // swap((bytes32,uint8,address,address,uint256,bytes),...,uint256)
   "0x3df02124": "CURVE_STABLE", // exchange(int128,int128,uint256,uint256)
   "0x5b41b908": "CURVE_CRYPTO", // exchange(uint256,uint256,uint256,uint256)
@@ -222,14 +224,17 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   const lcTo = to.toLowerCase();
   let targetPool: string = lcTo;
   let isKnown = knownPools.has(lcTo);
+
+  // If not a direct call to a known pool, search the calldata for known pool addresses.
   if (!isKnown) {
-    const extracted = extractEncodedAddresses(input);
+    const extracted = extractEncodedAddresses(input, knownPools);
     const hit = extracted.find((a) => knownPools.has(a));
     if (hit) {
       isKnown = true;
       targetPool = hit;
     }
   }
+
   if (!isKnown) {
     return null;
   }
@@ -251,22 +256,24 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
   }
 
   if (protocol === "UNISWAP_V3" && isDirect) {
-    // swap(address recipient, bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96, bytes data)
-    let amountSpecified = 0n;
-    if (input.length >= 10 + 192) {
-      try {
-        amountSpecified = BigInt("0x" + input.slice(10 + 128, 10 + 192));
-      } catch {}
+    if (selector === "0x128acb08") {
+      // swap(address recipient, bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96, bytes data)
+      let amountSpecified = 0n;
+      if (input.length >= 10 + 192) {
+        try {
+          amountSpecified = BigInt("0x" + input.slice(10 + 128, 10 + 192));
+        } catch {}
+      }
+      const size = amountSpecified < 0n ? -amountSpecified : amountSpecified;
+      let zeroForOne: boolean | undefined;
+      if (input.length >= 10 + 128) {
+        try {
+          const zfoWord = BigInt("0x" + input.slice(10 + 64, 10 + 128));
+          zeroForOne = zfoWord !== 0n;
+        } catch {}
+      }
+      return { protocol, poolAddress, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: size || 1n, zeroForOne };
     }
-    const size = amountSpecified < 0n ? -amountSpecified : amountSpecified;
-    let zeroForOne: boolean | undefined;
-    if (input.length >= 10 + 128) {
-      try {
-        const zfoWord = BigInt("0x" + input.slice(10 + 64, 10 + 128));
-        zeroForOne = zfoWord !== 0n;
-      } catch {}
-    }
-    return { protocol, poolAddress, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: size || 1n, zeroForOne };
   }
 
   // Generic for BALANCER_V2, CURVE_*, DODO_V2, WOOFI, KYBERSWAP_ELASTIC, and indirect V2/V3.
@@ -296,11 +303,26 @@ export function decodeSwapCalldata(to: Address, input: string, knownPools: Set<s
 
 /**
  * Extract all addresses from a transaction's input data.
- * Used for pool indexing — any address in the input might be a pool or token.
+ * Improved to find known pools even if not word-aligned (e.g. V3 packed paths).
  */
-export function extractEncodedAddresses(input: string): string[] {
+export function extractEncodedAddresses(input: string, knownPools?: Set<string>): string[] {
   const addrs: string[] = [];
   if (!input || input.length < 42) return addrs;
+
+  const lcInput = input.toLowerCase();
+
+  // 1. Fast path: check for known pool addresses directly in the hex string
+  if (knownPools) {
+    for (const pool of knownPools) {
+      const addrHex = pool.startsWith("0x") ? pool.slice(2) : pool;
+      if (lcInput.includes(addrHex)) {
+        addrs.push(pool);
+      }
+    }
+    if (addrs.length > 0) return addrs;
+  }
+
+  // 2. Fallback: word-aligned extraction
   // EVM word-aligned address extraction:
   // The method selector is 4 bytes (8 hex characters) after "0x" (prefix).
   // So the first word starts at index 10.

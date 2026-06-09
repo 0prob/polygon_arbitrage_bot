@@ -49,6 +49,12 @@ export class WebSocketSubscriber {
   private reconnectAttempts = 0;
   private requestId = 0;
 
+  // Throttling for eth_getTransactionByHash to avoid RPC rate limits
+  private pendingTxQueue: string[] = [];
+  private workerTimer: ReturnType<typeof setInterval> | null = null;
+  private WORKER_INTERVAL_MS = 100;
+  private MAX_BATCH_SIZE = 5;
+
   constructor(private options: WebSocketSubscriberOptions) {}
 
   onEvent(handler: WsEventHandler): void {
@@ -63,6 +69,9 @@ export class WebSocketSubscriber {
     if (this.running) return;
     this.running = true;
     this.connect();
+
+    // Start background worker for throttled TX fetching
+    this.workerTimer = setInterval(() => this.processTxQueue(), this.WORKER_INTERVAL_MS);
   }
 
   stop(): void {
@@ -74,6 +83,10 @@ export class WebSocketSubscriber {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
+    }
+    if (this.workerTimer) {
+      clearInterval(this.workerTimer);
+      this.workerTimer = null;
     }
     if (this.ws) {
       this.ws.close();
@@ -95,7 +108,7 @@ export class WebSocketSubscriber {
       this.ws = new WebSocket(this.options.url);
       this.reconnectAttempts = 0;
       this.ws.onopen = () => {
-        this.emit({ type: "newHead", blockNumber: 0, blockHash: "", parentHash: "", timestamp: Date.now() } as NewHeadEvent);
+        // Only subscribe to real updates, don't emit dummy block 0.
         this.subscribeNewHeads();
         this.subscribePendingTransactions();
         this.pingTimer = setInterval(() => this.ping(), this.options.pingIntervalMs ?? 15_000);
@@ -111,13 +124,11 @@ export class WebSocketSubscriber {
             return;
           }
 
-          // eth_subscription messages are handled by sendSubscription wrappers above in the chain.
-          // Only handle RPC responses (eth_getTransactionByHash replies) here.
           if (typeof data.id === "number" && data.result !== undefined) {
             this.handleRpcResponse(data as { id: number; result: unknown });
           }
         } catch (err) {
-          /* skip malformed or unexpected formats */
+          /* skip malformed */
         }
       };
 
@@ -180,13 +191,20 @@ export class WebSocketSubscriber {
   private subscribePendingTransactions(): void {
     this.sendSubscription<string>("newPendingTransactions", (result) => {
       if (typeof result !== "string" || !result.startsWith("0x")) return;
-      void this.fetchAndEmitPendingTx(result);
+      // Add to throttled queue instead of immediate fetch
+      if (this.pendingTxQueue.length < (this.options.maxPendingTxsPerTick ?? 1000)) {
+        this.pendingTxQueue.push(result);
+      }
     });
   }
 
-  private async fetchAndEmitPendingTx(hash: string): Promise<void> {
-    try {
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+  private processTxQueue(): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (this.pendingTxQueue.length === 0) return;
+
+    const batch = this.pendingTxQueue.splice(0, this.MAX_BATCH_SIZE);
+    for (const hash of batch) {
+      try {
         this.ws.send(
           JSON.stringify({
             jsonrpc: "2.0",
@@ -195,9 +213,9 @@ export class WebSocketSubscriber {
             id: this.requestId++,
           }),
         );
+      } catch {
+        /* skip */
       }
-    } catch {
-      /* ignore */
     }
   }
 

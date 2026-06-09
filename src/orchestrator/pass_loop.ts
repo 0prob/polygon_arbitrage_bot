@@ -103,8 +103,9 @@ async function runPoolDiscovery(
   bus: EventBus | undefined,
   currentPools: PoolMeta[] | null,
   lastDiscoveryTime: number,
+  lastDiscoveredBlock: number,
   onNewPools: (pools: PoolMeta[]) => void,
-): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number }> {
+): Promise<{ pools: PoolMeta[] | null; lastDiscoveryTime: number; lastDiscoveredBlock: number }> {
   ctx.logger.debug({}, "runPoolDiscovery called");
   const now = Date.now();
   const DISCOVERY_INTERVAL = 60000;
@@ -115,39 +116,43 @@ async function runPoolDiscovery(
       (now - lastDiscoveryTime > DISCOVERY_INTERVAL && ctx.tierManager.shouldDiscover())
     )
   ) {
-    return { pools: currentPools, lastDiscoveryTime };
+    return { pools: currentPools, lastDiscoveryTime, lastDiscoveredBlock };
   }
 
   bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
   const graphqlUrl = ctx.config.hasuraUrl;
   const secret = ctx.config.hasuraSecret;
+
+  const indexerHotBias = ctx.config.routing.indexerHotBias ?? false;
+  const discoveryMode: "broad" | "hot-bias" = indexerHotBias ? "hot-bias" : "broad";
+
   if (!currentPools || currentPools.length === 0) {
-    ctx.logger.info({}, "No pools — discovering from Hasura");
+    ctx.logger.info({ discoveryMode }, "No pools — discovering from Hasura");
   } else {
-    ctx.logger.info({}, "Polling Hasura for new pools");
+    ctx.logger.info({ discoveryMode, lastDiscoveredBlock }, "Polling Hasura for new pools");
   }
 
   const newLastDiscoveryTime = now;
   try {
     const discoveryStartTime = Date.now();
-    const hasuraPools = await ctx.rpcCircuit.execute(
-      () => deps.discoverPoolsFromHasura(graphqlUrl, secret, ctx.logger),
+    const result = await ctx.rpcCircuit.execute(
+      () =>
+        deps.discoverPoolsFromHasura(graphqlUrl, secret, ctx.logger, {
+          discoveryMode,
+          lastDiscoveredBlock,
+        }),
       async () => {
         ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
-        return [];
+        return { pools: [], maxBlock: lastDiscoveredBlock };
       },
     );
+    const hasuraPools = result.pools;
+    const newMaxBlock = result.maxBlock;
     const discoveryElapsed = Date.now() - discoveryStartTime;
 
     if (hasuraPools.length > 0) {
-      const poolLen = currentPools?.length ?? 0;
-      if (poolLen > 100 && hasuraPools.length < poolLen / 10) {
-        ctx.logger.warn(
-          { previous: poolLen, discovered: hasuraPools.length },
-          "Suspiciously low number of pools discovered, keeping previous list",
-        );
-        return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime };
-      }
+      // If incremental (lastDiscoveredBlock > 0), merge with currentPools.
+      // If full sync, just use hasuraPools.
       const mapped: PoolMeta[] = hasuraPools.map((p) => ({
         address: p.address as `0x${string}`,
         protocol: p.protocol,
@@ -156,9 +161,30 @@ async function runPoolDiscovery(
         tokens: p.tokens as `0x${string}`[],
         fee: p.fee,
       }));
-      onNewPools(mapped);
 
-      const protocolBreakdown = mapped.reduce(
+      let finalPools: PoolMeta[];
+      if (lastDiscoveredBlock > 0 && currentPools) {
+        // Incremental merge
+        const seen = new Set(currentPools.map((p) => p.address.toLowerCase()));
+        finalPools = [...currentPools];
+        let added = 0;
+        for (const p of mapped) {
+          if (!seen.has(p.address.toLowerCase())) {
+            finalPools.push(p);
+            seen.add(p.address.toLowerCase());
+            added++;
+          }
+        }
+        ctx.logger.info({ added, total: finalPools.length, durationMs: discoveryElapsed }, "Incremental pool discovery updated");
+      } else {
+        // Full sync or first load
+        finalPools = mapped;
+        ctx.logger.info({ discovered: mapped.length, durationMs: discoveryElapsed }, "Full pool discovery updated");
+      }
+
+      onNewPools(finalPools);
+
+      const protocolBreakdown = finalPools.reduce(
         (acc, p) => {
           const proto = p.protocol.split("_")[0] ?? p.protocol;
           acc[proto] = (acc[proto] ?? 0) + 1;
@@ -171,25 +197,26 @@ async function runPoolDiscovery(
 
       bus?.emit({
         type: "discovery_summary",
-        poolCount: mapped.length,
+        poolCount: finalPools.length,
         protocolBreakdown,
         lagBlocks,
       });
 
-      ctx.logger.info({ discovered: mapped.length, durationMs: discoveryElapsed }, "Updated pools from Hasura");
-      return { pools: mapped, lastDiscoveryTime: newLastDiscoveryTime };
+      return { pools: finalPools, lastDiscoveryTime: newLastDiscoveryTime, lastDiscoveredBlock: newMaxBlock };
     }
+
     if (!currentPools) {
       onNewPools([]);
-      return { pools: [], lastDiscoveryTime: newLastDiscoveryTime };
+      return { pools: [], lastDiscoveryTime: newLastDiscoveryTime, lastDiscoveredBlock: newMaxBlock };
     }
+    return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime, lastDiscoveredBlock: newMaxBlock };
   } catch (e) {
     ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
     ctx.metrics.totalErrors++;
     ctx.metrics.lastErrorTime = Date.now();
     ctx.metrics.lastErrorMessage = "Failed to discover pools from Hasura";
   }
-  return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime };
+  return { pools: currentPools, lastDiscoveryTime: newLastDiscoveryTime, lastDiscoveredBlock };
 }
 
 /**
@@ -547,7 +574,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         if (event.type === "newHead") {
           headTriggered = true;
           lastHeadTime = Date.now();
-          ctx.pendingStateOverlay?.clear();
+          if (event.blockNumber > 0) {
+            ctx.pendingStateOverlay?.clear();
+          }
         }
       });
     } catch (err) {
@@ -571,6 +600,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastRefreshTime = 0;
   let lastFullRefreshTime = 0;
   let lastDiscoveryTime = 0;
+  let lastDiscoveredBlock = 0;
   let lastMempoolTraceId: string | undefined = undefined;
   let cachedRates: Map<string, bigint> | null = null;
   let cachedMetas: Map<string, { decimals: number }> | null = null;
@@ -691,18 +721,27 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Stage 1: Pool discovery (60s cadence)
       {
         ctx.logger.info({}, "About to runPoolDiscovery");
-        const result = await runPoolDiscovery(ctx, deps, bus, hasuraPoolsCache, lastDiscoveryTime, (newPools) => {
-          hasuraPoolsCache = newPools;
-          cachedGraph = deps.buildGraph(newPools, stateCache);
-          ctx.graphUpdater?.resetRebuildCounter();
-          if (newPools && newPools.length > 0) {
-            ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
-            ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
-          }
-        });
+        const result = await runPoolDiscovery(
+          ctx,
+          deps,
+          bus,
+          hasuraPoolsCache,
+          lastDiscoveryTime,
+          lastDiscoveredBlock,
+          (newPools) => {
+            hasuraPoolsCache = newPools;
+            cachedGraph = deps.buildGraph(newPools, stateCache);
+            ctx.graphUpdater?.resetRebuildCounter();
+            if (newPools && newPools.length > 0) {
+              ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
+              ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
+            }
+          },
+        );
         ctx.logger.info({}, "runPoolDiscovery completed");
         hasuraPoolsCache = result.pools;
         lastDiscoveryTime = result.lastDiscoveryTime;
+        lastDiscoveredBlock = result.lastDiscoveredBlock;
       }
       mark("poolDiscovery");
 

@@ -22,8 +22,8 @@ describe("InMemoryPendingStateOverlay", () => {
     const state: PoolState = { reserve0: 100n, reserve1: 200n };
     overlay.update(address, state);
 
-    // Manually wait for TTL (200ms)
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    // Manually wait for TTL (1000ms)
+    await new Promise((resolve) => setTimeout(resolve, 1050));
 
     expect(overlay.get(address)).toBeUndefined();
   });

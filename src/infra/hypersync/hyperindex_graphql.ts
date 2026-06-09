@@ -15,6 +15,7 @@ interface PoolMetaRow {
   protocol: string;
   tokens: unknown;
   fee: number | null;
+  createdBlock?: number;
 }
 interface V2StateRow {
   id: string;
@@ -358,53 +359,92 @@ export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
     .filter((p) => isAddress(p.address) && p.tokens.length >= 2 && !isGarbagePool(p));
 }
 
+export interface DiscoverPoolsOptions {
+  discoveryMode?: "broad" | "hot-bias";
+  lastDiscoveredBlock?: number;
+}
+
 export async function discoverPoolsFromHasura(
   graphqlUrl: string,
   adminSecret: string,
   logger?: Pick<Logger, "warn" | "error">,
-): Promise<PoolMeta[]> {
+  options: DiscoverPoolsOptions = {},
+): Promise<{ pools: PoolMeta[]; maxBlock: number }> {
   const anchors = STATIC_ANCHORS;
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
+  let maxBlock = options.lastDiscoveredBlock ?? 0;
+
+  const { discoveryMode = "broad", lastDiscoveredBlock = 0 } = options;
+
+  // Build where clause
+  let whereClauses: string[] = [];
+  if (lastDiscoveredBlock > 0) {
+    whereClauses.push(`createdBlock: { _gt: ${lastDiscoveredBlock} }`);
+  }
+
+  if (discoveryMode === "hot-bias") {
+    // In Hasura/Envio, tokens is [String!]. We want pools where ANY token is in HOT_BASE_TOKENS.
+    // However, Hasura _in filter for arrays usually checks for inclusion.
+    // If it's a simple jsonb or array, we might need a more complex filter or multiple queries.
+    // For now, we'll fetch them and filter locally if a simple _in isn't supported, 
+    // but Envio's Hasura usually supports _contains or similar.
+    // Given we want "any token in hot list", and tokens is [String!], 
+    // we'll try to use a filter that works for this. 
+    // Optimization: If broad, we fetch all. If hot-bias, we can significantly reduce rows.
+    // For simplicity and correctness across Envio versions, we'll use a broad fetch if 
+    // incremental, and only apply hot-bias locally if not incremental, OR try a basic filter.
+    // Let's try to use the `tokens` filter if we can.
+  }
+
+  const where = whereClauses.length > 0 ? `where: { ${whereClauses.join(", ")} }` : "";
 
   // Paginate with offset to avoid silent truncation when >PAGE pools exist in Hasura
-  // Safety cap of 150K covers all known pools (~123K in Hasura) with room for future growth.
-  // The loop terminates early when a page returns < PAGE rows (the last page).
   for (let offset = 0; offset < 150000; offset += PAGE) {
     let pageResult: unknown = null;
     let ok = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        pageResult = await graphQLQuery(
-          graphqlUrl,
-          adminSecret,
-          `{ PoolMeta(limit: ${PAGE}, offset: ${offset}) { id protocol tokens fee } }`,
-        );
-        const d = pageResult as GraphQLData | null;
+        const query = `{ PoolMeta(limit: ${PAGE}, offset: ${offset}, ${where}, order_by: { createdBlock: asc }) { id protocol tokens fee createdBlock } }`;
+        pageResult = await graphQLQuery(graphqlUrl, adminSecret, query);
+        const d = pageResult as { PoolMeta?: (PoolMetaRow & { createdBlock: number })[] } | null;
         if (d?.PoolMeta) {
           allRows.push(...d.PoolMeta);
+          for (const row of d.PoolMeta) {
+            if (row.createdBlock > maxBlock) maxBlock = row.createdBlock;
+          }
           ok = true;
           if (d.PoolMeta.length < PAGE) {
-            // last page
-            offset = 1e9;
+            offset = 1e9; // last page
           }
           break;
         }
-      } catch {
+      } catch (err) {
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
     }
-    if (!ok) break; // give up on persistent errors for this page
+    if (!ok) break;
   }
 
+  if (allRows.length === 0 && lastDiscoveredBlock > 0) {
+    return { pools: [], maxBlock };
+  }
   if (allRows.length === 0) {
-    return anchors;
+    return { pools: anchors, maxBlock };
   }
 
   try {
-    const discovered = parsePoolMetaRows(allRows);
-    const combined = [...anchors].filter((p) => !isGarbagePool(p));
+    let discovered = parsePoolMetaRows(allRows);
+
+    // Apply hot-bias filter locally if requested (more reliable than complex GraphQL array filters)
+    if (discoveryMode === "hot-bias") {
+      const { HOT_BASE_SET } = await import("../../../hyperindex/src/utils/hot_tokens.ts");
+      discovered = discovered.filter((p) => p.tokens.some((t) => HOT_BASE_SET.has(t.toLowerCase())));
+    }
+
+    const combined = lastDiscoveredBlock > 0 ? [] : [...anchors].filter((p) => !isGarbagePool(p));
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));
+
     for (let i = 0; i < discovered.length; i++) {
       if (i > 0 && i % 10000 === 0) {
         await new Promise((r) => setTimeout(r, 0));
@@ -416,22 +456,21 @@ export async function discoverPoolsFromHasura(
       }
     }
 
-    // Auto-discover garbage during sync: if any token in a pool is a factory
-    // we actively index, it almost certainly came from a broken PairCreated event.
+    // Auto-discover garbage
     for (const p of combined) {
       for (const token of p.tokens) {
         if (KNOWN_FACTORIES.has(token)) {
           markAsGarbage(token)
-            .then(() => logger?.warn({ token }, "Auto-discovered garbage during pool sync (will be filtered from graph)"))
+            .then(() => logger?.warn({ token }, "Auto-discovered garbage during pool sync"))
             .catch(() => {});
         }
       }
     }
 
-    return combined;
+    return { pools: combined, maxBlock };
   } catch (err) {
     logger?.error({ err }, "discoverPoolsFromHasura error parsing results");
-    return anchors;
+    return { pools: anchors, maxBlock };
   }
 }
 
