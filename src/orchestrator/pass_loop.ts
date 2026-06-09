@@ -1145,15 +1145,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         } else if (result.profitable.length > 0) {
           const candidates: { candidate: CandidateExecution; profitable: (typeof result.profitable)[number]; routeKey: string }[] = [];
 
-          for (const profitable of result.profitable) {
-            if (!ctx.isRunning) break;
+          const candidatePromises = result.profitable.map(async (profitable) => {
+            if (!ctx.isRunning) return null;
 
             const routeKey = profitable.cycle.id ?? deps.routeKeyFromEdges(profitable.cycle.edges, profitable.cycle.startToken);
 
             const lastSubmit = recentRouteTimestamps.get(routeKey);
             if (lastSubmit && now - lastSubmit < ROUTE_COOLDOWN_MS) {
               ctx.logger.debug({ routeKey, lastSubmit, now }, "Route recently submitted, skipping cooldown");
-              continue;
+              return null;
             }
             recentRouteTimestamps.set(routeKey, now);
 
@@ -1174,7 +1174,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               );
             }
 
-            if (!profitable.result.profitable) continue;
+            if (!profitable.result.profitable) return null;
 
             // Capture full simulation trace for debugging
             deps.instrumenter.captureTrace(routeKey, profitable.result, stateCache);
@@ -1241,17 +1241,23 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
                     appendFileSync("data/failing-calldata.ndjson", dump);
                   } catch {}
                   ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
-                  continue;
+                  return null;
                 }
               }
 
-              candidates.push({ candidate, profitable, routeKey });
+              return { candidate, profitable, routeKey };
             } catch (err) {
               ctx.logger.error({ err, routeKey }, "Failed to build tx for cycle");
               ctx.metrics.totalErrors++;
               ctx.metrics.lastErrorTime = Date.now();
               ctx.metrics.lastErrorMessage = "Failed to build tx for cycle";
+              return null;
             }
+          });
+
+          const resolvedCandidates = await Promise.all(candidatePromises);
+          for (const res of resolvedCandidates) {
+            if (res) candidates.push(res);
           }
 
           if (candidates.length > 0) {
