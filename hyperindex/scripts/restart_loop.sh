@@ -36,7 +36,7 @@ while [ $restart_count -lt $MAX_RESTARTS ]; do
   echo -e "${GREEN}[restart_loop] Starting envio (attempt $restart_count/${MAX_RESTARTS}) $(date '+%H:%M:%S')${NC}"
 
   ENVIO_FULL_BATCH_SIZE=4500 \
-  ENVIO_LOG_LEVEL=info \
+  LOG_LEVEL=${ENVIO_LOG_LEVEL:-info} \
   bunx envio start 2>&1
 
   EXIT_CODE=$?

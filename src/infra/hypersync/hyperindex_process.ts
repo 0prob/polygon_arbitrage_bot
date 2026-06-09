@@ -578,7 +578,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
     // Force richer logs from the Envio side (hypersync client rate limiting, handler timing, etc.)
     // so our new instrumentation in parseEnvioLine catches even more bottleneck detail.
     env.RUST_LOG = env.RUST_LOG || "info,hypersync_client=debug,envio=debug";
-    env.ENVIO_LOG_LEVEL = env.ENVIO_LOG_LEVEL || "debug";
+    env.ENVIO_LOG_LEVEL = env.ENVIO_LOG_LEVEL || "info";
+    env.LOG_LEVEL = env.ENVIO_LOG_LEVEL; // Envio's CLI reads LOG_LEVEL, so map it here
 
     // === INSTRUMENTATION: Full startup trace for bottleneck diagnosis ===
     const sanitizedEnvKeys = Object.keys(env).filter(

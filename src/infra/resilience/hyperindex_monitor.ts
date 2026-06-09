@@ -292,10 +292,6 @@ export class HyperIndexMonitor implements Lifecycle {
 
     // Lag-based health check (only restart if we manage the process)
     if (lag > this.maxLagBlocks && this.lastSyncedBlock > 0) {
-      this.opts.logger.warn(
-        { lag, maxLag: this.maxLagBlocks, synced: this.lastSyncedBlock, head: this.lastChainHead },
-        "HyperIndex significantly behind chain head",
-      );
       if (this._managingProcess && lag > this.maxLagBlocks * 2) {
         // Don't restart for lag if we're heavily rate-limited — the restart would pick
         // the same exhausted token and make no progress, but we'd lose the existing

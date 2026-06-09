@@ -296,21 +296,6 @@ export async function evaluatePipeline(
               const mid = low + (high - low) / 2n;
               const evalMid = evaluateAmount(cycle, mid, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
               if (evalMid.grossProfitMatic === null || evalMid.grossProfitMatic <= 0n) {
-                if (attempted < 3 && evalLow.grossProfitMatic != null && options.logger) {
-                  options.logger.warn?.(
-                    {
-                      cycleId: cycle.id,
-                      low: low.toString(),
-                      grossProfitMatic: evalLow.grossProfitMatic.toString(),
-                      mid: mid.toString(),
-                      midGrossProfitMatic: evalMid.grossProfitMatic?.toString(),
-                      startRate: options.tokenToMaticRates.get(cycle.startToken)?.toString(),
-                      protocol: cycle.edges[0]?.protocol,
-                      hop: cycle.hopCount,
-                    },
-                    "Cycle rejected: no gross profit at low, high or mid",
-                  );
-                }
                 return {
                   type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned",
                   reason: "noGrossProfit",

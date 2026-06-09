@@ -174,5 +174,9 @@
   {
     "address": "0x5638c0f1a0e99c15bf22b45f4eb5cc98036dc06f",
     "decimals": 18
+  },
+  {
+    "address": "0xfde4c484c3eae3c2000a5ef79ded65d6bfe10c37",
+    "decimals": 18
   }
 ]

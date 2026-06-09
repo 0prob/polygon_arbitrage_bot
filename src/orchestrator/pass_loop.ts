@@ -607,7 +607,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
   let ratesNeedFullRefresh = false;
   let pendingFocusTokens: Set<string> | null = null;
-  let isLfPass = false;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
@@ -645,10 +644,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       lastDiscoveryTime = 0;
     }
     if (signal.type === "large_swap") {
-      ctx.logger.info(
-        { pool: signal.data.poolAddress, size: signal.data.estimatedSwapSize.toString(), txHash: signal.data.txHash },
-        "Large swap detected in mempool — triggering fast re-simulation",
-      );
       lastMempoolTraceId = signal.data.traceId;
       bus?.emit({
         type: "mempool_pending_swap",
@@ -671,7 +666,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       await sleep(200);
       continue;
     }
-    ctx.logger.info({}, "Pass loop cycle started");
     const now = Date.now();
     const startTime = now;
     const currentPassTraceId = lastMempoolTraceId;
@@ -684,7 +678,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       timings[name] = Date.now() - t_point;
       t_point = Date.now();
     };
-    isLfPass = false;
 
     const cycleWindow = 60000;
     const elapsedCycleWindow = now - cycleWindowStart;
@@ -720,7 +713,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       // Stage 1: Pool discovery (60s cadence)
       {
-        ctx.logger.info({}, "About to runPoolDiscovery");
         const result = await runPoolDiscovery(
           ctx,
           deps,
@@ -737,9 +729,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
               ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
             }
           },
-        );
-        ctx.logger.info({}, "runPoolDiscovery completed");
-        hasuraPoolsCache = result.pools;
+          );
+          hasuraPoolsCache = result.pools;
         lastDiscoveryTime = result.lastDiscoveryTime;
         lastDiscoveredBlock = result.lastDiscoveredBlock;
       }
@@ -776,7 +767,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         cachedGraph = enumResult.graph;
         cachedCycles = enumResult.cycles;
         lastRefreshTime = enumResult.lastRefreshTime;
-        isLfPass = enumResult.didEnumerate;
         didEnumerateThisPass = enumResult.didEnumerate;
       }
       mark("enumeration");
@@ -959,7 +949,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // we're assessing this pass (directly addresses persistent low rates in surfacing even
       // after polls). Log at info when it grows the set.
       {
-        const before = tokenToMaticRates.size;
         if (cycleTokens.size > 0) {
           const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
             minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
@@ -968,9 +957,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           });
           cachedRates = boosted;
           tokenToMaticRates = boosted;
-          if (boosted.size > before) {
-            ctx.logger.info({ rates: tokenToMaticRates.size, focus: cycleTokens.size }, "Rate coverage boosted with assessment focus");
-          }
         }
       }
 
@@ -1087,59 +1073,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       if (result.attempted > 0) {
         const tier = ctx.tierManager.getCurrent();
-        const unaccounted =
-          result.attempted -
-          result.noRate -
-          result.prunedMissingState -
-          result.prunedInvalidBounds -
-          result.prunedNoGrossProfit -
-          result.prunedFinalCheckFailed -
-          (result.simulated > 0 ? result.simulated : 0);
-        ctx.logger.info(
-          {
-            attempted: result.attempted,
-            simulated: result.simulated,
-            pruned: result.pruned,
-            prunedMissingState: result.prunedMissingState,
-            prunedInvalidBounds: result.prunedInvalidBounds,
-            prunedNoGrossProfit: result.prunedNoGrossProfit,
-            prunedFinalCheckFailed: result.prunedFinalCheckFailed,
-            noRate: result.noRate,
-            unaccounted,
-            profitable: result.profitableCount,
-            maxGrossMatic:
-              result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
-            rates: tokenToMaticRates.size,
-            cache: stateCache.size,
-            isLowFreq: isLfPass,
-            durationMs: simElapsed,
-            tier,
-          },
-          "Cycle assessment complete",
-        );
-
-        if (result.profitableCount > 0) {
-          ctx.logger.debug(
-            {
-              profitable: result.profitableCount,
-              maxGrossMatic:
-                result.maxGrossProfitMatic !== undefined ? (result.maxGrossProfitMatic / 10n ** 15n).toString() + "mMATIC" : "N/A",
-              rates: tokenToMaticRates.size,
-            },
-            "Assessment found profitable candidates (pre-filter; may skip on cooldown/dry/quarantine)",
-          );
-        } else if (result.noRate > Math.floor(result.attempted * 0.8) && result.attempted > 50) {
-          ctx.logger.info(
-            {
-              attempted: result.attempted,
-              noRate: result.noRate,
-              rates: tokenToMaticRates.size,
-              cache: stateCache.size,
-            },
-            "Assessment: very high noRate fraction (rate propagation/coverage issue?)",
-          );
-        }
-
         if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
           ctx.logger.debug({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
         } else if (result.profitable.length > 0) {

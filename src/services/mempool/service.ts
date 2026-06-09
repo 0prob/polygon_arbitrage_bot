@@ -1042,10 +1042,6 @@ export class MempoolService {
       }
     }
 
-    this.logger.info(
-      { pool: decoded.poolAddress, protocol: decoded.protocol, amount: decoded.amountIn.toString(), hash: tx.hash.slice(0, 10) + "..." },
-      "mempool: emitting large_swap signal",
-    );
     const signal: LargeSwapSignal = {
       traceId,
       txHash: tx.hash,
