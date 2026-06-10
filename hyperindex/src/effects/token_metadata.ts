@@ -1,7 +1,16 @@
 import { createEffect, S } from "envio";
 import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
-import { STATIC_TOKEN_DECIMALS } from "./token_registry";
+import { Database } from "bun:sqlite";
+import path from "node:path";
+
+const db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
+const getDecimalsStmt = db.prepare("SELECT decimals FROM token_decimals WHERE address = ?");
+
+function getStaticDecimals(address: string): number | null {
+  const row = getDecimalsStmt.get(address.toLowerCase()) as { decimals: number } | undefined;
+  return row ? row.decimals : null;
+}
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import path from "node:path";
 
@@ -164,7 +173,7 @@ export const fetchTokenMeta = createEffect(
     }
 
     // Layer 1: Static + discovered runtime cache (aggressive persistence)
-    const staticCached = STATIC_TOKEN_DECIMALS[addr];
+    const staticCached = getStaticDecimals(addr);
     if (staticCached !== undefined) {
       return { address: addr, decimals: staticCached };
     }
