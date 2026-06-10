@@ -20,6 +20,7 @@ import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import type { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import type { HyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
+import { StateRefreshService } from "../services/state_refresh.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -282,7 +283,7 @@ export async function bootApplication(
 
   logger.info("Ready — entering pass loop");
 
-  return {
+  const ctx = {
     config,
     logger,
     stateCache,
@@ -305,5 +306,11 @@ export async function bootApplication(
     hyperRpc: rpc.hyperRpc,
     hyperSync: rpc.hyperSync,
     hyperIndexMonitor,
-  };
+  } as RuntimeContext;
+
+  const stateRefreshService = new StateRefreshService(ctx);
+  stateRefreshService.start();
+  ctx.stateRefreshService = stateRefreshService;
+
+  return ctx;
 }
