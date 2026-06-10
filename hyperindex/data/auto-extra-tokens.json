@@ -338,5 +338,21 @@
   {
     "address": "0x11765033a289ac19b34185b61a202e6924b81098",
     "decimals": 18
+  },
+  {
+    "address": "0xfcac4072d35eda3f12112681481c780e47250f10",
+    "decimals": 9
+  },
+  {
+    "address": "0x5c98a9a8c647bd7dbad03807d9c873095006923a",
+    "decimals": 9
+  },
+  {
+    "address": "0x205e148bbd69cf9602b0caaefd0d86ba47a6dc56",
+    "decimals": 18
+  },
+  {
+    "address": "0x169fa508f45899fbd7ac446eeadc912b5a7ce39a",
+    "decimals": 18
   }
 ]
