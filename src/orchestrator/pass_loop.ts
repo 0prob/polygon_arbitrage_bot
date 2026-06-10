@@ -565,6 +565,43 @@ async function runPreFetch(
 }
 
 /**
+ * Reorg detection + block tracking at LF cadence.
+ * Runs every lfInterval ms. Returns shouldForceRefresh=true when a reorg
+ * is detected so the caller can schedule a state refresh.
+ */
+async function runReorgCheck(
+  ctx: RuntimeContext,
+  lastReorgCheck: number,
+  lfInterval: number,
+): Promise<{ lastReorgCheck: number; shouldForceRefresh: boolean }> {
+  const now = Date.now();
+  if (ctx.reorgDetector && ctx.publicClient && now - lastReorgCheck > lfInterval) {
+    lastReorgCheck = now;
+    const detector = ctx.reorgDetector;
+    try {
+      const reorged = await detector.checkReorg();
+      if (reorged.size > 0) {
+        ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
+        detector.clearReorged();
+        return { lastReorgCheck, shouldForceRefresh: true };
+      }
+
+      const latest = ctx.hyperSync
+        ? await ctx.hyperSync.getBlockByNumber("latest")
+        : ctx.hyperRpc
+          ? await ctx.hyperRpc.getBlockByNumber("latest")
+          : await ctx.publicClient.getBlock({ blockTag: "latest" });
+      if (latest?.number && latest?.hash) {
+        await detector.trackBlock(Number(latest.number), latest.hash as `0x${string}`);
+      }
+    } catch {
+      /* best effort */
+    }
+  }
+  return { lastReorgCheck, shouldForceRefresh: false };
+}
+
+/**
  * Filter pools for graph building, rebuild graph, enumerate cycles.
  * Returns updated graph, cycle list, and whether enumeration actually ran.
  */
@@ -1410,32 +1447,9 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
       }
 
-      // Reorg + block tracking: LF (1s) or explicit newHead from WS only.
-      // Previously this (plus checkReorg's serial getBlocks) ran every 200ms — major hot-path violation.
-      if (ctx.reorgDetector && ctx.publicClient && now - lastReorgCheck > LF_INTERVAL) {
-        lastReorgCheck = now;
-        const detector = ctx.reorgDetector; // narrow for the block
-        try {
-          // Only check on slow cadence
-          const reorged = await detector.checkReorg();
-          if (reorged.size > 0) {
-            ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
-            lastRefreshTime = 0;
-            detector.clearReorged();
-          }
-
-          const latest = ctx.hyperSync
-            ? await ctx.hyperSync.getBlockByNumber("latest")
-            : ctx.hyperRpc
-              ? await ctx.hyperRpc.getBlockByNumber("latest")
-              : await ctx.publicClient.getBlock({ blockTag: "latest" });
-          if (latest?.number && latest?.hash) {
-            await detector.trackBlock(Number(latest.number), latest.hash as `0x${string}`);
-          }
-        } catch {
-          /* best effort */
-        }
-      }
+      const reorgResult = await runReorgCheck(ctx, lastReorgCheck, LF_INTERVAL);
+      lastReorgCheck = reorgResult.lastReorgCheck;
+      if (reorgResult.shouldForceRefresh) lastRefreshTime = 0;
 
       // Block-aligned HF timing: skip to next cycle immediately on newHead,
       // fall back to normal 200ms polling after HEAD_TIMEOUT_MS without a head.
