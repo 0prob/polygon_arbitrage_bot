@@ -867,127 +867,151 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Heavy serial getBlock calls inside checkReorg were killing HF latency/RPC budget.
 
       const stateCache = ctx.stateCache;
-      const updatedPools = new Set<string>();
 
-      // Stage 1: Pool discovery (60s cadence)
-      {
-        const result = await runPoolDiscovery(
-          ctx,
-          deps,
-          bus,
-          hasuraPoolsCache,
-          lastDiscoveryTime,
-          lastDiscoveredBlock,
-          (newPools) => {
-            hasuraPoolsCache = newPools;
-            cachedGraph = deps.buildGraph(newPools, stateCache);
-            ctx.graphUpdater?.resetRebuildCounter();
-            if (newPools && newPools.length > 0) {
-              ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
-              ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
-            }
-          },
-          );
-          hasuraPoolsCache = result.pools;
-        lastDiscoveryTime = result.lastDiscoveryTime;
-        lastDiscoveredBlock = result.lastDiscoveredBlock;
-      }
-      mark("poolDiscovery");
+      // ===== LF PATH: Full orchestration (every ~1s) =====
+      const isLfTick = now - lastRefreshTime >= LF_INTERVAL || cachedCycles.length === 0;
 
-      // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
-      {
-        const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime, cachedCycles ?? []);
-        if (lfResult.updated) {
-          for (const addr of lfResult.updated) updatedPools.add(addr);
+      if (isLfTick) {
+        const updatedPools = new Set<string>();
+
+        // Stage 1: Pool discovery (60s cadence)
+        {
+          const result = await runPoolDiscovery(
+            ctx,
+            deps,
+            bus,
+            hasuraPoolsCache,
+            lastDiscoveryTime,
+            lastDiscoveredBlock,
+            (newPools) => {
+              hasuraPoolsCache = newPools;
+              cachedGraph = deps.buildGraph(newPools, stateCache);
+              ctx.graphUpdater?.resetRebuildCounter();
+              if (newPools && newPools.length > 0) {
+                ctx.mempoolService.setKnownPools(newPools.map((p) => p.address));
+                ctx.logger.info({ count: newPools.length }, "Pool discovery updated known pools");
+              }
+            },
+            );
+            hasuraPoolsCache = result.pools;
+          lastDiscoveryTime = result.lastDiscoveryTime;
+          lastDiscoveredBlock = result.lastDiscoveredBlock;
         }
-        if (lfResult.ratesNeedFullRefresh) {
-          lastRefreshTime = lfResult.lastRefreshTime;
-          lastFullRefreshTime = lfResult.lastFullRefreshTime;
-          ratesNeedFullRefresh = true;
-          pendingFocusTokens = null;
-        }
-      }
-      mark("lfRefresh");
+        mark("poolDiscovery");
 
-      // Stage 3: Filter pools, rebuild graph, enumerate cycles
-      let didEnumerateThisPass = false;
-      {
-        const enumResult = await runEnumerationPhase(
-          ctx,
-          deps,
-          bus,
-          hasuraPoolsCache ?? [],
-          stateCache,
-          cachedGraph,
-          cachedCycles,
-          lastRefreshTime,
-        );
-        cachedGraph = enumResult.graph;
-        cachedCycles = enumResult.cycles;
-        lastRefreshTime = enumResult.lastRefreshTime;
-        didEnumerateThisPass = enumResult.didEnumerate;
-      }
-      mark("enumeration");
-
-      // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
-      // Now optimized to only update "dirty" pools successfully refreshed in Stage 2 or Pre-fetch
-      if (ctx.graphUpdater && cachedGraph && !ratesNeedFullRefresh && updatedPools.size > 0) {
-        for (const addr of updatedPools) {
-          const state = stateCache.get(addr);
-          if (state) {
-            ctx.graphUpdater.applyPoolStateUpdate(cachedGraph, addr, state);
+        // Stage 2: LF state refresh from HyperIndex + RPC force-refresh (1s cadence)
+        {
+          const lfResult = await runLfStateRefresh(ctx, deps, bus, hasuraPoolsCache ?? [], lastRefreshTime, cachedCycles ?? []);
+          if (lfResult.updated) {
+            for (const addr of lfResult.updated) updatedPools.add(addr);
+          }
+          if (lfResult.ratesNeedFullRefresh) {
+            lastRefreshTime = lfResult.lastRefreshTime;
+            lastFullRefreshTime = lfResult.lastFullRefreshTime;
+            ratesNeedFullRefresh = true;
+            pendingFocusTokens = null;
           }
         }
-      }
+        mark("lfRefresh");
 
-      // Stage 4: Re-check whether cachedMetas should be refreshed (done inside LF, may be needed for HF)
-      if (!cachedMetas && (hasuraPoolsCache?.length ?? 0) > 0) {
-        try {
-          cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
-        } catch {
-          // Non-critical; will retry on next LF
+        // Stage 3: Filter pools, rebuild graph, enumerate cycles
+        let didEnumerateThisPass = false;
+        {
+          const enumResult = await runEnumerationPhase(
+            ctx,
+            deps,
+            bus,
+            hasuraPoolsCache ?? [],
+            stateCache,
+            cachedGraph,
+            cachedCycles,
+            lastRefreshTime,
+          );
+          cachedGraph = enumResult.graph;
+          cachedCycles = enumResult.cycles;
+          lastRefreshTime = enumResult.lastRefreshTime;
+          didEnumerateThisPass = enumResult.didEnumerate;
         }
-      }
-      mark("fetchMetas");
+        mark("enumeration");
 
-      const currentCycles = cachedCycles;
-
-      // Post-enum (only on LF enum passes): refresh states for *this pass's* cycles so rates + sim see current reserves/liquidity/slot0.
-      // (HF passes reuse the just-refreshed cache.) Critical for >0 grossProfit detections on non-stale data.
-      if (didEnumerateThisPass && currentCycles.length > 0 && (hasuraPoolsCache?.length ?? 0) > 0) {
-        try {
-          const sc = ctx.stateClient ?? ctx.publicClient;
-          const cachePools = hasuraPoolsCache ?? [];
-          const freshly = await fetchMissingPoolState(sc, stateCache, cachePools, currentCycles, [], false);
-          for (const a of freshly) updatedPools.add(a);
-        } catch (e) {
-          ctx.logger.debug?.({ err: e }, "post-enum cycle state refresh warn");
+        // Incremental graph update on HF cycles (no discovery, no LF — just new pool states)
+        // Now optimized to only update "dirty" pools successfully refreshed in Stage 2 or Pre-fetch
+        if (ctx.graphUpdater && cachedGraph && !ratesNeedFullRefresh && updatedPools.size > 0) {
+          for (const addr of updatedPools) {
+            const state = stateCache.get(addr);
+            if (state) {
+              ctx.graphUpdater.applyPoolStateUpdate(cachedGraph, addr, state);
+            }
+          }
         }
-      }
 
-      if (currentCycles.length === 0) {
-        bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
-        await sleep(HF_INTERVAL);
-        continue;
-      }
-
-      // Compute once to avoid redundant O(N) loops and .toLowerCase() calls which stress GC
-      const cycleTokens = new Set<string>();
-      for (const c of currentCycles) {
-        cycleTokens.add(c.startToken.toLowerCase());
-        for (const e of c.edges) {
-          cycleTokens.add(e.tokenIn.toLowerCase());
-          cycleTokens.add(e.tokenOut.toLowerCase());
+        // Stage 4: Re-check whether cachedMetas should be refreshed (done inside LF, may be needed for HF)
+        if (!cachedMetas && (hasuraPoolsCache?.length ?? 0) > 0) {
+          try {
+            cachedMetas = await deps.fetchTokenMetasFromHasura(ctx.config.hasuraUrl, ctx.config.hasuraSecret, ctx.logger);
+          } catch {
+            // Non-critical; will retry on next LF
+          }
         }
-      }
+        mark("fetchMetas");
 
-      const pfResult = await runPreFetch(
-        ctx, deps, bus, stateCache, hasuraPoolsCache, currentCycles, cycleTokens,
-        lastFullRefreshTime, preFetchCounter, cachedMetas,
+        const currentCycles = cachedCycles;
+
+        // Post-enum (only on LF enum passes): refresh states for *this pass's* cycles so rates + sim see current reserves/liquidity/slot0.
+        // (HF passes reuse the just-refreshed cache.) Critical for >0 grossProfit detections on non-stale data.
+        if (didEnumerateThisPass && currentCycles.length > 0 && (hasuraPoolsCache?.length ?? 0) > 0) {
+          try {
+            const sc = ctx.stateClient ?? ctx.publicClient;
+            const cachePools = hasuraPoolsCache ?? [];
+            const freshly = await fetchMissingPoolState(sc, stateCache, cachePools, currentCycles, [], false);
+            for (const a of freshly) updatedPools.add(a);
+          } catch (e) {
+            ctx.logger.debug?.({ err: e }, "post-enum cycle state refresh warn");
+          }
+        }
+
+        if (currentCycles.length === 0) {
+          bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
+          await sleep(HF_INTERVAL);
+          continue;
+        }
+
+        // Compute once to avoid redundant O(N) loops and .toLowerCase() calls which stress GC
+        const cycleTokens = new Set<string>();
+        for (const c of currentCycles) {
+          cycleTokens.add(c.startToken.toLowerCase());
+          for (const e of c.edges) {
+            cycleTokens.add(e.tokenIn.toLowerCase());
+            cycleTokens.add(e.tokenOut.toLowerCase());
+          }
+        }
+
+        const pfResult = await runPreFetch(
+          ctx, deps, bus, stateCache, hasuraPoolsCache, currentCycles, cycleTokens,
+          lastFullRefreshTime, preFetchCounter, cachedMetas,
+        );
+        preFetchCounter = pfResult.preFetchCounter;
+        cachedMetas = pfResult.cachedMetas;
+        pendingFocusTokens = pfResult.pendingFocusTokens;
+
+        // Stage 6: Consolidated rate computation + focus boost
+        const rateResult = runRateComputation(
+          ctx, hasuraPoolsCache, stateCache, cachedRates,
+          ratesNeedFullRefresh, pendingFocusTokens, cycleTokens, bus,
+        );
+        cachedRates = rateResult.cachedRates;
+        tokenToMaticRates = rateResult.tokenToMaticRates;
+        ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
+        pendingFocusTokens = rateResult.pendingFocusTokens;
+      }  // end if (isLfTick)
+
+      // ===== HF PATH: Simulation + Execution + Timing (every pass) =====
+      const currentCycles = cachedCycles ?? [];
+      tokenToMaticRates = cachedRates ?? computeMaticRates(
+        hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+        },
       );
-      preFetchCounter = pfResult.preFetchCounter;
-      cachedMetas = pfResult.cachedMetas;
-      pendingFocusTokens = pfResult.pendingFocusTokens;
 
       // === INDEXER LAG DETECTION (early, for graceful degradation decisions) ===
       const INDEXER_LAG_THRESHOLD_BLOCKS = 5000; // ~2+ hours on Polygon
@@ -1018,15 +1042,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       bus?.emit({ type: "gas_snapshot", gasPrice: gasSnapshot.gasPrice });
 
-      const rateResult = runRateComputation(
-        ctx, hasuraPoolsCache, stateCache, cachedRates,
-        ratesNeedFullRefresh, pendingFocusTokens, cycleTokens, bus,
-      );
-      cachedRates = rateResult.cachedRates;
-      tokenToMaticRates = rateResult.tokenToMaticRates;
-      ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
-      pendingFocusTokens = rateResult.pendingFocusTokens;
-
       // Filter out quarantined routes before simulation to avoid repetitive noise.
       // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
       // to avoid redundant O(N log N) routeKeyFromEdges work.
@@ -1040,10 +1055,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         await sleep(HF_INTERVAL);
         continue;
       }
-
-      // (Focused rate boost already applied earlier using currentCycles + assessment tokens;
-      // see the block right after the consolidated computeMaticRates. This helps rateSafe
-      // and profit assessment for the exact cycles in this pass.)
 
       // Mempool-aware dry run: check pending state before submitting
       if (ctx.dryRunner) {
