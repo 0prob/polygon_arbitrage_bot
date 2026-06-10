@@ -258,25 +258,6 @@ const fetchTokenMetaHandler = async ({ input, context }: { input: { address: str
 
       return result;
     } catch (err) {
-        // ... (error handling)
-    }
-      // Persist successful discovery aggressively
-      discoveredDecimals[addr] = result.decimals;
-      saveDiscoveredDecimals().catch(() => {});
-      // ...
-      // Auto-feed the gentok generator with newly discovered cold tokens.
-      // This dramatically reduces future 15s effects on new launches.
-      appendToAutoExtraTokens(addr, result.decimals).catch(() => {});
-
-      if (context.log) {
-        context.log.info(`Fetched decimals for new token via RPC (persisted + auto-extra)`, {
-          token: addr,
-          decimals: result.decimals,
-        });
-      }
-
-      return result;
-    } catch (err) {
       const errStr = String(err);
 
       // Distinguish between definitive "this is not an ERC20 token" errors
