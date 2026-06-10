@@ -576,14 +576,15 @@ async function runReorgCheck(
 ): Promise<{ lastReorgCheck: number; shouldForceRefresh: boolean }> {
   const now = Date.now();
   if (ctx.reorgDetector && ctx.publicClient && now - lastReorgCheck > lfInterval) {
-    lastReorgCheck = now;
     const detector = ctx.reorgDetector;
     try {
       const reorged = await detector.checkReorg();
+      let shouldForceRefresh = false;
       if (reorged.size > 0) {
         ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
         detector.clearReorged();
-        return { lastReorgCheck, shouldForceRefresh: true };
+        shouldForceRefresh = true;
+        // Fall through to trackBlock to re-establish tracking baseline
       }
 
       const latest = ctx.hyperSync
@@ -594,6 +595,8 @@ async function runReorgCheck(
       if (latest?.number && latest?.hash) {
         await detector.trackBlock(Number(latest.number), latest.hash as `0x${string}`);
       }
+
+      return { lastReorgCheck: now, shouldForceRefresh };
     } catch {
       /* best effort */
     }
