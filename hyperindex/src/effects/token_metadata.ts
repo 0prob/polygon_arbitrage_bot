@@ -35,6 +35,21 @@ const discoveredDecimals: Record<string, number> = {};
 let discoveredLoaded = false;
 let discoveredSavePending: Promise<void> | null = null;
 
+const registryCache: Map<string, number> = new Map();
+let cacheLoaded = false;
+
+async function warmUpCache() {
+  if (cacheLoaded) return;
+  await initDb();
+  if (db) {
+    const rows = db.prepare("SELECT address, decimals FROM token_decimals").all() as { address: string; decimals: number }[];
+    for (const row of rows) {
+      registryCache.set(row.address.toLowerCase(), row.decimals);
+    }
+  }
+  cacheLoaded = true;
+}
+
 async function loadDiscoveredDecimals() {
   if (discoveredLoaded) return;
   try {
@@ -165,26 +180,21 @@ function safeDecimals(d: number): number {
 // the same broken/malformed token (e.g. factory address emitted as a token).
 const failedDecimalsTokens = new Set<string>();
 
-export const fetchTokenMeta = createEffect(
-  {
-    name: "fetchTokenMeta",
-    input: {
-      address: S.string,
-    },
-    output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 500, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
-    cache: true, // Critical for performance on restarts / re-runs
-  },
-  async ({ input, context }) => {
-    await initDb();
-    // Ensure address is correctly padded to 42 characters (20 bytes hex + "0x").
-    // Sometimes Envio/viem event parsing drops leading zeros on addresses.
+const fetchTokenMetaHandler = async ({ input, context }: { input: { address: string }, context: any }) => {
+    await warmUpCache();
+    
+    // Layer 1: In-memory static cache
     let addr = input.address.toLowerCase();
     if (addr.startsWith("0x") && addr.length < 42) {
       addr = "0x" + addr.slice(2).padStart(40, "0");
     }
 
-    // Layer 1: Static + discovered runtime cache (aggressive persistence)
+    const cached = registryCache.get(addr);
+    if (cached !== undefined) {
+      return { address: addr, decimals: cached };
+    }
+
+    // Layer 2: Static + discovered runtime cache (aggressive persistence)
     const staticCached = getStaticDecimals(addr);
     if (staticCached !== undefined) {
       return { address: addr, decimals: staticCached };
@@ -296,5 +306,18 @@ export const fetchTokenMeta = createEffect(
       context.cache = false;
       return { address: addr, decimals: 18 };
     }
+  };
+
+export const fetchTokenMeta = createEffect(
+  {
+    name: "fetchTokenMeta",
+    input: {
+      address: S.string,
+    },
+    output: { address: S.string, decimals: S.number },
+    rateLimit: { calls: 500, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
+    cache: true, // Critical for performance on restarts / re-runs
   },
+  fetchTokenMetaHandler
 );
+export { fetchTokenMetaHandler };
