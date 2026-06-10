@@ -103,14 +103,6 @@ function progressBar(current: number, total: number, width: number): string {
   return "█".repeat(filled) + "░".repeat(width - filled);
 }
 
-function sparkline(values: number[], width: number): string {
-  if (values.length < 2) return "";
-  const CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-  const recent = values.slice(-width);
-  const max = Math.max(...recent.map(Math.abs), 1);
-  return recent.map((v) => CHARS[Math.min(Math.floor((Math.abs(v) / max) * (CHARS.length - 1)), CHARS.length - 1)]).join("");
-}
-
 // ─── Format helpers ────────────────────────────────────────────────────────────
 
 function abbreviateProtocol(name: string): string {
