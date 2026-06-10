@@ -436,6 +436,63 @@ async function runBootstrapInBackground(
   );
 }
 
+function runRateComputation(
+  ctx: RuntimeContext,
+  hasuraPoolsCache: PoolMeta[] | null,
+  stateCache: Map<string, Record<string, unknown>>,
+  cachedRates: Map<string, bigint> | null,
+  ratesNeedFullRefresh: boolean,
+  pendingFocusTokens: Set<string> | null,
+  cycleTokens: Set<string>,
+  bus?: EventBus,
+): {
+  cachedRates: Map<string, bigint>;
+  tokenToMaticRates: Map<string, bigint>;
+  ratesNeedFullRefresh: boolean;
+  pendingFocusTokens: Set<string> | null;
+} {
+  bus?.emit({ type: "pipeline_stage", stage: "RATES" });
+  let rates = cachedRates;
+  let needFull = ratesNeedFullRefresh;
+  let focus = pendingFocusTokens;
+
+  if (needFull) {
+    rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+      seedRates: rates ?? undefined,
+    });
+    needFull = false;
+  } else if (focus && rates) {
+    rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+      seedRates: rates,
+      focusTokens: focus,
+    });
+    focus = null;
+  } else if (!rates) {
+    rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+    });
+  }
+  const tokenToMaticRates = rates!;
+
+  if (cycleTokens.size > 0 && rates) {
+    const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
+      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
+      seedRates: rates,
+      focusTokens: cycleTokens,
+    });
+    rates = boosted;
+  }
+
+  return {
+    cachedRates: rates,
+    tokenToMaticRates,
+    ratesNeedFullRefresh: needFull,
+    pendingFocusTokens: focus,
+  };
+}
+
 /**
  * Filter pools for graph building, rebuild graph, enumerate cycles.
  * Returns updated graph, cycle list, and whether enumeration actually ran.
@@ -591,6 +648,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   let lastDiscoveredBlock = 0;
   let lastMempoolTraceId: string | undefined = undefined;
   let cachedRates: Map<string, bigint> | null = null;
+  let tokenToMaticRates: Map<string, bigint>;
   let cachedMetas: Map<string, { decimals: number }> | null = null;
   // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
   let ratesNeedFullRefresh = false;
@@ -895,50 +953,14 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       bus?.emit({ type: "gas_snapshot", gasPrice: gasSnapshot.gasPrice });
 
-      // Single consolidated rate computation point — guarantees at most one computeMaticRates call per pass.
-      // Priority: full refresh (LF) > incremental focus update (pre-fetch) > safety net.
-      bus?.emit({ type: "pipeline_stage", stage: "RATES" });
-      if (ratesNeedFullRefresh) {
-        // Seed from previous cached rates even on "full" refresh. This prevents coverage
-        // from dropping back to a few hundred on every LF tick (the bare compute only
-        // propagates from states present + WMATIC seeds). New stateCache entries will
-        // still expand the graph during the call. The subsequent cycle-focus boost
-        // will then only log "boosted" on *actual* growth.
-        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-          seedRates: cachedRates ?? undefined,
-        });
-        ratesNeedFullRefresh = false;
-      } else if (pendingFocusTokens && cachedRates) {
-        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-          seedRates: cachedRates,
-          focusTokens: pendingFocusTokens,
-        });
-        pendingFocusTokens = null;
-      } else if (!cachedRates) {
-        cachedRates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-          minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-        });
-      }
-      let tokenToMaticRates = cachedRates!;
-
-      // Focused rate boost using the *current graph's cycles* (available early).
-      // Always prioritize the tokens in the current graph batch for propagation + targeted sweep.
-      // This ensures rateSafe/grossMatic see the best possible rates for exactly the cycles
-      // we're assessing this pass (directly addresses persistent low rates in surfacing even
-      // after polls). Log at info when it grows the set.
-      {
-        if (cycleTokens.size > 0) {
-          const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-            minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-            seedRates: tokenToMaticRates,
-            focusTokens: cycleTokens,
-          });
-          cachedRates = boosted;
-          tokenToMaticRates = boosted;
-        }
-      }
+      const rateResult = runRateComputation(
+        ctx, hasuraPoolsCache, stateCache, cachedRates,
+        ratesNeedFullRefresh, pendingFocusTokens, cycleTokens, bus,
+      );
+      cachedRates = rateResult.cachedRates;
+      tokenToMaticRates = rateResult.tokenToMaticRates;
+      ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
+      pendingFocusTokens = rateResult.pendingFocusTokens;
 
       // Filter out quarantined routes before simulation to avoid repetitive noise.
       // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
