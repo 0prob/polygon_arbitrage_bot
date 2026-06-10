@@ -43,6 +43,7 @@ export interface RuntimeContext {
   dryRunner?: MempoolAwareDryRunner;
   graphUpdater?: IncrementalGraphUpdater;
   pendingStateOverlay?: InMemoryPendingStateOverlay;
+  stateRefreshService: StateRefreshService;
 
   /**
    * Optional HyperRPC client (read-only, high performance).
