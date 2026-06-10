@@ -8,12 +8,16 @@ let db: any = null;
 let getDecimalsStmt: any = null;
 
 async function initDb() {
+  console.log('DEBUG: initDb called, db is', db);
   if (db !== null) return;
   try {
+    console.log('DEBUG: Trying to init DB');
     const { Database } = await import("bun:sqlite");
     db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
     getDecimalsStmt = db.prepare("SELECT decimals FROM token_decimals WHERE address = ?");
+    console.log('DEBUG: DB init success');
   } catch (e) {
+    console.log('DEBUG: DB init failed', e);
     db = undefined; // Mark as definitively unavailable
     console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
   }
@@ -39,13 +43,24 @@ const registryCache: Map<string, number> = new Map();
 let cacheLoaded = false;
 
 async function warmUpCache() {
+  console.log('DEBUG: warmUpCache called, cacheLoaded', cacheLoaded);
   if (cacheLoaded) return;
   await initDb();
+  console.log('DEBUG: warmUpCache after initDb, db is', db);
   if (db) {
-    const rows = db.prepare("SELECT address, decimals FROM token_decimals").all() as { address: string; decimals: number }[];
+    console.log('DEBUG: warmUpCache calling prepare');
+    const stmt = db.prepare("SELECT address, decimals FROM token_decimals");
+    console.log('DEBUG: warmUpCache calling all');
+    const rows = stmt.all() as { address: string; decimals: number }[];
+    console.log('DEBUG: warmUpCache rows', rows);
     for (const row of rows) {
-      registryCache.set(row.address.toLowerCase(), row.decimals);
+      let addr = row.address.toLowerCase();
+      if (addr.startsWith("0x") && addr.length < 42) {
+        addr = "0x" + addr.slice(2).padStart(40, "0");
+      }
+      registryCache.set(addr, row.decimals);
     }
+    console.log('DEBUG: registryCache size', registryCache.size);
   }
   cacheLoaded = true;
 }
@@ -182,7 +197,7 @@ const failedDecimalsTokens = new Set<string>();
 
 const fetchTokenMetaHandler = async ({ input, context }: { input: { address: string }, context: any }) => {
     await warmUpCache();
-    
+
     // Layer 1: In-memory static cache
     let addr = input.address.toLowerCase();
     if (addr.startsWith("0x") && addr.length < 42) {
@@ -208,11 +223,12 @@ const fetchTokenMetaHandler = async ({ input, context }: { input: { address: str
       return { address: addr, decimals: discovered };
     }
 
-    // Layer 2: Permanent blocklist — non-ERC20 contracts never become valid
+    // Layer 3: Permanent blocklist — non-ERC20 contracts never become valid
     if (!failedLoaded) {
       await loadFailedTokens();
     }
-    if (failedTokens.has(addr)) {
+    const isFailed = failedTokens.has(addr);
+    if (isFailed) {
       return { address: addr, decimals: 18 };
     }
 
@@ -228,7 +244,26 @@ const fetchTokenMetaHandler = async ({ input, context }: { input: { address: str
       // Persist successful discovery aggressively
       discoveredDecimals[addr] = result.decimals;
       saveDiscoveredDecimals().catch(() => {});
+      // ...
+      // Auto-feed the gentok generator with newly discovered cold tokens.
+      // This dramatically reduces future 15s effects on new launches.
+      appendToAutoExtraTokens(addr, result.decimals).catch(() => {});
 
+      if (context.log) {
+        context.log.info(`Fetched decimals for new token via RPC (persisted + auto-extra)`, {
+          token: addr,
+          decimals: result.decimals,
+        });
+      }
+
+      return result;
+    } catch (err) {
+        // ... (error handling)
+    }
+      // Persist successful discovery aggressively
+      discoveredDecimals[addr] = result.decimals;
+      saveDiscoveredDecimals().catch(() => {});
+      // ...
       // Auto-feed the gentok generator with newly discovered cold tokens.
       // This dramatically reduces future 15s effects on new launches.
       appendToAutoExtraTokens(addr, result.decimals).catch(() => {});
@@ -315,8 +350,8 @@ export const fetchTokenMeta = createEffect(
       address: S.string,
     },
     output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 500, per: "second" }, // Pay-as-you-go Alchemy (historical eth_call + multicall). Batching in rpc_client keeps actual HTTP requests much lower.
-    cache: true, // Critical for performance on restarts / re-runs
+    rateLimit: { calls: 500, per: "second" },
+    cache: process.env.NODE_ENV === 'test' ? false : true,
   },
   fetchTokenMetaHandler
 );
