@@ -9,6 +9,7 @@ export class BoundedMap<K, V> {
   private ttlMs: number;
 
   constructor(options: BoundedMapOptions) {
+    if (options.maxSize < 1) throw new RangeError("BoundedMap: maxSize must be >= 1");
     this.maxSize = options.maxSize;
     this.ttlMs = options.ttlMs;
   }
@@ -57,11 +58,22 @@ export class BoundedMap<K, V> {
   }
 
   get size(): number {
-    return this.map.size;
+    const now = Date.now();
+    let count = 0;
+    for (const v of this.map.values()) {
+      if (now - v.ts <= this.ttlMs) count++;
+    }
+    return count;
   }
 
   keys(): IterableIterator<K> {
-    return this.map.keys();
+    const self = this;
+    return (function* () {
+      const now = Date.now();
+      for (const [k, v] of self.map) {
+        if (now - v.ts <= self.ttlMs) yield k;
+      }
+    })();
   }
 
   entries(): IterableIterator<[K, V]> {
