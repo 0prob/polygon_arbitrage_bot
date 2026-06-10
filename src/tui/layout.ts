@@ -34,10 +34,10 @@ export function computeLayout(cols: number | undefined, rows: number | undefined
   //   row 0           : header (1 row)
   //   row 1..panelEnd : 2 rows of panels
   //   gutter          : 1 blank row separator
-  //   log area        : up to 15 rows
+  //   log area        : up to 50% of height
   //   last row        : status bar
   const reservedRows = HEADER_HEIGHT + STATUS_HEIGHT + GUTTER + STATUS_HEIGHT;
-  const logHeight = Math.min(15, Math.max(3, safeRows - reservedRows - 8));
+  const logHeight = Math.min(Math.floor(safeRows * 0.5), Math.max(5, safeRows - reservedRows - 12));
   const dataAreaStart = HEADER_HEIGHT;
   const dataAreaHeight = safeRows - HEADER_HEIGHT - logHeight - GUTTER - STATUS_HEIGHT;
   const panelRowHeight = Math.max(4, Math.min(6, Math.floor(dataAreaHeight / 2)));
