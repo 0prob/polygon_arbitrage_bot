@@ -474,8 +474,6 @@ function runRateComputation(
       minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
     });
   }
-  const tokenToMaticRates = rates!;
-
   if (cycleTokens.size > 0 && rates) {
     const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
       minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
@@ -484,6 +482,8 @@ function runRateComputation(
     });
     rates = boosted;
   }
+
+  const tokenToMaticRates = rates!;
 
   return {
     cachedRates: rates,
