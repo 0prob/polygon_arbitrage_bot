@@ -511,6 +511,12 @@ async function runPreFetch(
 }> {
   preFetchCounter++;
   const now = Date.now();
+  // AGENT: DO NOT reduce preFetchModulo below 8 for the lowInfra path.
+  // The HF loop ticks at ~200ms. A modulo of 5 fires a pre-fetch every 1 second;
+  // a modulo of 8 fires every 1.6 seconds. The pre-fetch is NOT fire-and-forget for
+  // the cycle-pool fetch — it races against the LF state refresh that runs on the same
+  // 1s cadence. At modulo=5 both fire in the same second on every LF tick, doubling
+  // RPC pressure at exactly the moment the simulation most needs fresh state.
   const lowInfraForPrefetch = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
   const preFetchModulo = lowInfraForPrefetch ? 8 : 5;
   if (lastFullRefreshTime !== now && preFetchCounter % preFetchModulo === 0) {
@@ -531,6 +537,13 @@ async function runPreFetch(
       if (broadTokenPools.length > 0) {
         const rpsBroad = ctx.config.rpc.chainstackRps ?? 250;
         const lowBroad = rpsBroad <= 250;
+        // AGENT: DO NOT raise the lowInfra broadCap above 400.
+        // The broad pre-fetch fires every ~1.6s (preFetchModulo=8 × 200ms HF interval).
+        // 400 pools / 500-multicall-batch = 1 multicall RPC per trigger — negligible.
+        // 2000 pools = 4 multicalls per trigger = 2.5 RPS of continuous background load,
+        // which on a 250 RPS node is 1% of total budget consumed by a speculative fetch
+        // that only benefits cycles not yet in the state cache. The marginal value does
+        // not justify the RPS cost on constrained infrastructure.
         const broadCap = lowBroad ? 400 : 5000;
         const cap = broadTokenPools.slice(0, broadCap);
         fetchMissingPoolState(ctx.stateClient ?? ctx.publicClient, stateCache, cap, [], [], true)
@@ -933,7 +946,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       );
       preFetchCounter = pfResult.preFetchCounter;
       cachedMetas = pfResult.cachedMetas;
-      pendingFocusTokens = pfResult.pendingFocusTokens ?? pendingFocusTokens;
+      pendingFocusTokens = pfResult.pendingFocusTokens;
 
       // === INDEXER LAG DETECTION (early, for graceful degradation decisions) ===
       const INDEXER_LAG_THRESHOLD_BLOCKS = 5000; // ~2+ hours on Polygon
