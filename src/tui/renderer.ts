@@ -81,10 +81,10 @@ function visTrunc(s: string, width: number): string {
 }
 
 /** Pad/truncate to exactly `width` visible chars */
-function padR(s: string, width: number): string {
+function padR(s: string, width: number, char = " "): string {
   const l = visLen(s);
   if (l >= width) return visTrunc(s, width);
-  return s + " ".repeat(width - l);
+  return s + char.repeat(width - l);
 }
 
 // ─── Animation helpers ────────────────────────────────────────────────────────
@@ -192,9 +192,11 @@ export class Renderer {
       this._panelExecution.bind(this),
     ];
 
+    const titles = ["Index", "Mempool", "Opportunities", "Routing", "Graph", "Execution"];
+
     for (let i = 0; i < 6; i++) {
       const lines = renderFns[i](layout.panels[i], state, frame);
-      panels.push(this._box(lines, layout.panels[i], i === focusedSection));
+      panels.push(this._box(lines, layout.panels[i], titles[i], i === focusedSection));
     }
 
     panels.push(this._log(layout, state));
@@ -249,13 +251,12 @@ export class Renderer {
         .slice(0, 2)
         .map(([name, count]) => `${name}:${count}`)
         .join(" ");
-      summaryLine = ` ${top2} | Lag:${C.fg(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
+      summaryLine = `${top2} | Lag:${C.fg(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
     }
 
     return [
-      ` ${C.bold(`📡 Index`)}`,
-      ` ${spin} ${C.fg(s.hiStatus, statusColor)} ${C.fg(blockStr, CYAN)}/${remoteStr}`,
-      ` [${bar}] ${C.fg(`${pct}%`, GREEN)} lag:${C.fg(String(lag), lagColor)}${s.hiSyncRate > 0 ? C.dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
+      `${spin} ${C.fg(s.hiStatus, statusColor)} ${C.fg(blockStr, CYAN)}/${remoteStr}`,
+      `[${bar}] ${C.fg(`${pct}%`, GREEN)} lag:${C.fg(String(lag), lagColor)}${s.hiSyncRate > 0 ? C.dim(` @${s.hiSyncRate.toFixed(1)}/s`) : ""}`,
       summaryLine,
     ];
   }
@@ -272,13 +273,12 @@ export class Renderer {
     const fresh = s.pendingSwaps.filter((sw) => now - sw.timestamp < 3000);
     const swapLines = fresh.slice(0, 3).map((sw) => {
       const val = (Number(sw.value) / 1e18).toFixed(3);
-      return ` ${C.dim(`[${sw.traceId.slice(0, 6)}]`)} ${sw.path.slice(0, 16)} ${C.fg(val + " M", YELLOW)}`;
+      return `${C.dim(`[${sw.traceId.slice(0, 6)}]`)} ${sw.path.slice(0, 16)} ${C.fg(val + " M", YELLOW)}`;
     });
 
     return [
-      ` ${C.bold("🖄 Mempool")}`,
-      ` ${feedIcon} ${C.dim(feedLabel)}`,
-      ...(swapLines.length > 0 ? swapLines : [` ${C.dim("No recent activity")}`]),
+      `${feedIcon} ${C.dim(feedLabel)}`,
+      ...(swapLines.length > 0 ? swapLines : [`${C.dim("No recent activity")}`]),
     ];
   }
 
@@ -295,24 +295,23 @@ export class Renderer {
     if (isSim && s.simProgress.total > 0) {
       const bar = progressBar(s.simProgress.current, s.simProgress.total, 10);
       const pct = Math.floor((s.simProgress.current / s.simProgress.total) * 100);
-      simLine = ` ${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}] ${pct}% ✦${s.simProgress.profitable}`;
+      simLine = `${spin} ${s.simProgress.current}/${s.simProgress.total} [${bar}] ${pct}% ✦${s.simProgress.profitable}`;
     } else {
       const ss = s.lastSimStats;
       if (ss) {
-        const noRatePct = ss.attempted > 0 ? Math.round((ss.noRate / ss.attempted) * 100) : 0;
-        simLine = ` ● ${C.dim(`last: ${ss.attempted}att ${ss.simulated}sim noRate:${noRatePct}% ${ss.durationMs}ms`)}`;
+        simLine = `Attempts: ${ss.attempted} | Simulated: ${ss.simulated}`;
       } else {
-        simLine = ` ${C.dim("● Idle — awaiting simulation")}`;
+        simLine = `${C.dim("● Idle — awaiting simulation")}`;
       }
     }
 
     const best = m.opportunitiesFound > 0 && s.activeOpportunities.length > 0 ? s.activeOpportunities[0] : null;
     const bestLine = best
-      ? ` ★ Best: ${C.fg(fmtWeiMatic(best.profit), GREEN)} MATIC  ROI:${(best.roi / 10000).toFixed(2)}%`
-      : ` ${C.dim("★ No profitable opportunities yet")}`;
-    const countLine = ` Found: ${C.fg(String(m.opportunitiesFound), GREEN)} | ${best ? best.path.slice(0, 28) : "—"}`;
+      ? `Top Opp: ${C.fg(`${best.profit >= 0n ? "+" : ""}${fmtWeiMatic(best.profit)}`, GREEN)} MATIC`
+      : `${C.dim("★ No profitable opportunities yet")}`;
+    const countLine = `Found: ${C.fg(String(m.opportunitiesFound), GREEN)} total`;
 
-    return [` ${C.bold("💰 Opportunities")}`, simLine, bestLine, countLine];
+    return [simLine, bestLine, countLine];
   }
 
   // ── Panel 4: Routing ────────────────────────────────────────────────────────
@@ -324,16 +323,12 @@ export class Renderer {
     const cycleStr = s.cycleCount > 0 ? C.fg(s.cycleCount.toLocaleString(), WHITE) + " cycles" : C.dim("—");
     const enumTime = s.enumerationTimeMs > 0 ? C.dim(` (${s.enumerationTimeMs}ms)`) : "";
 
-    // Rate coverage line from last sim stats
-    const ss = s.lastSimStats;
-    const rateStr = ss ? `rates:${ss.ratesCovered} safe:${ss.rateSafeCycles}/${ss.totalCycles}` : C.dim("rates: warming up");
-
     const hopParts = Object.entries(s.cyclesByHop)
       .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([hop, count]) => `${count}×${hop}h`);
-    const hopLine = hopParts.length > 0 ? hopParts.join(" ") : C.dim("—");
+      .map(([hop, count]) => `${hop}h: ${count}`);
+    const hopLine = hopParts.length > 0 ? hopParts.join("  ") : C.dim("—");
 
-    return [` ${C.bold("🔀 Routing")}`, ` ${spin} ${cycleStr}${enumTime}`, ` ${hopLine}`, ` ${rateStr}`];
+    return [`${spin} ${cycleStr}${enumTime}`, `Enumerated:`, hopLine];
   }
 
   // ── Panel 5: Graph ─────────────────────────────────────────────────────────
@@ -353,10 +348,9 @@ export class Renderer {
     const cacheStr = s.cachedStateCount > 0 ? `cache:${s.cachedStateCount.toLocaleString()}` : C.dim("cache: warming");
 
     return [
-      ` ${C.bold("🔗 Graph")}`,
-      ` ${spin} ${C.fg(String(s.poolCount), WHITE)} pools  ${s.edgeCount > 0 ? s.edgeCount.toLocaleString() + " edges" : ""}`,
-      ` ${protoLine}`,
-      ` ${cacheStr}`,
+      `${spin} ${C.fg(String(s.poolCount), WHITE)} pools  ${s.edgeCount > 0 ? s.edgeCount.toLocaleString() + " edges" : ""}`,
+      `${protoLine}`,
+      `${cacheStr}`,
     ];
   }
 
@@ -368,50 +362,33 @@ export class Renderer {
     const isExec = s.pipelineStage === "EXECUTING";
     const spin = spinner(frame, isExec);
 
-    // Attempt / result counts
     const successRate = fmtPct(m.successful, m.executed);
-    const revertStr = m.reverts > 0 ? C.fg(` rev:${m.reverts}`, YELLOW) : "";
-    const countsLine = ` ${spin} ${m.executed} att  ${C.fg(`${m.successful}✅`, GREEN)} ${C.fg(`${m.failed}❌`, m.failed > 0 ? RED : WHITE)}${revertStr}  win:${successRate}`;
 
-    // Last execution
-    const le = s.lastExecution;
-    const lastLine = le
-      ? ` ${le.path.slice(0, 18)} ${C.fg(le.txHash.slice(0, 8), CYAN)} ${C.fg((le.profit >= 0n ? "+" : "") + fmtWeiMatic(le.profit) + "M", le.success ? GREEN : RED)}`
-      : C.dim(" No executions yet");
-
-    // P/L + sparkline
-    const pl = fmtWeiMatic(m.totalProfitWei);
-    const spark = sparkline(s.profitSparkline, 20);
-    const plLine = ` P/L: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${pl}`, m.totalProfitWei >= 0n ? GREEN : RED)} MATIC ${spark}`;
-
-    // Reject reason on its own line (won't stomp P/L)
-    const rejectLine = s.lastRejectReason
-      ? ` ⚠ ${C.fg(s.lastRejectReason.slice(0, 32), YELLOW)}`
-      : ` ${C.dim(`p/s: ${m.profitPerSecond > 0 ? m.profitPerSecond.toFixed(6) : "0"} MATIC/s`)}`;
-
-    return [` ${C.bold("⚡ Execution")}`, countsLine, lastLine, plLine, rejectLine];
+    return [
+      `${spin} Attempts: ${m.executed} | Success: ${C.fg(String(m.successful), GREEN)}`,
+      `Failed: ${C.fg(String(m.failed), m.failed > 0 ? RED : WHITE)} | Reverts: ${C.fg(String(m.reverts), YELLOW)}`,
+      `Success Rate: ${successRate}`,
+      `Total Profit: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${fmtWeiMatic(m.totalProfitWei)}`, m.totalProfitWei >= 0n ? GREEN : RED)} MATIC`,
+    ];
   }
 
   // ── Log panel ──────────────────────────────────────────────────────────────
 
   private _log(layout: TuiLayout, state: TuiState): RenderedPanel {
     const rect = layout.log;
-    const headerLine = C.bold("📋 Event Log");
-    const visibleRows = Math.max(0, rect.height - 1);
+    const visibleRows = Math.max(0, rect.height - 2);
     const startIdx = Math.max(0, state.log.length - visibleRows);
     const visible = state.log.slice(startIdx);
 
-    const lines: string[] = [headerLine];
+    const lines: string[] = [];
     for (const entry of visible) {
       const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
       const compCode = COMP_COLORS[entry.component] ?? WHITE;
       const comp = C.fg(entry.component.padEnd(9).slice(0, 9), compCode);
-      lines.push(` ${C.dim(time)} ${comp} ${entry.message}`);
+      lines.push(`${C.dim(time)} ${comp} ${entry.message}`);
     }
-    // Pad to fill
-    while (lines.length < rect.height) lines.push("");
 
-    return this._box(lines, rect);
+    return this._box(lines, rect, "Event Log");
   }
 
   // ── Status bar ─────────────────────────────────────────────────────────────
@@ -442,14 +419,29 @@ export class Renderer {
 
   // ── Panel box renderer ─────────────────────────────────────────────────────
 
-  private _box(lines: string[], rect: PanelRect, focused = false): RenderedPanel {
+  private _box(lines: string[], rect: PanelRect, title?: string, focused = false): RenderedPanel {
     let content = "";
-    for (let i = 0; i < rect.height; i++) {
+    const borderColor = focused ? CYAN : WHITE;
+
+    // 1. Top Border
+    let top = "┌─";
+    if (title) top += ` ${title} `;
+    top = padR(top, rect.width - 1, "─") + "┐";
+    content += C.cursor(rect.y, rect.x) + C.fg(top, borderColor);
+
+    // 2. Middle (Content)
+    // Content rows are between top and bottom border
+    const contentHeight = rect.height - 2;
+    for (let i = 0; i < contentHeight; i++) {
       const raw = lines[i] ?? "";
-      const line = focused ? C.fg(raw, CYAN) : raw;
-      content += C.cursor(rect.y + i, rect.x);
-      content += padR(line, rect.width);
+      const line = "│" + padR(" " + raw, rect.width - 2) + "│";
+      content += C.cursor(rect.y + i + 1, rect.x) + C.fg(line, borderColor);
     }
+
+    // 3. Bottom Border
+    const bottom = "└" + "─".repeat(rect.width - 2) + "┘";
+    content += C.cursor(rect.y + rect.height - 1, rect.x) + C.fg(bottom, borderColor);
+
     return { content };
   }
 }
