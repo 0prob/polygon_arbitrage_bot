@@ -113,6 +113,19 @@ function sparkline(values: number[], width: number): string {
 
 // ─── Format helpers ────────────────────────────────────────────────────────────
 
+function abbreviateProtocol(name: string): string {
+  const map: Record<string, string> = {
+    UniswapV2: "UniV2",
+    UniswapV3: "UniV3",
+    BalancerVault: "Bal",
+    CurveFactory: "Crv",
+    DodoFactory: "Dodo",
+    WooFi: "Woo",
+    UniswapV4: "UniV4",
+  };
+  return map[name] ?? name;
+}
+
 function fmtWeiMatic(wei: bigint): string {
   const n = Number(wei) / 1e18;
   if (n === 0) return "0";
@@ -249,7 +262,7 @@ export class Renderer {
       const top2 = Object.entries(ds.protocolBreakdown)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 2)
-        .map(([name, count]) => `${name}:${count}`)
+        .map(([name, count]) => `${abbreviateProtocol(name)}:${count}`)
         .join(" ");
       summaryLine = `${top2} | Lag:${C.fg(String(ds.lagBlocks), ds.lagBlocks > 10 ? RED : GREEN)}`;
     }
@@ -328,7 +341,7 @@ export class Renderer {
       .map(([hop, count]) => `${hop}h: ${count}`);
     const hopLine = hopParts.length > 0 ? hopParts.join("  ") : C.dim("—");
 
-    return [`${spin} ${cycleStr}${enumTime}`, `Enumerated:`, hopLine];
+    return [`${spin} ${cycleStr}${enumTime}`, hopLine];
   }
 
   // ── Panel 5: Graph ─────────────────────────────────────────────────────────
@@ -341,7 +354,7 @@ export class Renderer {
     const protoTop = Object.entries(s.protocolBreakdown)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
-      .map(([name, count]) => `${name}:${count}`)
+      .map(([name, count]) => `${abbreviateProtocol(name)}:${count}`)
       .join(" ");
     const protoLine = protoTop.length > 0 ? protoTop : C.dim("—");
 
@@ -432,9 +445,10 @@ export class Renderer {
     // 2. Middle (Content)
     // Content rows are between top and bottom border
     const contentHeight = rect.height - 2;
+    const borderColorCode = focused ? ESC + "[36m" : ESC + "[37m";
     for (let i = 0; i < contentHeight; i++) {
       const raw = lines[i] ?? "";
-      const line = "│" + padR(" " + raw, rect.width - 2) + "│";
+      const line = "│" + padR(" " + raw, rect.width - 2) + borderColorCode + "│";
       content += C.cursor(rect.y + i + 1, rect.x) + C.fg(line, borderColor);
     }
 
