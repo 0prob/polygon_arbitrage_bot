@@ -62,7 +62,10 @@ const EVM_ADDRESS_LENGTH = 42;
 const EVM_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 function poolsFromRouteKey(routeKey: string): string[] {
-  return routeKey.split(":").filter((p) => p.length === EVM_ADDRESS_LENGTH && EVM_ADDRESS_REGEX.test(p));
+  return routeKey.split(":").filter((p) => {
+    if (p.length !== EVM_ADDRESS_LENGTH || !p.startsWith("0x")) return false;
+    return EVM_ADDRESS_REGEX.test(p);
+  });
 }
 
 export function areCandidatesCompatible(a: CandidateExecution, b: CandidateExecution): boolean {

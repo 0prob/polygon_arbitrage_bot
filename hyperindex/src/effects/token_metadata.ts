@@ -1,18 +1,29 @@
 import { createEffect, S } from "envio";
 import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
-import { Database } from "bun:sqlite";
 import path from "node:path";
+import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 
-const db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
-const getDecimalsStmt = db.prepare("SELECT decimals FROM token_decimals WHERE address = ?");
+let db: any = null;
+let getDecimalsStmt: any = null;
 
-function getStaticDecimals(address: string): number | null {
+async function initDb() {
+  if (db !== null) return;
+  try {
+    const { Database } = await import("bun:sqlite");
+    db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
+    getDecimalsStmt = db.prepare("SELECT decimals FROM token_decimals WHERE address = ?");
+  } catch (e) {
+    db = undefined; // Mark as definitively unavailable
+    console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
+  }
+}
+
+function getStaticDecimals(address: string): number | null | undefined {
+  if (!getDecimalsStmt) return undefined;
   const row = getDecimalsStmt.get(address.toLowerCase()) as { decimals: number } | undefined;
   return row ? row.decimals : null;
 }
-import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
-import path from "node:path";
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
 const FAILED_DECIMALS_FILE = path.resolve("data/failed-decimals.json");
@@ -165,6 +176,7 @@ export const fetchTokenMeta = createEffect(
     cache: true, // Critical for performance on restarts / re-runs
   },
   async ({ input, context }) => {
+    await initDb();
     // Ensure address is correctly padded to 42 characters (20 bytes hex + "0x").
     // Sometimes Envio/viem event parsing drops leading zeros on addresses.
     let addr = input.address.toLowerCase();
