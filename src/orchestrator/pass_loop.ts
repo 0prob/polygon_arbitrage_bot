@@ -828,10 +828,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     const currentPassTraceId = lastMempoolTraceId;
     lastMempoolTraceId = undefined;
 
-    // Timing instrumentation for bottleneck analysis
+    // Timing instrumentation for bottleneck analysis (debug only)
     let t_point = Date.now();
-    const timings: Record<string, number> = {};
+    const timings: Record<string, number> | undefined = ctx.config.observability.logLevel === "debug" ? {} : undefined;
     const mark = (name: string) => {
+      if (!timings) return;
       timings[name] = Date.now() - t_point;
       t_point = Date.now();
     };
@@ -1370,7 +1371,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const HF_BUDGET_MS = 160;
       if (elapsed > HF_BUDGET_MS) {
         ctx.logger.debug(
-          { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles, timings },
+          { elapsed, budget: HF_BUDGET_MS, cycles: ctx.metrics.cycles, ...(timings ? { timings } : {}) },
           "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)",
         );
       }
