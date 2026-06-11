@@ -187,6 +187,12 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   // to avoid assuming infinite liquidity up to the absolute price limits.
   const hasTicks = sortedTicks.length > 0;
 
+  // Cumulative tick movement limiter for pools without tick data.
+  // Without tick data, liquidity is assumed constant across all steps, which massively
+  // over-estimates output for large price moves. Bound total movement to prevent this.
+  const MAX_CUMULATIVE_TICK_MOVE = 500;
+  const initialTick = tick;
+
   // Safety: max iterations to prevent infinite loops
   const MAX_ITERATIONS = 500;
 
@@ -195,10 +201,18 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
     let nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
 
     if (nextTick === null && !hasTicks) {
-      // Artificially bound to +/- 200 ticks (~2% price movement) to prevent infinite liquidity assumption
-      // while still allowing realistic trades to be simulated even without full tick data.
-      nextTick = zeroForOne ? tick - 200 : tick + 200;
-      // Clamp to absolute protocol limits
+      // Compute the target tick (200 tick step) then clamp to cumulative bound
+      const rawNext = zeroForOne ? tick - 200 : tick + 200;
+      const cumulativeFromStart = zeroForOne ? initialTick - rawNext : rawNext - initialTick;
+
+      if (cumulativeFromStart > MAX_CUMULATIVE_TICK_MOVE) {
+        const boundTick = zeroForOne ? initialTick - MAX_CUMULATIVE_TICK_MOVE : initialTick + MAX_CUMULATIVE_TICK_MOVE;
+        // Can't move further if already at/past bound
+        if (zeroForOne ? boundTick >= tick : boundTick <= tick) break;
+        nextTick = boundTick;
+      } else {
+        nextTick = rawNext;
+      }
       if (nextTick < MIN_TICK) nextTick = MIN_TICK;
       if (nextTick > MAX_TICK) nextTick = MAX_TICK;
     }

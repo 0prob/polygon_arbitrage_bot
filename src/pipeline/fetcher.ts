@@ -271,6 +271,8 @@ export async function fetchMissingPoolState(
                     {
                       reserve0: toBigInt(r0, 0n),
                       reserve1: toBigInt(r1, 0n),
+                      fee: meta.fee != null ? BigInt(meta.fee) : 30n,
+                      feeDenominator: 10000n,
                       initialized: true,
                     },
                     updated,

@@ -37,9 +37,20 @@ function sqrt(value: bigint) {
   if (value < 0n) throw new Error("DODOMath: sqrt undefined for negative");
   if (value < 2n) return value;
 
-  const bitLen = value.toString(16).length * 4;
-  const initialShift = BigInt((bitLen + 1) >> 1);
-  let x0 = 1n << initialShift;
+  // Estimate bit length using binary checks (avoids expensive string allocation)
+  let bitLen = 0;
+  let tmp = value;
+  if (tmp >= 1n << 128n) { tmp >>= 128n; bitLen += 128; }
+  if (tmp >= 1n << 64n) { tmp >>= 64n; bitLen += 64; }
+  if (tmp >= 1n << 32n) { tmp >>= 32n; bitLen += 32; }
+  if (tmp >= 1n << 16n) { tmp >>= 16n; bitLen += 16; }
+  if (tmp >= 1n << 8n) { tmp >>= 8n; bitLen += 8; }
+  if (tmp >= 1n << 4n) { tmp >>= 4n; bitLen += 4; }
+  if (tmp >= 1n << 2n) { tmp >>= 2n; bitLen += 2; }
+  if (tmp >= 1n << 1n) { tmp >>= 1n; bitLen += 1; }
+  if (tmp > 0n) bitLen += 1;
+
+  let x0 = 1n << BigInt(Math.floor(bitLen / 2) + 1);
   let x1 = (x0 + value / x0) / 2n;
   while (x1 < x0) {
     x0 = x1;

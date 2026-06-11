@@ -18,19 +18,22 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
 
   const adjacency = new Map<string, SwapEdge[]>();
   const poolMeta = new Map();
-  const stateRefs = new Map();
+  const stateRefs = new Map<string, Record<string, unknown>>();
+
+  for (let i = 0; i < tokens.length; i++) {
+    adjacency.set(tokens[i], []);
+  }
 
   for (let i = 0; i < tokens.length; i++) {
     const tokenIn = tokens[i];
-    const edges: SwapEdge[] = [];
 
-    // Add edges to other tokens to form cycles
     for (let j = 1; j <= edgesPerToken; j++) {
       const targetIndex = (i + j) % tokens.length;
       const tokenOut = tokens[targetIndex];
       const poolAddress = `0xpool_${i}_to_${targetIndex}` as Address;
+      stateRefs.set(poolAddress, {});
 
-      edges.push({
+      adjacency.get(tokenIn)!.push({
         poolAddress,
         protocol: "uniswap_v3",
         tokenIn,
@@ -42,8 +45,7 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
         tokenOutIdx: 1,
       });
 
-      // Also add reverse edge so cycles are possible in short hops
-      edges.push({
+      adjacency.get(tokenOut)!.push({
         poolAddress,
         protocol: "uniswap_v3",
         tokenIn: tokenOut,
@@ -55,8 +57,6 @@ function createMockGraph(numTokens: number, edgesPerToken: number): RoutingGraph
         tokenOutIdx: 0,
       });
     }
-
-    adjacency.set(tokenIn, edges);
   }
 
   return {

@@ -70,8 +70,29 @@ export function getDynamicSearchBounds(
         const inIdx = edge.tokenInIdx ?? (edge.zeroForOne ? 0 : 1);
         if (balances[inIdx] > 0n) capacity = balances[inIdx];
       }
+    } else if (protocol.includes("DODO")) {
+      const baseReserve = toBigInt((state as any).baseReserve, 0n);
+      const quoteReserve = toBigInt((state as any).quoteReserve, 0n);
+      if (baseReserve > 0n && quoteReserve > 0n) {
+        capacity = edge.zeroForOne ? baseReserve : quoteReserve;
+      }
+    } else if (protocol.includes("WOOFI")) {
+      const price = toBigInt((state as any).price, 0n);
+      if (price > 0n) {
+        // Estimate capacity as total value / price (rough liquidity proxy)
+        // WooFi uses a bonded curve with finite reserves per base token.
+        const baseState = (state as any).baseStates ?? (state as any).baseTokenStates;
+        if (baseState && typeof baseState === "object") {
+          const key = typeof edge.tokenIn === "string" ? edge.tokenIn.toLowerCase() : "";
+          const bs = key ? (baseState as Record<string, unknown>)[key] : undefined;
+          if (bs && typeof bs === "object") {
+            const reserve = toBigInt((bs as Record<string, unknown>).reserve, 0n);
+            if (reserve > 0n) capacity = reserve;
+          }
+        }
+      }
     } else {
-      // V2, DODO, etc often have reserve0/reserve1 in their state snapshots
+      // V2 pools have reserve0/reserve1 in their state snapshots
       const r0 = toBigInt((state as any).reserve0, 0n);
       const r1 = toBigInt((state as any).reserve1, 0n);
       if (r0 > 0n && r1 > 0n) {
@@ -182,23 +203,28 @@ export async function findCycles(
 
   let dfsCount = 0;
 
-  // Pre-filter adjacency and pre-calculate weight for all edges
-  type EdgeWithWeight = SwapEdge & { weight: number };
-  const activeAdjacency = new Map<string, EdgeWithWeight[]>();
+  // Pre-filter adjacency and pre-calculate weight for all edges.
+  // Skip edges with no pool state to avoid enumerating dead cycles.
+  const edgeWeight = new Map<string, number>();
+  const activeAdjacency = new Map<string, SwapEdge[]>();
   const tokens = Array.from(adjacency.keys());
   for (let tIdx = 0; tIdx < tokens.length; tIdx++) {
     const token = tokens[tIdx];
     const edges = adjacency.get(token)!;
     if (edges.length > 0) {
-      const edgesWithWeight = new Array(edges.length);
+      const filtered: SwapEdge[] = [];
       for (let eIdx = 0; eIdx < edges.length; eIdx++) {
         const e = edges[eIdx];
-        edgesWithWeight[eIdx] = {
-          ...e,
-          weight: feeLogWeight(e.feeBps),
-        };
+        const state = graph.stateRefs.get(e.poolAddress);
+        if (!state) continue;
+        filtered.push(e);
+        if (!edgeWeight.has(e.poolAddress)) {
+          edgeWeight.set(e.poolAddress, feeLogWeight(e.feeBps));
+        }
       }
-      activeAdjacency.set(token, edgesWithWeight);
+      if (filtered.length > 0) {
+        activeAdjacency.set(token, filtered);
+      }
     }
   }
 
@@ -206,7 +232,7 @@ export async function findCycles(
   function dfs(
     startToken: string,
     currToken: string,
-    path: EdgeWithWeight[],
+    path: SwapEdge[],
     usedPools: Set<string>,
     usedTokens: Set<string>,
     hops: number,
@@ -241,15 +267,14 @@ export async function findCycles(
 
       cycles.push({
         startToken: startToken as Address,
-        edges: [...path] as unknown as SwapEdge[], // clone to prevent mutations from affecting results
+        edges: path.slice(), // clone to prevent mutations from affecting results
         hopCount: hops,
         logWeight,
         cumulativeFeeBps: currentCumFee,
       });
-      return; // do not extend a just-closed cycle (prevents bogus longer cycles from shallower prefixes)
+      return;
     }
 
-    // Prune paths that revisit a token (inner loops), unless it's the start token
     if (usedTokens.has(currToken)) return;
 
     if (hops >= hopLimit) return;
@@ -263,6 +288,7 @@ export async function findCycles(
       const pAddr = e.poolAddress;
       if (usedPools.has(pAddr)) continue;
 
+      const w = edgeWeight.get(pAddr) ?? 0;
       path.push(e);
       usedPools.add(pAddr);
       dfs(
@@ -272,7 +298,7 @@ export async function findCycles(
         usedPools,
         usedTokens,
         hops + 1,
-        currentLogWeight + e.weight,
+        currentLogWeight + w,
         currentCumFee + e.feeBps,
       );
       path.pop();
@@ -317,7 +343,7 @@ export async function findCycles(
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       usedPools.add(e1.poolAddress);
-      const e1LogWeight = e1.weight;
+      const e1LogWeight = edgeWeight.get(e1.poolAddress) ?? 0;
       dfs(startToken, e1.tokenOut, [e1], usedPools, usedTokens, 1, e1LogWeight, e1.feeBps);
       usedPools.delete(e1.poolAddress);
     }
@@ -415,22 +441,24 @@ export async function findCyclesBellmanFord(
     }
 
     const dist = new Map<string, number>();
-    const parent = new Map<string, SwapEdge>();
+    const predNode = new Map<string, string>();
+    const predEdge = new Map<string, SwapEdge>();
     dist.set(sourceToken, 0);
 
-    // Relax up to maxHops times
     for (let iter = 0; iter < maxHops; iter++) {
       let relaxed = false;
       for (const [u, edges] of weightedAdjacency) {
         const uDist = dist.get(u);
-        if (uDist === undefined || uDist === Infinity) continue;
+        if (uDist === undefined || !Number.isFinite(uDist)) continue;
 
         for (const edge of edges) {
           const v = edge.tokenOut;
-          const vDist = dist.get(v) ?? Infinity;
-          if (uDist + edge.weight < vDist - 1e-9) {
-            dist.set(v, uDist + edge.weight);
-            parent.set(v, edge);
+          const oldDist = dist.get(v);
+          const newDist = uDist + edge.weight;
+          if (oldDist === undefined || newDist < oldDist - 1e-9) {
+            dist.set(v, newDist);
+            predNode.set(v, u);
+            predEdge.set(v, edge);
             relaxed = true;
           }
         }
@@ -438,69 +466,64 @@ export async function findCyclesBellmanFord(
       if (!relaxed) break;
     }
 
-    // Check for negative cycles
     for (const [u, edges] of weightedAdjacency) {
       if (cycles.length >= maxCycles) break;
       const uDist = dist.get(u);
-      if (uDist === undefined || uDist === Infinity) continue;
+      if (uDist === undefined || !Number.isFinite(uDist)) continue;
 
       for (const edge of edges) {
         const v = edge.tokenOut;
-        const vDist = dist.get(v) ?? Infinity;
+        const vDist = dist.get(v);
+        if (vDist === undefined || !Number.isFinite(vDist)) continue;
+
         if (uDist + edge.weight < vDist - 1e-9) {
-          // Trace back to reconstruct negative cycle
           const visited = new Set<string>();
-          let curr = v;
-          while (!visited.has(curr)) {
+          let curr: string | undefined = u;
+          while (curr !== undefined && !visited.has(curr)) {
             visited.add(curr);
-            const parentEdge = parent.get(curr);
-            if (!parentEdge) break;
-            curr = parentEdge.tokenIn;
+            curr = predNode.get(curr);
           }
+          const cycleStart = curr;
+          if (cycleStart === undefined) continue;
 
           const cycleEdges: SwapEdge[] = [];
-          let trace = curr;
-          const traceVisited = new Set<string>();
-          while (!traceVisited.has(trace)) {
-            traceVisited.add(trace);
-            const parentEdge = parent.get(trace);
-            if (!parentEdge) break;
-            cycleEdges.unshift(parentEdge);
-            trace = parentEdge.tokenIn;
-          }
+          let trace: string | undefined = cycleStart;
+          do {
+            const e = predEdge.get(trace);
+            if (!e) break;
+            cycleEdges.unshift(e);
+            trace = predNode.get(trace);
+          } while (trace !== undefined && trace !== cycleStart && cycleEdges.length <= maxHops);
 
-          if (cycleEdges.length >= 2 && cycleEdges.length <= maxHops) {
-            const firstEdge = cycleEdges[0];
-            const lastEdge = cycleEdges[cycleEdges.length - 1];
-            if (firstEdge.tokenIn === lastEdge.tokenOut) {
-              const startToken = firstEdge.tokenIn;
-              const key = routeKeyFromEdges(cycleEdges);
-              if (!foundKeys.has(key)) {
-                foundKeys.add(key);
+          if (!cycleEdges.length) continue;
+          const firstEdge = cycleEdges[0];
+          const lastEdge = cycleEdges[cycleEdges.length - 1];
+          if (!(firstEdge.tokenIn === lastEdge.tokenOut && cycleEdges.length >= 2 && cycleEdges.length <= maxHops)) continue;
 
-                let logWeight = 0;
-                let cumFee = 0n;
-                for (const e of cycleEdges) {
-                  const fNum = Math.min(Number(e.feeBps), 9999);
-                  const factor = Math.max(1, 10000 - fNum) / 10000;
-                  logWeight += -Math.log(factor);
-                  cumFee += e.feeBps;
-                }
+          const startToken = firstEdge.tokenIn;
+          const key = routeKeyFromEdges(cycleEdges);
+          if (!foundKeys.has(key)) {
+            foundKeys.add(key);
 
-                const HOP_PENALTIES_BF = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
-                const hopPenalty = HOP_PENALTIES_BF[cycleEdges.length as 2 | 3 | 4 | 5] ?? cycleEdges.length * 0.15;
-                logWeight = logWeight + hopPenalty;
-
-                cycles.push({
-                  id: key,
-                  startToken: startToken as Address,
-                  edges: cycleEdges,
-                  hopCount: cycleEdges.length,
-                  logWeight,
-                  cumulativeFeeBps: cumFee,
-                });
-              }
+            let logWeight = 0;
+            let cumFee = 0n;
+            for (const e of cycleEdges) {
+              logWeight += feeLogWeight(e.feeBps);
+              cumFee += e.feeBps;
             }
+
+            const HOP_PENALTIES_BF = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
+            const hopPenalty = HOP_PENALTIES_BF[cycleEdges.length as 2 | 3 | 4 | 5] ?? cycleEdges.length * 0.15;
+            logWeight = logWeight + hopPenalty;
+
+            cycles.push({
+              id: key,
+              startToken: startToken as Address,
+              edges: cycleEdges,
+              hopCount: cycleEdges.length,
+              logWeight,
+              cumulativeFeeBps: cumFee,
+            });
           }
         }
       }
@@ -518,27 +541,16 @@ export async function enumerateCyclesBellmanFord(
 ): Promise<FoundCycle[]> {
   const allCycles = await findCyclesBellmanFord(graph, maxHops, maxCycles);
 
-  if (getWinRate) {
-    for (let i = 0; i < allCycles.length; i++) {
-      const cycle = allCycles[i];
-      const key = cycle.id || routeKeyFromEdges(cycle.edges);
-      cycle.id = key;
-      let score = scoreCycleWithFeedback(cycle.logWeight, key, getWinRate);
-      if (MAJOR_TOKENS.has(cycle.startToken)) {
-        score -= 2.0;
-      }
-      cycle.score = score;
+  for (let i = 0; i < allCycles.length; i++) {
+    const cycle = allCycles[i];
+    if (!cycle.id) {
+      cycle.id = routeKeyFromEdges(cycle.edges);
     }
-  } else {
-    for (let i = 0; i < allCycles.length; i++) {
-      const cycle = allCycles[i];
-      cycle.id = cycle.id || routeKeyFromEdges(cycle.edges);
-      let score = cycle.logWeight;
-      if (MAJOR_TOKENS.has(cycle.startToken)) {
-        score -= 2.0;
-      }
-      cycle.score = score;
+    let score = getWinRate ? scoreCycleWithFeedback(cycle.logWeight, cycle.id, getWinRate) : cycle.logWeight;
+    if (MAJOR_TOKENS.has(cycle.startToken)) {
+      score -= 2.0;
     }
+    cycle.score = score;
   }
 
   allCycles.sort((a, b) => a.score! - b.score!);

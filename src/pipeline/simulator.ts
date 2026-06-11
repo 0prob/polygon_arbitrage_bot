@@ -15,6 +15,12 @@ import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 import { normalizeProtocol } from "../core/utils/protocol.ts";
 
 
+function bnToSafeNumber(v: bigint): number {
+  if (v === 0n) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function computeSpotPrice(
   normalizedProtocol: string,
   zeroForOne: boolean,
@@ -26,14 +32,21 @@ export function computeSpotPrice(
     const r0 = state.reserve0 as bigint | undefined;
     const r1 = state.reserve1 as bigint | undefined;
     if (r0 && r1) {
-      return zeroForOne ? Number(r1) / Number(r0) : Number(r0) / Number(r1);
+      const n0 = bnToSafeNumber(r0);
+      const n1 = bnToSafeNumber(r1);
+      if (n0 > 0 && n1 > 0) {
+        return zeroForOne ? n1 / n0 : n0 / n1;
+      }
     }
   } else if (normalizedProtocol === "V3" || normalizedProtocol === "V4") {
     const sqrtPriceX96 = state.sqrtPriceX96 as bigint | undefined;
     if (sqrtPriceX96 && sqrtPriceX96 > 0n) {
-      const price = (Number(sqrtPriceX96) / 2 ** 96) ** 2;
-      if (price > 0) {
-        return zeroForOne ? price : 1 / price;
+      const nSqrt = bnToSafeNumber(sqrtPriceX96);
+      if (nSqrt > 0) {
+        const price = (nSqrt / 2 ** 96) ** 2;
+        if (Number.isFinite(price) && price > 0) {
+          return zeroForOne ? price : 1 / price;
+        }
       }
     }
   } else if (normalizedProtocol === "BALANCER") {
@@ -43,7 +56,9 @@ export function computeSpotPrice(
       const inIdx = tokenInIdx ?? (zeroForOne ? 0 : 1);
       const outIdx = tokenOutIdx ?? (zeroForOne ? 1 : 0);
       if (balances[inIdx] > 0n && balances[outIdx] > 0n && weights[inIdx] > 0n && weights[outIdx] > 0n) {
-        return Number(balances[outIdx] * weights[inIdx]) / Number(balances[inIdx] * weights[outIdx]);
+        const num = bnToSafeNumber(balances[outIdx] * weights[inIdx]);
+        const den = bnToSafeNumber(balances[inIdx] * weights[outIdx]);
+        if (den > 0) return num / den;
       }
     }
   } else if (normalizedProtocol === "CURVE") {
@@ -52,19 +67,28 @@ export function computeSpotPrice(
       const inIdx = tokenInIdx ?? (zeroForOne ? 0 : 1);
       const outIdx = tokenOutIdx ?? (zeroForOne ? 1 : 0);
       if (balances[inIdx] > 0n && balances[outIdx] > 0n) {
-        return Number(balances[outIdx]) / Number(balances[inIdx]);
+        const num = bnToSafeNumber(balances[outIdx]);
+        const den = bnToSafeNumber(balances[inIdx]);
+        if (den > 0) return num / den;
       }
     }
   } else if (normalizedProtocol === "DODO") {
     const b = state.baseReserve as bigint | undefined;
     const q = state.quoteReserve as bigint | undefined;
     if (b && q && b > 0n && q > 0n) {
-      return zeroForOne ? Number(q) / Number(b) : Number(b) / Number(q);
+      const nB = bnToSafeNumber(b);
+      const nQ = bnToSafeNumber(q);
+      if (nB > 0 && nQ > 0) {
+        return zeroForOne ? nQ / nB : nB / nQ;
+      }
     }
   } else if (normalizedProtocol === "WOOFI") {
     const rawPrice = state.price as bigint | undefined;
     if (rawPrice && rawPrice > 0n) {
-      return zeroForOne ? Number(rawPrice) / 1e18 : 1e18 / Number(rawPrice);
+      const nPrice = bnToSafeNumber(rawPrice);
+      if (nPrice > 0) {
+        return zeroForOne ? nPrice / 1e18 : 1e18 / nPrice;
+      }
     }
   }
   return 0;
@@ -82,20 +106,29 @@ export function simulateHop(
   let result: SimulatedHopResult;
 
   switch (edge.normalizedProtocol) {
-    case "V2":
-      const feeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : edge.fee != null ? BigInt(edge.fee) : undefined;
-      const { numerator, denominator } = resolveV2Fee(state, undefined, 10000n);
+    case "V2": {
+      const edgeFeeBps = edge.swapFeeBps != null ? BigInt(edge.swapFeeBps) : edge.fee != null ? BigInt(edge.fee) : undefined;
 
-      // If fee was explicitly provided in the edge, use it to derive numerator.
-      // feeBps is in basis points (30 bps = 0.3%). The correct numerator is:
-      //   numerator = denominator - (feeBps * denominator) / BPS_DENOM
-      // For 30 bps with denominator = 1000: 1000 - (30 * 1000) / 10000 = 1000 - 3 = 997
-      let finalNum = numerator;
-      if (feeBps !== undefined) {
-        finalNum = feeBps < 500n ? denominator - (feeBps * denominator) / BPS_DENOM : feeBps;
+      // Resolve fee from pool state or default (0.3%). The denominator from
+      // resolveV2Fee is the authoritative value; we only override the numerator
+      // if the edge explicitly provides a feeBps.
+      const { numerator, denominator } = resolveV2Fee(state, undefined, 10000n);
+      let feeNum = numerator;
+
+      if (edgeFeeBps !== undefined) {
+        // Convert BPS to fee numerator: feeNum = denominator * (1 - bps/10000)
+        // For 30 bps with denominator = 1000: 1000 - (30 * 1000) / 10000 = 997
+        feeNum = edgeFeeBps < 500n ? denominator - (edgeFeeBps * denominator) / BPS_DENOM : edgeFeeBps;
+      } else if (denominator === 1000n && numerator === 997n) {
+        // Already the standard Uniswap V2 0.3% fee — no conversion needed.
+        feeNum = numerator;
+      } else if (numerator >= denominator) {
+        feeNum = BPS_DENOM - 30n; // safe default: 0.3%
       }
 
-      result = simulateV2Swap(state, amountIn, edge.zeroForOne, finalNum, denominator);
+      result = simulateV2Swap(state, amountIn, edge.zeroForOne, feeNum, denominator);
+      break;
+    }
       break;
     case "V3":
       result = extractGasResult(simulateV3Swap(state, amountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));

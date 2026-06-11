@@ -286,11 +286,26 @@ export async function evaluatePipeline(
               high > low ? evaluateAmount(cycle, high, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate) : null;
             const highAlsoZero = !evalHigh || evalHigh.grossProfitMatic === null || evalHigh.grossProfitMatic <= 0n;
             if (highAlsoZero) {
-              // Test a mid-point: maybe the profit function peaks between the extremes
-              // (low is too small to overcome fees, high has too much slippage).
-              const mid = low + (high - low) / 2n;
-              const evalMid = evaluateAmount(cycle, mid, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
-              if (evalMid.grossProfitMatic === null || evalMid.grossProfitMatic <= 0n) {
+              // Low and high are both unprofitable. The optimum may lie in a
+              // narrow mid-range (low too small to overcome gas, excessive
+              // slippage at high). Probe logarithmically between them.
+              const span = high - low;
+              const probes = [
+                low + span / 10n,   // ~1% of capacity
+                low + span / 5n,    // ~2%
+                low + span / 3n,    // ~3.3%
+                low + span / 2n,    // ~5% (mid)
+              ];
+              let anyProfitable = false;
+              for (const probe of probes) {
+                if (probe <= low || probe >= high) continue;
+                const evalP = evaluateAmount(cycle, probe, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
+                if (evalP.grossProfitMatic && evalP.grossProfitMatic > 0n) {
+                  anyProfitable = true;
+                  break;
+                }
+              }
+              if (!anyProfitable) {
                 return {
                   type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned",
                   reason: "noGrossProfit",
@@ -323,7 +338,16 @@ export async function evaluatePipeline(
             return res.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
           };
 
-          solveBrentOptimal(low, high, evaluateBrent, maxIters);
+          const brentResult = solveBrentOptimal(low, high, evaluateBrent, maxIters);
+          if (brentResult !== bestAmount) {
+            // Re-evaluate at the method's best point to ensure consistency
+            // (side-effect tracking may differ from Brent's convergence)
+            const res = evaluateAmount(cycle, brentResult, stateCache, options, true, true, prebuiltSimEdges, holder, overlay, startRate);
+            if (res.assessment && res.assessment.netProfitAfterGasMaticWei > bestProfit) {
+              bestProfit = res.assessment.netProfitAfterGasMaticWei;
+              bestAmount = brentResult;
+            }
+          }
         }
 
         // After search: do one final FULL simulation with impact check enabled.
