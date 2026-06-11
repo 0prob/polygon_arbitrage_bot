@@ -198,7 +198,7 @@ export async function runHfTick(
   ctx.metrics.executionReverts = trackerSummary.totalReverts;
   ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
 
-  const maticPriceUsd = computeMaticPriceUsd(state.tokenToMaticRates);
+  const maticPriceUsd = state.maticPriceUsd;
 
   const isRpcConnected = ctx.rpcCircuit.isHealthy();
   const isHasuraConnected = ctx.hasuraCircuit.isHealthy();

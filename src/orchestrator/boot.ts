@@ -14,7 +14,6 @@ import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
-import { IncrementalGraphUpdater } from "../pipeline/graph_incremental.ts";
 import { type Metrics } from "../core/types/metrics.ts";
 import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
@@ -43,7 +42,6 @@ export interface RuntimeContext {
   reorgDetector?: ReorgDetector;
   wsSubscriber?: WebSocketSubscriber;
   dryRunner?: MempoolAwareDryRunner;
-  graphUpdater?: IncrementalGraphUpdater;
   pendingStateOverlay?: InMemoryPendingStateOverlay;
   stateRefreshService: StateRefreshService;
 
@@ -267,9 +265,6 @@ export async function bootApplication(
   // Mempool-aware dry runner
   const dryRunner = new MempoolAwareDryRunner(publicClient);
 
-  // Incremental graph updater
-  const graphUpdater = new IncrementalGraphUpdater(config.routing.graphFullRebuildInterval);
-
   // Boot warmup: pre-warm gas oracle
   logger.info("Starting boot warmup...");
   try {
@@ -298,7 +293,6 @@ export async function bootApplication(
     reorgDetector,
     wsSubscriber,
     dryRunner,
-    graphUpdater,
     pendingStateOverlay,
     hyperRpc: rpc.hyperRpc,
     hyperSync: rpc.hyperSync,

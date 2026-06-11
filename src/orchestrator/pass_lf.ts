@@ -7,6 +7,7 @@ import { toBigInt } from "../core/utils/bigint.ts";
 import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 import { runRateComputation } from "./pass_rates.ts";
 import { runReorgCheck } from "./pass_reorg.ts";
+import { computeMaticPriceUsd } from "./pass_hf.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 
 const LF_INTERVAL = 1000;
@@ -46,6 +47,9 @@ export async function runLfTick(
   );
   state.cachedRates = rateResult.cachedRates;
   state.tokenToMaticRates = rateResult.tokenToMaticRates;
+  if (rateResult.tokenToMaticRates.size > 0) {
+    state.maticPriceUsd = computeMaticPriceUsd(rateResult.tokenToMaticRates);
+  }
   state.ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
   state.pendingFocusTokens = rateResult.pendingFocusTokens;
 

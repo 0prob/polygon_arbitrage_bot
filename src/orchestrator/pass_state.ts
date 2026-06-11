@@ -19,4 +19,6 @@ export interface PassLoopState {
   headTriggered: boolean;
   lastHeadTime: number;
   lastTierCheck: number;
+  lfTickInFlight: boolean;
+  maticPriceUsd: number;
 }

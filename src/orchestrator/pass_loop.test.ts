@@ -438,6 +438,11 @@ describe("runPassLoop", () => {
       stateRefreshService: { Pools: [], TokenMetas: new Map() },
     } as unknown as RuntimeContext;
 
+    // Timer to stop the loop: HF never calls evaluatePipeline when cycles are empty,
+    // so the Bellman-Ford enumeration runs in the background via LF microtask.
+    // This timer stops the loop after the LF tick has had a chance to execute.
+    const stopTimer = setTimeout(() => { mockContext.isRunning = false; }, 100);
+
     const deps: PassLoopDeps = {
       buildGraph: vi.fn().mockReturnValue({
         adjacency: new Map(),
@@ -453,6 +458,8 @@ describe("runPassLoop", () => {
     };
 
     await runPassLoop(mockContext, deps);
+
+    clearTimeout(stopTimer);
 
     expect(deps.enumerateCycles).not.toHaveBeenCalled();
   });

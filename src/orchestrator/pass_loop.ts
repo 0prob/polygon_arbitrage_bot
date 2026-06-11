@@ -129,6 +129,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     headTriggered: false,
     lastHeadTime: 0,
     lastTierCheck: 0,
+    lfTickInFlight: false,
+    maticPriceUsd: 0.7,
   };
 
   const lowInfraForCooldown = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
@@ -193,17 +195,23 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         const tier = ctx.tierManager.assess();
         state.lastTierCheck = now;
         ctx.logger.debug({ tier }, ctx.tierManager.label());
+        const staleKeys: string[] = [];
         for (const [key, ts] of state.recentRouteTimestamps) {
-          if (now - ts > ROUTE_COOLDOWN_MS * 2) state.recentRouteTimestamps.delete(key);
+          if (now - ts > ROUTE_COOLDOWN_MS * 2) staleKeys.push(key);
         }
+        for (const key of staleKeys) state.recentRouteTimestamps.delete(key);
       }
 
       const stateCache = ctx.stateCache;
       const isLfTick = now - state.lastRefreshTime >= LF_INTERVAL || state.cachedCycles.length === 0;
 
-      if (isLfTick) {
-        mark("lf");
-        await runLfTick(ctx, state, stateCache, deps, bus);
+      if (isLfTick && !state.lfTickInFlight) {
+        state.lfTickInFlight = true;
+        state.lastRefreshTime = now;
+        Promise.resolve()
+          .then(() => runLfTick(ctx, state, stateCache, deps, bus))
+          .catch((err) => { ctx.logger.error({ err }, "Background LF tick failed"); })
+          .finally(() => { state.lfTickInFlight = false; });
       }
 
       mark("hf");
