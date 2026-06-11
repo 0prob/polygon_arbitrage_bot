@@ -6,6 +6,7 @@ import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 import { isInvalidState } from "../core/types/pool.ts";
 import { normalizeProtocol } from "../core/utils/protocol.ts";
 import { tokensToMaticWei } from "../core/assessment/profit.ts";
+import { BoundedMap } from "../core/utils/bounded_map.ts";
 
 /**
  * Creates the bidirectional SwapEdge entries for a single pool.
@@ -38,11 +39,7 @@ export function createEdgesForPool(pool: PoolMeta, state: Record<string, unknown
   return edges;
 }
 
-const edgesCache = new Map<string, SwapEdge[]>();
-
-export function clearEdgeCache(): void {
-  edgesCache.clear();
-}
+const edgesCache = new BoundedMap<string, SwapEdge[]>({ maxSize: 10_000, ttlMs: 600_000 });
 
 export function buildGraph(
   pools: PoolMeta[],
@@ -88,10 +85,10 @@ export function buildGraph(
       tokens.add(t[i].toLowerCase());
     }
 
-    let poolEdges = edgesCache.get(addr);
+    let poolEdges = edgesCache.get(addr, now);
     if (!poolEdges) {
       poolEdges = createEdgesForPool(pool, state);
-      edgesCache.set(addr, poolEdges);
+      edgesCache.set(addr, poolEdges, now);
     } else {
       for (let i = 0; i < poolEdges.length; i++) {
         poolEdges[i].stateRef = state;

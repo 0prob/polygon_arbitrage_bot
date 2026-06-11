@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isAddress } from "viem";
@@ -109,42 +108,57 @@ export function parseBigIntArray(arr: unknown): bigint[] {
   return arr.map((s: unknown) => BigInt(s as string));
 }
 
-let _staticAnchors: PoolMeta[] = [];
-try {
-  const __dirname = fileURLToPath(new URL(".", import.meta.url));
-  const poolsPath = join(__dirname, "../../../scripts/pools.json");
-  const raw = readFileSync(poolsPath, "utf-8");
-  const poolsJson = JSON.parse(raw) as unknown[];
-  if (Array.isArray(poolsJson)) {
-    _staticAnchors = poolsJson.map((p) => {
-      const row = p as Record<string, unknown>;
-      const tokens: string[] = Array.isArray(row?.tokens) ? (row.tokens as string[]) : [];
-      return {
-        address: (row?.address ?? "") as `0x${string}`,
-        protocol: (row?.protocol ?? "unknown") as string,
-        token0: (tokens[0] ?? "") as `0x${string}`,
-        token1: (tokens[1] ?? "") as `0x${string}`,
-        tokens: tokens as `0x${string}`[],
-        fee: (row?.fee ?? 30) as number,
-      };
-    });
-  }
-} catch {
-}
+let _staticAnchors: PoolMeta[] | null = null;
+let staticAnchorsPromise: Promise<PoolMeta[]> | null = null;
 
-_staticAnchors = _staticAnchors.filter((p) => !isGarbagePool(p));
+async function loadStaticAnchors(): Promise<PoolMeta[]> {
+  if (_staticAnchors) return _staticAnchors;
+  if (staticAnchorsPromise) return staticAnchorsPromise;
+  staticAnchorsPromise = (async () => {
+    try {
+      const __dirname = fileURLToPath(new URL(".", import.meta.url));
+      const poolsPath = join(__dirname, "../../../scripts/pools.json");
+      const { readFile } = await import("node:fs/promises");
+      const raw = await readFile(poolsPath, "utf-8");
+      const poolsJson = JSON.parse(raw) as unknown[];
+      let result: PoolMeta[] = [];
+      if (Array.isArray(poolsJson)) {
+        result = poolsJson.map((p) => {
+          const row = p as Record<string, unknown>;
+          const tokens: string[] = Array.isArray(row?.tokens) ? (row.tokens as string[]) : [];
+          return {
+            address: (row?.address ?? "") as `0x${string}`,
+            protocol: (row?.protocol ?? "unknown") as string,
+            token0: (tokens[0] ?? "") as `0x${string}`,
+            token1: (tokens[1] ?? "") as `0x${string}`,
+            tokens: tokens as `0x${string}`[],
+            fee: (row?.fee ?? 30) as number,
+          };
+        });
+      }
+      result = result.filter((p) => !isGarbagePool(p));
 
-for (const p of _staticAnchors) {
-  for (const token of p.tokens) {
-    if (KNOWN_FACTORIES.has(token.toLowerCase())) {
-      markAsGarbage(token)
-        .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token} (persisted)`))
-        .catch(() => {});
+      for (const p of result) {
+        for (const token of p.tokens) {
+          if (KNOWN_FACTORIES.has(token.toLowerCase())) {
+            markAsGarbage(token)
+              .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token} (persisted)`))
+              .catch(() => {});
+          }
+        }
+      }
+
+      _staticAnchors = result;
+      return result;
+    } catch {
+      _staticAnchors = [];
+      return [];
     }
-  }
+  })();
+  return staticAnchorsPromise;
 }
 
-export const STATIC_ANCHORS: PoolMeta[] = _staticAnchors;
+export const STATIC_ANCHORS: PoolMeta[] = []; // placeholder, loaded lazily via loadStaticAnchors()
 
 const GRAPHQL_TIMEOUT = 10_000;
 
@@ -272,8 +286,6 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
-    await new Promise((r) => setTimeout(r, 0));
-
     for (const s of v3.rows) {
       stateCache.set(s.address.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
@@ -282,8 +294,6 @@ export async function buildStateCacheFromGraphQL(
         initialized: true,
       });
     }
-
-    await new Promise((r) => setTimeout(r, 0));
 
     for (const s of v4.rows) {
       stateCache.set(s.address.toLowerCase(), {
@@ -297,8 +307,6 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
-    await new Promise((r) => setTimeout(r, 0));
-
     for (const s of bal.rows) {
       stateCache.set(s.address.toLowerCase(), {
         poolId: s.poolId,
@@ -311,8 +319,6 @@ export async function buildStateCacheFromGraphQL(
       });
     }
 
-    await new Promise((r) => setTimeout(r, 0));
-
     for (const s of curve.rows) {
       stateCache.set(s.address.toLowerCase(), {
         balances: parseBigIntArray(s.balances),
@@ -322,8 +328,6 @@ export async function buildStateCacheFromGraphQL(
         initialized: true,
       });
     }
-
-    await new Promise((r) => setTimeout(r, 0));
 
     for (const s of dodo.rows) {
       stateCache.set(s.address.toLowerCase(), {
@@ -387,7 +391,7 @@ export async function discoverPoolsFromHasura(
   logger?: Pick<Logger, "warn" | "error">,
   options: DiscoverPoolsOptions = {},
 ): Promise<{ pools: PoolMeta[]; maxBlock: number }> {
-  const anchors = STATIC_ANCHORS;
+  const anchors = await loadStaticAnchors();
   const PAGE = 2500;
   const allRows: PoolMetaRow[] = [];
   const lastDiscoveredBlock = options.lastDiscoveredBlock ?? 0;
@@ -448,9 +452,6 @@ export async function discoverPoolsFromHasura(
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));
 
     for (let i = 0; i < discovered.length; i++) {
-      if (i > 0 && i % 10000 === 0) {
-        await new Promise((r) => setTimeout(r, 0));
-      }
       const p = discovered[i];
       if (!seen.has(p.address.toLowerCase())) {
         combined.push(p);

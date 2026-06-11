@@ -10,7 +10,6 @@ import {
   ArbInstrumenter,
   fetchMissingPoolState,
   computeMaticRates,
-  pruneFailedPools,
   type SwapEdge,
 } from "../pipeline/index.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -329,8 +328,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         for (const [key, ts] of recentRouteTimestamps) {
           if (now - ts > ROUTE_COOLDOWN_MS * 2) recentRouteTimestamps.delete(key);
         }
-        // Also prune the fetcher failed-pool tracker (prevents slow memory growth)
-        pruneFailedPools(now);
       }
 
       // Reorg safety + block tracking moved out of HF (200ms) hot path.
@@ -492,15 +489,20 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       bus?.emit({ type: "gas_snapshot", gasPrice: gasSnapshot.gasPrice });
 
-      // Filter out quarantined routes before simulation to avoid repetitive noise.
-      // Prefer cycle.id (pre-computed by enumerateCycles when win-rate scoring is active)
-      // to avoid redundant O(N log N) routeKeyFromEdges work.
-      const filteredCycles = currentCycles.filter((cycle) => {
+      // Build a list of non-quarantined cycle indices to avoid allocating a new FoundCycle[]
+      // on every 200ms pass. Prefer cycle.id (pre-computed by enumerateCycles) to avoid
+      // redundant O(N log N) routeKeyFromEdges work.
+      const cycleIndices: number[] = [];
+      const qm = ctx.executionService.getQuarantineManager();
+      for (let ci = 0; ci < currentCycles.length; ci++) {
+        const cycle = currentCycles[ci];
         const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges);
-        return !ctx.executionService.isQuarantined(routeKey);
-      });
+        if (!qm.isQuarantined(routeKey)) {
+          cycleIndices.push(ci);
+        }
+      }
 
-      if (filteredCycles.length === 0) {
+      if (cycleIndices.length === 0) {
         bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
         await sleep(HF_INTERVAL);
         continue;
@@ -561,14 +563,16 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       // Focus expensive simulation on cycles where the *start token* has a rate (flash principal is valued; profit asserted in startToken units).
       // Intermediates without rates contribute 0 to gross (conservative) and extreme checks are skipped for them.
       // This allows more of the graph to be evaluated as rate coverage grows slowly from WMATIC bootstrap + stateCache.
-      const rateSafeCycles = filteredCycles.filter((cycle) => {
+      const rateSafeCycles: FoundCycle[] = [];
+      for (const ci of cycleIndices) {
+        const cycle = currentCycles[ci];
         const startRate = tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
-        return startRate > 0n;
-      });
+        if (startRate > 0n) rateSafeCycles.push(cycle);
+      }
 
-      if (rateSafeCycles.length === 0 && filteredCycles.length > 0) {
+      if (rateSafeCycles.length === 0 && cycleIndices.length > 0) {
         ctx.logger.debug(
-          { totalFiltered: filteredCycles.length, rates: tokenToMaticRates.size },
+          { totalFiltered: cycleIndices.length, rates: tokenToMaticRates.size },
           "No rate-covered cycles this pass (coverage still growing)",
         );
       }
@@ -596,7 +600,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         ratesCovered: tokenToMaticRates.size,
         cacheSize: stateCache.size,
         rateSafeCycles: rateSafeCycles.length,
-        totalCycles: filteredCycles.length,
+        totalCycles: cycleIndices.length,
       });
 
       if (result.attempted > 0) {
@@ -819,6 +823,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const elapsed = Date.now() - startTime;
       ctx.metrics.lastCycleDurationMs = elapsed;
 
+      // Track heap growth every 1000 cycles when debug logging is enabled
+      if (ctx.config.observability.logLevel === "debug" && ctx.metrics.cycles % 1000 === 0) {
+        const mem = process.memoryUsage();
+        const heapMb = Math.round(mem.heapUsed / 1024 / 1024);
+        ctx.logger.debug?.({ heapMb, rssMb: Math.round(mem.rss / 1024 / 1024) }, "Memory snapshot");
+      }
+
       // Minimal HF budget instrumentation (P2 item from debug pass).
       // After previous purges (reorg/getBlock moved out), the loop should comfortably stay < 160 ms.
       // If we ever regress and start doing heavy work in the 200 ms path, this will scream.
@@ -900,7 +911,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             }
           : undefined,
       );
-      if (now - lastStatusWriteTime > 1000) {
+      // Throttle status writes: write every second only when interesting metrics change,
+      // otherwise every 5s to reduce file I/O pressure.
+      const statusChanged =
+        ctx.metrics.cycles % 5 === 0 ||
+        ctx.metrics.executionsAttempted > 0 ||
+        ctx.metrics.totalErrors > 0;
+      if (now - lastStatusWriteTime > (statusChanged ? 1000 : 5000)) {
         lastStatusWriteTime = now;
         writeStatusFile(ctx.config.paths.dataDir, payload).catch(() => {});
       }

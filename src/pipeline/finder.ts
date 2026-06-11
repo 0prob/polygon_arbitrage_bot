@@ -141,12 +141,17 @@ export function getDynamicSearchBounds(
 }
 
 const feeLogWeightCache = new Map<bigint, number>();
+const FEE_LOG_WEIGHT_CACHE_MAX = 200;
 function feeLogWeight(feeBps: bigint): number {
   const cached = feeLogWeightCache.get(feeBps);
   if (cached !== undefined) return cached;
   const feeNum = Math.min(Number(feeBps), 9999);
   const factor = Math.max(1, 10000 - feeNum) / 10000;
   const val = -Math.log(factor);
+  if (feeLogWeightCache.size >= FEE_LOG_WEIGHT_CACHE_MAX) {
+    const first = feeLogWeightCache.keys().next().value;
+    if (first !== undefined) feeLogWeightCache.delete(first);
+  }
   feeLogWeightCache.set(feeBps, val);
   return val;
 }

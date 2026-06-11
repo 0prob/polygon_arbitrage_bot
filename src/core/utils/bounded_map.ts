@@ -8,10 +8,11 @@ export class BoundedMap<K, V> {
   private maxSize: number;
   private ttlMs: number;
 
-  constructor(options: BoundedMapOptions) {
-    if (options.maxSize < 1) throw new RangeError("BoundedMap: maxSize must be >= 1");
-    this.maxSize = options.maxSize;
-    this.ttlMs = options.ttlMs;
+  constructor(options?: BoundedMapOptions) {
+    const opts = options ?? { maxSize: 10_000, ttlMs: 600_000 };
+    if (opts.maxSize < 1) throw new RangeError("BoundedMap: maxSize must be >= 1");
+    this.maxSize = opts.maxSize;
+    this.ttlMs = opts.ttlMs;
   }
 
   get(key: K, now: number = Date.now()): V | undefined {
@@ -28,8 +29,11 @@ export class BoundedMap<K, V> {
     if (this.map.has(key)) this.map.delete(key);
     this.map.set(key, { value, ts: now });
     if (this.map.size > this.maxSize) {
-      const oldest = this.map.keys().next().value;
-      if (oldest !== undefined) this.map.delete(oldest);
+      const removed = this.prune(now);
+      if (removed === 0 && this.map.size > this.maxSize) {
+        const oldest = this.map.keys().next().value;
+        if (oldest !== undefined) this.map.delete(oldest);
+      }
     }
   }
 

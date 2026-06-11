@@ -17,7 +17,7 @@ export {
   getDynamicSearchBounds,
 } from "./finder.ts";
 export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop } from "./simulator.ts";
-export { fetchMissingPoolState, pruneFailedPools } from "./fetcher.ts";
+export { fetchMissingPoolState } from "./fetcher.ts";
 export { computeMaticRates, type ComputeMaticRatesOptions } from "./rates.ts";
 export { evaluatePipeline } from "./pipeline.ts";
 export { ArbInstrumenter } from "./instrumenter.ts";

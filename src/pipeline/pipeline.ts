@@ -320,7 +320,8 @@ export async function evaluatePipeline(
             }
             if (res.assessment && res.assessment.netProfitAfterGasMaticWei > bestProfit) {
               bestResult = res.result;
-              bestAssessment = { ...res.assessment }; // clone the reused assessment object to preserve it
+              // No clone needed: bestAssessment is only read after the search loop
+              // when the final full simulation creates a fresh, unshared assessment object.
               bestProfit = res.assessment.netProfitAfterGasMaticWei;
               bestAmount = amount;
             }

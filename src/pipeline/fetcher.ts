@@ -1,6 +1,7 @@
 import { parseAbi } from "viem";
 import type { PublicClient } from "viem";
 import { toBigInt } from "../core/utils/bigint.ts";
+import { BoundedMap } from "../core/utils/bounded_map.ts";
 import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
@@ -51,34 +52,12 @@ const CURVE_ABI = parseAbi([
   "function rates(uint256 i) external view returns (uint256)",
 ]);
 
-const _failedPools = new Map<string, { count: number; lastTry: number }>();
-const FAILED_POOLS_MAX_SIZE = 10_000;
-const FAILED_POOLS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
-
-export function getFailedPools(): Map<string, { count: number; lastTry: number }> {
-  return _failedPools;
-}
-
-export function pruneFailedPools(now: number = Date.now()): void {
-  if (_failedPools.size <= FAILED_POOLS_MAX_SIZE) {
-    for (const [addr, entry] of _failedPools) {
-      if (now - entry.lastTry > FAILED_POOLS_MAX_AGE_MS) {
-        _failedPools.delete(addr);
-      }
-    }
-    return;
-  }
-  const entries = Array.from(_failedPools.entries()).sort((a, b) => a[1].lastTry - b[1].lastTry);
-  const toEvict = entries.length - Math.floor(FAILED_POOLS_MAX_SIZE * 0.9);
-  for (let i = 0; i < toEvict && i < entries.length; i++) {
-    _failedPools.delete(entries[i][0]);
-  }
-}
+const _failedPools = new BoundedMap<string, { count: number }>({ maxSize: 10_000, ttlMs: 10 * 60 * 1000 });
 
 function trackFailedPool(addr: string, reason: string, stateCache: RouteStateCache, now: number): void {
-  const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
-  const newCount = fail.count + 1;
-  _failedPools.set(addr, { count: newCount, lastTry: now });
+  const existing = _failedPools.get(addr);
+  const newCount = (existing?.count ?? 0) + 1;
+  _failedPools.set(addr, { count: newCount });
 
   // Only mark as invalid if it fails 3 times in a row
   if (newCount >= 3) {
@@ -100,6 +79,26 @@ function trackSuccessfulPool(
   _failedPools.delete(addr);
 }
 
+let _poolLookupCache: { fingerprint: string; lookup: Map<string, PoolMeta> } | null = null;
+function buildPoolLookup(pools: PoolMeta[], staticAnchors: readonly { address: string }[]): Map<string, PoolMeta> {
+  const fingerprint = `${pools.length}:${pools[0]?.address ?? ""}:${staticAnchors.length}`;
+  if (_poolLookupCache && _poolLookupCache.fingerprint === fingerprint) {
+    return _poolLookupCache.lookup;
+  }
+  const lookup = new Map<string, PoolMeta>();
+  for (const p of pools) {
+    lookup.set(p.address.toLowerCase(), p);
+  }
+  for (const anchor of staticAnchors) {
+    const addr = anchor.address.toLowerCase();
+    if (!lookup.has(addr)) {
+      lookup.set(addr, anchor as PoolMeta);
+    }
+  }
+  _poolLookupCache = { fingerprint, lookup };
+  return lookup;
+}
+
 export async function fetchMissingPoolState(
   publicClient: PublicClient,
   stateCache: RouteStateCache,
@@ -115,11 +114,6 @@ export async function fetchMissingPoolState(
 ): Promise<Set<string>> {
   const missingAddresses = new Set<string>();
   const now = Date.now();
-
-  // Periodic bounded pruning prevents unbounded growth on flaky RPC/indexer (was a memory leak)
-  if (Math.random() < 0.05 || _failedPools.size > 1000) {
-    pruneFailedPools(now);
-  }
 
   const updated = new Set<string>();
 
@@ -143,7 +137,7 @@ export async function fetchMissingPoolState(
       for (const edge of cycle.edges) {
         const addr = edge.poolAddress.toLowerCase();
         const fail = _failedPools.get(addr);
-        if (fail && fail.count >= 2 && now - fail.lastTry < 300_000) continue;
+        if (fail && fail.count >= 2) continue;
         missingAddresses.add(addr); // always (re)fetch for cycles to keep state fresh for sims (V* states not updated by indexer)
       }
     }
@@ -159,16 +153,7 @@ export async function fetchMissingPoolState(
     batches.push(toFetch.slice(i, i + BATCH_SIZE));
   }
 
-  const poolLookup = new Map<string, PoolMeta>();
-  for (const p of pools) {
-    poolLookup.set(p.address.toLowerCase(), p);
-  }
-  for (const anchor of staticAnchors) {
-    const addr = anchor.address.toLowerCase();
-    if (!poolLookup.has(addr)) {
-      poolLookup.set(addr, anchor as PoolMeta);
-    }
-  }
+  const poolLookup = buildPoolLookup(pools, staticAnchors);
 
   type MulticallCall = { address: `0x${string}`; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] };
   type V2Reserves = readonly [bigint, bigint, number] | { reserve0: bigint; reserve1: bigint; blockTimestampLast: number };

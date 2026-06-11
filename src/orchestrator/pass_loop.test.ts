@@ -132,7 +132,7 @@ describe("runPassLoop", () => {
         }),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
@@ -322,7 +322,7 @@ describe("runPassLoop", () => {
         execute: vi.fn(),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
@@ -437,7 +437,7 @@ describe("runPassLoop", () => {
         execute: vi.fn(),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn() }),
+        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),

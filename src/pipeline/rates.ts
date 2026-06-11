@@ -13,20 +13,21 @@ interface NormalizedPool {
   pool: PoolMeta;
 }
 
-const normalizedPoolsCache = new WeakMap<PoolMeta[], NormalizedPool[]>();
+let _normalizedPoolsCache: { key: string; pools: NormalizedPool[] } | null = null;
 
 function getNormalizedPools(pools: PoolMeta[]): NormalizedPool[] {
-  let cached = normalizedPoolsCache.get(pools);
-  if (!cached) {
-    cached = pools.map((p) => ({
-      addressLower: p.address.toLowerCase(),
-      protocolLower: p.protocol.toLowerCase(),
-      tokensLower: (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase()),
-      pool: p,
-    }));
-    normalizedPoolsCache.set(pools, cached);
+  const key = `${pools.length}:${pools[0]?.address ?? ""}`;
+  if (_normalizedPoolsCache && _normalizedPoolsCache.key === key) {
+    return _normalizedPoolsCache.pools;
   }
-  return cached;
+  const mapped = pools.map((p) => ({
+    addressLower: p.address.toLowerCase(),
+    protocolLower: p.protocol.toLowerCase(),
+    tokensLower: (p.tokens ?? [p.token0, p.token1]).map((t) => t.toLowerCase()),
+    pool: p,
+  }));
+  _normalizedPoolsCache = { key, pools: mapped };
+  return mapped;
 }
 
 export interface ComputeMaticRatesOptions {
