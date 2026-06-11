@@ -6,6 +6,7 @@ import type { PendingStateOverlay } from "../../core/types/overlay.ts";
 import { AbiRegistry } from "../../core/abis/registry.ts";
 import { COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
 import type { Hex } from "viem";
+import type { Address } from "../../core/types/common.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
@@ -131,11 +132,11 @@ export class MempoolService {
     const factoryDecoded = this.abiRegistry.decodeCall(tx.input as Hex);
     if (factoryDecoded) {
       if (factoryDecoded.tag === "uniswap_v2_factory" && factoryDecoded.functionName === "createPair") {
-        this.emit({ type: "new_pool_pending", data: { traceId, txHash: tx.hash, factory: tx.to } });
+        this.emit({ type: "new_pool_pending", data: { traceId, txHash: tx.hash, factoryAddress: tx.to as Address } });
         return;
       }
       if (factoryDecoded.tag === "uniswap_v3_factory" && factoryDecoded.functionName === "createPool") {
-        this.emit({ type: "new_pool_pending", data: { traceId, txHash: tx.hash, factory: tx.to } });
+        this.emit({ type: "new_pool_pending", data: { traceId, txHash: tx.hash, factoryAddress: tx.to as Address } });
         return;
       }
     }

@@ -135,7 +135,7 @@ _staticAnchors = _staticAnchors.filter((p) => !isGarbagePool(p));
 // Auto-mark any factories that appear as tokens in our static anchors
 for (const p of _staticAnchors) {
   for (const token of p.tokens) {
-    if (KNOWN_FACTORIES.has(token)) {
+    if (KNOWN_FACTORIES.has(token.toLowerCase())) {
       markAsGarbage(token)
         .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token} (persisted)`))
         .catch(() => {});
@@ -187,40 +187,14 @@ export interface HasuraPoolState {
   initialized: boolean;
 }
 
-const _cachedState: Map<string, any> = new Map();
-const MAX_CACHE_SIZE = 50000;
-const CACHE_TTL_MS = 300000; // 5 minutes
-let _lastCacheClear = 0;
-
-function evictExpiredCacheEntries(): void {
-  const now = Date.now();
-  // Only clear cache every 5 minutes to avoid constant map recreation
-  if (now - _lastCacheClear > CACHE_TTL_MS) {
-    _cachedState.clear();
-    _lastCacheClear = now;
-  } else if (_cachedState.size > MAX_CACHE_SIZE) {
-    // If size exceeded, clear oldest half (approximation)
-    const entries = Array.from(_cachedState.entries());
-    _cachedState.clear();
-    // Keep second half (most recently added)
-    const keepCount = Math.floor(MAX_CACHE_SIZE * 0.5);
-    for (let i = entries.length - keepCount; i < entries.length; i++) {
-      if (entries[i]) {
-        _cachedState.set(entries[i][0], entries[i][1]);
-      }
-    }
-  }
-}
-
 export async function buildStateCacheFromGraphQL(
   graphqlUrl: string,
   adminSecret: string,
   logger?: Pick<Logger, "warn" | "error">,
 ): Promise<Map<string, any>> {
-  try {
-    evictExpiredCacheEntries();
+  const stateCache = new Map<string, any>();
 
-    // Optimize: Use single batched query instead of 6 separate requests
+  try {
     const batchedQuery = `{
       V2PoolState(limit: 25000) { id address reserve0 reserve1 }
       V3PoolState(limit: 20000) { id address sqrtPriceX96 tick liquidity }
@@ -237,13 +211,9 @@ export async function buildStateCacheFromGraphQL(
       throw new Error("No data returned from batched GraphQL query");
     }
 
-    // Clear and rebuild cache with new data
-    _cachedState.clear();
-
-    // Process all state types efficiently
     const v2States = data.V2PoolState ?? [];
     for (const s of v2States) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         reserve0: BigInt(s.reserve0),
         reserve1: BigInt(s.reserve1),
       });
@@ -253,7 +223,7 @@ export async function buildStateCacheFromGraphQL(
 
     const v3States = data.V3PoolState ?? [];
     for (const s of v3States) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         tick: Number(s.tick),
         liquidity: BigInt(s.liquidity),
@@ -265,7 +235,7 @@ export async function buildStateCacheFromGraphQL(
 
     const v4States = data.V4PoolState ?? [];
     for (const s of v4States) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         liquidity: BigInt(s.liquidity),
         tick: Number(s.tick),
@@ -280,7 +250,7 @@ export async function buildStateCacheFromGraphQL(
 
     const balancerStates = data.BalancerPoolState ?? [];
     for (const s of balancerStates) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         poolId: s.poolId,
         balances: parseBigIntArray(s.balances),
         weights: parseBigIntArray(s.weights),
@@ -295,7 +265,7 @@ export async function buildStateCacheFromGraphQL(
 
     const curveStates = data.CurvePoolState ?? [];
     for (const s of curveStates) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         balances: parseBigIntArray(s.balances),
         A: BigInt(s.A),
         fee: BigInt(s.fee),
@@ -308,7 +278,7 @@ export async function buildStateCacheFromGraphQL(
 
     const dodoStates = data.DodoPoolState ?? [];
     for (const s of dodoStates) {
-      _cachedState.set((s.address ?? s.id).toLowerCase(), {
+      stateCache.set((s.address ?? s.id).toLowerCase(), {
         baseReserve: BigInt(s.baseReserve),
         quoteReserve: BigInt(s.quoteReserve),
         rStatus: s.rStatus,
@@ -327,7 +297,7 @@ export async function buildStateCacheFromGraphQL(
     throw err;
   }
 
-  return _cachedState;
+  return stateCache;
 }
 
 export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
@@ -374,22 +344,28 @@ export async function discoverPoolsFromHasura(
   const allRows: PoolMetaRow[] = [];
   const lastDiscoveredBlock = options.lastDiscoveredBlock ?? 0;
   let maxBlock = lastDiscoveredBlock;
+  const MAX_PAGES = 60; // 60 * 2500 = 150000 max rows (safety limit)
 
-  // Build where clause
-  let whereClauses: string[] = [];
-  if (lastDiscoveredBlock > 0) {
-    whereClauses.push(`createdBlock: { _gt: ${lastDiscoveredBlock} }`);
-  }
-
-  const where = whereClauses.length > 0 ? `where: { ${whereClauses.join(", ")} }` : "";
-
-  // Paginate with offset to avoid silent truncation when >PAGE pools exist in Hasura
-  for (let offset = 0; offset < 150000; offset += PAGE) {
+  // Cursor-based pagination using createdBlock + id for efficiency and correctness.
+  // Offset pagination re-scans skipped rows and has a hard truncation limit.
+  // Cursor pagination with `createdBlock` ensures we never miss rows and
+  // the query is efficient (uses the existing @index on createdBlock).
+  let cursorBlock: number | null = null;
+  let cursorId: string | null = null;
+  for (let page = 0; page < MAX_PAGES; page++) {
     let pageResult: unknown = null;
     let ok = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const query = `{ PoolMeta(limit: ${PAGE}, offset: ${offset}, ${where}, order_by: { createdBlock: asc }) { id protocol tokens fee createdBlock } }`;
+        let where = "";
+        if (lastDiscoveredBlock > 0 && cursorBlock == null) {
+          where = `where: { createdBlock: { _gt: ${lastDiscoveredBlock} } }`;
+        } else if (cursorBlock != null && cursorId != null) {
+          where = `where: { _or: [ { createdBlock: { _gt: ${cursorBlock} } }, { _and: [ { createdBlock: { _eq: ${cursorBlock} } }, { id: { _gt: "${cursorId}" } } ] } ] }`;
+        } else if (lastDiscoveredBlock > 0) {
+          where = `where: { createdBlock: { _gt: ${lastDiscoveredBlock} } }`;
+        }
+        const query = `{ PoolMeta(limit: ${PAGE}, ${where}, order_by: [{ createdBlock: asc }, { id: asc }]) { id protocol tokens fee createdBlock } }`;
         pageResult = await graphQLQuery(graphqlUrl, adminSecret, query);
         const d = pageResult as { PoolMeta?: (PoolMetaRow & { createdBlock: number })[] } | null;
         if (d?.PoolMeta) {
@@ -399,7 +375,11 @@ export async function discoverPoolsFromHasura(
           }
           ok = true;
           if (d.PoolMeta.length < PAGE) {
-            offset = 1e9; // last page
+            page = MAX_PAGES; // last page
+          } else {
+            const last = d.PoolMeta[d.PoolMeta.length - 1];
+            cursorBlock = last.createdBlock;
+            cursorId = last.id;
           }
           break;
         }
@@ -459,7 +439,7 @@ export async function fetchTokenMetasFromHasura(
 ): Promise<Map<string, { decimals: number }>> {
   const metas = new Map<string, { decimals: number }>();
   try {
-    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 5000) { id address decimals } }`);
+    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 30000) { id address decimals } }`);
     const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
     for (const m of rows) {
       if (m.address && m.decimals != null) {

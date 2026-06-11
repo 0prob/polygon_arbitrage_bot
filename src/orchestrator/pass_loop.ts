@@ -1,11 +1,9 @@
 import type { RuntimeContext } from "./boot.ts";
 import {
   type FoundCycle,
-  findCycles,
   enumerateCycles,
   enumerateCyclesBellmanFord,
   routeKeyFromEdges,
-  type RoutingGraph,
   buildGraph,
   evaluatePipeline,
   type PipelineOptions,
@@ -13,23 +11,17 @@ import {
   fetchMissingPoolState,
   computeMaticRates,
   pruneFailedPools,
-  averageObscurity,
   type SwapEdge,
 } from "../pipeline/index.ts";
+import type { RouteStateCache } from "../core/types/route.ts";
 import { FlashLoanSource } from "../core/types/execution.ts";
 import { groupCompatibleCandidates, type CandidateExecution } from "../services/execution/service.ts";
-import {
-  discoverPoolsFromHasura,
-  buildStateCacheFromGraphQL,
-  fetchTokenMetasFromHasura,
-  fetchIndexerProgressFromHasura,
-} from "../infra/hypersync/hyperindex_graphql.ts";
 import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { EventBus } from "../tui/events.ts";
 import { privateKeyToAccount } from "viem/accounts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
-import type { PassLoopDeps } from "./loop.ts"; // see loop.ts for history of the (now-removed) duplicated runPipeline extraction
+import type { PassLoopDeps } from "./loop.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
 import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 
@@ -79,24 +71,18 @@ const instrumenter = new ArbInstrumenter();
 
 export const DEFAULT_DEPS: PassLoopDeps = {
   buildGraph,
-  findCycles,
   enumerateCycles,
   evaluatePipeline,
-  discoverPoolsFromHasura,
-  buildStateCacheFromGraphQL,
-  fetchTokenMetasFromHasura,
-  fetchIndexerProgressFromHasura,
   routeKeyFromEdges,
   buildExecutionCandidate,
   instrumenter,
-  averageObscurity, // from finder (re-exported via pipeline); matches optional in PassLoopDeps
 };
 
 
 function runRateComputation(
   ctx: RuntimeContext,
   hasuraPoolsCache: PoolMeta[] | null,
-  stateCache: Map<string, Record<string, unknown>>,
+  stateCache: RouteStateCache,
   cachedRates: Map<string, bigint> | null,
   ratesNeedFullRefresh: boolean,
   pendingFocusTokens: Set<string> | null,
@@ -239,7 +225,6 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     }
   });
 
-  let cachedGraph: RoutingGraph | null = null;
   let cachedCycles: FoundCycle[] = [];
   let hasuraPoolsCache: PoolMeta[] | null = null;
   let lastRefreshTime = 0;
@@ -250,6 +235,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
   // Rate refresh intent flags — set by LF / pre-fetch paths, consumed by single ensureRates block
   let ratesNeedFullRefresh = false;
   let pendingFocusTokens: Set<string> | null = null;
+  // Guard: prevents concurrent background graph+cycle enumeration runs
+  let lfEnumerationInFlight = false;
 
   const HF_INTERVAL = 200;
   const LF_INTERVAL = 1000;
@@ -354,95 +341,21 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       const isLfTick = now - lastRefreshTime >= LF_INTERVAL || cachedCycles.length === 0;
 
       if (isLfTick) {
-        const reorgResult = await runReorgCheck(ctx, lastReorgCheck, LF_INTERVAL);
-        lastReorgCheck = reorgResult.lastReorgCheck;
-        if (reorgResult.shouldForceRefresh) lastRefreshTime = 0;
-
+        // Snapshot LF metadata (non-blocking reads from StateRefreshService)
         hasuraPoolsCache = ctx.stateRefreshService.Pools;
-        if (!cachedMetas) {
-          cachedMetas = ctx.stateRefreshService.TokenMetas;
+        const freshMetas = ctx.stateRefreshService.TokenMetas;
+        if (freshMetas) {
+          cachedMetas = freshMetas;
         }
-        const pools = hasuraPoolsCache;
-        bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+        lastRefreshTime = now; // Advance timestamp immediately so next HF pass is not gated
 
-        const filteredPools = pools.filter((p) => {
-          if (p.fee === 0) return false;
-          if (isGarbagePool(p)) return false;
+        // Run reorg check non-blockingly (best-effort; kicks off in background if needed)
+        runReorgCheck(ctx, lastReorgCheck, LF_INTERVAL).then((reorgResult) => {
+          lastReorgCheck = reorgResult.lastReorgCheck;
+          if (reorgResult.shouldForceRefresh) lastRefreshTime = 0; // force next LF
+        }).catch(() => {});
 
-          const protocol = p.protocol.toLowerCase();
-          const addr = p.address.toLowerCase();
-          if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-            const state = stateCache.get(addr);
-            if (!state) return false;
-            const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
-            const liq = toBigInt(rawLiq, 0n);
-            if (liq < ctx.config.execution.minLiquidityV3Rate) {
-              return false;
-            }
-          }
-          return true;
-        });
-
-        ctx.logger.info(
-          { total: pools.length, filtered: filteredPools.length, removed: pools.length - filteredPools.length },
-          "Pools filtered for graph building",
-        );
-
-        cachedGraph = deps.buildGraph(filteredPools, stateCache);
-
-        bus?.emit({
-          type: "graph_stats",
-          poolCount: pools.length,
-          protocolBreakdown: pools.reduce(
-            (acc, p) => {
-              const proto = p.protocol.split("_")[0] ?? p.protocol;
-              acc[proto] = (acc[proto] ?? 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>,
-          ),
-          edgeCount: cachedGraph.adjacency.size,
-          cachedCount: stateCache.size,
-        });
-
-        const enumStartTime = Date.now();
-        const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
-        const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
-        const lowForEnum = rpsForEnum <= 250;
-        const maxPaths = lowForEnum ? Math.min(8000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
-        const MAX_HOPS = ctx.config.routing.maxHops;
-        const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
-        cachedCycles = await finderFn(cachedGraph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
-
-        // Fetch state for pools referenced by current cycles
-        const stateClient = ctx.stateClient ?? ctx.publicClient;
-        if (pools.length > 0 && cachedCycles.length > 0) {
-          try {
-            await fetchMissingPoolState(stateClient, stateCache, pools, cachedCycles, [], false);
-          } catch (err) {
-            ctx.logger.debug?.({ err }, "State refresh fetch failed (will retry next LF)");
-          }
-        }
-
-        const enumElapsed = Date.now() - enumStartTime;
-
-        const cyclesByHop: Record<number, number> = {};
-        for (const cycle of cachedCycles) {
-          cyclesByHop[cycle.hopCount] = (cyclesByHop[cycle.hopCount] ?? 0) + 1;
-        }
-        bus?.emit({
-          type: "cycles_enumerated",
-          total: cachedCycles.length,
-          cyclesByHop,
-          elapsedMs: enumElapsed,
-        });
-
-        ctx.logger.info(
-          { pools: pools.length, filtered: filteredPools.length, cycles: cachedCycles.length, durationMs: enumElapsed },
-          "Graph and cycles re-enumerated",
-        );
-
-        // LF Rate Computation
+        // Update rates from freshly pulled state (synchronous CPU, typically <20ms)
         const rateResult = runRateComputation(
           ctx,
           hasuraPoolsCache,
@@ -450,14 +363,100 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           cachedRates,
           ratesNeedFullRefresh,
           pendingFocusTokens,
-          new Set<string>(), // No specific cycleTokens for a full LF refresh
+          new Set<string>(),
           bus,
         );
         cachedRates = rateResult.cachedRates;
         tokenToMaticRates = rateResult.tokenToMaticRates;
         ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
         pendingFocusTokens = rateResult.pendingFocusTokens;
-        lastRefreshTime = now; // Update lastRefreshTime after all LF logic
+
+        // Kick off the heavy LF work (graph build + DFS + RPC fetch) in the background.
+        // The current pass continues with cachedCycles from the *previous* enumeration.
+        // Results are applied atomically when the background work completes.
+        if (!lfEnumerationInFlight) {
+          lfEnumerationInFlight = true;
+          const pools = hasuraPoolsCache.slice(); // snapshot for async closure
+          const enumStateCache = stateCache;
+          const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
+          const rpsForEnum = ctx.config.rpc.chainstackRps ?? 250;
+          const lowForEnum = rpsForEnum <= 250;
+          const maxPaths = lowForEnum ? Math.min(8000, Math.floor(baseMaxPaths * 0.8)) : baseMaxPaths;
+          const MAX_HOPS = ctx.config.routing.maxHops;
+          const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
+          const stateClient = ctx.stateClient ?? ctx.publicClient;
+
+          Promise.resolve().then(async () => {
+            bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
+
+            const filteredPools = pools.filter((p) => {
+              if (p.fee === 0) return false;
+              if (isGarbagePool(p)) return false;
+              const protocol = p.protocol.toLowerCase();
+              const addr = p.address.toLowerCase();
+              if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+                const state = enumStateCache.get(addr);
+                if (!state) return false;
+                const rawLiq = (state as Record<string, unknown>).liquidity ?? 0;
+                const liq = toBigInt(rawLiq, 0n);
+                if (liq < ctx.config.execution.minLiquidityV3Rate) return false;
+              }
+              return true;
+            });
+
+            ctx.logger.info(
+              { total: pools.length, filtered: filteredPools.length, removed: pools.length - filteredPools.length },
+              "Pools filtered for graph building",
+            );
+
+            const newGraph = deps.buildGraph(filteredPools, enumStateCache);
+
+            bus?.emit({
+              type: "graph_stats",
+              poolCount: pools.length,
+              protocolBreakdown: pools.reduce(
+                (acc, p) => {
+                  const proto = p.protocol.split("_")[0] ?? p.protocol;
+                  acc[proto] = (acc[proto] ?? 0) + 1;
+                  return acc;
+                },
+                {} as Record<string, number>,
+              ),
+              edgeCount: newGraph.adjacency.size,
+              cachedCount: enumStateCache.size,
+            });
+
+            const enumStart = Date.now();
+            const newCycles = await finderFn(newGraph, MAX_HOPS, maxPaths, (key) => ctx.executionService.tracker.getWinRate(key));
+            const enumElapsed = Date.now() - enumStart;
+
+            // Atomically swap in the newly-enumerated cycles for the hot path to consume
+            cachedCycles = newCycles;
+
+            const cyclesByHop: Record<number, number> = {};
+            for (const cycle of newCycles) {
+              cyclesByHop[cycle.hopCount] = (cyclesByHop[cycle.hopCount] ?? 0) + 1;
+            }
+            bus?.emit({ type: "cycles_enumerated", total: newCycles.length, cyclesByHop, elapsedMs: enumElapsed });
+            ctx.logger.info(
+              { pools: pools.length, filtered: filteredPools.length, cycles: newCycles.length, durationMs: enumElapsed },
+              "Graph and cycles re-enumerated (background)",
+            );
+
+            // Release the enumeration lock immediately so the next LF tick
+            // can start a fresh enumeration while state fetch runs in parallel.
+            lfEnumerationInFlight = false;
+
+            // RPC state fetch for active cycles — runs unguarded in background
+            if (pools.length > 0 && newCycles.length > 0) {
+              try {
+                await fetchMissingPoolState(stateClient, enumStateCache, pools, newCycles, [], false);
+              } catch (err) {
+                ctx.logger.debug?.({ err }, "Background state fetch failed (will retry next LF)");
+              }
+            }
+          });
+        }
       }  // end if (isLfTick)
 
       // ===== HF PATH: Simulation + Execution + Timing (every pass) =====
@@ -650,18 +649,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             });
 
             try {
-              // Low-competition relaxation:
-              // In obscure/long-tail paths the edge tends to persist longer and competition
-              // is lower, so we can afford slightly more slippage/revert risk to capture
-              // opportunities that stricter parameters would drop.
-              const avgObs = deps.averageObscurity ? deps.averageObscurity(profitable.cycle.edges) : 0;
-              const obscurityRelax = Math.min(1.0, Math.max(0, avgObs)) * 25; // up to +25 bps on high-obscurity
-
               const candidate = deps.buildExecutionCandidate(
                 profitable,
                 { executorAddress, fromAddress: executorAddress },
                 {
-                  slippageBps: Number(options.slippageBps ?? 50n) + Math.floor(obscurityRelax) * 2, // base from config + obscurity relaxation up to 50bp; removed prior +500 blanket that caused cascading K errors
+                  slippageBps: Number(options.slippageBps ?? 50n),
                   flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
                   stateCache,
                 },

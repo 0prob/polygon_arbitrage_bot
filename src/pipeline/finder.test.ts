@@ -53,9 +53,10 @@ describe("getDynamicSearchBounds", () => {
       cumulativeFeeBps: 10n,
     };
 
+    const SQRT_PRICE_1 = 1n << 96n; // price = 1.0
     const stateCache = new Map<string, any>([
-      ["0xpool1", { liquidity: 1_000_000_000_000_000_000n }], // 1e18
-      ["0xpool2", { liquidity: 2_000_000_000_000_000_000n }], // 2e18
+      ["0xpool1", { liquidity: 1_000_000_000_000_000_000n, sqrtPriceX96: SQRT_PRICE_1 }], // 1e18
+      ["0xpool2", { liquidity: 2_000_000_000_000_000_000n, sqrtPriceX96: SQRT_PRICE_1 }], // 2e18
     ]);
 
     const rates = new Map<string, bigint>([[WMATIC.toLowerCase(), 10n ** 18n]]);

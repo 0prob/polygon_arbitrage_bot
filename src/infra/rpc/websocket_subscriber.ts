@@ -222,17 +222,21 @@ export class WebSocketSubscriber {
   private sendSubscription<T>(subscriptionType: string, onResult: (result: T) => void): void {
     if (!this.ws) return;
     const id = this.requestId++;
+    let subscriptionId: string | null = null;
     const origOnMessage = this.ws.onmessage;
     this.ws.onmessage = (msg: MessageEvent) => {
       try {
         const data = JSON.parse(msg.data as string) as Record<string, unknown>;
         if (data.id === id && data.result) {
           // Subscription confirmed
+          subscriptionId = data.result as string;
         } else if (data.method === "eth_subscription" && data.params) {
           const params = data.params as Record<string, unknown>;
-          const subResult = params.result;
-          if (subResult) {
-            onResult(subResult as T);
+          if (params.subscription === subscriptionId) {
+            const subResult = params.result;
+            if (subResult) {
+              onResult(subResult as T);
+            }
           }
         }
       } catch {

@@ -2,7 +2,7 @@ import { keccak256, encodeAbiParameters, getAddress } from "viem";
 import type { Address } from "viem";
 import type { PoolState } from "../../core/types/pool.ts";
 import { isInvalidState } from "../../core/types/pool.ts";
-import { normalizeProtocol } from "../../pipeline/simulator.ts";
+import { normalizeProtocol } from "../../core/utils/protocol.ts";
 import { simulateV2Swap } from "../../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../../core/math/uniswap_v3.ts";
 import { BPS_DENOM } from "../../core/constants.ts";

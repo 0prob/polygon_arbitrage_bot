@@ -12,11 +12,18 @@ import {
 } from "../infra/hypersync/hyperindex_graphql.ts";
 
 export class StateRefreshService {
-  private lastDiscoveryTime = 0;
   private lastDiscoveredBlock = 0;
   private pools: PoolMeta[] = [];
   private tokenMetas: Map<string, { decimals: number }> | null = null;
   private lfStateRefreshCount = 0;
+
+  private discoveryTimer: ReturnType<typeof setInterval> | null = null;
+  private lfTimer: ReturnType<typeof setInterval> | null = null;
+
+  private discoveryInProgress = false;
+  private lfInProgress = false;
+  private expansionInProgress = false;
+  private bootstrapInProgress = false;
 
   public get Pools(): PoolMeta[] {
     return this.pools;
@@ -33,56 +40,70 @@ export class StateRefreshService {
 
   async start(): Promise<void> {
     this.ctx.logger.info("StateRefreshService started");
-    this.runLoop();
+
+    // Immediate first discovery + LF refresh on boot
+    this.runPoolDiscovery().catch(() => {});
+    this.runLfStateRefresh().catch(() => {});
+
+    // Dedicated discovery timer (default 60s)
+    const discoveryInterval = this.ctx.config.discoveryIntervalMs ?? 60000;
+    this.discoveryTimer = setInterval(() => {
+      this.runPoolDiscovery().catch(() => {});
+    }, discoveryInterval);
+
+    // Dedicated LF state refresh timer (1s)
+    this.lfTimer = setInterval(() => {
+      this.runLfStateRefresh().catch(() => {});
+    }, 1000);
   }
 
-  private async runLoop(): Promise<void> {
-    while (this.ctx.isRunning) {
-      try {
-        await this.runPoolDiscovery();
-        await this.runLfStateRefresh();
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } catch (err) {
-        this.ctx.logger.error({ err }, "Error in StateRefreshService");
-      }
+  async stop(): Promise<void> {
+    if (this.discoveryTimer) {
+      clearInterval(this.discoveryTimer);
+      this.discoveryTimer = null;
+    }
+    if (this.lfTimer) {
+      clearInterval(this.lfTimer);
+      this.lfTimer = null;
     }
   }
 
   private async runPoolDiscovery(): Promise<void> {
-    const DISCOVERY_INTERVAL = 60000;
-    const now = Date.now();
+    if (this.discoveryInProgress) return;
     if (
-        !(
-          this.pools === null ||
-          this.pools.length === 0 ||
-          (now - this.lastDiscoveryTime > DISCOVERY_INTERVAL && this.ctx.tierManager.shouldDiscover())
-        )
-      ) {
-        return;
-      }
+      this.pools.length > 0 &&
+      !this.ctx.tierManager.shouldDiscover()
+    ) {
+      return;
+    }
 
+    this.discoveryInProgress = true;
     this.bus?.emit({ type: "pipeline_stage", stage: "DISCOVERY" });
     const graphqlUrl = this.ctx.config.hasuraUrl;
     const secret = this.ctx.config.hasuraSecret;
 
     try {
-        const [result, metas] = await Promise.all([
-            this.ctx.rpcCircuit.execute(
-            () =>
-                discoverPoolsFromHasura(graphqlUrl, secret, this.ctx.logger, {
-                lastDiscoveredBlock: this.lastDiscoveredBlock,
-                }),
-            async () => {
-                this.ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
-                return { pools: [], maxBlock: this.lastDiscoveredBlock };
-            },
-            ),
-            !this.tokenMetas ? fetchTokenMetasFromHasura(graphqlUrl, secret, this.ctx.logger) : Promise.resolve(this.tokenMetas)
-        ]);
+        const result = await this.ctx.hasuraCircuit.execute(
+        () =>
+            discoverPoolsFromHasura(graphqlUrl, secret, this.ctx.logger, {
+            lastDiscoveredBlock: this.lastDiscoveredBlock,
+            }),
+        async () => {
+            this.ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
+            return { pools: [], maxBlock: this.lastDiscoveredBlock };
+        },
+        );
 
-        if (!this.tokenMetas && metas) {
-            this.tokenMetas = metas;
+        // Only fetch token metas on first boot or when new pools are discovered.
+        // Skipping the unconditional Hasura call saves ~100-500ms per discovery cycle
+        // when the pool set hasn't changed.
+        if (!this.tokenMetas || result.pools.length > 0) {
+            const metas = !this.tokenMetas
+                ? await fetchTokenMetasFromHasura(graphqlUrl, secret, this.ctx.logger)
+                : await this.refreshTokenMetas(graphqlUrl, secret);
+            if (!this.tokenMetas && metas) {
+                this.tokenMetas = metas;
+            }
         }
         
         if (result.pools.length > 0) {
@@ -95,7 +116,7 @@ export class StateRefreshService {
                 fee: p.fee,
             }));
 
-            if (this.lastDiscoveredBlock > 0 && this.pools) {
+            if (this.lastDiscoveredBlock > 0 && this.pools.length > 0) {
                 const seen = new Set(this.pools.map((p) => p.address.toLowerCase()));
                 for (const p of mapped) {
                     if (!seen.has(p.address.toLowerCase())) {
@@ -104,88 +125,119 @@ export class StateRefreshService {
                     }
                 }
             } else {
-                this.pools = mapped;
+                this.pools.splice(0, this.pools.length, ...mapped);
             }
-            this.lastDiscoveryTime = now;
             this.lastDiscoveredBlock = result.maxBlock;
         }
     } catch (e) {
         this.ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+    } finally {
+        this.discoveryInProgress = false;
+    }
+  }
+
+  private async refreshTokenMetas(graphqlUrl: string, secret: string): Promise<Map<string, { decimals: number }> | null> {
+    try {
+      const fresh = await fetchTokenMetasFromHasura(graphqlUrl, secret, this.ctx.logger);
+      if (fresh.size > 0 && this.tokenMetas) {
+        const merged = new Map(this.tokenMetas);
+        for (const [addr, meta] of fresh) {
+          merged.set(addr, meta);
+        }
+        this.tokenMetas = merged;
+      } else if (fresh.size > 0) {
+        this.tokenMetas = fresh;
+      }
+      return this.tokenMetas;
+    } catch {
+      return this.tokenMetas;
     }
   }
 
   private async runLfStateRefresh(): Promise<void> {
-    const graphqlUrl = this.ctx.config.hasuraUrl;
-    const secret = this.ctx.config.hasuraSecret;
-
+    if (this.lfInProgress) return;
+    this.lfInProgress = true;
     try {
-      const [gqlCache, fetchedProgress] = await Promise.all([
-        this.ctx.hasuraCircuit.execute(() => buildStateCacheFromGraphQL(graphqlUrl, secret, this.ctx.logger)),
-        this.ctx.hasuraCircuit.execute(() => fetchIndexerProgressFromHasura(graphqlUrl, secret, this.ctx.logger))
-      ]);
+      const graphqlUrl = this.ctx.config.hasuraUrl;
+      const secret = this.ctx.config.hasuraSecret;
 
-      let newEntries = 0;
-      let skippedStale = 0;
-      for (const [addr, state] of gqlCache.entries()) {
-        if (!this.ctx.stateCache.has(addr)) {
-          const s = state as Record<string, unknown>;
-          const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
-          const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
-          const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
-          const staleV3 = liq !== null && liq === 0n;
-          const staleV2 = r0 !== null && r1 !== null && r0 === 0n && r1 === 0n;
-          if (staleV3 || staleV2) {
-            skippedStale++;
-            continue;
+      try {
+        const [gqlCache, fetchedProgress] = await Promise.all([
+          this.ctx.hasuraCircuit.execute(() => buildStateCacheFromGraphQL(graphqlUrl, secret, this.ctx.logger)),
+          this.ctx.hasuraCircuit.execute(() => fetchIndexerProgressFromHasura(graphqlUrl, secret, this.ctx.logger))
+        ]);
+
+        let newEntries = 0;
+        let skippedStale = 0;
+        const now = Date.now();
+        for (const [addr, state] of gqlCache.entries()) {
+          if (!this.ctx.stateCache.has(addr, now)) {
+            const s = state as Record<string, unknown>;
+            const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
+            const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
+            const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
+            const staleV3 = liq !== null && liq === 0n;
+            const staleV2 = r0 !== null && r1 !== null && r0 === 0n && r1 === 0n;
+            if (staleV3 || staleV2) {
+              skippedStale++;
+            } else {
+              this.ctx.stateCache.set(addr, state, now);
+              newEntries++;
+            }
           }
-          this.ctx.stateCache.set(addr, state);
-          newEntries++;
+        }
+        this.ctx.logger.debug({ entries: gqlCache.size, newEntries, skippedStale }, "State and TokenMeta refreshed from HyperIndex");
+
+        if (fetchedProgress && this.ctx.hyperIndexMonitor) {
+          this.ctx.hyperIndexMonitor.updateSyncedBlock(fetchedProgress.lastProcessedBlock);
+        }
+      } catch (err) {
+        const isCircuitOpenError = err instanceof Error && err.message.includes("Circuit breaker") && err.message.includes("is open");
+        if (isCircuitOpenError && this.ctx.hasuraCircuit.getState() === "open") {
+          this.ctx.logger.debug({ err }, "Hasura circuit open — skipping HyperIndex state refresh");
+        } else {
+          this.ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex");
         }
       }
-      this.ctx.logger.debug({ entries: gqlCache.size, newEntries, skippedStale }, "State and TokenMeta refreshed from HyperIndex");
 
-      if (fetchedProgress && this.ctx.hyperIndexMonitor) {
-        this.ctx.hyperIndexMonitor.updateSyncedBlock(fetchedProgress.lastProcessedBlock);
+      const stateCacheEmpty = this.ctx.stateCache.size === 0;
+      const rps = this.ctx.config.rpc.chainstackRps ?? 250;
+      const lowInfra = rps <= 250;
+      const stateClient = this.ctx.stateClient ?? this.ctx.publicClient;
+
+      if (stateCacheEmpty && this.pools.length > 0 && !this.bootstrapInProgress) {
+        this.bootstrapInProgress = true;
+        this.runBootstrapInBackground(stateClient, lowInfra)
+          .catch(err => this.ctx.logger.warn({err}, "Bootstrap failed"))
+          .finally(() => { this.bootstrapInProgress = false; });
       }
-    } catch (err) {
-      const isCircuitOpenError = err instanceof Error && err.message.includes("Circuit breaker") && err.message.includes("is open");
-      if (isCircuitOpenError && this.ctx.hasuraCircuit.getState() === "open") {
-        this.ctx.logger.debug({ err }, "Hasura circuit open — skipping HyperIndex state refresh");
-      } else {
-        this.ctx.logger.warn({ err }, "Failed to refresh state from HyperIndex");
+
+      this.lfStateRefreshCount++;
+      const CACHE_TARGET = 30000;
+      const EXPANSION_CADENCE = lowInfra ? 20 : 10;
+      if (!stateCacheEmpty && this.ctx.stateCache.size < CACHE_TARGET && this.lfStateRefreshCount % EXPANSION_CADENCE === 0 && !this.expansionInProgress) {
+        const BASE_EXP = 6000;
+        const EXPANSION_BATCH = lowInfra ? 1000 : BASE_EXP;
+        const uncached = this.pools.filter((p) => !this.ctx.stateCache.has(p.address.toLowerCase()));
+        if (uncached.length > 0) {
+          const batch = uncached.slice(0, EXPANSION_BATCH);
+          const uncachedLen = uncached.length;
+          this.expansionInProgress = true;
+          fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true)
+            .then((expanded) => {
+              if (expanded.size > 0) {
+                this.ctx.logger.info(
+                  { expanded: expanded.size, totalCached: this.ctx.stateCache.size, remaining: uncachedLen - expanded.size, lowInfra },
+                  "Gradual cache expansion batch complete (background)",
+                );
+              }
+            })
+            .catch((err) => this.ctx.logger.warn({ err }, "Background gradual expansion failed"))
+            .finally(() => { this.expansionInProgress = false; });
+        }
       }
-    }
-
-    const stateCacheEmpty = this.ctx.stateCache.size === 0;
-    const rps = this.ctx.config.rpc.chainstackRps ?? 250;
-    const lowInfra = rps <= 250;
-    const stateClient = this.ctx.stateClient ?? this.ctx.publicClient;
-
-    if (stateCacheEmpty && this.pools.length > 0) {
-      this.runBootstrapInBackground(stateClient, lowInfra).catch(err => this.ctx.logger.warn({err}, "Bootstrap failed"));
-    }
-
-    this.lfStateRefreshCount++;
-    const CACHE_TARGET = 30000;
-    const EXPANSION_CADENCE = lowInfra ? 20 : 10;
-    if (!stateCacheEmpty && this.ctx.stateCache.size < CACHE_TARGET && this.lfStateRefreshCount % EXPANSION_CADENCE === 0) {
-      const BASE_EXP = 6000;
-      const EXPANSION_BATCH = lowInfra ? 1000 : BASE_EXP;
-      const uncached = this.pools.filter((p) => !this.ctx.stateCache.has(p.address.toLowerCase()));
-      if (uncached.length > 0) {
-        const batch = uncached.slice(0, EXPANSION_BATCH);
-        const uncachedLen = uncached.length;
-        fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true)
-          .then((expanded) => {
-            if (expanded.size > 0) {
-              this.ctx.logger.info(
-                { expanded: expanded.size, totalCached: this.ctx.stateCache.size, remaining: uncachedLen - expanded.size, lowInfra },
-                "Gradual cache expansion batch complete (background)",
-              );
-            }
-          })
-          .catch((err) => this.ctx.logger.warn({ err }, "Background gradual expansion failed"));
-      }
+    } finally {
+      this.lfInProgress = false;
     }
   }
 

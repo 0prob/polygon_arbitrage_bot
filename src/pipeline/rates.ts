@@ -44,7 +44,7 @@ export interface ComputeMaticRatesOptions {
 
 export function computeMaticRates(
   pools: PoolMeta[],
-  stateCache: Map<string, Record<string, unknown>>,
+  stateCache: { get(key: string): Record<string, unknown> | undefined; has(key: string): boolean; size: number },
   /** Minimal pino-compatible logger (only debug/info used). */
   logger?: {
     debug?: (obj: Record<string, unknown>, msg?: string) => void;

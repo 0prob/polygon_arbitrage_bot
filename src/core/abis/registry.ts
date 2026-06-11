@@ -1,9 +1,11 @@
-import { AbiFunction, AbiError, Hex, toFunctionSelector, decodeFunctionData, decodeErrorResult, formatAbiItem, decodeAbiParameters, parseAbiItem } from 'viem';
+import { type AbiFunction, type Hex, toFunctionSelector, decodeFunctionData, decodeErrorResult, parseAbiItem } from 'viem';
 
 export type RegistryEntry<T extends AbiFunction | AbiError> = {
   abiItem: T;
   tag?: string;
 };
+
+type AbiError = { type: 'error'; name: string; inputs: readonly { name: string; type: string; [key: string]: unknown }[] };
 
 const COMMON_ERRORS = [
   'error Error(string)',

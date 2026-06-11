@@ -1,4 +1,0 @@
-- [ ] Refactor runLfStateRefresh into StateRefreshService
-- [ ] Remove runLfStateRefresh call from runPassLoop
-- [ ] Initialize StateRefreshService in bootApplication
-- [ ] Commit changes

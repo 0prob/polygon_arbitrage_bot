@@ -128,5 +128,6 @@ export const AppConfigSchema = z.object({
   envioApiToken: z.string().default(""),
   hasuraUrl: z.string().url().default("http://localhost:8080/v1/graphql"),
   hasuraSecret: z.string().default("testing"),
+  discoveryIntervalMs: numberFromString.int().positive().default(60000),
 });
 export type AppConfig = z.infer<typeof AppConfigSchema>;

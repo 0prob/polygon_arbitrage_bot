@@ -71,6 +71,8 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   LOG_LEVEL: ["observability", "logLevel"],
   TUI: ["observability", "tuiEnabled"],
 
+  DISCOVERY_INTERVAL_MS: ["discoveryIntervalMs" as keyof AppConfig, ""],
+
   ENVIO_API_TOKEN: ["envioApiToken" as keyof AppConfig, ""],
   HASURA_URL: ["hasuraUrl" as keyof AppConfig, ""],
   HASURA_SECRET: ["hasuraSecret" as keyof AppConfig, ""],

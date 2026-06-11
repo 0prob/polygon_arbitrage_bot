@@ -36,7 +36,7 @@
     "@modelcontextprotocol/sdk": "1.29.0",
     "@nomicfoundation/solidity-language-server": "0.8.25",
     "@taplo/cli": "0.7.0",
-    "@types/node": "25.9.2",
+    "@types/node": "25.9.3",
     "@vitest/coverage-istanbul": "4.1.8",
     "@vitest/coverage-v8": "4.1.8",
     "bash-language-server": "5.6.0",

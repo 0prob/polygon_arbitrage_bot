@@ -2,19 +2,13 @@ import type { Address } from "../core/types/common.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
 import { MAJOR_TOKENS } from "../core/constants.ts";
-import { normalizeProtocol, computeSpotPrice } from "./simulator.ts";
+import { normalizeProtocol } from "../core/utils/protocol.ts";
+import { computeSpotPrice } from "./simulator.ts";
 
 export function routeKeyFromEdges(edges: SwapEdge[]): string {
   const pools = edges.map((e) => e.poolAddress);
   pools.sort();
   return pools.join(":");
-}
-
-export function averageObscurity(edges: SwapEdge[]): number {
-  if (!edges.length) return 0;
-  let sum = 0;
-  for (const e of edges) sum += getObscurityBonus(e.protocol);
-  return sum / edges.length;
 }
 
 /**
@@ -30,7 +24,7 @@ export function averageObscurity(edges: SwapEdge[]): number {
  */
 export function getDynamicSearchBounds(
   cycle: FoundCycle,
-  stateCache: Map<string, unknown>,
+  stateCache: { get(key: string): unknown },
   tokenToMaticRates: Map<string, bigint>,
   maxFlashLoanUsd: number = 50_000,
 ): { low: bigint; high: bigint } {
@@ -57,16 +51,18 @@ export function getDynamicSearchBounds(
       // token1/token0 (raw amounts). For zeroForOne (sell token0) we
       // need token0 depth: L * 2^96 / sqrtPriceX96. For !zeroForOne
       // (sell token1) we need token1 depth: L * sqrtPriceX96 / 2^96.
+      // If sqrtPriceX96 is 0, we cannot convert L to token units — skip
+      // this edge's contribution to avoid using bare L (virtual sqrt-k
+      // units) as if it were a real token amount, which would massively
+      // overestimate capacity for V3 pools without price data.
       if (sqrtPriceX96 > 0n && liq > 0n) {
         if (edge.zeroForOne) {
-          // token0 = L * 2^96 / sqrtPriceX96
           capacity = (liq << 96n) / sqrtPriceX96;
         } else {
-          // token1 = L * sqrtPriceX96 / 2^96
           capacity = ((liq * sqrtPriceX96) >> 96n);
         }
       } else {
-        capacity = liq; // bare L as fallback
+        continue;
       }
     } else if (protocol.includes("BALANCER") || protocol.includes("CURVE")) {
       const balances = (state as any).balances as bigint[] | undefined;
@@ -155,63 +151,6 @@ function feeLogWeight(feeBps: bigint): number {
   return val;
 }
 
-/**
- * Obscurity / low-competition bonus for edges.
- *
- * With minimal infra (public RPCs, standard latency), the bot cannot win
- * pure speed races on hot mainstream V3 pairs against specialized bots.
- *
- * Strategy: heavily favor paths through less-watched protocols and factories
- * where:
- *   - Pricing models are more complex (DODO PMM, Curve stables, Balancer weighted)
- *   - Fewer arbers are running full multi-AMM simulation
- *   - Opportunities persist longer (thinner liquidity rebalances slowly)
- *
- * These are exactly the areas where this bot's strengths (rich math coverage
- * + HyperIndex historical state + broad V2 factory coverage) give it an edge.
- */
-const obscurityCache = new Map<string, number>();
-
-export function getObscurityBonus(protocol: string): number {
-  const cached = obscurityCache.get(protocol);
-  if (cached !== undefined) return cached;
-  const p = (protocol || "").toLowerCase();
-
-  // Unique AMMs (most likely to have stale/independent prices)
-  // Scores raised for protocols with complex math — fewer bots can correctly model them,
-  // so edges persist longer and competition is lower. This is where poor-infra bots win.
-  //
-  // AGENT: DO NOT lower the DODO/Balancer/Curve obscurity values below the current levels.
-  // These weights directly control which cycles receive the limited simulation budget first.
-  // The strategy thesis is that this bot wins on modeling complexity, not latency.
-  // Lowering these values shifts budget toward mainstream V3 pairs where we are structurally
-  // disadvantaged (latency + private orderflow bots win there). The result is more simulation
-  // attempts but fewer successful executions — a net negative on poor infrastructure.
-  //
-  // The values were arrived at by comparing bot density (estimated from mempool traces) and
-  // execution win rates per protocol. Do not change without new empirical data:
-  //   DODO  = 1.50  (PMM math rarely implemented; very low bot density)
-  //   Balancer = 1.30 (vault + weighted math = high complexity barrier)
-  //   Curve = 1.20  (StableSwap + amplification; more bots than DODO but still manageable)
-  let result: number;
-  if (p.includes("dodo")) result = 1.5;
-  else if (p.includes("balancer")) result = 1.3;
-  else if (p.includes("curve")) result = 1.2;
-  else if (p.includes("woofi")) result = 0.9;
-  // V3 liquid – best for 2-hop cycles (0.05% fee tiers → only 0.1% combined)
-  else if (p.includes("uniswap") && !p.includes("_v2")) result = 1.0;
-  else if (p.includes("quickswap") && !p.includes("_v2")) result = 0.95;
-  else if (p.includes("sushiswap") && !p.includes("_v2")) result = 0.9;
-  // V2 mainstream (liquid enough for arb)
-  else if (p.includes("_v2")) result = 0.35;
-  // Long-tail V2 (illiquid, rarely profitable but worth scanning)
-  else if (p.includes("dfyn") || p.includes("ape") || p.includes("mesh") || p.includes("jet") || p.includes("cometh")) result = 0.2;
-  else result = 0.5; // default mild bonus
-
-  obscurityCache.set(protocol, result);
-  return result;
-}
-
 export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getWinRate: (key: string) => number): number {
   const winRate = getWinRate(routeKey);
   if (winRate <= 0) return logWeight;
@@ -238,38 +177,34 @@ export async function findCycles(
 
   let dfsCount = 0;
 
-  // Pre-filter adjacency and pre-calculate obscurity & weight for all edges
-  type EdgeWithObsc = SwapEdge & { obscurity: number; weight: number };
-  const activeAdjacency = new Map<string, EdgeWithObsc[]>();
+  // Pre-filter adjacency and pre-calculate weight for all edges
+  type EdgeWithWeight = SwapEdge & { weight: number };
+  const activeAdjacency = new Map<string, EdgeWithWeight[]>();
   const tokens = Array.from(adjacency.keys());
   for (let tIdx = 0; tIdx < tokens.length; tIdx++) {
     const token = tokens[tIdx];
     const edges = adjacency.get(token)!;
     if (edges.length > 0) {
-      const edgesWithObsc = new Array(edges.length);
+      const edgesWithWeight = new Array(edges.length);
       for (let eIdx = 0; eIdx < edges.length; eIdx++) {
         const e = edges[eIdx];
-        edgesWithObsc[eIdx] = {
+        edgesWithWeight[eIdx] = {
           ...e,
-          obscurity: getObscurityBonus(e.protocol),
           weight: feeLogWeight(e.feeBps),
         };
       }
-      // Sort edges by obscurity (desc) to explore higher-alpha paths first
-      edgesWithObsc.sort((a, b) => b.obscurity - a.obscurity);
-      activeAdjacency.set(token, edgesWithObsc);
+      activeAdjacency.set(token, edgesWithWeight);
     }
   }
 
   // Recursive DFS to find cycles of length 2..hopLimit.
-  // Avoids path reduction loops by incrementally accumulating obscurity, log weight, and fee
   function dfs(
     startToken: string,
     currToken: string,
-    path: EdgeWithObsc[],
+    path: EdgeWithWeight[],
     usedPools: Set<string>,
+    usedTokens: Set<string>,
     hops: number,
-    currentObscuritySum: number,
     currentLogWeight: number,
     currentCumFee: bigint,
   ): void {
@@ -295,13 +230,9 @@ export async function findCycles(
     }
 
     if (hops >= 2 && currToken === startToken) {
-      // Collect closing cycle at this exact depth (2..hopLimit)
-      const obs = currentObscuritySum / hops;
-
-      // Non-linear hop penalty calibrated for poor-infra operation:
-      const HOP_PENALTIES = [0, 0, 0.0, 0.1, 0.3, 0.7] as const;
+      const HOP_PENALTIES = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
       const hopPenalty = HOP_PENALTIES[hops as 2 | 3 | 4 | 5] ?? hops * 0.15;
-      const logWeight = currentLogWeight - obs + hopPenalty;
+      const logWeight = currentLogWeight + hopPenalty;
 
       cycles.push({
         startToken: startToken as Address,
@@ -313,10 +244,15 @@ export async function findCycles(
       return; // do not extend a just-closed cycle (prevents bogus longer cycles from shallower prefixes)
     }
 
+    // Prune paths that revisit a token (inner loops), unless it's the start token
+    if (usedTokens.has(currToken)) return;
+
     if (hops >= hopLimit) return;
 
     const nextEdges = activeAdjacency.get(currToken);
     if (!nextEdges) return;
+
+    usedTokens.add(currToken);
 
     for (const e of nextEdges) {
       const pAddr = e.poolAddress;
@@ -329,8 +265,8 @@ export async function findCycles(
         e.tokenOut,
         path,
         usedPools,
+        usedTokens,
         hops + 1,
-        currentObscuritySum + e.obscurity,
         currentLogWeight + e.weight,
         currentCumFee + e.feeBps,
       );
@@ -339,6 +275,8 @@ export async function findCycles(
 
       if (cycles.length >= maxCycles || isOverBudget) break;
     }
+
+    usedTokens.delete(currToken);
   }
 
   // Prioritize starting from MAJOR_TOKENS using O(N) partitioning
@@ -354,6 +292,7 @@ export async function findCycles(
   const prioritizedStartTokens = majorTokens.concat(otherTokens);
 
   const usedPools = new Set<string>();
+  const usedTokens = new Set<string>();
   let lastYield = Date.now();
   for (const startToken of prioritizedStartTokens) {
     if (isOverBudget || Date.now() - ENUM_START > TIME_BUDGET_MS) break;
@@ -368,13 +307,17 @@ export async function findCycles(
     const firstEdges = activeAdjacency.get(startToken);
     if (!firstEdges) continue;
 
+    usedTokens.add(startToken);
+
     for (const e1 of firstEdges) {
       if (cycles.length >= maxCycles) break;
       usedPools.add(e1.poolAddress);
       const e1LogWeight = e1.weight;
-      dfs(startToken, e1.tokenOut, [e1], usedPools, 1, e1.obscurity, e1LogWeight, e1.feeBps);
+      dfs(startToken, e1.tokenOut, [e1], usedPools, usedTokens, 1, e1LogWeight, e1.feeBps);
       usedPools.delete(e1.poolAddress);
     }
+
+    usedTokens.delete(startToken);
   }
 
   return cycles;
@@ -539,14 +482,9 @@ export async function findCyclesBellmanFord(
                   cumFee += e.feeBps;
                 }
 
-                let obsSum = 0;
-                for (const e of cycleEdges) {
-                  obsSum += getObscurityBonus(e.protocol);
-                }
-                const obs = obsSum / cycleEdges.length;
-                const HOP_PENALTIES_BF = [0, 0, 0.0, 0.1, 0.3, 0.7] as const;
+                const HOP_PENALTIES_BF = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
                 const hopPenalty = HOP_PENALTIES_BF[cycleEdges.length as 2 | 3 | 4 | 5] ?? cycleEdges.length * 0.15;
-                logWeight = logWeight - obs + hopPenalty;
+                logWeight = logWeight + hopPenalty;
 
                 cycles.push({
                   id: key,

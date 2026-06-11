@@ -5,28 +5,16 @@ import path from "node:path";
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 
 let db: any = null;
-let getDecimalsStmt: any = null;
 
 async function initDb() {
-  console.log('DEBUG: initDb called, db is', db);
   if (db !== null) return;
   try {
-    console.log('DEBUG: Trying to init DB');
     const { Database } = await import("bun:sqlite");
     db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
-    getDecimalsStmt = db.prepare("SELECT decimals FROM token_decimals WHERE address = ?");
-    console.log('DEBUG: DB init success');
   } catch (e) {
-    console.log('DEBUG: DB init failed', e);
-    db = undefined; // Mark as definitively unavailable
+    db = undefined;
     console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
   }
-}
-
-function getStaticDecimals(address: string): number | null | undefined {
-  if (!getDecimalsStmt) return undefined;
-  const row = getDecimalsStmt.get(address.toLowerCase()) as { decimals: number } | undefined;
-  return row ? row.decimals : null;
 }
 
 const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
@@ -43,16 +31,11 @@ const registryCache: Map<string, number> = new Map();
 let cacheLoaded = false;
 
 async function warmUpCache() {
-  console.log('DEBUG: warmUpCache called, cacheLoaded', cacheLoaded);
   if (cacheLoaded) return;
   await initDb();
-  console.log('DEBUG: warmUpCache after initDb, db is', db);
   if (db) {
-    console.log('DEBUG: warmUpCache calling prepare');
     const stmt = db.prepare("SELECT address, decimals FROM token_decimals");
-    console.log('DEBUG: warmUpCache calling all');
     const rows = stmt.all() as { address: string; decimals: number }[];
-    console.log('DEBUG: warmUpCache rows', rows);
     for (const row of rows) {
       let addr = row.address.toLowerCase();
       if (addr.startsWith("0x") && addr.length < 42) {
@@ -60,7 +43,6 @@ async function warmUpCache() {
       }
       registryCache.set(addr, row.decimals);
     }
-    console.log('DEBUG: registryCache size', registryCache.size);
   }
   cacheLoaded = true;
 }
@@ -207,12 +189,6 @@ const fetchTokenMetaHandler = async ({ input, context }: { input: { address: str
     const cached = registryCache.get(addr);
     if (cached !== undefined) {
       return { address: addr, decimals: cached };
-    }
-
-    // Layer 2: Static + discovered runtime cache (aggressive persistence)
-    const staticCached = getStaticDecimals(addr);
-    if (staticCached !== undefined) {
-      return { address: addr, decimals: staticCached };
     }
 
     if (!discoveredLoaded) {

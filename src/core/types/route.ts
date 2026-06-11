@@ -1,5 +1,6 @@
 import type { Address } from "./common.ts";
 import type { PoolState } from "./pool.ts";
+import { BoundedMap } from "../utils/bounded_map.ts";
 
 export interface RouteEdge {
   poolAddress: Address;
@@ -52,7 +53,7 @@ export interface EvaluatedRoute {
   result: RouteSimulationResult;
 }
 
-export type RouteStateCache = Map<string, PoolState>;
+export type RouteStateCache = BoundedMap<string, Record<string, unknown>>;
 
 export interface CycleEnumerationOptions {
   maxHops: number;

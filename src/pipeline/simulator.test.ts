@@ -3,6 +3,7 @@ import { simulateHop } from "./simulator.ts";
 import type { PoolState } from "../core/types/pool.ts";
 import type { SimulationEdge } from "./types.ts";
 import type { CurvePoolState, BalancerPoolState } from "../core/types/pool.ts";
+import { BoundedMap } from "../core/utils/bounded_map.ts";
 
 describe("Simulator Verification", () => {
   const mockCurveState: CurvePoolState = {
@@ -24,7 +25,7 @@ describe("Simulator Verification", () => {
       stateRef: mockCurveState as unknown as PoolState,
     } as SimulationEdge;
 
-    const result = simulateHop(edge, 1n * 10n ** 18n, new Map());
+    const result = simulateHop(edge, 1n * 10n ** 18n, new BoundedMap<string, Record<string, unknown>>());
     expect(result.amountOut).toBeGreaterThan(0n);
   });
 
@@ -59,11 +60,11 @@ describe("Simulator Verification", () => {
       stateRef: mockCurveState as unknown as PoolState,
     } as SimulationEdge;
 
-    const resultWithFee = simulateHop(edge, 1n * 10n ** 18n, new Map());
+    const resultWithFee = simulateHop(edge, 1n * 10n ** 18n, new BoundedMap<string, Record<string, unknown>>());
 
     const stateNoFee = { ...mockCurveState, fee: 0n };
     const edgeNoFee = { ...edge, stateRef: stateNoFee as unknown as PoolState };
-    const resultNoFee = simulateHop(edgeNoFee, 1n * 10n ** 18n, new Map());
+    const resultNoFee = simulateHop(edgeNoFee, 1n * 10n ** 18n, new BoundedMap<string, Record<string, unknown>>());
 
     expect(resultNoFee.amountOut).toBeGreaterThan(resultWithFee.amountOut);
   });

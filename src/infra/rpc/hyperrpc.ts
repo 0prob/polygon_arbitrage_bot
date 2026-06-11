@@ -48,8 +48,8 @@ export class HyperRpcClient {
   // Simple in‑memory caches for static RPC calls
   private _chainIdCache: { value?: number; expiry?: number } = {};
   private _blockNumberCache: { value?: bigint; expiry?: number } = {};
-  // Cache TTL in milliseconds (e.g., 5 seconds)
-  private static readonly CACHE_TTL = 5_000;
+  // Cache TTL in milliseconds (e.g., 100ms instead of 5s for an arbitrage bot)
+  private static readonly CACHE_TTL = 100;
 
   constructor(config: HyperRpcConfig = {}) {
     this.token = config.apiToken?.trim();

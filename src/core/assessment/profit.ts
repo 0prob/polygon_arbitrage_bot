@@ -254,4 +254,3 @@ export function computeProfitCore(
   };
 }
 
-// Note: invalidAssessment was removed after introducing computeProfitCore (no longer needed in hot path)

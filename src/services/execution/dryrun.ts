@@ -1,6 +1,6 @@
 import { type PublicClient, BaseError, type Hex } from "viem";
 import type { CandidateExecution } from "./service.ts";
-import { UNISWAP_V3_POOL_ABI, COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
+import { COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
 import { ARB_EXECUTOR_ABI } from "../../core/abis/executor.ts";
 import { AbiRegistry } from "../../core/abis/registry.ts";
 
@@ -21,43 +21,10 @@ const registry = new AbiRegistry();
 Object.entries(COMPILED_ABIS).forEach(([tag, abi]) => registry.registerAbi(abi, tag));
 registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 
-type Slot0 = readonly [bigint, number, number, number, number, number, boolean];
-
-export interface PredictionResult {
-  predictedBlock: number;
-  expectedSqrtPriceX96: Record<string, bigint>;
-  expectedLiquidity: Record<string, bigint>;
-}
-
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
 
   constructor(private client: PublicClient) {}
-
-  async predictState(poolAddresses: string[]): Promise<PredictionResult> {
-    const block = await this.fetchPendingState();
-    const result: PredictionResult = {
-      predictedBlock: (block?.blockNumber || 0) + 1,
-      expectedSqrtPriceX96: {},
-      expectedLiquidity: {},
-    };
-
-    for (const addr of poolAddresses) {
-      const state = (await this.client
-        .readContract({
-          address: addr as `0x${string}`,
-          abi: V3_POOL_SWAP_ABI,
-          functionName: "slot0",
-        })
-        .catch(() => null)) as Slot0 | null;
-
-      if (state) {
-        result.expectedSqrtPriceX96[addr.toLowerCase()] = state[0];
-      }
-    }
-
-    return result;
-  }
 
   async fetchPendingState(): Promise<PendingState | null> {
     try {
@@ -73,10 +40,6 @@ export class MempoolAwareDryRunner {
       /* ignore */
     }
     return null;
-  }
-
-  getLastPendingState(): PendingState | null {
-    return this.lastPendingState;
   }
 
   async dryRun(candidate: CandidateExecution, fromAddress: string): Promise<DryRunResult> {

@@ -14,27 +14,27 @@ export class BoundedMap<K, V> {
     this.ttlMs = options.ttlMs;
   }
 
-  get(key: K): V | undefined {
+  get(key: K, now: number = Date.now()): V | undefined {
     const entry = this.map.get(key);
     if (!entry) return undefined;
-    if (Date.now() - entry.ts > this.ttlMs) {
+    if (now - entry.ts > this.ttlMs) {
       this.map.delete(key);
       return undefined;
     }
     return entry.value;
   }
 
-  set(key: K, value: V): void {
+  set(key: K, value: V, now: number = Date.now()): void {
     if (this.map.has(key)) this.map.delete(key);
-    this.map.set(key, { value, ts: Date.now() });
+    this.map.set(key, { value, ts: now });
     if (this.map.size > this.maxSize) {
       const oldest = this.map.keys().next().value;
       if (oldest !== undefined) this.map.delete(oldest);
     }
   }
 
-  has(key: K): boolean {
-    return this.get(key) !== undefined;
+  has(key: K, now: number = Date.now()): boolean {
+    return this.get(key, now) !== undefined;
   }
 
   delete(key: K): void {
@@ -58,12 +58,7 @@ export class BoundedMap<K, V> {
   }
 
   get size(): number {
-    const now = Date.now();
-    let count = 0;
-    for (const v of this.map.values()) {
-      if (now - v.ts <= this.ttlMs) count++;
-    }
-    return count;
+    return this.map.size;
   }
 
   keys(): IterableIterator<K> {
@@ -87,8 +82,9 @@ export class BoundedMap<K, V> {
   }
 
   forEach(fn: (value: V, key: K) => void): void {
+    const now = Date.now();
     for (const [k, v] of this.map) {
-      if (Date.now() - v.ts <= this.ttlMs) {
+      if (now - v.ts <= this.ttlMs) {
         fn(v.value, k);
       }
     }

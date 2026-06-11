@@ -16,6 +16,8 @@
     "dev:reset": "bun run clear-hasura || echo '⚠️  clear-hasura failed (missing secret or Hasura not ready) — continuing with full reset anyway' && bunx envio dev -r"
   },
   "dependencies": {
+    "@envio-dev/hypersync-client": "1.4.0",
+    "envio": "3.1.2",
     "viem": "2.52.0"
   },
   "devDependencies": {

@@ -5,9 +5,9 @@ import {
   simulateRouteMinimal,
   simulateMinimalWithImpactCheck,
   buildSimulationEdges,
-  normalizeProtocol,
   computeSpotPrice,
 } from "./simulator.ts";
+import { normalizeProtocol } from "../core/utils/protocol.ts";
 import { getDynamicSearchBounds } from "./finder.ts";
 import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";

@@ -2,6 +2,7 @@ import { type PublicClient } from "viem";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
+import { BoundedMap } from "../core/utils/bounded_map.ts";
 import { ExecutionService } from "../services/execution/service.ts";
 import { SubmissionStrategy, type SubmitTxFn } from "../services/execution/submit.ts";
 import { ReceiptPoller } from "../services/execution/receipt.ts";
@@ -98,7 +99,7 @@ export async function bootApplication(
     stateClient = publicClient;
   }
 
-  const stateCache: RouteStateCache = new Map();
+  const stateCache: RouteStateCache = new BoundedMap<string, Record<string, unknown>>({ maxSize: 50_000, ttlMs: 600_000 });
 
   // Basic validation: ensure executorAddress is a contract
   const executorCode = await publicClient.getBytecode({ address: config.execution.executorAddress as `0x${string}` });
@@ -269,14 +270,10 @@ export async function bootApplication(
   // Incremental graph updater
   const graphUpdater = new IncrementalGraphUpdater(config.routing.graphFullRebuildInterval);
 
-  // Boot warmup: pre-warm gas oracle and state cache
+  // Boot warmup: pre-warm gas oracle
   logger.info("Starting boot warmup...");
   try {
-    // Warm gas oracle with 3 quick polls
     await gasOracle.start();
-    for (let i = 0; i < 3; i++) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
   } catch (err) {
     logger.warn({ err }, "Gas oracle warmup failed, continuing with cold start");
   }

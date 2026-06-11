@@ -4,6 +4,7 @@ import { toBigInt } from "../core/utils/bigint.ts";
 import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
+import type { RouteStateCache } from "../core/types/route.ts";
 import { markAsGarbage } from "../infra/garbage/garbage-tracker.ts";
 const ERC20_ABI = parseAbi(["function balanceOf(address account) external view returns (uint256)"]);
 
@@ -74,7 +75,7 @@ export function pruneFailedPools(now: number = Date.now()): void {
   }
 }
 
-function trackFailedPool(addr: string, reason: string, stateCache: Map<string, Record<string, unknown>>, now: number): void {
+function trackFailedPool(addr: string, reason: string, stateCache: RouteStateCache, now: number): void {
   const fail = _failedPools.get(addr) || { count: 0, lastTry: 0 };
   const newCount = fail.count + 1;
   _failedPools.set(addr, { count: newCount, lastTry: now });
@@ -90,7 +91,7 @@ function trackFailedPool(addr: string, reason: string, stateCache: Map<string, R
 
 function trackSuccessfulPool(
   addr: string,
-  stateCache: Map<string, Record<string, unknown>>,
+  stateCache: RouteStateCache,
   state: Record<string, unknown>,
   updated: Set<string>,
 ): void {
@@ -101,7 +102,7 @@ function trackSuccessfulPool(
 
 export async function fetchMissingPoolState(
   publicClient: PublicClient,
-  stateCache: Map<string, Record<string, unknown>>,
+  stateCache: RouteStateCache,
   pools: PoolMeta[],
   currentCycles: FoundCycle[],
   staticAnchors: readonly { address: string }[] = [],

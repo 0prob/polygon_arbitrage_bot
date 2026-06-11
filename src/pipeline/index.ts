@@ -14,15 +14,11 @@ export {
   enumerateCycles,
   enumerateCyclesBellmanFord,
   routeKeyFromEdges,
-  getObscurityBonus,
-  averageObscurity,
   getDynamicSearchBounds,
 } from "./finder.ts";
-export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop, getTestAmount } from "./simulator.ts";
-export { fetchMissingPoolState, pruneFailedPools } from "./fetcher.ts"; // returns Set of updated pool addresses
+export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop } from "./simulator.ts";
+export { fetchMissingPoolState, pruneFailedPools } from "./fetcher.ts";
 export { computeMaticRates, type ComputeMaticRatesOptions } from "./rates.ts";
 export { evaluatePipeline } from "./pipeline.ts";
-export { ArbInstrumenter, type SimulationTrace, type ExecutionComparison } from "./instrumenter.ts";
-
-// Recently relocated modules (moved out of the old services/strategy/ legacy facade)
+export { ArbInstrumenter } from "./instrumenter.ts";
 export { IncrementalGraphUpdater } from "./graph_incremental.ts";

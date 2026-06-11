@@ -4,7 +4,7 @@ import type { SwapEdge, RoutingGraph } from "./types.ts";
 import { DEFAULT_FEE_BPS } from "./types.ts";
 import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 import { isInvalidState } from "../core/types/pool.ts";
-import { normalizeProtocol } from "./simulator.ts";
+import { normalizeProtocol } from "../core/utils/protocol.ts";
 import { tokensToMaticWei } from "../core/assessment/profit.ts";
 
 /**
@@ -39,12 +39,14 @@ export function createEdgesForPool(pool: PoolMeta, state: Record<string, unknown
 }
 
 const edgesCache = new Map<string, SwapEdge[]>();
-// Optional adjacency cache to avoid Map re-allocation for the same pool set
-const adjacencyCache = new Map<string, SwapEdge[]>();
+
+export function clearEdgeCache(): void {
+  edgesCache.clear();
+}
 
 export function buildGraph(
   pools: PoolMeta[],
-  stateCache: Map<string, unknown>,
+  stateCache: { get(key: string, now?: number): unknown; has(key: string, now?: number): boolean },
   tokenToMaticRates?: Map<string, bigint>,
   liquidityFloorUsd?: number,
 ): RoutingGraph {
@@ -57,10 +59,11 @@ export function buildGraph(
 
   const maticPerUsd = 2n;
 
-  for (let pIdx = 0; pIdx < cleanPools.length; pIdx++) {
-    const pool = cleanPools[pIdx];
+  const now = Date.now();
+  for (let i = 0; i < cleanPools.length; i++) {
+    const pool = cleanPools[i];
     const addr = pool.address.toLowerCase();
-    const state = stateCache.get(addr) as Record<string, unknown> | undefined;
+    const state = stateCache.get(addr, now) as Record<string, unknown> | undefined;
 
     if (state && !isInvalidState(state) && tokenToMaticRates && liquidityFloorUsd != null && liquidityFloorUsd > 0) {
       const proto = normalizeProtocol(pool.protocol);

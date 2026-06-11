@@ -20,15 +20,12 @@ import { ARB_EXECUTOR_ABI } from "../../../core/abis/executor.ts";
 import {
   UNISWAP_V2_POOL_ABI,
   UNISWAP_V3_POOL_ABI,
-  DODO_POOL_ABI,
   WOOFI_POOL_ABI,
-  CURVE_POOL_ABI,
   BALANCER_VAULT_ABI,
   UNISWAP_V4_POOL_MANAGER_ABI,
 } from "../../../core/abis/compiled/index.ts";
 import {
   KYBER_ELASTIC_POOL_SWAP_ABI,
-  POOL_MANAGER_LOCK_ABI,
   CURVE_EXCHANGE_INT128_ABI,
   CURVE_EXCHANGE_UINT256_ABI,
   CURVE_EXCHANGE_INT128_RECEIVER_ABI,
@@ -40,11 +37,6 @@ import type { ExecutorCall, CalldataHop, RouteCalldataOptions } from "./types.ts
 // ─── Helpers ────────────────────────────────────────────────────
 
 let v3MismatchLogged = 0;
-
-/** Reset the V3 mismatch log counter (used for testing). */
-export function resetV3MismatchLogged(): void {
-  v3MismatchLogged = 0;
-}
 
 function callbackProtocolId(protocol: unknown): number {
   switch (protocol) {
