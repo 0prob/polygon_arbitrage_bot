@@ -139,8 +139,8 @@ export function simulateV2Swap(
   }
 
   const pool = asPoolState(poolState);
-  let reserve0 = toBigInt(pool.reserve0);
-  let reserve1 = toBigInt(pool.reserve1);
+  const reserve0 = toBigInt(pool.reserve0);
+  const reserve1 = toBigInt(pool.reserve1);
 
   const reserveIn = zeroForOne ? reserve0 : reserve1;
   const reserveOut = zeroForOne ? reserve1 : reserve0;

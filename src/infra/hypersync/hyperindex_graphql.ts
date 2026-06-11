@@ -398,7 +398,7 @@ export async function discoverPoolsFromHasura(
   }
 
   try {
-    let discovered = parsePoolMetaRows(allRows);
+    const discovered = parsePoolMetaRows(allRows);
 
     const combined = lastDiscoveredBlock > 0 ? [] : [...anchors].filter((p) => !isGarbagePool(p));
     const seen = new Set(combined.map((a) => a.address.toLowerCase()));
