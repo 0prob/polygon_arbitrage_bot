@@ -44,7 +44,7 @@ export async function shutdownApplication(ctx: RuntimeContext): Promise<void> {
     peakCpm: ctx.metrics.peakCyclesPerMinute,
     timestamp: new Date().toISOString(),
   };
-  await writeStatusFile(ctx.config.paths.dataDir, finalPayload).catch(() => {});
+  await writeStatusFile(ctx.config.paths.dataDir, finalPayload).catch((err) => { ctx.logger.warn?.({ err }, "Failed to write final status file"); });
 
   ctx.logger.info({}, "Shutdown complete");
 }

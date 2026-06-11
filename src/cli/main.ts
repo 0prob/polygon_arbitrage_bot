@@ -119,7 +119,8 @@ async function main() {
         }
         const block = await ctx.publicClient.getBlock({ blockTag: "latest" });
         return Number(block.number);
-      } catch {
+      } catch (err) {
+        logger?.warn?.({ err }, "Chain head fetcher failed");
         return 0;
       }
     };
@@ -142,7 +143,8 @@ async function main() {
       try {
         const prog = await fetchIndexerProgressFromHasura(hasuraUrl, hasuraSecret || "", undefined);
         return prog?.lastProcessedBlock ?? 0;
-      } catch {
+      } catch (err) {
+        logger?.warn?.({ err }, "Indexed height fetcher failed");
         return 0;
       }
     };
@@ -198,7 +200,9 @@ async function main() {
         lag: status.lag,
         syncRate: status.syncRate,
       });
-    } catch {}
+    } catch (err) {
+      logger?.warn?.({ err }, "Sync status timer failed");
+    }
   }, 5000);
 
   const runner = new PassRunner(ctx, undefined, tui?.bus);

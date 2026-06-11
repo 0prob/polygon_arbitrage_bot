@@ -40,8 +40,8 @@ export function getDynamicSearchBounds(
     // Default fallback: 1000 units (conservative)
     let capacity = 1000n * 10n ** 18n;
 
-    const protocol = (edge.protocol || "").toUpperCase();
-    if (protocol.includes("V3") || protocol.includes("V4") || protocol.includes("ELASTIC")) {
+    const protocol = normalizeProtocol(edge.protocol);
+    if (protocol === "V3" || protocol === "V4" || protocol.includes("ELASTIC")) {
       const rawLiq = (state as Record<string, unknown>).liquidity;
       const liq = toBigInt(rawLiq, 0n);
       const rawSqrt = (state as Record<string, unknown>).sqrtPriceX96;

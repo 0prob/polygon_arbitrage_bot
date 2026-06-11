@@ -62,7 +62,8 @@ async function main() {
     try {
       const p = await fetchIndexerProgressFromHasura(config.hasuraUrl!, config.hasuraSecret || "", logger);
       return p?.lastProcessedBlock ?? 0;
-    } catch {
+    } catch (err) {
+      logger?.warn?.({ err }, "Indexed height provider failed");
       return 0;
     }
   });
@@ -78,7 +79,8 @@ async function main() {
       const j = await res.json();
       const hex = j?.result;
       return hex ? parseInt(hex, 16) : 0;
-    } catch {
+    } catch (err) {
+      logger?.warn?.({ err }, "Chain head fetcher failed");
       return 0;
     }
   });
@@ -98,7 +100,7 @@ async function main() {
         st = monitorAny.getLastStatus() || st;
       }
     } catch (e) {
-      // best effort for external monitor
+      logger?.debug?.({ err: e }, "External monitor status fetch failed");
     }
     bus.emit({
       type: "hyperindex_status",
@@ -117,7 +119,9 @@ async function main() {
     clearInterval(statusTimer);
     try {
       await hyperIndexMonitor.stop();
-    } catch {}
+    } catch (err) {
+      ctx.logger.warn?.({ err }, "HyperIndex monitor stop failed during shutdown");
+    }
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();

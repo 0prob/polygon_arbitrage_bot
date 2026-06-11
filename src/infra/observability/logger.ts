@@ -37,7 +37,8 @@ function createLogSinkStream(sink: string[], max: number): DestinationStream {
           const msg = parsed.msg ?? "";
           sink.unshift(`[${label}] ${msg}`);
           if (sink.length > max) sink.length = max;
-        } catch {
+        } catch (err) {
+          console.warn("[logger] Failed to parse log line:", err);
           sink.unshift(raw);
           if (sink.length > max) sink.length = max;
         }

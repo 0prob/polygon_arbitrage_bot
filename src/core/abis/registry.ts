@@ -61,7 +61,8 @@ export class AbiRegistry {
           data,
         });
         return { ...decoded, tag: entry.tag, abiItem: entry.abiItem };
-      } catch {
+      } catch (err) {
+        console.warn("[abi-registry] decodeCall failed:", err);
         continue;
       }
     }
@@ -81,7 +82,8 @@ export class AbiRegistry {
           data,
         });
         return { ...decoded, tag: entry.tag, abiItem: entry.abiItem };
-      } catch {
+      } catch (err) {
+        console.warn("[abi-registry] decodeError failed:", err);
         continue;
       }
     }

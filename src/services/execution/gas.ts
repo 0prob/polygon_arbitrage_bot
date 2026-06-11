@@ -236,7 +236,8 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
       if (priorityFee <= 0n) priorityFee = fallback;
 
       return { baseFee, priorityFee };
-    } catch {
+    } catch (err) {
+      console.warn("[gas] Gas fetcher failed:", err);
       return { baseFee: fallback, priorityFee: fallback };
     }
   };
@@ -256,7 +257,8 @@ async function fetchGasFromStation(url: string, percentile: number): Promise<{ b
     const priorityFee = BigInt(Math.round(data[level].maxPriorityFee * 1e9));
 
     return { baseFee, priorityFee };
-  } catch (_) {
+  } catch (err) {
+    console.warn("[gas] Gas station fetch failed:", err);
     return null;
   }
 }

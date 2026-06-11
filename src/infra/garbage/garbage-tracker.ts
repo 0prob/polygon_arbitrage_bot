@@ -93,8 +93,8 @@ export function getAllGarbageAddresses(): string[] {
 }
 
 // Auto-load on module import (best-effort, non-blocking for startup)
-loadGarbageAddresses().catch(() => {
-  // Already handled inside the function
+loadGarbageAddresses().catch((err) => {
+  console.warn("[garbage-tracker] Auto-load failed:", err);
 });
 
 /**
@@ -155,7 +155,9 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
         if (typeof pool.tokens === "string") {
           try {
             tokens = JSON.parse(pool.tokens);
-          } catch {}
+          } catch (err) {
+            console.warn("[garbage-cleanup] Failed to parse pool tokens:", err);
+          }
         } else if (Array.isArray(pool.tokens)) {
           tokens = pool.tokens.map(String);
         }

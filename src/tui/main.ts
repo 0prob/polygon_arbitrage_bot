@@ -49,8 +49,8 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
     frameCount++;
     try {
       renderer.render(layout, state, frameCount, focusedSection);
-    } catch {
-      // Never let a render error propagate — it would kill the setInterval
+    } catch (err) {
+      logger?.warn?.({ err }, "TUI render frame failed");
     }
   }
 
@@ -69,8 +69,8 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
       process.stdin.off("data", stdinHandler);
       try {
         process.stdin.setRawMode(false);
-      } catch {
-        // Not a TTY or already reset
+      } catch (err) {
+        logger?.debug?.({ err }, "Failed to reset stdin raw mode (not a TTY)");
       }
       stdinHandler = null;
     }
@@ -186,8 +186,8 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
       if (process.stdin.isTTY) {
         try {
           process.stdin.setRawMode(true);
-        } catch {
-          // Non-interactive stdin (piped input, CI, etc.) — skip raw mode
+        } catch (err) {
+          logger?.debug?.({ err }, "Failed to enable stdin raw mode (non-interactive stdin)");
         }
         stdinHandler = handleKey;
         process.stdin.on("data", stdinHandler);

@@ -42,8 +42,8 @@ async function loadEnvFile(filePath: string): Promise<Record<string, string>> {
       if (key) result[key] = value;
     }
     return result;
-  } catch {
-    // File missing or unreadable — not fatal
+  } catch (err) {
+    console.warn("[hyperindex] Failed to load .env file:", err);
     return {};
   }
 }
@@ -130,8 +130,8 @@ async function needsAggressiveCleanup(): Promise<boolean> {
     );
 
     return hasStuckContainers;
-  } catch {
-    // If we can't check, err on the side of caution
+  } catch (err) {
+    console.warn("[hyperindex] needsAggressiveCleanup check failed:", err);
     return true;
   }
 }
@@ -147,8 +147,8 @@ async function performLightweightDockerCleanup(hiDir: string): Promise<void> {
     // Remove any still-running envio containers
     const bulkRm = "docker rm -f $(docker ps -q --filter name=envio- 2>/dev/null) 2>/dev/null || true";
     await execAsync(bulkRm, { timeout: 3000 });
-  } catch {
-    // Errors are non-critical for lightweight cleanup
+  } catch (err) {
+    console.warn("[hyperindex] Lightweight Docker cleanup failed:", err);
   }
 }
 
@@ -169,8 +169,8 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
       for (const id of containerIds.trim().split("\n").filter(Boolean)) {
         try {
           await execAsync(`docker rm -f ${id}`, { timeout: 2000 });
-        } catch {
-          // Individual failures are not critical
+        } catch (err) {
+          console.warn("[hyperindex] Individual container force-remove failed:", err);
         }
       }
     }
@@ -181,8 +181,8 @@ async function performAggressiveDockerCleanup(hiDir: string, forceFullReset: boo
         timeout: 5000,
       });
     }
-  } catch {
-    // Errors are logged but not critical
+  } catch (err) {
+    console.warn("[hyperindex] Aggressive Docker cleanup failed:", err);
   }
 }
 
@@ -204,7 +204,8 @@ export async function ensureCodegenUpToDate(hiDir: string, logger?: Logger): Pro
     let generatedStat: Awaited<ReturnType<typeof stat>> | StatLike | undefined;
     try {
       generatedStat = await stat(generatedTypesPath);
-    } catch {
+    } catch (err) {
+      logger?.debug?.({ err }, "Generated types stat failed (will regenerate)");
       generatedStat = { mtimeMs: 0 };
     }
 
@@ -271,12 +272,12 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       if (pid) {
         try {
           process.kill(Number(pid), "SIGKILL");
-        } catch {
-          // process already gone
+        } catch (err) {
+          opts.logger.debug?.({ err, pid }, "Process already gone during port free");
         }
       }
-    } catch {
-      // port is free or lsof failed
+    } catch (err) {
+      opts.logger.debug?.({ err, port }, "Port is free or lsof failed");
     }
   }
 
@@ -304,7 +305,9 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         setTimeout(() => {
           try {
             child.kill();
-          } catch {}
+          } catch (err) {
+            logger?.debug?.({ err }, "Failed to kill gentok child (already exited)");
+          }
         }, 90_000);
       } catch (err) {
         logger.debug({ err }, "Failed to spawn generate-tokens:auto after shutdown (non-fatal)");
@@ -707,8 +710,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       // Still try to stop envio just in case containers are orphans
       try {
         execSync("bunx envio stop", { cwd: hiDir, stdio: "ignore", timeout: 10000 });
-      } catch {
-        // ignore errors if nothing to stop
+      } catch (err) {
+        opts.logger.debug?.({ err }, "envio stop in stop() had nothing to stop");
       }
       return;
     }
@@ -726,8 +729,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       const timeout = setTimeout(() => {
         try {
           if (p.pid) process.kill(-p.pid, "SIGKILL");
-        } catch {
-          // ignore
+        } catch (err) {
+          opts.logger.debug?.({ err }, "SIGKILL failed (process may already be gone)");
         }
         cleanup();
         resolve();
@@ -753,7 +756,9 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
             stdio: "ignore",
             timeout: 5000,
           });
-        } catch {}
+        } catch (err) {
+          opts.logger.debug?.({ err }, "Docker force-cleanup in stop() had nothing to remove");
+        }
       }
 
       p.on("exit", cleanup);

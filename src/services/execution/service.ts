@@ -31,9 +31,9 @@ function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, exec
       if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
         netProfit += parsed.args.value ?? 0n;
       }
-    } catch {
-      /* skip unmatched logs */
-    }
+      } catch (err) {
+        console.warn("[execution-service] Failed to parse transfer log:", err);
+      }
   }
   return netProfit;
 }

@@ -100,7 +100,8 @@ export function parseBigIntArray(arr: unknown): bigint[] {
   if (typeof arr === "string") {
     try {
       return JSON.parse(arr).map((s: string) => BigInt(s));
-    } catch {
+    } catch (err) {
+      console.warn("[hyperindex-graphql] Failed to parse bigint array:", err);
       return [];
     }
   }
@@ -143,14 +144,15 @@ async function loadStaticAnchors(): Promise<PoolMeta[]> {
           if (KNOWN_FACTORIES.has(token.toLowerCase())) {
             markAsGarbage(token)
               .then(() => console.warn(`[garbage] Auto-discovered garbage from static anchors: ${token} (persisted)`))
-              .catch(() => {});
+              .catch((err) => { console.warn("[garbage] Failed to persist garbage address:", err); });
           }
         }
       }
 
       _staticAnchors = result;
       return result;
-    } catch {
+    } catch (err) {
+      console.warn("[hyperindex-graphql] Failed to load static anchors:", err);
       _staticAnchors = [];
       return [];
     }
@@ -360,7 +362,8 @@ export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
       if (typeof pm.tokens === "string") {
         try {
           tokens = JSON.parse(pm.tokens) as string[];
-        } catch {
+        } catch (err) {
+          console.warn("[hyperindex-graphql] Failed to parse pool tokens in discoverPools:", err);
           tokens = [];
         }
       } else if (Array.isArray(pm.tokens)) {
@@ -464,7 +467,7 @@ export async function discoverPoolsFromHasura(
         if (KNOWN_FACTORIES.has(token)) {
           markAsGarbage(token)
             .then(() => logger?.warn({ token }, "Auto-discovered garbage during pool sync"))
-            .catch(() => {});
+            .catch((err) => { logger?.warn?.({ err, token }, "Failed to persist garbage during pool sync"); });
         }
       }
     }

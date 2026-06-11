@@ -7,7 +7,6 @@ import {
   buildSimulationEdges,
   computeSpotPrice,
 } from "./simulator.ts";
-import { normalizeProtocol } from "../core/utils/protocol.ts";
 import { getDynamicSearchBounds } from "./finder.ts";
 import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
@@ -42,6 +41,7 @@ function evaluateAmount(
   prebuiltSimEdges?: SimulationEdge[],
   outHolder?: MinimalEvalHolder,
   overlay?: PendingStateOverlay,
+  startRateOverride?: bigint,
 ): { result: RouteSimulationResult | null; assessment: ProfitAssessment | null; grossProfitMatic: bigint | null } {
   try {
     let simProfit: bigint;
@@ -55,8 +55,6 @@ function evaluateAmount(
         simProfit = minimal.profit;
         simGas = minimal.totalGas;
       } else {
-        // COMBINED PATH: impact check + simulation in a single pass.
-        // Calls simulateHop once per edge instead of 3x (impact ×2 + simulation).
         const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
         const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact, overlay);
         if (!combined.success) return { result: null, assessment: null, grossProfitMatic: null };
@@ -69,18 +67,14 @@ function evaluateAmount(
       simGas = fullResult.totalGas;
       simAmountIn = fullResult.amountIn;
 
-      if (!skipImpactCheck) {
+      if (!skipImpactCheck && prebuiltSimEdges) {
         const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-        // Efficient post-simulation impact check: reuses the hopAmounts from simulateRoute
-        // to avoid calling simulateHop 2x more per edge.
-        for (let i = 0; i < cycle.edges.length; i++) {
-          const edge = cycle.edges[i];
-          const poolAddr = edge.poolAddress;
-          const state = (stateCache.get(poolAddr) ?? edge.stateRef) as PoolState | undefined;
+        for (let i = 0; i < prebuiltSimEdges.length; i++) {
+          const simEdge = prebuiltSimEdges[i];
+          const state = simEdge.stateRef as PoolState | undefined;
           if (!state) return { result: null, assessment: null, grossProfitMatic: null };
 
-          const normalizedProtocol = normalizeProtocol(edge.protocol);
-          const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
+          const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
           if (spotPrice > 0 && fullResult.hopAmounts[i] > 0n) {
             const realizedPrice = Number(fullResult.hopAmounts[i + 1]) / Number(fullResult.hopAmounts[i]);
             const impact = (spotPrice - realizedPrice) / spotPrice;
@@ -90,7 +84,7 @@ function evaluateAmount(
       }
     }
 
-    const startRate = options.tokenToMaticRates.get(cycle.startToken) ?? 0n;
+    const startRate = startRateOverride ?? options.tokenToMaticRates.get(cycle.startToken) ?? 0n;
     if (startRate === 0n) {
       return { result: null, assessment: null, grossProfitMatic: null };
     }
@@ -194,7 +188,8 @@ function evaluateAmount(
     }
 
     return { result: fullResult, assessment, grossProfitMatic: grossMatic };
-  } catch {
+  } catch (err) {
+    options.logger?.debug?.({ err }, "Single cycle evaluation failed");
     return { result: null, assessment: null, grossProfitMatic: null };
   }
 }
@@ -270,7 +265,7 @@ export async function evaluatePipeline(
             };
           }
           bestAmount = xStar > high ? high : xStar < low ? low : xStar;
-          const evalOpt = evaluateAmount(cycle, bestAmount, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+          const evalOpt = evaluateAmount(cycle, bestAmount, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
           if (evalOpt.grossProfitMatic && evalOpt.grossProfitMatic > 0n && evalOpt.assessment) {
             bestGrossMatic = evalOpt.grossProfitMatic;
             bestResult = evalOpt.result; // null in minimal mode
@@ -285,16 +280,16 @@ export async function evaluatePipeline(
           }
         } else {
           const maxIters = Math.min(10, options.ternarySearchIterations ?? 8);
-          const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+          const evalLow = evaluateAmount(cycle, low, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
           if (evalLow.grossProfitMatic === null || evalLow.grossProfitMatic <= 0n) {
             const evalHigh =
-              high > low ? evaluateAmount(cycle, high, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay) : null;
+              high > low ? evaluateAmount(cycle, high, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate) : null;
             const highAlsoZero = !evalHigh || evalHigh.grossProfitMatic === null || evalHigh.grossProfitMatic <= 0n;
             if (highAlsoZero) {
               // Test a mid-point: maybe the profit function peaks between the extremes
               // (low is too small to overcome fees, high has too much slippage).
               const mid = low + (high - low) / 2n;
-              const evalMid = evaluateAmount(cycle, mid, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay);
+              const evalMid = evaluateAmount(cycle, mid, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
               if (evalMid.grossProfitMatic === null || evalMid.grossProfitMatic <= 0n) {
                 return {
                   type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned",
@@ -314,7 +309,7 @@ export async function evaluatePipeline(
           };
 
           const evaluateBrent = (amount: bigint) => {
-            const res = evaluateAmount(cycle, amount, stateCache, options, true, true, prebuiltSimEdges, holder, overlay);
+            const res = evaluateAmount(cycle, amount, stateCache, options, true, true, prebuiltSimEdges, holder, overlay, startRate);
             if (res.grossProfitMatic && res.grossProfitMatic > bestGrossMatic) {
               bestGrossMatic = res.grossProfitMatic;
             }
@@ -334,7 +329,7 @@ export async function evaluatePipeline(
         // After search: do one final FULL simulation with impact check enabled.
         // This verifies spot-price integrity before promoting to profitable.
         if (bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
-          const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay);
+          const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay, startRate);
           if (final.result && final.assessment && final.assessment.shouldExecute) {
             bestResult = final.result;
             bestAssessment = final.assessment;

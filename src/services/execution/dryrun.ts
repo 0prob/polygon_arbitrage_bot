@@ -36,9 +36,9 @@ export class MempoolAwareDryRunner {
         };
         return this.lastPendingState;
       }
-    } catch {
-      /* ignore */
-    }
+      } catch (err) {
+        console.warn("[dryrun] fetchPendingState failed:", err);
+      }
     return null;
   }
 
@@ -95,7 +95,8 @@ export class MempoolAwareDryRunner {
               } else {
                 reason = error.shortMessage || error.message || "Unknown revert";
               }
-            } catch {
+            } catch (decodeErr) {
+              console.warn("[dryrun] Failed to decode revert data:", decodeErr);
               reason = error.shortMessage || error.message || "Unknown revert";
             }
           } else {

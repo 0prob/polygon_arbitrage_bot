@@ -10,8 +10,8 @@ export function normalizeUint(value: unknown, label: string): bigint {
     const n = BigInt(value as string | number | bigint | boolean);
     if (n < 0n) throw new Error("negative");
     return n;
-  } catch {
-    throw new Error(`${label} must be a non-negative integer`);
+  } catch (err) {
+    throw new Error(`${label} must be a non-negative integer` + (err instanceof Error ? `: ${err.message}` : ""));
   }
 }
 

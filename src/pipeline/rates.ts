@@ -281,7 +281,8 @@ export function computeMaticRates(
             changed = true;
             if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${np.pool.address} [${protocol}])`);
           }
-        } catch {
+        } catch (err) {
+          logger?.debug?.({ err, pool: np.pool.address, protocol }, "Rate propagation failed for pool");
           continue;
         }
       }
@@ -334,8 +335,8 @@ export function computeMaticRates(
             if (newRate > 0n && newRate < 10n ** 36n) rates.set(unknown, newRate);
           }
         }
-      } catch {
-        // ignore per-pool errors in the cheap focus sweep
+      } catch (err) {
+        logger?.debug?.({ err }, "Focus sweep rate propagation failed for pool");
       }
     }
   }

@@ -78,7 +78,8 @@ const DEFAULT_MAX_CALLS = 12;
 function normalizeEvmAddress(value: unknown): `0x${string}` | null {
   try {
     return asAddress(value);
-  } catch {
+  } catch (err) {
+    console.warn("[builder] normalizeEvmAddress failed:", err);
     return null;
   }
 }

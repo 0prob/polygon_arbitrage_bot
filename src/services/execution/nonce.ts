@@ -79,7 +79,8 @@ export class NonceManager {
       await this.onStuckTx(oldest, boostedFee);
       this.staleNonces.delete(oldest);
       return true;
-    } catch {
+    } catch (err) {
+      console.warn("[nonce] recoverStale failed:", err);
       return false;
     }
   }

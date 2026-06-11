@@ -94,7 +94,8 @@ function safeUrlSummary(value: unknown) {
       return `${parsed.origin}/[REDACTED_PATH]`;
     }
     return parsed.origin;
-  } catch {
+  } catch (err) {
+    console.warn("[errors] safeUrlSummary failed:", err);
     return "[redacted-url]";
   }
 }

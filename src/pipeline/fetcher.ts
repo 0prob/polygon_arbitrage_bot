@@ -382,7 +382,9 @@ export async function fetchMissingPoolState(
                 const error = slot0Res?.error || liqRes?.error;
                 console.warn(`[fetcher] V3 fetch failed for ${addr}: ${JSON.stringify(error)}`);
                 if ((error as any)?.name === "ContractFunctionExecutionError") {
-                  markAsGarbage(addr).catch(() => {});
+                  markAsGarbage(addr).catch((err) => {
+                    console.warn(`[fetcher] Failed to mark garbage: ${err}`);
+                  });
                 }
                 trackFailedPool(addr, "v3-slot0-failed", stateCache, now);
               }

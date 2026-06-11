@@ -494,11 +494,12 @@ export function simulateBalancerSwap(
   let amountOut = 0n;
   try {
     const pool = asPoolState(poolState);
-    amountOut =
-      pool.isStable === true || pool.amp != null
-        ? getBalancerStableAmountOut(amountIn, poolState, inIdx, outIdx)
-        : getBalancerAmountOut(amountIn, poolState, inIdx, outIdx);
-  } catch {
+      amountOut =
+        pool.isStable === true || pool.amp != null
+          ? getBalancerStableAmountOut(amountIn, poolState, inIdx, outIdx)
+          : getBalancerAmountOut(amountIn, poolState, inIdx, outIdx);
+  } catch (err) {
+    console.warn("[balancer] Swap simulation failed:", err);
     amountOut = 0n;
   }
 

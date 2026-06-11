@@ -166,8 +166,8 @@ export function encodeV2Hop(
       if (computed > 0n) {
         outForMin = computed;
       }
-    } catch {
-      // fallback to nominal hop.amountOut below
+    } catch (err) {
+      console.warn("[calldata-hops] V2 swap simulation failed, using nominal amountOut:", err);
     }
   }
   const minAmountOut = slippageAdjustedAmountOut(outForMin, slippageBps, "encodeV2Hop");

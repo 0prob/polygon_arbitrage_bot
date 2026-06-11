@@ -14,7 +14,8 @@ export function toBigInt(value: unknown, fallback = 0n): bigint {
   if (isBigIntConvertible(value)) {
     try {
       return BigInt(value);
-    } catch {
+    } catch (err) {
+      console.warn("[bigint] toBigInt conversion failed:", err, "value:", value);
       return fallback;
     }
   }
@@ -30,7 +31,8 @@ export function toBigIntOrNull(value: unknown): bigint | null {
   if (isBigIntConvertible(value)) {
     try {
       return BigInt(value);
-    } catch {
+    } catch (err) {
+      console.warn("[bigint] toBigIntOrNull conversion failed:", err, "value:", value);
       return null;
     }
   }

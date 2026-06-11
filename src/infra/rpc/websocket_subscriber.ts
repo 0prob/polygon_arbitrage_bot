@@ -128,7 +128,7 @@ export class WebSocketSubscriber {
             this.handleRpcResponse(data as { id: number; result: unknown });
           }
         } catch (err) {
-          /* skip malformed */
+          console.warn("[ws-subscriber] Malformed message:", err);
         }
       };
 
@@ -147,7 +147,8 @@ export class WebSocketSubscriber {
         }
         this.scheduleReconnect();
       };
-    } catch {
+    } catch (err) {
+      console.warn("[ws-subscriber] connect() failed:", err);
       this.scheduleReconnect();
     }
   }
@@ -169,8 +170,8 @@ export class WebSocketSubscriber {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: this.requestId++ }));
       }
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.warn("[ws-subscriber] ping failed:", err);
     }
   }
 
@@ -213,8 +214,8 @@ export class WebSocketSubscriber {
             id: this.requestId++,
           }),
         );
-      } catch {
-        /* skip */
+      } catch (err) {
+        console.warn("[ws-subscriber] Failed to send tx fetch request:", err);
       }
     }
   }
@@ -239,8 +240,8 @@ export class WebSocketSubscriber {
             }
           }
         }
-      } catch {
-        /* skip */
+      } catch (err) {
+        console.warn("[ws-subscriber] Failed to handle subscription message:", err);
       }
       if (typeof origOnMessage === "function") {
         origOnMessage.call(this.ws!, msg);
@@ -274,8 +275,8 @@ export class WebSocketSubscriber {
     for (const handler of this.eventHandlers) {
       try {
         handler(event);
-      } catch {
-        /* handler error */
+      } catch (err) {
+        console.warn("[ws-subscriber] Handler error:", err);
       }
     }
   }

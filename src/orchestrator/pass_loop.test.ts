@@ -142,6 +142,7 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
+      stateRefreshService: { Pools: [], TokenMetas: new Map() },
     } as unknown as RuntimeContext;
 
     let execCalls = 0;
@@ -158,7 +159,6 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      findCycles: vi.fn().mockReturnValue([]),
       enumerateCycles: vi.fn().mockReturnValue([
         {
           edges: [
@@ -234,15 +234,9 @@ describe("runPassLoop", () => {
         attempted: 2,
         profitableCount: 2,
       }),
-      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn((_edges: any) => "mocked-route-key"),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
-      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
-      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
-      discoverPoolsFromHasura: vi
-        .fn()
-        .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),
     };
 
     await runPassLoop(mockContext, deps);
@@ -332,6 +326,7 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
+      stateRefreshService: { Pools: [], TokenMetas: new Map() },
     } as unknown as RuntimeContext;
 
     const enumerateCyclesSpy = vi.fn().mockImplementation(() => {
@@ -345,18 +340,11 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      findCycles: vi.fn().mockReturnValue([]),
       enumerateCycles: enumerateCyclesSpy,
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
-      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
-      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
-      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
-      discoverPoolsFromHasura: vi
-        .fn()
-        .mockResolvedValue([{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }]),
     };
 
     await runPassLoop(mockContext, deps);
@@ -447,6 +435,7 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
+      stateRefreshService: { Pools: [], TokenMetas: new Map() },
     } as unknown as RuntimeContext;
 
     const deps: PassLoopDeps = {
@@ -456,19 +445,11 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      findCycles: vi.fn().mockReturnValue([]),
       enumerateCycles: vi.fn(),
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
-      buildStateCacheFromGraphQL: vi.fn().mockResolvedValue(new Map()),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
-      fetchTokenMetasFromHasura: vi.fn().mockResolvedValue(new Map()),
-      fetchIndexerProgressFromHasura: vi.fn().mockResolvedValue(undefined),
-      discoverPoolsFromHasura: vi.fn().mockImplementation(() => {
-        mockContext.isRunning = false;
-        return [{ address: "0xPool", protocol: "test", tokens: [VALID_ADDR_A, VALID_ADDR_C], fee: 30 }];
-      }),
     };
 
     await runPassLoop(mockContext, deps);

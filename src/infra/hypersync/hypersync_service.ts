@@ -4,8 +4,8 @@ import type { Logger } from "../observability/logger.ts";
 let HypersyncClient: typeof import("@envio-dev/hypersync-client").HypersyncClient | undefined;
 try {
   HypersyncClient = (await import("@envio-dev/hypersync-client")).HypersyncClient;
-} catch {
-  // Will be handled at runtime when trying to create the service
+} catch (err) {
+  console.warn("[hypersync] Failed to import @envio-dev/hypersync-client:", err);
 }
 
 /**
@@ -58,7 +58,9 @@ export class HyperSyncService {
   async waitForRateLimit(): Promise<void> {
     try {
       await this.client.waitForRateLimit?.();
-    } catch {}
+    } catch (err) {
+      this.logger?.debug?.({ err }, "waitForRateLimit failed");
+    }
   }
 
   async getHeight(): Promise<number> {

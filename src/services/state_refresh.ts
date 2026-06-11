@@ -43,18 +43,18 @@ export class StateRefreshService {
     this.ctx.logger.info("StateRefreshService started");
 
     // Immediate first discovery + LF refresh on boot
-    this.runPoolDiscovery().catch(() => {});
-    this.runLfStateRefresh().catch(() => {});
+    this.runPoolDiscovery().catch((err) => { this.ctx.logger.warn?.({ err }, "Initial pool discovery failed"); });
+    this.runLfStateRefresh().catch((err) => { this.ctx.logger.warn?.({ err }, "Initial LF state refresh failed"); });
 
     // Dedicated discovery timer (default 60s)
     const discoveryInterval = this.ctx.config.discoveryIntervalMs ?? 60000;
     this.discoveryTimer = setInterval(() => {
-      this.runPoolDiscovery().catch(() => {});
+      this.runPoolDiscovery().catch((err) => { this.ctx.logger.warn?.({ err }, "Periodic pool discovery failed"); });
     }, discoveryInterval);
 
     // Dedicated LF state refresh timer (1s)
     this.lfTimer = setInterval(() => {
-      this.runLfStateRefresh().catch(() => {});
+      this.runLfStateRefresh().catch((err) => { this.ctx.logger.warn?.({ err }, "Periodic LF refresh failed"); });
     }, 1000);
   }
 
@@ -150,7 +150,8 @@ export class StateRefreshService {
         this.tokenMetas = fresh;
       }
       return this.tokenMetas;
-    } catch {
+    } catch (err) {
+      this.ctx.logger.debug?.({ err }, "Token meta refresh failed");
       return this.tokenMetas;
     }
   }

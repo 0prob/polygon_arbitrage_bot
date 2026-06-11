@@ -28,7 +28,8 @@ export async function filterArchivalRpcUrls(urls: readonly string[]): Promise<st
         blockNumber: ARCHIVE_TEST_BLOCK,
       });
       return Number(result) === 6 ? url : null;
-    } catch {
+    } catch (err) {
+      console.warn("[archival] RPC archival probe failed:", err);
       return null;
     }
   });

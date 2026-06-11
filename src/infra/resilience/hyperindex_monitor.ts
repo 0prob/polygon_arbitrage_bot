@@ -64,8 +64,8 @@ export class HyperIndexMonitor implements Lifecycle {
           this._managingProcess = false;
           return;
         }
-      } catch {
-        // Hasura not reachable, proceed to start our own process
+      } catch (err) {
+        this.opts.logger.debug?.({ err }, "Hasura health check failed — proceeding to start our own process");
       }
     }
 
@@ -97,8 +97,8 @@ export class HyperIndexMonitor implements Lifecycle {
     if (this._managingProcess) {
       try {
         await this.proc.stop();
-      } catch {
-        // best effort
+      } catch (err) {
+        this.opts.logger.warn?.({ err }, "HyperIndex process stop failed during monitor stop");
       }
     }
   }
@@ -138,13 +138,17 @@ export class HyperIndexMonitor implements Lifecycle {
       try {
         const height = await this._getIndexedHeight();
         if (height > 0) return height;
-      } catch {}
+      } catch (err) {
+        this.opts.logger.debug?.({ err }, "getIndexedHeight: provider failed");
+      }
     }
     // Fallback to HyperSync height if we have the service (better than pure log scraping)
     if (this.opts.hyperSync) {
       try {
         return await this.opts.hyperSync.getHeight();
-      } catch {}
+      } catch (err) {
+        this.opts.logger.debug?.({ err }, "getIndexedHeight: hyperSync fallback failed");
+      }
     }
     return this.lastSyncedBlock;
   }
@@ -231,7 +235,9 @@ export class HyperIndexMonitor implements Lifecycle {
         if (rl && this._managingProcess) {
           this.opts.logger.debug({ rateLimitInfo: rl, lag }, "HyperIndex monitor - current HyperSync rate limit state");
         }
-      } catch {}
+      } catch (err) {
+        this.opts.logger.debug?.({ err }, "HyperSync rateLimitInfo failed");
+      }
     }
 
     if (current > 0) {
@@ -332,7 +338,9 @@ export class HyperIndexMonitor implements Lifecycle {
         try {
           const rl = this.opts.hyperSync.rateLimitInfo?.();
           if (rl) extra.rateLimitInfo = rl;
-        } catch {}
+        } catch (err) {
+          this.opts.logger.debug?.({ err }, "HyperSync rateLimitInfo failed in status");
+        }
       }
 
       this.opts.logger.debug(extra, "HyperIndex sync status (instrumented trace)");
@@ -406,8 +414,8 @@ export class HyperIndexMonitor implements Lifecycle {
     this._isHealthy = false;
     try {
       await this.proc.stop();
-    } catch (_: unknown) {
-      // best effort
+    } catch (err) {
+      this.opts.logger.warn?.({ err }, "HyperIndex process stop failed during restart");
     }
     this.restartAttempts++;
     const delay = Math.min(1000 * Math.pow(2, this.restartAttempts), 60_000);

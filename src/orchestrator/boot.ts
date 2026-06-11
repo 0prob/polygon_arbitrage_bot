@@ -168,7 +168,7 @@ export async function bootApplication(
             maxFeePerGas: maxFee,
             maxPriorityFeePerGas: maxFee / 2n,
           })
-          .catch(() => {}),
+          .catch((err) => { logger?.warn?.({ err }, "Stuck tx cancellation failed"); }),
       ),
     );
   };

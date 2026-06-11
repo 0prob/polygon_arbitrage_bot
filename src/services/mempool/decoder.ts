@@ -97,7 +97,9 @@ export function decodeSwapCalldata(
       if (v > 10n ** 12n && v < 1n << 160n) {
         if (v > amountIn) amountIn = v;
       }
-    } catch {}
+    } catch (err) {
+      console.warn("[mempool-decoder] Failed to parse hex word:", err);
+    }
   }
   if (amountIn === 0n) amountIn = 1n;
   return { protocol, poolAddress, tokenIn: "" as Address, tokenOut: "" as Address, amountIn };
