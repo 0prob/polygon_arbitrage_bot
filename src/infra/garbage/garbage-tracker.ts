@@ -131,33 +131,52 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
 
   try {
     const { graphQLQuery } = await import("../hypersync/hyperindex_graphql.ts");
-    const result = (await graphQLQuery(graphqlUrl, adminSecret, `{ PoolMeta(limit: 5000) { id tokens } }`)) as {
-      PoolMeta?: Array<{ id?: string; tokens?: unknown }>;
-    } | null;
-
-    if (!result?.PoolMeta) return 0;
+    const PAGE = 5000;
+    const MAX_PAGES = 30;
+    let cursorId: string | null = null;
 
     let newlyMarked = 0;
     const promises: Promise<void>[] = [];
-    for (const pool of result.PoolMeta) {
-      let tokens: string[] = [];
-      if (typeof pool.tokens === "string") {
-        try {
-          tokens = JSON.parse(pool.tokens);
-        } catch {}
-      } else if (Array.isArray(pool.tokens)) {
-        tokens = pool.tokens.map(String);
-      }
 
-      for (const token of tokens) {
-        const lower = token.toLowerCase();
-        if (knownFactories.has(lower) && !isGarbageAddress(lower)) {
-          promises.push(markAsGarbage(lower));
-          console.warn(`[garbage] One-time historical cleanup discovered new garbage address: ${lower}`);
-          newlyMarked++;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      let whereClause = "";
+      if (cursorId != null) {
+        whereClause = `where: { id: { _gt: "${cursorId}" } }`;
+      }
+      const query = `{ PoolMeta(limit: ${PAGE}, ${whereClause}, order_by: [{ id: asc }]) { id tokens } }`;
+      const result = (await graphQLQuery(graphqlUrl, adminSecret, query)) as {
+        PoolMeta?: Array<{ id?: string; tokens?: unknown }>;
+      } | null;
+
+      if (!result?.PoolMeta || result.PoolMeta.length === 0) break;
+
+      for (const pool of result.PoolMeta) {
+        let tokens: string[] = [];
+        if (typeof pool.tokens === "string") {
+          try {
+            tokens = JSON.parse(pool.tokens);
+          } catch {}
+        } else if (Array.isArray(pool.tokens)) {
+          tokens = pool.tokens.map(String);
+        }
+
+        for (const token of tokens) {
+          const lower = token.toLowerCase();
+          if (knownFactories.has(lower) && !isGarbageAddress(lower)) {
+            promises.push(markAsGarbage(lower));
+            console.warn(`[garbage] One-time historical cleanup discovered new garbage address: ${lower}`);
+            newlyMarked++;
+          }
         }
       }
+
+      if (result.PoolMeta.length < PAGE) break;
+
+      const last = result.PoolMeta[result.PoolMeta.length - 1];
+      cursorId = last.id ?? null;
+      if (!cursorId) break;
     }
+
     if (promises.length > 0) {
       await Promise.all(promises);
     }

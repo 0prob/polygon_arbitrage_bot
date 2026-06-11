@@ -13,8 +13,7 @@ vi.mock('./rpc_client', () => ({
 vi.mock('bun:sqlite', () => ({
   Database: vi.fn(() => ({
     prepare: vi.fn(() => ({
-      get: vi.fn(() => ({ decimals: 18 })),
-      all: vi.fn(() => [{ address: '0x123', decimals: 18 }]),
+      all: vi.fn(() => [{ address: '0xabcdef1234567890abcdef1234567890abcdef12', decimals: 18 }]),
     })),
   })),
 }));
@@ -32,22 +31,26 @@ describe('fetchTokenMeta', () => {
     vi.clearAllMocks();
   });
 
-  it('should use the in-memory cache on subsequent calls', async () => {
+  it('should return from SQLite registry cache without hitting RPC', async () => {
     const context = { log: { info: vi.fn(), warn: vi.fn() }, cache: true };
-    const input = { address: '0x123' };
+    const input = { address: '0xabcdef1234567890abcdef1234567890abcdef12' };
 
-    // Mock readContract to return a value
     (publicClient.readContract as any).mockResolvedValue(18);
 
-    // First call: should hit RPC
-    const res1 = await fetchTokenMetaHandler({ input, context });
-    expect(res1.decimals).toBe(18);
-    
-    // Second call: should hit in-memory cache
-    const res2 = await fetchTokenMetaHandler({ input, context });
-    expect(res2.decimals).toBe(18);
+    const result = await fetchTokenMetaHandler({ input, context });
+    expect(result).toEqual({ address: '0xabcdef1234567890abcdef1234567890abcdef12', decimals: 18 });
+    expect(publicClient.readContract).not.toHaveBeenCalled();
+  });
 
-    // Expectation: The RPC logic should have been called 0 times (hit cache directly).
-    expect(publicClient.readContract).toHaveBeenCalledTimes(0);
+  it('should return from in-memory cache on second call', async () => {
+    const context = { log: { info: vi.fn(), warn: vi.fn() }, cache: true };
+    const input = { address: '0xabcdef1234567890abcdef1234567890abcdef12' };
+
+    (publicClient.readContract as any).mockResolvedValue(18);
+
+    await fetchTokenMetaHandler({ input, context });
+    await fetchTokenMetaHandler({ input, context });
+
+    expect(publicClient.readContract).not.toHaveBeenCalled();
   });
 });

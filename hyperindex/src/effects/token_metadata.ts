@@ -4,22 +4,24 @@ import { publicClient } from "./rpc_client";
 import path from "node:path";
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 
+const ROOT = import.meta.dir ?? ".";
+
 let db: any = null;
 
 async function initDb() {
   if (db !== null) return;
   try {
     const { Database } = await import("bun:sqlite");
-    db = new Database(path.resolve("hyperindex/token_registry.db"), { readonly: true });
+    db = new Database(path.resolve(ROOT, "../../token_registry.db"), { readonly: true });
   } catch (e) {
     db = undefined;
     console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
   }
 }
 
-const DISCOVERED_DECIMALS_FILE = path.resolve("data/discovered-decimals.json");
-const FAILED_DECIMALS_FILE = path.resolve("data/failed-decimals.json");
-const AUTO_EXTRA_TOKENS_FILE = path.resolve("data/auto-extra-tokens.json");
+const DISCOVERED_DECIMALS_FILE = path.resolve(ROOT, "../../../data/discovered-decimals.json");
+const FAILED_DECIMALS_FILE = path.resolve(ROOT, "../../../data/failed-decimals.json");
+const AUTO_EXTRA_TOKENS_FILE = path.resolve(ROOT, "../../../data/auto-extra-tokens.json");
 // No TTL — a contract that isn't ERC20 will never become one. Permanent blocklist.
 
 // Runtime discovered decimals (persisted across restarts for this indexer instance)

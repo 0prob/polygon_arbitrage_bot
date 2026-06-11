@@ -13,6 +13,7 @@ import {
 
 export class StateRefreshService {
   private lastDiscoveredBlock = 0;
+  private lastSeenBlock = 0;
   private pools: PoolMeta[] = [];
   private tokenMetas: Map<string, { decimals: number }> | null = null;
   private lfStateRefreshCount = 0;
@@ -162,31 +163,35 @@ export class StateRefreshService {
       const secret = this.ctx.config.hasuraSecret;
 
       try {
-        const [gqlCache, fetchedProgress] = await Promise.all([
-          this.ctx.hasuraCircuit.execute(() => buildStateCacheFromGraphQL(graphqlUrl, secret, this.ctx.logger)),
+        const [{ stateCache, maxSeenBlock }, fetchedProgress] = await Promise.all([
+          this.ctx.hasuraCircuit.execute(() => buildStateCacheFromGraphQL(graphqlUrl, secret, this.ctx.logger, { lastSeenBlock: this.lastSeenBlock })),
           this.ctx.hasuraCircuit.execute(() => fetchIndexerProgressFromHasura(graphqlUrl, secret, this.ctx.logger))
         ]);
 
         let newEntries = 0;
         let skippedStale = 0;
+        let updatedEntries = 0;
         const now = Date.now();
-        for (const [addr, state] of gqlCache.entries()) {
-          if (!this.ctx.stateCache.has(addr, now)) {
-            const s = state as Record<string, unknown>;
-            const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
-            const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
-            const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
-            const staleV3 = liq !== null && liq === 0n;
-            const staleV2 = r0 !== null && r1 !== null && r0 === 0n && r1 === 0n;
-            if (staleV3 || staleV2) {
-              skippedStale++;
-            } else {
-              this.ctx.stateCache.set(addr, state, now);
-              newEntries++;
-            }
+        for (const [addr, state] of stateCache.entries()) {
+          const alreadyCached = this.ctx.stateCache.has(addr, now);
+          const s = state as Record<string, unknown>;
+          const liq = typeof s.liquidity === "bigint" ? (s.liquidity as bigint) : null;
+          const r0 = typeof s.reserve0 === "bigint" ? (s.reserve0 as bigint) : null;
+          const r1 = typeof s.reserve1 === "bigint" ? (s.reserve1 as bigint) : null;
+          const staleV3 = liq !== null && liq === 0n;
+          const staleV2 = r0 !== null && r1 !== null && r0 === 0n && r1 === 0n;
+          if (staleV3 || staleV2) {
+            skippedStale++;
+          } else {
+            if (alreadyCached) updatedEntries++;
+            else newEntries++;
+            this.ctx.stateCache.set(addr, state, now);
           }
         }
-        this.ctx.logger.debug({ entries: gqlCache.size, newEntries, skippedStale }, "State and TokenMeta refreshed from HyperIndex");
+        if (maxSeenBlock > this.lastSeenBlock) {
+          this.lastSeenBlock = maxSeenBlock;
+        }
+        this.ctx.logger.debug({ entries: stateCache.size, newEntries, updatedEntries, skippedStale, lastSeenBlock: this.lastSeenBlock }, "State and TokenMeta refreshed from HyperIndex");
 
         if (fetchedProgress && this.ctx.hyperIndexMonitor) {
           this.ctx.hyperIndexMonitor.updateSyncedBlock(fetchedProgress.lastProcessedBlock);

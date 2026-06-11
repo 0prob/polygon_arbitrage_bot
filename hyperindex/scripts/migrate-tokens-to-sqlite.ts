@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { STATIC_TOKEN_DECIMALS } from "../src/effects/token_registry.js";
 import path from "node:path";
 
-const dbPath = path.resolve("hyperindex/token_registry.db");
+const dbPath = path.resolve(import.meta.dir, "../token_registry.db");
 const db = new Database(dbPath);
 
 db.run("CREATE TABLE IF NOT EXISTS token_decimals (address TEXT PRIMARY KEY, decimals INTEGER)");

@@ -6,10 +6,8 @@ import type { PoolMeta } from "../../core/types/pool.ts";
 import { isGarbagePool, KNOWN_INDEXED_FACTORIES, markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
 
-// Use the single source of truth for indexed factories (re-exported via core/constants for convenience).
 const KNOWN_FACTORIES = KNOWN_INDEXED_FACTORIES;
 
-// Narrow response shapes for the specific GraphQL queries we issue (reduces `any` + tsc noise on data)
 interface PoolMetaRow {
   id: string;
   protocol: string;
@@ -89,6 +87,16 @@ interface GraphQLData {
   TokenMeta?: TokenMetaRow[];
 }
 
+const V2_STATE_FIELDS = "id address reserve0 reserve1";
+const V3_STATE_FIELDS = "id address sqrtPriceX96 tick liquidity";
+const V4_STATE_FIELDS = "id address sqrtPriceX96 liquidity tick fee tickSpacing hooks";
+const BALANCER_STATE_FIELDS = "id address poolId balances weights amp swapFee scalingFactors";
+const CURVE_STATE_FIELDS = "id address balances A fee rates";
+const DODO_STATE_FIELDS = "id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate";
+
+const MAX_PAGE = 60;
+const MAX_PAGE_SIZE = 10000;
+
 export function parseBigIntArray(arr: unknown): bigint[] {
   if (typeof arr === "string") {
     try {
@@ -101,10 +109,6 @@ export function parseBigIntArray(arr: unknown): bigint[] {
   return arr.map((s: unknown) => BigInt(s as string));
 }
 
-// Resilient anchor pools loader: the scripts/pools.json (82 Uniswap V3 anchors) may be
-// missing in some environments (gitignored, generated, or minimal checkout).
-// We fall back to empty; discoverPoolsFromHasura and fetcher already treat anchors as
-// best-effort pre-fetch / fallback list.
 let _staticAnchors: PoolMeta[] = [];
 try {
   const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -126,13 +130,10 @@ try {
     });
   }
 } catch {
-  // silent fallback - bot will rely entirely on Hasura discovery
 }
 
-// Remove any garbage pools from static anchors (defensive)
 _staticAnchors = _staticAnchors.filter((p) => !isGarbagePool(p));
 
-// Auto-mark any factories that appear as tokens in our static anchors
 for (const p of _staticAnchors) {
   for (const token of p.tokens) {
     if (KNOWN_FACTORIES.has(token.toLowerCase())) {
@@ -187,33 +188,85 @@ export interface HasuraPoolState {
   initialized: boolean;
 }
 
+interface PaginatedFetchResult<T extends { id: string }> {
+  rows: T[];
+  maxBlock: number;
+}
+
+async function fetchPaginatedState<T extends { id: string; lastUpdatedBlock: number }>(
+  graphqlUrl: string,
+  adminSecret: string,
+  table: string,
+  fields: string,
+  lastSeenBlock: number,
+  pageSize: number,
+): Promise<PaginatedFetchResult<T>> {
+  const allRows: T[] = [];
+  let maxBlock = lastSeenBlock;
+  let cursorBlock: number | null = null;
+  let cursorId: string | null = null;
+
+  for (let page = 0; page < MAX_PAGE; page++) {
+    let whereClause = "";
+    if (cursorBlock != null && cursorId != null) {
+      whereClause = `where: { _or: [ { lastUpdatedBlock: { _gt: ${cursorBlock} } }, { _and: [ { lastUpdatedBlock: { _eq: ${cursorBlock} } }, { id: { _gt: "${cursorId}" } } ] } ] }`;
+    } else if (lastSeenBlock > 0) {
+      whereClause = `where: { lastUpdatedBlock: { _gt: ${lastSeenBlock} } }`;
+    }
+
+    const query = `{ ${table}(limit: ${pageSize}, ${whereClause}, order_by: [{ lastUpdatedBlock: asc }, { id: asc }]) { ${fields} lastUpdatedBlock } }`;
+    const result = await graphQLQuery(graphqlUrl, adminSecret, query);
+    const rows: T[] | undefined = (result as any)?.[table];
+    if (!rows || rows.length === 0) break;
+
+    for (const r of rows) {
+      if (r.lastUpdatedBlock > maxBlock) maxBlock = r.lastUpdatedBlock;
+    }
+    allRows.push(...rows);
+
+    if (rows.length < pageSize) break;
+
+    const last = rows[rows.length - 1];
+    cursorBlock = last.lastUpdatedBlock;
+    cursorId = last.id;
+  }
+
+  return { rows: allRows, maxBlock };
+}
+
+export interface BuildStateCacheOptions {
+  lastSeenBlock?: number;
+}
+
+export interface BuildStateCacheResult {
+  stateCache: Map<string, any>;
+  maxSeenBlock: number;
+}
+
 export async function buildStateCacheFromGraphQL(
   graphqlUrl: string,
   adminSecret: string,
   logger?: Pick<Logger, "warn" | "error">,
-): Promise<Map<string, any>> {
+  options: BuildStateCacheOptions = {},
+): Promise<BuildStateCacheResult> {
   const stateCache = new Map<string, any>();
+  const lastSeenBlock = options.lastSeenBlock ?? 0;
+  let maxSeenBlock = lastSeenBlock;
 
   try {
-    const batchedQuery = `{
-      V2PoolState(limit: 25000) { id address reserve0 reserve1 }
-      V3PoolState(limit: 20000) { id address sqrtPriceX96 tick liquidity }
-      V4PoolState(limit: 10000) { id address sqrtPriceX96 liquidity tick fee tickSpacing hooks }
-      BalancerPoolState(limit: 10000) { id address poolId balances weights amp swapFee scalingFactors }
-      CurvePoolState(limit: 10000) { id address balances A fee rates }
-      DodoPoolState(limit: 10000) { id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate }
-    }`;
+    const [v2, v3, v4, bal, curve, dodo] = await Promise.all([
+      fetchPaginatedState<V2StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V2PoolState", V2_STATE_FIELDS, lastSeenBlock, 25000),
+      fetchPaginatedState<V3StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V3PoolState", V3_STATE_FIELDS, lastSeenBlock, 20000),
+      fetchPaginatedState<V4StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V4PoolState", V4_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
+      fetchPaginatedState<BalancerStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "BalancerPoolState", BALANCER_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
+      fetchPaginatedState<CurveStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "CurvePoolState", CURVE_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
+      fetchPaginatedState<DodoStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "DodoPoolState", DODO_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
+    ]);
 
-    const result = await graphQLQuery(graphqlUrl, adminSecret, batchedQuery);
-    const data = result as GraphQLData | null;
+    maxSeenBlock = Math.max(maxSeenBlock, v2.maxBlock, v3.maxBlock, v4.maxBlock, bal.maxBlock, curve.maxBlock, dodo.maxBlock);
 
-    if (!data) {
-      throw new Error("No data returned from batched GraphQL query");
-    }
-
-    const v2States = data.V2PoolState ?? [];
-    for (const s of v2States) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of v2.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         reserve0: BigInt(s.reserve0),
         reserve1: BigInt(s.reserve1),
       });
@@ -221,9 +274,8 @@ export async function buildStateCacheFromGraphQL(
 
     await new Promise((r) => setTimeout(r, 0));
 
-    const v3States = data.V3PoolState ?? [];
-    for (const s of v3States) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of v3.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         tick: Number(s.tick),
         liquidity: BigInt(s.liquidity),
@@ -233,9 +285,8 @@ export async function buildStateCacheFromGraphQL(
 
     await new Promise((r) => setTimeout(r, 0));
 
-    const v4States = data.V4PoolState ?? [];
-    for (const s of v4States) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of v4.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         sqrtPriceX96: BigInt(s.sqrtPriceX96),
         liquidity: BigInt(s.liquidity),
         tick: Number(s.tick),
@@ -248,9 +299,8 @@ export async function buildStateCacheFromGraphQL(
 
     await new Promise((r) => setTimeout(r, 0));
 
-    const balancerStates = data.BalancerPoolState ?? [];
-    for (const s of balancerStates) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of bal.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         poolId: s.poolId,
         balances: parseBigIntArray(s.balances),
         weights: parseBigIntArray(s.weights),
@@ -263,9 +313,8 @@ export async function buildStateCacheFromGraphQL(
 
     await new Promise((r) => setTimeout(r, 0));
 
-    const curveStates = data.CurvePoolState ?? [];
-    for (const s of curveStates) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of curve.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         balances: parseBigIntArray(s.balances),
         A: BigInt(s.A),
         fee: BigInt(s.fee),
@@ -276,9 +325,8 @@ export async function buildStateCacheFromGraphQL(
 
     await new Promise((r) => setTimeout(r, 0));
 
-    const dodoStates = data.DodoPoolState ?? [];
-    for (const s of dodoStates) {
-      stateCache.set((s.address ?? s.id).toLowerCase(), {
+    for (const s of dodo.rows) {
+      stateCache.set(s.address.toLowerCase(), {
         baseReserve: BigInt(s.baseReserve),
         quoteReserve: BigInt(s.quoteReserve),
         rStatus: s.rStatus,
@@ -297,7 +345,7 @@ export async function buildStateCacheFromGraphQL(
     throw err;
   }
 
-  return stateCache;
+  return { stateCache, maxSeenBlock };
 }
 
 export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
@@ -344,12 +392,8 @@ export async function discoverPoolsFromHasura(
   const allRows: PoolMetaRow[] = [];
   const lastDiscoveredBlock = options.lastDiscoveredBlock ?? 0;
   let maxBlock = lastDiscoveredBlock;
-  const MAX_PAGES = 60; // 60 * 2500 = 150000 max rows (safety limit)
+  const MAX_PAGES = 60;
 
-  // Cursor-based pagination using createdBlock + id for efficiency and correctness.
-  // Offset pagination re-scans skipped rows and has a hard truncation limit.
-  // Cursor pagination with `createdBlock` ensures we never miss rows and
-  // the query is efficient (uses the existing @index on createdBlock).
   let cursorBlock: number | null = null;
   let cursorId: string | null = null;
   for (let page = 0; page < MAX_PAGES; page++) {
@@ -375,7 +419,7 @@ export async function discoverPoolsFromHasura(
           }
           ok = true;
           if (d.PoolMeta.length < PAGE) {
-            page = MAX_PAGES; // last page
+            page = MAX_PAGES;
           } else {
             const last = d.PoolMeta[d.PoolMeta.length - 1];
             cursorBlock = last.createdBlock;
@@ -414,7 +458,6 @@ export async function discoverPoolsFromHasura(
       }
     }
 
-    // Auto-discover garbage
     for (const p of combined) {
       for (const token of p.tokens) {
         if (KNOWN_FACTORIES.has(token)) {
@@ -439,12 +482,29 @@ export async function fetchTokenMetasFromHasura(
 ): Promise<Map<string, { decimals: number }>> {
   const metas = new Map<string, { decimals: number }>();
   try {
-    const result = await graphQLQuery(graphqlUrl, adminSecret, `{ TokenMeta(limit: 30000) { id address decimals } }`);
-    const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
-    for (const m of rows) {
-      if (m.address && m.decimals != null) {
-        metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
+    const PAGE = 10000;
+    let cursorId: string | null = null;
+
+    for (let page = 0; page < MAX_PAGE; page++) {
+      let whereClause = "";
+      if (cursorId != null) {
+        whereClause = `where: { id: { _gt: "${cursorId}" } }`;
       }
+      const query = `{ TokenMeta(limit: ${PAGE}, ${whereClause}, order_by: [{ id: asc }]) { address decimals } }`;
+      const result = await graphQLQuery(graphqlUrl, adminSecret, query);
+      const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
+      if (rows.length === 0) break;
+
+      for (const m of rows) {
+        if (m.address && m.decimals != null) {
+          metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
+        }
+      }
+
+      if (rows.length < PAGE) break;
+
+      cursorId = rows[rows.length - 1].id ?? null;
+      if (!cursorId) break;
     }
   } catch (err) {
     logger?.warn({ err }, "fetchTokenMetasFromHasura failed");
@@ -458,11 +518,6 @@ export interface IndexerProgress {
   updatedAtBlock: number;
 }
 
-/**
- * Fetches the latest IndexerProgress written by the block handler.
- * Returns the first (and normally only) row, or undefined if the handler
- * has never run or the table is empty.
- */
 export async function fetchIndexerProgressFromHasura(
   graphqlUrl: string,
   adminSecret: string,
@@ -472,7 +527,7 @@ export async function fetchIndexerProgressFromHasura(
     const result = await graphQLQuery(
       graphqlUrl,
       adminSecret,
-      `{ IndexerProgress(limit: 5) { id chainId lastProcessedBlock updatedAtBlock } }`,
+      `{ IndexerProgress(limit: 5) { chainId lastProcessedBlock updatedAtBlock } }`,
     );
     const rows =
       (result as { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } | null)
@@ -480,7 +535,6 @@ export async function fetchIndexerProgressFromHasura(
 
     if (rows.length === 0) return undefined;
 
-    // Prefer the highest block if multiple chains ever appear
     const best = rows.reduce((a, b) => (b.lastProcessedBlock > a.lastProcessedBlock ? b : a));
     return {
       chainId: best.chainId,
