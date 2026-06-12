@@ -428,6 +428,26 @@ export function applyEvent(state: TuiState, event: ArbEvent): void {
       break;
 
     case "hyperindex_status": {
+      // #region agent log
+      fetch("http://127.0.0.1:7263/ingest/ac6c9208-c536-42e7-b496-db8499c17483", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fb4402" },
+        body: JSON.stringify({
+          sessionId: "fb4402",
+          location: "state.ts:hyperindex_status",
+          message: "hi status event",
+          data: {
+            incoming: event.status,
+            prev: state.system.hiStatus,
+            syncedBlock: event.syncedBlock,
+            storedSynced: state.system.hiSyncedBlock,
+            willSkip: (event.status === "running" || event.status === "starting") && state.system.hiSyncedBlock > 0,
+          },
+          timestamp: Date.now(),
+          hypothesisId: "B",
+        }),
+      }).catch(() => {});
+      // #endregion
       // Don't downgrade from synced/syncing to running/starting if we already have block data
       if (event.status === "running" && state.system.hiSyncedBlock > 0) break;
       if (event.status === "starting" && state.system.hiSyncedBlock > 0) break;

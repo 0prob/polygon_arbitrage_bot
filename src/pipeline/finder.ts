@@ -1,5 +1,6 @@
 import type { Address } from "../core/types/common.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
+import { isInvalidState } from "../core/types/pool.ts";
 import type { RoutingGraph, SwapEdge, FoundCycle } from "./types.ts";
 import { MAJOR_TOKENS } from "../core/constants.ts";
 import { normalizeProtocol, feeToBps } from "../core/utils/protocol.ts";
@@ -15,6 +16,135 @@ export function routeKeyFromEdges(edges: SwapEdge[]): string {
   const pools = edges.map((e) => e.poolAddress);
   pools.sort();
   return pools.join(":");
+}
+
+/** Hop bucket for HF sim selection: 0=≤2, 1=3, 2=4, 3=5+ */
+export function hopSimBucket(hopCount: number): number {
+  if (hopCount <= 2) return 0;
+  if (hopCount === 3) return 1;
+  if (hopCount === 4) return 2;
+  return 3;
+}
+
+const LONG_TAIL_PROTOCOLS = new Set([
+  "DFYN_V2",
+  "APESWAP_V2",
+  "MESHSWAP_V2",
+  "JETSWAP_V2",
+  "COMETHSWAP_V2",
+  "DODO_V2",
+  "BALANCER_V2",
+  "CURVE",
+  "WOOFI",
+]);
+
+/** Score bonus for long-tail / multi-hop routes (lower score = ranked higher). */
+export function longTailRouteBonus(cycle: FoundCycle): number {
+  let obscureHops = 0;
+  for (const e of cycle.edges) {
+    if (LONG_TAIL_PROTOCOLS.has(e.protocol.toUpperCase())) obscureHops++;
+  }
+  let bonus = obscureHops * -0.05;
+  if (cycle.hopCount >= 3) {
+    bonus -= 0.02 * (cycle.hopCount - 2);
+  }
+  return bonus;
+}
+
+/** Per-hop minimum slots before global score fill (scaled down when maxCycles is smaller). */
+export const DEFAULT_HOP_QUOTAS: ReadonlyMap<number, number> = new Map([
+  [2, 1500],
+  [3, 2000],
+  [4, 2000],
+  [5, 2500],
+]);
+
+/**
+ * Guarantee hop representation in the capped cycle list: fill per-hop quotas first,
+ * then top up globally by score. Prevents 5-hop floods from evicting 2–3 hop routes.
+ */
+export function applyHopStratifiedCap(
+  cycles: FoundCycle[],
+  maxCycles: number,
+  quotas: ReadonlyMap<number, number> = DEFAULT_HOP_QUOTAS,
+): FoundCycle[] {
+  if (cycles.length <= maxCycles) {
+    cycles.sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity));
+    return cycles;
+  }
+
+  const byHop = new Map<number, FoundCycle[]>();
+  for (const c of cycles) {
+    const list = byHop.get(c.hopCount) ?? [];
+    list.push(c);
+    byHop.set(c.hopCount, list);
+  }
+  for (const list of byHop.values()) {
+    list.sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity));
+  }
+
+  const totalQuota = [...quotas.values()].reduce((s, q) => s + q, 0);
+  const scale = totalQuota > maxCycles ? maxCycles / totalQuota : 1;
+
+  const selected: FoundCycle[] = [];
+  const selectedIds = new Set<string>();
+  const hopKeys = [...quotas.keys()].sort((a, b) => a - b);
+
+  for (const hop of hopKeys) {
+    const tier = byHop.get(hop);
+    if (!tier) continue;
+    const quota = Math.max(0, Math.floor((quotas.get(hop) ?? 0) * scale));
+    for (let i = 0; i < tier.length && i < quota && selected.length < maxCycles; i++) {
+      const c = tier[i];
+      const key = c.id ?? routeKeyFromEdges(c.edges);
+      if (selectedIds.has(key)) continue;
+      selectedIds.add(key);
+      selected.push(c);
+    }
+  }
+
+  if (selected.length < maxCycles) {
+    const rest = cycles
+      .filter((c) => !selectedIds.has(c.id ?? routeKeyFromEdges(c.edges)))
+      .sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity));
+    for (const c of rest) {
+      if (selected.length >= maxCycles) break;
+      const key = c.id ?? routeKeyFromEdges(c.edges);
+      if (selectedIds.has(key)) continue;
+      selectedIds.add(key);
+      selected.push(c);
+    }
+  }
+
+  selected.sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity));
+  return selected;
+}
+
+/**
+ * Build a rotation window with proportional hop representation (for HF sim batch).
+ */
+export function buildHopBalancedWindow(cycles: FoundCycle[], windowSize: number, offset: number): FoundCycle[] {
+  if (cycles.length <= windowSize) return cycles;
+
+  const byBucket: FoundCycle[][] = [[], [], [], []];
+  for (const c of cycles) {
+    byBucket[hopSimBucket(c.hopCount)].push(c);
+  }
+
+  const window: FoundCycle[] = [];
+  const activeBuckets = byBucket.filter((b) => b.length > 0);
+  const perBucket = Math.max(1, Math.ceil(windowSize / activeBuckets.length));
+
+  for (let b = 0; b < byBucket.length; b++) {
+    const tier = byBucket[b];
+    if (tier.length === 0) continue;
+    const start = tier.length > 0 ? (offset + b * 97) % tier.length : 0;
+    for (let i = 0; i < perBucket && window.length < windowSize; i++) {
+      window.push(tier[(start + i) % tier.length]);
+    }
+  }
+
+  return window.length > 0 ? window : cycles.slice(0, windowSize);
 }
 
 /**
@@ -246,6 +376,7 @@ export function rescoreCyclesBySpotPrice(
     if (MAJOR_TOKENS.has(cycle.startToken)) {
       score -= 2.0;
     }
+    score += longTailRouteBonus(cycle);
     cycle.score = score;
   }
   return { rescored: cycles.length, missingSpot: totalMissingSpot };
@@ -260,7 +391,7 @@ export async function findCycles(
   logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
 ): Promise<FoundCycle[]> {
   const cycles: FoundCycle[] = [];
-  const hopLimit = Math.min(maxHops, 5);
+  const hopLimit = Math.min(maxHops, 8);
   const { adjacency } = graph;
 
   const ENUM_START = Date.now();
@@ -283,7 +414,7 @@ export async function findCycles(
       for (let eIdx = 0; eIdx < edges.length; eIdx++) {
         const e = edges[eIdx];
         const state = graph.stateRefs.get(e.poolAddress);
-        if (!state) continue;
+        if (!state || isInvalidState(state)) continue;
         filtered.push(e);
         if (!edgeWeight.has(e.poolAddress)) {
           // feeBps carries protocol-native units (pips for V3/V4, fee-units for
@@ -452,6 +583,7 @@ export async function enumerateCycles(
     if (MAJOR_TOKENS.has(cycle.startToken)) {
       score -= 2.0; // Significant bonus for major bases
     }
+    score += longTailRouteBonus(cycle);
     cycle.score = score;
 
     const existing = deduped.get(key);
@@ -461,38 +593,9 @@ export async function enumerateCycles(
   }
 
   const result = Array.from(deduped.values());
-  const spotRescore = rescoreCyclesBySpotPrice(graph, result, getWinRate);
+  rescoreCyclesBySpotPrice(graph, result, getWinRate);
 
-  // Hop-stratified retention: a global score cap drops 2–3 hop routes when 5-hop
-  // cycles flood the enumerator with artificially low spot scores.
-  const byHop = new Map<number, FoundCycle[]>();
-  for (const c of result) {
-    const list = byHop.get(c.hopCount) ?? [];
-    list.push(c);
-    byHop.set(c.hopCount, list);
-  }
-  for (const list of byHop.values()) {
-    list.sort((a, b) => a.score! - b.score!);
-  }
-  const hopQuota: [number, number][] = [
-    [2, Math.min(1500, maxCycles)],
-    [3, Math.min(2000, maxCycles)],
-    [4, Math.min(2000, maxCycles)],
-    [5, Math.min(2500, maxCycles)],
-  ];
-  const stratified: FoundCycle[] = [];
-  const hopRetained: Record<number, number> = {};
-  for (const [hop, quota] of hopQuota) {
-    const tier = byHop.get(hop);
-    if (!tier) continue;
-    const take = tier.slice(0, quota);
-    hopRetained[hop] = take.length;
-    stratified.push(...take);
-  }
-  stratified.sort((a, b) => a.score! - b.score!);
-  const limit = Math.min(stratified.length, maxCycles);
-  const finalResult = stratified.slice(0, limit);
-  return finalResult;
+  return applyHopStratifiedCap(result, maxCycles);
 }
 
 export async function findCyclesBellmanFord(
@@ -658,11 +761,9 @@ export async function enumerateCyclesBellmanFord(
     if (MAJOR_TOKENS.has(cycle.startToken)) {
       score -= 2.0;
     }
+    score += longTailRouteBonus(cycle);
     cycle.score = score;
   }
 
-  allCycles.sort((a, b) => a.score! - b.score!);
-  const limit = Math.min(allCycles.length, maxCycles);
-  allCycles.length = limit;
-  return allCycles;
+  return applyHopStratifiedCap(allCycles, maxCycles);
 }

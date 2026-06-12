@@ -304,7 +304,15 @@ export class Renderer {
     } else {
       const ss = s.lastSimStats;
       if (ss) {
-        simLine = `Attempts: ${ss.attempted} | Simulated: ${ss.simulated}`;
+        const pruned = ss.prunedNoGrossProfit + ss.prunedMissingState + ss.prunedFinalCheckFailed;
+        simLine = `${ss.simulated}/${ss.attempted} sim | ✦${ss.profitable} | max:${ss.maxGrossMilliMatic}m`;
+        if (pruned > 0) {
+          return [
+            simLine,
+            `${C.dim(`pruned:${pruned} noRate:${ss.noRate} ${ss.durationMs}ms`)}`,
+            `Found: ${C.fg(String(m.opportunitiesFound), GREEN)} total`,
+          ];
+        }
       } else {
         simLine = `${C.dim("● Idle — awaiting simulation")}`;
       }
@@ -314,9 +322,8 @@ export class Renderer {
     const bestLine = best
       ? `Top Opp: ${C.fg(`${best.profit >= 0n ? "+" : ""}${fmtWeiMatic(best.profit)}`, GREEN)} MATIC`
       : `${C.dim("★ No profitable opportunities yet")}`;
-    const countLine = `Found: ${C.fg(String(m.opportunitiesFound), GREEN)} total`;
 
-    return [simLine, bestLine, countLine];
+    return [simLine, bestLine, `Found: ${C.fg(String(m.opportunitiesFound), GREEN)} total`];
   }
 
   // ── Panel 4: Routing ────────────────────────────────────────────────────────
@@ -370,10 +377,8 @@ export class Renderer {
     const successRate = fmtPct(m.successful, m.executed);
 
     return [
-      `${spin} Attempts: ${m.executed} | Success: ${C.fg(String(m.successful), GREEN)}`,
-      `Failed: ${C.fg(String(m.failed), m.failed > 0 ? RED : WHITE)} | Reverts: ${C.fg(String(m.reverts), YELLOW)}`,
-      `Success Rate: ${successRate}`,
-      `Total Profit: ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${fmtWeiMatic(m.totalProfitWei)}`, m.totalProfitWei >= 0n ? GREEN : RED)} MATIC`,
+      `${spin} Attempts: ${m.executed} | OK: ${C.fg(String(m.successful), GREEN)} | ${successRate}`,
+      `Fail: ${C.fg(String(m.failed), m.failed > 0 ? RED : WHITE)} Rev: ${C.fg(String(m.reverts), YELLOW)} | ${C.fg(`${m.totalProfitWei >= 0n ? "+" : ""}${fmtWeiMatic(m.totalProfitWei)}`, m.totalProfitWei >= 0n ? GREEN : RED)} MATIC`,
     ];
   }
 
@@ -412,7 +417,8 @@ export class Renderer {
     const maxHp = m.maxHotPathMs > 0 ? `max:${m.maxHotPathMs}ms` : "";
     const cramped = layout.cramped ? C.fg(" ⚠ Terminal too small", YELLOW) : "";
 
-    const left = ` RPC${rpcIcon} Hasura${hasuraIcon} WS${wsIcon} idx:${hiBlock} gas:${gas} ${cpm} ${maxHp}${cramped}`;
+    const stageLabel = s.pipelineStage !== "IDLE" ? C.fg(s.pipelineStage, CYAN) + " " : "";
+    const left = ` ${stageLabel}RPC${rpcIcon} Hasura${hasuraIcon} WS${wsIcon} idx:${hiBlock} gas:${gas} ${cpm} ${maxHp}${cramped}`;
     const right = C.dim(" 1-6:focus  Tab:cycle  P:pause  R:reset  Q:quit ");
     const gap = Math.max(0, rect.width - visLen(left) - visLen(right));
 

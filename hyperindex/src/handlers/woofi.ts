@@ -24,6 +24,20 @@ type Protocol =
   | "UNKNOWN_V2"
   | "UNKNOWN_V3";
 
+const ZERO = "0x0000000000000000000000000000000000000000";
+/** Typical WOOFi pool fee in 1e5 units (25 = 0.025%). swapFee event param is wei paid, not the rate. */
+const DEFAULT_WOOFI_FEE = 25;
+
+function mergeTokens(existing: string[] | undefined, ...add: string[]): string[] {
+  const out = [...(existing ?? [])];
+  for (const raw of add) {
+    const t = raw.toLowerCase();
+    if (t === ZERO || out.includes(t)) continue;
+    out.push(t);
+  }
+  return out;
+}
+
 indexer.onEvent(
   {
     contract: "WooPPV2",
@@ -35,35 +49,39 @@ indexer.onEvent(
     const t1 = event.params.toToken;
     const blockNumber = Number(event.block.number);
 
-    // Retrieve metadata for this pool to check if it's already registered
     const meta = await context.PoolMeta.get(poolAddr);
+    const mergedTokens = mergeTokens(meta?.tokens, t0, t1);
+    if (mergedTokens.length < 2) return;
 
-    if (!meta) {
-      // Concurrently fetch token metadata
-      const tEff0 = Date.now();
-      const concurrency = getMetadataConcurrency();
-      const [t0meta, t1meta] = await runWithConcurrency([t0, t1], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
-      logEffectTime("fetchTokenMeta:woofi", Date.now() - tEff0, blockNumber);
+    const newTokens = mergedTokens.filter((t) => !(meta?.tokens ?? []).includes(t));
+    const tokensToFetch = newTokens.length > 0 ? newTokens : mergedTokens.slice(0, 2);
 
-      if (context.isPreload) {
-        return;
-      }
+    const tEff0 = Date.now();
+    const concurrency = getMetadataConcurrency();
+    const tokenMetas = await runWithConcurrency(tokensToFetch, concurrency, (addr) =>
+      context.effect(fetchTokenMeta, { address: addr }),
+    );
+    logEffectTime("fetchTokenMeta:woofi", Date.now() - tEff0, blockNumber);
 
-      // Register WOOFi pool in PoolMeta
-      context.PoolMeta.set({
-        id: poolAddr,
-        address: poolAddr,
-        protocol: "WOOFI" as Protocol,
-        tokens: [t0, t1],
-        fee: Number(event.params.swapFee), // WOOFi swap fee (often dynamically set but recorded here)
-        tickSpacing: undefined,
-        createdBlock: blockNumber,
-        createdTx: event.transaction.hash,
-        poolId: undefined,
-      });
+    if (context.isPreload) {
+      return;
+    }
 
-      context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
-      context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
+    context.PoolMeta.set({
+      id: poolAddr,
+      address: poolAddr,
+      protocol: "WOOFI" as Protocol,
+      tokens: mergedTokens,
+      fee: meta?.fee && meta.fee > 0 ? meta.fee : DEFAULT_WOOFI_FEE,
+      tickSpacing: undefined,
+      createdBlock: meta?.createdBlock ?? blockNumber,
+      createdTx: meta?.createdTx ?? event.transaction.hash,
+      poolId: undefined,
+    });
+
+    for (let i = 0; i < tokensToFetch.length; i++) {
+      const token = tokensToFetch[i];
+      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     }
   },
 );

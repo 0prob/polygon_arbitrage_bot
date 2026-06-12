@@ -33,31 +33,31 @@ indexer.onEvent(
     if (existing) return;
 
     const tEffCurve = Date.now();
-    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 4, blockNumber: BigInt(blockNumber) });
+    const meta = await context.effect(fetchCurveMetadata, { pool, nCoins: 8, blockNumber: BigInt(blockNumber) });
     logEffectTime("fetchCurveMetadata", Date.now() - tEffCurve, blockNumber);
 
-    // Schedule + await coin token metadata effects *early* (right after curve meta, before isPreload guard)
-    // so the full set of effects for this event participates in preload-phase parallel batching
-    // and memoization (critical for backfill). See docs.envio.dev/docs/HyperIndex/preload-optimization
-    //
-    // Concurrency is capped when HYPERSYNC_RPM_TARGET is low to keep request patterns smooth.
+    const ZERO = "0x0000000000000000000000000000000000000000";
+    const coins = meta.coins.filter((c) => c && c.toLowerCase() !== ZERO);
+    if (coins.length < 2) return;
+
     const tEffCoins = Date.now();
     const concurrency = getMetadataConcurrency();
-    const coinMetas = await runWithConcurrency(meta.coins, concurrency, (coin) => context.effect(fetchTokenMeta, { address: coin }));
+    const coinMetas = await runWithConcurrency(coins, concurrency, (coin) => context.effect(fetchTokenMeta, { address: coin }));
     logEffectTime("fetchTokenMeta:curveCoins", Date.now() - tEffCoins, blockNumber);
 
     if (context.isPreload) {
       return;
     }
 
-    const feeBps = meta.fee > 0n ? Number(meta.fee / 10n ** 16n) : 1;
+    // Curve fee(): 1e10 = 100% → bps = fee / 1e6
+    const feeBps = meta.fee > 0n ? Number(meta.fee / 1_000_000n) : 4;
 
     context.PoolMeta.set({
       id: pool,
       address: pool,
       protocol: "CURVE",
-      tokens: meta.coins,
-      fee: feeBps,
+      tokens: coins,
+      fee: feeBps > 0 ? feeBps : 4,
       tickSpacing: undefined,
       createdBlock: blockNumber,
       createdTx: event.transaction.hash,
@@ -68,13 +68,13 @@ indexer.onEvent(
       id: pool,
       address: pool,
       lastUpdatedBlock: blockNumber,
-      balances: meta.balances,
+      balances: meta.balances.slice(0, coins.length),
       A: meta.A,
       fee: meta.fee,
-      rates: meta.rates,
+      rates: meta.rates.slice(0, coins.length),
     });
 
-    meta.coins.forEach((coin, i) => {
+    coins.forEach((coin, i) => {
       context.TokenMeta.set({ id: coin, address: coin, decimals: coinMetas[i].decimals });
     });
   },

@@ -9,8 +9,20 @@ import {
   buildStateCacheFromGraphQL,
   fetchIndexerProgressFromHasura,
   fetchTokenMetasFromHasura,
+  loadStaticAnchors,
 } from "../infra/hypersync/hyperindex_graphql.ts";
 import { resolveInfraProfile } from "../config/infra_profile.ts";
+
+function protocolBreakdown(pools: PoolMeta[]): Record<string, number> {
+  return pools.reduce(
+    (acc, p) => {
+      const proto = p.protocol.split("_")[0] ?? p.protocol;
+      acc[proto] = (acc[proto] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+}
 
 export class StateRefreshService {
   private lastDiscoveredBlock = 0;
@@ -85,7 +97,11 @@ export class StateRefreshService {
             lastDiscoveredBlock: this.lastDiscoveredBlock,
             }),
         async () => {
-            this.ctx.logger.warn({}, "Hasura circuit open, returning empty pool list");
+            this.ctx.logger.warn({}, "Hasura circuit open — using cached or static pools");
+            if (this.pools.length === 0) {
+              const anchors = await loadStaticAnchors();
+              return { pools: anchors, maxBlock: 0 };
+            }
             return { pools: [], maxBlock: this.lastDiscoveredBlock };
         },
         );
@@ -110,6 +126,7 @@ export class StateRefreshService {
                 token1: (p.tokens[1] ?? "") as `0x${string}`,
                 tokens: p.tokens as `0x${string}`[],
                 fee: p.fee,
+                poolId: p.poolId,
             }));
 
             if (this.lastDiscoveredBlock > 0 && this.pools.length > 0) {
@@ -124,9 +141,41 @@ export class StateRefreshService {
                 this.pools.splice(0, this.pools.length, ...mapped);
             }
             this.lastDiscoveredBlock = result.maxBlock;
+            this.ctx.logger.info(
+              { added: mapped.length, total: this.pools.length, protocols: protocolBreakdown(this.pools) },
+              "Pools discovered from HyperIndex",
+            );
+        } else if (this.pools.length === 0) {
+            const anchors = await loadStaticAnchors();
+            if (anchors.length > 0) {
+              this.pools = anchors;
+              this.ctx.logger.info(
+                { count: anchors.length, protocols: protocolBreakdown(anchors) },
+                "Loaded static anchor pools (Hasura returned no pools on first discovery)",
+              );
+            }
+        }
+
+        if (this.pools.length > 0) {
+          this.ctx.mempoolService.setKnownPools(this.pools.map((p) => p.address));
         }
     } catch (e) {
         this.ctx.logger.warn({ err: e }, "Failed to discover pools from Hasura");
+        if (this.pools.length === 0) {
+          try {
+            const anchors = await loadStaticAnchors();
+            if (anchors.length > 0) {
+              this.pools = anchors;
+              this.ctx.mempoolService.setKnownPools(this.pools.map((p) => p.address));
+              this.ctx.logger.info(
+                { count: anchors.length, protocols: protocolBreakdown(anchors) },
+                "Loaded static anchor pools after discovery failure",
+              );
+            }
+          } catch (anchorErr) {
+            this.ctx.logger.debug?.({ err: anchorErr }, "Static anchor fallback failed");
+          }
+        }
     } finally {
         this.discoveryInProgress = false;
     }

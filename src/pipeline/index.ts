@@ -15,6 +15,10 @@ export {
   enumerateCyclesBellmanFord,
   routeKeyFromEdges,
   getDynamicSearchBounds,
+  applyHopStratifiedCap,
+  buildHopBalancedWindow,
+  hopSimBucket,
+  longTailRouteBonus,
 } from "./finder.ts";
 export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop } from "./simulator.ts";
 export { fetchMissingPoolState } from "./fetcher.ts";

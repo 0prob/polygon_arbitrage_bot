@@ -85,6 +85,8 @@ export interface PoolMeta {
   fee?: number;
   tickSpacing?: number;
   poolType?: string;
+  /** Balancer internal poolId (bytes32); required for vault reads and execution. */
+  poolId?: string;
   discoveredBlock?: number;
   status?: "active" | "removed";
 }

@@ -136,11 +136,27 @@ export function summarizeTokenRates(
 }
 
 export function summarizeCycleRateCoverage(
-  cycles: { startToken: string }[],
+  cycles: { startToken: string; hopCount?: number }[],
   rates: Map<string, bigint>,
   simCap?: number,
 ): Record<string, unknown> {
-  const slice = simCap && cycles.length > simCap ? cycles.slice(0, simCap) : cycles;
+  let slice = cycles;
+  if (simCap && cycles.length > simCap) {
+    const byHop = new Map<number, typeof cycles>();
+    for (const c of cycles) {
+      const h = c.hopCount ?? 2;
+      const list = byHop.get(h) ?? [];
+      list.push(c);
+      byHop.set(h, list);
+    }
+    const perHop = Math.max(1, Math.ceil(simCap / Math.max(1, byHop.size)));
+    slice = [];
+    for (const list of byHop.values()) {
+      slice.push(...list.slice(0, perHop));
+      if (slice.length >= simCap) break;
+    }
+    slice = slice.slice(0, simCap);
+  }
   let covered = 0;
   for (const c of slice) {
     const r = rates.get(c.startToken.toLowerCase()) ?? 0n;

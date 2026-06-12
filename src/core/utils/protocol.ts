@@ -35,8 +35,8 @@ export function feeToBps(protocol: string, rawFee: bigint): bigint {
   let divisor = feeUnitDivisorCache.get(protocol);
   if (divisor === undefined) {
     const u = protocol.toUpperCase();
-    if (u.includes("ELASTIC") || u.startsWith("WOOFI")) divisor = 10n;
-    else if (u.includes("V3") || u.includes("V4")) divisor = 100n;
+    if (u.startsWith("WOOFI")) divisor = 10n;
+    else if (u.includes("V3") || u.includes("V4") || u.includes("ELASTIC")) divisor = 100n;
     else divisor = 1n;
     feeUnitDivisorCache.set(protocol, divisor);
   }

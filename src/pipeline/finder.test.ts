@@ -1,7 +1,69 @@
 import { describe, it, expect } from "vitest";
-import { getDynamicSearchBounds, findCyclesBellmanFord } from "./finder.ts";
+import {
+  getDynamicSearchBounds,
+  findCyclesBellmanFord,
+  applyHopStratifiedCap,
+  buildHopBalancedWindow,
+  longTailRouteBonus,
+} from "./finder.ts";
 import type { FoundCycle } from "./types.ts";
 import type { Address } from "../core/types/common.ts";
+
+function mockCycle(hops: number, score: number, protocol = "UNISWAP_V2"): FoundCycle {
+  const edges = Array.from({ length: hops }, (_, i) => ({
+    poolAddress: `0xpool${hops}_${i}_${score}`,
+    protocol,
+    tokenIn: "0xa" as Address,
+    tokenOut: "0xb" as Address,
+    zeroForOne: true,
+    feeBps: 30n,
+  }));
+  return {
+    startToken: "0xa" as Address,
+    edges: edges as FoundCycle["edges"],
+    hopCount: hops,
+    logWeight: score,
+    score,
+    cumulativeFeeBps: 30n * BigInt(hops),
+  };
+}
+
+describe("applyHopStratifiedCap", () => {
+  it("guarantees short-hop representation when 5-hop scores dominate", () => {
+    const cycles: FoundCycle[] = [];
+    for (let i = 0; i < 4000; i++) cycles.push(mockCycle(5, i * 0.001));
+    for (let i = 0; i < 200; i++) cycles.push(mockCycle(2, 10 + i * 0.01));
+
+    const capped = applyHopStratifiedCap(cycles, 500);
+    const hopDist: Record<number, number> = {};
+    for (const c of capped) hopDist[c.hopCount] = (hopDist[c.hopCount] ?? 0) + 1;
+
+    expect(capped.length).toBe(500);
+    expect(hopDist[2] ?? 0).toBeGreaterThan(0);
+    expect(hopDist[5] ?? 0).toBeGreaterThan(0);
+  });
+});
+
+describe("buildHopBalancedWindow", () => {
+  it("includes multiple hop buckets in rotation window", () => {
+    const cycles: FoundCycle[] = [];
+    for (let i = 0; i < 100; i++) cycles.push(mockCycle(5, i));
+    for (let i = 0; i < 50; i++) cycles.push(mockCycle(2, i));
+
+    const window = buildHopBalancedWindow(cycles, 60, 0);
+    const buckets = new Set(window.map((c) => c.hopCount));
+    expect(buckets.has(2)).toBe(true);
+    expect(buckets.has(5)).toBe(true);
+  });
+});
+
+describe("longTailRouteBonus", () => {
+  it("prefers obscure multi-hop routes", () => {
+    const hot = mockCycle(2, 5, "UNISWAP_V3");
+    const tail = mockCycle(4, 5, "DODO_V2");
+    expect(longTailRouteBonus(tail)).toBeLessThan(longTailRouteBonus(hot));
+  });
+});
 
 describe("getDynamicSearchBounds", () => {
   const WMATIC = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270" as Address;

@@ -31,9 +31,12 @@ describe("feeToBps", () => {
     expect(feeToBps("QUICKSWAP_V3", 100n)).toBe(1n); // 0.01%
   });
 
-  it("converts Kyber Elastic / WooFi fee-units (1e5 = 100%) to bps", () => {
-    expect(feeToBps("KYBERSWAP_ELASTIC", 300n)).toBe(30n); // 0.30%
-    expect(feeToBps("KYBERSWAP_ELASTIC", 8n)).toBe(0n); // 0.008% rounds below 1 bps
+  it("converts Kyber Elastic / Uniswap V3 pips (1e6 = 100%) to bps", () => {
+    expect(feeToBps("KYBERSWAP_ELASTIC", 3000n)).toBe(30n); // 0.30%
+    expect(feeToBps("KYBERSWAP_ELASTIC", 800n)).toBe(8n);
+  });
+
+  it("converts WooFi fee-units (1e5 = 100%) to bps", () => {
     expect(feeToBps("WOOFI", 25n)).toBe(2n); // 0.025%
   });
 });

@@ -35,4 +35,6 @@ export interface PassLoopState {
   lastLargeSwapSignal?: LargeSwapSignal;
   /** Round-robin offset for HF simulation batch (covers full cycle set over time). */
   hfSimOffset: number;
+  /** stateCache.size at last successful enumeration — triggers re-enum when bootstrap fills cache. */
+  lastEnumStateCacheSize: number;
 }

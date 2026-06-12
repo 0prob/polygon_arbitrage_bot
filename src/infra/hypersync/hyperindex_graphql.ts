@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isAddress } from "viem";
 import type { PoolMeta } from "../../core/types/pool.ts";
 import { isGarbagePool, KNOWN_INDEXED_FACTORIES, markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
@@ -13,6 +12,7 @@ interface PoolMetaRow {
   tokens: unknown;
   fee: number | null;
   createdBlock?: number;
+  poolId?: string | null;
 }
 interface V2StateRow {
   id: string;
@@ -112,7 +112,7 @@ export function parseBigIntArray(arr: unknown): bigint[] {
 let _staticAnchors: PoolMeta[] | null = null;
 let staticAnchorsPromise: Promise<PoolMeta[]> | null = null;
 
-async function loadStaticAnchors(): Promise<PoolMeta[]> {
+export async function loadStaticAnchors(): Promise<PoolMeta[]> {
   if (_staticAnchors) return _staticAnchors;
   if (staticAnchorsPromise) return staticAnchorsPromise;
   staticAnchorsPromise = (async () => {
@@ -354,6 +354,14 @@ export async function buildStateCacheFromGraphQL(
   return { stateCache, maxSeenBlock };
 }
 
+/** Accept 20-byte pool addresses and 32-byte pool keys (Uniswap V4 poolId). */
+export function isValidPoolKey(id: string): boolean {
+  if (!id.startsWith("0x")) return false;
+  const hex = id.slice(2);
+  if (hex.length !== 40 && hex.length !== 64) return false;
+  return /^[0-9a-f]+$/.test(hex);
+}
+
 export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
   return rows
     .filter((pm) => pm && pm.id && pm.protocol)
@@ -379,9 +387,10 @@ export function parsePoolMetaRows(rows: PoolMetaRow[]): PoolMeta[] {
         token1: (tokens[1] ?? "") as `0x${string}`,
         tokens: tokens as `0x${string}`[],
         fee: pm.fee ?? 30,
+        poolId: pm.poolId ?? undefined,
       };
     })
-    .filter((p) => isAddress(p.address) && p.tokens.length >= 2 && !isGarbagePool(p));
+    .filter((p) => isValidPoolKey(p.address) && p.tokens.length >= 2 && !isGarbagePool(p));
 }
 
 export interface DiscoverPoolsOptions {
@@ -416,7 +425,7 @@ export async function discoverPoolsFromHasura(
         } else if (lastDiscoveredBlock > 0) {
           where = `where: { createdBlock: { _gt: ${lastDiscoveredBlock} } }`;
         }
-        const query = `{ PoolMeta(limit: ${PAGE}, ${where}, order_by: [{ createdBlock: asc }, { id: asc }]) { id protocol tokens fee createdBlock } }`;
+        const query = `{ PoolMeta(limit: ${PAGE}, ${where}, order_by: [{ createdBlock: asc }, { id: asc }]) { id protocol tokens fee poolId createdBlock } }`;
         pageResult = await graphQLQuery(graphqlUrl, adminSecret, query);
         const d = pageResult as { PoolMeta?: (PoolMetaRow & { createdBlock: number })[] } | null;
         if (d?.PoolMeta) {

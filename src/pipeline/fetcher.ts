@@ -228,6 +228,8 @@ export async function fetchMissingPoolState(
             calls.push({ address: meta.token0 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
             calls.push({ address: meta.token1 as `0x${string}`, abi: ERC20_ABI, functionName: "balanceOf", args: [addr] });
           } else if (proto.includes("v4")) {
+            // V4 PoolMeta.id is bytes32 poolKey — state comes from HyperIndex, not slot0 on the key.
+            if (addr.length === 66) continue;
             calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "slot0" });
             calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "liquidity" });
             calls.push({ address: addr as `0x${string}`, abi: V4_ABI, functionName: "fee" });
@@ -237,7 +239,8 @@ export async function fetchMissingPoolState(
             calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "price" });
             calls.push({ address: addr as `0x${string}`, abi: WOOFI_PAIR_ABI, functionName: "fee" });
           } else if (proto.includes("balancer")) {
-            const poolId = (meta as any).poolId;
+            const cached = stateCache.get(addr) as Record<string, unknown> | undefined;
+            const poolId = meta.poolId ?? (cached?.poolId as string | undefined);
             if (poolId) {
               calls.push({
                 address: "0xba12222222228d8ba445958a75a0704d566bf2c8",
@@ -469,7 +472,8 @@ export async function fetchMissingPoolState(
                 trackFailedPool(addr, "woofi-price-failed", stateCache, logger);
               }
             } else if (proto.includes("balancer")) {
-              const poolId = (meta as any).poolId;
+              const cached = stateCache.get(addr) as Record<string, unknown> | undefined;
+              const poolId = meta.poolId ?? (cached?.poolId as string | undefined);
               if (poolId) {
                 const getPoolTokensRes = results[resultIdx++];
                 const existing = stateCache.get(addr);

@@ -38,12 +38,15 @@ async function handleDodoPool(
     return; // Aggressive preload exit: effects done (batched), skip writes (ignored anyway) and any future work.
   }
 
+  const feeBps =
+    meta.lpFeeRate > 0n ? Math.max(1, Number(meta.lpFeeRate / 10n ** 14n)) : 10;
+
   context.PoolMeta.set({
     id: pool,
     address: pool,
     protocol: "DODO_V2",
     tokens: [base, quote],
-    fee: 10,
+    fee: feeBps,
     tickSpacing: undefined,
     createdBlock: blockNumber,
     createdTx: txHash,

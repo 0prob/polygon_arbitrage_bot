@@ -24,6 +24,7 @@ function mockCtx(): RuntimeContext {
       }),
     },
     tierManager: { shouldDiscover: vi.fn().mockReturnValue(true) },
+    mempoolService: { setKnownPools: vi.fn() },
     publicClient: {},
     stateClient: {},
     hyperIndexMonitor: { updateSyncedBlock: vi.fn() },

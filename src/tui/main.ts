@@ -49,13 +49,83 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
     dirty = true;
   }
 
+  function isAnimating(): boolean {
+    const stage = state.system.pipelineStage;
+    return (
+      stage === "SIMULATING" ||
+      stage === "ENUMERATING" ||
+      stage === "EXECUTING" ||
+      stage === "LF_REFRESH" ||
+      stage === "DISCOVERY" ||
+      stage === "PRE_FETCH" ||
+      stage === "RATES" ||
+      state.system.hiStatus === "syncing"
+    );
+  }
+
+  let skippedFrames = 0;
+  let renderedFrames = 0;
+
   function renderFrame(): void {
-    if (!dirty) return;
+    const animating = isAnimating();
+    if (!dirty && !animating) {
+      skippedFrames++;
+      // #region agent log
+      if (skippedFrames % 30 === 1) {
+        fetch("http://127.0.0.1:7263/ingest/ac6c9208-c536-42e7-b496-db8499c17483", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fb4402" },
+          body: JSON.stringify({
+            sessionId: "fb4402",
+            location: "main.ts:renderFrame",
+            message: "frame skipped",
+            data: { skippedFrames, renderedFrames, dirty, animating, stage: state.system.pipelineStage, hiStatus: state.system.hiStatus },
+            timestamp: Date.now(),
+            hypothesisId: "A",
+            runId: "post-fix",
+          }),
+        }).catch(() => {});
+      }
+      // #endregion
+      return;
+    }
     dirty = false;
     frameCount++;
+    renderedFrames++;
+    // #region agent log
+    if (renderedFrames % 15 === 1) {
+      fetch("http://127.0.0.1:7263/ingest/ac6c9208-c536-42e7-b496-db8499c17483", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fb4402" },
+        body: JSON.stringify({
+          sessionId: "fb4402",
+          location: "main.ts:renderFrame",
+          message: "frame rendered",
+          data: { skippedFrames, renderedFrames, frameCount, animating, stage: state.system.pipelineStage, hiStatus: state.system.hiStatus },
+          timestamp: Date.now(),
+          hypothesisId: "A",
+          runId: "post-fix",
+        }),
+      }).catch(() => {});
+    }
+    // #endregion
     try {
       renderer.render(layout, state, frameCount, focusedSection);
     } catch (err) {
+      // #region agent log
+      fetch("http://127.0.0.1:7263/ingest/ac6c9208-c536-42e7-b496-db8499c17483", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fb4402" },
+        body: JSON.stringify({
+          sessionId: "fb4402",
+          location: "main.ts:renderFrame:catch",
+          message: "render error",
+          data: { err: String(err) },
+          timestamp: Date.now(),
+          hypothesisId: "E",
+        }),
+      }).catch(() => {});
+      // #endregion
       logger?.warn?.({ err }, "TUI render frame failed");
     }
   }
