@@ -7,7 +7,10 @@
     "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "inlineSources": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -20,6 +23,6 @@
     "target": "ESNext",
     "types": ["node", "bun-types"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "hyperindex/**/*.ts"],
   "exclude": ["node_modules", "dist", "hyperindex/node_modules", ".opencode/node_modules"]
 }
