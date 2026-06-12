@@ -14,6 +14,7 @@ import {
 } from "../infra/observability/metrics.ts";
 import { resolveInfraProfile, scaledConcurrency, type InfraProfile } from "../config/infra_profile.ts";
 import { getHfSnapshot, type HfReadSnapshot } from "./hf_snapshot.ts";
+import { agentDebugLog } from "../infra/observability/debug_agent.ts";
 
 const HF_INTERVAL = 200;
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
@@ -36,6 +37,23 @@ function selectCyclesForSim(cycles: FoundCycle[], cap: number): FoundCycle[] {
     if (selected.length >= cap) break;
   }
   return selected;
+}
+
+/** Rotate through the full cycle set so HF does not resimulate the same cap every tick. */
+function selectCyclesForSimRotating(cycles: FoundCycle[], cap: number, offset: number): { selected: FoundCycle[]; nextOffset: number } {
+  if (cycles.length <= cap) {
+    return { selected: selectCyclesForSim(cycles, cap), nextOffset: 0 };
+  }
+  const start = offset % cycles.length;
+  const window: FoundCycle[] = [];
+  const windowSize = Math.min(cycles.length, cap * 3);
+  for (let i = 0; i < windowSize; i++) {
+    window.push(cycles[(start + i) % cycles.length]);
+  }
+  return {
+    selected: selectCyclesForSim(window, cap),
+    nextOffset: (start + cap) % cycles.length,
+  };
 }
 
 function sleep(ms: number): Promise<void> {
@@ -98,6 +116,12 @@ export async function runHfTick(
   }
 
   if (cycleIndices.length === 0) {
+    agentDebugLog(
+      "pass_hf.ts:no-cycles",
+      "HF idle — no cycles in snapshot",
+      { snapGeneration: snap.generation, lfEnumInFlight: snap.lfEnumerationInFlight },
+      "A",
+    );
     bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
     await sleep(HF_INTERVAL);
     return { elapsed: Date.now() - startTime };
@@ -177,8 +201,15 @@ export async function runHfTick(
   }
 
   const simCap = infra.maxSimCycles;
-  const cyclesToSim =
-    rateSafeCycles.length > simCap ? selectCyclesForSim(rateSafeCycles, simCap) : rateSafeCycles;
+  let cyclesToSim: FoundCycle[];
+  if (rateSafeCycles.length > simCap) {
+    const rotated = selectCyclesForSimRotating(rateSafeCycles, simCap, state.hfSimOffset);
+    cyclesToSim = rotated.selected;
+    state.hfSimOffset = rotated.nextOffset;
+  } else {
+    cyclesToSim = rateSafeCycles;
+    state.hfSimOffset = 0;
+  }
   const simSkipped = rateSafeCycles.length - cyclesToSim.length;
   if (simSkipped > 0) {
     ctx.logger.debug(
@@ -194,6 +225,29 @@ export async function runHfTick(
   const simStartTime = Date.now();
   const result = await deps.evaluatePipeline(cyclesToSim, stateCache, options, ctx.pendingStateOverlay);
   const simElapsed = Date.now() - simStartTime;
+
+  agentDebugLog(
+    "pass_hf.ts:post-sim",
+    "HF simulation batch",
+    {
+      totalCycles: cycleIndices.length,
+      rateSafe: rateSafeCycles.length,
+      batchSize: cyclesToSim.length,
+      simulated: result.simulated,
+      attempted: result.attempted,
+      profitable: result.profitableCount,
+      prunedMissingState: result.prunedMissingState,
+      prunedNoGross: result.prunedNoGrossProfit,
+      prunedPhantom: result.prunedPhantomGross ?? 0,
+      prunedFinalCheck: result.prunedFinalCheckFailed,
+      maxGrossMilliMatic: result.maxGrossProfitMatic != null ? Number(result.maxGrossProfitMatic / 10n ** 15n) : 0,
+      nearMiss: result.nearMissCount,
+      simOffset: state.hfSimOffset,
+      noRate: result.noRate,
+      simMs: simElapsed,
+    },
+    "B",
+  );
 
   ctx.metrics.opportunitiesFound += result.profitableCount;
 
@@ -587,6 +641,18 @@ async function buildAndExecuteCandidates(
         results =
           group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
       }
+
+      agentDebugLog(
+        "pass_hf.ts:post-exec",
+        "HF execution batch",
+        {
+          groupSize: group.length,
+          usedBackrun,
+          success: results.filter((r) => r.success).length,
+          failed: results.filter((r) => !r.success).length,
+        },
+        "D",
+      );
 
       for (let i = 0; i < results.length; i++) {
         const execResult = results[i];

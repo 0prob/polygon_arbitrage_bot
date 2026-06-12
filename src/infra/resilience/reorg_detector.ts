@@ -25,6 +25,24 @@ export class ReorgDetector {
     private hyperSync?: HyperSyncService,
   ) {}
 
+  private async getBlockByNumber(blockNumber: bigint) {
+    if (this.hyperSync) {
+      try {
+        return await this.hyperSync.getBlockByNumber(blockNumber);
+      } catch {
+        // fall through to HyperRPC / public RPC
+      }
+    }
+    if (this.hyperRpc) {
+      try {
+        return await this.hyperRpc.getBlockByNumber(blockNumber);
+      } catch {
+        // fall through to public RPC (e.g. HyperRPC 403)
+      }
+    }
+    return this.client.getBlock({ blockNumber });
+  }
+
   async trackBlock(blockNumber: number, blockHash: string): Promise<void> {
     const parent = this.trackedBlocks.find((b) => b.number === blockNumber - 1);
     let parentHash = "";
@@ -32,11 +50,7 @@ export class ReorgDetector {
       parentHash = parent.hash;
     } else {
       try {
-        const block = this.hyperSync
-          ? await this.hyperSync.getBlockByNumber(BigInt(blockNumber - 1))
-          : this.hyperRpc
-            ? await this.hyperRpc.getBlockByNumber(BigInt(blockNumber - 1))
-            : await this.client.getBlock({ blockNumber: BigInt(blockNumber - 1) });
+        const block = await this.getBlockByNumber(BigInt(blockNumber - 1));
         parentHash = (block?.hash as string) ?? "";
       } catch (err) {
         console.warn("[reorg-detector] Failed to fetch parent block:", err);
@@ -67,11 +81,7 @@ export class ReorgDetector {
       if (!tracked) continue;
 
       try {
-        const block = this.hyperSync
-          ? await this.hyperSync.getBlockByNumber(BigInt(blockNum))
-          : this.hyperRpc
-            ? await this.hyperRpc.getBlockByNumber(BigInt(blockNum))
-            : await this.client.getBlock({ blockNumber: BigInt(blockNum) });
+        const block = await this.getBlockByNumber(BigInt(blockNum));
         const blockHash = (block?.hash as string | undefined)?.toLowerCase();
         if (blockHash && blockHash !== tracked.hash.toLowerCase()) {
           // Reorg detected at this height

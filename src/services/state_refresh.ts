@@ -43,9 +43,8 @@ export class StateRefreshService {
   async start(): Promise<void> {
     this.ctx.logger.info("StateRefreshService started");
 
-    // Immediate first discovery + LF refresh on boot
+    // Immediate first discovery on boot; LF refresh is owned by pass_loop runLfTick.
     this.runPoolDiscovery().catch((err) => { this.ctx.logger.warn?.({ err }, "Initial pool discovery failed"); });
-    this.runLfStateRefresh().catch((err) => { this.ctx.logger.warn?.({ err }, "Initial LF state refresh failed"); });
 
     // Dedicated discovery timer (default 60s)
     const discoveryInterval = this.ctx.config.discoveryIntervalMs ?? 60000;

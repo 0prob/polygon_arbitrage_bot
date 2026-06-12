@@ -33,4 +33,6 @@ export interface PassLoopState {
   hfSnapshot: HfReadSnapshot | null;
   /** Most recent large-swap mempool signal (for MEV backrun path). */
   lastLargeSwapSignal?: LargeSwapSignal;
+  /** Round-robin offset for HF simulation batch (covers full cycle set over time). */
+  hfSimOffset: number;
 }

@@ -19,6 +19,7 @@ import { fingerprintPools } from "../core/utils/pool_fingerprint.ts";
 import { resolveInfraProfile } from "../config/infra_profile.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 import { fetchTicksForCyclePools } from "../pipeline/tick_fetcher.ts";
+import { agentDebugLog } from "../infra/observability/debug_agent.ts";
 
 const LF_INTERVAL = 1000;
 /** Min gap between full graph re-enumerations when pool set is unchanged. */
@@ -45,6 +46,16 @@ export async function runLfTick(
     state.cachedMetas = freshMetas;
   }
   state.lastRefreshTime = now;
+
+  if ((state.hasuraPoolsCache?.length ?? 0) === 0) {
+    agentDebugLog(
+      "pass_lf.ts:no-pools",
+      "LF skipped — Hasura pools empty",
+      { rates: state.tokenToMaticRates.size },
+      "A",
+    );
+    return;
+  }
 
   runReorgCheck(ctx, state.lastReorgCheck, LF_INTERVAL).then((reorgResult) => {
     state.lastReorgCheck = reorgResult.lastReorgCheck;
@@ -99,6 +110,18 @@ export async function runLfTick(
   state.ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
   state.pendingFocusTokens = rateResult.pendingFocusTokens;
   publishHfSnapshot(state);
+
+  agentDebugLog(
+    "pass_lf.ts:post-rates",
+    "LF rates refreshed",
+    {
+      pools: state.hasuraPoolsCache?.length ?? 0,
+      rates: state.tokenToMaticRates.size,
+      cachedCycles: state.cachedCycles.length,
+      stateCacheSize: stateCache.size,
+    },
+    "A",
+  );
 
   const pools = state.hasuraPoolsCache?.slice() ?? [];
   const poolsFingerprint = fingerprintPools(pools);
@@ -247,8 +270,16 @@ export async function runLfTick(
         "Graph and cycles re-enumerated (background)",
       );
 
+      agentDebugLog(
+        "pass_lf.ts:post-enum",
+        "LF enumeration complete",
+        { cycles: newCycles.length, filteredPools: filteredPools.length, enumMs: enumElapsed },
+        "A",
+      );
+
       state.lastPoolsFingerprint = poolsFingerprint;
       state.lastEnumerationTime = Date.now();
+      state.hfSimOffset = 0;
 
       if (newCycles.length > 0) {
         const fetchCap = lfFetchCycleCap(ctx);

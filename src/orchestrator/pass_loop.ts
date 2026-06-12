@@ -15,6 +15,7 @@ import type { PassLoopState } from "./pass_state.ts";
 import { publishHfSnapshot } from "./hf_snapshot.ts";
 import { refreshCyclePoolsOnHead } from "./head_refresh.ts";
 import { resolveInfraProfile } from "../config/infra_profile.ts";
+import { agentDebugLog } from "../infra/observability/debug_agent.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -150,6 +151,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     maticPriceUsd: 0.7,
     cyclesGeneration: 0,
     hfSnapshot: null,
+    hfSimOffset: 0,
   };
 
   publishHfSnapshot(state);
@@ -234,7 +236,26 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       }
 
       const stateCache = ctx.stateCache;
-      const isLfTick = now - state.lastRefreshTime >= LF_INTERVAL || state.cachedCycles.length === 0;
+      // Time-based LF cadence only; do not re-trigger every HF tick while cycles are empty.
+      const isLfTick = now - state.lastRefreshTime >= LF_INTERVAL;
+
+      // #region agent log
+      if (ctx.metrics.cycles % 25 === 0) {
+        agentDebugLog(
+          "pass_loop.ts:tick",
+          "Pass loop tick",
+          {
+            isLfTick,
+            lfInFlight: state.lfTickInFlight,
+            lfEnumInFlight: state.lfEnumerationInFlight,
+            cachedCycles: state.cachedCycles.length,
+            msSinceLf: now - state.lastRefreshTime,
+            snapGen: state.hfSnapshot?.generation ?? 0,
+          },
+          "C",
+        );
+      }
+      // #endregion
 
       if (isLfTick && !state.lfTickInFlight) {
         state.lfTickInFlight = true;
@@ -261,6 +282,12 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       await sleep(waitMs);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      agentDebugLog(
+        "pass_loop.ts:error",
+        "Pass loop error",
+        { message: message.slice(0, 200) },
+        "E",
+      );
       ctx.logger.error({ err }, "Pass loop error");
       ctx.metrics.totalErrors++;
       ctx.metrics.lastErrorTime = Date.now();

@@ -16,6 +16,10 @@ import { solveV2Optimal } from "../core/math/uniswap_v2_solver.ts";
 import { solveBrentOptimal } from "../core/math/hybrid_solver.ts";
 import { logSampled, METRICS_INTERVAL } from "../infra/observability/metrics.ts";
 
+const PROFIT_SENTINEL = -1_000_000_000_000_000_000_000_000_000_000n;
+/** Gross above this with no net profit = poisoned rates / minimal-search artifact. */
+const PHANTOM_GROSS_MATIC_WEI = 10n ** 17n; // 0.1 MATIC
+
 /**
  * Pipeline evaluation (ternary search + profit assessment).
  * Because the system is flash-loan-only, the optimal `amountIn` chosen by ternary search
@@ -223,6 +227,7 @@ export async function evaluatePipeline(
   let prunedMissingState = 0;
   let prunedInvalidBounds = 0;
   let prunedNoGrossProfit = 0;
+  let prunedPhantomGross = 0;
   let prunedFinalCheckFailed = 0;
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
@@ -287,7 +292,7 @@ export async function evaluatePipeline(
         }
         let bestResult: RouteSimulationResult | null = null;
         let bestAssessment: ProfitAssessment | null = null;
-        let bestProfit = -1_000_000_000_000_000_000_000_000_000_000n;
+        let bestProfit = PROFIT_SENTINEL;
         let bestGrossMatic = 0n;
         let bestAmount: bigint = low; // track the amount that produced the current best (for final full sim)
 
@@ -363,12 +368,11 @@ export async function evaluatePipeline(
             }
             if (res.assessment && res.assessment.netProfitAfterGasMaticWei > bestProfit) {
               bestResult = res.result;
-              // No clone needed: bestAssessment is only read after the search loop
-              // when the final full simulation creates a fresh, unshared assessment object.
+              bestAssessment = res.assessment;
               bestProfit = res.assessment.netProfitAfterGasMaticWei;
               bestAmount = amount;
             }
-            return res.assessment?.netProfitAfterGasMaticWei ?? -1_000_000_000_000_000_000_000_000_000_000n;
+            return res.assessment?.netProfitAfterGasMaticWei ?? PROFIT_SENTINEL;
           };
 
           const brentResult = solveBrentOptimal(low, high, evaluateBrent, maxIters);
@@ -377,6 +381,7 @@ export async function evaluatePipeline(
             // (side-effect tracking may differ from Brent's convergence)
             const res = evaluateAmount(cycle, brentResult, stateCache, options, true, true, prebuiltSimEdges, holder, overlay, startRate);
             if (res.assessment && res.assessment.netProfitAfterGasMaticWei > bestProfit) {
+              bestAssessment = res.assessment;
               bestProfit = res.assessment.netProfitAfterGasMaticWei;
               bestAmount = brentResult;
             }
@@ -385,7 +390,7 @@ export async function evaluatePipeline(
 
         // After search: do one final FULL simulation with impact check enabled.
         // This verifies spot-price integrity before promoting to profitable.
-        if (bestAssessment && bestProfit > -1_000_000_000_000_000_000_000_000_000_000n) {
+        if (bestAssessment && bestProfit > PROFIT_SENTINEL) {
           const final = evaluateAmount(cycle, bestAmount, stateCache, options, false, false, prebuiltSimEdges, undefined, overlay, startRate);
           if (final.result && final.assessment && final.assessment.shouldExecute) {
             bestResult = final.result;
@@ -394,6 +399,15 @@ export async function evaluatePipeline(
             results.push({ type: "pruned", reason: "finalCheckFailed", cycle });
             continue;
           }
+        } else if (
+          bestGrossMatic > PHANTOM_GROSS_MATIC_WEI &&
+          (!bestAssessment || bestAssessment.netProfitAfterGasMaticWei <= 0n)
+        ) {
+          results.push({ type: "pruned", reason: "phantomGross", cycle });
+          continue;
+        } else if (!bestAssessment || bestProfit <= PROFIT_SENTINEL || bestAssessment.netProfitAfterGasMaticWei <= 0n) {
+          results.push({ type: "pruned", reason: "noGrossProfit", cycle });
+          continue;
         }
 
         results.push({ type: "success", bestResult, bestAssessment, bestGrossMatic, cycle });
@@ -454,6 +468,7 @@ export async function evaluatePipeline(
         if (res.reason === "missingState") prunedMissingState++;
         else if (res.reason === "invalidBounds") prunedInvalidBounds++;
         else if (res.reason === "noGrossProfit") prunedNoGrossProfit++;
+        else if (res.reason === "phantomGross") prunedPhantomGross++;
         else if (res.reason === "finalCheckFailed") {
           prunedFinalCheckFailed++;
           if (res.cycle) grossPositiveFinalFail++;
@@ -461,7 +476,12 @@ export async function evaluatePipeline(
       } else if (res.type === "success" && "cycle" in res) {
         simulated++;
         const cycleForRes = res.cycle;
-        if (res.bestGrossMatic > 0n && (maxGrossMatic === undefined || res.bestGrossMatic > maxGrossMatic)) {
+        if (
+          res.bestGrossMatic > 0n &&
+          res.bestAssessment &&
+          res.bestAssessment.netProfitAfterGasMaticWei > 0n &&
+          (maxGrossMatic === undefined || res.bestGrossMatic > maxGrossMatic)
+        ) {
           maxGrossMatic = res.bestGrossMatic;
         }
         if (res.bestResult && res.bestAssessment && res.bestAssessment.shouldExecute) {
@@ -500,6 +520,7 @@ export async function evaluatePipeline(
       noRate,
       prunedMissingState,
       prunedNoGrossProfit,
+      prunedPhantomGross,
       prunedInvalidBounds,
       prunedFinalCheckFailed,
       grossPositiveFinalFail,
@@ -518,6 +539,7 @@ export async function evaluatePipeline(
     prunedMissingState,
     prunedInvalidBounds,
     prunedNoGrossProfit,
+    prunedPhantomGross,
     prunedFinalCheckFailed,
     noRate,
     nearMissCount,

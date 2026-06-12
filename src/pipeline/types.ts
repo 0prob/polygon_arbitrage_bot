@@ -80,6 +80,7 @@ export interface PipelineResult {
   prunedMissingState: number;
   prunedInvalidBounds: number;
   prunedNoGrossProfit: number;
+  prunedPhantomGross?: number;
   prunedFinalCheckFailed: number;
   noRate: number;
   nearMissCount?: number;
