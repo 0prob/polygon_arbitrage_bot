@@ -25,8 +25,10 @@ let stopping = false;
 
 async function inspectorReady(): Promise<boolean> {
   try {
-    const res = await fetch(`http://127.0.0.1:${port}/`);
-    return res.status === 404;
+    const res = await fetch(`http://127.0.0.1:${port}/json/list`);
+    if (!res.ok) return false;
+    const list = (await res.json()) as Array<{ webSocketDebuggerUrl?: string }>;
+    return list.some((t) => Boolean(t.webSocketDebuggerUrl));
   } catch {
     return false;
   }
@@ -99,7 +101,8 @@ if (await inspectorReady()) {
   console.error(`[debug-run] inspector already on ${inspectUrl}`);
   console.error(`[debug-run] DEBUGGER_READY ${inspectUrl}`);
   console.error('[debug-run] attach via F5 → "Bot: Attach (9229 TCP)"');
-  await new Promise(() => {});
+  // Wait for the existing process; do not spin.
+  await new Promise<void>((resolve) => process.on("SIGINT", resolve));
 } else {
   child = launch();
 }

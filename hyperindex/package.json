@@ -17,12 +17,12 @@
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "1.4.0",
-    "envio": "3.1.2",
-    "viem": "2.52.0"
+    "envio": "3.2.0",
+    "viem": "2.52.2"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "typescript": "^5.4.5",
-    "vitest": "^2.0.0"
+    "@types/node": "25.9.3",
+    "typescript": "6.0.3",
+    "vitest": "4.1.8"
   }
 }
