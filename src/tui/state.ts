@@ -91,7 +91,8 @@ export interface SystemState {
 }
 
 export interface LogEntry {
-  time: Date;
+  /** Preformatted HH:MM:SS — formatting once at append time avoids per-frame Intl calls in the renderer. */
+  time: string;
   component: string;
   message: string;
 }
@@ -167,8 +168,15 @@ export function createInitialState(): TuiState {
   };
 }
 
+function formatLogTime(d: Date): string {
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
+
 function appendLog(state: TuiState, component: string, message: string): void {
-  state.log.push({ time: new Date(), component, message });
+  state.log.push({ time: formatLogTime(new Date()), component, message });
   // Trim to MAX_LOG in one splice rather than iterating
   if (state.log.length > MAX_LOG) {
     state.log.splice(0, state.log.length - MAX_LOG);

@@ -8,9 +8,35 @@ import { groupCompatibleCandidates, type CandidateExecution } from "../services/
 import type { RouteStateCache } from "../core/types/route.ts";
 import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 import { privateKeyToAccount } from "viem/accounts";
+import {
+  logHfPassMetrics,
+  summarizeCycleRateCoverage,
+} from "../infra/observability/metrics.ts";
+import { resolveInfraProfile, scaledConcurrency, type InfraProfile } from "../config/infra_profile.ts";
+import { getHfSnapshot, type HfReadSnapshot } from "./hf_snapshot.ts";
 
 const HF_INTERVAL = 200;
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
+
+/** Prefer shorter hop counts — 5-hop cycles dominate enumeration but rarely clear gas+fees. */
+function selectCyclesForSim(cycles: FoundCycle[], cap: number): FoundCycle[] {
+  if (cycles.length <= cap) return cycles;
+  const byHop: FoundCycle[][] = [[], [], [], []];
+  for (let i = 0; i < cycles.length; i++) {
+    const c = cycles[i];
+    const bucket = c.hopCount <= 2 ? 0 : c.hopCount === 3 ? 1 : c.hopCount === 4 ? 2 : 3;
+    byHop[bucket].push(c);
+  }
+  const selected: FoundCycle[] = [];
+  for (let b = 0; b < byHop.length; b++) {
+    const tier = byHop[b];
+    for (let i = 0; i < tier.length && selected.length < cap; i++) {
+      selected.push(tier[i]);
+    }
+    if (selected.length >= cap) break;
+  }
+  return selected;
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,10 +51,12 @@ export async function runHfTick(
 ): Promise<{ elapsed: number }> {
   const startTime = Date.now();
   const now = startTime;
+  const snap = getHfSnapshot(state);
   const currentPassTraceId = state.lastMempoolTraceId;
   state.lastMempoolTraceId = undefined;
 
-  const currentCycles = state.cachedCycles;
+  const currentCycles = snap.cachedCycles;
+  const infra = resolveInfraProfile(ctx.config);
 
   // === INDEXER LAG DETECTION ===
   let currentIndexerLag = 0;
@@ -84,11 +112,7 @@ export async function runHfTick(
 
   const isDegraded = currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS;
   const baseConc = ctx.config.routing.concurrency ?? 50;
-  let effectiveConcurrency = isDegraded ? Math.max(10, Math.floor(baseConc * 0.4)) : baseConc;
-  const rpsConc = ctx.config.rpc.chainstackRps ?? 250;
-  if (rpsConc <= 250) {
-    effectiveConcurrency = Math.max(4, Math.floor(effectiveConcurrency * 0.5));
-  }
+  const effectiveConcurrency = scaledConcurrency(baseConc, infra, isDegraded);
   const effectiveMinProfit = isDegraded
     ? ctx.config.execution.minProfitWei * 2n
     : ctx.config.execution.minProfitWei;
@@ -96,15 +120,18 @@ export async function runHfTick(
   const options: PipelineOptions = {
     minProfitMaticWei: effectiveMinProfit,
     gasPriceWei: gasSnapshot.gasPrice,
-    tokenToMaticRates: state.tokenToMaticRates,
-    tokenMetas: state.cachedMetas ?? undefined,
+    tokenToMaticRates: snap.tokenToMaticRates,
+    tokenMetas: snap.cachedMetas ?? undefined,
     slippageBps: ctx.config.execution.slippageBps,
     revertRiskBps: ctx.config.execution.revertRiskBps,
     flashLoanSource: ctx.config.execution.flashLoanSource === "AAVE_V3" ? FlashLoanSource.AAVE_V3 : FlashLoanSource.BALANCER,
     ternarySearchIterations: ctx.config.routing.ternarySearchIterations,
     maxPriceImpactThreshold: ctx.config.routing.maxPriceImpactThreshold,
+    v3ShallowMaxImpactBps: ctx.config.routing.v3ShallowMaxImpactBps,
     concurrency: effectiveConcurrency,
+    simBatchSize: infra.simBatchSize,
     roiSafetyCap: ctx.config.execution.roiSafetyCap,
+    pendingOverrideStore: ctx.pendingOverrideStore,
     logger: ctx.logger,
     onProgress: (current, total, profitable) => {
       if (current % 10 === 0 || current === total) {
@@ -120,23 +147,52 @@ export async function runHfTick(
     );
   }
 
-  // Focus on rate-covered cycles
+  // Focus on rate-covered cycles (oracle fallback when pool-graph rate is missing)
   const rateSafeCycles: FoundCycle[] = [];
+  const oracleFallbackRates = new Map<string, bigint>();
   for (const ci of cycleIndices) {
     const cycle = currentCycles[ci];
-    const startRate = state.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+    const tokenKey = cycle.startToken.toLowerCase();
+    let startRate = snap.tokenToMaticRates.get(tokenKey) ?? 0n;
+    if (startRate === 0n && ctx.priceOracle && ctx.config.oracle.enabled !== false) {
+      const cached = oracleFallbackRates.get(tokenKey);
+      if (cached != null) {
+        startRate = cached;
+      } else {
+        const { rate } = await ctx.priceOracle.getTokenToMaticRate(tokenKey, 0n, ctx.publicClient);
+        if (rate > 0n) {
+          oracleFallbackRates.set(tokenKey, rate);
+          startRate = rate;
+        }
+      }
+    }
     if (startRate > 0n) rateSafeCycles.push(cycle);
   }
 
   if (rateSafeCycles.length === 0 && cycleIndices.length > 0) {
     ctx.logger.debug(
-      { totalFiltered: cycleIndices.length, rates: state.tokenToMaticRates.size },
+      { totalFiltered: cycleIndices.length, rates: snap.tokenToMaticRates.size },
       "No rate-covered cycles this pass (coverage still growing)",
     );
   }
 
+  const simCap = infra.maxSimCycles;
+  const cyclesToSim =
+    rateSafeCycles.length > simCap ? selectCyclesForSim(rateSafeCycles, simCap) : rateSafeCycles;
+  const simSkipped = rateSafeCycles.length - cyclesToSim.length;
+  if (simSkipped > 0) {
+    ctx.logger.debug(
+      { total: rateSafeCycles.length, simCap, skipped: simSkipped },
+      "Capped simulation batch to top-scored cycles",
+    );
+  }
+  const simHopDist: Record<number, number> = {};
+  for (const c of cyclesToSim) {
+    simHopDist[c.hopCount] = (simHopDist[c.hopCount] ?? 0) + 1;
+  }
+
   const simStartTime = Date.now();
-  const result = await deps.evaluatePipeline(rateSafeCycles, stateCache, options, ctx.pendingStateOverlay);
+  const result = await deps.evaluatePipeline(cyclesToSim, stateCache, options, ctx.pendingStateOverlay);
   const simElapsed = Date.now() - simStartTime;
 
   ctx.metrics.opportunitiesFound += result.profitableCount;
@@ -153,7 +209,7 @@ export async function runHfTick(
     prunedFinalCheckFailed: result.prunedFinalCheckFailed,
     maxGrossMilliMatic: result.maxGrossProfitMatic !== undefined ? Number(result.maxGrossProfitMatic / 10n ** 15n) : 0,
     durationMs: simElapsed,
-    ratesCovered: state.tokenToMaticRates.size,
+    ratesCovered: snap.tokenToMaticRates.size,
     cacheSize: stateCache.size,
     rateSafeCycles: rateSafeCycles.length,
     totalCycles: cycleIndices.length,
@@ -165,7 +221,7 @@ export async function runHfTick(
       ctx.logger.debug({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
     } else if (result.profitable.length > 0) {
       await buildAndExecuteCandidates(
-        ctx, state, deps, result.profitable, currentPassTraceId, options, now, bus,
+        ctx, state, snap, deps, result.profitable, currentPassTraceId, options, now, infra, bus,
       );
     }
   }
@@ -181,12 +237,18 @@ export async function runHfTick(
     ctx.logger.debug?.({ heapMb, rssMb: Math.round(mem.rss / 1024 / 1024) }, "Memory snapshot");
   }
 
-  // Minimal HF budget instrumentation
-  const HF_BUDGET_MS = 160;
+  const HF_BUDGET_MS = infra.hfBudgetMs;
   if (elapsed > HF_BUDGET_MS) {
-    const timings = ctx.config.observability.logLevel === "debug" ? {} : undefined;
     ctx.logger.debug(
-      { elapsed, budget: HF_BUDGET_MS, cycles, ...(timings ? { timings } : {}) },
+      {
+        elapsed,
+        simMs: simElapsed,
+        budget: HF_BUDGET_MS,
+        cycles,
+        snapGeneration: snap.generation,
+        lfEnumInFlight: snap.lfEnumerationInFlight,
+        infraTier: infra.tier,
+      },
       "HF cycle exceeded budget — possible hot-path regression (reorg, heavy RPC, or expensive simulation)",
     );
   }
@@ -198,15 +260,14 @@ export async function runHfTick(
   ctx.metrics.executionReverts = trackerSummary.totalReverts;
   ctx.metrics.trackedRoutes = trackerSummary.trackedRoutes;
 
-  const maticPriceUsd = state.maticPriceUsd;
+  const maticPriceUsd = snap.maticPriceUsd;
 
   const isRpcConnected = ctx.rpcCircuit.isHealthy();
   const isHasuraConnected = ctx.hasuraCircuit.isHealthy();
   const isWsConnected = !!ctx.wsSubscriber && ctx.wsSubscriber.isConnected();
 
-  const trackerSummary2 = ctx.executionService.tracker.summary;
   const successRateVal =
-    trackerSummary2.totalAttempts > 0 ? Math.round((trackerSummary2.totalSuccesses / trackerSummary2.totalAttempts) * 100) : 0;
+    trackerSummary.totalAttempts > 0 ? Math.round((trackerSummary.totalSuccesses / trackerSummary.totalAttempts) * 100) : 0;
 
   bus?.emit({
     type: "heartbeat",
@@ -223,7 +284,7 @@ export async function runHfTick(
     peakCpm: ctx.metrics.peakCyclesPerMinute,
     successRate: successRateVal,
     maxHotPathMs: ctx.metrics.maxHotPathDurationMs,
-    trackedRoutes: trackerSummary2.trackedRoutes,
+    trackedRoutes: trackerSummary.trackedRoutes,
   });
   bus?.emit({ type: "connection_status", subsystem: "rpc", status: isRpcConnected ? "connected" : "disconnected" });
   bus?.emit({ type: "connection_status", subsystem: "hasura", status: isHasuraConnected ? "connected" : "disconnected" });
@@ -255,36 +316,51 @@ export async function runHfTick(
     });
   }
 
+  logHfPassMetrics(ctx.logger, {
+    elapsedMs: elapsed,
+    simMs: simElapsed,
+    cyclesTotal: cycleIndices.length,
+    rateSafe: rateSafeCycles.length,
+    simCap,
+    simSkipped,
+    simHopDist,
+    ratesCount: snap.tokenToMaticRates.size,
+    attempted: result.attempted,
+    simulated: result.simulated,
+    profitable: result.profitableCount,
+    prunedMissing: result.prunedMissingState,
+    prunedNoGross: result.prunedNoGrossProfit,
+    prunedFinalCheck: result.prunedFinalCheckFailed,
+    nearMiss: result.nearMissCount ?? 0,
+    maxGrossMilliMatic:
+      result.maxGrossProfitMatic !== undefined ? Number(result.maxGrossProfitMatic / 10n ** 15n) : 0,
+    gasPriceGwei: Number(gasSnapshot.gasPrice) / 1e9,
+    indexerLag: currentIndexerLag,
+    rpcOk: isRpcConnected,
+    hasuraOk: isHasuraConnected,
+    wsOk: isWsConnected,
+    tier: ctx.tierManager.getCurrent(),
+    degraded: isDegraded,
+    quarantinedRoutes: qm.size,
+    tierAllowsExecute: ctx.tierManager.shouldExecute(),
+    cycleRates: summarizeCycleRateCoverage(currentCycles, snap.tokenToMaticRates, simCap),
+    lfEnumInFlight: snap.lfEnumerationInFlight,
+    snapGeneration: snap.generation,
+  });
+
   return { elapsed };
-}
-
-export function computeMaticPriceUsd(tokenToMaticRates: Map<string, bigint>): number {
-  let maticPriceUsd = 0.7;
-  const usdcAddress = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359".toLowerCase();
-  const usdceAddress = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174".toLowerCase();
-  const usdtAddress = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f".toLowerCase();
-  const daiAddress = "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063".toLowerCase();
-
-  const usdcRate = tokenToMaticRates.get(usdcAddress) || tokenToMaticRates.get(usdceAddress) || tokenToMaticRates.get(usdtAddress);
-  if (usdcRate && usdcRate > 0n) {
-    maticPriceUsd = 1e30 / Number(usdcRate);
-  } else {
-    const daiRate = tokenToMaticRates.get(daiAddress);
-    if (daiRate && daiRate > 0n) {
-      maticPriceUsd = 1e18 / Number(daiRate);
-    }
-  }
-  return maticPriceUsd;
 }
 
 async function buildAndExecuteCandidates(
   ctx: RuntimeContext,
   state: PassLoopState,
+  snap: HfReadSnapshot,
   deps: PassLoopDeps,
   profitable: PipelineResult["profitable"],
   currentPassTraceId: string | undefined,
   options: PipelineOptions,
   now: number,
+  infra: InfraProfile,
   bus?: EventBus,
 ): Promise<void> {
   const { executorAddress } = ctx.config.execution;
@@ -299,8 +375,7 @@ async function buildAndExecuteCandidates(
     const routeKey = profitableItem.cycle.id ?? deps.routeKeyFromEdges(profitableItem.cycle.edges);
 
     const lastSubmit = state.recentRouteTimestamps.get(routeKey);
-    const lowInfraForCooldown = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
-    const ROUTE_COOLDOWN_MS = lowInfraForCooldown ? 12000 : 5000;
+    const ROUTE_COOLDOWN_MS = infra.routeCooldownMs;
     if (lastSubmit && now - lastSubmit < ROUTE_COOLDOWN_MS) {
       ctx.logger.debug({ routeKey, lastSubmit, now }, "Route recently submitted, skipping cooldown");
       return null;
@@ -334,7 +409,6 @@ async function buildAndExecuteCandidates(
       path,
       roi: profitableItem.assessment.roi,
     });
-
     try {
       const candidate = deps.buildExecutionCandidate(
         profitableItem,
@@ -383,6 +457,11 @@ async function buildAndExecuteCandidates(
           ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
           return null;
         }
+        if (dryRun.gasUsed != null && dryRun.gasUsed > 0n) {
+          candidate.gasLimit = (dryRun.gasUsed * 120n) / 100n + 1n;
+        } else if (candidate.gasLimit == null && profitableItem.result.totalGas > 0) {
+          candidate.gasLimit = BigInt(Math.ceil(profitableItem.result.totalGas * 1.2));
+        }
       }
 
       return { candidate, profitable: profitableItem, routeKey };
@@ -400,12 +479,67 @@ async function buildAndExecuteCandidates(
     if (res) candidates.push(res);
   }
 
+  if (ctx.config.ranking.mode === "statistical" && candidates.length > 1) {
+    const { sortCandidatesByEv } = await import("../services/ranking/scorer.ts");
+    const rankInputs = candidates.map((c) => ({
+      ...c.candidate,
+      gasPriceWei: options.gasPriceWei,
+    }));
+    const sorted = sortCandidatesByEv(
+      rankInputs,
+      ctx.executionService.tracker,
+      (k) => ctx.executionService.isQuarantined(k),
+    );
+    const order = new Map(sorted.map((c, i) => [c.routeKey, i]));
+    candidates.sort((a, b) => (order.get(a.routeKey) ?? 0) - (order.get(b.routeKey) ?? 0));
+  } else if (ctx.config.ranking.mode === "ml" && candidates.length > 1) {
+    try {
+      const { readFile } = await import("node:fs/promises");
+      const raw = JSON.parse(await readFile(ctx.config.ranking.modelPath, "utf8"));
+      const { loadRankingModel, scoreWithModel } = await import("../services/ranking/model.ts");
+      const model = loadRankingModel(raw);
+      if (model) {
+        candidates.sort((a, b) => {
+          const fa = {
+            hopCount: a.profitable.cycle.hopCount,
+            expectedProfit: Number(a.candidate.expectedProfit ?? 0n),
+            gasLimit: Number(a.candidate.gasLimit ?? 0n),
+          };
+          const fb = {
+            hopCount: b.profitable.cycle.hopCount,
+            expectedProfit: Number(b.candidate.expectedProfit ?? 0n),
+            gasLimit: Number(b.candidate.gasLimit ?? 0n),
+          };
+          return scoreWithModel(fb, model) - scoreWithModel(fa, model);
+        });
+      }
+    } catch {
+      // fall back to submission order when model unavailable
+    }
+  }
+
+  for (const c of candidates) {
+    void ctx.executionService.tracker.logOpportunityFeatures(
+      `${ctx.config.paths.dataDir}/opportunity-features.ndjson`,
+      {
+        routeKey: c.routeKey,
+        expectedProfit: c.candidate.expectedProfit?.toString(),
+        gasLimit: c.candidate.gasLimit?.toString(),
+        hopCount: c.profitable.cycle.hopCount,
+        protocols: c.profitable.cycle.edges.map((e) => e.protocol),
+      },
+    );
+  }
+
   if (candidates.length > 0) {
     bus?.emit({ type: "pipeline_stage", stage: "EXECUTING" });
     const candidateExecs = candidates.map((c) => c.candidate);
     const groups = groupCompatibleCandidates(candidateExecs);
 
     ctx.logger.info({ total: candidates.length, groups: groups.length }, "Executing opportunities in batches");
+
+    const victimSignal = state.lastLargeSwapSignal;
+    state.lastLargeSwapSignal = undefined;
 
     for (const group of groups) {
       if (!ctx.isRunning) break;
@@ -428,8 +562,31 @@ async function buildAndExecuteCandidates(
         });
       }
 
-      const results =
-        group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
+      let results: Awaited<ReturnType<typeof ctx.executionService.execute>>[] = [];
+      let usedBackrun = false;
+
+      if (ctx.config.mev?.enabled && victimSignal && group.length === 1) {
+        const match = candidates.find((c) => c.routeKey === group[0].routeKey);
+        if (match) {
+          const { submitBackrunBundle } = await import("../services/mev/backrun.ts");
+          const backrun = await submitBackrunBundle(
+            ctx,
+            { victim: victimSignal, candidate: group[0], operatorAddress },
+            victimSignal.rawTx ?? "",
+          );
+          if (backrun.submitted) {
+            usedBackrun = true;
+            results = [{ success: true, txHash: victimSignal.txHash }];
+          } else if (backrun.mode !== "public_fallback") {
+            ctx.logger.debug({ detail: backrun.detail }, "MEV backrun skipped");
+          }
+        }
+      }
+
+      if (!usedBackrun) {
+        results =
+          group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
+      }
 
       for (let i = 0; i < results.length; i++) {
         const execResult = results[i];
@@ -446,7 +603,7 @@ async function buildAndExecuteCandidates(
           const cand = candidates.find((c) => c.routeKey === routeKey);
           let profitWei = 0n;
           if (cand) {
-            const startRate = state.tokenToMaticRates.get(cand.profitable.cycle.startToken.toLowerCase()) ?? 0n;
+            const startRate = snap.tokenToMaticRates.get(cand.profitable.cycle.startToken.toLowerCase()) ?? 0n;
             const profitInTokens = tracked ? tracked.profit : cand.profitable.assessment.netProfitAfterGas;
             if (startRate > 0n) {
               profitWei = (profitInTokens * startRate) / 1000000000000000000n;

@@ -3,15 +3,22 @@ import type { SignalHandler, MempoolSignal, LargeSwapSignal } from "./signals.ts
 import { decodeSwapCalldata } from "./decoder.ts";
 import { join } from "node:path";
 import type { PendingStateOverlay } from "../../core/types/overlay.ts";
+import type { PoolState } from "../../core/types/pool.ts";
 import { AbiRegistry } from "../../core/abis/registry.ts";
 import { COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
 import type { Hex } from "viem";
 import type { Address } from "../../core/types/common.ts";
+import { PendingOverrideStore } from "./pending-override.ts";
+import { buildStateOverride } from "./state-override-builder.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
   largeSwapThresholdWei: bigint;
   dataDir?: string;
+  /** Lookup pool state for building Geth state overrides. */
+  getPoolState?: (poolAddress: string) => PoolState | undefined;
+  /** Invalidate cached tick data after mempool projection mutates pool state. */
+  invalidatePoolTicks?: (poolAddress: string) => void;
 }
 
 export const DEFAULT_MEMPOOL_OPTIONS: MempoolServiceOptions = {
@@ -41,6 +48,7 @@ export class MempoolService {
     private logger: Logger,
     private options: MempoolServiceOptions = DEFAULT_MEMPOOL_OPTIONS,
     private overlay?: PendingStateOverlay,
+    private pendingOverrideStore?: PendingOverrideStore,
   ) {
     this.abiRegistry = new AbiRegistry();
     for (const [tag, abi] of Object.entries(COMPILED_ABIS)) {
@@ -168,14 +176,12 @@ export class MempoolService {
           this.overlay.update(decoded.poolAddress, { reserve1: amount });
         }
       } else if (proto.startsWith("UNISWAP_V3") && decoded.zeroForOne !== undefined) {
-        // V3 overlay: mark state dirty for the dry runner by setting a sentinel.
-        // The exact sqrtPriceX96 projection requires running the swap math, which
-        // is deferred to the dry runner. Setting { pendingV3: true } triggers a
-        // fresh RPC read for this pool before the dry run.
         this.logger.debug({ pool: decoded.poolAddress }, "mempool: marking V3 pool dirty for overlay");
         this.overlay.update(decoded.poolAddress, { pendingV3: true });
       }
     }
+
+    this.applyPendingOverride(decoded, tx.hash);
 
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
     const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
@@ -218,6 +224,28 @@ export class MempoolService {
       zeroForOne: decoded.zeroForOne,
     };
     this.emit({ type: "large_swap", data: signal });
+  }
+
+  private applyPendingOverride(decoded: import("./decoder.ts").DecodedSwap, txHash: string): void {
+    if (!this.pendingOverrideStore || !this.options.getPoolState) return;
+
+    const poolAddr = decoded.poolAddress.toLowerCase();
+    const currentState = this.options.getPoolState(poolAddr);
+    if (!currentState) return;
+
+    const override = buildStateOverride({
+      poolAddress: decoded.poolAddress,
+      protocol: decoded.protocol,
+      tokenIn: decoded.tokenIn,
+      tokenOut: decoded.tokenOut,
+      amountIn: decoded.amountIn,
+      zeroForOne: decoded.zeroForOne,
+      currentState,
+    });
+    if (!override) return;
+
+    this.pendingOverrideStore.update(override, [poolAddr], txHash);
+    this.options.invalidatePoolTicks?.(poolAddr);
   }
 
   private trackUnknownSelector(selector: string, to: string, hash: string): void {

@@ -35,8 +35,29 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   ROUTING_CONCURRENCY: ["routing", "concurrency"],
   TERNARY_SEARCH_ITERATIONS: ["routing", "ternarySearchIterations"],
   MAX_PRICE_IMPACT_THRESHOLD: ["routing", "maxPriceImpactThreshold"],
+  V3_SHALLOW_MAX_IMPACT_BPS: ["routing", "v3ShallowMaxImpactBps"],
+  TICK_FETCH_ENABLED: ["routing", "tickFetchEnabled"],
+  TICK_WORD_RANGE: ["routing", "tickWordRange"],
+  TICK_REFRESH_ON_MOVE: ["routing", "tickRefreshOnMove"],
   GRAPH_FULL_REBUILD_INTERVAL: ["routing", "graphFullRebuildInterval"],
   ROUTING_CYCLE_FINDER: ["routing", "cycleFinder"],
+
+  SYNC_HEAD_DRIVEN_REFRESH: ["sync", "headDrivenRefresh"],
+  SYNC_HEAD_REFRESH_MAX_POOLS: ["sync", "headRefreshMaxPools"],
+
+  ORACLE_ENABLED: ["oracle", "enabled"],
+  ORACLE_PYTH_HERMES_URL: ["oracle", "pythHermesUrl"],
+  ORACLE_MAX_DIVERGENCE_BPS: ["oracle", "maxDivergenceBps"],
+
+  MEV_ENABLED: ["mev", "enabled"],
+  MEV_FASTLANE_RELAY_URL: ["mev", "fastlaneRelayUrl"],
+  MEV_PUBLIC_BACKRUN_FALLBACK: ["mev", "publicBackrunFallback"],
+  MEV_JIT_ENABLED: ["mev", "jitEnabled"],
+  MEV_SANDWICH_ENABLED: ["mev", "sandwichEnabled"],
+  MEV_MAX_BID_BPS: ["mev", "maxBidBps"],
+
+  RANKING_MODE: ["ranking", "mode"],
+  RANKING_MODEL_PATH: ["ranking", "modelPath"],
 
   MIN_PROFIT_WEI: ["execution", "minProfitWei"],
   SLIPPAGE_BPS: ["execution", "slippageBps"],

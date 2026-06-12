@@ -3,6 +3,7 @@ import type { PoolMeta } from "../core/types/pool.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 import type { EventBus } from "../tui/events.ts";
 import { computeMaticRates } from "../pipeline/index.ts";
+import { logSampled, METRICS_INTERVAL, summarizeTokenRates } from "../infra/observability/metrics.ts";
 
 export function runRateComputation(
   ctx: RuntimeContext,
@@ -52,6 +53,17 @@ export function runRateComputation(
   }
 
   const tokenToMaticRates = rates!;
+
+  if (hasuraPoolsCache && hasuraPoolsCache.length > 0) {
+    logSampled(
+      ctx.logger,
+      "rates:coverage",
+      "debug",
+      "Token rate coverage",
+      summarizeTokenRates(hasuraPoolsCache, tokenToMaticRates),
+      METRICS_INTERVAL.tokenRates,
+    );
+  }
 
   return {
     cachedRates: rates,

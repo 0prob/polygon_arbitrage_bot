@@ -108,3 +108,8 @@ export function buildGraph(
   }
   return { adjacency, poolMeta, stateRefs, tokens };
 }
+
+/** Clear edge LRU cache (vitest isolation). */
+export function resetGraphCacheForTests(): void {
+  edgesCache.clear();
+}

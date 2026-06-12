@@ -1,10 +1,13 @@
 import type { PoolState } from "../core/types/pool.ts";
 import { isInvalidState } from "../core/types/pool.ts";
 import type { PendingStateOverlay } from "../core/types/overlay.ts";
+import type { PendingOverrideStore } from "../services/mempool/pending-override.ts";
+import { getProjectedPoolState } from "../services/mempool/override_projection.ts";
 import type { Address } from "../core/types/common.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
 import { simulateV2Swap, resolveV2Fee } from "../core/math/uniswap_v2.ts";
 import { simulateV3Swap } from "../core/math/uniswap_v3.ts";
+import { simulateV4Swap } from "../core/math/uniswap_v4.ts";
 import { simulateCurveSwap } from "../core/math/curve.ts";
 import { simulateBalancerSwap } from "../core/math/balancer.ts";
 import { simulateDodoSwap } from "../core/math/dodo.ts";
@@ -14,6 +17,27 @@ import type { SwapEdge, SimulationEdge } from "./types.ts";
 import { USDC, USDC_NATIVE, USDT, WBTC } from "../config/addresses.ts";
 import { normalizeProtocol } from "../core/utils/protocol.ts";
 
+function isShallowV3State(state: PoolState | undefined): boolean {
+  if (!state) return false;
+  const ticks = (state as Record<string, unknown>).ticks;
+  return !(ticks instanceof Map && ticks.size > 0);
+}
+
+function effectiveImpactThreshold(
+  normalizedProtocol: string,
+  state: PoolState | undefined,
+  maxImpactThreshold: number,
+  v3ShallowMaxImpactBps?: number,
+): number {
+  if (
+    (normalizedProtocol === "V3" || normalizedProtocol === "V4") &&
+    isShallowV3State(state)
+  ) {
+    const shallowBps = v3ShallowMaxImpactBps ?? 30;
+    return Math.min(maxImpactThreshold, shallowBps / 10_000);
+  }
+  return maxImpactThreshold;
+}
 
 function bnToSafeNumber(v: bigint): number {
   if (v === 0n) return 0;
@@ -101,7 +125,9 @@ export function simulateHop(
   _overlay?: PendingStateOverlay,
 ): SimulatedHopResult {
   const state = edge.stateRef;
-  if (!state || isInvalidState(state)) throw new Error(`No valid state for pool ${edge.poolAddress}`);
+  if (!state || isInvalidState(state)) {
+    throw new Error(`No valid state for pool ${edge.poolAddress}`);
+  }
 
   let result: SimulatedHopResult;
 
@@ -129,10 +155,26 @@ export function simulateHop(
       result = simulateV2Swap(state, amountIn, edge.zeroForOne, feeNum, denominator);
       break;
     }
+    case "V3": {
+      // edge.fee is protocol-native: pips (1e6 = 100%) for V3, but Kyber
+      // Elastic factories emit fee-units (1e5 = 100%). simulateV3Swap expects
+      // pips, so scale Elastic fees up 10x or the fee is underestimated 10x.
+      let feePips = edge.fee != null ? Number(edge.fee) : undefined;
+      if (feePips != null && edge.protocol.toUpperCase().includes("ELASTIC")) {
+        feePips *= 10;
+      }
+      result = extractGasResult(simulateV3Swap(state, amountIn, edge.zeroForOne, feePips));
       break;
-    case "V3":
-      result = extractGasResult(simulateV3Swap(state, amountIn, edge.zeroForOne, edge.fee != null ? Number(edge.fee) : undefined));
+    }
+    case "V4": {
+      let feePips = edge.fee != null ? Number(edge.fee) : undefined;
+      const v4 = simulateV4Swap(state, amountIn, edge.zeroForOne, feePips);
+      if (v4.rejectedReason) {
+        throw new Error(`V4 swap rejected: ${v4.rejectedReason}`);
+      }
+      result = extractGasResult(v4);
       break;
+    }
     case "CURVE":
       result = simulateCurveSwap(amountIn, state, edge.tokenInIdx ?? 0, edge.tokenOutIdx ?? 1);
       break;
@@ -152,8 +194,18 @@ export function simulateHop(
   return result;
 }
 
-function extractGasResult(r: { amountOut: bigint; gasEstimate: number }): SimulatedHopResult {
-  return { amountOut: r.amountOut, gasEstimate: r.gasEstimate };
+function extractGasResult(r: {
+  amountOut: bigint;
+  gasEstimate: number;
+  shallow?: boolean;
+  maxReliableAmountIn?: bigint;
+}): SimulatedHopResult {
+  return {
+    amountOut: r.amountOut,
+    gasEstimate: r.gasEstimate,
+    shallow: r.shallow,
+    maxReliableAmountIn: r.maxReliableAmountIn,
+  };
 }
 
 export function simulateRoute(
@@ -244,6 +296,7 @@ export function buildSimulationEdges(
   edges: SwapEdge[],
   stateCache: RouteStateCache,
   overlay?: PendingStateOverlay,
+  overrideStore?: PendingOverrideStore,
 ): SimulationEdge[] | null {
   const simEdges: SimulationEdge[] = new Array(edges.length);
 
@@ -255,7 +308,7 @@ export function buildSimulationEdges(
       // console.warn(`Missing base state for pool ${poolAddr}`);
       return null;
     }
-    const state = overlay?.getProjected(edge.poolAddress as Address, baseState) ?? baseState;
+    const state = getProjectedPoolState(poolAddr, baseState, overlay, overrideStore);
 
     if (isInvalidState(state)) {
       // console.warn(`Invalid state for pool ${poolAddr}`);
@@ -292,6 +345,7 @@ export function simulateMinimalWithImpactCheck(
   prebuiltSimEdges: SimulationEdge[] | undefined,
   maxImpactThreshold: number,
   overlay?: PendingStateOverlay,
+  v3ShallowMaxImpactBps?: number,
 ): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
   const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
   if (!simEdges) throw new Error("Missing state for simulation");
@@ -308,7 +362,13 @@ export function simulateMinimalWithImpactCheck(
       const spotPrice = computeSpotPrice(simEdge.normalizedProtocol, simEdge.zeroForOne, simEdge.tokenInIdx, simEdge.tokenOutIdx, state);
       if (spotPrice > 0) {
         const impact = (spotPrice - realizedPrice) / spotPrice;
-        if (impact > maxImpactThreshold) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
+        const threshold = effectiveImpactThreshold(
+          simEdge.normalizedProtocol,
+          state,
+          maxImpactThreshold,
+          v3ShallowMaxImpactBps,
+        );
+        if (impact > threshold) return { success: false, profit: 0n, totalGas: 0, amountOut: 0n };
       }
     }
 

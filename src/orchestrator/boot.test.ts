@@ -68,6 +68,27 @@ describe("bootApplication", () => {
         liquidityFloorUsd: 0,
         enumerationMaxPaths: 1,
       },
+      sync: {
+        headDrivenRefresh: true,
+        headRefreshMaxPools: 50,
+      },
+      oracle: {
+        enabled: false,
+        pythHermesUrl: "https://hermes.pyth.network",
+        maxDivergenceBps: 500,
+      },
+      mev: {
+        enabled: false,
+        fastlaneRelayUrl: "https://polygon-rpc.fastlane.xyz",
+        publicBackrunFallback: true,
+        jitEnabled: false,
+        sandwichEnabled: false,
+        maxBidBps: 500,
+      },
+      ranking: {
+        mode: "off" as const,
+        modelPath: "data/ranking-model.json",
+      },
       mempool: {
         enabled: false,
         websocketUrl: "",

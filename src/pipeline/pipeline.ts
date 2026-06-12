@@ -8,12 +8,13 @@ import {
   computeSpotPrice,
 } from "./simulator.ts";
 import { getDynamicSearchBounds } from "./finder.ts";
-import { computeProfit, computeProfitCore, tokensToMaticWei } from "../core/assessment/profit.ts";
+import { computeProfit, computeProfitCore, tokensToMaticWei, type ProfitCoreNumbers } from "../core/assessment/profit.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
 import type { PoolState } from "../core/types/pool.ts";
 import type { PendingStateOverlay } from "../core/types/overlay.ts";
 import { solveV2Optimal } from "../core/math/uniswap_v2_solver.ts";
 import { solveBrentOptimal } from "../core/math/hybrid_solver.ts";
+import { logSampled, METRICS_INTERVAL } from "../infra/observability/metrics.ts";
 
 /**
  * Pipeline evaluation (ternary search + profit assessment).
@@ -28,7 +29,7 @@ interface MinimalEvalHolder {
   netProfitAfterGasMaticWei: bigint;
   assessment: ProfitAssessment | null;
   result: RouteSimulationResult | null;
-  core?: any;
+  core: ProfitCoreNumbers;
 }
 
 function evaluateAmount(
@@ -56,7 +57,15 @@ function evaluateAmount(
         simGas = minimal.totalGas;
       } else {
         const maxImpact = options.maxPriceImpactThreshold ?? 0.15;
-        const combined = simulateMinimalWithImpactCheck(cycle.edges, amount, stateCache, prebuiltSimEdges, maxImpact, overlay);
+        const combined = simulateMinimalWithImpactCheck(
+          cycle.edges,
+          amount,
+          stateCache,
+          prebuiltSimEdges,
+          maxImpact,
+          overlay,
+          options.v3ShallowMaxImpactBps,
+        );
         if (!combined.success) return { result: null, assessment: null, grossProfitMatic: null };
         simProfit = combined.profit;
         simGas = combined.totalGas;
@@ -78,13 +87,17 @@ function evaluateAmount(
           if (spotPrice > 0 && fullResult.hopAmounts[i] > 0n) {
             const realizedPrice = Number(fullResult.hopAmounts[i + 1]) / Number(fullResult.hopAmounts[i]);
             const impact = (spotPrice - realizedPrice) / spotPrice;
-            if (impact > maxImpact) return { result: null, assessment: null, grossProfitMatic: null };
+            const threshold = (simEdge.normalizedProtocol === "V3" || simEdge.normalizedProtocol === "V4") &&
+              (!(state.ticks instanceof Map) || state.ticks.size === 0)
+              ? Math.min(maxImpact, (options.v3ShallowMaxImpactBps ?? 30) / 10_000)
+              : maxImpact;
+            if (impact > threshold) return { result: null, assessment: null, grossProfitMatic: null };
           }
         }
       }
     }
 
-    const startRate = startRateOverride ?? options.tokenToMaticRates.get(cycle.startToken) ?? 0n;
+    const startRate = startRateOverride ?? options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
     if (startRate === 0n) {
       return { result: null, assessment: null, grossProfitMatic: null };
     }
@@ -93,8 +106,8 @@ function evaluateAmount(
     if (!minimalForSearch && fullResult) {
       for (let i = 0; i < cycle.edges.length; i++) {
         const edge = cycle.edges[i];
-        const rateIn = options.tokenToMaticRates.get(edge.tokenIn) ?? 0n;
-        const rateOut = options.tokenToMaticRates.get(edge.tokenOut) ?? 0n;
+        const rateIn = options.tokenToMaticRates.get(edge.tokenIn.toLowerCase()) ?? 0n;
+        const rateOut = options.tokenToMaticRates.get(edge.tokenOut.toLowerCase()) ?? 0n;
 
         if (rateIn > 0n && rateOut > 0n) {
           const valIn = tokensToMaticWei(fullResult.hopAmounts[i], rateIn);
@@ -113,10 +126,9 @@ function evaluateAmount(
     let assessment: ProfitAssessment | null = null;
     let netProfitAfterGasMaticWei = 0n;
 
-    if (minimalForSearch) {
-      // Numeric-only path: avoid full ProfitAssessment allocation during every ternary probe
-      if (outHolder && !outHolder.core) {
-        outHolder.core = {} as any;
+    if (minimalForSearch && outHolder) {
+      if (!outHolder.core) {
+        outHolder.core = {} as ProfitCoreNumbers;
       }
       const core = computeProfitCore(
         simProfit,
@@ -184,7 +196,11 @@ function evaluateAmount(
       outHolder.netProfitAfterGasMaticWei = netProfitAfterGasMaticWei;
       outHolder.assessment = assessment;
       outHolder.result = null;
-      return outHolder as any;
+      return {
+        result: outHolder.result,
+        assessment: outHolder.assessment,
+        grossProfitMatic: outHolder.grossProfitMatic,
+      };
     }
 
     return { result: fullResult, assessment, grossProfitMatic: grossMatic };
@@ -210,24 +226,36 @@ export async function evaluatePipeline(
   let prunedFinalCheckFailed = 0;
   let noRate = 0;
   let maxGrossMatic: bigint | undefined = undefined;
+  let nearMissCount = 0;
+  let grossPositiveFinalFail = 0;
 
   const CONCURRENCY = options.concurrency ?? 75;
+  const yieldEvery = options.simBatchSize ?? Math.min(25, CONCURRENCY);
   const batches: FoundCycle[][] = [];
   for (let i = 0; i < cycles.length; i += CONCURRENCY) {
     batches.push(cycles.slice(i, i + CONCURRENCY));
   }
 
+  type CycleEvalResult =
+    | { type: "noRate"; cycle: FoundCycle }
+    | { type: "pruned"; reason: string; cycle: FoundCycle }
+    | { type: "success"; bestResult: RouteSimulationResult | null; bestAssessment: ProfitAssessment | null; bestGrossMatic: bigint; cycle: FoundCycle }
+    | { type: "error"; cycle: FoundCycle };
+
   for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
     const batch = batches[batchIdx];
     if (profitable.length >= 10) break;
 
-    // Yield to event loop every 2 batches to prevent starvation of
-    // mempool signals, WebSocket newHead events, etc.
-    if (batchIdx > 0 && batchIdx % 2 === 0) {
-      await new Promise((r) => setTimeout(r, 0));
+    if (batchIdx > 0) {
+      await new Promise((r) => setImmediate(r));
     }
 
-    const results = batch.map((cycle) => {
+    const results: CycleEvalResult[] = [];
+    for (let ci = 0; ci < batch.length; ci++) {
+      if (ci > 0 && ci % yieldEvery === 0) {
+        await new Promise((r) => setImmediate(r));
+      }
+      const cycle = batch[ci];
       attempted++;
       try {
         // ... (the rest of the mapping logic remains)
@@ -235,17 +263,27 @@ export async function evaluatePipeline(
         // This lets more cycles (with partial rate coverage on intermediates) reach ternary search + assessment
         // while the rate map grows. Missing intermediate rates => 0 contrib to grossMatic (conservative under-estimate)
         // and their extreme loss/gain checks are skipped (see earlier rateIn/rateOut guards).
-        const startRate = options.tokenToMaticRates.get(cycle.startToken) ?? 0n;
-        if (startRate === 0n) return { type: "noRate" as const, cycle };
+        const startRate = options.tokenToMaticRates.get(cycle.startToken.toLowerCase()) ?? 0n;
+        if (startRate === 0n) {
+          results.push({ type: "noRate", cycle });
+          continue;
+        }
 
         const { low, high } = getDynamicSearchBounds(cycle, stateCache, options.tokenToMaticRates, options.maxFlashLoanUsd ?? 50_000);
         if (low === 0n || low >= high) {
-          return { type: "pruned" as const, reason: "invalidBounds", cycle };
+          results.push({ type: "pruned", reason: "invalidBounds", cycle });
+          continue;
         }
 
-        const prebuiltSimEdges = buildSimulationEdges(cycle.edges, stateCache, overlay);
+        const prebuiltSimEdges = buildSimulationEdges(
+          cycle.edges,
+          stateCache,
+          overlay,
+          options.pendingOverrideStore,
+        );
         if (!prebuiltSimEdges) {
-          return { type: "pruned" as const, reason: "missingState", cycle };
+          results.push({ type: "pruned", reason: "missingState", cycle });
+          continue;
         }
         let bestResult: RouteSimulationResult | null = null;
         let bestAssessment: ProfitAssessment | null = null;
@@ -258,11 +296,8 @@ export async function evaluatePipeline(
         if (allV2) {
           const xStar = solveV2Optimal(prebuiltSimEdges);
           if (xStar <= 0n) {
-            return {
-              type: "pruned" as const,
-              reason: "noGrossProfit",
-              cycle,
-            };
+            results.push({ type: "pruned", reason: "noGrossProfit", cycle });
+            continue;
           }
           bestAmount = xStar > high ? high : xStar < low ? low : xStar;
           const evalOpt = evaluateAmount(cycle, bestAmount, stateCache, options, true, true, prebuiltSimEdges, undefined, overlay, startRate);
@@ -272,11 +307,8 @@ export async function evaluatePipeline(
             bestAssessment = evalOpt.assessment;
             bestProfit = evalOpt.assessment.netProfitAfterGasMaticWei;
           } else {
-            return {
-              type: "pruned" as const,
-              reason: "noGrossProfit",
-              cycle,
-            };
+            results.push({ type: "pruned", reason: "noGrossProfit", cycle });
+            continue;
           }
         } else {
           const maxIters = Math.min(10, options.ternarySearchIterations ?? 8);
@@ -306,11 +338,12 @@ export async function evaluatePipeline(
                 }
               }
               if (!anyProfitable) {
-                return {
-                  type: (evalLow.grossProfitMatic === null ? "noRate" : "pruned") as "noRate" | "pruned",
+                results.push({
+                  type: evalLow.grossProfitMatic === null ? "noRate" : "pruned",
                   reason: "noGrossProfit",
                   cycle,
-                };
+                });
+                continue;
               }
             }
           }
@@ -320,7 +353,7 @@ export async function evaluatePipeline(
             netProfitAfterGasMaticWei: 0n,
             assessment: null,
             result: null,
-            core: {} as any,
+            core: {} as ProfitCoreNumbers,
           };
 
           const evaluateBrent = (amount: bigint) => {
@@ -358,11 +391,12 @@ export async function evaluatePipeline(
             bestResult = final.result;
             bestAssessment = final.assessment;
           } else {
-            return { type: "pruned" as const, reason: "finalCheckFailed", cycle };
+            results.push({ type: "pruned", reason: "finalCheckFailed", cycle });
+            continue;
           }
         }
 
-        return { type: "success" as const, bestResult, bestAssessment, bestGrossMatic, cycle };
+        results.push({ type: "success", bestResult, bestAssessment, bestGrossMatic, cycle });
       } catch (err) {
         if (options.logger) {
           options.logger.error?.(
@@ -374,9 +408,9 @@ export async function evaluatePipeline(
             "Unexpected error evaluating pipeline cycle",
           );
         }
-        return { type: "error" as const, cycle };
+        results.push({ type: "error", cycle });
       }
-    });
+    }
 
     type EvalSuccess = {
       type: "success";
@@ -386,7 +420,10 @@ export async function evaluatePipeline(
       cycle: FoundCycle;
     };
     const sortedResults = results
-      .filter((r): r is EvalSuccess => r.type === "success")
+      .filter(
+        (r): r is EvalSuccess =>
+          r.type === "success" && r.bestResult != null && r.bestAssessment != null,
+      )
       .sort((a, b) => (b.bestGrossMatic > a.bestGrossMatic ? 1 : b.bestGrossMatic < a.bestGrossMatic ? -1 : 0));
 
     if (sortedResults.length > 0 && sortedResults[0].bestGrossMatic > 0n) {
@@ -417,7 +454,10 @@ export async function evaluatePipeline(
         if (res.reason === "missingState") prunedMissingState++;
         else if (res.reason === "invalidBounds") prunedInvalidBounds++;
         else if (res.reason === "noGrossProfit") prunedNoGrossProfit++;
-        else if (res.reason === "finalCheckFailed") prunedFinalCheckFailed++;
+        else if (res.reason === "finalCheckFailed") {
+          prunedFinalCheckFailed++;
+          if (res.cycle) grossPositiveFinalFail++;
+        }
       } else if (res.type === "success" && "cycle" in res) {
         simulated++;
         const cycleForRes = res.cycle;
@@ -437,6 +477,8 @@ export async function evaluatePipeline(
             );
           }
           profitable.push({ cycle: cycleForRes, result: res.bestResult, assessment: res.bestAssessment });
+        } else if (res.bestAssessment && res.bestAssessment.roi > 950_000 && res.bestAssessment.roi < 1_000_000) {
+          nearMissCount++;
         }
       }
     }
@@ -445,6 +487,27 @@ export async function evaluatePipeline(
       options.onProgress(attempted, cycles.length, profitable.length);
     }
   }
+
+  logSampled(
+    options.logger,
+    "sim:batch",
+    "debug",
+    "Pipeline batch summary",
+    {
+      attempted,
+      simulated,
+      profitable: profitable.length,
+      noRate,
+      prunedMissingState,
+      prunedNoGrossProfit,
+      prunedInvalidBounds,
+      prunedFinalCheckFailed,
+      grossPositiveFinalFail,
+      nearMissCount,
+      maxGrossMilliMatic: maxGrossMatic !== undefined ? Number(maxGrossMatic / 10n ** 15n) : 0,
+    },
+    METRICS_INTERVAL.simBatch,
+  );
 
   return {
     profitable,
@@ -457,6 +520,7 @@ export async function evaluatePipeline(
     prunedNoGrossProfit,
     prunedFinalCheckFailed,
     noRate,
+    nearMissCount,
     maxGrossProfitMatic: maxGrossMatic,
   };
 }

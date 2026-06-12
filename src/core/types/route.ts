@@ -26,6 +26,9 @@ export interface ArbPath {
 export interface SimulatedHopResult {
   amountOut: bigint;
   gasEstimate: number;
+  /** True when V3/V4 sim ran without loaded tick data. */
+  shallow?: boolean;
+  maxReliableAmountIn?: bigint;
 }
 
 export interface RouteSimulationResult {

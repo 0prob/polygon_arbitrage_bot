@@ -387,10 +387,9 @@ export class Renderer {
 
     const lines: string[] = [];
     for (const entry of visible) {
-      const time = entry.time.toLocaleTimeString("en-US", { hour12: false });
       const compCode = COMP_COLORS[entry.component] ?? WHITE;
       const comp = C.fg(entry.component.padEnd(9).slice(0, 9), compCode);
-      lines.push(`${C.dim(time)} ${comp} ${entry.message}`);
+      lines.push(`${C.dim(entry.time)} ${comp} ${entry.message}`);
     }
 
     return this._box(lines, rect, "Event Log");

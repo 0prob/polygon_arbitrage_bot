@@ -4,6 +4,8 @@ import { isInvalidState } from "../core/types/pool.ts";
 import { toBigInt } from "../core/utils/bigint.ts";
 import { MAJOR_TOKEN_APPROX_RATES, RATE_PRECISION } from "../core/constants.ts";
 
+import { fingerprintPools } from "../core/utils/pool_fingerprint.ts";
+
 const WMATIC_LOWER = WMATIC.toLowerCase();
 
 interface NormalizedPool {
@@ -16,7 +18,7 @@ interface NormalizedPool {
 let _normalizedPoolsCache: { key: string; pools: NormalizedPool[] } | null = null;
 
 function getNormalizedPools(pools: PoolMeta[]): NormalizedPool[] {
-  const key = `${pools.length}:${pools[0]?.address ?? ""}`;
+  const key = fingerprintPools(pools);
   if (_normalizedPoolsCache && _normalizedPoolsCache.key === key) {
     return _normalizedPoolsCache.pools;
   }
@@ -28,6 +30,10 @@ function getNormalizedPools(pools: PoolMeta[]): NormalizedPool[] {
   }));
   _normalizedPoolsCache = { key, pools: mapped };
   return mapped;
+}
+
+export function resetRatesCacheForTests(): void {
+  _normalizedPoolsCache = null;
 }
 
 export interface ComputeMaticRatesOptions {
@@ -71,8 +77,9 @@ export function computeMaticRates(
     rates.set(addr, rate);
   }
 
-  const logs: string[] = [];
-  if (logger) logs.push(`Starting rate propagation from WMATIC. Pools with state: ${stateCache.size}`);
+  // Count-only instrumentation: building per-rate log strings (bigint toString + template
+  // interpolation) for thousands of pools every LF tick dominated this function's cost.
+  let ratesPropagated = 0;
 
   const minLiquidityV3 = options.minLiquidityV3 ?? 100_000_000_000_000_000n;
 
@@ -279,10 +286,10 @@ export function computeMaticRates(
           if (newRate > 0n && (!rates.has(unknownToken) || rates.get(unknownToken)! < newRate)) {
             rates.set(unknownToken, newRate);
             changed = true;
-            if (logger) logs.push(`Set rate for ${unknownToken}: ${newRate} (via ${np.pool.address} [${protocol}])`);
+            ratesPropagated++;
           }
         } catch (err) {
-          logger?.debug?.({ err, pool: np.pool.address, protocol }, "Rate propagation failed for pool");
+          logger?.debug?.({ err, pool: np.pool.address, protocol: np.protocolLower }, "Rate propagation failed for pool");
           continue;
         }
       }
@@ -343,7 +350,7 @@ export function computeMaticRates(
 
   if (logger && rates.size > 1) {
     logger.debug?.(
-      { rates: rates.size, skippedNoState, skippedLowLiquidity, skippedExtremeRatio, propagation: logs },
+      { rates: rates.size, ratesPropagated, skippedNoState, skippedLowLiquidity, skippedExtremeRatio },
       "Rate propagation complete",
     );
   } else if (logger) {

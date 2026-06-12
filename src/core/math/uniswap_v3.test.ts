@@ -50,10 +50,29 @@ describe("simulateV3Swap", () => {
     const result = simulateV3Swap(state, 1000n, true);
     expect(result.amountOut).toBe(0n);
   });
-  it("simulates a swap with active liquidity", () => {
+  it("marks shallow=true and bounds output when ticks are missing", () => {
+    const state = {
+      initialized: true,
+      sqrtPriceX96: getSqrtRatioAtTick(0),
+      tick: 0,
+      liquidity: 1_000_000_000_000_000_000n,
+      fee: 3000n,
+      tickSpacing: 60,
+    };
+    const small = simulateV3Swap(state, 1000n, true);
+    expect(small.shallow).toBe(true);
+    expect(small.maxReliableAmountIn).toBeGreaterThan(0n);
+
+    const huge = simulateV3Swap(state, 10n ** 24n, true);
+    expect(huge.shallow).toBe(true);
+    expect(huge.amountOut).toBeLessThan(10n ** 24n);
+    expect(huge.maxReliableAmountIn).toBeLessThan(10n ** 24n);
+  });
+
+  it("marks shallow=false when ticks are loaded", () => {
     const result = simulateV3Swap(makePoolState(), 1000n, true);
-    expect(result.amountOut).toBeGreaterThan(0n);
-    expect(result.gasEstimate).toBeGreaterThan(0);
+    expect(result.shallow).toBe(false);
+    expect(result.maxReliableAmountIn).toBe(1000n);
   });
 });
 

@@ -9,6 +9,8 @@ export interface LargeSwapSignal {
   tokenOut: Address;
   estimatedSwapSize: bigint;
   zeroForOne?: boolean;
+  /** Optional RLP-encoded raw tx for FastLane bundle construction. */
+  rawTx?: string;
 }
 
 export interface PoolStateInvalidatedSignal {

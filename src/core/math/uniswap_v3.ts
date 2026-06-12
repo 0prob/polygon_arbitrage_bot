@@ -166,6 +166,8 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
       sqrtPriceX96After: fallbackSqrtPrice,
       tickAfter: fallbackTick,
       gasEstimate: 0,
+      shallow: false,
+      maxReliableAmountIn: 0n,
     };
   }
 
@@ -196,13 +198,23 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
   // Safety: max iterations to prevent infinite loops
   const MAX_ITERATIONS = 500;
 
+  /** Input consumed before the first synthetic boundary (no-tick pools only). */
+  let maxReliableAmountIn = amountIn;
+  let tickDataExhausted = false;
+
   for (let i = 0; i < MAX_ITERATIONS && amountRemaining > 0n; i++) {
     // Find the next initialized tick boundary
     let nextTick = nextInitializedTickOptimized(sortedTicks, tick, zeroForOne);
 
+    if (nextTick === null && hasTicks) {
+      tickDataExhausted = true;
+      maxReliableAmountIn = amountIn - amountRemaining;
+      break;
+    }
+
     if (nextTick === null && !hasTicks) {
-      // Compute the target tick (200 tick step) then clamp to cumulative bound
-      const rawNext = zeroForOne ? tick - 200 : tick + 200;
+      const tickStep = Number.isFinite(Number(pool.tickStepOverride)) ? Number(pool.tickStepOverride) : 200;
+      const rawNext = zeroForOne ? tick - tickStep : tick + tickStep;
       const cumulativeFromStart = zeroForOne ? initialTick - rawNext : rawNext - initialTick;
 
       if (cumulativeFromStart > MAX_CUMULATIVE_TICK_MOVE) {
@@ -254,6 +266,9 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
       } else {
         // If we crossed an initialized boundary and have no tick data,
         // we must assume liquidity drops to 0 to prevent infinite liquidity exploit.
+        if (!hasTicks) {
+          maxReliableAmountIn = amountIn - amountRemaining;
+        }
         liquidity = 0n;
       }
 
@@ -271,7 +286,13 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
     }
 
     // Safety: if liquidity drops to zero, we can't continue
-    if (liquidity <= 0n) break;
+    if (liquidity <= 0n) {
+      if (hasTicks && amountRemaining > 0n) {
+        tickDataExhausted = true;
+        maxReliableAmountIn = amountIn - amountRemaining;
+      }
+      break;
+    }
   }
 
   // Gas estimate: ~185k base (Polygon V3 measured) + ~25k per tick crossed.
@@ -296,7 +317,28 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
     sqrtPriceX96After: sqrtPriceX96,
     tickAfter: tick,
     gasEstimate,
+    shallow: !hasTicks || tickDataExhausted,
+    maxReliableAmountIn: hasTicks && !tickDataExhausted ? amountIn : maxReliableAmountIn,
   };
+}
+
+/**
+ * Estimate max input that stays within one tick-spacing move (shallow V3 guard).
+ */
+export function estimateSingleTickSpacingCapacity(state: unknown, zeroForOne: boolean): bigint {
+  const pool = asPoolState(state);
+  const liq = toBigIntOrNull(pool.liquidity);
+  const sqrtPrice = toBigIntOrNull(pool.sqrtPriceX96);
+  if (liq == null || liq <= 0n || sqrtPrice == null || sqrtPrice <= 0n) return 0n;
+
+  const tick = Number.isInteger(pool.tick) ? Number(pool.tick) : 0;
+  const tickSpacing = Number.isFinite(Number(pool.tickSpacing)) ? Number(pool.tickSpacing) : 60;
+  const nextTick = zeroForOne ? tick - tickSpacing : tick + tickSpacing;
+  const sqrtNext = getSqrtRatioAtTick(nextTick);
+  const feePips = toBigIntOrNull(pool.fee) ?? 3000n;
+
+  const step = computeSwapStep(sqrtPrice, sqrtNext, liq, 2n ** 256n - 1n, feePips);
+  return step.amountIn + step.feeAmount;
 }
 
 /**
@@ -310,4 +352,9 @@ export function simulateV3Swap(state: unknown, amountIn: bigint, zeroForOne: boo
  */
 export function quoteV3(state: unknown, amountIn: bigint, zeroForOne: boolean, fee?: number) {
   return simulateV3Swap(state, amountIn, zeroForOne, fee).amountOut;
+}
+
+/** Clear sorted-ticks LRU cache (vitest isolation). */
+export function resetV3SimCacheForTests(): void {
+  sortedTicksCache.clear();
 }

@@ -3,6 +3,7 @@ import type { PoolMeta, PoolState } from "../core/types/pool.ts";
 import type { FlashLoanSource } from "../core/types/execution.ts";
 import type { ProfitAssessment } from "../core/types/execution.ts";
 import type { RouteSimulationResult } from "../core/types/route.ts";
+import type { PendingOverrideStore } from "../services/mempool/pending-override.ts";
 
 export const DEFAULT_FEE_BPS = 30n;
 
@@ -46,7 +47,11 @@ export interface PipelineOptions {
   flashLoanSource: FlashLoanSource;
   ternarySearchIterations?: number;
   maxPriceImpactThreshold?: number;
+  /** Tighter price-impact cap (bps) for V3/V4 hops without loaded tick data. */
+  v3ShallowMaxImpactBps?: number;
   concurrency?: number;
+  /** Max cycles evaluated synchronously before yielding to the event loop (defaults to concurrency). */
+  simBatchSize?: number;
   roiSafetyCap?: number;
   /** Optional cap (in USD) for dynamic search bound high; used by getDynamicSearchBounds for liquidity-aware ternary search. */
   maxFlashLoanUsd?: number;
@@ -57,6 +62,8 @@ export interface PipelineOptions {
     warn?: (obj: Record<string, unknown>, msg?: string) => void;
     error?: (obj: Record<string, unknown>, msg?: string) => void;
   };
+  /** Pending Geth state overrides from mempool (shared with dry-run). */
+  pendingOverrideStore?: PendingOverrideStore;
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 
@@ -75,6 +82,7 @@ export interface PipelineResult {
   prunedNoGrossProfit: number;
   prunedFinalCheckFailed: number;
   noRate: number;
+  nearMissCount?: number;
   maxGrossProfitMatic?: bigint;
 }
 

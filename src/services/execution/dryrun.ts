@@ -1,8 +1,10 @@
-import { type PublicClient, BaseError, type Hex } from "viem";
+import { type PublicClient, BaseError, type Hex, type StateOverride as ViemStateOverride } from "viem";
 import type { CandidateExecution } from "./service.ts";
 import { COMPILED_ABIS } from "../../core/abis/compiled/index.ts";
 import { ARB_EXECUTOR_ABI } from "../../core/abis/executor.ts";
 import { AbiRegistry } from "../../core/abis/registry.ts";
+import { PendingOverrideStore } from "../mempool/pending-override.ts";
+import { toViemStateOverride } from "../../core/types/state-override.ts";
 
 export interface DryRunResult {
   success: boolean;
@@ -24,7 +26,10 @@ registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
 
-  constructor(private client: PublicClient) {}
+  constructor(
+    private client: PublicClient,
+    private pendingOverrideStore?: PendingOverrideStore,
+  ) {}
 
   async fetchPendingState(): Promise<PendingState | null> {
     try {
@@ -42,28 +47,22 @@ export class MempoolAwareDryRunner {
     return null;
   }
 
+  private getViemOverride(): ViemStateOverride | undefined {
+    const merged = this.pendingOverrideStore?.get();
+    if (!merged) return undefined;
+    return toViemStateOverride(merged) as ViemStateOverride;
+  }
+
   async dryRun(candidate: CandidateExecution, fromAddress: string): Promise<DryRunResult> {
     const MAX_RETRIES = 3;
     let lastResult: DryRunResult | null = null;
+    const viemOverride = this.getViemOverride();
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        await this.client.call({
-          account: fromAddress as `0x${string}`,
-          to: candidate.targetAddress as `0x${string}`,
-          data: candidate.calldata as `0x${string}`,
-          value: candidate.value,
-          blockTag: "pending",
-        });
+        await this.runCall(fromAddress, candidate, viemOverride);
 
-        const gasEstimate = await this.client
-          .estimateGas({
-            account: fromAddress as `0x${string}`,
-            to: candidate.targetAddress as `0x${string}`,
-            data: candidate.calldata as `0x${string}`,
-            value: candidate.value,
-          })
-          .catch(() => 500_000n);
+        const gasEstimate = await this.runEstimateGas(fromAddress, candidate, viemOverride);
 
         return {
           success: true,
@@ -81,7 +80,6 @@ export class MempoolAwareDryRunner {
 
             const isLockError = revertData.includes("4c4f4b");
             if (isLockError && attempt < MAX_RETRIES - 1) {
-              // Add jitter to LOCK retry to avoid synchronized retry storms
               const jitter = Math.floor(Math.random() * 20);
               await new Promise((r) => setTimeout(r, 50 + jitter));
               continue;
@@ -119,5 +117,51 @@ export class MempoolAwareDryRunner {
     }
 
     return lastResult!;
+  }
+
+  private async runCall(
+    fromAddress: string,
+    candidate: CandidateExecution,
+    viemOverride?: ViemStateOverride,
+  ): Promise<void> {
+    const base = {
+      account: fromAddress as `0x${string}`,
+      to: candidate.targetAddress as `0x${string}`,
+      data: candidate.calldata as `0x${string}`,
+      value: candidate.value,
+      blockTag: "pending" as const,
+    };
+    if (viemOverride) {
+      try {
+        await this.client.call({ ...base, stateOverride: viemOverride });
+        return;
+      } catch {
+        await this.client.call(base);
+        return;
+      }
+    }
+    await this.client.call(base);
+  }
+
+  private async runEstimateGas(
+    fromAddress: string,
+    candidate: CandidateExecution,
+    viemOverride?: ViemStateOverride,
+  ): Promise<bigint> {
+    const base = {
+      account: fromAddress as `0x${string}`,
+      to: candidate.targetAddress as `0x${string}`,
+      data: candidate.calldata as `0x${string}`,
+      value: candidate.value,
+      blockTag: "pending" as const,
+    };
+    if (viemOverride) {
+      try {
+        return await this.client.estimateGas({ ...base, stateOverride: viemOverride });
+      } catch {
+        return await this.client.estimateGas(base).catch(() => 500_000n);
+      }
+    }
+    return await this.client.estimateGas(base).catch(() => 500_000n);
   }
 }

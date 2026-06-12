@@ -12,6 +12,9 @@ import { buildExecutionCandidate } from "../services/execution/candidate.ts";
 import { runLfTick } from "./pass_lf.ts";
 import { runHfTick } from "./pass_hf.ts";
 import type { PassLoopState } from "./pass_state.ts";
+import { publishHfSnapshot } from "./hf_snapshot.ts";
+import { refreshCyclePoolsOnHead } from "./head_refresh.ts";
+import { resolveInfraProfile } from "../config/infra_profile.ts";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -66,6 +69,7 @@ export const DEFAULT_DEPS: PassLoopDeps = {
 const HF_INTERVAL = 200;
 const LF_INTERVAL = 1000;
 const TIER_CHECK_INTERVAL = 5000;
+const NONCE_RECOVERY_INTERVAL = 5000;
 const HEAD_TIMEOUT_MS = 3000;
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
@@ -93,6 +97,17 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
           state.lastHeadTime = Date.now();
           if (event.blockNumber > 0) {
             ctx.pendingStateOverlay?.clear();
+            ctx.pendingOverrideStore?.clear();
+          }
+          if (event.blockHash && ctx.reorgDetector) {
+            ctx.reorgDetector.trackBlock(event.blockNumber, event.blockHash as `0x${string}`).catch((err) => {
+              ctx.logger.debug?.({ err }, "trackBlock on newHead failed");
+            });
+          }
+          if (ctx.config.sync.headDrivenRefresh !== false && state.cachedCycles.length > 0) {
+            refreshCyclePoolsOnHead(ctx, ctx.stateCache, state.cachedCycles, ctx.config.sync.headRefreshMaxPools).catch(
+              (err) => ctx.logger.debug?.({ err }, "Head-driven pool refresh failed"),
+            );
           }
         }
       });
@@ -124,6 +139,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     lastStatusWriteTime: 0,
     lastMempoolTraceId: undefined,
     lfEnumerationInFlight: false,
+    lastEnumerationTime: 0,
+    lastPoolsFingerprint: "",
     cycleWindowStart: Date.now(),
     recentRouteTimestamps: new Map(),
     headTriggered: false,
@@ -131,10 +148,15 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     lastTierCheck: 0,
     lfTickInFlight: false,
     maticPriceUsd: 0.7,
+    cyclesGeneration: 0,
+    hfSnapshot: null,
   };
 
-  const lowInfraForCooldown = (ctx.config.rpc.chainstackRps ?? 250) <= 250;
-  const ROUTE_COOLDOWN_MS = lowInfraForCooldown ? 12000 : 5000;
+  publishHfSnapshot(state);
+
+  const infra = resolveInfraProfile(ctx.config);
+  const ROUTE_COOLDOWN_MS = infra.routeCooldownMs;
+  let lastNonceRecoveryCheck = 0;
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
@@ -149,6 +171,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     }
     if (signal.type === "large_swap") {
       state.lastMempoolTraceId = signal.data.traceId;
+      state.lastLargeSwapSignal = signal.data;
       bus?.emit({
         type: "mempool_pending_swap",
         poolPath: signal.data.poolAddress,
@@ -157,6 +180,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         traceId: signal.data.traceId,
       });
       state.lastRefreshTime = 0;
+      state.lastEnumerationTime = 0;
     }
   });
 
@@ -202,6 +226,13 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
         for (const key of staleKeys) state.recentRouteTimestamps.delete(key);
       }
 
+      if (now - lastNonceRecoveryCheck >= NONCE_RECOVERY_INTERVAL) {
+        lastNonceRecoveryCheck = now;
+        ctx.executionService.tickNonceRecovery().catch((err) => {
+          ctx.logger.debug?.({ err }, "Nonce recovery tick failed");
+        });
+      }
+
       const stateCache = ctx.stateCache;
       const isLfTick = now - state.lastRefreshTime >= LF_INTERVAL || state.cachedCycles.length === 0;
 
@@ -229,10 +260,11 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
       await sleep(waitMs);
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       ctx.logger.error({ err }, "Pass loop error");
       ctx.metrics.totalErrors++;
       ctx.metrics.lastErrorTime = Date.now();
-      ctx.metrics.lastErrorMessage = "Pass loop error";
+      ctx.metrics.lastErrorMessage = message.slice(0, 200);
       await sleep(HF_INTERVAL);
     }
   }

@@ -19,7 +19,11 @@ const ERC20_TRANSFER_EVENT = {
   type: "event",
 } as const;
 
-function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, executor: `0x${string}`): bigint {
+function parseTransferLogs(
+  logs: Array<{ topics: string[]; data: string }>,
+  executor: `0x${string}`,
+  logger?: Logger,
+): bigint {
   let netProfit = 0n;
   for (const log of logs) {
     try {
@@ -32,7 +36,7 @@ function parseTransferLogs(logs: Array<{ topics: string[]; data: string }>, exec
         netProfit += parsed.args.value ?? 0n;
       }
       } catch (err) {
-        console.warn("[execution-service] Failed to parse transfer log:", err);
+        logger?.debug?.({ err }, "Failed to parse transfer log");
       }
   }
   return netProfit;
@@ -104,6 +108,8 @@ export class ExecutionService {
   private quarantine: QuarantineManager;
   readonly tracker = new ExecutionTracker();
   private inFlightRouteHashes = new Map<string, number>();
+  private consecutiveStaleFailures = 0;
+  private lastNonceRecoveryCheck = 0;
 
   private cleanInFlight(): void {
     const cutoff = Date.now() - 35_000;
@@ -177,6 +183,7 @@ export class ExecutionService {
           value: candidate.value,
           nonce,
           maxFee: fee.maxFee,
+          gasLimit: candidate.gasLimit,
         },
         candidate.expectedProfit,
         candidate.gasLimit,
@@ -186,6 +193,13 @@ export class ExecutionService {
       this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Transaction submitted");
 
       const receipt = await this.receiptPoller.wait(txHash);
+      if (!receipt) {
+        this.inFlightRouteHashes.delete(candidate.routeKey);
+        this.nonceManager.markStale(nonce);
+        this.consecutiveStaleFailures++;
+        this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
+        return { success: false, txHash, error: "timeout" };
+      }
       const success = !!receipt?.status;
       const gasUsed = receipt?.gasUsed ?? 0n;
 
@@ -196,7 +210,7 @@ export class ExecutionService {
       if (success && receipt && candidate.profitToken) {
         const execAddr = getAddress(candidate.targetAddress);
         const logs = receipt.logs;
-        profit = parseTransferLogs(logs, execAddr);
+        profit = parseTransferLogs(logs, execAddr, this.logger);
       }
 
       this.tracker.record({
@@ -279,6 +293,7 @@ export class ExecutionService {
               value: candidate.value,
               nonce,
               maxFee: fee.maxFee,
+              gasLimit: candidate.gasLimit,
             },
             candidate.expectedProfit,
             candidate.gasLimit,
@@ -322,7 +337,7 @@ export class ExecutionService {
           if (success && candidate.profitToken) {
             const execAddr = getAddress(candidate.targetAddress);
             const logs = receipt.logs;
-            profit = parseTransferLogs(logs, execAddr);
+            profit = parseTransferLogs(logs, execAddr, this.logger);
           }
 
           this.inFlightRouteHashes.delete(candidate.routeKey);
@@ -368,6 +383,31 @@ export class ExecutionService {
 
   getQuarantineManager(): QuarantineManager {
     return this.quarantine;
+  }
+
+  /** Periodic stale-nonce recovery (call from pass loop ~every 5s). */
+  async tickNonceRecovery(): Promise<void> {
+    const now = Date.now();
+    if (now - this.lastNonceRecoveryCheck < 5000) return;
+    this.lastNonceRecoveryCheck = now;
+
+    const fee = this.gasOracle.getSnapshot();
+    if (!fee) return;
+
+    if (this.nonceManager.getStaleCount() > 0) {
+      const recovered = await this.nonceManager.recoverStale(fee.maxFee);
+      if (recovered) {
+        this.consecutiveStaleFailures = 0;
+      } else {
+        this.consecutiveStaleFailures++;
+      }
+    }
+
+    if (this.consecutiveStaleFailures >= 3) {
+      await this.nonceManager.resync();
+      this.consecutiveStaleFailures = 0;
+      this.logger.warn({}, "NonceManager resynced after repeated stale recovery failures");
+    }
   }
 }
 

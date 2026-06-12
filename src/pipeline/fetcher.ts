@@ -7,6 +7,8 @@ import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
 import { markAsGarbage } from "../infra/garbage/garbage-tracker.ts";
+import { fingerprintPools } from "../core/utils/pool_fingerprint.ts";
+import { logSampled, METRICS_INTERVAL, type MetricsLogger } from "../infra/observability/metrics.ts";
 const ERC20_ABI = parseAbi(["function balanceOf(address account) external view returns (uint256)"]);
 
 const V2_ABI = parseAbi(["function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"]);
@@ -53,19 +55,32 @@ const CURVE_ABI = parseAbi([
 ]);
 
 const _failedPools = new BoundedMap<string, { count: number }>({ maxSize: 10_000, ttlMs: 10 * 60 * 1000 });
+/** Per-pool last successful fetch time — avoids refetching every HF tick when state is still fresh. */
+const _lastFetchedAt = new BoundedMap<string, number>({ maxSize: 50_000, ttlMs: 30 * 60 * 1000 });
+const POOL_STATE_STALE_MS = 2500;
 
-function trackFailedPool(addr: string, reason: string, stateCache: RouteStateCache, now: number): void {
+function trackFailedPool(
+  addr: string,
+  reason: string,
+  stateCache: RouteStateCache,
+  logger?: MetricsLogger,
+): void {
   const existing = _failedPools.get(addr);
   const newCount = (existing?.count ?? 0) + 1;
   _failedPools.set(addr, { count: newCount });
 
-  // Only mark as invalid if it fails 3 times in a row
   if (newCount >= 3) {
     if (newCount === 3) {
-      console.warn(`[fetcher] Marking pool ${addr} as INVALID after 3 failures (Reason: ${reason})`);
+      logger?.warn?.({ pool: addr, reason }, "Marking pool INVALID after 3 fetch failures");
     }
     stateCache.set(addr, INVALID_POOL_STATE);
   }
+}
+
+export function resetFetcherCachesForTests(): void {
+  _failedPools.clear();
+  _lastFetchedAt.clear();
+  _poolLookupCache = null;
 }
 
 function trackSuccessfulPool(
@@ -77,11 +92,12 @@ function trackSuccessfulPool(
   stateCache.set(addr, state);
   updated.add(addr);
   _failedPools.delete(addr);
+  _lastFetchedAt.set(addr, Date.now());
 }
 
 let _poolLookupCache: { fingerprint: string; lookup: Map<string, PoolMeta> } | null = null;
 function buildPoolLookup(pools: PoolMeta[], staticAnchors: readonly { address: string }[]): Map<string, PoolMeta> {
-  const fingerprint = `${pools.length}:${pools[0]?.address ?? ""}:${staticAnchors.length}`;
+  const fingerprint = fingerprintPools(pools) + `:${staticAnchors.length}`;
   if (_poolLookupCache && _poolLookupCache.fingerprint === fingerprint) {
     return _poolLookupCache.lookup;
   }
@@ -113,7 +129,7 @@ export async function fetchMissingPoolState(
   },
 ): Promise<Set<string>> {
   const missingAddresses = new Set<string>();
-  const now = Date.now();
+  const fetchNow = Date.now();
 
   const updated = new Set<string>();
 
@@ -138,7 +154,14 @@ export async function fetchMissingPoolState(
         const addr = edge.poolAddress.toLowerCase();
         const fail = _failedPools.get(addr);
         if (fail && fail.count >= 2) continue;
-        missingAddresses.add(addr); // always (re)fetch for cycles to keep state fresh for sims (V* states not updated by indexer)
+        if (!stateCache.has(addr)) {
+          missingAddresses.add(addr);
+          continue;
+        }
+        const lastFetched = _lastFetchedAt.get(addr);
+        if (lastFetched === undefined || fetchNow - lastFetched >= POOL_STATE_STALE_MS) {
+          missingAddresses.add(addr);
+        }
       }
     }
   }
@@ -146,6 +169,8 @@ export async function fetchMissingPoolState(
   if (missingAddresses.size === 0) return updated;
 
   const toFetch = Array.from(missingAddresses);
+  let missingMeta = 0;
+  let batchFailures = 0;
 
   const BATCH_SIZE = 500;
   const batches: string[][] = [];
@@ -172,7 +197,10 @@ export async function fetchMissingPoolState(
         const calls: MulticallCall[] = [];
         for (const addr of batch) {
           const meta = poolLookup.get(addr);
-          if (!meta) continue;
+          if (!meta) {
+            missingMeta++;
+            continue;
+          }
           const proto = meta.protocol.toLowerCase();
           if (proto.includes("v2")) {
             calls.push({ address: addr as `0x${string}`, abi: V2_ABI, functionName: "getReserves" });
@@ -278,10 +306,10 @@ export async function fetchMissingPoolState(
                     updated,
                   );
                 } else {
-                  trackFailedPool(addr, "v2-reserves-undefined", stateCache, now);
+                  trackFailedPool(addr, "v2-reserves-undefined", stateCache, logger);
                 }
               } else {
-                trackFailedPool(addr, "v2-reserves-failed", stateCache, now);
+                trackFailedPool(addr, "v2-reserves-failed", stateCache, logger);
               }
             } else if (proto.includes("dodo")) {
               const baseRes = results[resultIdx++];
@@ -319,7 +347,7 @@ export async function fetchMissingPoolState(
                   updated,
                 );
               } else {
-                trackFailedPool(addr, "dodo-reserves-failed", stateCache, now);
+                trackFailedPool(addr, "dodo-reserves-failed", stateCache, logger);
               }
             } else if (proto.includes("elastic")) {
               const stateRes = results[resultIdx++];
@@ -347,10 +375,10 @@ export async function fetchMissingPoolState(
                     updated,
                   );
                 } else {
-                  trackFailedPool(addr, "elastic-state-undefined", stateCache, now);
+                  trackFailedPool(addr, "elastic-state-undefined", stateCache, logger);
                 }
               } else {
-                trackFailedPool(addr, "elastic-state-failed", stateCache, now);
+                trackFailedPool(addr, "elastic-state-failed", stateCache, logger);
               }
             } else if (proto.includes("v3")) {
               const slot0Res = results[resultIdx++];
@@ -378,17 +406,17 @@ export async function fetchMissingPoolState(
                     updated,
                   );
                 } else {
-                  trackFailedPool(addr, "v3-slot0-undefined", stateCache, now);
+                  trackFailedPool(addr, "v3-slot0-undefined", stateCache, logger);
                 }
               } else {
                 const error = slot0Res?.error || liqRes?.error;
-                console.warn(`[fetcher] V3 fetch failed for ${addr}: ${JSON.stringify(error)}`);
-                if ((error as any)?.name === "ContractFunctionExecutionError") {
+                logger?.debug?.({ pool: addr, error }, "V3 fetch failed");
+                if ((error as { name?: string })?.name === "ContractFunctionExecutionError") {
                   markAsGarbage(addr).catch((err) => {
-                    console.warn(`[fetcher] Failed to mark garbage: ${err}`);
+                    logger?.warn?.({ err, pool: addr }, "Failed to mark garbage pool");
                   });
                 }
-                trackFailedPool(addr, "v3-slot0-failed", stateCache, now);
+                trackFailedPool(addr, "v3-slot0-failed", stateCache, logger);
               }
             } else if (proto.includes("v4")) {
               const slot0Res = results[resultIdx++];
@@ -418,10 +446,10 @@ export async function fetchMissingPoolState(
                     updated,
                   );
                 } else {
-                  trackFailedPool(addr, "v4-slot0-undefined", stateCache, now);
+                  trackFailedPool(addr, "v4-slot0-undefined", stateCache, logger);
                 }
               } else {
-                trackFailedPool(addr, "v4-slot0-failed", stateCache, now);
+                trackFailedPool(addr, "v4-slot0-failed", stateCache, logger);
               }
             } else if (proto.includes("woofi")) {
               const priceRes = results[resultIdx++];
@@ -438,7 +466,7 @@ export async function fetchMissingPoolState(
                   updated,
                 );
               } else {
-                trackFailedPool(addr, "woofi-price-failed", stateCache, now);
+                trackFailedPool(addr, "woofi-price-failed", stateCache, logger);
               }
             } else if (proto.includes("balancer")) {
               const poolId = (meta as any).poolId;
@@ -470,7 +498,7 @@ export async function fetchMissingPoolState(
                     updated,
                   );
                 } else {
-                  trackFailedPool(addr, "balancer-getPoolTokens-failed", stateCache, now);
+                  trackFailedPool(addr, "balancer-getPoolTokens-failed", stateCache, logger);
                 }
               }
             } else if (proto.includes("curve")) {
@@ -507,7 +535,7 @@ export async function fetchMissingPoolState(
                   : rateResults.map((r) => (r?.status === "success" ? BigInt(r.result as bigint) : null));
 
                 if (!hasStatic && rates.includes(null)) {
-                  trackFailedPool(addr, "curve-rates-failed", stateCache, now);
+                  trackFailedPool(addr, "curve-rates-failed", stateCache, logger);
                 } else {
                   trackSuccessfulPool(
                     addr,
@@ -523,11 +551,12 @@ export async function fetchMissingPoolState(
                   );
                 }
               } else {
-                trackFailedPool(addr, "curve-balances-failed", stateCache, now);
+                trackFailedPool(addr, "curve-balances-failed", stateCache, logger);
               }
             }
           }
         } catch (err) {
+          batchFailures++;
           logger?.error?.(
             {
               err,
@@ -543,6 +572,22 @@ export async function fetchMissingPoolState(
       }),
     );
   }
+
+  logSampled(
+    logger,
+    "pool:fetch",
+    "debug",
+    "Pool state fetch summary",
+    {
+      requested: toFetch.length,
+      updated: updated.size,
+      missingMeta,
+      batchFailures,
+      cacheSize: stateCache.size,
+      hitRatePct: toFetch.length > 0 ? Math.round((updated.size / toFetch.length) * 1000) / 10 : 0,
+    },
+    METRICS_INTERVAL.poolFetch,
+  );
 
   return updated;
 }

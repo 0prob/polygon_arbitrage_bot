@@ -84,6 +84,17 @@ export class ExecutionTracker {
     return { totalAttempts, totalSuccesses, totalReverts, totalProfit, trackedRoutes: this.routeStats.size };
   }
 
+  async logOpportunityFeatures(filePath: string, features: Record<string, unknown>): Promise<void> {
+    try {
+      const { appendFile, mkdir } = await import("node:fs/promises");
+      const { dirname } = await import("node:path");
+      await mkdir(dirname(filePath), { recursive: true });
+      await appendFile(filePath, JSON.stringify({ ts: Date.now(), ...features }) + "\n");
+    } catch {
+      // best effort
+    }
+  }
+
   prune(olderThanMs: number): void {
     const cutoff = Date.now() - olderThanMs;
     const before = this.records.length;

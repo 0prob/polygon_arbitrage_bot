@@ -45,8 +45,14 @@ describe("NonceManager", () => {
     expect(nm.expectedNextNonce).toBe(5);
   });
 
-  it("expectedNextNonce returns null before init", () => {
-    const nm = new NonceManager("0xabc", () => Promise.resolve(0));
-    expect(nm.expectedNextNonce).toBeNull();
+  it("recoverStale invokes onStuckTx with boosted fee", async () => {
+    const onStuckTx = vi.fn().mockResolvedValue(undefined);
+    const nm = new NonceManager("0xabc", () => Promise.resolve(0), onStuckTx);
+    await nm.initialize();
+    nm.markStale(7);
+    const recovered = await nm.recoverStale(100n);
+    expect(recovered).toBe(true);
+    expect(onStuckTx).toHaveBeenCalledWith(7, 150n);
+    expect(nm.getStaleCount()).toBe(0);
   });
 });

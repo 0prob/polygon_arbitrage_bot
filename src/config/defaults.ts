@@ -38,8 +38,33 @@ export const DEFAULTS = {
     concurrency: 75,
     ternarySearchIterations: 12, // Slightly fewer iterations, more cycles (pairs with higher enumerationMaxPaths)
     maxPriceImpactThreshold: 0.1,
+    v3ShallowMaxImpactBps: 30,
+    tickFetchEnabled: true,
+    tickWordRange: 3,
+    tickRefreshOnMove: true,
     graphFullRebuildInterval: 100,
     cycleFinder: "dfs" as const,
+  },
+  sync: {
+    headDrivenRefresh: true,
+    headRefreshMaxPools: 50,
+  },
+  oracle: {
+    enabled: true,
+    pythHermesUrl: "https://hermes.pyth.network",
+    maxDivergenceBps: 500,
+  },
+  mev: {
+    enabled: false,
+    fastlaneRelayUrl: "https://polygon-rpc.fastlane.xyz",
+    publicBackrunFallback: true,
+    jitEnabled: false,
+    sandwichEnabled: false,
+    maxBidBps: 500,
+  },
+  ranking: {
+    mode: "statistical" as const,
+    modelPath: "data/ranking-model.json",
   },
   execution: {
     minProfitWei: 100_000_000_000_000_000n, // 0.1 MATIC (~$0.10)

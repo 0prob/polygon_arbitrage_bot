@@ -3,6 +3,11 @@ import { runPassLoop } from "./pass_loop.ts";
 import type { PassLoopDeps } from "./loop.ts";
 import type { RuntimeContext } from "./boot.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
+import { WMATIC } from "../config/addresses.ts";
+
+vi.mock("../pipeline/fetcher.ts", () => ({
+  fetchMissingPoolState: vi.fn().mockResolvedValue(new Set()),
+}));
 
 const MOCK_CANDIDATE_EXECUTION: CandidateExecution = {
   routeKey: "0x1234567890123456789012345678901234567890",
@@ -18,6 +23,7 @@ function mockTracker() {
     getRouteStats: vi.fn(),
     getAllRouteStats: vi.fn().mockReturnValue(new Map()),
     getRecentRecords: vi.fn().mockReturnValue([]),
+    logOpportunityFeatures: vi.fn().mockResolvedValue(undefined),
     summary: { totalAttempts: 0, totalSuccesses: 0, totalReverts: 0, totalProfit: 0n, trackedRoutes: 0 },
   };
 }
@@ -50,8 +56,46 @@ const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
 const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
 const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
 
+const MOCK_POOL = {
+  address: VALID_ADDR_B as `0x${string}`,
+  protocol: "QUICKSWAP_V2",
+  token0: WMATIC,
+  token1: VALID_ADDR_C as `0x${string}`,
+  tokens: [WMATIC, VALID_ADDR_C] as `0x${string}`[],
+  fee: 30,
+};
+
+function mockStateRefresh(overrides: { pools?: typeof MOCK_POOL[] } = {}) {
+  const service = {
+    Pools: overrides.pools ?? [MOCK_POOL],
+    TokenMetas: new Map([[WMATIC.toLowerCase(), { decimals: 18 }]]),
+    runLfStateRefresh: vi.fn().mockResolvedValue(undefined),
+    stop: vi.fn(),
+  };
+  return service;
+}
+
 const stateWithPool = new Map<string, Record<string, unknown>>();
-stateWithPool.set("0xpool", { initialized: true });
+stateWithPool.set(VALID_ADDR_B.toLowerCase(), { initialized: true, reserve0: 1000n, reserve1: 1000n });
+
+const mockCycle = {
+  edges: [
+    {
+      poolAddress: VALID_ADDR_B,
+      tokenIn: WMATIC,
+      tokenOut: VALID_ADDR_C,
+      protocol: "QUICKSWAP_V2",
+      feeBps: 30n,
+      zeroForOne: true,
+      tokenInIdx: 0,
+      tokenOutIdx: 1,
+    },
+  ],
+  hopCount: 1,
+  startToken: WMATIC,
+  logWeight: 0,
+  cumulativeFeeBps: 30n,
+};
 
 describe("runPassLoop", () => {
   it("executes profitable cycles", async () => {
@@ -65,12 +109,24 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
+        ranking: { mode: "off" as const, modelPath: "data/ranking-model.json" },
+        sync: { headDrivenRefresh: false, headRefreshMaxPools: 50 },
+        oracle: { enabled: false, pythHermesUrl: "", maxDivergenceBps: 500 },
+        mev: {
+          enabled: false,
+          fastlaneRelayUrl: "",
+          publicBackrunFallback: true,
+          jitEnabled: false,
+          sandwichEnabled: false,
+          maxBidBps: 500,
+        },
         execution: {
           minProfitWei: 0n,
           executorAddress: VALID_ADDR_A,
           privateKey: `0x${"1".repeat(64)}`,
           slippageBps: 50,
           revertRiskBps: 10,
+          minLiquidityV3Rate: 0n,
         },
         gas: {
           pollIntervalMs: 1000,
@@ -130,6 +186,7 @@ describe("runPassLoop", () => {
           mockContext.isRunning = false;
           return group.map(() => ({ success: true, txHash: "0x1" }));
         }),
+        tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
         getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
@@ -142,7 +199,7 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
-      stateRefreshService: { Pools: [], TokenMetas: new Map() },
+      stateRefreshService: mockStateRefresh(),
     } as unknown as RuntimeContext;
 
     let execCalls = 0;
@@ -159,82 +216,58 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      enumerateCycles: vi.fn().mockReturnValue([
-        {
-          edges: [
-            {
-              poolAddress: VALID_ADDR_B,
-              tokenIn: VALID_ADDR_A,
-              tokenOut: VALID_ADDR_C,
-              protocol: "QUICKSWAP_V2",
-              feeBps: 30n,
-            },
-          ],
-          hopCount: 1,
-          startToken: VALID_ADDR_A,
-          logWeight: 0,
-          cumulativeFeeBps: 30n,
-        },
+      enumerateCycles: vi.fn().mockResolvedValue([
+        { ...mockCycle, id: "route-1" },
+        { ...mockCycle, id: "route-2" },
       ]),
-      evaluatePipeline: vi.fn().mockReturnValue({
+      evaluatePipeline: vi.fn().mockResolvedValue({
         profitable: [
           {
-            cycle: {
-              edges: [
-                {
-                  poolAddress: VALID_ADDR_B,
-                  tokenIn: VALID_ADDR_A,
-                  tokenOut: VALID_ADDR_C,
-                  protocol: "QUICKSWAP_V2",
-                  feeBps: 30n,
-                },
-              ],
-              startToken: VALID_ADDR_A,
-              hopCount: 1,
-              logWeight: 0,
-              cumulativeFeeBps: 30n,
-            },
+            cycle: { ...mockCycle, id: "route-1" },
             result: {
               amountIn: 1000000n,
               amountOut: 2000000n,
               hopAmounts: [1000000n, 2000000n],
-              tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+              tokenPath: [WMATIC, VALID_ADDR_C],
               poolPath: [VALID_ADDR_B],
               profitable: true,
             },
-            assessment: { netProfitAfterGas: 1000n, roi: 1000000 },
+            assessment: {
+              netProfitAfterGas: 1000n,
+              netProfitAfterGasMaticWei: 1000n,
+              roi: 1000000,
+              shouldExecute: true,
+            },
           },
           {
-            cycle: {
-              edges: [
-                {
-                  poolAddress: VALID_ADDR_B,
-                  tokenIn: VALID_ADDR_A,
-                  tokenOut: VALID_ADDR_C,
-                  protocol: "QUICKSWAP_V2",
-                  feeBps: 30n,
-                },
-              ],
-              startToken: VALID_ADDR_A,
-              hopCount: 1,
-              logWeight: 0,
-              cumulativeFeeBps: 30n,
-            },
+            cycle: { ...mockCycle, id: "route-2" },
             result: {
               amountIn: 1000000n,
               amountOut: 2000000n,
               hopAmounts: [1000000n, 2000000n],
-              tokenPath: [VALID_ADDR_A, VALID_ADDR_C],
+              tokenPath: [WMATIC, VALID_ADDR_C],
               poolPath: [VALID_ADDR_B],
               profitable: true,
             },
-            assessment: { netProfitAfterGas: 1000n, roi: 1000000 },
+            assessment: {
+              netProfitAfterGas: 1000n,
+              netProfitAfterGasMaticWei: 1000n,
+              roi: 1000000,
+              shouldExecute: true,
+            },
           },
         ],
         attempted: 2,
         profitableCount: 2,
+        simulated: 2,
+        pruned: 0,
+        prunedMissingState: 0,
+        prunedInvalidBounds: 0,
+        prunedNoGrossProfit: 0,
+        prunedFinalCheckFailed: 0,
+        noRate: 0,
       }),
-      routeKeyFromEdges: vi.fn((_edges: any) => "mocked-route-key"),
+      routeKeyFromEdges: vi.fn((_edges: unknown, idx?: number) => `mocked-route-key-${idx ?? 0}`),
       buildExecutionCandidate: vi.fn().mockReturnValue(MOCK_CANDIDATE_EXECUTION),
       instrumenter: { captureTrace: vi.fn() } as any,
     };
@@ -253,12 +286,24 @@ describe("runPassLoop", () => {
           enumerationMaxPaths: 5000,
           liquidityFloorUsd: 50,
         },
+        ranking: { mode: "off" as const, modelPath: "data/ranking-model.json" },
+        sync: { headDrivenRefresh: false, headRefreshMaxPools: 50 },
+        oracle: { enabled: false, pythHermesUrl: "", maxDivergenceBps: 500 },
+        mev: {
+          enabled: false,
+          fastlaneRelayUrl: "",
+          publicBackrunFallback: true,
+          jitEnabled: false,
+          sandwichEnabled: false,
+          maxBidBps: 500,
+        },
         execution: {
           minProfitWei: 0n,
           executorAddress: VALID_ADDR_A,
           privateKey: `0x${"1".repeat(64)}`,
           slippageBps: 50,
           revertRiskBps: 10,
+          minLiquidityV3Rate: 0n,
         },
         gas: {
           pollIntervalMs: 1000,
@@ -314,6 +359,7 @@ describe("runPassLoop", () => {
       executionService: {
         start: vi.fn(),
         execute: vi.fn(),
+        tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
         getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
@@ -326,10 +372,10 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
-      stateRefreshService: { Pools: [], TokenMetas: new Map() },
+      stateRefreshService: mockStateRefresh(),
     } as unknown as RuntimeContext;
 
-    const enumerateCyclesSpy = vi.fn().mockImplementation(() => {
+    const enumerateCyclesSpy = vi.fn().mockImplementation(async () => {
       mockContext.isRunning = false;
       return [];
     });
@@ -341,7 +387,18 @@ describe("runPassLoop", () => {
         tokens: new Set(),
       }),
       enumerateCycles: enumerateCyclesSpy,
-      evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
+      evaluatePipeline: vi.fn().mockResolvedValue({
+        profitable: [],
+        attempted: 0,
+        profitableCount: 0,
+        simulated: 0,
+        pruned: 0,
+        prunedMissingState: 0,
+        prunedInvalidBounds: 0,
+        prunedNoGrossProfit: 0,
+        prunedFinalCheckFailed: 0,
+        noRate: 0,
+      }),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
       instrumenter: { captureTrace: vi.fn() } as any,
@@ -362,12 +419,24 @@ describe("runPassLoop", () => {
           liquidityFloorUsd: 50,
           cycleFinder: "bellman-ford",
         },
+        ranking: { mode: "off" as const, modelPath: "data/ranking-model.json" },
+        sync: { headDrivenRefresh: false, headRefreshMaxPools: 50 },
+        oracle: { enabled: false, pythHermesUrl: "", maxDivergenceBps: 500 },
+        mev: {
+          enabled: false,
+          fastlaneRelayUrl: "",
+          publicBackrunFallback: true,
+          jitEnabled: false,
+          sandwichEnabled: false,
+          maxBidBps: 500,
+        },
         execution: {
           minProfitWei: 0n,
           executorAddress: VALID_ADDR_A,
           privateKey: `0x${"1".repeat(64)}`,
           slippageBps: 50,
           revertRiskBps: 10,
+          minLiquidityV3Rate: 0n,
         },
         gas: {
           pollIntervalMs: 1000,
@@ -423,6 +492,7 @@ describe("runPassLoop", () => {
       executionService: {
         start: vi.fn(),
         execute: vi.fn(),
+        tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
         getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
@@ -435,7 +505,7 @@ describe("runPassLoop", () => {
       rpcCircuit: mockCircuitBreaker(),
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
-      stateRefreshService: { Pools: [], TokenMetas: new Map() },
+      stateRefreshService: mockStateRefresh(),
     } as unknown as RuntimeContext;
 
     // Timer to stop the loop: HF never calls evaluatePipeline when cycles are empty,

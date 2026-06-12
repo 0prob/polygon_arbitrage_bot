@@ -10,6 +10,7 @@ import {
   fetchIndexerProgressFromHasura,
   fetchTokenMetasFromHasura,
 } from "../infra/hypersync/hyperindex_graphql.ts";
+import { resolveInfraProfile } from "../config/infra_profile.ts";
 
 export class StateRefreshService {
   private lastDiscoveredBlock = 0;
@@ -19,10 +20,10 @@ export class StateRefreshService {
   private lfStateRefreshCount = 0;
 
   private discoveryTimer: ReturnType<typeof setInterval> | null = null;
-  private lfTimer: ReturnType<typeof setInterval> | null = null;
 
   private discoveryInProgress = false;
   private lfInProgress = false;
+  private lfRefreshTask: Promise<void> | null = null;
   private expansionInProgress = false;
   private bootstrapInProgress = false;
 
@@ -51,11 +52,6 @@ export class StateRefreshService {
     this.discoveryTimer = setInterval(() => {
       this.runPoolDiscovery().catch((err) => { this.ctx.logger.warn?.({ err }, "Periodic pool discovery failed"); });
     }, discoveryInterval);
-
-    // Dedicated LF state refresh timer (1s)
-    this.lfTimer = setInterval(() => {
-      this.runLfStateRefresh().catch((err) => { this.ctx.logger.warn?.({ err }, "Periodic LF refresh failed"); });
-    }, 1000);
   }
 
   async stop(): Promise<void> {
@@ -63,10 +59,10 @@ export class StateRefreshService {
       clearInterval(this.discoveryTimer);
       this.discoveryTimer = null;
     }
-    if (this.lfTimer) {
-      clearInterval(this.lfTimer);
-      this.lfTimer = null;
-    }
+  }
+
+  resetLastSeenBlock(block?: number): void {
+    this.lastSeenBlock = block ?? 0;
   }
 
   private async runPoolDiscovery(): Promise<void> {
@@ -156,11 +152,18 @@ export class StateRefreshService {
     }
   }
 
-  private async runLfStateRefresh(): Promise<void> {
-    if (this.lfInProgress) return;
+  async runLfStateRefresh(): Promise<void> {
+    if (this.lfRefreshTask) return this.lfRefreshTask;
+    this.lfRefreshTask = this.runLfStateRefreshImpl().finally(() => {
+      this.lfInProgress = false;
+      this.lfRefreshTask = null;
+    });
+    return this.lfRefreshTask;
+  }
+
+  private async runLfStateRefreshImpl(): Promise<void> {
     this.lfInProgress = true;
-    try {
-      const graphqlUrl = this.ctx.config.hasuraUrl;
+    const graphqlUrl = this.ctx.config.hasuraUrl;
       const secret = this.ctx.config.hasuraSecret;
 
       try {
@@ -207,8 +210,8 @@ export class StateRefreshService {
       }
 
       const stateCacheEmpty = this.ctx.stateCache.size === 0;
-      const rps = this.ctx.config.rpc.chainstackRps ?? 250;
-      const lowInfra = rps <= 250;
+      const infra = resolveInfraProfile(this.ctx.config);
+      const lowInfra = infra.tier === "low";
       const stateClient = this.ctx.stateClient ?? this.ctx.publicClient;
 
       if (stateCacheEmpty && this.pools.length > 0 && !this.bootstrapInProgress) {
@@ -242,9 +245,6 @@ export class StateRefreshService {
             .finally(() => { this.expansionInProgress = false; });
         }
       }
-    } finally {
-      this.lfInProgress = false;
-    }
   }
 
   private async runBootstrapInBackground(stateClient: import("viem").PublicClient, lowInfra: boolean): Promise<void> {

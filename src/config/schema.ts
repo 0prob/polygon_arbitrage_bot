@@ -68,6 +68,10 @@ export const RoutingConfigSchema = z.object({
   concurrency: numberFromString.int().positive().default(75),
   ternarySearchIterations: numberFromString.int().min(5).max(50).default(12),
   maxPriceImpactThreshold: numberFromString.min(0.01).max(0.5).default(0.1),
+  v3ShallowMaxImpactBps: numberFromString.int().min(1).max(500).default(30),
+  tickFetchEnabled: z.coerce.boolean().default(true),
+  tickWordRange: numberFromString.int().min(1).max(20).default(3),
+  tickRefreshOnMove: z.coerce.boolean().default(true),
   graphFullRebuildInterval: numberFromString.int().positive().default(100),
   cycleFinder: z.enum(["dfs", "bellman-ford"]).default("dfs"),
 });
@@ -97,6 +101,35 @@ export const ExecutionConfigSchema = z.object({
 });
 export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 
+export const SyncConfigSchema = z.object({
+  headDrivenRefresh: z.coerce.boolean().default(true),
+  headRefreshMaxPools: numberFromString.int().positive().default(50),
+});
+export type SyncConfig = z.infer<typeof SyncConfigSchema>;
+
+export const OracleConfigSchema = z.object({
+  enabled: z.coerce.boolean().default(true),
+  pythHermesUrl: z.string().url().default("https://hermes.pyth.network"),
+  maxDivergenceBps: numberFromString.int().min(50).max(5000).default(500),
+});
+export type OracleConfig = z.infer<typeof OracleConfigSchema>;
+
+export const MevConfigSchema = z.object({
+  enabled: z.coerce.boolean().default(false),
+  fastlaneRelayUrl: z.string().default("https://polygon-rpc.fastlane.xyz"),
+  publicBackrunFallback: z.coerce.boolean().default(true),
+  jitEnabled: z.coerce.boolean().default(false),
+  sandwichEnabled: z.coerce.boolean().default(false),
+  maxBidBps: numberFromString.int().min(1).max(10_000).default(500),
+});
+export type MevConfig = z.infer<typeof MevConfigSchema>;
+
+export const RankingConfigSchema = z.object({
+  mode: z.enum(["statistical", "ml", "off"]).default("statistical"),
+  modelPath: z.string().default("data/ranking-model.json"),
+});
+export type RankingConfig = z.infer<typeof RankingConfigSchema>;
+
 export const MempoolConfigSchema = z.object({
   enabled: z.coerce.boolean(),
   websocketUrl: z.string().default(""),
@@ -121,6 +154,10 @@ export const AppConfigSchema = z.object({
   rpc: RpcConfigSchema,
   gas: GasConfigSchema,
   routing: RoutingConfigSchema,
+  sync: SyncConfigSchema,
+  oracle: OracleConfigSchema,
+  mev: MevConfigSchema,
+  ranking: RankingConfigSchema,
   execution: ExecutionConfigSchema,
   mempool: MempoolConfigSchema,
   observability: ObservabilityConfigSchema,

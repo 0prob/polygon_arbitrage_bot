@@ -28,12 +28,10 @@ export class BoundedMap<K, V> {
   set(key: K, value: V, now: number = Date.now()): void {
     if (this.map.has(key)) this.map.delete(key);
     this.map.set(key, { value, ts: now });
+    // O(1) LRU eviction — do not full-scan for TTL here; get()/has() lazily drop expired entries.
     if (this.map.size > this.maxSize) {
-      const removed = this.prune(now);
-      if (removed === 0 && this.map.size > this.maxSize) {
-        const oldest = this.map.keys().next().value;
-        if (oldest !== undefined) this.map.delete(oldest);
-      }
+      const oldest = this.map.keys().next().value;
+      if (oldest !== undefined) this.map.delete(oldest);
     }
   }
 
@@ -45,8 +43,7 @@ export class BoundedMap<K, V> {
     this.map.delete(key);
   }
 
-  prune(): number {
-    const now = Date.now();
+  prune(now: number = Date.now()): number {
     let removed = 0;
     for (const [key, entry] of this.map) {
       if (now - entry.ts > this.ttlMs) {

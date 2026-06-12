@@ -14,12 +14,14 @@ import { CircuitBreaker } from "../infra/resilience/circuit_breaker.ts";
 import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
+import { PendingOverrideStore } from "../services/mempool/pending-override.ts";
 import { type Metrics } from "../core/types/metrics.ts";
 import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
 import type { WebSocketSubscriber } from "../infra/rpc/websocket_subscriber.ts";
 import type { HyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
+import { PriceOracle } from "../services/oracle/price_oracle.ts";
 import { StateRefreshService } from "../services/state_refresh.ts";
 
 export interface RuntimeContext {
@@ -43,6 +45,8 @@ export interface RuntimeContext {
   wsSubscriber?: WebSocketSubscriber;
   dryRunner?: MempoolAwareDryRunner;
   pendingStateOverlay?: InMemoryPendingStateOverlay;
+  pendingOverrideStore?: PendingOverrideStore;
+  priceOracle?: PriceOracle;
   stateRefreshService: StateRefreshService;
 
   /**
@@ -181,6 +185,7 @@ export async function bootApplication(
       nonce: number;
       maxFee: bigint;
       maxPriorityFee: bigint;
+      gasLimit?: bigint;
     }): Promise<string> => {
       const hash = await walletClient.sendTransaction({
         account: walletClient.account!,
@@ -191,6 +196,7 @@ export async function bootApplication(
         nonce: tx.nonce,
         maxFeePerGas: tx.maxFee,
         maxPriorityFeePerGas: tx.maxPriorityFee,
+        ...(tx.gasLimit != null ? { gas: tx.gasLimit } : {}),
       });
       return hash;
     };
@@ -213,6 +219,7 @@ export async function bootApplication(
           nonce: tx.nonce,
           maxFeePerGas: tx.maxFee,
           maxPriorityFeePerGas: tx.maxPriorityFee,
+          ...(tx.gasLimit != null ? { gas: tx.gasLimit } : {}),
         }),
       );
       return Promise.any(promises);
@@ -243,7 +250,31 @@ export async function bootApplication(
     dataDir: config.paths.dataDir,
   };
   const pendingStateOverlay = new InMemoryPendingStateOverlay();
-  const mempoolService = new MempoolService(logger, mempoolOptions, pendingStateOverlay);
+  const pendingOverrideStore = new PendingOverrideStore({ ttlMs: 2000, maxEntries: 100 });
+  const priceOracle = new PriceOracle({
+    enabled: config.oracle.enabled,
+    pythHermesUrl: config.oracle.pythHermesUrl,
+    maxDivergenceBps: config.oracle.maxDivergenceBps,
+    client: publicClient,
+  });
+  const mempoolService = new MempoolService(
+    logger,
+    {
+      ...mempoolOptions,
+      getPoolState: (addr) => stateCache.get(addr) as import("../core/types/pool.ts").PoolState | undefined,
+      invalidatePoolTicks: (addr) => {
+        const existing = stateCache.get(addr);
+        if (!existing) return;
+        stateCache.set(addr, {
+          ...existing,
+          ticks: undefined,
+          tickVersion: Number(existing.tickVersion ?? 0) + 1,
+        });
+      },
+    },
+    pendingStateOverlay,
+    pendingOverrideStore,
+  );
   const mempoolWsUrl = config.mempool.enabled ? config.mempool.websocketUrl : "";
 
   const rpcCircuit = new CircuitBreaker("polygon-rpc", {
@@ -263,7 +294,7 @@ export async function bootApplication(
   const wsSubscriber = mempoolWsUrl ? rpc.addWebSocketSubscriber(mempoolWsUrl) : undefined;
 
   // Mempool-aware dry runner
-  const dryRunner = new MempoolAwareDryRunner(publicClient);
+  const dryRunner = new MempoolAwareDryRunner(publicClient, pendingOverrideStore);
 
   // Boot warmup: pre-warm gas oracle
   logger.info("Starting boot warmup...");
@@ -294,6 +325,8 @@ export async function bootApplication(
     wsSubscriber,
     dryRunner,
     pendingStateOverlay,
+    pendingOverrideStore,
+    priceOracle,
     hyperRpc: rpc.hyperRpc,
     hyperSync: rpc.hyperSync,
     hyperIndexMonitor,

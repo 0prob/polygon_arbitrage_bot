@@ -33,6 +33,9 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
   let frameCount = 0;
   let focusedSection = -1; // -1 = none, 0-(PANEL_COUNT-1) = section index
   let started = false;
+  // Skip repaints when nothing changed since the last frame. Events mark the
+  // state dirty; an idle TUI costs ~0 CPU instead of a full ANSI rebuild at 15fps.
+  let dirty = true;
   let originalConsole: {
     log: typeof console.log;
     info: typeof console.info;
@@ -43,9 +46,12 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
 
   function handleResize(): void {
     layout = computeLayout(process.stdout.columns, process.stdout.rows);
+    dirty = true;
   }
 
   function renderFrame(): void {
+    if (!dirty) return;
+    dirty = false;
     frameCount++;
     try {
       renderer.render(layout, state, frameCount, focusedSection);
@@ -89,6 +95,7 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
 
   function handleKey(data: Buffer): void {
     const key = data.toString();
+    dirty = true;
 
     // Quit: q or Ctrl-Q
     if (key === "q" || key === "\u0011") {
@@ -128,6 +135,7 @@ export function createTui(bus?: EventBus, logger?: Logger): TuiInstance {
 
   bus.on((event: ArbEvent) => {
     applyEvent(state, event);
+    dirty = true;
   });
 
   return {

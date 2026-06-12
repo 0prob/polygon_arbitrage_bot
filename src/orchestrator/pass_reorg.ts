@@ -15,6 +15,8 @@ export async function runReorgCheck(
         ctx.logger.warn({ reorgedBlocks: [...reorged].join(",") }, "Reorg detected — forcing state refresh");
         detector.clearReorged();
         shouldForceRefresh = true;
+        ctx.stateRefreshService.resetLastSeenBlock();
+        ctx.stateCache.clear();
       }
 
       const latest = ctx.hyperSync

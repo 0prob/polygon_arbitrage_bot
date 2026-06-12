@@ -24,6 +24,11 @@ export function buildExecutionCandidate(
   traceId?: string,
 ): CandidateExecution {
   const edges = profitable.cycle.edges.map((e) => {
+    // e.feeBps is the protocol-native raw fee (bps for V2-likes, pips for V3/V4,
+    // fee-units for Kyber Elastic). Pass it through as `fee` only: encodeV3Hop and
+    // the Kyber encoder's fallback consume the raw value directly. Do NOT set
+    // swapFeeBps here — normalizeKyberSwapFeePips treats that field as true bps
+    // and multiplies by 100, which corrupts the fee for Elastic hops.
     const fee = Number(e.feeBps ?? 0);
     const addr = e.poolAddress.toLowerCase();
     const state = options.stateCache?.get(addr);
@@ -35,7 +40,6 @@ export function buildExecutionCandidate(
       protocol: e.protocol,
       zeroForOne: e.zeroForOne,
       fee,
-      swapFeeBps: fee,
       metadata: {},
       tokenInIdx: e.tokenInIdx,
       tokenOutIdx: e.tokenOutIdx,
