@@ -25,26 +25,37 @@ registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 
 export class MempoolAwareDryRunner {
   private lastPendingState: PendingState | null = null;
+  private lastFetchAt = 0;
 
   constructor(
     private client: PublicClient,
     private pendingOverrideStore?: PendingOverrideStore,
   ) {}
 
-  async fetchPendingState(): Promise<PendingState | null> {
+  async fetchPendingState(minIntervalMs = 0): Promise<PendingState | null> {
+    const now = Date.now();
+    if (minIntervalMs > 0 && this.lastPendingState && now - this.lastFetchAt < minIntervalMs) {
+      return this.lastPendingState;
+    }
     try {
-      const block = await this.client.getBlock({ blockTag: "pending" });
+      const block = await Promise.race([
+        this.client.getBlock({ blockTag: "pending" }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("fetchPendingState timeout")), 2_000),
+        ),
+      ]);
       if (block.number && block.hash) {
+        this.lastFetchAt = now;
         this.lastPendingState = {
           blockNumber: Number(block.number),
           blockHash: block.hash,
         };
         return this.lastPendingState;
       }
-      } catch (err) {
-        console.warn("[dryrun] fetchPendingState failed:", err);
-      }
-    return null;
+    } catch (err) {
+      console.warn("[dryrun] fetchPendingState failed:", err);
+    }
+    return this.lastPendingState;
   }
 
   private getViemOverride(): ViemStateOverride | undefined {

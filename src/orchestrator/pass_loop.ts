@@ -15,6 +15,7 @@ import type { PassLoopState } from "./pass_state.ts";
 import { publishHfSnapshot } from "./hf_snapshot.ts";
 import { refreshCyclePoolsOnHead } from "./head_refresh.ts";
 import { resolveInfraProfile } from "../config/infra_profile.ts";
+import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -73,6 +74,8 @@ const HEAD_TIMEOUT_MS = 3000;
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
   ctx.logger.info({}, "runPassLoop started");
+  debugBreak(DebugSites.PASS_LOOP_START);
+  debugLog("pass_loop.ts:start", "pass loop starting", { hfInterval: HF_INTERVAL });
 
   await Promise.all([ctx.executionService.start(), ctx.mempoolService.start()]);
 
@@ -263,6 +266,8 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
       await sleep(waitMs);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      debugBreak(DebugSites.PASS_LOOP_ERROR, { message, cycles: ctx.metrics.cycles });
+      debugLog("pass_loop.ts:error", "pass loop iteration error", { message }, "pass-loop-error");
       ctx.logger.error({ err }, "Pass loop error");
       ctx.metrics.totalErrors++;
       ctx.metrics.lastErrorTime = Date.now();

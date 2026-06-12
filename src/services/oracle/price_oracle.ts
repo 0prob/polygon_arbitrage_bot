@@ -175,17 +175,23 @@ export async function enrichTokenToMaticRates(
   poolRates: Map<string, bigint>,
   tokens: Iterable<string>,
   client?: PublicClient,
+  concurrency = 8,
 ): Promise<Map<string, bigint>> {
   const out = new Map(poolRates);
-  for (const token of tokens) {
-    const key = token.toLowerCase();
-    const poolRate = poolRates.get(key) ?? 0n;
-    const { rate, source } = await oracle.getTokenToMaticRate(key, poolRate, client);
-    if (source === "blocked") {
-      out.delete(key);
-    } else if (rate > 0n) {
-      out.set(key, rate);
-    }
+  const unique = [...new Set([...tokens].map((t) => t.toLowerCase()))];
+  for (let i = 0; i < unique.length; i += concurrency) {
+    const chunk = unique.slice(i, i + concurrency);
+    await Promise.all(
+      chunk.map(async (key) => {
+        const poolRate = poolRates.get(key) ?? 0n;
+        const { rate, source } = await oracle.getTokenToMaticRate(key, poolRate, client);
+        if (source === "blocked") {
+          out.delete(key);
+        } else if (rate > 0n) {
+          out.set(key, rate);
+        }
+      }),
+    );
   }
   return out;
 }

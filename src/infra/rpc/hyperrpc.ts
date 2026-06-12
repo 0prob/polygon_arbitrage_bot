@@ -99,7 +99,6 @@ export class HyperRpcClient {
 
       return json.result as T;
     } catch (err) {
-      // Standardize error handling
       handleRpcError(err, `rpc ${method}`);
     } finally {
       clearTimeout(timer);

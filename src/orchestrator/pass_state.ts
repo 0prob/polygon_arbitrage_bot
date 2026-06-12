@@ -37,4 +37,10 @@ export interface PassLoopState {
   hfSimOffset: number;
   /** stateCache.size at last successful enumeration — triggers re-enum when bootstrap fills cache. */
   lastEnumStateCacheSize: number;
+  /** Debug: HF tick counter for sampled instrumentation. */
+  hfTickCount?: number;
+  /** Last HF simulation wall time — drives adaptive sim cap when over budget. */
+  lastHfSimMs?: number;
+  /** Cached oracle fallback rates (0n = no feed found) — avoids re-querying every HF tick. */
+  oracleRateCache?: Map<string, bigint>;
 }

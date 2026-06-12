@@ -7,8 +7,13 @@ import { EventBus } from "../tui/events.ts";
 import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
+import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 
 async function main() {
+  debugLog("arb_only_debug.ts:main", "entry", {
+    argv: process.argv.slice(2),
+    underDebugger: !!(process.env.BUN_INSPECT || process.env.VSCODE_INSPECTOR_OPTIONS),
+  });
   const useTui = process.argv.includes("--tui");
   const config = loadConfig(process.env);
 
@@ -29,6 +34,8 @@ async function main() {
   logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only mode — assuming HyperIndex/Hasura is running externally");
 
   const ctx = await bootApplication(config, undefined, logger, undefined);
+  debugBreak(DebugSites.BOOT, { mode: "arb-only", hasuraUrl: config.hasuraUrl ?? null });
+  debugLog("arb_only_debug.ts:boot", "boot complete", { tier: ctx.tierManager.assess() });
 
   // Health server requires a HyperIndexMonitor — skip in arb-only mode.
 
@@ -79,6 +86,7 @@ async function main() {
 }
 
 main().catch((err) => {
+  debugBreak(DebugSites.FATAL, { err: String(err) });
   console.error(err);
   process.exit(1);
 });

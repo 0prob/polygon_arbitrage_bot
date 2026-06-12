@@ -15,6 +15,7 @@ import type { PendingStateOverlay } from "../core/types/overlay.ts";
 import { solveV2Optimal } from "../core/math/uniswap_v2_solver.ts";
 import { solveBrentOptimal } from "../core/math/hybrid_solver.ts";
 import { logSampled, METRICS_INTERVAL } from "../infra/observability/metrics.ts";
+import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 
 const PROFIT_SENTINEL = -1_000_000_000_000_000_000_000_000_000_000n;
 /** Gross above this with no net profit = poisoned rates / minimal-search artifact. */
@@ -236,6 +237,8 @@ export async function evaluatePipeline(
 
   const CONCURRENCY = options.concurrency ?? 75;
   const yieldEvery = options.simBatchSize ?? Math.min(25, CONCURRENCY);
+  const deadline = options.maxDurationMs != null ? Date.now() + options.maxDurationMs : Infinity;
+  let pipelineErrorCount = 0;
   const batches: FoundCycle[][] = [];
   for (let i = 0; i < cycles.length; i += CONCURRENCY) {
     batches.push(cycles.slice(i, i + CONCURRENCY));
@@ -248,6 +251,7 @@ export async function evaluatePipeline(
     | { type: "error"; cycle: FoundCycle };
 
   for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+    if (Date.now() >= deadline) break;
     const batch = batches[batchIdx];
     if (profitable.length >= 10) break;
 
@@ -258,6 +262,7 @@ export async function evaluatePipeline(
     const results: CycleEvalResult[] = [];
     for (let ci = 0; ci < batch.length; ci++) {
       if (ci > 0 && ci % yieldEvery === 0) {
+        if (Date.now() >= deadline) break;
         await new Promise((r) => setImmediate(r));
       }
       const cycle = batch[ci];
@@ -412,6 +417,21 @@ export async function evaluatePipeline(
 
         results.push({ type: "success", bestResult, bestAssessment, bestGrossMatic, cycle });
       } catch (err) {
+        pipelineErrorCount++;
+        if (pipelineErrorCount === 1 || pipelineErrorCount % 50 === 0) {
+          debugBreak(DebugSites.PIPELINE_CYCLE_ERROR, {
+            cycleId: cycle.id,
+            path: cycle.edges.map((e) => e.poolAddress).join(" -> "),
+            err: String(err),
+            errorCount: pipelineErrorCount,
+          });
+          debugLog(
+            "pipeline.ts:evaluate",
+            "cycle evaluation error",
+            { cycleId: cycle.id, err: String(err), errorCount: pipelineErrorCount },
+            DebugSites.PIPELINE_CYCLE_ERROR,
+          );
+        }
         if (options.logger) {
           options.logger.error?.(
             {
@@ -506,6 +526,7 @@ export async function evaluatePipeline(
     if (options.onProgress) {
       options.onProgress(attempted, cycles.length, profitable.length);
     }
+    if (Date.now() >= deadline) break;
   }
 
   logSampled(

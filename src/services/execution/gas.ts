@@ -237,15 +237,22 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
 
       return { baseFee, priorityFee };
     } catch (err) {
-      console.warn("[gas] Gas fetcher failed:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[gas] Gas fetcher failed: ${msg}`);
       return { baseFee: fallback, priorityFee: fallback };
     }
   };
 }
 
+let gasStationFailures = 0;
+let gasStationCooldownUntil = 0;
+const GAS_STATION_COOLDOWN_MS = 60_000;
+const GAS_STATION_MAX_FAILURES = 3;
+
 async function fetchGasFromStation(url: string, percentile: number): Promise<{ baseFee: bigint; priorityFee: bigint } | null> {
+  if (Date.now() < gasStationCooldownUntil) return null;
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    const response = await fetch(url, { signal: AbortSignal.timeout(1500) });
     if (!response.ok) return null;
     const data = (await response.json()) as PolygonGasStationResponse;
 
@@ -256,9 +263,14 @@ async function fetchGasFromStation(url: string, percentile: number): Promise<{ b
     const baseFee = BigInt(Math.round(data.estimatedBaseFee * 1e9));
     const priorityFee = BigInt(Math.round(data[level].maxPriorityFee * 1e9));
 
+    gasStationFailures = 0;
     return { baseFee, priorityFee };
-  } catch (err) {
-    console.warn("[gas] Gas station fetch failed:", err);
+  } catch {
+    gasStationFailures++;
+    if (gasStationFailures >= GAS_STATION_MAX_FAILURES) {
+      gasStationCooldownUntil = Date.now() + GAS_STATION_COOLDOWN_MS;
+      gasStationFailures = 0;
+    }
     return null;
   }
 }

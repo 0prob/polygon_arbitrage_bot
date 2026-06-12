@@ -15,8 +15,73 @@ import {
 import { resolveInfraProfile, scaledConcurrency, type InfraProfile } from "../config/infra_profile.ts";
 import { buildHopBalancedWindow, hopSimBucket } from "../pipeline/finder.ts";
 import { getHfSnapshot, type HfReadSnapshot } from "./hf_snapshot.ts";
-const HF_INTERVAL = 200;
+import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
+const ORACLE_FALLBACK_CONCURRENCY = 8;
+const ORACLE_FALLBACK_MAX_PER_TICK = 24;
+const PENDING_STATE_MIN_INTERVAL_MS = 2_000;
+
+async function resolveOracleFallbackRates(
+  ctx: RuntimeContext,
+  snap: HfReadSnapshot,
+  tokenKeys: string[],
+  state: PassLoopState,
+): Promise<Map<string, bigint>> {
+  const out = new Map<string, bigint>();
+  if (!ctx.priceOracle || ctx.config.oracle.enabled === false) return out;
+
+  if (!state.oracleRateCache) state.oracleRateCache = new Map();
+
+  const missing: string[] = [];
+  for (const raw of new Set(tokenKeys.map((t) => t.toLowerCase()))) {
+    if ((snap.tokenToMaticRates.get(raw) ?? 0n) > 0n) continue;
+    const cached = state.oracleRateCache.get(raw);
+    if (cached !== undefined) {
+      if (cached > 0n) out.set(raw, cached);
+      continue;
+    }
+    missing.push(raw);
+  }
+
+  const batch = missing.slice(0, ORACLE_FALLBACK_MAX_PER_TICK);
+  const oracleStart = Date.now();
+  for (let i = 0; i < batch.length; i += ORACLE_FALLBACK_CONCURRENCY) {
+    const chunk = batch.slice(i, i + ORACLE_FALLBACK_CONCURRENCY);
+    await Promise.all(
+      chunk.map(async (tokenKey) => {
+        try {
+          const { rate } = await ctx.priceOracle!.getTokenToMaticRate(tokenKey, 0n, ctx.publicClient);
+          state.oracleRateCache!.set(tokenKey, rate);
+          if (rate > 0n) out.set(tokenKey, rate);
+        } catch {
+          state.oracleRateCache!.set(tokenKey, 0n);
+        }
+      }),
+    );
+  }
+  if (batch.length > 0) {
+    debugLog(
+      "pass_hf.ts:oracle",
+      "oracle fallback batch",
+      { requested: missing.length, fetched: batch.length, elapsedMs: Date.now() - oracleStart },
+      DebugSites.HF_TICK,
+    );
+  }
+  return out;
+}
+
+function rateForToken(
+  tokenKey: string,
+  snap: HfReadSnapshot,
+  oracleFallback: Map<string, bigint>,
+  oracleCache?: Map<string, bigint>,
+): bigint {
+  const fromSnap = snap.tokenToMaticRates.get(tokenKey) ?? 0n;
+  if (fromSnap > 0n) return fromSnap;
+  const fromTick = oracleFallback.get(tokenKey) ?? 0n;
+  if (fromTick > 0n) return fromTick;
+  return oracleCache?.get(tokenKey) ?? 0n;
+}
 
 /** Prefer shorter hop counts — 5-hop cycles dominate enumeration but rarely clear gas+fees. */
 function selectCyclesForSim(cycles: FoundCycle[], cap: number): FoundCycle[] {
@@ -63,6 +128,12 @@ export async function runHfTick(
   const startTime = Date.now();
   const now = startTime;
   const snap = getHfSnapshot(state);
+  // Sampled — avoid flooding debug ingest / stepping into pino→stream on every HF tick
+  if (state.hfTickCount === undefined) state.hfTickCount = 0;
+  state.hfTickCount++;
+  if (state.hfTickCount === 1 || state.hfTickCount % 200 === 0) {
+    debugLog("pass_hf.ts:tick", "HF tick start", { cachedCycles: snap.cachedCycles.length, tick: state.hfTickCount }, DebugSites.HF_TICK);
+  }
   const currentPassTraceId = state.lastMempoolTraceId;
   state.lastMempoolTraceId = undefined;
 
@@ -110,13 +181,12 @@ export async function runHfTick(
 
   if (cycleIndices.length === 0) {
     bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
-    await sleep(HF_INTERVAL);
     return { elapsed: Date.now() - startTime };
   }
 
-  // Mempool-aware dry run
+  // Mempool-aware dry run — refresh pending block in background; never block HF on RPC
   if (ctx.dryRunner) {
-    await ctx.dryRunner.fetchPendingState();
+    void ctx.dryRunner.fetchPendingState(PENDING_STATE_MIN_INTERVAL_MS).catch(() => {});
   }
 
   bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });
@@ -128,10 +198,63 @@ export async function runHfTick(
     ? ctx.config.execution.minProfitWei * 2n
     : ctx.config.execution.minProfitWei;
 
+  if (isDegraded) {
+    ctx.logger.debug(
+      { effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() },
+      "Running in indexer-lag degraded mode",
+    );
+  }
+
+  // Rate-covered cycles using pool-graph + cached oracle only (no RPC on hot path yet)
+  const rateSafeCycles: FoundCycle[] = [];
+  for (const ci of cycleIndices) {
+    const cycle = currentCycles[ci];
+    const tokenKey = cycle.startToken.toLowerCase();
+    const startRate = rateForToken(tokenKey, snap, new Map(), state.oracleRateCache);
+    if (startRate > 0n) rateSafeCycles.push(cycle);
+  }
+
+  if (rateSafeCycles.length === 0 && cycleIndices.length > 0) {
+    ctx.logger.debug(
+      { totalFiltered: cycleIndices.length, rates: snap.tokenToMaticRates.size },
+      "No rate-covered cycles this pass (coverage still growing)",
+    );
+  }
+
+  const simCapBase = infra.maxSimCycles;
+  const lastSimMs = state.lastHfSimMs ?? 0;
+  const simCap =
+    lastSimMs > infra.hfBudgetMs * 2
+      ? Math.max(100, Math.floor(simCapBase * (infra.hfBudgetMs / lastSimMs)))
+      : simCapBase;
+  let cyclesToSim: FoundCycle[];
+  if (rateSafeCycles.length > simCap) {
+    const rotated = selectCyclesForSimRotating(rateSafeCycles, simCap, state.hfSimOffset);
+    cyclesToSim = rotated.selected;
+    state.hfSimOffset = rotated.nextOffset;
+  } else {
+    cyclesToSim = rateSafeCycles;
+    state.hfSimOffset = 0;
+  }
+
+  // Oracle fallback only for the sim batch — capped per tick to protect HF budget
+  const oracleFallbackRates = await resolveOracleFallbackRates(
+    ctx,
+    snap,
+    cyclesToSim.map((c) => c.startToken.toLowerCase()),
+    state,
+  );
+
+  const simTokenRates = new Map(snap.tokenToMaticRates);
+  for (const [k, v] of oracleFallbackRates) simTokenRates.set(k, v);
+  for (const [k, v] of state.oracleRateCache ?? []) {
+    if (v > 0n && !simTokenRates.has(k)) simTokenRates.set(k, v);
+  }
+
   const options: PipelineOptions = {
     minProfitMaticWei: effectiveMinProfit,
     gasPriceWei: gasSnapshot.gasPrice,
-    tokenToMaticRates: snap.tokenToMaticRates,
+    tokenToMaticRates: simTokenRates,
     tokenMetas: snap.cachedMetas ?? undefined,
     slippageBps: ctx.config.execution.slippageBps,
     revertRiskBps: ctx.config.execution.revertRiskBps,
@@ -143,6 +266,7 @@ export async function runHfTick(
     simBatchSize: infra.simBatchSize,
     roiSafetyCap: ctx.config.execution.roiSafetyCap,
     pendingOverrideStore: ctx.pendingOverrideStore,
+    maxDurationMs: Math.max(80, infra.hfBudgetMs - 20),
     logger: ctx.logger,
     onProgress: (current, total, profitable) => {
       if (current % 10 === 0 || current === total) {
@@ -151,52 +275,6 @@ export async function runHfTick(
     },
   };
 
-  if (isDegraded) {
-    ctx.logger.debug(
-      { effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() },
-      "Running in indexer-lag degraded mode",
-    );
-  }
-
-  // Focus on rate-covered cycles (oracle fallback when pool-graph rate is missing)
-  const rateSafeCycles: FoundCycle[] = [];
-  const oracleFallbackRates = new Map<string, bigint>();
-  for (const ci of cycleIndices) {
-    const cycle = currentCycles[ci];
-    const tokenKey = cycle.startToken.toLowerCase();
-    let startRate = snap.tokenToMaticRates.get(tokenKey) ?? 0n;
-    if (startRate === 0n && ctx.priceOracle && ctx.config.oracle.enabled !== false) {
-      const cached = oracleFallbackRates.get(tokenKey);
-      if (cached != null) {
-        startRate = cached;
-      } else {
-        const { rate } = await ctx.priceOracle.getTokenToMaticRate(tokenKey, 0n, ctx.publicClient);
-        if (rate > 0n) {
-          oracleFallbackRates.set(tokenKey, rate);
-          startRate = rate;
-        }
-      }
-    }
-    if (startRate > 0n) rateSafeCycles.push(cycle);
-  }
-
-  if (rateSafeCycles.length === 0 && cycleIndices.length > 0) {
-    ctx.logger.debug(
-      { totalFiltered: cycleIndices.length, rates: snap.tokenToMaticRates.size },
-      "No rate-covered cycles this pass (coverage still growing)",
-    );
-  }
-
-  const simCap = infra.maxSimCycles;
-  let cyclesToSim: FoundCycle[];
-  if (rateSafeCycles.length > simCap) {
-    const rotated = selectCyclesForSimRotating(rateSafeCycles, simCap, state.hfSimOffset);
-    cyclesToSim = rotated.selected;
-    state.hfSimOffset = rotated.nextOffset;
-  } else {
-    cyclesToSim = rateSafeCycles;
-    state.hfSimOffset = 0;
-  }
   const simSkipped = rateSafeCycles.length - cyclesToSim.length;
   if (simSkipped > 0) {
     ctx.logger.debug(
@@ -212,6 +290,7 @@ export async function runHfTick(
   const simStartTime = Date.now();
   const result = await deps.evaluatePipeline(cyclesToSim, stateCache, options, ctx.pendingStateOverlay);
   const simElapsed = Date.now() - simStartTime;
+  state.lastHfSimMs = simElapsed;
 
   ctx.metrics.opportunitiesFound += result.profitableCount;
 
@@ -238,6 +317,10 @@ export async function runHfTick(
     if (result.profitable.length > 0 && !ctx.tierManager.shouldExecute()) {
       ctx.logger.debug({ tier, count: result.profitable.length }, "Execution suppressed by degradation tier");
     } else if (result.profitable.length > 0) {
+      debugBreak(DebugSites.PROFITABLE_FOUND, {
+        count: result.profitable.length,
+        topProfit: result.profitable[0]?.assessment.netProfitAfterGas.toString(),
+      });
       await buildAndExecuteCandidates(
         ctx, state, snap, deps, result.profitable, currentPassTraceId, options, now, infra, bus,
       );
@@ -500,8 +583,10 @@ async function buildAndExecuteCandidates(
   if (ctx.config.ranking.mode === "statistical" && candidates.length > 1) {
     const { sortCandidatesByEv } = await import("../services/ranking/scorer.ts");
     const rankInputs = candidates.map((c) => ({
-      ...c.candidate,
+      routeKey: c.candidate.routeKey,
+      gasLimit: c.candidate.gasLimit,
       gasPriceWei: options.gasPriceWei,
+      expectedProfit: c.candidate.expectedProfit ?? c.profitable.assessment.netProfitAfterGasMaticWei,
     }));
     const sorted = sortCandidatesByEv(
       rankInputs,

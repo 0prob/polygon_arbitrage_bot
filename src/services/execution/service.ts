@@ -7,6 +7,7 @@ import { getAddress, decodeEventLog } from "viem";
 import { SubmissionStrategy, type SubmitTxFn } from "./submit.ts";
 import { ReceiptPoller } from "./receipt.ts";
 import { getTraceMessages } from "../../infra/hypersync/trace_parser.ts";
+import { debugBreak, debugLog, DebugSites } from "../../infra/debug/session.ts";
 
 const ERC20_TRANSFER_EVENT = {
   anonymous: false,
@@ -232,6 +233,15 @@ export class ExecutionService {
       } else if (success) {
         this.quarantine.recordSuccess(candidate.routeKey);
       }
+
+      debugBreak(DebugSites.TX_RESULT, {
+        routeKey: candidate.routeKey,
+        success,
+        txHash,
+        profit: profit.toString(),
+        gasUsed: gasUsed.toString(),
+      });
+      debugLog("service.ts:execute", "execution result", { routeKey: candidate.routeKey, success, txHash }, DebugSites.TX_RESULT);
 
       return { success, txHash, gasUsed, traceMessages };
     } catch (err: any) {

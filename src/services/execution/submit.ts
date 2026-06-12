@@ -2,6 +2,7 @@ import type { Logger } from "../../infra/observability/logger.ts";
 import { scalePriorityFeeByProfitMargin } from "./gas.ts";
 import type { GasOracle } from "./gas.ts";
 import { SubmissionStrategy as SubmissionStrategyEnum } from "../../config/schema.ts";
+import { debugBreak, debugLog, DebugSites } from "../../infra/debug/session.ts";
 
 export type SubmitTxFn = (tx: {
   to: string;
@@ -39,6 +40,13 @@ export class SubmissionStrategy {
   ): Promise<{ txHash: string; endpoint: string }> {
     const effectiveGasLimit = gasLimit ?? tx.gasLimit;
     const snapshot = this.gasOracle.getSnapshot();
+    debugBreak(DebugSites.TX_SUBMIT, {
+      to: tx.to,
+      nonce: tx.nonce,
+      strategy: this.strategy,
+      expectedProfit: expectedProfit?.toString(),
+    });
+    debugLog("submit.ts:submit", "submitting tx", { to: tx.to, nonce: tx.nonce }, DebugSites.TX_SUBMIT);
     let adjustedFee = tx.maxFee;
     let maxPriorityFee = snapshot ? snapshot.priorityFee : 1_000_000_000n; // fallback to 1 Gwei
     if (expectedProfit && expectedProfit > 0n && snapshot) {

@@ -64,6 +64,8 @@ export interface PipelineOptions {
   };
   /** Pending Geth state overrides from mempool (shared with dry-run). */
   pendingOverrideStore?: PendingOverrideStore;
+  /** Stop evaluating batches once this wall-clock budget (ms) is exhausted. */
+  maxDurationMs?: number;
   onProgress?: (current: number, total: number, profitable: number) => void;
 }
 

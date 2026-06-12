@@ -20,7 +20,13 @@
     "fix": "bunx eslint src/ --fix && bunx prettier --write .",
     "dfail": "bun scripts/decode-failing.ts",
     "test": "bunx vitest run --coverage",
-    "devr": "bun run --cwd hyperindex dev:reset"
+    "devr": "bun run --cwd hyperindex dev:reset",
+    "debug": "BOT_DEBUG=1 bun run scripts/debug-run.ts",
+    "debug:tui": "BOT_DEBUG=1 bun run scripts/debug-run.ts --tui",
+    "debug:once": "BOT_DEBUG=1 bun run scripts/debug-run.ts --once",
+    "debug:loop": "BOT_DEBUG=1 bun run scripts/debug-run.ts",
+    "debug:arb": "BOT_DEBUG=1 bun --env-file=.env --inspect=127.0.0.1:9229/run run src/cli/arb_only_debug.ts",
+    "debug:full": "BOT_DEBUG=1 bun --env-file=.env --inspect=127.0.0.1:9229/run run src/cli/main.ts"
   },
   "dependencies": {
     "@envio-dev/hypersync-client": "1.4.0",
