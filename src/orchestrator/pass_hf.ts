@@ -10,9 +10,12 @@ import { buildStatusPayload, writeStatusFile } from "./status_writer.ts";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   logHfPassMetrics,
+  logSampled,
+  METRICS_INTERVAL,
+  shouldLogSampled,
   summarizeCycleRateCoverage,
 } from "../infra/observability/metrics.ts";
-import { resolveInfraProfile, scaledConcurrency, type InfraProfile } from "../config/infra_profile.ts";
+import { scaledConcurrency, type InfraProfile } from "../config/infra_profile.ts";
 import { buildHopBalancedWindow, hopSimBucket } from "../pipeline/finder.ts";
 import { getHfSnapshot, type HfReadSnapshot } from "./hf_snapshot.ts";
 import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
@@ -20,6 +23,28 @@ import { mapWithConcurrency } from "../core/utils/concurrency.ts";
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
 const ORACLE_FALLBACK_CONCURRENCY = 8;
 const ORACLE_FALLBACK_MAX_PER_TICK = 24;
+const HF_TELEMETRY_INTERVAL_MS = 1000;
+
+function getActiveCycleIndices(
+  cycles: FoundCycle[],
+  deps: PassLoopDeps,
+  qm: { isQuarantined: (routeKey: string) => boolean; revision: number },
+  state: PassLoopState,
+  generation: number,
+): number[] {
+  const cache = state.hfCycleFilterCache;
+  if (cache && cache.generation === generation && cache.quarantineRevision === qm.revision) {
+    return cache.indices;
+  }
+  const indices: number[] = [];
+  for (let ci = 0; ci < cycles.length; ci++) {
+    const cycle = cycles[ci];
+    const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges);
+    if (!qm.isQuarantined(routeKey)) indices.push(ci);
+  }
+  state.hfCycleFilterCache = { generation, quarantineRevision: qm.revision, indices };
+  return indices;
+}
 
 async function resolveOracleFallbackRates(
   ctx: RuntimeContext,
@@ -45,12 +70,21 @@ async function resolveOracleFallbackRates(
 
   const batch = missing.slice(0, ORACLE_FALLBACK_MAX_PER_TICK);
   const oracleStart = Date.now();
+  const maticUsdHint =
+    batch.length > 0 && ctx.config.oracle.enabled !== false
+      ? await ctx.priceOracle!.getMaticUsd(ctx.publicClient)
+      : undefined;
   for (let i = 0; i < batch.length; i += ORACLE_FALLBACK_CONCURRENCY) {
     const chunk = batch.slice(i, i + ORACLE_FALLBACK_CONCURRENCY);
     await Promise.all(
       chunk.map(async (tokenKey) => {
         try {
-          const { rate } = await ctx.priceOracle!.getTokenToMaticRate(tokenKey, 0n, ctx.publicClient);
+          const { rate } = await ctx.priceOracle!.getTokenToMaticRate(
+            tokenKey,
+            0n,
+            ctx.publicClient,
+            maticUsdHint,
+          );
           state.oracleRateCache!.set(tokenKey, rate);
           if (rate > 0n) out.set(tokenKey, rate);
         } catch {
@@ -132,30 +166,46 @@ export async function runHfTick(
   if (state.hfTickCount === undefined) state.hfTickCount = 0;
   state.hfTickCount++;
   if (state.hfTickCount === 1 || state.hfTickCount % 200 === 0) {
+    debugBreak(DebugSites.HF_TICK, { cachedCycles: snap.cachedCycles.length, tick: state.hfTickCount });
     debugLog("pass_hf.ts:tick", "HF tick start", { cachedCycles: snap.cachedCycles.length, tick: state.hfTickCount }, DebugSites.HF_TICK);
   }
   const currentPassTraceId = state.lastMempoolTraceId;
   state.lastMempoolTraceId = undefined;
 
   const currentCycles = snap.cachedCycles;
-  const infra = resolveInfraProfile(ctx.config);
+  const infra = state.infra;
+
+  const isRpcConnected = ctx.rpcCircuit.isHealthy();
+  const isHasuraConnected = ctx.hasuraCircuit.isHealthy();
+  const isWsConnected = !!ctx.wsSubscriber && ctx.wsSubscriber.isConnected();
+  const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
 
   // === INDEXER LAG DETECTION ===
   let currentIndexerLag = 0;
-  const hiStatusForLag = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
-  if (hiStatusForLag && hiStatusForLag.remote > 0 && hiStatusForLag.synced > 0) {
-    currentIndexerLag = Math.max(0, hiStatusForLag.remote - hiStatusForLag.synced);
+  if (hiStatus && hiStatus.synced > 0) {
+    currentIndexerLag = hiStatus.lag > 0 ? hiStatus.lag : Math.max(0, hiStatus.remote - hiStatus.synced);
     if (currentIndexerLag > INDEXER_LAG_THRESHOLD_BLOCKS) {
-      ctx.logger.warn(
+      logSampled(
+        ctx.logger,
+        "hf:indexer-lag",
+        "warn",
+        "High indexer lag detected — entering degraded mode (reduced concurrency, higher profit floor)",
         {
           lag: currentIndexerLag,
           threshold: INDEXER_LAG_THRESHOLD_BLOCKS,
-          synced: hiStatusForLag.synced,
-          remote: hiStatusForLag.remote,
+          synced: hiStatus.synced,
+          remote: hiStatus.remote,
         },
-        "High indexer lag detected — entering degraded mode (reduced concurrency, higher profit floor)",
+        60_000,
       );
     }
+  }
+
+  if (!ctx.tierManager.shouldPollState()) {
+    ctx.logger.debug({ tier: ctx.tierManager.getCurrent() }, "HF tick skipped — RPC unavailable (black tier)");
+    bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
+    await sleep(200);
+    return { elapsed: Date.now() - startTime };
   }
 
   const gasSnapshot = ctx.gasOracle.getSnapshot();
@@ -168,16 +218,15 @@ export async function runHfTick(
 
   bus?.emit({ type: "gas_snapshot", gasPrice: gasSnapshot.gasPrice });
 
-  // Build non-quarantined cycle indices
-  const cycleIndices: number[] = [];
-  const qm = ctx.executionService.getQuarantineManager();
-  for (let ci = 0; ci < currentCycles.length; ci++) {
-    const cycle = currentCycles[ci];
-    const routeKey = cycle.id ?? deps.routeKeyFromEdges(cycle.edges);
-    if (!qm.isQuarantined(routeKey)) {
-      cycleIndices.push(ci);
-    }
+  if (!ctx.tierManager.shouldSimulate()) {
+    ctx.logger.debug({ tier: ctx.tierManager.getCurrent() }, "HF simulation suppressed by degradation tier");
+    bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
+    return { elapsed: Date.now() - startTime };
   }
+
+  // Build non-quarantined cycle indices (cached until snapshot or quarantine changes)
+  const qm = ctx.executionService.getQuarantineManager();
+  const cycleIndices = getActiveCycleIndices(currentCycles, deps, qm, state, snap.generation);
 
   if (cycleIndices.length === 0) {
     bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
@@ -194,9 +243,13 @@ export async function runHfTick(
     : ctx.config.execution.minProfitWei;
 
   if (isDegraded) {
-    ctx.logger.debug(
-      { effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() },
+    logSampled(
+      ctx.logger,
+      "hf:degraded-mode",
+      "debug",
       "Running in indexer-lag degraded mode",
+      { effectiveConcurrency, effectiveMinProfit: effectiveMinProfit.toString() },
+      60_000,
     );
   }
 
@@ -315,6 +368,7 @@ export async function runHfTick(
       debugBreak(DebugSites.PROFITABLE_FOUND, {
         count: result.profitable.length,
         topProfit: result.profitable[0]?.assessment.netProfitAfterGas.toString(),
+        topRoi: result.profitable[0]?.assessment.roi,
       });
       await buildAndExecuteCandidates(
         ctx, state, snap, deps, result.profitable, currentPassTraceId, options, now, infra, bus,
@@ -335,6 +389,7 @@ export async function runHfTick(
 
   const HF_BUDGET_MS = infra.hfBudgetMs;
   if (elapsed > HF_BUDGET_MS) {
+    debugBreak(DebugSites.HF_BUDGET_EXCEEDED, { elapsed, simMs: simElapsed, budget: HF_BUDGET_MS, cycles });
     ctx.logger.debug(
       {
         elapsed,
@@ -358,59 +413,63 @@ export async function runHfTick(
 
   const maticPriceUsd = snap.maticPriceUsd;
 
-  const isRpcConnected = ctx.rpcCircuit.isHealthy();
-  const isHasuraConnected = ctx.hasuraCircuit.isHealthy();
-  const isWsConnected = !!ctx.wsSubscriber && ctx.wsSubscriber.isConnected();
-
   const successRateVal =
     trackerSummary.totalAttempts > 0 ? Math.round((trackerSummary.totalSuccesses / trackerSummary.totalAttempts) * 100) : 0;
 
-  bus?.emit({
-    type: "heartbeat",
-    elapsedMs: elapsed,
-    cycles,
-    totalErrors: ctx.metrics.totalErrors,
-    indexerLag: currentIndexerLag,
-    gasPrice: gasSnapshot?.gasPrice,
-    rpcConnected: isRpcConnected,
-    hasuraConnected: isHasuraConnected,
-    wsConnected: isWsConnected,
-    maticPriceUsd,
-    cyclesPerMin: ctx.metrics.currentCyclesPerMinute,
-    peakCpm: ctx.metrics.peakCyclesPerMinute,
-    successRate: successRateVal,
-    maxHotPathMs: ctx.metrics.maxHotPathDurationMs,
-    trackedRoutes: trackerSummary.trackedRoutes,
-  });
-  bus?.emit({ type: "connection_status", subsystem: "rpc", status: isRpcConnected ? "connected" : "disconnected" });
-  bus?.emit({ type: "connection_status", subsystem: "hasura", status: isHasuraConnected ? "connected" : "disconnected" });
-  bus?.emit({ type: "connection_status", subsystem: "ws", status: isWsConnected ? "connected" : "disconnected" });
-  const hiStatus = ctx.hyperIndexMonitor ? ctx.hyperIndexMonitor.getLastStatus() : undefined;
+  const telemetryDue = now - (state.lastHfTelemetryTime ?? 0) >= HF_TELEMETRY_INTERVAL_MS;
+  if (telemetryDue) {
+    state.lastHfTelemetryTime = now;
+    bus?.emit({
+      type: "heartbeat",
+      elapsedMs: elapsed,
+      cycles,
+      totalErrors: ctx.metrics.totalErrors,
+      indexerLag: currentIndexerLag,
+      gasPrice: gasSnapshot?.gasPrice,
+      rpcConnected: isRpcConnected,
+      hasuraConnected: isHasuraConnected,
+      wsConnected: isWsConnected,
+      maticPriceUsd,
+      cyclesPerMin: ctx.metrics.currentCyclesPerMinute,
+      peakCpm: ctx.metrics.peakCyclesPerMinute,
+      successRate: successRateVal,
+      maxHotPathMs: ctx.metrics.maxHotPathDurationMs,
+      trackedRoutes: trackerSummary.trackedRoutes,
+    });
+    bus?.emit({ type: "connection_status", subsystem: "rpc", status: isRpcConnected ? "connected" : "disconnected" });
+    bus?.emit({ type: "connection_status", subsystem: "hasura", status: isHasuraConnected ? "connected" : "disconnected" });
+    bus?.emit({ type: "connection_status", subsystem: "ws", status: isWsConnected ? "connected" : "disconnected" });
+  }
 
-  const payload = buildStatusPayload(
-    ctx.metrics,
-    gasSnapshot.gasPrice,
-    state.hasuraPoolsCache?.length ?? 0,
-    hiStatus
-      ? {
-          synced: hiStatus.synced,
-          remote: hiStatus.remote,
-          lag: hiStatus.lag,
-          syncRate: hiStatus.syncRate,
-          healthy: ctx.hyperIndexMonitor!.isHealthy(),
-        }
-      : undefined,
-  );
   const statusChanged =
     cycles % 5 === 0 ||
     ctx.metrics.executionsAttempted > 0 ||
     ctx.metrics.totalErrors > 0;
-  if (now - state.lastStatusWriteTime > (statusChanged ? 1000 : 5000)) {
+  const statusWriteInterval = statusChanged ? 1000 : 5000;
+  if (now - state.lastStatusWriteTime > statusWriteInterval) {
     state.lastStatusWriteTime = now;
+    const payload = buildStatusPayload(
+      ctx.metrics,
+      gasSnapshot.gasPrice,
+      state.hasuraPoolsCache?.length ?? 0,
+      hiStatus
+        ? {
+            synced: hiStatus.synced,
+            remote: hiStatus.remote,
+            lag: hiStatus.lag,
+            syncRate: hiStatus.syncRate,
+            healthy: ctx.hyperIndexMonitor!.isHealthy(),
+          }
+        : undefined,
+    );
     writeStatusFile(ctx.config.paths.dataDir, payload).catch((err) => {
       ctx.logger.debug?.({ err }, "Failed to write status file");
     });
   }
+
+  const cycleRates = shouldLogSampled("hf:pass", METRICS_INTERVAL.hfPass)
+    ? summarizeCycleRateCoverage(currentCycles, snap.tokenToMaticRates, simCap)
+    : { total: currentCycles.length };
 
   logHfPassMetrics(ctx.logger, {
     elapsedMs: elapsed,
@@ -439,7 +498,7 @@ export async function runHfTick(
     degraded: isDegraded,
     quarantinedRoutes: qm.size,
     tierAllowsExecute: ctx.tierManager.shouldExecute(),
-    cycleRates: summarizeCycleRateCoverage(currentCycles, snap.tokenToMaticRates, simCap),
+    cycleRates,
     lfEnumInFlight: snap.lfEnumerationInFlight,
     snapGeneration: snap.generation,
   });
@@ -507,7 +566,7 @@ async function buildAndExecuteCandidates(
     try {
       const candidate = deps.buildExecutionCandidate(
         profitableItem,
-        { executorAddress, fromAddress: executorAddress },
+        { executorAddress, fromAddress: operatorAddress },
         {
           slippageBps: Number(options.slippageBps ?? 50n),
           flashLoanSource: options.flashLoanSource === FlashLoanSource.AAVE_V3 ? "AAVE_V3" : "BALANCER",
@@ -550,6 +609,7 @@ async function buildAndExecuteCandidates(
             ctx.logger.warn?.({ err: dumpErr, routeKey }, "Failed to dump failing calldata");
           }
           ctx.executionService.getQuarantineManager().add(routeKey, dryRun.revertReason || dryRun.error);
+          debugBreak(DebugSites.DRY_RUN_FAIL, { routeKey, reason: dryRun.revertReason || dryRun.error });
           return null;
         }
         if (dryRun.gasUsed != null && dryRun.gasUsed > 0n) {
@@ -630,6 +690,10 @@ async function buildAndExecuteCandidates(
 
   if (candidates.length > 0) {
     bus?.emit({ type: "pipeline_stage", stage: "EXECUTING" });
+    debugBreak(DebugSites.EXECUTE_BATCH, {
+      count: candidates.length,
+      routeKeys: candidates.map((c) => c.routeKey),
+    });
     const candidateExecs = candidates.map((c) => c.candidate);
     const groups = groupCompatibleCandidates(candidateExecs);
 
@@ -668,30 +732,50 @@ async function buildAndExecuteCandidates(
         const match = candidates.find((c) => c.routeKey === group[0].routeKey);
         if (match) {
           const { submitBackrunBundle, waitForBundledBackrunTx } = await import("../services/mev/backrun.ts");
-          const backrun = await submitBackrunBundle(
-            ctx,
-            { victim: victimSignal, candidate: group[0], operatorAddress },
-            victimSignal.rawTx ?? "",
-          );
-          if (backrun.submitted) {
-            runPublicExecute = false;
-            ctx.logger.info({ routeKey: group[0].routeKey, detail: backrun.detail }, "MEV bundle submitted — waiting for inclusion");
-            const inclusion = await waitForBundledBackrunTx(
-              ctx.publicClient,
+          const fee = ctx.gasOracle.getSnapshot();
+          let externalNonce: number | undefined;
+          if (fee) {
+            externalNonce = ctx.executionService.reserveExternalNonce();
+            debugBreak(DebugSites.BACKRUN_SUBMIT, {
+              routeKey: group[0].routeKey,
+              victimTx: victimSignal.txHash,
+              pool: victimSignal.poolAddress,
+            });
+            const backrun = await submitBackrunBundle(
+              ctx,
               { victim: victimSignal, candidate: group[0], operatorAddress },
-              victimSignal.txHash,
-              ctx.config.mev.bundleWaitMs,
+              victimSignal.rawTx ?? "",
+              {
+                nonce: externalNonce,
+                maxFeePerGas: fee.maxFee,
+                maxPriorityFeePerGas: fee.priorityFee,
+              },
             );
-            if (inclusion) {
-              results = [await ctx.executionService.confirmExecution(group[0], inclusion.txHash)];
-            } else if (ctx.config.mev.publicBackrunFallback) {
-              runPublicExecute = true;
-              ctx.logger.debug({ routeKey: group[0].routeKey }, "MEV bundle not included — public fallback");
+            if (backrun.submitted) {
+              runPublicExecute = false;
+              ctx.logger.info({ routeKey: group[0].routeKey, detail: backrun.detail }, "MEV bundle submitted — waiting for inclusion");
+              const inclusion = await waitForBundledBackrunTx(
+                ctx,
+                { victim: victimSignal, candidate: group[0], operatorAddress },
+                victimSignal.txHash,
+                ctx.config.mev.bundleWaitMs,
+              );
+              if (inclusion) {
+                results = [await ctx.executionService.confirmExecution(group[0], inclusion.txHash, externalNonce)];
+              } else if (ctx.config.mev.publicBackrunFallback) {
+                ctx.executionService.releaseExternalNonce(externalNonce);
+                runPublicExecute = true;
+                ctx.logger.debug({ routeKey: group[0].routeKey }, "MEV bundle not included — public fallback");
+              } else {
+                ctx.executionService.releaseExternalNonce(externalNonce);
+                results = [{ success: false, error: "mev_bundle_timeout" }];
+              }
+            } else if (backrun.mode !== "public_fallback") {
+              ctx.executionService.releaseExternalNonce(externalNonce);
+              ctx.logger.debug({ detail: backrun.detail }, "MEV backrun skipped");
             } else {
-              results = [{ success: false, error: "mev_bundle_timeout" }];
+              ctx.executionService.releaseExternalNonce(externalNonce);
             }
-          } else if (backrun.mode !== "public_fallback") {
-            ctx.logger.debug({ detail: backrun.detail }, "MEV backrun skipped");
           }
         }
       }
@@ -717,7 +801,11 @@ async function buildAndExecuteCandidates(
           const cand = candidates.find((c) => c.routeKey === routeKey);
           let profitWei = 0n;
           if (cand) {
-            const startRate = snap.tokenToMaticRates.get(cand.profitable.cycle.startToken.toLowerCase()) ?? 0n;
+            const tokenKey = cand.profitable.cycle.startToken.toLowerCase();
+            const startRate =
+              snap.tokenToMaticRates.get(tokenKey) ??
+              state.oracleRateCache?.get(tokenKey) ??
+              0n;
             const profitInTokens = tracked ? tracked.profit : cand.profitable.assessment.netProfitAfterGas;
             if (startRate > 0n) {
               profitWei = (profitInTokens * startRate) / 1000000000000000000n;

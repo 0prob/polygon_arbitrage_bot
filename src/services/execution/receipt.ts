@@ -21,7 +21,7 @@ export interface ReceiptData {
 
 type ReceiptSource = "hypersync" | "hyperrpc" | "viem";
 
-const ALL_SOURCES: ReceiptSource[] = ["hypersync", "hyperrpc", "viem"];
+const ALL_SOURCES: ReceiptSource[] = ["hyperrpc", "hypersync", "viem"];
 
 function normalizeReceipt(receipt: RawReceipt): ReceiptData {
   return {
@@ -42,6 +42,8 @@ export class ReceiptPoller {
     private rpc: RpcManager,
     private timeoutMs: number,
     private pollMs: number,
+    /** When true, fetch execution traces via HyperSync (doubles API cost). */
+    private fetchTraces = false,
   ) {}
 
   public cancel(): void {
@@ -58,7 +60,7 @@ export class ReceiptPoller {
       const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
       if (!hyperSync) return null;
       const receipt = (await hyperSync.getTransactionReceipt(txHash)) as RawReceipt | null;
-      if (receipt) {
+      if (receipt && this.fetchTraces) {
         receipt.traces = await hyperSync.getTransactionTraces(txHash).catch(() => []);
       }
       return receipt;

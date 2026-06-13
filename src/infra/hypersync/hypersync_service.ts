@@ -75,10 +75,13 @@ export class HyperSyncService {
    * Get a recent block with useful fields.
    */
   async getBlock(numberOrTag: number | "latest" | bigint): Promise<any | null> {
-    const from = typeof numberOrTag === "string" ? 0 : Number(numberOrTag);
+    if (numberOrTag === "latest") {
+      return this.getBlockByNumber("latest");
+    }
+    const from = Number(numberOrTag);
     const query: Record<string, unknown> = {
       fromBlock: from,
-      toBlock: typeof numberOrTag === "string" ? undefined : from + 1,
+      toBlock: from + 1,
       fieldSelection: {
         block: ["Number", "Hash", "Timestamp", "BaseFeePerGas"],
       },

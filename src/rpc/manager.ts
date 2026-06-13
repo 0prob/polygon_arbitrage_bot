@@ -15,6 +15,8 @@ const DEFAULT_TIMEOUT_MS = 10_000;
 
 export interface RpcManagerOptions {
   chainId?: number;
+  /** ENVIO_API_TOKEN — HyperSync only (per Envio env var docs). */
+  envioApiToken?: string;
 }
 
 export class RpcManager {
@@ -69,9 +71,15 @@ export class RpcManager {
     // Gracefully degrades if the native package isn't installed yet.
     // IMPORTANT: Created BEFORE ReorgDetector so it receives the instance.
     if (config.hyperSyncUrl) {
+      const hyperSyncToken = opts?.envioApiToken?.trim();
+      if (!hyperSyncToken) {
+        console.warn(
+          "[RpcManager] HYPER_SYNC_URL is set but ENVIO_API_TOKEN is missing — HyperSync will use an unauthenticated endpoint",
+        );
+      }
       this._hyperSync = createHyperSyncService({
         url: config.hyperSyncUrl,
-        apiToken: config.hyperRpcApiToken,
+        apiToken: hyperSyncToken,
         timeoutMs: config.requestTimeoutMs,
       });
     }
@@ -88,7 +96,7 @@ export class RpcManager {
     }
 
     // ReorgDetector — created AFTER both HyperSync and HyperRPC so it receives the instances.
-    this._reorgDetector = new ReorgDetector(this._readClient, 10, this._hyperRpc, this._hyperSync);
+    this._reorgDetector = new ReorgDetector(this._readClient, 3, this._hyperRpc, this._hyperSync);
   }
 
   /** The read PublicClient (used by existing consumers for backward compat) */

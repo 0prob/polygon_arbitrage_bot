@@ -17,6 +17,29 @@ describe("PriceOracle", () => {
     expect(source).toBe("pool");
   });
 
+  it("deduplicates concurrent getMaticUsd fetches", async () => {
+    let reads = 0;
+    const mockClient = {
+      readContract: vi.fn().mockImplementation(() => {
+        reads++;
+        return Promise.resolve([0n, 800_000_000n, 0n, 0n, 0n]);
+      }),
+    };
+
+    const oracle = new PriceOracle({ enabled: true, client: mockClient as any });
+    vi.spyOn(oracle as any, "fetchPythPrice").mockResolvedValue(null);
+
+    const [a, b, c] = await Promise.all([
+      oracle.getMaticUsd(mockClient as any),
+      oracle.getMaticUsd(mockClient as any),
+      oracle.getMaticUsd(mockClient as any),
+    ]);
+
+    expect(a).toBe(b);
+    expect(b).toBe(c);
+    expect(reads).toBe(1);
+  });
+
   it("blocks token when pool-graph and oracle diverge beyond threshold", async () => {
     const mockClient = {
       readContract: vi.fn().mockImplementation(({ functionName }: { functionName: string }) => {

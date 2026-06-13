@@ -9,14 +9,17 @@ vi.mock('./rpc_client', () => ({
   },
 }));
 
-// Mock bun:sqlite
-vi.mock('bun:sqlite', () => ({
-  Database: vi.fn(() => ({
-    prepare: vi.fn(() => ({
-      all: vi.fn(() => [{ address: '0xabcdef1234567890abcdef1234567890abcdef12', decimals: 18 }]),
-    })),
-  })),
-}));
+// Mock bun:sqlite — must be a constructable class (vitest + dynamic import)
+vi.mock("bun:sqlite", () => {
+  class MockDatabase {
+    prepare(_sql: string) {
+      return {
+        all: () => [{ address: "0xabcdef1234567890abcdef1234567890abcdef12", decimals: 18 }],
+      };
+    }
+  }
+  return { Database: MockDatabase };
+});
 
 // Mock fs/promises
 vi.mock('node:fs/promises', () => ({
@@ -35,7 +38,7 @@ describe('fetchTokenMeta', () => {
     const context = { log: { info: vi.fn(), warn: vi.fn() }, cache: true };
     const input = { address: '0xabcdef1234567890abcdef1234567890abcdef12' };
 
-    (publicClient.readContract as any).mockResolvedValue(18);
+    (publicClient.readContract as ReturnType<typeof vi.fn>).mockResolvedValue(18);
 
     const result = await fetchTokenMetaHandler({ input, context });
     expect(result).toEqual({ address: '0xabcdef1234567890abcdef1234567890abcdef12', decimals: 18 });
@@ -46,7 +49,7 @@ describe('fetchTokenMeta', () => {
     const context = { log: { info: vi.fn(), warn: vi.fn() }, cache: true };
     const input = { address: '0xabcdef1234567890abcdef1234567890abcdef12' };
 
-    (publicClient.readContract as any).mockResolvedValue(18);
+    (publicClient.readContract as ReturnType<typeof vi.fn>).mockResolvedValue(18);
 
     await fetchTokenMetaHandler({ input, context });
     await fetchTokenMetaHandler({ input, context });

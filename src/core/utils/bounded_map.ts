@@ -62,6 +62,15 @@ export class BoundedMap<K, V> {
     return this.map.size;
   }
 
+  /** Count entries that have not exceeded TTL (unlike `size`, which includes expired keys). */
+  liveSize(now: number = Date.now()): number {
+    let count = 0;
+    for (const entry of this.map.values()) {
+      if (now - entry.ts <= this.ttlMs) count++;
+    }
+    return count;
+  }
+
   keys(): IterableIterator<K> {
     const self = this;
     return (function* () {

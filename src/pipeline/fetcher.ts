@@ -83,6 +83,12 @@ export function resetFetcherCachesForTests(): void {
   _poolLookupCache = null;
 }
 
+/** Clear per-pool fetch cooldowns after chain reorg or full state invalidation. */
+export function clearPoolFetchTracking(): void {
+  _failedPools.clear();
+  _lastFetchedAt.clear();
+}
+
 function trackSuccessfulPool(
   addr: string,
   stateCache: RouteStateCache,

@@ -159,15 +159,51 @@ export class ExecutionService {
     this.logger.info({}, "ExecutionService stopped");
   }
 
+  /**
+   * Reserve a nonce for a tx submitted outside execute() (e.g. FastLane MEV bundle).
+   * Caller must call releaseExternalNonce on timeout/failure or confirmExternalNonce on inclusion.
+   */
+  reserveExternalNonce(): number {
+    const nonce = this.nonceManager.getNextNonce();
+    this.nonceManager.markInFlight(nonce);
+    return nonce;
+  }
+
+  confirmExternalNonce(nonce: number): void {
+    this.nonceManager.confirmNonce(nonce);
+  }
+
+  releaseExternalNonce(nonce: number): void {
+    this.nonceManager.markStale(nonce);
+  }
+
   /** Wait for an already-submitted tx (e.g. MEV bundle) and record the outcome. */
-  async confirmExecution(candidate: CandidateExecution, txHash: string): Promise<ExecutionResult> {
+  async confirmExecution(
+    candidate: CandidateExecution,
+    txHash: string,
+    externalNonce?: number,
+  ): Promise<ExecutionResult> {
     if (this.isInFlight(candidate.routeKey)) {
       return { success: false, error: "route already in-flight (same calldata pending)" };
     }
 
     this.markInFlight(candidate.routeKey);
     const receipt = await this.receiptPoller.wait(txHash);
-    return this.finalizeFromReceipt(candidate, txHash, receipt);
+    const result = this.finalizeFromReceipt(candidate, txHash, receipt);
+    if (externalNonce !== undefined) {
+      if (result.success) {
+        this.confirmExternalNonce(externalNonce);
+      } else {
+        this.releaseExternalNonce(externalNonce);
+      }
+    } else {
+      try {
+        await this.nonceManager.resync();
+      } catch (err) {
+        this.logger.warn?.({ err }, "Nonce resync after external confirm failed");
+      }
+    }
+    return result;
   }
 
   private finalizeFromReceipt(

@@ -14,23 +14,27 @@
 // Must be set before any envio handler module is evaluated (top of file).
 process.env.INDEXER_PROGRESS_REALTIME_START = "5024576";
 
-import { describe, it, expect } from "vitest";
-import { createTestIndexer } from "envio";
-import { publicClient } from "../effects/rpc_client";
+import { describe, it, expect, vi } from "vitest";
 
-(publicClient as any).readContract = async ({ functionName }: any) => {
-  if (functionName === "_I_") return 1n;
-  if (functionName === "_K_") return 1n;
-  if (functionName === "_BASE_RESERVE_") return 100n;
-  if (functionName === "_QUOTE_RESERVE_") return 200n;
-  if (functionName === "_BASE_TARGET_") return 100n;
-  if (functionName === "_QUOTE_TARGET_") return 200n;
-  if (functionName === "_R_STATUS_") return 0;
-  if (functionName === "_LP_FEE_RATE_") return 10n;
-  if (functionName === "_MT_FEE_RATE_") return 20n;
-  if (functionName === "decimals") return 18;
-  return 0n;
-};
+vi.mock("../effects/rpc_client", () => ({
+  publicClient: {
+    readContract: async ({ functionName }: { functionName: string }) => {
+      if (functionName === "_I_") return 1n;
+      if (functionName === "_K_") return 1n;
+      if (functionName === "_BASE_RESERVE_") return 100n;
+      if (functionName === "_QUOTE_RESERVE_") return 200n;
+      if (functionName === "_BASE_TARGET_") return 100n;
+      if (functionName === "_QUOTE_TARGET_") return 200n;
+      if (functionName === "_R_STATUS_") return 0;
+      if (functionName === "_LP_FEE_RATE_") return 10n;
+      if (functionName === "_MT_FEE_RATE_") return 20n;
+      if (functionName === "decimals") return 18;
+      return 0n;
+    },
+  },
+}));
+
+import { createTestIndexer } from "envio";
 
 // Well-known Quickswap V2 factory address (registered in config.yaml)
 const QUICKSWAP_V2 = "0x5757371414417b8c6caad45baef941abc7d3ab32";
@@ -343,7 +347,7 @@ describe("Multiple events in sequence", () => {
 });
 
 describe("UniswapV2Pool.Sync", () => {
-  it("updates V2PoolState", async () => {
+  it("is a no-op (hot state fetched by arb bot RPC)", async () => {
     const indexer = createTestIndexer();
 
     await indexer.process({
@@ -378,15 +382,12 @@ describe("UniswapV2Pool.Sync", () => {
     });
 
     const state = await indexer.V2PoolState.get(PAIR_ADDR);
-    expect(state).toBeDefined();
-    expect(state?.reserve0).toBe(1000n);
-    expect(state?.reserve1).toBe(2000n);
-    expect(state?.lastUpdatedBlock).toBe(SIM_BLOCK + 1);
+    expect(state).toBeUndefined();
   });
 });
 
 describe("UniswapV3Pool.Initialize & Swap", () => {
-  it("updates V3PoolState", async () => {
+  it("is a no-op (hot state fetched by arb bot RPC)", async () => {
     const indexer = createTestIndexer();
 
     await indexer.process({
@@ -437,15 +438,12 @@ describe("UniswapV3Pool.Initialize & Swap", () => {
     });
 
     const state = await indexer.V3PoolState.get(POOL_ADDR);
-    expect(state).toBeDefined();
-    expect(state?.sqrtPriceX96).toBe(12346n);
-    expect(state?.liquidity).toBe(5000n);
-    expect(state?.tick).toBe(101);
+    expect(state).toBeUndefined();
   });
 });
 
 describe("DodoPool.Sync", () => {
-  it("updates DodoPoolState base and quote reserves", async () => {
+  it("is a no-op (preserves existing DodoPoolState from factory seed)", async () => {
     const indexer = createTestIndexer();
     const DODO_POOL = "0xdddddddddddddddddddddddddddddddddddddddd";
 
@@ -487,7 +485,8 @@ describe("DodoPool.Sync", () => {
 
     const state = await indexer.DodoPoolState.get(DODO_POOL);
     expect(state).toBeDefined();
-    expect(state?.baseReserve).toBe(1000000000000000000n);
-    expect(state?.quoteReserve).toBe(1000000n);
+    expect(state?.baseReserve).toBe(0n);
+    expect(state?.quoteReserve).toBe(0n);
+    expect(state?.lastUpdatedBlock).toBe(SIM_BLOCK);
   });
 });

@@ -13,10 +13,15 @@ import { buildStateOverride } from "./state-override-builder.ts";
 import type { DecodedSwap } from "./decoder.ts";
 import { resolveSwapAmountIn, computeV2OverlayDeltas } from "./pending-amount.ts";
 import type { MempoolSimulator } from "./simulator.ts";
+import { SwapUsdValuator, resolveMempoolInputToken } from "./swap_usd_valuation.ts";
+import { debugBreak, DebugSites } from "../../infra/debug/session.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
-  largeSwapThresholdWei: bigint;
+  /** USD-notional threshold for direct pool swaps (indirect/router swaps always pass). */
+  largeSwapThresholdUsd: number;
+  /** Live valuation snapshot — updated by the pass loop as rates refresh. */
+  swapUsdValuator: SwapUsdValuator;
   dataDir?: string;
   /** Lookup pool state for building Geth state overrides. */
   getPoolState?: (poolAddress: string) => PoolState | undefined;
@@ -28,12 +33,14 @@ export interface MempoolServiceOptions {
 
 export const DEFAULT_MEMPOOL_OPTIONS: MempoolServiceOptions = {
   coalesceTtlMs: 100,
-  largeSwapThresholdWei: 10n ** 18n, // 1 MATIC equivalent
+  largeSwapThresholdUsd: 10_000,
+  swapUsdValuator: new SwapUsdValuator(10_000),
 };
 
 export class MempoolService {
   private handlers: SignalHandler[] = [];
   private knownPools = new Set<string>();
+  private knownPoolsKey = "";
   private lastEmitByPool = new Map<string, number>();
   private unknownSelectors = new Map<
     string,
@@ -66,6 +73,9 @@ export class MempoolService {
   }
 
   setKnownPools(pools: string[]): void {
+    const nextKey = pools.length > 0 ? `${pools.length}:${pools[0]?.toLowerCase()}` : "0";
+    if (nextKey === this.knownPoolsKey) return;
+    this.knownPoolsKey = nextKey;
     this.knownPools = new Set(pools.map((p) => p.toLowerCase()));
     this.logger.debug({ count: this.knownPools.size }, "MempoolService known pools updated");
   }
@@ -188,17 +198,26 @@ export class MempoolService {
     }
 
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
-    if (!isIndirect && decoded.amountIn < this.options.largeSwapThresholdWei) {
-      this.logger.debug(
-        {
-          pool: decoded.poolAddress,
-          amount: decoded.amountIn.toString(),
-          thresh: this.options.largeSwapThresholdWei.toString(),
-          hash: tx.hash,
-        },
-        "mempool: decoded swap below threshold",
-      );
-      return;
+    if (!isIndirect) {
+      const poolState = this.options.getPoolState?.(decoded.poolAddress.toLowerCase());
+      const effectiveAmount = resolveSwapAmountIn(decoded, poolState);
+      const inputToken = resolveMempoolInputToken(decoded, this.options.swapUsdValuator.getPoolTokens());
+      const valuation = this.options.swapUsdValuator.evaluate(inputToken, effectiveAmount);
+      if (!valuation.passes) {
+        this.logger.debug(
+          {
+            pool: decoded.poolAddress,
+            tokenIn: decoded.tokenIn,
+            amount: decoded.amountIn.toString(),
+            usdMicro: valuation.usdMicro?.toString() ?? null,
+            source: valuation.source,
+            threshUsd: this.options.largeSwapThresholdUsd,
+            hash: tx.hash,
+          },
+          "mempool: decoded swap below USD threshold",
+        );
+        return;
+      }
     }
 
     const poolKey = decoded.poolAddress.toLowerCase();
@@ -226,6 +245,12 @@ export class MempoolService {
       estimatedSwapSize: decoded.amountIn,
       zeroForOne: decoded.zeroForOne,
     };
+    debugBreak(DebugSites.MEMPOOL_LARGE_SWAP, {
+      pool: decoded.poolAddress,
+      tokenIn: decoded.tokenIn,
+      amountIn: decoded.amountIn.toString(),
+      txHash: tx.hash,
+    });
     this.emit({ type: "large_swap", data: signal });
   }
 

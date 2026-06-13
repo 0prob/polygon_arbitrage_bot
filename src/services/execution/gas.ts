@@ -198,8 +198,7 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
       const chainId = client.chain?.id;
       const stationUrl = chainId ? POLYGON_GAS_STATION_URLS[chainId] : undefined;
 
-      const [block, priorityFromClient, feeHistory, stationResult] = await Promise.all([
-        client.getBlock({ blockTag: "latest" }),
+      const [priorityFromClient, feeHistory, stationResult] = await Promise.all([
         client.estimateMaxPriorityFeePerGas().catch(() => null),
         client
           .getFeeHistory({
@@ -211,7 +210,13 @@ export function createGasFetcher(client: PublicClient, opts: GasFetcherOptions):
         stationUrl ? fetchGasFromStation(stationUrl, percentile).catch(() => null) : Promise.resolve(null),
       ]);
 
-      const baseFee = block.baseFeePerGas ?? fallback;
+      let baseFee = fallback;
+      if (feeHistory?.baseFeePerGas && feeHistory.baseFeePerGas.length > 0) {
+        baseFee = feeHistory.baseFeePerGas[feeHistory.baseFeePerGas.length - 1] ?? fallback;
+      } else {
+        const block = await client.getBlock({ blockTag: "latest" });
+        baseFee = block.baseFeePerGas ?? fallback;
+      }
 
       let priorityFromHistory: bigint | null = null;
       if (feeHistory?.reward && feeHistory.reward.length > 0) {

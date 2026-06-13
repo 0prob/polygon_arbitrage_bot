@@ -14,6 +14,8 @@ import { runHfTick } from "./pass_hf.ts";
 import type { PassLoopState } from "./pass_state.ts";
 import { publishHfSnapshot } from "./hf_snapshot.ts";
 import { refreshCyclePoolsOnHead } from "./head_refresh.ts";
+import { applyReorgInvalidation } from "./pass_reorg.ts";
+import { IncrementalGraphUpdater } from "../pipeline/index.ts";
 import { resolveInfraProfile } from "../config/infra_profile.ts";
 import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 function sleep(ms: number): Promise<void> {
@@ -74,7 +76,7 @@ const HEAD_TIMEOUT_MS = 3000;
 
 export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFAULT_DEPS, bus?: EventBus): Promise<void> {
   ctx.logger.info({}, "runPassLoop started");
-  debugBreak(DebugSites.PASS_LOOP_START);
+  debugBreak(DebugSites.PASS_LOOP_START, { hfInterval: HF_INTERVAL, lfInterval: LF_INTERVAL });
   debugLog("pass_loop.ts:start", "pass loop starting", { hfInterval: HF_INTERVAL });
 
   await Promise.all([ctx.executionService.start(), ctx.mempoolService.start()]);
@@ -102,14 +104,23 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
             ctx.pendingOverrideStore?.clear();
           }
           if (event.blockHash && ctx.reorgDetector) {
-            ctx.reorgDetector.trackBlock(event.blockNumber, event.blockHash as `0x${string}`).catch((err) => {
+            if (event.parentHash && ctx.reorgDetector.checkLocalParentMismatch(event.blockNumber, event.parentHash)) {
+              applyReorgInvalidation(ctx, state, `ws parent mismatch at block ${event.blockNumber}`);
+              ctx.reorgDetector.clearReorged();
+            }
+            ctx.reorgDetector.trackBlock(event.blockNumber, event.blockHash as `0x${string}`, event.parentHash || undefined).catch((err) => {
               ctx.logger.debug?.({ err }, "trackBlock on newHead failed");
             });
           }
           if (ctx.config.sync.headDrivenRefresh !== false && state.cachedCycles.length > 0) {
-            refreshCyclePoolsOnHead(ctx, ctx.stateCache, state.cachedCycles, ctx.config.sync.headRefreshMaxPools).catch(
-              (err) => ctx.logger.debug?.({ err }, "Head-driven pool refresh failed"),
-            );
+            refreshCyclePoolsOnHead(
+              ctx,
+              ctx.stateCache,
+              state.cachedCycles,
+              ctx.config.sync.headRefreshMaxPools,
+              state.cachedRoutingGraph,
+              state.graphUpdater,
+            ).catch((err) => ctx.logger.debug?.({ err }, "Head-driven pool refresh failed"));
           }
         }
       });
@@ -138,10 +149,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     pendingFocusTokens: null,
     lastRefreshTime: 0,
     lastReorgCheck: 0,
+    lastEnumerationTime: Date.now(),
     lastStatusWriteTime: 0,
     lastMempoolTraceId: undefined,
     lfEnumerationInFlight: false,
-    lastEnumerationTime: 0,
     lastPoolsFingerprint: "",
     cycleWindowStart: Date.now(),
     recentRouteTimestamps: new Map(),
@@ -154,17 +165,26 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     hfSnapshot: null,
     hfSimOffset: 0,
     lastEnumStateCacheSize: 0,
+    cachedRoutingGraph: null,
+    graphUpdater: new IncrementalGraphUpdater(60),
+    infra: resolveInfraProfile(ctx.config),
   };
 
   publishHfSnapshot(state);
 
-  const infra = resolveInfraProfile(ctx.config);
+  const infra = state.infra;
   const ROUTE_COOLDOWN_MS = infra.routeCooldownMs;
   let lastNonceRecoveryCheck = 0;
+  let lastTier = ctx.tierManager.getCurrent();
 
   ctx.mempoolService.onSignal((signal) => {
     if (signal.type === "new_pool_pending") {
       ctx.logger.info({ txHash: signal.data.txHash }, "New pool deployment detected in mempool! Scheduling rapid discovery.");
+      state.lastRefreshTime = 0;
+      state.lastEnumerationTime = 0;
+      void ctx.stateRefreshService.triggerDiscovery("new_pool_pending").catch((err) => {
+        ctx.logger.debug?.({ err }, "Mempool-triggered pool discovery failed");
+      });
       bus?.emit({
         type: "mempool_pending_swap",
         poolPath: signal.data.factoryAddress,
@@ -221,6 +241,10 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
 
       if (now - state.lastTierCheck > TIER_CHECK_INTERVAL) {
         const tier = ctx.tierManager.assess();
+        if (tier !== lastTier) {
+          debugBreak(DebugSites.TIER_CHANGED, { from: lastTier, to: tier });
+          lastTier = tier;
+        }
         state.lastTierCheck = now;
         ctx.logger.debug({ tier }, ctx.tierManager.label());
         const staleKeys: string[] = [];
@@ -267,7 +291,7 @@ export async function runPassLoop(ctx: RuntimeContext, deps: PassLoopDeps = DEFA
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       debugBreak(DebugSites.PASS_LOOP_ERROR, { message, cycles: ctx.metrics.cycles });
-      debugLog("pass_loop.ts:error", "pass loop iteration error", { message }, "pass-loop-error");
+      debugLog("pass_loop.ts:error", "pass loop iteration error", { message }, DebugSites.PASS_LOOP_ERROR);
       ctx.logger.error({ err }, "Pass loop error");
       ctx.metrics.totalErrors++;
       ctx.metrics.lastErrorTime = Date.now();

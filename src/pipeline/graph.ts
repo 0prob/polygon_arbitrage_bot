@@ -7,6 +7,65 @@ import { isInvalidState } from "../core/types/pool.ts";
 import { normalizeProtocol } from "../core/utils/protocol.ts";
 import { tokensToMaticWei } from "../core/assessment/profit.ts";
 import { BoundedMap } from "../core/utils/bounded_map.ts";
+import { normalizePoolAddress, normalizeAddress } from "../core/utils/normalize.ts";
+import type { RouteStateCache } from "../core/types/route.ts";
+import { toBigInt } from "../core/utils/bigint.ts";
+
+export interface FilterPoolsForRoutingOptions {
+  minLiquidityV3: bigint;
+}
+
+export interface FilterPoolsForRoutingResult {
+  filtered: PoolMeta[];
+  filteredFeeZero: number;
+  filteredGarbage: number;
+  filteredV3NoState: number;
+  filteredV3LowLiq: number;
+}
+
+/** Single-pass pool filter before graph build / cycle enumeration. */
+export function filterPoolsForRouting(
+  pools: PoolMeta[],
+  stateCache: RouteStateCache,
+  options: FilterPoolsForRoutingOptions,
+): FilterPoolsForRoutingResult {
+  let filteredFeeZero = 0;
+  let filteredGarbage = 0;
+  let filteredV3NoState = 0;
+  let filteredV3LowLiq = 0;
+
+  const filtered = pools.filter((p) => {
+    const protocol = p.protocol.toLowerCase();
+    if (p.fee === 0) {
+      const feeInState = protocol.includes("balancer") || protocol.includes("curve") || protocol.includes("woofi");
+      if (!feeInState) {
+        filteredFeeZero++;
+        return false;
+      }
+    }
+    if (isGarbagePool(p)) {
+      filteredGarbage++;
+      return false;
+    }
+    const addr = normalizePoolAddress(p.address);
+    if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
+      const poolState = stateCache.get(addr);
+      if (!poolState) {
+        filteredV3NoState++;
+      } else {
+        const rawLiq = (poolState as Record<string, unknown>).liquidity ?? 0;
+        const liq = toBigInt(rawLiq, 0n);
+        if (liq < options.minLiquidityV3) {
+          filteredV3LowLiq++;
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+
+  return { filtered, filteredFeeZero, filteredGarbage, filteredV3NoState, filteredV3LowLiq };
+}
 
 /**
  * Creates the bidirectional SwapEdge entries for a single pool.
@@ -15,14 +74,14 @@ import { BoundedMap } from "../core/utils/bounded_map.ts";
  */
 export function createEdgesForPool(pool: PoolMeta, state: Record<string, unknown> | undefined): SwapEdge[] {
   const edges: SwapEdge[] = [];
-  const addr = pool.address.toLowerCase() as Address;
+  const addr = normalizePoolAddress(pool.address) as Address;
   const t = pool.tokens ?? [];
   const feeBps = pool.fee != null ? BigInt(pool.fee) : DEFAULT_FEE_BPS;
   for (let i = 0; i < t.length; i++) {
-    const tILower = t[i].toLowerCase() as Address;
+    const tILower = normalizeAddress(t[i]) as Address;
     for (let j = 0; j < t.length; j++) {
       if (i === j) continue;
-      const tJLower = t[j].toLowerCase() as Address;
+      const tJLower = normalizeAddress(t[j]) as Address;
       edges.push({
         poolAddress: addr,
         protocol: pool.protocol,
@@ -59,7 +118,7 @@ export function buildGraph(
   const now = Date.now();
   for (let i = 0; i < cleanPools.length; i++) {
     const pool = cleanPools[i];
-    const addr = pool.address.toLowerCase();
+    const addr = normalizePoolAddress(pool.address);
     const state = stateCache.get(addr, now) as Record<string, unknown> | undefined;
 
     if (state && !isInvalidState(state) && tokenToMaticRates && liquidityFloorUsd != null && liquidityFloorUsd > 0) {
@@ -67,8 +126,8 @@ export function buildGraph(
       if (proto === "V2") {
         const r0 = state.reserve0 as bigint | undefined;
         const r1 = state.reserve1 as bigint | undefined;
-        const rate0 = tokenToMaticRates.get(pool.token0.toLowerCase());
-        const rate1 = tokenToMaticRates.get(pool.token1.toLowerCase());
+        const rate0 = tokenToMaticRates.get(normalizeAddress(pool.token0));
+        const rate1 = tokenToMaticRates.get(normalizeAddress(pool.token1));
         let poolLiquidityMatic = 0n;
         if (r0 != null && rate0 != null) poolLiquidityMatic += tokensToMaticWei(r0, rate0);
         if (r1 != null && rate1 != null) poolLiquidityMatic += tokensToMaticWei(r1, rate1);
@@ -82,10 +141,14 @@ export function buildGraph(
     
     const t = pool.tokens ?? [];
     for (let i = 0; i < t.length; i++) {
-      tokens.add(t[i].toLowerCase());
+      tokens.add(normalizeAddress(t[i]));
     }
 
     let poolEdges = edgesCache.get(addr, now);
+    const expectedEdgeCount = t.length * (t.length - 1);
+    if (poolEdges && poolEdges.length !== expectedEdgeCount) {
+      poolEdges = undefined;
+    }
     if (!poolEdges) {
       poolEdges = createEdgesForPool(pool, state);
       edgesCache.set(addr, poolEdges, now);

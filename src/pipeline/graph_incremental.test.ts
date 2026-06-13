@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { IncrementalGraphUpdater } from "./graph_incremental.ts";
+import { IncrementalGraphUpdater, syncGraphStateFromCache } from "./graph_incremental.ts";
 import { buildGraph } from "./graph.ts";
 import type { RoutingGraph } from "./types.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
@@ -49,11 +49,15 @@ describe("IncrementalGraphUpdater", () => {
     expect(graph.stateRefs.size).toBe(0);
   });
 
-  it("updates pool state references", () => {
+  it("syncGraphStateFromCache updates edge stateRef", () => {
     const pool = makePool("0xpool1", "UNISWAP_V2", ["0xaaa", "0xbbb"], 30);
     const graph = makeGraph([pool]);
+    const cache = new Map<string, Record<string, unknown>>();
+    cache.set("0xpool1", { reserve0: 999n, reserve1: 888n });
     const updater = new IncrementalGraphUpdater();
-    updater.applyPoolStateUpdate(graph, "0xpool1", { reserve0: 999n, reserve1: 888n });
+    syncGraphStateFromCache(graph, [pool], cache as any, updater);
     expect(graph.stateRefs.get("0xpool1")).toEqual({ reserve0: 999n, reserve1: 888n });
+    const edges = graph.adjacency.get("0xaaa") ?? [];
+    expect(edges.some((e) => e.poolAddress === "0xpool1" && e.stateRef?.reserve0 === 999n)).toBe(true);
   });
 });

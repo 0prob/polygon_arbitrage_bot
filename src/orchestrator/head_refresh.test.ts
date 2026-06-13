@@ -60,4 +60,42 @@ describe("refreshCyclePoolsOnHead", () => {
     expect(fetchMissingPoolState).toHaveBeenCalled();
     expect(fetchTicksForCyclePools).toHaveBeenCalled();
   });
+
+  it("syncs routing graph edge stateRef after head refresh", async () => {
+    const { fetchMissingPoolState } = await import("../pipeline/fetcher.ts");
+    const stateCache = new Map<string, Record<string, unknown>>();
+    stateCache.set("0xpool1", { reserve0: 1n, reserve1: 2n });
+    const cycles = [
+      {
+        edges: [{ poolAddress: "0xpool1", protocol: "UNISWAP_V2", tokenIn: "0xaaa", tokenOut: "0xbbb" }],
+        hopCount: 1,
+        startToken: "0xaaa",
+        logWeight: 0,
+        cumulativeFeeBps: 30n,
+      },
+    ] as any;
+    const graph = {
+      adjacency: new Map([
+        ["0xaaa", [{ poolAddress: "0xpool1", tokenIn: "0xaaa", tokenOut: "0xbbb", stateRef: { reserve0: 0n } }]],
+      ]),
+      poolMeta: new Map([["0xpool1", { address: "0xpool1", tokens: ["0xaaa", "0xbbb"] }]]),
+      stateRefs: new Map([["0xpool1", { reserve0: 0n }]]),
+      tokens: new Set(["0xaaa", "0xbbb"]),
+    };
+    const updater = new (await import("../pipeline/graph_incremental.ts")).IncrementalGraphUpdater();
+    stateCache.set("0xpool1", { reserve0: 500n, reserve1: 600n });
+
+    const ctx = {
+      stateRefreshService: { Pools: [{ address: "0xpool1", tokens: ["0xaaa", "0xbbb"] }] },
+      stateClient: {},
+      publicClient: {},
+      config: { routing: { tickFetchEnabled: false } },
+      logger: { debug: vi.fn() },
+    } as unknown as RuntimeContext;
+
+    await refreshCyclePoolsOnHead(ctx, stateCache as any, cycles, 50, graph as any, updater);
+    expect(fetchMissingPoolState).toHaveBeenCalled();
+    expect(graph.stateRefs.get("0xpool1")).toEqual({ reserve0: 500n, reserve1: 600n });
+    expect(graph.adjacency.get("0xaaa")![0].stateRef).toEqual({ reserve0: 500n, reserve1: 600n });
+  });
 });

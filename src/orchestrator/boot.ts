@@ -25,6 +25,8 @@ import type { HyperRpcClient } from "../infra/rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
 import { PriceOracle } from "../services/oracle/price_oracle.ts";
 import { StateRefreshService } from "../services/state_refresh.ts";
+import { SwapUsdValuator } from "../services/mempool/swap_usd_valuation.ts";
+import { debugBreak, DebugSites } from "../infra/debug/session.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
@@ -50,6 +52,8 @@ export interface RuntimeContext {
   pendingOverrideStore?: PendingOverrideStore;
   priceOracle?: PriceOracle;
   stateRefreshService: StateRefreshService;
+  /** USD valuation for mempool large-swap detection (sync snapshot, updated by pass loop). */
+  swapUsdValuator: SwapUsdValuator;
 
   /**
    * Optional HyperRPC client (read-only, high performance).
@@ -93,7 +97,7 @@ export async function bootApplication(
     currentCyclesPerMinute: 0,
   };
 
-  const rpc = new RpcManager(config.rpc);
+  const rpc = new RpcManager(config.rpc, { chainId: config.execution.chainId, envioApiToken: config.envioApiToken });
   const publicClient = rpc.getReadClient();
 
   let stateClient: PublicClient;
@@ -253,10 +257,11 @@ export async function bootApplication(
     config.execution.quarantineMaxMs,
   );
 
-  const approxRawPerUsd = 10n ** 15n; // rough to map USD threshold to raw amount units (varies by token decimals/price)
+  const swapUsdValuator = new SwapUsdValuator(config.mempool.largeSwapThresholdUsd);
   const mempoolOptions: MempoolServiceOptions = {
     coalesceTtlMs: config.mempool.coalesceTtlMs,
-    largeSwapThresholdWei: BigInt(Math.floor(config.mempool.largeSwapThresholdUsd)) * approxRawPerUsd,
+    largeSwapThresholdUsd: config.mempool.largeSwapThresholdUsd,
+    swapUsdValuator,
     dataDir: config.paths.dataDir,
   };
   const pendingOverrideTtlMs = 2000;
@@ -344,6 +349,7 @@ export async function bootApplication(
     pendingStateOverlay,
     pendingOverrideStore,
     priceOracle,
+    swapUsdValuator,
     hyperRpc: rpc.hyperRpc,
     hyperSync: rpc.hyperSync,
     hyperIndexMonitor,
@@ -352,6 +358,13 @@ export async function bootApplication(
   const stateRefreshService = new StateRefreshService(ctx);
   void stateRefreshService.start();
   ctx.stateRefreshService = stateRefreshService;
+
+  debugBreak(DebugSites.BOOT, {
+    pools: stateRefreshService.Pools.length,
+    tier: tierManager.getCurrent(),
+    mempool: config.mempool.enabled,
+    mev: config.mev.enabled,
+  });
 
   return ctx;
 }

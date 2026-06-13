@@ -25,8 +25,8 @@ describe("ReceiptPoller", () => {
     const receipt = await poller.wait("0xabc");
 
     expect(receipt?.status).toBe(true);
-    expect(hyperSyncReceipt).toHaveBeenCalledTimes(1);
     expect(hyperRpcReceipt).toHaveBeenCalledTimes(1);
+    expect(hyperSyncReceipt).not.toHaveBeenCalled();
     expect(viemReceipt).not.toHaveBeenCalled();
 
     hyperSyncReceipt.mockClear();

@@ -27,7 +27,7 @@ export interface StatusPayload {
     lag: number;
     syncRate: number;
     healthy: boolean;
-    /** Last block processed by handlers (from the IndexerProgress block handler entity) */
+    /** Last block processed by the indexer (from Hasura subscription / HTTP seed). */
     progressBlock?: number;
   };
   timestamp: string;

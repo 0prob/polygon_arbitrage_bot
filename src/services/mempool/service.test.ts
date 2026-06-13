@@ -6,12 +6,24 @@ import type { MempoolSignal } from "./signals.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
 import { encodeFunctionData } from "viem";
 import { UNISWAP_V2_POOL_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V2_FACTORY_ABI } from "../../core/abis/compiled/index.ts";
+import { SwapUsdValuator } from "./swap_usd_valuation.ts";
+
+const USDC = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
+const WMATIC = "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270";
+
+function mempoolTestOptions(thresholdUsd = 0) {
+  return {
+    coalesceTtlMs: 100,
+    largeSwapThresholdUsd: thresholdUsd,
+    swapUsdValuator: new SwapUsdValuator(thresholdUsd),
+  };
+}
 
 describe("MempoolService", () => {
   it("emits large_swap signal for matching V2 swap", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const service = new MempoolService(logger, mempoolTestOptions());
     service.setKnownPools(["0xpool1"]);
     service.onSignal((s) => signals.push(s));
 
@@ -34,7 +46,7 @@ describe("MempoolService", () => {
   it("emits large_swap for V3 direct swap", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const service = new MempoolService(logger, mempoolTestOptions());
     service.setKnownPools(["0xpoolv3"]);
     service.onSignal((s) => signals.push(s));
 
@@ -54,10 +66,45 @@ describe("MempoolService", () => {
     expect((signals[0] as any).data.estimatedSwapSize).toBe(10n);
   });
 
+  it("filters direct swaps below USD threshold using token decimals and price", () => {
+    const signals: MempoolSignal[] = [];
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const valuator = new SwapUsdValuator(10_000);
+    valuator.update({
+      tokenDecimals: new Map([[USDC, 6]]),
+      tokenUsd: new Map([[USDC, 1]]),
+      poolMetas: [{ address: "0xpoolusdc", token0: USDC, token1: WMATIC }],
+    });
+    const service = new MempoolService(logger, {
+      coalesceTtlMs: 100,
+      largeSwapThresholdUsd: 10_000,
+      swapUsdValuator: valuator,
+    });
+    service.setKnownPools(["0xpoolusdc"]);
+    service.onSignal((s) => signals.push(s));
+
+    const small = encodeFunctionData({
+      abi: UNISWAP_V3_POOL_ABI,
+      functionName: "swap",
+      args: ["0x0000000000000000000000000000000000000000", true, 500n * 10n ** 6n, 0n, "0x"],
+    });
+    service.processPendingTx({ hash: "0xsmall", to: "0xpoolusdc", input: small, value: "0x0" });
+    expect(signals.length).toBe(0);
+
+    const large = encodeFunctionData({
+      abi: UNISWAP_V3_POOL_ABI,
+      functionName: "swap",
+      args: ["0x0000000000000000000000000000000000000000", true, 15_000n * 10n ** 6n, 0n, "0x"],
+    });
+    service.processPendingTx({ hash: "0xlarge", to: "0xpoolusdc", input: large, value: "0x0" });
+    expect(signals.length).toBe(1);
+    expect((signals[0] as any).data.estimatedSwapSize).toBe(15_000n * 10n ** 6n);
+  });
+
   it("emits large_swap for generic indirect swap (heuristic)", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const service = new MempoolService(logger, mempoolTestOptions());
     const poolAddr = "0x" + "a".repeat(40);
     service.setKnownPools([poolAddr]);
     service.onSignal((s) => signals.push(s));
@@ -82,7 +129,7 @@ describe("MempoolService", () => {
   it("does not emit for unknown pool", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const service = new MempoolService(logger, mempoolTestOptions());
     service.onSignal((s) => signals.push(s));
 
     const input = encodeFunctionData({
@@ -97,7 +144,7 @@ describe("MempoolService", () => {
   it("emits new_pool_pending with traceId", () => {
     const signals: MempoolSignal[] = [];
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n });
+    const service = new MempoolService(logger, mempoolTestOptions());
     service.onSignal((s) => signals.push(s));
 
     const input = encodeFunctionData({
@@ -128,8 +175,7 @@ describe("MempoolService", () => {
     const service = new MempoolService(
       logger,
       {
-        coalesceTtlMs: 100,
-        largeSwapThresholdWei: 1n,
+        ...mempoolTestOptions(),
         getPoolState: () => ({ reserve0: 1_000_000n, reserve1: 2_000_000n, initialized: true }),
       },
       overlay,
@@ -164,8 +210,7 @@ describe("MempoolService", () => {
     const service = new MempoolService(
       logger,
       {
-        coalesceTtlMs: 100,
-        largeSwapThresholdWei: 1n,
+        ...mempoolTestOptions(),
         getPoolState: () => ({ reserve0: 1_000_000n, reserve1: 2_000_000n, initialized: true }),
       },
       overlay,
@@ -192,7 +237,7 @@ describe("MempoolService", () => {
       getProjected: vi.fn(),
       clear: vi.fn(),
     };
-    const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n }, overlay);
+    const service = new MempoolService(logger, mempoolTestOptions(), overlay);
     service.setKnownPools(["0xpool1"]);
 
     const input = encodeFunctionData({
@@ -224,8 +269,7 @@ describe("MempoolService", () => {
     const service = new MempoolService(
       logger,
       {
-        coalesceTtlMs: 100,
-        largeSwapThresholdWei: 1n,
+        ...mempoolTestOptions(),
         getPoolState: () => ({ reserve0: 0n, reserve1: 0n, initialized: true }),
         mempoolSimulator: simulator as any,
       },
@@ -262,8 +306,7 @@ describe("MempoolService", () => {
 
     try {
       const service = new MempoolService(logger, {
-        coalesceTtlMs: 100,
-        largeSwapThresholdWei: 1n,
+        ...mempoolTestOptions(),
         dataDir: testDir,
       });
 

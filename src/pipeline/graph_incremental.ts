@@ -1,6 +1,8 @@
 import type { RoutingGraph } from "./types.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
+import type { RouteStateCache } from "../core/types/route.ts";
 import { createEdgesForPool } from "./graph.ts";
+import { normalizeAddress, normalizePoolAddress } from "../core/utils/normalize.ts";
 
 export class IncrementalGraphUpdater {
   private fullRebuildCount = 0;
@@ -21,14 +23,14 @@ export class IncrementalGraphUpdater {
   }
 
   applyPoolStateUpdate(graph: RoutingGraph, poolAddress: string, newState: Record<string, unknown>): void {
-    const addr = poolAddress.toLowerCase();
+    const addr = normalizePoolAddress(poolAddress);
     graph.stateRefs.set(addr, newState);
     // O(1) Map lookup instead of O(N) forEach scan — poolMeta keys are already lowercased
     const meta = graph.poolMeta.get(addr);
     if (meta) {
       const t = meta.tokens ?? [];
       for (const token of t) {
-        const edges = graph.adjacency.get(token.toLowerCase());
+        const edges = graph.adjacency.get(normalizeAddress(token));
         if (edges) {
           for (const edge of edges) {
             if (edge.poolAddress === addr) {
@@ -41,13 +43,13 @@ export class IncrementalGraphUpdater {
   }
 
   addNewPool(graph: RoutingGraph, pool: PoolMeta, state: Record<string, unknown>): void {
-    const addr = pool.address.toLowerCase();
+    const addr = normalizePoolAddress(pool.address);
     graph.poolMeta.set(addr, pool);
     graph.stateRefs.set(addr, state);
 
     const t = pool.tokens ?? [];
     for (const token of t) {
-      const tLower = token.toLowerCase();
+      const tLower = normalizeAddress(token);
       graph.tokens.add(tLower);
     }
 
@@ -62,14 +64,14 @@ export class IncrementalGraphUpdater {
   }
 
   removePool(graph: RoutingGraph, poolAddress: string): void {
-    const addr = poolAddress.toLowerCase();
+    const addr = normalizePoolAddress(poolAddress);
     const meta = graph.poolMeta.get(addr);
     graph.poolMeta.delete(addr);
     graph.stateRefs.delete(addr);
 
-    if (meta && meta.tokens) {
+    if (meta?.tokens) {
       for (const token of meta.tokens) {
-        const tLower = token.toLowerCase();
+        const tLower = normalizeAddress(token);
         const edges = graph.adjacency.get(tLower);
         if (edges) {
           const filtered = edges.filter((e) => e.poolAddress !== addr);
@@ -92,4 +94,23 @@ export class IncrementalGraphUpdater {
       }
     }
   }
+}
+
+/** Refresh graph.stateRefs and edge.stateRef from the live state cache (head refresh / incremental LF). */
+export function syncGraphStateFromCache(
+  graph: RoutingGraph,
+  pools: Array<{ address: string }>,
+  stateCache: RouteStateCache,
+  updater: IncrementalGraphUpdater,
+): number {
+  let updated = 0;
+  for (const pool of pools) {
+    const addr = normalizePoolAddress(pool.address);
+    const state = stateCache.get(addr);
+    if (state) {
+      updater.applyPoolStateUpdate(graph, addr, state);
+      updated++;
+    }
+  }
+  return updated;
 }

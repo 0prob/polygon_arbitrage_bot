@@ -4,6 +4,7 @@ import type { PassLoopDeps } from "./loop.ts";
 import type { RuntimeContext } from "./boot.ts";
 import type { CandidateExecution } from "../services/execution/service.ts";
 import { WMATIC } from "../config/addresses.ts";
+import { SwapUsdValuator } from "../services/mempool/swap_usd_valuation.ts";
 
 vi.mock("../pipeline/fetcher.ts", () => ({
   fetchMissingPoolState: vi.fn().mockResolvedValue(new Set()),
@@ -56,6 +57,10 @@ const VALID_ADDR_A = "0x0000000000000000000000000000000000000001";
 const VALID_ADDR_B = "0x0000000000000000000000000000000000000002";
 const VALID_ADDR_C = "0x0000000000000000000000000000000000000003";
 
+function mockSwapUsdValuator() {
+  return new SwapUsdValuator(10_000);
+}
+
 const MOCK_POOL = {
   address: VALID_ADDR_B as `0x${string}`,
   protocol: "QUICKSWAP_V2",
@@ -70,13 +75,26 @@ function mockStateRefresh(overrides: { pools?: typeof MOCK_POOL[] } = {}) {
     Pools: overrides.pools ?? [MOCK_POOL],
     TokenMetas: new Map([[WMATIC.toLowerCase(), { decimals: 18 }]]),
     runLfStateRefresh: vi.fn().mockResolvedValue(undefined),
+    triggerDiscovery: vi.fn().mockResolvedValue(undefined),
+    isBootstrapInProgress: false,
     stop: vi.fn(),
   };
   return service;
 }
 
-const stateWithPool = new Map<string, Record<string, unknown>>();
-stateWithPool.set(VALID_ADDR_B.toLowerCase(), { initialized: true, reserve0: 1000n, reserve1: 1000n });
+function mockStateCache(initial?: [string, Record<string, unknown>][]) {
+  const cache = new Map<string, Record<string, unknown>>(initial) as Map<string, Record<string, unknown>> & {
+    liveSize: () => number;
+  };
+  cache.liveSize = function liveSize() {
+    return this.size;
+  };
+  return cache;
+}
+
+const stateWithPool = mockStateCache([
+  [VALID_ADDR_B.toLowerCase(), { initialized: true, reserve0: 1000n, reserve1: 1000n }],
+]);
 
 const mockCycle = {
   edges: [
@@ -189,7 +207,12 @@ describe("runPassLoop", () => {
         tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
+        getQuarantineManager: vi.fn().mockReturnValue({
+          add: vi.fn(),
+          isQuarantined: vi.fn().mockReturnValue(false),
+          revision: 0,
+          size: 0,
+        }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
@@ -200,6 +223,7 @@ describe("runPassLoop", () => {
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
+      swapUsdValuator: mockSwapUsdValuator(),
     } as unknown as RuntimeContext;
 
     let execCalls = 0;
@@ -209,6 +233,10 @@ describe("runPassLoop", () => {
       return { success: true, txHash: "0x1" };
     });
 
+    const mockCycles = [
+      { ...mockCycle, id: "route-1" },
+      { ...mockCycle, id: "route-2" },
+    ];
     const deps: PassLoopDeps = {
       buildGraph: vi.fn().mockReturnValue({
         adjacency: new Map(),
@@ -216,10 +244,9 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      enumerateCycles: vi.fn().mockResolvedValue([
-        { ...mockCycle, id: "route-1" },
-        { ...mockCycle, id: "route-2" },
-      ]),
+      enumerateCycles: vi.fn(),
+      findCyclesMultiPass: vi.fn().mockResolvedValue(mockCycles),
+      finalizeEnumeratedCycles: vi.fn((_g, raw) => raw),
       evaluatePipeline: vi.fn().mockResolvedValue({
         profitable: [
           {
@@ -277,7 +304,7 @@ describe("runPassLoop", () => {
     expect(mockExecute).toHaveBeenCalledTimes(2);
   }, 15000);
 
-  it("calls findCycles with configured maxHops (default 5) on re-enumeration", async () => {
+  it("calls findCyclesMultiPass with configured maxHops (default 5) on re-enumeration", async () => {
     const mockContext = {
       config: {
         routing: {
@@ -354,7 +381,7 @@ describe("runPassLoop", () => {
         getEffectiveMaxBidMultiplier: vi.fn().mockReturnValue(2),
       },
       isRunning: true,
-      stateCache: new Map(),
+      stateCache: mockStateCache(),
       mempoolService: { start: vi.fn(), onSignal: vi.fn(), setKnownPools: vi.fn() },
       executionService: {
         start: vi.fn(),
@@ -362,7 +389,12 @@ describe("runPassLoop", () => {
         tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
+        getQuarantineManager: vi.fn().mockReturnValue({
+          add: vi.fn(),
+          isQuarantined: vi.fn().mockReturnValue(false),
+          revision: 0,
+          size: 0,
+        }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
@@ -373,9 +405,10 @@ describe("runPassLoop", () => {
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
+      swapUsdValuator: mockSwapUsdValuator(),
     } as unknown as RuntimeContext;
 
-    const enumerateCyclesSpy = vi.fn().mockImplementation(async () => {
+    const findCyclesMultiPassSpy = vi.fn().mockImplementation(async () => {
       mockContext.isRunning = false;
       return [];
     });
@@ -386,7 +419,9 @@ describe("runPassLoop", () => {
         stateRefs: new Map(),
         tokens: new Set(),
       }),
-      enumerateCycles: enumerateCyclesSpy,
+      enumerateCycles: vi.fn(),
+      findCyclesMultiPass: findCyclesMultiPassSpy,
+      finalizeEnumeratedCycles: vi.fn((_, raw) => raw),
       evaluatePipeline: vi.fn().mockResolvedValue({
         profitable: [],
         attempted: 0,
@@ -406,8 +441,16 @@ describe("runPassLoop", () => {
 
     await runPassLoop(mockContext, deps);
 
-    expect(enumerateCyclesSpy).toHaveBeenCalledWith(expect.anything(), 5, 5000, expect.any(Function));
-  });
+    expect(findCyclesMultiPassSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.arrayContaining([
+        expect.objectContaining({ maxHops: 2 }),
+        expect.objectContaining({ maxHops: 3 }),
+        expect.objectContaining({ maxHops: 5, maxCycles: 5000 }),
+      ]),
+      expect.anything(),
+    );
+  }, 15000);
 
   it("uses Bellman-Ford cycle enumeration if cycleFinder is configured to 'bellman-ford'", async () => {
     const mockContext = {
@@ -487,7 +530,7 @@ describe("runPassLoop", () => {
         getEffectiveMaxBidMultiplier: vi.fn().mockReturnValue(2),
       },
       isRunning: true,
-      stateCache: new Map(),
+      stateCache: mockStateCache(),
       mempoolService: { start: vi.fn(), onSignal: vi.fn(), setKnownPools: vi.fn() },
       executionService: {
         start: vi.fn(),
@@ -495,7 +538,12 @@ describe("runPassLoop", () => {
         tickNonceRecovery: vi.fn().mockResolvedValue(undefined),
         tracker: mockTracker(),
         isQuarantined: vi.fn().mockReturnValue(false),
-        getQuarantineManager: vi.fn().mockReturnValue({ add: vi.fn(), isQuarantined: vi.fn().mockReturnValue(false) }),
+        getQuarantineManager: vi.fn().mockReturnValue({
+          add: vi.fn(),
+          isQuarantined: vi.fn().mockReturnValue(false),
+          revision: 0,
+          size: 0,
+        }),
       },
       publicClient: {
         getBlock: vi.fn().mockResolvedValue({ baseFeePerGas: 30n * 10n ** 9n }),
@@ -506,12 +554,16 @@ describe("runPassLoop", () => {
       hasuraCircuit: mockCircuitBreaker(),
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
+      swapUsdValuator: mockSwapUsdValuator(),
     } as unknown as RuntimeContext;
 
     // Timer to stop the loop: HF never calls evaluatePipeline when cycles are empty,
     // so the Bellman-Ford enumeration runs in the background via LF microtask.
     // This timer stops the loop after the LF tick has had a chance to execute.
     const stopTimer = setTimeout(() => { mockContext.isRunning = false; }, 100);
+
+    const findCyclesMultiPassSpy = vi.fn();
+    const bfMultiPassSpy = vi.fn().mockResolvedValue([]);
 
     const deps: PassLoopDeps = {
       buildGraph: vi.fn().mockReturnValue({
@@ -521,6 +573,9 @@ describe("runPassLoop", () => {
         tokens: new Set(),
       }),
       enumerateCycles: vi.fn(),
+      findCyclesMultiPass: findCyclesMultiPassSpy,
+      findCyclesBellmanFordMultiPass: bfMultiPassSpy,
+      finalizeEnumeratedCycles: vi.fn((_, raw) => raw),
       evaluatePipeline: vi.fn().mockReturnValue({ profitable: [], attempted: 0, profitableCount: 0 }),
       routeKeyFromEdges: vi.fn(),
       buildExecutionCandidate: vi.fn(),
@@ -531,6 +586,7 @@ describe("runPassLoop", () => {
 
     clearTimeout(stopTimer);
 
-    expect(deps.enumerateCycles).not.toHaveBeenCalled();
+    expect(findCyclesMultiPassSpy).not.toHaveBeenCalled();
+    expect(bfMultiPassSpy).toHaveBeenCalled();
   });
 });

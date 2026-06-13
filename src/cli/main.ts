@@ -13,7 +13,6 @@ import { performOneTimeGarbageCleanup } from "../infra/garbage/garbage-tracker.t
 import { HealthServer } from "../infra/observability/health_server.ts";
 import { filterArchivalRpcUrls } from "../infra/rpc/archival.ts";
 import { DEFAULTS } from "../config/defaults.ts";
-import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
 async function main() {
   const useTui = process.argv.includes("--tui");
@@ -129,26 +128,6 @@ async function main() {
 
   if (ctx.hyperSync) {
     hyperIndexMonitor.setHyperSyncService(ctx.hyperSync);
-  }
-
-  // Provide indexed height from Hasura using the custom IndexerProgress entity (written by
-  // our block handlers in hyperindex/src/handlers/progress.ts with historical/realtime strides).
-  // This is the reliable source for "how far the indexer has processed" for our schema.
-  // Replaces the old envio_chains query (which no longer exists / is not populated in this setup).
-  // Accurate synced/lag is important for TUI display, degraded mode, and health.
-  const hasuraUrl = config.hasuraUrl;
-  const hasuraSecret = config.hasuraSecret;
-  if (hasuraUrl) {
-    const getIndexedHeight = async (): Promise<number> => {
-      try {
-        const prog = await fetchIndexerProgressFromHasura(hasuraUrl, hasuraSecret || "", undefined);
-        return prog?.lastProcessedBlock ?? 0;
-      } catch (err) {
-        logger?.warn?.({ err }, "Indexed height fetcher failed");
-        return 0;
-      }
-    };
-    hyperIndexMonitor.setIndexedHeightProvider?.(getIndexedHeight);
   }
 
   const healthServer = new HealthServer(9090, {

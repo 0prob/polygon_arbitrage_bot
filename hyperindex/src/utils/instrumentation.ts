@@ -8,8 +8,9 @@
  *   - Handlers = wall time spent in onEvent/contractRegister bodies *excluding* effects
  *   - DB Writes = time in entity persistence (.set / .delete)
  *
- * Why this indexer shows ~99% Loaders / 0% Handlers / 0% DB:
+ * Typical pipeline split after no-op optimization:
  *   - Pool event handlers (Sync/Swap/...) are deliberate no-ops: async () => {}
+ *   - WOOFi WooSwap no-ops repeat swaps; only first sight of a new token runs effects
  *   - Factory handlers spend almost all time in context.effect(fetchTokenMeta / fetch*Metadata)
  *   - After effects: only a few .set() calls + early return on context.isPreload
  *   - .set() calls are skipped entirely during preload phase (per Envio best practice)

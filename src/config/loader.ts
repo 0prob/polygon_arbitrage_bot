@@ -55,6 +55,7 @@ const ENV_TO_PATH: Record<string, [keyof AppConfig, string]> = {
   MEV_JIT_ENABLED: ["mev", "jitEnabled"],
   MEV_SANDWICH_ENABLED: ["mev", "sandwichEnabled"],
   MEV_MAX_BID_BPS: ["mev", "maxBidBps"],
+  MEV_BUNDLE_WAIT_MS: ["mev", "bundleWaitMs"],
 
   RANKING_MODE: ["ranking", "mode"],
   RANKING_MODEL_PATH: ["ranking", "modelPath"],

@@ -44,9 +44,8 @@ raw_events: false
 #   - Handlers → tiny (mostly contractRegister + PoolMeta/TokenMeta sets on creation)
 #
 # The arb bot tolerates this because:
-#   - Primary live state source is its own RPC fetcher (fetchMissingPoolState in LF path).
-#   - buildStateCacheFromGraphQL is best-effort bootstrap at startup + periodic refresh.
-#   - Pool discovery (new PairCreated/PoolCreated/...) still flows through Hasura → bot.
+#   - Primary live state source is its own RPC fetcher (fetchMissingPoolState).
+#   - Pool discovery (new PairCreated/PoolCreated/...) flows through Hasura → bot.
 #
 # Historical full backfill still works (no schema change), but live tail is now cheap on DB.
 #

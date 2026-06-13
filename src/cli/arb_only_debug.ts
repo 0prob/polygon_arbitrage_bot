@@ -8,6 +8,7 @@ import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
+import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 
 async function main() {
   debugLog("arb_only_debug.ts:main", "entry", {
@@ -31,28 +32,69 @@ async function main() {
     logger = createRootLogger({ level: config.observability.logLevel });
   }
 
-  logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only mode — assuming HyperIndex/Hasura is running externally");
+  logger.info({ hasuraUrl: config.hasuraUrl }, "Starting arb-only debug mode — assuming HyperIndex/Hasura is running externally");
 
-  const ctx = await bootApplication(config, undefined, logger, undefined);
-  debugBreak(DebugSites.BOOT, { mode: "arb-only", hasuraUrl: config.hasuraUrl ?? null });
+  const hyperIndexMonitor = new HyperIndexMonitor({
+    processOptions: {
+      dataDir: config.paths.dataDir,
+      polygonRpcUrls: config.rpc.polygonRpcUrls,
+      envioApiToken: config.envioApiToken,
+      logger,
+      hasuraUrl: config.hasuraUrl || undefined,
+      hasuraSecret: config.hasuraSecret || undefined,
+    },
+    logger,
+    checkIntervalMs: 10_000,
+    maxStallMs: 60_000,
+    maxLagBlocks: 200,
+  });
+  try {
+    await hyperIndexMonitor.prepare();
+  } catch (err) {
+    logger.warn({ err }, "HyperIndex monitor prepare (external) failed");
+  }
+
+  const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);
   debugLog("arb_only_debug.ts:boot", "boot complete", { tier: ctx.tierManager.assess() });
 
-  // Health server requires a HyperIndexMonitor — skip in arb-only mode.
+  hyperIndexMonitor.setChainHeadFetcher(async () => {
+    try {
+      const rpcUrl = config.rpc.executionRpcUrl || (config.rpc.polygonRpcUrls && config.rpc.polygonRpcUrls[0]);
+      if (!rpcUrl) return 0;
+      const res = await fetch(rpcUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }),
+      });
+      const j = await res.json();
+      const hex = j?.result;
+      return hex ? parseInt(hex, 16) : 0;
+    } catch (err) {
+      logger?.warn?.({ err }, "Chain head fetcher failed");
+      return 0;
+    }
+  });
+  await hyperIndexMonitor.start().catch((e) => logger.warn({ e }, "monitor start warn"));
 
-  const tui = useTui ? createTui(bus) : null;
+  const tui = useTui ? createTui(bus, logger) : null;
   if (tui) {
     tui.start();
   }
 
-  // Emit a basic hyperindex_status so the TUI doesn't sit empty (with prefix for ENVIO key display)
   const statusTimer = setInterval(() => {
+    let st: { synced?: number; remote?: number; lag?: number; syncRate?: number } = {};
+    try {
+      st = hyperIndexMonitor.getLastStatus() ?? st;
+    } catch (e) {
+      logger?.debug?.({ err: e }, "External monitor status fetch failed");
+    }
     bus.emit({
       type: "hyperindex_status",
       status: "external",
-      syncedBlock: 0,
-      remoteBlock: 0,
-      lag: 0,
-      syncRate: 0,
+      syncedBlock: st.synced ?? 0,
+      remoteBlock: st.remote ?? 0,
+      lag: st.lag ?? 0,
+      syncRate: st.syncRate ?? 0,
     });
   }, 10000);
 
@@ -61,6 +103,11 @@ async function main() {
     if (shuttingDown) return;
     shuttingDown = true;
     clearInterval(statusTimer);
+    try {
+      await hyperIndexMonitor.stop();
+    } catch (err) {
+      ctx.logger.warn?.({ err }, "HyperIndex monitor stop failed during shutdown");
+    }
     ctx.logger.warn({}, "Shutting down");
     tui?.bus.emit({ type: "shutdown" });
     tui?.stop();

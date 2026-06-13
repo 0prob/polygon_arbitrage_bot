@@ -655,7 +655,10 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       } else {
         opts.logger.warn({ code, signal }, "HyperIndex process exited");
       }
-      _statusTimer = null;
+      if (_statusTimer) {
+        clearInterval(_statusTimer);
+        _statusTimer = null;
+      }
       proc = null;
     };
     proc.on("exit", _exitHandler);

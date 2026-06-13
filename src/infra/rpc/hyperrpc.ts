@@ -40,6 +40,15 @@ export interface HyperRpcLog {
   [key: string]: unknown;
 }
 
+/** Envio docs: append API token to the HyperRPC endpoint URL path. */
+export function buildHyperRpcEndpoint(url: string, apiToken?: string): string {
+  const base = url.replace(/\/$/, "");
+  const token = apiToken?.trim();
+  if (!token) return base;
+  if (base.endsWith(`/${token}`)) return base;
+  return `${base}/${token}`;
+}
+
 export class HyperRpcClient {
   private readonly endpoint: string;
   private readonly timeoutMs: number;
@@ -55,7 +64,7 @@ export class HyperRpcClient {
     this.token = config.apiToken?.trim();
 
     if (config.url) {
-      this.endpoint = config.url;
+      this.endpoint = buildHyperRpcEndpoint(config.url, this.token);
     } else {
       throw new Error("HyperRpcClient requires a URL");
     }

@@ -21,35 +21,26 @@ export function runRateComputation(
   pendingFocusTokens: Set<string> | null;
 } {
   bus?.emit({ type: "pipeline_stage", stage: "RATES" });
+
+  const focus = new Set<string>();
+  if (pendingFocusTokens) {
+    for (const t of pendingFocusTokens) focus.add(t);
+  }
+  if (cycleTokens.size > 0) {
+    for (const t of cycleTokens) focus.add(t);
+  }
+
   let rates = cachedRates;
   let needFull = ratesNeedFullRefresh;
-  let focus = pendingFocusTokens;
 
-  if (needFull) {
+  const shouldCompute = needFull || !rates || focus.size > 0;
+  if (shouldCompute) {
     rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
       minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
       seedRates: rates ?? undefined,
+      focusTokens: focus.size > 0 ? focus : undefined,
     });
     needFull = false;
-  } else if (focus && rates) {
-    rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-      seedRates: rates,
-      focusTokens: focus,
-    });
-    focus = null;
-  } else if (!rates) {
-    rates = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-    });
-  }
-  if (cycleTokens.size > 0 && rates) {
-    const boosted = computeMaticRates(hasuraPoolsCache ?? [], stateCache, ctx.logger, {
-      minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
-      seedRates: rates,
-      focusTokens: cycleTokens,
-    });
-    rates = boosted;
   }
 
   const tokenToMaticRates = rates!;
@@ -69,6 +60,6 @@ export function runRateComputation(
     cachedRates: rates,
     tokenToMaticRates,
     ratesNeedFullRefresh: needFull,
-    pendingFocusTokens: focus,
+    pendingFocusTokens: null,
   };
 }

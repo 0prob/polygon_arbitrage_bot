@@ -14,61 +14,6 @@ interface PoolMetaRow {
   createdBlock?: number;
   poolId?: string | null;
 }
-interface V2StateRow {
-  id: string;
-  address: string;
-  reserve0: string;
-  reserve1: string;
-}
-interface V3StateRow {
-  id: string;
-  address: string;
-  sqrtPriceX96: string;
-  tick: string;
-  liquidity: string;
-}
-interface V4StateRow {
-  id: string;
-  address: string;
-  sqrtPriceX96: string;
-  liquidity: string;
-  tick: string;
-  fee: string;
-  tickSpacing: string;
-  hooks: string;
-}
-interface BalancerStateRow {
-  id: string;
-  address: string;
-  poolId: string;
-  balances: unknown;
-  weights: unknown;
-  amp?: string | null;
-  swapFee: string;
-  scalingFactors: unknown;
-}
-interface CurveStateRow {
-  id: string;
-  address: string;
-  balances: unknown;
-  A: string;
-  fee: string;
-  rates?: unknown;
-}
-interface DodoStateRow {
-  id: string;
-  address: string;
-  baseReserve: string;
-  quoteReserve: string;
-  rStatus: number;
-  k: string;
-  fee: string;
-  i: string;
-  targetBase: string;
-  targetQuote: string;
-  lpFeeRate: string;
-  mtFeeRate: string;
-}
 interface TokenMetaRow {
   id?: string;
   address?: string;
@@ -77,36 +22,63 @@ interface TokenMetaRow {
 
 interface GraphQLData {
   PoolMeta?: PoolMetaRow[];
-  V2PoolState?: V2StateRow[];
-  V3PoolState?: V3StateRow[];
-  V4PoolState?: V4StateRow[];
-  BalancerPoolState?: BalancerStateRow[];
-  CurvePoolState?: CurveStateRow[];
-  DodoPoolState?: DodoStateRow[];
   TokenMeta?: TokenMetaRow[];
 }
 
-const V2_STATE_FIELDS = "id address reserve0 reserve1";
-const V3_STATE_FIELDS = "id address sqrtPriceX96 tick liquidity";
-const V4_STATE_FIELDS = "id address sqrtPriceX96 liquidity tick fee tickSpacing hooks";
-const BALANCER_STATE_FIELDS = "id address poolId balances weights amp swapFee scalingFactors";
-const CURVE_STATE_FIELDS = "id address balances A fee rates";
-const DODO_STATE_FIELDS = "id address baseReserve quoteReserve rStatus k fee i targetBase targetQuote lpFeeRate mtFeeRate";
-
 const MAX_PAGE = 60;
 const MAX_PAGE_SIZE = 10000;
+const GRAPHQL_TIMEOUT = 10_000;
+const TRANSIENT_HTTP_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 
-export function parseBigIntArray(arr: unknown): bigint[] {
-  if (typeof arr === "string") {
-    try {
-      return JSON.parse(arr).map((s: string) => BigInt(s));
-    } catch (err) {
-      console.warn("[hyperindex-graphql] Failed to parse bigint array:", err);
-      return [];
-    }
+/** Escape a value for use inside GraphQL double-quoted strings. */
+export function escapeGraphQLString(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/** Build `{ Table(limit: N, [where], order_by: ...) { fields } }` without stray commas. */
+export function buildGraphQLListQuery(
+  table: string,
+  fields: string,
+  options: { limit: number; where?: string; orderBy: string },
+): string {
+  const args: string[] = [`limit: ${options.limit}`];
+  if (options.where) args.push(options.where);
+  args.push(`order_by: ${options.orderBy}`);
+  return `{ ${table}(${args.join(", ")}) { ${fields} } }`;
+}
+
+export function blockCursorWhere(
+  blockField: string,
+  lastBlock: number,
+  cursorBlock: number | null,
+  cursorId: string | null,
+): string | undefined {
+  if (cursorBlock != null && cursorId != null) {
+    const id = escapeGraphQLString(cursorId);
+    return `where: { _or: [ { ${blockField}: { _gt: ${cursorBlock} } }, { _and: [ { ${blockField}: { _eq: ${cursorBlock} } }, { id: { _gt: "${id}" } } ] } ] }`;
   }
-  if (!Array.isArray(arr)) return [];
-  return arr.map((s: unknown) => BigInt(s as string));
+  if (lastBlock > 0) {
+    return `where: { ${blockField}: { _gt: ${lastBlock} } }`;
+  }
+  return undefined;
+}
+
+function idCursorWhere(cursorId: string | null): string | undefined {
+  if (cursorId == null) return undefined;
+  return `where: { id: { _gt: "${escapeGraphQLString(cursorId)}" } }`;
+}
+
+function isRetryableGraphQLError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  if (err.name === "AbortError") return true;
+  const msg = err.message;
+  if (msg.includes("fetch failed") || msg.includes("ECONNRESET") || msg.includes("ETIMEDOUT")) {
+    return true;
+  }
+  for (const code of TRANSIENT_HTTP_STATUSES) {
+    if (msg.includes(String(code))) return true;
+  }
+  return false;
 }
 
 let _staticAnchors: PoolMeta[] | null = null;
@@ -160,11 +132,7 @@ export async function loadStaticAnchors(): Promise<PoolMeta[]> {
   return staticAnchorsPromise;
 }
 
-export const STATIC_ANCHORS: PoolMeta[] = []; // placeholder, loaded lazily via loadStaticAnchors()
-
-const GRAPHQL_TIMEOUT = 10_000;
-
-export async function graphQLQuery(url: string, adminSecret: string, query: string): Promise<unknown> {
+async function graphQLQueryOnce(url: string, adminSecret: string, query: string): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), GRAPHQL_TIMEOUT);
 
@@ -180,7 +148,7 @@ export async function graphQLQuery(url: string, adminSecret: string, query: stri
     });
 
     if (!resp.ok) {
-      throw new Error(`GraphQL query failed: ${resp.statusText}`);
+      throw new Error(`GraphQL query failed (${resp.status}): ${resp.statusText}`);
     }
 
     const json = (await resp.json()) as Record<string, unknown>;
@@ -194,164 +162,23 @@ export async function graphQLQuery(url: string, adminSecret: string, query: stri
   }
 }
 
-export interface HasuraPoolState {
-  id: string;
-  reserve0?: string;
-  reserve1?: string;
-  sqrtPriceX96?: string;
-  tick?: string;
-  liquidity?: string;
-  initialized: boolean;
-}
-
-interface PaginatedFetchResult<T extends { id: string }> {
-  rows: T[];
-  maxBlock: number;
-}
-
-async function fetchPaginatedState<T extends { id: string; lastUpdatedBlock: number }>(
-  graphqlUrl: string,
+export async function graphQLQuery(
+  url: string,
   adminSecret: string,
-  table: string,
-  fields: string,
-  lastSeenBlock: number,
-  pageSize: number,
-): Promise<PaginatedFetchResult<T>> {
-  const allRows: T[] = [];
-  let maxBlock = lastSeenBlock;
-  let cursorBlock: number | null = null;
-  let cursorId: string | null = null;
-
-  for (let page = 0; page < MAX_PAGE; page++) {
-    let whereClause = "";
-    if (cursorBlock != null && cursorId != null) {
-      whereClause = `where: { _or: [ { lastUpdatedBlock: { _gt: ${cursorBlock} } }, { _and: [ { lastUpdatedBlock: { _eq: ${cursorBlock} } }, { id: { _gt: "${cursorId}" } } ] } ] }`;
-    } else if (lastSeenBlock > 0) {
-      whereClause = `where: { lastUpdatedBlock: { _gt: ${lastSeenBlock} } }`;
+  query: string,
+  retries = 2,
+): Promise<unknown> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await graphQLQueryOnce(url, adminSecret, query);
+    } catch (err) {
+      lastErr = err;
+      if (!isRetryableGraphQLError(err) || attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
     }
-
-    const query = `{ ${table}(limit: ${pageSize}, ${whereClause}, order_by: [{ lastUpdatedBlock: asc }, { id: asc }]) { ${fields} lastUpdatedBlock } }`;
-    const result = await graphQLQuery(graphqlUrl, adminSecret, query);
-    const rows: T[] | undefined = (result as any)?.[table];
-    if (!rows || rows.length === 0) break;
-
-    for (const r of rows) {
-      if (r.lastUpdatedBlock > maxBlock) maxBlock = r.lastUpdatedBlock;
-    }
-    allRows.push(...rows);
-
-    if (rows.length < pageSize) break;
-
-    const last = rows[rows.length - 1];
-    cursorBlock = last.lastUpdatedBlock;
-    cursorId = last.id;
   }
-
-  return { rows: allRows, maxBlock };
-}
-
-export interface BuildStateCacheOptions {
-  lastSeenBlock?: number;
-}
-
-export interface BuildStateCacheResult {
-  stateCache: Map<string, any>;
-  maxSeenBlock: number;
-}
-
-export async function buildStateCacheFromGraphQL(
-  graphqlUrl: string,
-  adminSecret: string,
-  logger?: Pick<Logger, "warn" | "error">,
-  options: BuildStateCacheOptions = {},
-): Promise<BuildStateCacheResult> {
-  const stateCache = new Map<string, any>();
-  const lastSeenBlock = options.lastSeenBlock ?? 0;
-  let maxSeenBlock = lastSeenBlock;
-
-  try {
-    const [v2, v3, v4, bal, curve, dodo] = await Promise.all([
-      fetchPaginatedState<V2StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V2PoolState", V2_STATE_FIELDS, lastSeenBlock, 25000),
-      fetchPaginatedState<V3StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V3PoolState", V3_STATE_FIELDS, lastSeenBlock, 20000),
-      fetchPaginatedState<V4StateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "V4PoolState", V4_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
-      fetchPaginatedState<BalancerStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "BalancerPoolState", BALANCER_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
-      fetchPaginatedState<CurveStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "CurvePoolState", CURVE_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
-      fetchPaginatedState<DodoStateRow & { lastUpdatedBlock: number }>(graphqlUrl, adminSecret, "DodoPoolState", DODO_STATE_FIELDS, lastSeenBlock, MAX_PAGE_SIZE),
-    ]);
-
-    maxSeenBlock = Math.max(maxSeenBlock, v2.maxBlock, v3.maxBlock, v4.maxBlock, bal.maxBlock, curve.maxBlock, dodo.maxBlock);
-
-    for (const s of v2.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        reserve0: BigInt(s.reserve0),
-        reserve1: BigInt(s.reserve1),
-      });
-    }
-
-    for (const s of v3.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        sqrtPriceX96: BigInt(s.sqrtPriceX96),
-        tick: Number(s.tick),
-        liquidity: BigInt(s.liquidity),
-        initialized: true,
-      });
-    }
-
-    for (const s of v4.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        sqrtPriceX96: BigInt(s.sqrtPriceX96),
-        liquidity: BigInt(s.liquidity),
-        tick: Number(s.tick),
-        fee: BigInt(s.fee),
-        tickSpacing: Number(s.tickSpacing),
-        hooks: s.hooks,
-        initialized: true,
-      });
-    }
-
-    for (const s of bal.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        poolId: s.poolId,
-        balances: parseBigIntArray(s.balances),
-        weights: parseBigIntArray(s.weights),
-        amp: s.amp ? BigInt(s.amp) : undefined,
-        swapFee: BigInt(s.swapFee),
-        scalingFactors: parseBigIntArray(s.scalingFactors),
-        initialized: true,
-      });
-    }
-
-    for (const s of curve.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        balances: parseBigIntArray(s.balances),
-        A: BigInt(s.A),
-        fee: BigInt(s.fee),
-        rates: parseBigIntArray(s.rates),
-        initialized: true,
-      });
-    }
-
-    for (const s of dodo.rows) {
-      stateCache.set(s.address.toLowerCase(), {
-        baseReserve: BigInt(s.baseReserve),
-        quoteReserve: BigInt(s.quoteReserve),
-        rStatus: s.rStatus,
-        k: BigInt(s.k),
-        fee: BigInt(s.fee),
-        i: BigInt(s.i),
-        targetBase: BigInt(s.targetBase),
-        targetQuote: BigInt(s.targetQuote),
-        lpFeeRate: BigInt(s.lpFeeRate),
-        mtFeeRate: BigInt(s.mtFeeRate),
-        initialized: true,
-      });
-    }
-  } catch (err) {
-    logger?.warn({ err }, "buildStateCacheFromGraphQL unexpected error");
-    throw err;
-  }
-
-  return { stateCache, maxSeenBlock };
+  throw lastErr;
 }
 
 /** Accept 20-byte pool addresses and 32-byte pool keys (Uniswap V4 poolId). */
@@ -413,41 +240,37 @@ export async function discoverPoolsFromHasura(
   let cursorBlock: number | null = null;
   let cursorId: string | null = null;
   for (let page = 0; page < MAX_PAGES; page++) {
-    let pageResult: unknown = null;
-    let ok = false;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        let where = "";
-        if (lastDiscoveredBlock > 0 && cursorBlock == null) {
-          where = `where: { createdBlock: { _gt: ${lastDiscoveredBlock} } }`;
-        } else if (cursorBlock != null && cursorId != null) {
-          where = `where: { _or: [ { createdBlock: { _gt: ${cursorBlock} } }, { _and: [ { createdBlock: { _eq: ${cursorBlock} } }, { id: { _gt: "${cursorId}" } } ] } ] }`;
-        } else if (lastDiscoveredBlock > 0) {
-          where = `where: { createdBlock: { _gt: ${lastDiscoveredBlock} } }`;
-        }
-        const query = `{ PoolMeta(limit: ${PAGE}, ${where}, order_by: [{ createdBlock: asc }, { id: asc }]) { id protocol tokens fee poolId createdBlock } }`;
-        pageResult = await graphQLQuery(graphqlUrl, adminSecret, query);
-        const d = pageResult as { PoolMeta?: (PoolMetaRow & { createdBlock: number })[] } | null;
-        if (d?.PoolMeta) {
-          allRows.push(...d.PoolMeta);
-          for (const row of d.PoolMeta) {
-            if (row.createdBlock > maxBlock) maxBlock = row.createdBlock;
-          }
-          ok = true;
-          if (d.PoolMeta.length < PAGE) {
-            page = MAX_PAGES;
-          } else {
-            const last = d.PoolMeta[d.PoolMeta.length - 1];
-            cursorBlock = last.createdBlock;
-            cursorId = last.id;
-          }
-          break;
-        }
-      } catch (err) {
-        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-      }
+    let pageResult: unknown;
+    try {
+      const where = blockCursorWhere("createdBlock", lastDiscoveredBlock, cursorBlock, cursorId);
+      const query = buildGraphQLListQuery(
+        "PoolMeta",
+        "id protocol tokens fee poolId createdBlock",
+        {
+          limit: PAGE,
+          where,
+          orderBy: "[{ createdBlock: asc }, { id: asc }]",
+        },
+      );
+      pageResult = await graphQLQuery(graphqlUrl, adminSecret, query);
+    } catch (err) {
+      logger?.warn({ err, page }, "discoverPoolsFromHasura page fetch failed");
+      break;
     }
-    if (!ok) break;
+
+    const d = pageResult as { PoolMeta?: (PoolMetaRow & { createdBlock: number })[] } | null;
+    if (!d?.PoolMeta || d.PoolMeta.length === 0) break;
+
+    allRows.push(...d.PoolMeta);
+    for (const row of d.PoolMeta) {
+      if (row.createdBlock > maxBlock) maxBlock = row.createdBlock;
+    }
+
+    if (d.PoolMeta.length < PAGE) break;
+
+    const last = d.PoolMeta[d.PoolMeta.length - 1];
+    cursorBlock = last.createdBlock;
+    cursorId = last.id;
   }
 
   if (allRows.length === 0 && lastDiscoveredBlock > 0) {
@@ -473,7 +296,7 @@ export async function discoverPoolsFromHasura(
 
     for (const p of combined) {
       for (const token of p.tokens) {
-        if (KNOWN_FACTORIES.has(token)) {
+        if (KNOWN_FACTORIES.has(token.toLowerCase())) {
           markAsGarbage(token)
             .then(() => logger?.warn({ token }, "Auto-discovered garbage during pool sync"))
             .catch((err) => { logger?.warn?.({ err, token }, "Failed to persist garbage during pool sync"); });
@@ -495,15 +318,14 @@ export async function fetchTokenMetasFromHasura(
 ): Promise<Map<string, { decimals: number }>> {
   const metas = new Map<string, { decimals: number }>();
   try {
-    const PAGE = 10000;
     let cursorId: string | null = null;
 
     for (let page = 0; page < MAX_PAGE; page++) {
-      let whereClause = "";
-      if (cursorId != null) {
-        whereClause = `where: { id: { _gt: "${cursorId}" } }`;
-      }
-      const query = `{ TokenMeta(limit: ${PAGE}, ${whereClause}, order_by: [{ id: asc }]) { address decimals } }`;
+      const query = buildGraphQLListQuery("TokenMeta", "id address decimals", {
+        limit: MAX_PAGE_SIZE,
+        where: idCursorWhere(cursorId),
+        orderBy: "[{ id: asc }]",
+      });
       const result = await graphQLQuery(graphqlUrl, adminSecret, query);
       const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
       if (rows.length === 0) break;
@@ -514,7 +336,7 @@ export async function fetchTokenMetasFromHasura(
         }
       }
 
-      if (rows.length < PAGE) break;
+      if (rows.length < MAX_PAGE_SIZE) break;
 
       cursorId = rows[rows.length - 1].id ?? null;
       if (!cursorId) break;
@@ -525,13 +347,90 @@ export async function fetchTokenMetasFromHasura(
   return metas;
 }
 
+export async function fetchTokenMetasForAddresses(
+  graphqlUrl: string,
+  adminSecret: string,
+  addresses: string[],
+  logger?: Pick<Logger, "warn">,
+): Promise<Map<string, { decimals: number }>> {
+  const metas = new Map<string, { decimals: number }>();
+  if (addresses.length === 0) return metas;
+
+  const unique = [...new Set(addresses.map((a) => a.toLowerCase()))];
+  const CHUNK = 500;
+
+  try {
+    for (let i = 0; i < unique.length; i += CHUNK) {
+      const chunk = unique.slice(i, i + CHUNK);
+      const inList = chunk.map((a) => `"${escapeGraphQLString(a)}"`).join(", ");
+      const query = buildGraphQLListQuery("TokenMeta", "id address decimals", {
+        limit: chunk.length,
+        where: `where: { address: { _in: [${inList}] } }`,
+        orderBy: "[{ id: asc }]",
+      });
+      const result = await graphQLQuery(graphqlUrl, adminSecret, query);
+      const rows = (result as GraphQLData | null)?.TokenMeta ?? [];
+      for (const m of rows) {
+        if (m.address && m.decimals != null) {
+          metas.set(m.address.toLowerCase(), { decimals: Number(m.decimals) });
+        }
+      }
+    }
+  } catch (err) {
+    logger?.warn({ err, count: unique.length }, "fetchTokenMetasForAddresses failed");
+  }
+  return metas;
+}
+
 export interface IndexerProgress {
   chainId: number;
   lastProcessedBlock: number;
   updatedAtBlock: number;
+  /** Chain head from the indexer's active data source (_meta.sourceBlock). */
+  sourceBlock?: number;
+  isReady?: boolean;
 }
 
-export async function fetchIndexerProgressFromHasura(
+interface EnvioMetaRow {
+  chainId: number;
+  progressBlock: number;
+  sourceBlock?: number;
+  isReady?: boolean;
+}
+
+/**
+ * Official Envio indexing metadata exposed via Hasura.
+ * @see https://docs.envio.dev/docs/HyperIndex/metadata-query
+ */
+export async function fetchIndexerMetaFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+  chainId: number,
+  logger?: Pick<Logger, "warn">,
+): Promise<IndexerProgress | undefined> {
+  try {
+    const result = await graphQLQuery(
+      graphqlUrl,
+      adminSecret,
+      `{ _meta(where: { chainId: { _eq: ${chainId} } }) { chainId progressBlock sourceBlock isReady } }`,
+    );
+    const rows = (result as { _meta?: EnvioMetaRow[] } | null)?._meta ?? [];
+    const row = rows.find((r) => r.chainId === chainId) ?? rows[0];
+    if (!row || row.progressBlock <= 0) return undefined;
+    return {
+      chainId: row.chainId,
+      lastProcessedBlock: row.progressBlock,
+      updatedAtBlock: row.progressBlock,
+      sourceBlock: row.sourceBlock,
+      isReady: row.isReady,
+    };
+  } catch (err) {
+    logger?.debug?.({ err, chainId }, "fetchIndexerMetaFromHasura failed — falling back to IndexerProgress entity");
+    return undefined;
+  }
+}
+
+async function fetchLegacyIndexerProgressFromHasura(
   graphqlUrl: string,
   adminSecret: string,
   logger?: Pick<Logger, "warn">,
@@ -540,7 +439,10 @@ export async function fetchIndexerProgressFromHasura(
     const result = await graphQLQuery(
       graphqlUrl,
       adminSecret,
-      `{ IndexerProgress(limit: 5) { chainId lastProcessedBlock updatedAtBlock } }`,
+      buildGraphQLListQuery("IndexerProgress", "chainId lastProcessedBlock updatedAtBlock", {
+        limit: 5,
+        orderBy: "[{ lastProcessedBlock: desc }]",
+      }),
     );
     const rows =
       (result as { IndexerProgress?: Array<{ chainId: number; lastProcessedBlock: number; updatedAtBlock: number }> } | null)
@@ -548,14 +450,26 @@ export async function fetchIndexerProgressFromHasura(
 
     if (rows.length === 0) return undefined;
 
-    const best = rows.reduce((a, b) => (b.lastProcessedBlock > a.lastProcessedBlock ? b : a));
+    const best = rows[0];
+    if (!best) return undefined;
     return {
       chainId: best.chainId,
       lastProcessedBlock: best.lastProcessedBlock,
       updatedAtBlock: best.updatedAtBlock,
     };
   } catch (err) {
-    logger?.warn({ err }, "fetchIndexerProgressFromHasura failed");
+    logger?.warn({ err }, "fetchLegacyIndexerProgressFromHasura failed");
     return undefined;
   }
+}
+
+export async function fetchIndexerProgressFromHasura(
+  graphqlUrl: string,
+  adminSecret: string,
+  logger?: Pick<Logger, "warn">,
+  chainId = 137,
+): Promise<IndexerProgress | undefined> {
+  const meta = await fetchIndexerMetaFromHasura(graphqlUrl, adminSecret, chainId, logger);
+  if (meta) return meta;
+  return fetchLegacyIndexerProgressFromHasura(graphqlUrl, adminSecret, logger);
 }

@@ -326,6 +326,50 @@ export function scoreCycleWithFeedback(logWeight: number, routeKey: string, getW
   return logWeight - feedbackBonus;
 }
 
+/** Dedupe raw cycles by pool set, apply win-rate / major-token / long-tail scoring. */
+export function dedupeScoredCycles(
+  allCycles: FoundCycle[],
+  getWinRate?: (key: string) => number,
+): FoundCycle[] {
+  const deduped = new Map<string, FoundCycle>();
+
+  for (let i = 0; i < allCycles.length; i++) {
+    const cycle = allCycles[i];
+    const key = routeKeyFromEdges(cycle.edges);
+    cycle.id = key;
+
+    let score = getWinRate ? scoreCycleWithFeedback(cycle.logWeight, key, getWinRate) : cycle.logWeight;
+
+    if (MAJOR_TOKENS.has(cycle.startToken)) {
+      score -= 2.0;
+    }
+    score += longTailRouteBonus(cycle);
+    cycle.score = score;
+
+    const existing = deduped.get(key);
+    if (!existing || score < (existing.score ?? Infinity)) {
+      deduped.set(key, cycle);
+    }
+  }
+
+  return Array.from(deduped.values());
+}
+
+/**
+ * Post-process raw cycle enumeration: dedupe, spot-price rescore, hop-stratified cap.
+ * Call once after merging multi-pass findCycles batches (LF path).
+ */
+export function finalizeEnumeratedCycles(
+  graph: RoutingGraph,
+  rawCycles: FoundCycle[],
+  maxCycles: number,
+  getWinRate?: (key: string) => number,
+): FoundCycle[] {
+  const deduped = dedupeScoredCycles(rawCycles, getWinRate);
+  rescoreCyclesBySpotPrice(graph, deduped, getWinRate);
+  return applyHopStratifiedCap(deduped, maxCycles);
+}
+
 const HOP_PENALTIES_SPOT = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
 
 /**
@@ -383,52 +427,71 @@ export function rescoreCyclesBySpotPrice(
 }
 
 const MAX_CYCLES_PER_PASS = 250_000;
+const CYCLE_ENUM_TIME_BUDGET_MS = 10_000;
 
-export async function findCycles(
-  graph: RoutingGraph,
-  maxHops: number,
-  maxCycles: number = MAX_CYCLES_PER_PASS,
-  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
-): Promise<FoundCycle[]> {
-  const cycles: FoundCycle[] = [];
-  const hopLimit = Math.min(maxHops, 8);
-  const { adjacency } = graph;
+export interface CycleSearchPass {
+  maxHops: number;
+  maxCycles: number;
+}
 
-  const ENUM_START = Date.now();
-  const TIME_BUDGET_MS = 10000;
-  let budgetExceededLogged = false;
-  let isOverBudget = false;
+interface CycleSearchPrep {
+  activeAdjacency: Map<string, SwapEdge[]>;
+  edgeWeight: Map<string, number>;
+  prioritizedStartTokens: string[];
+}
 
-  let dfsCount = 0;
+interface CycleSearchBudget {
+  startMs: number;
+  exceeded: boolean;
+  logged: boolean;
+}
 
-  // Pre-filter adjacency and pre-calculate weight for all edges.
-  // Skip edges with no pool state to avoid enumerating dead cycles.
+function prepareCycleSearchGraph(graph: RoutingGraph): CycleSearchPrep {
   const edgeWeight = new Map<string, number>();
   const activeAdjacency = new Map<string, SwapEdge[]>();
-  const tokens = Array.from(adjacency.keys());
-  for (let tIdx = 0; tIdx < tokens.length; tIdx++) {
-    const token = tokens[tIdx];
-    const edges = adjacency.get(token)!;
-    if (edges.length > 0) {
-      const filtered: SwapEdge[] = [];
-      for (let eIdx = 0; eIdx < edges.length; eIdx++) {
-        const e = edges[eIdx];
-        const state = graph.stateRefs.get(e.poolAddress);
-        if (!state || isInvalidState(state)) continue;
-        filtered.push(e);
-        if (!edgeWeight.has(e.poolAddress)) {
-          // feeBps carries protocol-native units (pips for V3/V4, fee-units for
-          // Elastic/WooFi) — normalize to true bps before log-weighting.
-          edgeWeight.set(e.poolAddress, feeLogWeight(feeToBps(e.protocol, e.feeBps)));
-        }
+  const { adjacency } = graph;
+
+  for (const [token, edges] of adjacency) {
+    if (edges.length === 0) continue;
+    const filtered: SwapEdge[] = [];
+    for (const e of edges) {
+      const state = graph.stateRefs.get(e.poolAddress);
+      if (!state || isInvalidState(state)) continue;
+      filtered.push(e);
+      if (!edgeWeight.has(e.poolAddress)) {
+        edgeWeight.set(e.poolAddress, feeLogWeight(feeToBps(e.protocol, e.feeBps)));
       }
-      if (filtered.length > 0) {
-        activeAdjacency.set(token, filtered);
-      }
+    }
+    if (filtered.length > 0) {
+      activeAdjacency.set(token, filtered);
     }
   }
 
-  // Recursive DFS to find cycles of length 2..hopLimit.
+  const majorTokens: string[] = [];
+  const otherTokens: string[] = [];
+  for (const token of activeAdjacency.keys()) {
+    if (MAJOR_TOKENS.has(token)) majorTokens.push(token);
+    else otherTokens.push(token);
+  }
+
+  return {
+    activeAdjacency,
+    edgeWeight,
+    prioritizedStartTokens: majorTokens.concat(otherTokens),
+  };
+}
+
+async function collectCyclesPrepared(
+  prep: CycleSearchPrep,
+  hopLimit: number,
+  maxCycles: number,
+  budget: CycleSearchBudget,
+  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
+): Promise<FoundCycle[]> {
+  const cycles: FoundCycle[] = [];
+  const hopCap = Math.min(hopLimit, 8);
+  let dfsCount = 0;
+
   function dfs(
     startToken: string,
     currToken: string,
@@ -439,22 +502,22 @@ export async function findCycles(
     currentLogWeight: number,
     currentCumFee: bigint,
   ): void {
-    if (isOverBudget || cycles.length >= maxCycles) return;
+    if (budget.exceeded || cycles.length >= maxCycles) return;
 
     if ((++dfsCount & 1023) === 0) {
-      if (Date.now() - ENUM_START > TIME_BUDGET_MS) {
-        isOverBudget = true;
-        if (!budgetExceededLogged && logger) {
+      if (Date.now() - budget.startMs > CYCLE_ENUM_TIME_BUDGET_MS) {
+        budget.exceeded = true;
+        if (!budget.logged && logger) {
           logger.warn?.(
             {
-              elapsedMs: Date.now() - ENUM_START,
+              elapsedMs: Date.now() - budget.startMs,
               cyclesFound: cycles.length,
               maxCycles,
-              budgetMs: TIME_BUDGET_MS,
+              budgetMs: CYCLE_ENUM_TIME_BUDGET_MS,
             },
             "Cycle enumeration over budget or max cycles reached",
           );
-          budgetExceededLogged = true;
+          budget.logged = true;
         }
         return;
       }
@@ -463,23 +526,19 @@ export async function findCycles(
     if (hops >= 2 && currToken === startToken) {
       const HOP_PENALTIES = [0, 0, 0.0, 0.01, 0.03, 0.08] as const;
       const hopPenalty = HOP_PENALTIES[hops as 2 | 3 | 4 | 5] ?? hops * 0.15;
-      const logWeight = currentLogWeight + hopPenalty;
-
       cycles.push({
         startToken: startToken as Address,
-        edges: path.slice(), // clone to prevent mutations from affecting results
+        edges: path.slice(),
         hopCount: hops,
-        logWeight,
+        logWeight: currentLogWeight + hopPenalty,
         cumulativeFeeBps: currentCumFee,
       });
       return;
     }
 
-    if (usedTokens.has(currToken)) return;
+    if (usedTokens.has(currToken) || hops >= hopCap) return;
 
-    if (hops >= hopLimit) return;
-
-    const nextEdges = activeAdjacency.get(currToken);
+    const nextEdges = prep.activeAdjacency.get(currToken);
     if (!nextEdges) return;
 
     usedTokens.add(currToken);
@@ -488,7 +547,7 @@ export async function findCycles(
       const pAddr = e.poolAddress;
       if (usedPools.has(pAddr)) continue;
 
-      const w = edgeWeight.get(pAddr) ?? 0;
+      const w = prep.edgeWeight.get(pAddr) ?? 0;
       path.push(e);
       usedPools.add(pAddr);
       dfs(
@@ -504,42 +563,26 @@ export async function findCycles(
       path.pop();
       usedPools.delete(pAddr);
 
-      if (cycles.length >= maxCycles || isOverBudget) break;
+      if (cycles.length >= maxCycles || budget.exceeded) break;
     }
 
     usedTokens.delete(currToken);
   }
 
-  // Prioritize starting from MAJOR_TOKENS using O(N) partitioning
-  const majorTokens: string[] = [];
-  const otherTokens: string[] = [];
-  for (const token of activeAdjacency.keys()) {
-    if (MAJOR_TOKENS.has(token)) {
-      majorTokens.push(token);
-    } else {
-      otherTokens.push(token);
-    }
-  }
-  const prioritizedStartTokens = majorTokens.concat(otherTokens);
-
   const usedPools = new Set<string>();
   const usedTokens = new Set<string>();
   let lastYield = Date.now();
-  for (const startToken of prioritizedStartTokens) {
-    if (isOverBudget || Date.now() - ENUM_START > TIME_BUDGET_MS) break;
+  for (const startToken of prep.prioritizedStartTokens) {
+    if (budget.exceeded || Date.now() - budget.startMs > CYCLE_ENUM_TIME_BUDGET_MS) break;
 
-    const firstEdges = activeAdjacency.get(startToken);
+    const firstEdges = prep.activeAdjacency.get(startToken);
     if (!firstEdges) continue;
 
     usedTokens.add(startToken);
 
     for (const e1 of firstEdges) {
-      if (cycles.length >= maxCycles || isOverBudget) break;
+      if (cycles.length >= maxCycles || budget.exceeded) break;
 
-      // Yield to event loop every 50ms to prevent WS/RPC/TUI starvation.
-      // Must live inside the first-edge loop: major start tokens (WMATIC etc.)
-      // have hundreds of first edges and each dfs() subtree is sync CPU work —
-      // yielding only between start tokens blocked the loop for seconds.
       const now = Date.now();
       if (now - lastYield > 50) {
         await new Promise((r) => setImmediate(r));
@@ -547,7 +590,7 @@ export async function findCycles(
       }
 
       usedPools.add(e1.poolAddress);
-      const e1LogWeight = edgeWeight.get(e1.poolAddress) ?? 0;
+      const e1LogWeight = prep.edgeWeight.get(e1.poolAddress) ?? 0;
       dfs(startToken, e1.tokenOut, [e1], usedPools, usedTokens, 1, e1LogWeight, feeToBps(e1.protocol, e1.feeBps));
       usedPools.delete(e1.poolAddress);
     }
@@ -558,6 +601,35 @@ export async function findCycles(
   return cycles;
 }
 
+/** Run multiple hop-limited DFS passes sharing one adjacency prep and one time budget. */
+export async function findCyclesMultiPass(
+  graph: RoutingGraph,
+  passes: CycleSearchPass[],
+  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
+): Promise<FoundCycle[]> {
+  if (passes.length === 0) return [];
+  const prep = prepareCycleSearchGraph(graph);
+  const budget: CycleSearchBudget = { startMs: Date.now(), exceeded: false, logged: false };
+  const all: FoundCycle[] = [];
+  for (const pass of passes) {
+    if (budget.exceeded) break;
+    const batch = await collectCyclesPrepared(prep, pass.maxHops, pass.maxCycles, budget, logger);
+    all.push(...batch);
+  }
+  return all;
+}
+
+export async function findCycles(
+  graph: RoutingGraph,
+  maxHops: number,
+  maxCycles: number = MAX_CYCLES_PER_PASS,
+  logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
+): Promise<FoundCycle[]> {
+  const prep = prepareCycleSearchGraph(graph);
+  const budget: CycleSearchBudget = { startMs: Date.now(), exceeded: false, logged: false };
+  return collectCyclesPrepared(prep, maxHops, maxCycles, budget, logger);
+}
+
 export async function enumerateCycles(
   graph: RoutingGraph,
   maxHops = 5, // Default raised to 5 for increased long-tail discovery potential (see pass_loop strategy comments)
@@ -566,55 +638,19 @@ export async function enumerateCycles(
   logger?: { warn?: (obj: Record<string, unknown>, msg?: string) => void },
 ): Promise<FoundCycle[]> {
   const allCycles = await findCycles(graph, maxHops, maxCycles, logger);
-
-  // Use a map to deduplicate by cycle ID (pools only).
-  // If multiple entry points (startTokens) exist for the same set of pools,
-  // we keep the one with the best (lowest) score.
-  const deduped = new Map<string, FoundCycle>();
-
-  for (let i = 0; i < allCycles.length; i++) {
-    const cycle = allCycles[i];
-    const key = routeKeyFromEdges(cycle.edges);
-    cycle.id = key;
-
-    let score = getWinRate ? scoreCycleWithFeedback(cycle.logWeight, key, getWinRate) : cycle.logWeight;
-
-    // Prioritize priceable tokens: bias score for MAJOR_TOKENS
-    if (MAJOR_TOKENS.has(cycle.startToken)) {
-      score -= 2.0; // Significant bonus for major bases
-    }
-    score += longTailRouteBonus(cycle);
-    cycle.score = score;
-
-    const existing = deduped.get(key);
-    if (!existing || score < (existing.score ?? Infinity)) {
-      deduped.set(key, cycle);
-    }
-  }
-
-  const result = Array.from(deduped.values());
-  rescoreCyclesBySpotPrice(graph, result, getWinRate);
-
-  return applyHopStratifiedCap(result, maxCycles);
+  return finalizeEnumeratedCycles(graph, allCycles, maxCycles, getWinRate);
 }
 
-export async function findCyclesBellmanFord(
-  graph: RoutingGraph,
-  maxHops: number = 5,
-  maxCycles: number = MAX_CYCLES_PER_PASS,
-): Promise<FoundCycle[]> {
-  const cycles: FoundCycle[] = [];
-  const foundKeys = new Set<string>();
+type EdgeWithWeight = SwapEdge & { weight: number };
 
-  // Pre-calculate weights for all valid edges in the graph
-  type EdgeWithWeight = SwapEdge & { weight: number };
+function buildBellmanFordAdjacency(graph: RoutingGraph): Map<string, EdgeWithWeight[]> {
   const weightedAdjacency = new Map<string, EdgeWithWeight[]>();
 
   for (const [u, edges] of graph.adjacency) {
     const list: EdgeWithWeight[] = [];
     for (const edge of edges) {
       const state = graph.stateRefs.get(edge.poolAddress);
-      if (!state) continue;
+      if (!state || isInvalidState(state)) continue;
 
       const normalizedProtocol = normalizeProtocol(edge.protocol);
       const spotPrice = computeSpotPrice(normalizedProtocol, edge.zeroForOne, edge.tokenInIdx, edge.tokenOutIdx, state);
@@ -629,9 +665,20 @@ export async function findCyclesBellmanFord(
     }
   }
 
-  const sourceTokens = Array.from(graph.adjacency.keys()).filter((t) => MAJOR_TOKENS.has(t));
+  return weightedAdjacency;
+}
+
+async function collectBellmanFordCycles(
+  weightedAdjacency: Map<string, EdgeWithWeight[]>,
+  maxHops: number,
+  maxCycles: number,
+): Promise<FoundCycle[]> {
+  const cycles: FoundCycle[] = [];
+  const foundKeys = new Set<string>();
+
+  const sourceTokens = Array.from(weightedAdjacency.keys()).filter((t) => MAJOR_TOKENS.has(t));
   if (sourceTokens.length === 0) {
-    sourceTokens.push(Array.from(graph.adjacency.keys())[0]);
+    sourceTokens.push(Array.from(weightedAdjacency.keys())[0]);
   }
 
   let lastYield = Date.now();
@@ -650,8 +697,6 @@ export async function findCyclesBellmanFord(
     dist.set(sourceToken, 0);
 
     for (let iter = 0; iter < maxHops; iter++) {
-      // Each relaxation pass touches every edge — yield so a large graph
-      // doesn't block the event loop for the whole maxHops × edges sweep.
       if (Date.now() - lastYield > 50) {
         await new Promise((r) => setImmediate(r));
         lastYield = Date.now();
@@ -744,6 +789,30 @@ export async function findCyclesBellmanFord(
   return cycles;
 }
 
+/** Multiple Bellman-Ford passes sharing one weighted adjacency build. */
+export async function findCyclesBellmanFordMultiPass(
+  graph: RoutingGraph,
+  passes: CycleSearchPass[],
+): Promise<FoundCycle[]> {
+  if (passes.length === 0) return [];
+  const weightedAdjacency = buildBellmanFordAdjacency(graph);
+  const all: FoundCycle[] = [];
+  for (const pass of passes) {
+    const batch = await collectBellmanFordCycles(weightedAdjacency, pass.maxHops, pass.maxCycles);
+    all.push(...batch);
+  }
+  return all;
+}
+
+export async function findCyclesBellmanFord(
+  graph: RoutingGraph,
+  maxHops: number = 5,
+  maxCycles: number = MAX_CYCLES_PER_PASS,
+): Promise<FoundCycle[]> {
+  const weightedAdjacency = buildBellmanFordAdjacency(graph);
+  return collectBellmanFordCycles(weightedAdjacency, maxHops, maxCycles);
+}
+
 export async function enumerateCyclesBellmanFord(
   graph: RoutingGraph,
   maxHops = 5,
@@ -751,19 +820,5 @@ export async function enumerateCyclesBellmanFord(
   getWinRate?: (key: string) => number,
 ): Promise<FoundCycle[]> {
   const allCycles = await findCyclesBellmanFord(graph, maxHops, maxCycles);
-
-  for (let i = 0; i < allCycles.length; i++) {
-    const cycle = allCycles[i];
-    if (!cycle.id) {
-      cycle.id = routeKeyFromEdges(cycle.edges);
-    }
-    let score = getWinRate ? scoreCycleWithFeedback(cycle.logWeight, cycle.id, getWinRate) : cycle.logWeight;
-    if (MAJOR_TOKENS.has(cycle.startToken)) {
-      score -= 2.0;
-    }
-    score += longTailRouteBonus(cycle);
-    cycle.score = score;
-  }
-
-  return applyHopStratifiedCap(allCycles, maxCycles);
+  return finalizeEnumeratedCycles(graph, allCycles, maxCycles, getWinRate);
 }

@@ -17,10 +17,20 @@ export class QuarantineManager {
   private entries = new Map<string, QuarantineEntry>();
   private baseMs: number;
   private maxMs: number;
+  /** Bumped on any mutation — invalidates HF cycle-filter caches. */
+  private _revision = 0;
 
   constructor(baseMs: number = 2000, maxMs: number = 600_000) {
     this.baseMs = baseMs;
     this.maxMs = maxMs;
+  }
+
+  get revision(): number {
+    return this._revision;
+  }
+
+  private bumpRevision(): void {
+    this._revision++;
   }
 
   add(routeKey: string, error: string = ""): void {
@@ -45,6 +55,7 @@ export class QuarantineManager {
         this.entries.delete(oldestKey);
       }
     }
+    this.bumpRevision();
   }
 
   isQuarantined(routeKey: string): boolean {
@@ -53,13 +64,14 @@ export class QuarantineManager {
 
     if (Date.now() >= entry.nextRetry) {
       this.entries.delete(routeKey);
+      this.bumpRevision();
       return false;
     }
     return true;
   }
 
   recordSuccess(routeKey: string): void {
-    this.entries.delete(routeKey);
+    if (this.entries.delete(routeKey)) this.bumpRevision();
   }
 
   getEntry(routeKey: string): QuarantineEntry | undefined {
@@ -68,11 +80,14 @@ export class QuarantineManager {
 
   prune(): void {
     const now = Date.now();
+    let changed = false;
     for (const [key, entry] of this.entries) {
       if (now >= entry.nextRetry) {
         this.entries.delete(key);
+        changed = true;
       }
     }
+    if (changed) this.bumpRevision();
   }
 
   get size(): number {

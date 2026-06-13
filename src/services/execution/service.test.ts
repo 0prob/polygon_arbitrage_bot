@@ -23,6 +23,7 @@ describe("ExecutionService", () => {
     confirmNonce: vi.fn(),
     markInFlight: vi.fn(),
     markStale: vi.fn(),
+    resync: vi.fn(),
   } as unknown as NonceManager;
   const mockSubmitTx = vi.fn();
   const mockRpc = { read: { getTransactionReceipt: vi.fn() } } as unknown as RpcManager;
@@ -96,5 +97,18 @@ describe("ExecutionService", () => {
     ];
 
     expect(parseTransferLogs(logs, executor)).toBe(70n);
+  });
+
+  it("reserves and confirms external nonce on MEV confirm path", async () => {
+    const service = makeService();
+    vi.spyOn(mockNonceManager, "getNextNonce").mockReturnValue(7);
+    expect(service.reserveExternalNonce()).toBe(7);
+    expect(mockNonceManager.markInFlight).toHaveBeenCalledWith(7);
+
+    service.confirmExternalNonce(7);
+    expect(mockNonceManager.confirmNonce).toHaveBeenCalledWith(7);
+
+    service.releaseExternalNonce(8);
+    expect(mockNonceManager.markStale).toHaveBeenCalledWith(8);
   });
 });

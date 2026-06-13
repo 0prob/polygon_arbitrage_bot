@@ -26,6 +26,13 @@ export const METRICS_INTERVAL = {
 
 type LogLevel = "debug" | "info" | "warn";
 
+/** True when a sampled log/metric for `key` is due (does not advance the interval). */
+export function shouldLogSampled(key: string, minIntervalMs: number): boolean {
+  const now = Date.now();
+  const last = lastEmitMs.get(key) ?? 0;
+  return now - last >= minIntervalMs;
+}
+
 export function logSampled(
   logger: MetricsLogger | undefined,
   key: string,
@@ -35,10 +42,8 @@ export function logSampled(
   minIntervalMs: number,
 ): void {
   if (!logger) return;
-  const now = Date.now();
-  const last = lastEmitMs.get(key) ?? 0;
-  if (now - last < minIntervalMs) return;
-  lastEmitMs.set(key, now);
+  if (!shouldLogSampled(key, minIntervalMs)) return;
+  lastEmitMs.set(key, Date.now());
   logger[level](data, msg);
 }
 

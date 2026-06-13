@@ -1,7 +1,9 @@
-import type { FoundCycle } from "../pipeline/index.ts";
+import type { FoundCycle, RoutingGraph } from "../pipeline/index.ts";
+import type { IncrementalGraphUpdater } from "../pipeline/graph_incremental.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { HfReadSnapshot } from "./hf_snapshot.ts";
 import type { LargeSwapSignal } from "../services/mempool/signals.ts";
+import type { InfraProfile } from "../config/infra_profile.ts";
 
 export interface PassLoopState {
   cachedCycles: FoundCycle[];
@@ -43,4 +45,19 @@ export interface PassLoopState {
   lastHfSimMs?: number;
   /** Cached oracle fallback rates (0n = no feed found) — avoids re-querying every HF tick. */
   oracleRateCache?: Map<string, bigint>;
+  /** Resolved once at loop start — config is static for the process lifetime. */
+  infra: InfraProfile;
+  /** Last wall time heartbeat / connection_status were emitted to the TUI. */
+  lastHfTelemetryTime?: number;
+  /** Skip mempool known-pool updates when pool set fingerprint is unchanged. */
+  knownPoolsFingerprint?: string;
+  /** Cached non-quarantined cycle indices for HF filtering. */
+  hfCycleFilterCache?: { generation: number; quarantineRevision: number; indices: number[] };
+  /** Throttle oracle rate enrichment on the LF path. */
+  lastOracleEnrichTime?: number;
+  lastOracleEnrichTokenKey?: string;
+  /** Last built routing graph — reused for incremental state updates when pool set is stable. */
+  cachedRoutingGraph?: RoutingGraph | null;
+  /** Incremental graph helper; full rebuild every N enumerations. */
+  graphUpdater?: IncrementalGraphUpdater;
 }

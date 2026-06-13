@@ -130,7 +130,7 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
   const knownFactories = KNOWN_INDEXED_FACTORIES;
 
   try {
-    const { graphQLQuery } = await import("../hypersync/hyperindex_graphql.ts");
+    const { graphQLQuery, buildGraphQLListQuery, escapeGraphQLString } = await import("../hypersync/hyperindex_graphql.ts");
     const PAGE = 5000;
     const MAX_PAGES = 30;
     let cursorId: string | null = null;
@@ -139,11 +139,13 @@ export async function performOneTimeGarbageCleanup(graphqlUrl: string, adminSecr
     const promises: Promise<void>[] = [];
 
     for (let page = 0; page < MAX_PAGES; page++) {
-      let whereClause = "";
-      if (cursorId != null) {
-        whereClause = `where: { id: { _gt: "${cursorId}" } }`;
-      }
-      const query = `{ PoolMeta(limit: ${PAGE}, ${whereClause}, order_by: [{ id: asc }]) { id tokens } }`;
+      const where =
+        cursorId != null ? `where: { id: { _gt: "${escapeGraphQLString(cursorId)}" } }` : undefined;
+      const query = buildGraphQLListQuery("PoolMeta", "id tokens", {
+        limit: PAGE,
+        where,
+        orderBy: "[{ id: asc }]",
+      });
       const result = (await graphQLQuery(graphqlUrl, adminSecret, query)) as {
         PoolMeta?: Array<{ id?: string; tokens?: unknown }>;
       } | null;

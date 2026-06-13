@@ -1,14 +1,41 @@
 /** Cursor/VS Code debug helpers — active when BOT_DEBUG=1 or --debug is passed. */
 
 export const DebugSites = {
+  /** Application boot complete — all services wired. */
   BOOT: "boot",
+  /** Main pass loop entered. */
   PASS_LOOP_START: "pass-loop-start",
+  /** Unhandled pass-loop iteration error. */
   PASS_LOOP_ERROR: "pass-loop-error",
+  /** HF tick (sampled — every 200 ticks). */
   HF_TICK: "hf-tick",
+  /** LF cycle enumeration produced routes. */
+  LF_ENUM: "lf-enum",
+  /** Profitable cycles found after simulation. */
   PROFITABLE_FOUND: "profitable-found",
+  /** Dry-run against pending state failed. */
+  DRY_RUN_FAIL: "dry-run-fail",
+  /** About to submit execution batch. */
+  EXECUTE_BATCH: "execute-batch",
+  /** MEV backrun bundle submission. */
+  BACKRUN_SUBMIT: "backrun-submit",
+  /** Transaction submitted to relay. */
   TX_SUBMIT: "tx-submit",
+  /** Transaction receipt finalized. */
   TX_RESULT: "tx-result",
+  /** Pipeline cycle evaluation error (sampled). */
   PIPELINE_CYCLE_ERROR: "pipeline-cycle-error",
+  /** Large mempool swap signal emitted. */
+  MEMPOOL_LARGE_SWAP: "mempool-large-swap",
+  /** Chain reorg detected — state invalidated. */
+  REORG_DETECTED: "reorg-detected",
+  /** New pools discovered from indexer. */
+  STATE_DISCOVERY: "state-discovery",
+  /** Degradation tier changed. */
+  TIER_CHANGED: "tier-changed",
+  /** HF cycle exceeded budget — hot-path regression. */
+  HF_BUDGET_EXCEEDED: "hf-budget-exceeded",
+  /** Unhandled fatal error at process exit. */
   FATAL: "fatal",
 } as const;
 
@@ -56,7 +83,10 @@ export function debugLog(
   // #endregion
 }
 
-/** Programmatic breakpoint anchor — also set IDE breakpoints on these lines. */
+/**
+ * Programmatic breakpoint anchor — also set IDE breakpoints on these lines.
+ * Active only when BOT_DEBUG_BREAK=1; filter sites via BOT_DEBUG_SITES.
+ */
 export function debugBreak(site: DebugSite, data: Record<string, unknown> = {}): void {
   if (!isDebugSession() || !siteEnabled(site)) return;
   if (process.env.BOT_DEBUG_BREAK !== "1") return;

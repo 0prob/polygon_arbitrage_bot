@@ -2,25 +2,29 @@ import type { RuntimeContext } from "./boot.ts";
 import type { PassLoopDeps } from "./loop.ts";
 import type { PassLoopState } from "./pass_state.ts";
 import type { EventBus } from "../tui/events.ts";
-import { enumerateCyclesBellmanFord, fetchMissingPoolState, applyHopStratifiedCap, type FoundCycle } from "../pipeline/index.ts";
+import { findCyclesMultiPass, findCyclesBellmanFordMultiPass, finalizeEnumeratedCycles, fetchMissingPoolState, type FoundCycle, type CycleSearchPass } from "../pipeline/index.ts";
+import { filterPoolsForRouting } from "../pipeline/graph.ts";
+import { IncrementalGraphUpdater, syncGraphStateFromCache } from "../pipeline/graph_incremental.ts";
+import { normalizePoolAddress } from "../core/utils/normalize.ts";
 import {
   logSampled,
   METRICS_INTERVAL,
   summarizePoolReadiness,
   summarizeRoutingCycles,
 } from "../infra/observability/metrics.ts";
-import { toBigInt } from "../core/utils/bigint.ts";
-import { isGarbagePool } from "../infra/garbage/garbage-tracker.ts";
 import { MAJOR_TOKENS } from "../core/constants.ts";
 import { runRateComputation } from "./pass_rates.ts";
-import { runReorgCheck } from "./pass_reorg.ts";
+import { runReorgCheck, invalidateRoutingOnReorg } from "./pass_reorg.ts";
 import { computeMaticPriceUsd } from "./matic_price.ts";
 import { publishHfSnapshot } from "./hf_snapshot.ts";
 import { fingerprintPools } from "../core/utils/pool_fingerprint.ts";
-import { resolveInfraProfile } from "../config/infra_profile.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
+import { refreshSwapUsdValuator } from "../services/mempool/swap_usd_valuation.ts";
 import { fetchTicksForCyclePools } from "../pipeline/tick_fetcher.ts";
+import { debugBreak, DebugSites } from "../infra/debug/session.ts";
 const LF_INTERVAL = 1000;
+/** Min gap between oracle enrich passes on the LF path. */
+const ORACLE_ENRICH_INTERVAL_MS = 30_000;
 /** Min gap between full graph re-enumerations when pool set is unchanged. */
 const MIN_ENUM_INTERVAL_MS = 30_000;
 /** Faster re-enumeration while no cycles exist (bootstrap/state hydration still in flight). */
@@ -30,15 +34,23 @@ const STATE_CACHE_GROWTH_REENUM_DELTA = 500;
 /** Prefetch on-chain state for this many pools before first enumeration pass. */
 const PREFETCH_BEFORE_ENUM_CAP = 2000;
 /** Only prefetch on-chain state for top-scored cycles (matches HF sim cap + headroom). */
-function lfFetchCycleCap(ctx: RuntimeContext): number {
-  return resolveInfraProfile(ctx.config).maxSimCycles;
+function lfFetchCycleCap(state: PassLoopState): number {
+  return state.infra.maxSimCycles;
 }
 
 export async function runLfTick(
   ctx: RuntimeContext,
   state: PassLoopState,
   stateCache: RouteStateCache,
-  deps: Pick<PassLoopDeps, "buildGraph" | "enumerateCycles" | "routeKeyFromEdges">,
+  deps: Pick<
+    PassLoopDeps,
+    | "buildGraph"
+    | "enumerateCycles"
+    | "routeKeyFromEdges"
+    | "findCyclesMultiPass"
+    | "findCyclesBellmanFordMultiPass"
+    | "finalizeEnumeratedCycles"
+  >,
   bus?: EventBus,
 ): Promise<void> {
   const now = Date.now();
@@ -57,11 +69,15 @@ export async function runLfTick(
   }
 
   const pools = state.hasuraPoolsCache.slice();
-  ctx.mempoolService.setKnownPools(pools.map((p) => p.address));
+  const poolsFingerprint = fingerprintPools(pools);
+  if (poolsFingerprint !== state.knownPoolsFingerprint) {
+    ctx.mempoolService.setKnownPools(pools.map((p) => p.address));
+    state.knownPoolsFingerprint = poolsFingerprint;
+  }
 
   runReorgCheck(ctx, state.lastReorgCheck, LF_INTERVAL).then((reorgResult) => {
     state.lastReorgCheck = reorgResult.lastReorgCheck;
-    if (reorgResult.shouldForceRefresh) state.lastRefreshTime = 0;
+    if (reorgResult.shouldForceRefresh) invalidateRoutingOnReorg(state);
   }).catch((err) => {
     ctx.logger.debug?.({ err }, "Background reorg check failed");
   });
@@ -76,19 +92,26 @@ export async function runLfTick(
       cycleTokens.add(e.tokenOut.toLowerCase());
     }
   }
+  const requestedFullRates = state.ratesNeedFullRefresh || state.tokenToMaticRates.size < 500;
   const rateResult = runRateComputation(
     ctx,
     state.hasuraPoolsCache,
     stateCache,
     state.cachedRates,
-    state.ratesNeedFullRefresh || state.tokenToMaticRates.size < 500,
+    requestedFullRates,
     state.pendingFocusTokens,
     cycleTokens,
     bus,
   );
   state.cachedRates = rateResult.cachedRates;
   state.tokenToMaticRates = rateResult.tokenToMaticRates;
-  if (ctx.priceOracle && ctx.config.oracle.enabled !== false) {
+  const cycleTokenKey = [...cycleTokens].sort().join(",");
+  const oracleEnrichDue =
+    requestedFullRates ||
+    !state.lastOracleEnrichTime ||
+    now - state.lastOracleEnrichTime >= ORACLE_ENRICH_INTERVAL_MS ||
+    state.lastOracleEnrichTokenKey !== cycleTokenKey;
+  if (oracleEnrichDue && ctx.priceOracle && ctx.config.oracle.enabled !== false) {
     try {
       const { enrichTokenToMaticRates } = await import("../services/oracle/price_oracle.ts");
       state.tokenToMaticRates = await enrichTokenToMaticRates(
@@ -98,30 +121,36 @@ export async function runLfTick(
         ctx.publicClient,
       );
       state.cachedRates = state.tokenToMaticRates;
+      state.lastOracleEnrichTime = now;
+      state.lastOracleEnrichTokenKey = cycleTokenKey;
     } catch (err) {
       ctx.logger.debug?.({ err }, "Oracle rate enrichment failed");
     }
   }
   if (rateResult.tokenToMaticRates.size > 0) {
     if (ctx.priceOracle && ctx.config.oracle.enabled !== false) {
-      state.maticPriceUsd = await ctx.priceOracle.getMaticUsd(ctx.publicClient);
+      const cachedMaticUsd = ctx.priceOracle.getCachedMaticUsd();
+      if (cachedMaticUsd != null && cachedMaticUsd > 0) {
+        state.maticPriceUsd = cachedMaticUsd;
+      } else {
+        state.maticPriceUsd = await ctx.priceOracle.getMaticUsd(ctx.publicClient);
+      }
     } else {
       state.maticPriceUsd = computeMaticPriceUsd(rateResult.tokenToMaticRates);
     }
   }
   state.ratesNeedFullRefresh = rateResult.ratesNeedFullRefresh;
   state.pendingFocusTokens = rateResult.pendingFocusTokens;
+  refreshSwapUsdValuator(ctx.swapUsdValuator, { ...state, hasuraPoolsCache: state.hasuraPoolsCache }, ctx.priceOracle);
   publishHfSnapshot(state);
 
-  const poolsFingerprint = fingerprintPools(pools);
-  const infra = resolveInfraProfile(ctx.config);
+  const infra = state.infra;
   const enumInterval =
     state.cachedCycles.length === 0 ? EMPTY_CYCLES_ENUM_INTERVAL_MS : MIN_ENUM_INTERVAL_MS;
   const stateCacheGrew =
     state.cachedCycles.length === 0 &&
-    stateCache.size >= state.lastEnumStateCacheSize + STATE_CACHE_GROWTH_REENUM_DELTA;
+    stateCache.liveSize() >= state.lastEnumStateCacheSize + STATE_CACHE_GROWTH_REENUM_DELTA;
   const enumStale =
-    state.cachedCycles.length === 0 ||
     poolsFingerprint !== state.lastPoolsFingerprint ||
     stateCacheGrew ||
     now - state.lastEnumerationTime >= enumInterval;
@@ -132,47 +161,20 @@ export async function runLfTick(
     const baseMaxPaths = ctx.config.routing.enumerationMaxPaths;
     const maxPaths = Math.min(infra.enumMaxPathsCap, Math.floor(baseMaxPaths * infra.enumMaxPathsScale));
     const MAX_HOPS = ctx.config.routing.maxHops;
-    const finderFn = ctx.config.routing.cycleFinder === "bellman-ford" ? enumerateCyclesBellmanFord : deps.enumerateCycles;
     const stateClient = ctx.stateClient ?? ctx.publicClient;
 
     Promise.resolve()
       .then(async () => {
       bus?.emit({ type: "pipeline_stage", stage: "ENUMERATING" });
 
-      let filteredFeeZero = 0;
-      let filteredGarbage = 0;
-      let filteredV3NoState = 0;
-      let filteredV3LowLiq = 0;
-      const filteredPools = pools.filter((p) => {
-        const protocol = p.protocol.toLowerCase();
-        if (p.fee === 0) {
-          // Balancer/Curve/WOOFi may store fee in on-chain state or use non-bps PoolMeta.fee.
-          const feeInState = protocol.includes("balancer") || protocol.includes("curve") || protocol.includes("woofi");
-          if (!feeInState) {
-            filteredFeeZero++;
-            return false;
-          }
-        }
-        if (isGarbagePool(p)) {
-          filteredGarbage++;
-          return false;
-        }
-        const addr = p.address.toLowerCase();
-        if (protocol.includes("v3") || protocol.includes("v4") || protocol.includes("elastic")) {
-          const poolState = enumStateCache.get(addr);
-          if (!poolState) {
-            filteredV3NoState++;
-            // Keep in graph for token connectivity; findCycles skips no-state edges until fetch fills cache.
-          } else {
-            const rawLiq = (poolState as Record<string, unknown>).liquidity ?? 0;
-            const liq = toBigInt(rawLiq, 0n);
-            if (liq < ctx.config.execution.minLiquidityV3Rate) {
-              filteredV3LowLiq++;
-              return false;
-            }
-          }
-        }
-        return true;
+      const {
+        filtered: filteredPools,
+        filteredFeeZero,
+        filteredGarbage,
+        filteredV3NoState,
+        filteredV3LowLiq,
+      } = filterPoolsForRouting(pools, enumStateCache, {
+        minLiquidityV3: ctx.config.execution.minLiquidityV3Rate,
       });
 
       ctx.logger.info(
@@ -188,10 +190,10 @@ export async function runLfTick(
         "Pools filtered for graph building",
       );
 
-      // findCycles skips edges without pool state — prefetch before first enumeration
-      // so multi-hop routes across V2/V3/Balancer/Curve/DODO/WOOFi can form.
-      if (state.cachedCycles.length === 0) {
-        const withState = filteredPools.filter((p) => enumStateCache.has(p.address.toLowerCase())).length;
+      // findCycles skips edges without pool state — prefetch once before first enumeration
+      // (skip while bootstrap is already filling the cache in StateRefreshService).
+      if (state.cachedCycles.length === 0 && !ctx.stateRefreshService.isBootstrapInProgress) {
+        const withState = filteredPools.filter((p) => enumStateCache.has(normalizePoolAddress(p.address))).length;
         const targetCoverage = Math.min(filteredPools.length, PREFETCH_BEFORE_ENUM_CAP);
         if (withState < targetCoverage) {
           const prefetchBatch = [...filteredPools]
@@ -209,11 +211,36 @@ export async function runLfTick(
         }
       }
 
-      const newGraph = deps.buildGraph(filteredPools, enumStateCache);
+      const poolSetStable = poolsFingerprint === state.lastPoolsFingerprint;
+      if (!state.graphUpdater) {
+        state.graphUpdater = new IncrementalGraphUpdater(INCREMENTAL_FULL_REBUILD_INTERVAL);
+      }
+      const graphUpdater = state.graphUpdater;
+      const useIncrementalGraph =
+        poolSetStable && state.cachedRoutingGraph != null && !graphUpdater.shouldFullRebuild();
+
+      let newGraph = state.cachedRoutingGraph;
+      if (useIncrementalGraph && newGraph) {
+        syncGraphStateFromCache(newGraph, filteredPools, enumStateCache, graphUpdater);
+        ctx.logger.debug?.(
+          { pools: filteredPools.length, poolSetStable: true },
+          "Routing graph updated incrementally (pool set stable)",
+        );
+      } else {
+        newGraph = deps.buildGraph(filteredPools, enumStateCache);
+        state.cachedRoutingGraph = newGraph;
+        if (!poolSetStable) {
+          graphUpdater.resetRebuildCounter();
+        }
+      }
+
+      if (!newGraph) {
+        throw new Error("Routing graph unavailable after build/incremental update");
+      }
 
       let poolsWithState = 0;
       for (const p of filteredPools) {
-        if (enumStateCache.has(p.address.toLowerCase())) poolsWithState++;
+        if (enumStateCache.has(normalizePoolAddress(p.address))) poolsWithState++;
       }
       logSampled(
         ctx.logger,
@@ -248,23 +275,20 @@ export async function runLfTick(
 
       const enumStart = Date.now();
       const winRateFn = (key: string) => ctx.executionService.tracker.getWinRate(key);
-      // Dedicated 2-hop pass: long DFS runs fill maxCycles with 5-hop before 2-hop are found.
+      const finalizeFn = deps.finalizeEnumeratedCycles ?? finalizeEnumeratedCycles;
+      const cycleCap = Math.min(maxPaths, lfFetchCycleCap(state));
       const twoHopCap = Math.min(1000, Math.floor(maxPaths * 0.25));
       const shortHopCap = Math.min(2000, Math.floor(maxPaths * 0.35));
-      const twoHopCycles = await finderFn(newGraph, 2, twoHopCap, winRateFn);
-      const shortCycles = await finderFn(newGraph, 3, shortHopCap, winRateFn);
-      const longCycles = await finderFn(newGraph, MAX_HOPS, maxPaths, winRateFn);
-      const merged = new Map<string, FoundCycle>();
-      for (const c of [...twoHopCycles, ...shortCycles, ...longCycles]) {
-        const key = c.id ?? deps.routeKeyFromEdges(c.edges);
-        const existing = merged.get(key);
-        if (!existing || (c.score ?? Infinity) < (existing.score ?? Infinity)) {
-          merged.set(key, c);
-        }
-      }
-      let newCycles = Array.from(merged.values());
-      newCycles.sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity));
-      newCycles = applyHopStratifiedCap(newCycles, maxPaths);
+      const searchPasses: CycleSearchPass[] = [
+        { maxHops: 2, maxCycles: twoHopCap },
+        { maxHops: 3, maxCycles: shortHopCap },
+        { maxHops: MAX_HOPS, maxCycles: maxPaths },
+      ];
+      const rawCycles =
+        ctx.config.routing.cycleFinder === "bellman-ford"
+          ? await (deps.findCyclesBellmanFordMultiPass ?? findCyclesBellmanFordMultiPass)(newGraph, searchPasses)
+          : await (deps.findCyclesMultiPass ?? findCyclesMultiPass)(newGraph, searchPasses, ctx.logger);
+      const newCycles = finalizeFn(newGraph, rawCycles, cycleCap, winRateFn);
       const enumElapsed = Date.now() - enumStart;
 
       state.cachedCycles = newCycles;
@@ -289,15 +313,21 @@ export async function runLfTick(
         "Graph and cycles re-enumerated (background)",
       );
 
+      debugBreak(DebugSites.LF_ENUM, {
+        pools: pools.length,
+        cycles: newCycles.length,
+        durationMs: enumElapsed,
+        stateCacheSize: stateCache.size,
+      });
+
       state.lastPoolsFingerprint = poolsFingerprint;
       state.lastEnumerationTime = Date.now();
-      state.lastEnumStateCacheSize = stateCache.size;
+      state.lastEnumStateCacheSize = stateCache.liveSize();
       state.hfSimOffset = 0;
+      state.cachedRoutingGraph = newGraph;
 
       if (newCycles.length > 0) {
-        const fetchCap = lfFetchCycleCap(ctx);
-        const cyclesForFetch =
-          newCycles.length > fetchCap ? applyHopStratifiedCap(newCycles, fetchCap) : newCycles;
+        const cyclesForFetch = newCycles;
         try {
           await fetchMissingPoolState(stateClient, enumStateCache, pools, cyclesForFetch, [], false, ctx.logger);
           if (ctx.config.routing.tickFetchEnabled !== false) {
@@ -311,7 +341,7 @@ export async function runLfTick(
             "lf:pool-ready",
             "debug",
             "Sim pool readiness",
-            summarizePoolReadiness(cyclesForFetch, enumStateCache, fetchCap),
+            summarizePoolReadiness(cyclesForFetch, enumStateCache, cycleCap),
             METRICS_INTERVAL.lfPoolReady,
           );
         } catch (err) {

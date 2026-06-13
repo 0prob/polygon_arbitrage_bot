@@ -8,7 +8,6 @@ import { createTui } from "../tui/main.ts";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
-import { fetchIndexerProgressFromHasura } from "../infra/hypersync/hyperindex_graphql.ts";
 
 
 async function main() {
@@ -57,16 +56,6 @@ async function main() {
   const ctx = await bootApplication(config, undefined, logger, hyperIndexMonitor);
   logger.info({}, "Application booted successfully");
 
-  // Wire providers for real lag computation even in external/arb-only (enables degraded mode, accurate TUI lag, status)
-  hyperIndexMonitor.setIndexedHeightProvider(async () => {
-    try {
-      const p = await fetchIndexerProgressFromHasura(config.hasuraUrl!, config.hasuraSecret || "", logger);
-      return p?.lastProcessedBlock ?? 0;
-    } catch (err) {
-      logger?.warn?.({ err }, "Indexed height provider failed");
-      return 0;
-    }
-  });
   hyperIndexMonitor.setChainHeadFetcher(async () => {
     try {
       const rpcUrl = config.rpc.executionRpcUrl || (config.rpc.polygonRpcUrls && config.rpc.polygonRpcUrls[0]);

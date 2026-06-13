@@ -428,7 +428,6 @@ export async function evaluatePipeline(
         if (pipelineErrorCount === 1 || pipelineErrorCount % 50 === 0) {
           debugBreak(DebugSites.PIPELINE_CYCLE_ERROR, {
             cycleId: cycle.id,
-            path: cycle.edges.map((e) => e.poolAddress).join(" -> "),
             err: String(err),
             errorCount: pipelineErrorCount,
           });

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { publishHfSnapshot, getHfSnapshot } from "./hf_snapshot.ts";
 import type { PassLoopState } from "./pass_state.ts";
+import { resolveInfraProfile } from "../config/infra_profile.ts";
+import type { AppConfig } from "../config/schema.ts";
 
 function emptyState(): PassLoopState {
   return {
@@ -27,6 +29,9 @@ function emptyState(): PassLoopState {
     maticPriceUsd: 0.7,
     cyclesGeneration: 0,
     hfSnapshot: null,
+    hfSimOffset: 0,
+    lastEnumStateCacheSize: 0,
+    infra: resolveInfraProfile({ rpc: { chainstackRps: 500 } } as AppConfig),
   };
 }
 

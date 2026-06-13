@@ -13,12 +13,22 @@ const port = Number(process.argv.find((a) => a.startsWith("--port="))?.split("="
 const durationSec = Number(process.argv.find((a) => a.startsWith("--duration="))?.split("=")[1] ?? "1800");
 const outDir = join(workspace, "data", "debug-sessions");
 
-/** Map debug sites → source files for breakpoint placement */
+/** Map debug sites → source files for CDP breakpoint placement */
 const BREAKPOINT_SITES: Array<{ site: string; file: string; pattern: string }> = [
-  { site: "boot", file: "src/cli/arb_only_debug.ts", pattern: "debugBreak(DebugSites.BOOT" },
+  { site: "boot", file: "src/orchestrator/boot.ts", pattern: "debugBreak(DebugSites.BOOT" },
   { site: "pass-loop-start", file: "src/orchestrator/pass_loop.ts", pattern: "debugBreak(DebugSites.PASS_LOOP_START" },
   { site: "pass-loop-error", file: "src/orchestrator/pass_loop.ts", pattern: "debugBreak(DebugSites.PASS_LOOP_ERROR" },
+  { site: "tier-changed", file: "src/orchestrator/pass_loop.ts", pattern: "debugBreak(DebugSites.TIER_CHANGED" },
+  { site: "hf-tick", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.HF_TICK" },
+  { site: "hf-budget-exceeded", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.HF_BUDGET_EXCEEDED" },
+  { site: "lf-enum", file: "src/orchestrator/pass_lf.ts", pattern: "debugBreak(DebugSites.LF_ENUM" },
   { site: "profitable-found", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.PROFITABLE_FOUND" },
+  { site: "dry-run-fail", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.DRY_RUN_FAIL" },
+  { site: "execute-batch", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.EXECUTE_BATCH" },
+  { site: "backrun-submit", file: "src/orchestrator/pass_hf.ts", pattern: "debugBreak(DebugSites.BACKRUN_SUBMIT" },
+  { site: "reorg-detected", file: "src/orchestrator/pass_reorg.ts", pattern: "debugBreak(DebugSites.REORG_DETECTED" },
+  { site: "state-discovery", file: "src/services/state_refresh.ts", pattern: "debugBreak(DebugSites.STATE_DISCOVERY" },
+  { site: "mempool-large-swap", file: "src/services/mempool/service.ts", pattern: "debugBreak(DebugSites.MEMPOOL_LARGE_SWAP" },
   { site: "pipeline-cycle-error", file: "src/pipeline/pipeline.ts", pattern: "debugBreak(DebugSites.PIPELINE_CYCLE_ERROR" },
   { site: "tx-submit", file: "src/services/execution/submit.ts", pattern: "debugBreak(DebugSites.TX_SUBMIT" },
   { site: "tx-result", file: "src/services/execution/service.ts", pattern: "debugBreak(DebugSites.TX_RESULT" },

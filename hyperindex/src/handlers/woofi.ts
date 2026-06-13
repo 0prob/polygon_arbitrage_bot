@@ -38,6 +38,12 @@ function mergeTokens(existing: string[] | undefined, ...add: string[]): string[]
   return out;
 }
 
+/**
+ * WooSwap — lazy pool discovery on first sight of a token pair only.
+ *
+ * WOOFi has no factory event; the first swap per new token is the discovery path.
+ * Repeat swaps with no new tokens are a no-op (no effects, no DB writes).
+ */
 indexer.onEvent(
   {
     contract: "WooPPV2",
@@ -54,11 +60,11 @@ indexer.onEvent(
     if (mergedTokens.length < 2) return;
 
     const newTokens = mergedTokens.filter((t) => !(meta?.tokens ?? []).includes(t));
-    const tokensToFetch = newTokens.length > 0 ? newTokens : mergedTokens.slice(0, 2);
+    if (newTokens.length === 0) return;
 
     const tEff0 = Date.now();
     const concurrency = getMetadataConcurrency();
-    const tokenMetas = await runWithConcurrency(tokensToFetch, concurrency, (addr) =>
+    const tokenMetas = await runWithConcurrency(newTokens, concurrency, (addr) =>
       context.effect(fetchTokenMeta, { address: addr }),
     );
     logEffectTime("fetchTokenMeta:woofi", Date.now() - tEff0, blockNumber);
@@ -79,8 +85,8 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    for (let i = 0; i < tokensToFetch.length; i++) {
-      const token = tokensToFetch[i];
+    for (let i = 0; i < newTokens.length; i++) {
+      const token = newTokens[i];
       context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
     }
   },

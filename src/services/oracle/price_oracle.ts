@@ -37,6 +37,8 @@ const CHAINLINK_ABI = [
 ] as const;
 
 const RATE_PRECISION = 10n ** 18n;
+/** Polygon Chainlink USD feeds use 8 decimals — avoids a per-feed eth_call. */
+const CHAINLINK_USD_DECIMALS = 8;
 
 export interface PriceOracleOptions {
   enabled?: boolean;
@@ -48,6 +50,8 @@ export interface PriceOracleOptions {
 export class PriceOracle {
   private maticUsdCache: { value: number; ts: number } | null = null;
   private tokenUsdCache = new Map<string, { value: number; ts: number }>();
+  private maticUsdInflight: Promise<number> | null = null;
+  private tokenUsdInflight = new Map<string, Promise<number | null>>();
   private readonly ttlMs = 10_000;
 
   constructor(private options: PriceOracleOptions = {}) {}
@@ -56,26 +60,22 @@ export class PriceOracle {
     const cached = this.maticUsdCache;
     if (cached && Date.now() - cached.ts < this.ttlMs) return cached.value;
 
+    if (this.maticUsdInflight) return this.maticUsdInflight;
+
+    this.maticUsdInflight = this.fetchMaticUsd(client).finally(() => {
+      this.maticUsdInflight = null;
+    });
+    return this.maticUsdInflight;
+  }
+
+  private async fetchMaticUsd(client?: PublicClient): Promise<number> {
+    const stale = this.maticUsdCache?.value;
     const c = client ?? this.options.client;
     if (c && this.options.enabled !== false) {
-      try {
-        const [, answer] = await c.readContract({
-          address: CHAINLINK_MATIC_USD,
-          abi: CHAINLINK_ABI,
-          functionName: "latestRoundData",
-        });
-        const decimals = await c.readContract({
-          address: CHAINLINK_MATIC_USD,
-          abi: CHAINLINK_ABI,
-          functionName: "decimals",
-        });
-        const usd = Number(answer) / 10 ** Number(decimals);
-        if (usd > 0) {
-          this.maticUsdCache = { value: usd, ts: Date.now() };
-          return usd;
-        }
-      } catch {
-        // fall through to Pyth
+      const usd = await this.readChainlinkUsd(CHAINLINK_MATIC_USD, c);
+      if (usd != null && usd > 0) {
+        this.maticUsdCache = { value: usd, ts: Date.now() };
+        return usd;
       }
     }
 
@@ -85,7 +85,21 @@ export class PriceOracle {
       return pyth;
     }
 
-    return cached?.value ?? 0.7;
+    return stale ?? 0.7;
+  }
+
+  private async readChainlinkUsd(feed: `0x${string}`, client: PublicClient): Promise<number | null> {
+    try {
+      const [, answer] = await client.readContract({
+        address: feed,
+        abi: CHAINLINK_ABI,
+        functionName: "latestRoundData",
+      });
+      const usd = Number(answer) / 10 ** CHAINLINK_USD_DECIMALS;
+      return usd > 0 ? usd : null;
+    } catch {
+      return null;
+    }
   }
 
   /** token -> MATIC wei per 1 token unit (1e18 scaled) */
@@ -93,9 +107,11 @@ export class PriceOracle {
     token: string,
     poolGraphRate: bigint,
     client?: PublicClient,
+    /** When batching oracle lookups, pass a shared MATIC/USD to skip redundant reads. */
+    maticUsdHint?: number,
   ): Promise<{ rate: bigint; source: "pool" | "oracle" | "blocked" }> {
     const addr = token.toLowerCase();
-    const maticUsd = await this.getMaticUsd(client);
+    const maticUsd = maticUsdHint ?? (await this.getMaticUsd(client));
     if (maticUsd <= 0) {
       return poolGraphRate > 0n ? { rate: poolGraphRate, source: "pool" } : { rate: 0n, source: "blocked" };
     }
@@ -120,32 +136,55 @@ export class PriceOracle {
     return { rate: oracleRate > 0n ? oracleRate : poolGraphRate, source: "oracle" };
   }
 
+  /** Sync read of cached MATIC/USD (for mempool hot path). */
+  getCachedMaticUsd(): number | null {
+    const cached = this.maticUsdCache;
+    if (!cached || Date.now() - cached.ts >= this.ttlMs) return null;
+    return cached.value;
+  }
+
+  /** Sync read of cached token/USD quotes (for mempool hot path). */
+  getCachedTokenUsd(token: string): number | null {
+    const cached = this.tokenUsdCache.get(token.toLowerCase());
+    if (!cached || Date.now() - cached.ts >= this.ttlMs) return null;
+    return cached.value;
+  }
+
+  /** Export all non-stale cached token USD prices. */
+  exportCachedTokenUsd(): Map<string, number> {
+    const out = new Map<string, number>();
+    const now = Date.now();
+    for (const [token, cached] of this.tokenUsdCache) {
+      if (now - cached.ts < this.ttlMs && cached.value > 0) {
+        out.set(token, cached.value);
+      }
+    }
+    return out;
+  }
+
   async getTokenUsd(token: string, client?: PublicClient): Promise<number | null> {
     const addr = token.toLowerCase();
     const cached = this.tokenUsdCache.get(addr);
     if (cached && Date.now() - cached.ts < this.ttlMs) return cached.value;
 
+    const inflight = this.tokenUsdInflight.get(addr);
+    if (inflight) return inflight;
+
+    const promise = this.fetchTokenUsd(addr, client).finally(() => {
+      this.tokenUsdInflight.delete(addr);
+    });
+    this.tokenUsdInflight.set(addr, promise);
+    return promise;
+  }
+
+  private async fetchTokenUsd(addr: string, client?: PublicClient): Promise<number | null> {
     const feed = CHAINLINK_FEEDS[addr];
     const c = client ?? this.options.client;
     if (feed && c) {
-      try {
-        const [, answer] = await c.readContract({
-          address: feed,
-          abi: CHAINLINK_ABI,
-          functionName: "latestRoundData",
-        });
-        const decimals = await c.readContract({
-          address: feed,
-          abi: CHAINLINK_ABI,
-          functionName: "decimals",
-        });
-        const usd = Number(answer) / 10 ** Number(decimals);
-        if (usd > 0) {
-          this.tokenUsdCache.set(addr, { value: usd, ts: Date.now() });
-          return usd;
-        }
-      } catch {
-        // Pyth fallback
+      const usd = await this.readChainlinkUsd(feed, c);
+      if (usd != null && usd > 0) {
+        this.tokenUsdCache.set(addr, { value: usd, ts: Date.now() });
+        return usd;
       }
     }
 
@@ -179,12 +218,16 @@ export async function enrichTokenToMaticRates(
 ): Promise<Map<string, bigint>> {
   const out = new Map(poolRates);
   const unique = [...new Set([...tokens].map((t) => t.toLowerCase()))];
+  if (unique.length === 0) return out;
+
+  const maticUsd = await oracle.getMaticUsd(client);
+
   for (let i = 0; i < unique.length; i += concurrency) {
     const chunk = unique.slice(i, i + concurrency);
     await Promise.all(
       chunk.map(async (key) => {
         const poolRate = poolRates.get(key) ?? 0n;
-        const { rate, source } = await oracle.getTokenToMaticRate(key, poolRate, client);
+        const { rate, source } = await oracle.getTokenToMaticRate(key, poolRate, client, maticUsd);
         if (source === "blocked") {
           out.delete(key);
         } else if (rate > 0n) {

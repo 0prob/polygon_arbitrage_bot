@@ -118,39 +118,9 @@ export class HyperIndexMonitor implements Lifecycle {
     this.opts.getChainHead = fn;
   }
 
-  /** Inject the official HyperSync service for reliable progress/height (preferred over log scraping) */
+  /** Inject the official HyperSync service for reliable chain-head queries (not indexed height). */
   setHyperSyncService(service: HyperSyncService): void {
     this.opts.hyperSync = service;
-  }
-
-  /**
-   * Optional provider for the actual height the indexer has processed (e.g. from Hasura max(lastUpdatedBlock)).
-   * This is the key improvement over pure log scraping for accurate "how far behind" reporting.
-   */
-  setIndexedHeightProvider(fn: () => Promise<number>): void {
-    this._getIndexedHeight = fn;
-  }
-
-  private _getIndexedHeight?: () => Promise<number>;
-
-  private async getIndexedHeight(): Promise<number> {
-    if (this._getIndexedHeight) {
-      try {
-        const height = await this._getIndexedHeight();
-        if (height > 0) return height;
-      } catch (err) {
-        this.opts.logger.debug?.({ err }, "getIndexedHeight: provider failed");
-      }
-    }
-    // Fallback to HyperSync height if we have the service (better than pure log scraping)
-    if (this.opts.hyperSync) {
-      try {
-        return await this.opts.hyperSync.getHeight();
-      } catch (err) {
-        this.opts.logger.debug?.({ err }, "getIndexedHeight: hyperSync fallback failed");
-      }
-    }
-    return this.lastSyncedBlock;
   }
 
   updateSyncedBlock(block: number, remote?: number): void {
@@ -179,15 +149,20 @@ export class HyperIndexMonitor implements Lifecycle {
       }
     }
 
-    // Try to get real chain head for accurate lag (prefer official HyperSync client)
-    if (this.opts.hyperSync) {
+    // Prefer HyperRPC chain head — reserve HyperSync quota for the indexer child.
+    if (this.opts.getChainHead) {
+      try {
+        const head = await this.opts.getChainHead();
+        if (head > this.lastChainHead) this.lastChainHead = head;
+      } catch (err) {
+        this.opts.logger.debug({ err }, "Failed to fetch chain head for lag calculation");
+      }
+    } else if (this.opts.hyperSync) {
       try {
         await this.opts.hyperSync.waitForRateLimit();
         const head = await this.opts.hyperSync.getHeight();
         if (head > this.lastChainHead) this.lastChainHead = head;
 
-        // === SURFACE RATE LIMIT STATE ===
-        // With paid 200 rpm plan, rate limits are transient. Log for observability.
         const rl = this.opts.hyperSync.rateLimitInfo?.();
         if (rl && rl.remaining !== undefined && rl.remaining < 10) {
           this.opts.logger.warn({ rateLimitInfo: rl }, "HyperSync rate-limited — paid plan should recover within the rate window");
@@ -195,16 +170,9 @@ export class HyperIndexMonitor implements Lifecycle {
       } catch (err) {
         this.opts.logger.debug({ err }, "HyperSyncService getHeight failed for lag calculation");
       }
-    } else if (this.opts.getChainHead) {
-      try {
-        const head = await this.opts.getChainHead();
-        if (head > this.lastChainHead) this.lastChainHead = head;
-      } catch (err) {
-        this.opts.logger.debug({ err }, "Failed to fetch chain head for lag calculation");
-      }
     }
 
-    const current = await this.getIndexedHeight();
+    const current = this.lastSyncedBlock;
     const lag = this.getCurrentLag();
 
     // Hasura health check: if we have a URL but can't reach it, it's a critical failure.

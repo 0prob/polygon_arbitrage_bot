@@ -2,7 +2,7 @@ import type { RuntimeContext } from "../../orchestrator/boot.ts";
 import type { LargeSwapSignal } from "../mempool/signals.ts";
 import type { CandidateExecution } from "../execution/service.ts";
 import { submitFastLaneBundleHttp, buildFastLaneBundle, type SolverOperationPayload } from "./fastlane_relay.ts";
-import type { PublicClient, Hash, Hex } from "viem";
+import type { Hash, Hex } from "viem";
 import { getAddress } from "viem";
 
 export interface BackrunContext {
@@ -11,16 +11,28 @@ export interface BackrunContext {
   operatorAddress: string;
 }
 
+export interface BackrunTxFees {
+  nonce: number;
+  maxFeePerGas: bigint;
+  maxPriorityFeePerGas: bigint;
+}
+
+export type BackrunRpcContext = Pick<RuntimeContext, "publicClient" | "hyperRpc">;
+
+function toHexQuantity(value: bigint): string {
+  return `0x${value.toString(16)}`;
+}
+
 /** Build a minimal solver op placeholder — production requires Atlas SolverBase contract + EIP-712 signing. */
-export function buildPlaceholderSolverOp(ctx: BackrunContext): SolverOperationPayload {
+export function buildPlaceholderSolverOp(ctx: BackrunContext, fees: BackrunTxFees): SolverOperationPayload {
   return {
     from: ctx.operatorAddress,
     to: ctx.candidate.targetAddress,
     value: "0x0",
     gas: ctx.candidate.gasLimit?.toString() ?? "500000",
-    maxFeePerGas: "0x0",
-    maxPriorityFeePerGas: "0x0",
-    nonce: "0x0",
+    maxFeePerGas: toHexQuantity(fees.maxFeePerGas),
+    maxPriorityFeePerGas: toHexQuantity(fees.maxPriorityFeePerGas),
+    nonce: toHexQuantity(BigInt(fees.nonce)),
     deadline: 0,
     userOpHash: ctx.victim.txHash,
     dAppControl: "0x0000000000000000000000000000000000000000",
@@ -36,12 +48,13 @@ export async function submitBackrunBundle(
   ctx: RuntimeContext,
   backrun: BackrunContext,
   victimRawTx: string,
+  fees: BackrunTxFees,
 ): Promise<{ submitted: boolean; mode: "fastlane" | "public_fallback" | "skipped"; detail?: string }> {
   if (!ctx.config.mev.enabled) {
     return { submitted: false, mode: "skipped", detail: "mev disabled" };
   }
 
-  const solverOp = buildPlaceholderSolverOp(backrun);
+  const solverOp = buildPlaceholderSolverOp(backrun, fees);
   const bundle = buildFastLaneBundle(victimRawTx, solverOp);
   const relay = await submitFastLaneBundleHttp(ctx.config.mev.fastlaneRelayUrl, bundle);
   if (relay.ok) {
@@ -84,12 +97,60 @@ export function findBackrunTxInBlock(
   return null;
 }
 
+async function fetchVictimReceiptBlockNumber(
+  rpc: BackrunRpcContext,
+  victimTxHash: string,
+): Promise<bigint | null> {
+  if (rpc.hyperRpc) {
+    try {
+      const receipt = await rpc.hyperRpc.getTransactionReceipt(victimTxHash as `0x${string}`);
+      if (receipt?.blockNumber) return BigInt(receipt.blockNumber);
+    } catch (err: unknown) {
+      if (!isReceiptNotFound(err)) throw err;
+    }
+  }
+
+  try {
+    const receipt = await rpc.publicClient.getTransactionReceipt({ hash: victimTxHash as Hash });
+    return receipt.blockNumber;
+  } catch (err: unknown) {
+    if (isReceiptNotFound(err)) return null;
+    throw err;
+  }
+}
+
+function isReceiptNotFound(err: unknown): boolean {
+  const error = err as { name?: string; message?: string };
+  const msg = error.message?.toLowerCase() ?? "";
+  return (
+    error.name === "TransactionReceiptNotFoundError" ||
+    msg.includes("not found") ||
+    msg.includes("could not be found")
+  );
+}
+
+async function fetchBlockWithTransactions(rpc: BackrunRpcContext, blockNumber: bigint) {
+  if (rpc.hyperRpc) {
+    try {
+      const block = await rpc.hyperRpc.getBlockByNumber(blockNumber, true);
+      if (block?.transactions) return block;
+    } catch {
+      // fall through
+    }
+  }
+
+  return rpc.publicClient.getBlock({
+    blockNumber,
+    includeTransactions: true,
+  });
+}
+
 /**
  * Wait for a FastLane bundle to land by watching the victim tx, then scanning its block
  * for a matching operator→executor call. Returns null if the bundle never lands.
  */
 export async function waitForBundledBackrunTx(
-  client: PublicClient,
+  rpc: BackrunRpcContext,
   backrun: BackrunContext,
   victimTxHash: string,
   timeoutMs: number,
@@ -98,23 +159,12 @@ export async function waitForBundledBackrunTx(
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    try {
-      const victimReceipt = await client.getTransactionReceipt({ hash: victimTxHash as Hash });
-      const block = await client.getBlock({
-        blockNumber: victimReceipt.blockNumber,
-        includeTransactions: true,
-      });
+    const blockNumber = await fetchVictimReceiptBlockNumber(rpc, victimTxHash);
+    if (blockNumber != null) {
+      const block = await fetchBlockWithTransactions(rpc, blockNumber);
       const backrunHash = findBackrunTxInBlock(block.transactions, backrun.operatorAddress, backrun.candidate);
       if (backrunHash) return { txHash: backrunHash };
       return null;
-    } catch (err: unknown) {
-      const error = err as { name?: string; message?: string };
-      const msg = error.message?.toLowerCase() ?? "";
-      const notFound =
-        error.name === "TransactionReceiptNotFoundError" ||
-        msg.includes("not found") ||
-        msg.includes("could not be found");
-      if (!notFound) throw err;
     }
 
     await new Promise((r) => setTimeout(r, pollMs));

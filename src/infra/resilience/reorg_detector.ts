@@ -1,6 +1,9 @@
 import type { PublicClient } from "viem";
 import type { HyperRpcClient } from "../rpc/hyperrpc.ts";
 import type { HyperSyncService } from "../hypersync/hypersync_service.ts";
+import { normalizeBlockHash } from "../../core/utils/normalize.ts";
+
+export { normalizeBlockHash } from "../../core/utils/normalize.ts";
 
 export interface BlockInfo {
   number: number;
@@ -26,28 +29,42 @@ export class ReorgDetector {
   ) {}
 
   private async getBlockByNumber(blockNumber: bigint) {
-    if (this.hyperSync) {
-      try {
-        return await this.hyperSync.getBlockByNumber(blockNumber);
-      } catch {
-        // fall through to HyperRPC / public RPC
-      }
-    }
+    // Prefer HyperRPC (cheap JSON-RPC, 100ms cache) over HyperSync to preserve
+    // the shared ENVIO_API_TOKEN quota for the HyperIndex child process.
     if (this.hyperRpc) {
       try {
         return await this.hyperRpc.getBlockByNumber(blockNumber);
       } catch {
-        // fall through to public RPC (e.g. HyperRPC 403)
+        // fall through
+      }
+    }
+    if (this.hyperSync) {
+      try {
+        return await this.hyperSync.getBlockByNumber(blockNumber);
+      } catch {
+        // fall through to public RPC
       }
     }
     return this.client.getBlock({ blockNumber });
   }
 
-  async trackBlock(blockNumber: number, blockHash: string): Promise<void> {
+  /**
+   * Detect fork before mutating tracked chain: WS newHead parent must link to block N-1 we already saw.
+   */
+  checkLocalParentMismatch(blockNumber: number, parentHash: string): boolean {
+    if (blockNumber <= 0 || !parentHash) return false;
+    const parent = this.trackedBlocks.find((b) => b.number === blockNumber - 1);
+    if (!parent) return false;
+    return normalizeBlockHash(parentHash) !== parent.hash;
+  }
+
+  async trackBlock(blockNumber: number, blockHash: string, parentHashHint?: string): Promise<void> {
     const parent = this.trackedBlocks.find((b) => b.number === blockNumber - 1);
     let parentHash = "";
     if (parent) {
       parentHash = parent.hash;
+    } else if (parentHashHint) {
+      parentHash = parentHashHint;
     } else {
       try {
         const block = await this.getBlockByNumber(BigInt(blockNumber - 1));
@@ -56,18 +73,31 @@ export class ReorgDetector {
         console.warn("[reorg-detector] Failed to fetch parent block:", err);
       }
     }
-    this.trackedBlocks.push({
+    const normalizedHash = normalizeBlockHash(blockHash);
+    const normalizedParent = parentHash ? normalizeBlockHash(parentHash) : "";
+    const existingIdx = this.trackedBlocks.findIndex((b) => b.number === blockNumber);
+    const entry: BlockInfo = {
       number: blockNumber,
-      hash: blockHash,
-      parentHash,
+      hash: normalizedHash,
+      parentHash: normalizedParent,
       timestamp: Date.now(),
-    });
-    if (this.trackedBlocks.length > MAX_TRACKED_BLOCKS) {
-      this.trackedBlocks.shift();
+    };
+    if (existingIdx >= 0) {
+      this.trackedBlocks[existingIdx] = entry;
+    } else {
+      this.trackedBlocks.push(entry);
+      if (this.trackedBlocks.length > MAX_TRACKED_BLOCKS) {
+        this.trackedBlocks.shift();
+      }
     }
   }
 
-  async checkReorg(): Promise<Set<number>> {
+  /** Drop tracked entries at/above a reorg fork height (canonical chain replaced them). */
+  private pruneTrackedFrom(blockNumber: number): void {
+    this.trackedBlocks = this.trackedBlocks.filter((b) => b.number < blockNumber);
+  }
+
+  async checkReorg(chainTip?: { number: number; hash: string }): Promise<Set<number>> {
     const reorged = new Set<number>();
     const latest = this.trackedBlocks[this.trackedBlocks.length - 1];
     if (!latest) return reorged;
@@ -81,9 +111,15 @@ export class ReorgDetector {
       if (!tracked) continue;
 
       try {
-        const block = await this.getBlockByNumber(BigInt(blockNum));
-        const blockHash = (block?.hash as string | undefined)?.toLowerCase();
-        if (blockHash && blockHash !== tracked.hash.toLowerCase()) {
+        let blockHash: string | undefined;
+        if (depth === 0 && chainTip && chainTip.number === blockNum) {
+          blockHash = normalizeBlockHash(chainTip.hash);
+        } else {
+          const block = await this.getBlockByNumber(BigInt(blockNum));
+          const raw = block?.hash as string | undefined;
+          blockHash = raw ? normalizeBlockHash(raw) : undefined;
+        }
+        if (blockHash && blockHash !== tracked.hash) {
           // Reorg detected at this height
           reorged.add(blockNum);
           this.reorgedBlocks.add(blockNum);
@@ -96,6 +132,7 @@ export class ReorgDetector {
               this.reorgedBlocks.add(tb.number);
             }
           }
+          this.pruneTrackedFrom(blockNum);
           break; // Found the fork point
         }
       } catch (err) {

@@ -184,6 +184,23 @@ describe("createGasFetcher (dual-source)", () => {
     } as any;
   }
 
+  it("uses feeHistory baseFeePerGas without eth_getBlock when available", async () => {
+    const getBlock = vi.fn();
+    const client = makeMockClient({
+      getBlock,
+      getFeeHistory: vi.fn().mockResolvedValue({
+        reward: [[12n * 10n ** 9n]],
+        baseFeePerGas: [31n * 10n ** 9n],
+        gasUsedRatio: [],
+        oldestBlock: 0n,
+      }),
+    });
+    const fetcher = createGasFetcher(client, { feeHistoryPercentile: 50 });
+    const result = await fetcher();
+    expect(result.baseFee).toBe(31n * 10n ** 9n);
+    expect(getBlock).not.toHaveBeenCalled();
+  });
+
   it("uses feeHistory value when higher than estimateMaxPriorityFeePerGas (conservative max)", async () => {
     const client = makeMockClient({
       estimateMaxPriorityFeePerGas: vi.fn().mockResolvedValue(8n * 10n ** 9n),
