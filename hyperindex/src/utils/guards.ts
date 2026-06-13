@@ -14,3 +14,8 @@ export function isLikelyGarbagePair(token0: string, token1: string): boolean {
     t0 === t1
   );
 }
+
+/** Shared guard for factory PairCreated / PoolCreated (contractRegister + onEvent). */
+export function shouldSkipFactoryPool(token0: string, token1: string, factoryAddr: string): boolean {
+  return token0 === factoryAddr || token1 === factoryAddr || isLikelyGarbagePair(token0, token1);
+}

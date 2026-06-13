@@ -1,6 +1,5 @@
 import { createPublicClient, http, fallback, type PublicClient, type HttpTransport } from "viem";
 import { polygon } from "viem/chains";
-import { getRpmTarget, isLowQuota, isVeryLowQuota } from "../utils/pacing";
 
 /**
  * Centralized RPC client for all effects (token decimals, Curve/Balancer/DODO metadata, etc.).
@@ -39,39 +38,43 @@ function getRpcUrls(): string[] {
   return ["https://polygon.drpc.org", "https://polygon-mainnet.public.blastapi.io", "https://polygon.api.onfinality.io/public"];
 }
 
-const _rpm = getRpmTarget();
-const low = isLowQuota();
-const veryLow = isVeryLowQuota();
+let publicClientInstance: PublicClient | undefined;
 
-// Dynamic batching tuned to the overall quota (HYPERSYNC_RPM_TARGET).
-// When the free-tier HyperSync budget is tight we reduce RPC burstiness from effects
-// so the whole system (HyperSync fetches + metadata effects) stays smoother.
-// Disabled JSON-RPC batching (BATCH_SIZE = 1) because some endpoints (Chainstack)
-// struggle with large JSON-RPC batches even when using Multicall internally.
-const _BATCH_SIZE = 1;
-const MULTICALL_BATCH_SIZE = veryLow ? 8 : low ? 12 : 16;
-const MULTICALL_WAIT_MS = veryLow ? 100 : low ? 75 : 50;
+function buildPublicClient(): PublicClient {
+  const rpcUrls = getRpcUrls();
+  if (process.env.VITEST !== "true") {
+    console.log("[rpc_client] Initializing with RPC URLs:", rpcUrls);
+  }
 
-const rpcUrls = getRpcUrls();
-console.log("[rpc_client] Initializing with RPC URLs:", rpcUrls);
+  const transports: HttpTransport[] = rpcUrls.map((url) =>
+    http(url, {
+      batch: {
+        batchSize: 8, // Safe standard JSON-RPC batching size
+        wait: 20,
+      },
+      timeout: 15_000, // Slightly raised for catchup bursts
+      retryCount: 3,
+      retryDelay: 500,
+    }),
+  );
 
-const transports: HttpTransport[] = rpcUrls.map((url) =>
-  http(url, {
-    batch: {
-      batchSize: 8, // Safe standard JSON-RPC batching size
-      wait: 20,
-    },
-    timeout: 15_000, // Slightly raised for catchup bursts
-    retryCount: 3,
-    retryDelay: 500,
-  }),
-);
+  const transport = transports.length > 1 ? fallback(transports, { rank: true }) : transports[0];
 
-const transport = transports.length > 1 ? fallback(transports, { rank: true }) : transports[0];
+  return createPublicClient({
+    chain: polygon,
+    transport,
+  });
+}
 
-export const publicClient: PublicClient = createPublicClient({
-  chain: polygon,
-  transport,
+/** Lazy client — avoids RPC setup during Vitest handler runs that only hit the static registry. */
+export const publicClient: PublicClient = new Proxy({} as PublicClient, {
+  get(_target, prop, receiver) {
+    if (!publicClientInstance) {
+      publicClientInstance = buildPublicClient();
+    }
+    const value = Reflect.get(publicClientInstance, prop, receiver);
+    return typeof value === "function" ? value.bind(publicClientInstance) : value;
+  },
 });
 
 // Re-export for convenience in effects

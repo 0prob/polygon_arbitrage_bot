@@ -10,6 +10,7 @@
     "bench-summary": "envio benchmark-summary",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:bun": "bun test --pass-with-no-tests",
     "generate-tokens": "bun scripts/generate-polygon-tokens.ts",
     "generate-tokens:auto": "bun scripts/update-token-registry.ts",
     "clear-hasura": "bun scripts/clear-hasura-metadata.ts",

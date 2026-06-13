@@ -3,19 +3,33 @@ import { parseAbi } from "viem";
 import { publicClient } from "./rpc_client";
 import path from "node:path";
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
+import { DAI, USDC, USDC_E, USDT, WBTC, WETH, WMATIC } from "../utils/constants";
 
 const ROOT = import.meta.dir ?? ".";
 
 let db: any = null;
+
+/** Well-known Polygon tokens used by handler tests — avoids RPC when Vitest runs without bun:sqlite. */
+const VITEST_TOKEN_DECIMALS: Record<string, number> = {
+  [WMATIC]: 18,
+  [WETH]: 18,
+  [USDC_E]: 6,
+  [USDT]: 6,
+  [USDC]: 6,
+  [DAI]: 18,
+  [WBTC]: 8,
+};
 
 async function initDb() {
   if (db !== null) return;
   try {
     const { Database } = await import("bun:sqlite");
     db = new Database(path.resolve(ROOT, "../../token_registry.db"), { readonly: true });
-  } catch (e) {
+  } catch {
     db = undefined;
-    console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
+    if (process.env.VITEST !== "true") {
+      console.warn("[token_metadata] sqlite (bun:sqlite) unavailable, skipping static registry lookup");
+    }
   }
 }
 
@@ -32,6 +46,12 @@ let discoveredSavePending: Promise<void> | null = null;
 const registryCache: Map<string, number> = new Map();
 let cacheLoaded = false;
 
+function seedVitestRegistry(): void {
+  for (const [addr, decimals] of Object.entries(VITEST_TOKEN_DECIMALS)) {
+    registryCache.set(addr.toLowerCase(), decimals);
+  }
+}
+
 async function warmUpCache() {
   if (cacheLoaded) return;
   await initDb();
@@ -45,6 +65,9 @@ async function warmUpCache() {
       }
       registryCache.set(addr, row.decimals);
     }
+  }
+  if (process.env.VITEST === "true") {
+    seedVitestRegistry();
   }
   cacheLoaded = true;
 }

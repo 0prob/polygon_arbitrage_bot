@@ -49,6 +49,8 @@
  *   logEffectTime("fetchTokenMeta", Date.now() - t0, Number(event.block.number));
  */
 export function logEffectTime(name: string, durationMs: number, blockNumber?: number): void {
+  if (process.env.VITEST === "true") return;
+
   // Only log slow effects (>350ms) to avoid noise in normal operation.
   // Normal cold RPC fetches take 70-250ms, while cached hits are <1ms.
   // Only warn if it exceeds 350ms to help spot actual RPC bottlenecks.

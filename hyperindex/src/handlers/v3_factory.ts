@@ -1,7 +1,6 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { isLikelyGarbagePair } from "../utils/guards";
-import { logEffectTime } from "../utils/instrumentation";
+import { shouldSkipFactoryPool } from "../utils/guards";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 type Protocol =
@@ -40,11 +39,11 @@ indexer.contractRegister(
     event: "PoolCreated",
   },
   async ({ event, context }) => {
-    context.chain.UniswapV3Pool.add(event.params.pool);
+    const t0 = event.params.token0;
+    const t1 = event.params.token1;
+    if (shouldSkipFactoryPool(t0, t1, event.srcAddress)) return;
 
-    if (context.log) {
-      context.log.info("Registered dynamic V3 pool", { pool: event.params.pool });
-    }
+    context.chain.UniswapV3Pool.add(event.params.pool);
   },
 );
 
@@ -60,7 +59,7 @@ indexer.onEvent(
     const factoryAddr = event.srcAddress;
 
     // Consistency: skip obvious garbage pairs (zero address, factory-as-token, etc.)
-    if (t0 === factoryAddr || t1 === factoryAddr || isLikelyGarbagePair(t0, t1)) {
+    if (shouldSkipFactoryPool(t0, t1, factoryAddr)) {
       return;
     }
 
@@ -70,10 +69,8 @@ indexer.onEvent(
 
     // Effects first (before any sets) for preload batching. PoolMeta set moved post-guard.
     // Concurrency is reduced automatically when HYPERSYNC_RPM_TARGET is low.
-    const tEff0 = Date.now();
     const concurrency = getMetadataConcurrency();
     const [t0meta, t1meta] = await runWithConcurrency([t0, t1], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
-    logEffectTime("fetchTokenMeta:pool", Date.now() - tEff0, blockNumber);
 
     if (context.isPreload) {
       return;

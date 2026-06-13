@@ -1,7 +1,6 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
-import { isLikelyGarbagePair } from "../utils/guards";
-import { logEffectTime } from "../utils/instrumentation";
+import { shouldSkipFactoryPool } from "../utils/guards";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 type Protocol =
@@ -46,12 +45,11 @@ indexer.contractRegister(
     event: "PairCreated",
   },
   async ({ event, context }) => {
-    // Use context.chain for the modern v3 way to register dynamic contracts.
-    context.chain.UniswapV2Pool.add(event.params.pair);
+    const t0 = event.params.token0;
+    const t1 = event.params.token1;
+    if (shouldSkipFactoryPool(t0, t1, event.srcAddress)) return;
 
-    if (context.log) {
-      context.log.info("Registered dynamic V2 pool", { pair: event.params.pair });
-    }
+    context.chain.UniswapV2Pool.add(event.params.pair);
   },
 );
 
@@ -68,7 +66,7 @@ indexer.onEvent(
 
     // JS-level defensive filter using shared hot_tokens (kept in sync with root bot).
     // This complements any where topic filtering.
-    if (t0 === factoryAddr || t1 === factoryAddr || isLikelyGarbagePair(t0, t1)) {
+    if (shouldSkipFactoryPool(t0, t1, factoryAddr)) {
       return;
     }
 
@@ -78,15 +76,12 @@ indexer.onEvent(
 
     // Envio v3 Preload + Effect API best practice.
     // Effects are the dominant cost (Loaders % in pipeline split).
-    // We time them explicitly so slow cache misses are visible in logs.
     // PoolMeta set moved after effects + isPreload guard for zero writes in preload phase.
     //
     // When HYPERSYNC_RPM_TARGET is low we limit concurrency here to avoid
     // creating request spikes that interact badly with the HyperSync budget.
-    const tEff0 = Date.now();
     const concurrency = getMetadataConcurrency();
     const [t0meta, t1meta] = await runWithConcurrency([t0, t1], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
-    logEffectTime("fetchTokenMeta:pair", Date.now() - tEff0, blockNumber);
 
     // Aggressive isPreload: after effects (which preload batches), exit early in preload phase.
     // Sets below will only execute (and persist) in the real processing phase.
