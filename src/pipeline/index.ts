@@ -33,3 +33,9 @@ export { computeMaticRates, type ComputeMaticRatesOptions } from "./rates.ts";
 export { evaluatePipeline } from "./pipeline.ts";
 export { ArbInstrumenter } from "./instrumenter.ts";
 export { IncrementalGraphUpdater, syncGraphStateFromCache } from "./graph_incremental.ts";
+export { InMemoryPoolGraph, type PoolGraphEntry } from "./pool_graph.ts";
+export {
+  BOT_INDEXER_ENTITIES,
+  INDEXER_HOT_STATE_ENTITIES,
+  assertBotIndexerTable,
+} from "./architecture.ts";

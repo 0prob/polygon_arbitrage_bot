@@ -24,7 +24,7 @@ export async function refreshCyclePoolsOnHead(
 
   const anchorPools = addrs.map((address) => ({ address }));
   const client = ctx.stateClient ?? ctx.publicClient;
-  await fetchMissingPoolState(client, stateCache, pools, cycles.slice(0, 20), anchorPools, true, ctx.logger);
+  await fetchMissingPoolState(client, stateCache, pools, cycles.slice(0, 20), anchorPools, true, ctx.logger, ctx.poolGraph);
 
   if (routingGraph && graphUpdater) {
     const touched = new Set(addrs.map((a) => normalizePoolAddress(a)));

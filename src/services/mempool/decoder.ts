@@ -86,7 +86,7 @@ export function decodeSwapCalldata(
         return { protocol, poolAddress, tokenIn: "" as Address, tokenOut: "" as Address, amountIn: bestAmount };
       }
     }
-  } catch (err) {
+  } catch {
     // Fallback to heuristic if decoding fails
   }
 

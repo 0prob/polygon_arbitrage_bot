@@ -6,6 +6,7 @@ import { INVALID_POOL_STATE } from "../core/types/pool.ts";
 import type { PoolMeta } from "../core/types/pool.ts";
 import type { FoundCycle } from "./types.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
+import type { InMemoryPoolGraph } from "./pool_graph.ts";
 import { markAsGarbage } from "../infra/garbage/garbage-tracker.ts";
 import { fingerprintPools } from "../core/utils/pool_fingerprint.ts";
 import { logSampled, METRICS_INTERVAL, type MetricsLogger } from "../infra/observability/metrics.ts";
@@ -133,6 +134,8 @@ export async function fetchMissingPoolState(
     error?: (obj: Record<string, unknown>, msg?: string) => void;
     warn?: (obj: Record<string, unknown>, msg?: string) => void;
   },
+  /** When set, patches InMemoryPoolGraph after RPC fetch (architecture: hot state never from Hasura). */
+  poolGraph?: InMemoryPoolGraph,
 ): Promise<Set<string>> {
   const missingAddresses = new Set<string>();
   const fetchNow = Date.now();
@@ -598,6 +601,10 @@ export async function fetchMissingPoolState(
     },
     METRICS_INTERVAL.poolFetch,
   );
+
+  if (poolGraph && updated.size > 0) {
+    poolGraph.patchStatesFromCache(stateCache, updated);
+  }
 
   return updated;
 }

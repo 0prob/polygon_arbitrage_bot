@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/guard-shell.sh"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": ".cursor/hooks/cleanup-repo-orphans.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/cleanup-repo-orphans.sh"
+      }
+    ]
+  }
+}

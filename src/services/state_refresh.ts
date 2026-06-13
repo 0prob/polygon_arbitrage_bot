@@ -39,6 +39,8 @@ export class StateRefreshService {
   private expansionInProgress = false;
   private bootstrapInProgress = false;
   private discoveryDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Set when progress-driven discovery fires while a discovery pass is already running. */
+  private pendingProgressDiscovery = false;
   /** Last indexer progress block that triggered an incremental pool discovery pass. */
   private lastProgressDiscoveryBlock = 0;
   /** Minimum blocks between progress-driven discovery triggers. */
@@ -125,11 +127,13 @@ export class StateRefreshService {
     this.discoveryDebounceTimer = setTimeout(() => {
       this.discoveryDebounceTimer = null;
       this.lastProgressDiscoveryBlock = progressBlock;
-      if (!this.discoveryInProgress) {
-        this.runPoolDiscovery().catch((err) => {
-          this.ctx.logger.debug?.({ err, progressBlock }, "Progress-driven pool discovery failed");
-        });
+      if (this.discoveryInProgress) {
+        this.pendingProgressDiscovery = true;
+        return;
       }
+      this.runPoolDiscovery().catch((err) => {
+        this.ctx.logger.debug?.({ err, progressBlock }, "Progress-driven pool discovery failed");
+      });
     }, 2000);
   }
 
@@ -220,10 +224,12 @@ export class StateRefreshService {
               { added: mapped.length, total: this.pools.length, protocols: protocolBreakdown(this.pools) },
               "Pools discovered from HyperIndex",
             );
+            this.ctx.poolGraph.bulkSync(this.pools, this.ctx.stateCache);
         } else if (this.pools.length === 0) {
             const anchors = await loadStaticAnchors();
             if (anchors.length > 0) {
               this.pools = anchors;
+              this.ctx.poolGraph.bulkSync(this.pools, this.ctx.stateCache);
               this.ctx.logger.info(
                 { count: anchors.length, protocols: protocolBreakdown(anchors) },
                 "Loaded static anchor pools (Hasura returned no pools on first discovery)",
@@ -239,6 +245,7 @@ export class StateRefreshService {
             const anchors = await loadStaticAnchors();
             if (anchors.length > 0) {
               this.pools = anchors;
+              this.ctx.poolGraph.bulkSync(this.pools, this.ctx.stateCache);
               this.ctx.logger.info(
                 { count: anchors.length, protocols: protocolBreakdown(anchors) },
                 "Loaded static anchor pools after discovery failure",
@@ -250,6 +257,12 @@ export class StateRefreshService {
         }
     } finally {
         this.discoveryInProgress = false;
+        if (this.pendingProgressDiscovery) {
+          this.pendingProgressDiscovery = false;
+          void this.runPoolDiscovery().catch((err) => {
+            this.ctx.logger.debug?.({ err }, "Chained progress-driven pool discovery failed");
+          });
+        }
     }
   }
 
@@ -295,7 +308,7 @@ export class StateRefreshService {
         const batch = uncached.slice(0, EXPANSION_BATCH);
         const uncachedLen = uncached.length;
         this.expansionInProgress = true;
-        fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true)
+        fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true, undefined, this.ctx.poolGraph)
           .then((expanded) => {
             if (expanded.size > 0) {
               this.ctx.logger.info(
@@ -335,7 +348,11 @@ export class StateRefreshService {
     const localUpdated = new Set<string>();
     for (let i = 0; i < batches.length; i += CONCURRENCY_BS) {
       const chunk = batches.slice(i, i + CONCURRENCY_BS);
-      const results = await Promise.all(chunk.map((batch) => fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true)));
+      const results = await Promise.all(
+        chunk.map((batch) =>
+          fetchMissingPoolState(stateClient, this.ctx.stateCache, batch, [], [], true, undefined, this.ctx.poolGraph),
+        ),
+      );
       for (const res of results) {
         for (const addr of res) localUpdated.add(addr);
       }

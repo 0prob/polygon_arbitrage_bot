@@ -66,13 +66,9 @@ type BalancerPoolIdToAddress {
 }
 
 """
-V2-style constant-product pool state snapshot (mostly creation-time in the
-live-debug "no per-event state writes" profile — see config.yaml).
-Bot owns hot state via its RPC fetcher + multicalls. This provides
-best-effort bootstrap cache + historical discovery.
-BigInt fields use @config(precision) per schema docs for large 256-bit-ish
-on-chain values (https://docs.envio.dev/docs/HyperIndex/schema#advanced-precision-and-scale-config-directive).
-Enhanced with composite indexing for time-based queries.
+LEGACY — not written by current handlers and not read by the arb bot.
+Hot V2 reserves come from RPC (fetchMissingPoolState → RouteStateCache).
+Kept in schema for backwards-compatible DB migrations only.
 """
 type V2PoolState @index(fields: ["address", ["lastUpdatedBlock", "DESC"]]) {
   id: ID!

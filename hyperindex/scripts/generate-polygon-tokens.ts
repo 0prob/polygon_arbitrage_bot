@@ -204,6 +204,14 @@ async function loadDiscoveredFile(path: string): Promise<TokenListToken[]> {
   try {
     const content = await Bun.file(path).text();
     const data = JSON.parse(content);
+    if (Array.isArray(data)) {
+      return data
+        .filter((t: { address?: string; decimals?: number }) => t.address && typeof t.decimals === "number")
+        .map((t: { address: string; decimals: number }) => ({
+          address: t.address.toLowerCase(),
+          decimals: Number(t.decimals),
+        }));
+    }
     if (data && typeof data === "object") {
       return Object.entries(data)
         .filter(([addr, dec]) => typeof addr === "string" && typeof dec === "number")

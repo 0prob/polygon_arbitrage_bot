@@ -82,6 +82,15 @@ function mockStateRefresh(overrides: { pools?: typeof MOCK_POOL[] } = {}) {
   return service;
 }
 
+function mockPoolGraph() {
+  return {
+    bulkSync: vi.fn(),
+    patchStatesFromCache: vi.fn(),
+    clearStates: vi.fn(),
+    getState: vi.fn(),
+  };
+}
+
 function mockStateCache(initial?: [string, Record<string, unknown>][]) {
   const cache = new Map<string, Record<string, unknown>>(initial) as Map<string, Record<string, unknown>> & {
     liveSize: () => number;
@@ -224,6 +233,7 @@ describe("runPassLoop", () => {
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
       swapUsdValuator: mockSwapUsdValuator(),
+      poolGraph: mockPoolGraph(),
     } as unknown as RuntimeContext;
 
     let execCalls = 0;
@@ -406,6 +416,7 @@ describe("runPassLoop", () => {
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
       swapUsdValuator: mockSwapUsdValuator(),
+      poolGraph: mockPoolGraph(),
     } as unknown as RuntimeContext;
 
     const findCyclesMultiPassSpy = vi.fn().mockImplementation(async () => {
@@ -555,6 +566,7 @@ describe("runPassLoop", () => {
       tierManager: mockTierManager(),
       stateRefreshService: mockStateRefresh(),
       swapUsdValuator: mockSwapUsdValuator(),
+      poolGraph: mockPoolGraph(),
     } as unknown as RuntimeContext;
 
     // Timer to stop the loop: HF never calls evaluatePipeline when cycles are empty,

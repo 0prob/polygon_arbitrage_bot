@@ -342,4 +342,14 @@ describe("MempoolService", () => {
       }
     }
   });
+
+  it("updates known pools when set changes but length and first pool stay the same", () => {
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const service = new MempoolService(logger, mempoolTestOptions());
+    service.setKnownPools(["0xpool1", "0xpool2"]);
+    const debugBefore = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.length;
+    service.setKnownPools(["0xpool1", "0xpool3"]);
+    const debugAfter = (logger.debug as ReturnType<typeof vi.fn>).mock.calls.length;
+    expect(debugAfter).toBeGreaterThan(debugBefore);
+  });
 });

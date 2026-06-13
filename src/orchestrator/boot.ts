@@ -26,12 +26,15 @@ import type { HyperSyncService } from "../infra/hypersync/hypersync_service.ts";
 import { PriceOracle } from "../services/oracle/price_oracle.ts";
 import { StateRefreshService } from "../services/state_refresh.ts";
 import { SwapUsdValuator } from "../services/mempool/swap_usd_valuation.ts";
+import { InMemoryPoolGraph } from "../pipeline/pool_graph.ts";
 import { debugBreak, DebugSites } from "../infra/debug/session.ts";
 
 export interface RuntimeContext {
   config: AppConfig;
   logger: Logger;
   stateCache: RouteStateCache;
+  /** Joined PoolMeta + live RPC state for O(1) cross-pool lookups. */
+  poolGraph: InMemoryPoolGraph;
   executionService: ExecutionService;
   mempoolService: MempoolService;
   publicClient: PublicClient;
@@ -108,6 +111,7 @@ export async function bootApplication(
   }
 
   const stateCache: RouteStateCache = new BoundedMap<string, Record<string, unknown>>({ maxSize: 50_000, ttlMs: 600_000 });
+  const poolGraph = new InMemoryPoolGraph();
 
   // Basic validation: ensure executorAddress is a contract
   const executorCode = await publicClient.getBytecode({ address: config.execution.executorAddress as `0x${string}` });
@@ -332,6 +336,7 @@ export async function bootApplication(
     config,
     logger,
     stateCache,
+    poolGraph,
     executionService,
     mempoolService,
     publicClient,

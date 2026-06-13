@@ -9,6 +9,32 @@
  * when the bot launches us, or 200 if someone runs `envio dev` directly).
  */
 
+/** Apply HyperSync pacing knobs to a child-process env (batch size + rpm aliases). */
+export function applyHyperSyncPacingEnv(env: Record<string, string | undefined>): void {
+  const rpm = getRpmTargetFromEnv(env);
+  env.ENVIO_HYPERSYNC_RPM_TARGET = String(rpm);
+  env.HYPERSYNC_RPM_TARGET = env.HYPERSYNC_RPM_TARGET ?? String(rpm);
+  if (!env.ENVIO_FULL_BATCH_SIZE) {
+    env.ENVIO_FULL_BATCH_SIZE = String(getRecommendedFullBatchSizeForRpm(rpm));
+  }
+}
+
+function getRpmTargetFromEnv(env: Record<string, string | undefined>): number {
+  const raw = env.ENVIO_HYPERSYNC_RPM_TARGET || env.HYPERSYNC_RPM_TARGET;
+  if (raw) {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n > 0) return Math.floor(n);
+  }
+  return 180;
+}
+
+function getRecommendedFullBatchSizeForRpm(rpm: number): number {
+  if (rpm >= 180) return 4500;
+  if (rpm >= 150) return 2800;
+  if (rpm >= 120) return 1800;
+  return 1000;
+}
+
 export function getRpmTarget(): number {
   const raw = process.env.ENVIO_HYPERSYNC_RPM_TARGET || process.env.HYPERSYNC_RPM_TARGET;
   if (raw) {
@@ -32,11 +58,7 @@ export function isVeryLowQuota(): boolean {
  * Bigger batches amortize HyperSync roundtrips but create spikier request patterns.
  */
 export function getRecommendedFullBatchSize(): number {
-  const rpm = getRpmTarget();
-  if (rpm >= 180) return 4500;
-  if (rpm >= 150) return 2800;
-  if (rpm >= 120) return 1800;
-  return 1000;
+  return getRecommendedFullBatchSizeForRpm(getRpmTarget());
 }
 
 /**
@@ -50,6 +72,15 @@ export function getMetadataConcurrency(): number {
   if (rpm >= 150) return 3;
   if (rpm >= 120) return 2;
   return 1;
+}
+
+/** Effect rateLimit for fetchTokenMeta — scales down on tight HyperSync quotas. */
+export function getTokenMetaEffectRateLimit(): { calls: number; per: "second" } {
+  const rpm = getRpmTarget();
+  if (rpm >= 180) return { calls: 500, per: "second" };
+  if (rpm >= 150) return { calls: 200, per: "second" };
+  if (rpm >= 120) return { calls: 100, per: "second" };
+  return { calls: 50, per: "second" };
 }
 
 /**

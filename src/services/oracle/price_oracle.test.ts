@@ -70,4 +70,30 @@ describe("PriceOracle", () => {
     const out = await enrichTokenToMaticRates(oracle, rates, ["0xabc"]);
     expect(out.has("0xabc")).toBe(false);
   });
+
+  it("uses Pyth symbol feed for known tokens without Chainlink mapping", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => [{ price: { price: "250000000000", expo: -8 } }],
+    } as Response);
+
+    const oracle = new PriceOracle({ enabled: true });
+    const usd = await oracle.getTokenUsd("0xb33eaad8d922b1083446dc23f610c2567fb5180f"); // UNI
+
+    expect(usd).toBe(2500);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Crypto.UNI%2FUSD"),
+      expect.any(Object),
+    );
+    fetchSpy.mockRestore();
+  });
+
+  it("does not call Pyth for unknown token addresses", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const oracle = new PriceOracle({ enabled: true });
+    const usd = await oracle.getTokenUsd("0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead");
+    expect(usd).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
 });

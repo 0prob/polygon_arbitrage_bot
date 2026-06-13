@@ -62,6 +62,7 @@ export function applyReorgInvalidation(ctx: RuntimeContext, state: PassLoopState
   debugBreak(DebugSites.REORG_DETECTED, { reason });
   invalidateRoutingOnReorg(state);
   ctx.stateCache.clear();
+  ctx.poolGraph.clearStates();
   clearPoolFetchTracking();
   ctx.logger.warn({ reason }, "Reorg detected — forcing state refresh");
 }
@@ -86,6 +87,7 @@ export async function runReorgCheck(
         detector.clearReorged();
         shouldForceRefresh = true;
         ctx.stateCache.clear();
+        ctx.poolGraph.clearStates();
         clearPoolFetchTracking();
       }
 

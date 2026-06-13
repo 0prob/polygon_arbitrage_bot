@@ -2,7 +2,7 @@ import { indexer } from "envio";
 import { fetchCurveMetadata } from "../effects/curve_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { logEffectTime } from "../utils/instrumentation";
-import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
+import { setTokenMetasIfMissing } from "../utils/entity_writes";
 
 // Modern v3 async contractRegister with conditional logic + external call.
 // Per the dynamic-contracts guide, we can do effects here to decide whether
@@ -64,18 +64,11 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    context.CurvePoolState.set({
-      id: pool,
-      address: pool,
-      lastUpdatedBlock: blockNumber,
-      balances: meta.balances.slice(0, coins.length),
-      A: meta.A,
-      fee: meta.fee,
-      rates: meta.rates.slice(0, coins.length),
-    });
-
-    coins.forEach((coin, i) => {
-      context.TokenMeta.set({ id: coin, address: coin, decimals: coinMetas[i].decimals });
-    });
+    // Hot Curve state comes from arb bot RPC — skip CurvePoolState DB write.
+    await setTokenMetasIfMissing(
+      context,
+      coins,
+      coinMetas.map((m) => m.decimals),
+    );
   },
 );

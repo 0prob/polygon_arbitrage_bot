@@ -204,7 +204,7 @@ export async function runLfTick(
             })
             .slice(0, targetCoverage);
           try {
-            await fetchMissingPoolState(stateClient, enumStateCache, prefetchBatch, [], true, ctx.logger);
+            await fetchMissingPoolState(stateClient, enumStateCache, prefetchBatch, [], [], true, ctx.logger, ctx.poolGraph);
           } catch (err) {
             ctx.logger.debug?.({ err }, "Pre-enumeration pool state prefetch failed");
           }
@@ -329,7 +329,7 @@ export async function runLfTick(
       if (newCycles.length > 0) {
         const cyclesForFetch = newCycles;
         try {
-          await fetchMissingPoolState(stateClient, enumStateCache, pools, cyclesForFetch, [], false, ctx.logger);
+          await fetchMissingPoolState(stateClient, enumStateCache, pools, cyclesForFetch, [], false, ctx.logger, ctx.poolGraph);
           if (ctx.config.routing.tickFetchEnabled !== false) {
             await fetchTicksForCyclePools(stateClient, enumStateCache, cyclesForFetch, pools, {
               wordRange: ctx.config.routing.tickWordRange ?? 3,

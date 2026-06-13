@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { PoolMeta } from "../../core/types/pool.ts";
 import { isGarbagePool, KNOWN_INDEXED_FACTORIES, markAsGarbage } from "../garbage/garbage-tracker.ts";
 import type { Logger } from "../observability/logger.ts";
+import { assertBotIndexerTable } from "../../pipeline/architecture.ts";
 
 const KNOWN_FACTORIES = KNOWN_INDEXED_FACTORIES;
 
@@ -242,6 +243,7 @@ export async function discoverPoolsFromHasura(
   for (let page = 0; page < MAX_PAGES; page++) {
     let pageResult: unknown;
     try {
+      assertBotIndexerTable("PoolMeta");
       const where = blockCursorWhere("createdBlock", lastDiscoveredBlock, cursorBlock, cursorId);
       const query = buildGraphQLListQuery(
         "PoolMeta",
@@ -321,6 +323,7 @@ export async function fetchTokenMetasFromHasura(
     let cursorId: string | null = null;
 
     for (let page = 0; page < MAX_PAGE; page++) {
+      assertBotIndexerTable("TokenMeta");
       const query = buildGraphQLListQuery("TokenMeta", "id address decimals", {
         limit: MAX_PAGE_SIZE,
         where: idCursorWhere(cursorId),
@@ -361,6 +364,7 @@ export async function fetchTokenMetasForAddresses(
 
   try {
     for (let i = 0; i < unique.length; i += CHUNK) {
+      assertBotIndexerTable("TokenMeta");
       const chunk = unique.slice(i, i + CHUNK);
       const inList = chunk.map((a) => `"${escapeGraphQLString(a)}"`).join(", ");
       const query = buildGraphQLListQuery("TokenMeta", "id address decimals", {
@@ -436,6 +440,7 @@ async function fetchLegacyIndexerProgressFromHasura(
   logger?: Pick<Logger, "warn">,
 ): Promise<IndexerProgress | undefined> {
   try {
+    assertBotIndexerTable("IndexerProgress");
     const result = await graphQLQuery(
       graphqlUrl,
       adminSecret,

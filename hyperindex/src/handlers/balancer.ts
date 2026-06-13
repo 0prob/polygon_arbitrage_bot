@@ -2,7 +2,7 @@ import { indexer } from "envio";
 import { fetchBalancerMetadata } from "../effects/balancer_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { logEffectTime } from "../utils/instrumentation";
-import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
+import { setTokenMetasIfMissing } from "../utils/entity_writes";
 
 const balancerMetaCache = new Map<string, { tokens: string[]; fee: number }>();
 const balancerIdToAddrCache = new Map<string, string>();
@@ -56,21 +56,12 @@ indexer.onEvent(
 
     context.BalancerPoolIdToAddress.set({ id: poolId, address: pool });
 
-    context.BalancerPoolState.set({
-      id: pool,
-      address: pool,
-      lastUpdatedBlock: blockNumber,
-      poolId: poolId,
-      balances: meta.balances,
-      weights: meta.weights,
-      amp: meta.amp,
-      swapFee: meta.swapFee,
-      scalingFactors: meta.scalingFactors,
-    });
-
-    tokens.forEach((token, i) => {
-      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
-    });
+    // Hot Balancer state comes from arb bot RPC — skip BalancerPoolState DB write.
+    await setTokenMetasIfMissing(
+      context,
+      tokens,
+      tokenMetas.map((m) => m.decimals),
+    );
   },
 );
 
@@ -116,9 +107,11 @@ indexer.onEvent({ contract: "BalancerVault", event: "TokensRegistered" }, async 
   });
 
   const tokenMetas = await tokenMetasPromise;
-  tokens.forEach((token, i) => {
-    context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
-  });
+  await setTokenMetasIfMissing(
+    context,
+    tokens,
+    tokenMetas.map((m) => m.decimals),
+  );
 });
 
 // Swap / PoolBalanceChanged — intentional no-ops; hot Balancer state comes from arb bot RPC.

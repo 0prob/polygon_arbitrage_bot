@@ -6,6 +6,7 @@ import { readFile, stat } from "fs/promises";
 const execAsync = promisify(exec);
 import type { Logger } from "../observability/logger.ts";
 import { EnvioLineParser, type EnvioLineParsedInfo } from "./envio_line_parser.ts";
+import { applyHyperSyncPacingEnv } from "../../../hyperindex/src/utils/pacing.ts";
 
 interface HyperIndexStatusEvent {
   type: "hyperindex_status";
@@ -572,11 +573,8 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
       );
     }
 
-    // Forward the RPM target so any future code inside the child (or effects) can be aware.
-    const rpmTarget = Number(process.env.HYPERSYNC_RPM_TARGET || 200);
-    if (!env.HYPERSYNC_RPM_TARGET) {
-      env.HYPERSYNC_RPM_TARGET = String(rpmTarget);
-    }
+    applyHyperSyncPacingEnv(env);
+    const rpmTarget = Number(env.HYPERSYNC_RPM_TARGET || 180);
 
     // === AUTONOMOUS DEBUG LOOP SUPPORT ===
     // Force richer logs from the Envio side (hypersync client rate limiting, handler timing, etc.)
@@ -599,6 +597,7 @@ export function createHyperIndexProcess(opts: HyperIndexProcessOptions): HyperIn
         rpcEndpoints: rpcCount,
         hasEnvioToken: hasToken,
         rpmTarget,
+        fullBatchSize: env.ENVIO_FULL_BATCH_SIZE,
         startBlock,
         importantEnv: sanitizedEnvKeys,
         forceFullReset: opts.forceFullReset,

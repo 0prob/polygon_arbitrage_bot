@@ -1,6 +1,7 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { logEffectTime } from "../utils/instrumentation";
+import { setTokenMetasIfMissing } from "../utils/entity_writes";
 import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
 
 type Protocol =
@@ -85,9 +86,10 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    for (let i = 0; i < newTokens.length; i++) {
-      const token = newTokens[i];
-      context.TokenMeta.set({ id: token, address: token, decimals: tokenMetas[i].decimals });
-    }
+    await setTokenMetasIfMissing(
+      context,
+      newTokens,
+      tokenMetas.map((m) => m.decimals),
+    );
   },
 );

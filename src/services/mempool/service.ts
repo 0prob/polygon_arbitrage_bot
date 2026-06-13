@@ -15,6 +15,7 @@ import { resolveSwapAmountIn, computeV2OverlayDeltas } from "./pending-amount.ts
 import type { MempoolSimulator } from "./simulator.ts";
 import { SwapUsdValuator, resolveMempoolInputToken } from "./swap_usd_valuation.ts";
 import { debugBreak, DebugSites } from "../../infra/debug/session.ts";
+import { fingerprintPools } from "../../core/utils/pool_fingerprint.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
@@ -73,7 +74,7 @@ export class MempoolService {
   }
 
   setKnownPools(pools: string[]): void {
-    const nextKey = pools.length > 0 ? `${pools.length}:${pools[0]?.toLowerCase()}` : "0";
+    const nextKey = fingerprintPools(pools.map((address) => ({ address })));
     if (nextKey === this.knownPoolsKey) return;
     this.knownPoolsKey = nextKey;
     this.knownPools = new Set(pools.map((p) => p.toLowerCase()));
@@ -308,7 +309,7 @@ export class MempoolService {
     amountIn: bigint,
     txHash: string,
     tx: { to: string; input: string; value: string },
-    poolAddr: string,
+    _poolAddr: string,
   ): Promise<void> {
     const simulator = this.options.mempoolSimulator;
     if (!simulator || !this.pendingOverrideStore) return;

@@ -36,7 +36,8 @@ raw_events: false
 #
 # Fix applied: Removed all per-event mutable state writes from high-volume handlers:
 #   - v2_pool.ts, v3_pool.ts, curve_pool.ts, dodo_pool.ts, v4.ts (Swap), balancer.ts (Swap/PoolBalanceChanged)
-#   - Only creation-time writes remain (factory/registry events + V4 Initialize + DODO factory handlers).
+#   - Only creation-time metadata writes remain (factory/registry events + V4 Initialize + DODO factory handlers).
+#   - *PoolState entities are no longer written at discovery (bot owns hot state via RPC).
 #
 # Result for "live debug indexer" (`envio dev` while bot runs):
 #   - DB Writes → minimal (pool discovery metadata only)

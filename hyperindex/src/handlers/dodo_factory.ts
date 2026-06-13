@@ -2,14 +2,16 @@ import { indexer, Effect } from "envio";
 import { fetchDodoMetadata } from "../effects/dodo_metadata";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { logEffectTime } from "../utils/instrumentation";
-import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
+import { setTokenMetasIfMissing } from "../utils/entity_writes";
 
 interface DodoHandlerContext {
   effect: <I, O>(effect: Effect<I, O>, input: I extends undefined ? undefined : I) => Promise<O>;
   isPreload: boolean;
   PoolMeta: { set: (entity: unknown) => void };
-  DodoPoolState: { set: (entity: unknown) => void };
-  TokenMeta: { set: (entity: unknown) => void };
+  TokenMeta: {
+    get: (id: string) => Promise<{ decimals?: number } | undefined>;
+    set: (entity: { id: string; address: string; decimals: number }) => void;
+  };
 }
 
 async function handleDodoPool(
@@ -53,24 +55,8 @@ async function handleDodoPool(
     poolId: undefined,
   });
 
-  context.DodoPoolState.set({
-    id: pool,
-    address: pool,
-    lastUpdatedBlock: blockNumber,
-    baseReserve: meta.baseReserve,
-    quoteReserve: meta.quoteReserve,
-    targetBase: meta.baseTarget,
-    targetQuote: meta.quoteTarget,
-    rStatus: meta.rStatus,
-    k: meta.k,
-    fee: meta.fee,
-    i: meta.i,
-    lpFeeRate: meta.lpFeeRate,
-    mtFeeRate: meta.mtFeeRate,
-  });
-
-  context.TokenMeta.set({ id: base, address: base, decimals: baseMeta.decimals });
-  context.TokenMeta.set({ id: quote, address: quote, decimals: quoteMeta.decimals });
+  // Hot DODO state comes from arb bot RPC — skip DodoPoolState DB write.
+  await setTokenMetasIfMissing(context, [base, quote], [baseMeta.decimals, quoteMeta.decimals]);
 }
 
 const DODO_POOL_EVENTS = [

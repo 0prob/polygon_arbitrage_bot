@@ -46,6 +46,10 @@ function mockCtx(): RuntimeContext {
     publicClient: {},
     stateClient: {},
     hyperIndexMonitor: { updateSyncedBlock: vi.fn() },
+    poolGraph: {
+      bulkSync: vi.fn(),
+      patchStatesFromCache: vi.fn(),
+    },
   } as unknown as RuntimeContext;
 }
 

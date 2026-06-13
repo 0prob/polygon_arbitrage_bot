@@ -4,6 +4,22 @@ import type { PublicClient } from "viem";
 const CHAINLINK_MATIC_USD = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0" as const;
 
 /** Token address -> Chainlink USD feed on Polygon */
+/** Polygon token address -> Pyth Hermes price feed id (symbol form, not hex address). */
+const PYTH_TOKEN_FEEDS: Record<string, string> = {
+  "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270": "Crypto.MATIC/USD", // WMATIC
+  "0x0000000000000000000000000000000000001010": "Crypto.MATIC/USD", // MATIC
+  "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": "Crypto.ETH/USD", // WETH
+  "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": "Crypto.USDC/USD", // USDC
+  "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": "Crypto.USDC/USD", // USDC.e
+  "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": "Crypto.USDT/USD", // USDT
+  "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": "Crypto.DAI/USD", // DAI
+  "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6": "Crypto.BTC/USD", // WBTC
+  "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39": "Crypto.LINK/USD", // LINK
+  "0xb33eaad8d922b1083446dc23f610c2567fb5180f": "Crypto.UNI/USD", // UNI
+  "0xd6df932a45c0f255f85145f286ea0b292b21c90b": "Crypto.AAVE/USD", // AAVE
+  "0x172370d5cd63279efa6d502dab29171933a610af": "Crypto.CRV/USD", // CRV
+};
+
 const CHAINLINK_FEEDS: Record<string, `0x${string}`> = {
   "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270": CHAINLINK_MATIC_USD,
   "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": "0xfE4A8cc5b5B2369C1C1948aBaC52816A1C139901",
@@ -188,7 +204,16 @@ export class PriceOracle {
       }
     }
 
-    return this.fetchPythPrice(`Crypto.${addr}/USD`);
+    const pythId = PYTH_TOKEN_FEEDS[addr];
+    if (pythId) {
+      const usd = await this.fetchPythPrice(pythId);
+      if (usd != null && usd > 0) {
+        this.tokenUsdCache.set(addr, { value: usd, ts: Date.now() });
+        return usd;
+      }
+    }
+
+    return null;
   }
 
   private async fetchPythPrice(id: string): Promise<number | null> {

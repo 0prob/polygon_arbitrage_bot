@@ -4,6 +4,7 @@ import { publicClient } from "./rpc_client";
 import path from "node:path";
 import { readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import { DAI, USDC, USDC_E, USDT, WBTC, WETH, WMATIC } from "../utils/constants";
+import { getTokenMetaEffectRateLimit } from "../utils/pacing";
 
 const ROOT = import.meta.dir ?? ".";
 
@@ -52,6 +53,24 @@ function seedVitestRegistry(): void {
   }
 }
 
+async function loadAutoExtraTokens(): Promise<void> {
+  try {
+    const raw = await readFile(AUTO_EXTRA_TOKENS_FILE, "utf8");
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data)) return;
+    for (const entry of data) {
+      if (!entry?.address || typeof entry.decimals !== "number") continue;
+      let addr = String(entry.address).toLowerCase();
+      if (addr.startsWith("0x") && addr.length < 42) {
+        addr = "0x" + addr.slice(2).padStart(40, "0");
+      }
+      registryCache.set(addr, safeDecimals(Number(entry.decimals)));
+    }
+  } catch {
+    // File may not exist yet
+  }
+}
+
 async function warmUpCache() {
   if (cacheLoaded) return;
   await initDb();
@@ -66,6 +85,11 @@ async function warmUpCache() {
       registryCache.set(addr, row.decimals);
     }
   }
+  await loadDiscoveredDecimals();
+  for (const [addr, decimals] of Object.entries(discoveredDecimals)) {
+    registryCache.set(addr, decimals);
+  }
+  await loadAutoExtraTokens();
   if (process.env.VITEST === "true") {
     seedVitestRegistry();
   }
@@ -102,8 +126,7 @@ async function saveDiscoveredDecimals() {
   return discoveredSavePending;
 }
 
-// Best-effort append of newly discovered cold tokens so the auto-update (generate-tokens:auto) promotes them on next indexer run / shutdown.
-// can promote them into the static registry automatically.
+// Best-effort append of newly discovered cold tokens so generate-tokens:auto can promote them on next indexer run.
 const autoExtraWritePending = new Set<string>();
 
 async function appendToAutoExtraTokens(address: string, decimals: number) {
@@ -192,9 +215,8 @@ function safeDecimals(d: number): number {
  * 1. Large static registry (fastest — 6000+ Polygon tokens, 0 RPC)
  * 2. Batched RPC (last resort)
  *
- * Cold tokens discovered via RPC are **automatically** appended to
- * `data/auto-extra-tokens.json` so the automatic token registry update promotes them (no manual `gentok` needed).
- * into the static registry.
+ * Cold tokens discovered via RPC are automatically appended to
+ * `data/auto-extra-tokens.json` so generate-tokens:auto promotes them into the static registry.
  *
  * This is the #1 lever for V2Factory.PairCreated performance.
  */
@@ -245,9 +267,6 @@ const fetchTokenMetaHandler = async ({ input, context }: { input: { address: str
       // Persist successful discovery aggressively
       discoveredDecimals[addr] = result.decimals;
       saveDiscoveredDecimals().catch(() => {});
-      // ...
-      // Auto-feed the gentok generator with newly discovered cold tokens.
-      // This dramatically reduces future 15s effects on new launches.
       appendToAutoExtraTokens(addr, result.decimals).catch(() => {});
 
       if (context.log) {
@@ -332,9 +351,21 @@ export const fetchTokenMeta = createEffect(
       address: S.string,
     },
     output: { address: S.string, decimals: S.number },
-    rateLimit: { calls: 500, per: "second" },
-    cache: process.env.NODE_ENV === 'test' ? false : true,
+    rateLimit: getTokenMetaEffectRateLimit(),
+    cache: process.env.VITEST === "true" || process.env.NODE_ENV === "test" ? false : true,
   },
   fetchTokenMetaHandler
 );
 export { fetchTokenMetaHandler };
+
+/** @internal Vitest-only — resets module caches between isolated test cases. */
+export function resetTokenMetadataCachesForTest(): void {
+  if (process.env.VITEST !== "true") return;
+  cacheLoaded = false;
+  discoveredLoaded = false;
+  failedLoaded = false;
+  registryCache.clear();
+  for (const key of Object.keys(discoveredDecimals)) delete discoveredDecimals[key];
+  failedTokens.clear();
+  failedDecimalsTokens.clear();
+}

@@ -81,7 +81,10 @@ export class GasOracle {
   }
 
   stop(): void {
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   }
 
   private async refresh(): Promise<void> {

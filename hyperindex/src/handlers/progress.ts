@@ -48,8 +48,8 @@ const realtimeStart = (() => {
   return DEFAULT_REALTIME_START;
 })();
 
-const HISTORICAL_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 2000));
-const REALTIME_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY ?? 200));
+const HISTORICAL_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_HISTORICAL_EVERY ?? 4000));
+const REALTIME_EVERY = getProgressOnBlockStride(Number(process.env.INDEXER_PROGRESS_REALTIME_EVERY ?? 500));
 
 // -----------------------------------------------------------------------------
 // The single handler implementation (registered twice below)

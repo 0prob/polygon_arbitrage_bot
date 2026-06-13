@@ -1,7 +1,7 @@
 import { indexer } from "envio";
 import { fetchTokenMeta } from "../effects/token_metadata";
 import { shouldSkipFactoryPool } from "../utils/guards";
-import { getMetadataConcurrency, runWithConcurrency } from "../utils/pacing";
+import { setTokenMetasIfMissing } from "../utils/entity_writes";
 
 type Protocol =
   | "UNISWAP_V2"
@@ -69,8 +69,10 @@ indexer.onEvent(
 
     // Effects first (before any sets) for preload batching. PoolMeta set moved post-guard.
     // Concurrency is reduced automatically when HYPERSYNC_RPM_TARGET is low.
-    const concurrency = getMetadataConcurrency();
-    const [t0meta, t1meta] = await runWithConcurrency([t0, t1], concurrency, (addr) => context.effect(fetchTokenMeta, { address: addr }));
+    const [t0meta, t1meta] = await Promise.all([
+      context.effect(fetchTokenMeta, { address: t0 }),
+      context.effect(fetchTokenMeta, { address: t1 }),
+    ]);
 
     if (context.isPreload) {
       return;
@@ -88,7 +90,6 @@ indexer.onEvent(
       poolId: undefined,
     });
 
-    context.TokenMeta.set({ id: t0, address: t0, decimals: t0meta.decimals });
-    context.TokenMeta.set({ id: t1, address: t1, decimals: t1meta.decimals });
+    await setTokenMetasIfMissing(context, [t0, t1], [t0meta.decimals, t1meta.decimals]);
   },
 );

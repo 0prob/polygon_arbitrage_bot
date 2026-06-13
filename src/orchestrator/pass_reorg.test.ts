@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { invalidateRoutingOnReorg } from "./pass_reorg.ts";
+import { describe, it, expect, vi } from "vitest";
+import { invalidateRoutingOnReorg, applyReorgInvalidation } from "./pass_reorg.ts";
 import type { PassLoopState } from "./pass_state.ts";
+import { InMemoryPoolGraph } from "../pipeline/pool_graph.ts";
+import { BoundedMap } from "../core/utils/bounded_map.ts";
+import type { RuntimeContext } from "./boot.ts";
 
 function baseState(): PassLoopState {
   return {
@@ -57,5 +60,36 @@ describe("invalidateRoutingOnReorg", () => {
     expect(state.oracleRateCache).toBeUndefined();
     expect(state.cyclesGeneration).toBe(2);
     expect(state.hfSnapshot?.cachedCycles).toEqual([]);
+  });
+
+  it("applyReorgInvalidation clears state cache and pool graph states", () => {
+    const state = baseState();
+    const stateCache = new BoundedMap<string, Record<string, unknown>>({ maxSize: 10, ttlMs: 60_000 });
+    stateCache.set("0xpool", { reserve0: 1n });
+    const poolGraph = new InMemoryPoolGraph();
+    poolGraph.syncPool(
+      {
+        address: "0xpool" as `0x${string}`,
+        protocol: "QUICKSWAP_V2",
+        token0: "0xa" as `0x${string}`,
+        token1: "0xb" as `0x${string}`,
+        tokens: ["0xa", "0xb"] as `0x${string}`[],
+        fee: 30,
+      },
+      { reserve0: 1n },
+    );
+
+    applyReorgInvalidation(
+      {
+        stateCache,
+        poolGraph,
+        logger: { warn: vi.fn() },
+      } as unknown as RuntimeContext,
+      state,
+      "test reorg",
+    );
+
+    expect(stateCache.size).toBe(0);
+    expect(poolGraph.getState("0xpool")).toBeNull();
   });
 });
