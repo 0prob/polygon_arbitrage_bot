@@ -56,7 +56,8 @@ export class PendingOverrideStore {
 
   /** Get the set of pool addresses affected by the current override. */
   getAffectedPools(): Set<string> {
-    return this.entry?.affectedPools ?? new Set();
+    if (!this.hasActive()) return new Set();
+    return this.entry!.affectedPools;
   }
 
   /** Check if a specific pool is affected by the current override. */

@@ -19,7 +19,6 @@ import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
 const ORACLE_FALLBACK_CONCURRENCY = 8;
 const ORACLE_FALLBACK_MAX_PER_TICK = 24;
-const PENDING_STATE_MIN_INTERVAL_MS = 2_000;
 
 async function resolveOracleFallbackRates(
   ctx: RuntimeContext,
@@ -182,11 +181,6 @@ export async function runHfTick(
   if (cycleIndices.length === 0) {
     bus?.emit({ type: "pipeline_stage", stage: "IDLE" });
     return { elapsed: Date.now() - startTime };
-  }
-
-  // Mempool-aware dry run — refresh pending block in background; never block HF on RPC
-  if (ctx.dryRunner) {
-    void ctx.dryRunner.fetchPendingState(PENDING_STATE_MIN_INTERVAL_MS).catch(() => {});
   }
 
   bus?.emit({ type: "pipeline_stage", stage: "SIMULATING" });

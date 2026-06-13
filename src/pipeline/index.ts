@@ -20,7 +20,7 @@ export {
   hopSimBucket,
   longTailRouteBonus,
 } from "./finder.ts";
-export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, simulateHop } from "./simulator.ts";
+export { simulateRoute, simulateRouteMinimal, buildSimulationEdges, refreshProjectedStates, simulateHop } from "./simulator.ts";
 export { fetchMissingPoolState } from "./fetcher.ts";
 export { computeMaticRates, type ComputeMaticRatesOptions } from "./rates.ts";
 export { evaluatePipeline } from "./pipeline.ts";

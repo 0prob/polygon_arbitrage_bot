@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { MempoolService } from "./service.ts";
+import { PendingOverrideStore } from "./pending-override.ts";
+import { resolveV2Fee, simulateV2Swap } from "../../core/math/uniswap_v2.ts";
 import type { MempoolSignal } from "./signals.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
 import { encodeFunctionData } from "viem";
@@ -134,7 +136,6 @@ describe("MempoolService", () => {
     );
     service.setKnownPools(["0xpool1"]);
 
-    // V2 swap: pool sends 10 of token1 → trader pays token0 (zeroForOne=true)
     const input = encodeFunctionData({
       abi: UNISWAP_V2_POOL_ABI,
       functionName: "swap",
@@ -142,7 +143,45 @@ describe("MempoolService", () => {
     });
     service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
 
-    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: 6n });
+    const state = { reserve0: 1_000_000n, reserve1: 2_000_000n, initialized: true };
+    const amountIn = 6n;
+    const { numerator, denominator } = resolveV2Fee(state, undefined, 1000n);
+    const swap = simulateV2Swap(state, amountIn, true, numerator, denominator);
+
+    // Override store is wired in production; without it, overlay is the fallback.
+    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: amountIn, reserve1: -swap.amountOut });
+  });
+
+  it("skips overlay when pending override store succeeds", () => {
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const overlay = {
+      update: vi.fn(),
+      get: vi.fn(),
+      getProjected: vi.fn(),
+      clear: vi.fn(),
+    };
+    const store = new PendingOverrideStore({ ttlMs: 60_000 });
+    const service = new MempoolService(
+      logger,
+      {
+        coalesceTtlMs: 100,
+        largeSwapThresholdWei: 1n,
+        getPoolState: () => ({ reserve0: 1_000_000n, reserve1: 2_000_000n, initialized: true }),
+      },
+      overlay,
+      store,
+    );
+    service.setKnownPools(["0xpool1"]);
+
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [0n, 10n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
+    service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
+
+    expect(store.hasActive()).toBe(true);
+    expect(overlay.update).not.toHaveBeenCalled();
   });
 
   it("updates overlay for V2 swap without pool state falls back to output amount", () => {
@@ -163,6 +202,47 @@ describe("MempoolService", () => {
     });
     service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
     expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: 10n });
+  });
+
+  it("schedules trace override when manual build fails and simulator is configured", async () => {
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const store = new PendingOverrideStore({ ttlMs: 60_000 });
+    const simulator = {
+      buildOverride: vi.fn().mockResolvedValue({
+        success: true,
+        stateOverride: {
+          "0xpool1": {
+            stateDiff: {
+              "0x0000000000000000000000000000000000000000000000000000000000000008": "0x64",
+            },
+          },
+        },
+        affectedPools: ["0xpool1"],
+        method: "trace",
+      }),
+    };
+    const service = new MempoolService(
+      logger,
+      {
+        coalesceTtlMs: 100,
+        largeSwapThresholdWei: 1n,
+        getPoolState: () => ({ reserve0: 0n, reserve1: 0n, initialized: true }),
+        mempoolSimulator: simulator as any,
+      },
+      undefined,
+      store,
+    );
+    service.setKnownPools(["0xpool1"]);
+
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [0n, 10n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
+    service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
+
+    await vi.waitFor(() => expect(simulator.buildOverride).toHaveBeenCalled());
+    expect(store.hasActive()).toBe(true);
   });
 
   it("tracks unknown selectors and saves them to a file", async () => {

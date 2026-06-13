@@ -106,5 +106,78 @@ export const BALANCER_VAULT_ABI = [
     ],
     "name": "Swap",
     "type": "event"
+  },
+  {
+    "type": "function",
+    "name": "swap",
+    "inputs": [
+      {
+        "name": "singleSwap",
+        "type": "tuple",
+        "components": [
+          {
+            "name": "poolId",
+            "type": "bytes32"
+          },
+          {
+            "name": "kind",
+            "type": "uint8"
+          },
+          {
+            "name": "assetIn",
+            "type": "address"
+          },
+          {
+            "name": "assetOut",
+            "type": "address"
+          },
+          {
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "name": "userData",
+            "type": "bytes"
+          }
+        ]
+      },
+      {
+        "name": "funds",
+        "type": "tuple",
+        "components": [
+          {
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "name": "fromInternalBalance",
+            "type": "bool"
+          },
+          {
+            "name": "recipient",
+            "type": "address"
+          },
+          {
+            "name": "toInternalBalance",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "limit",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amountCalculated",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable"
   }
 ] as const;

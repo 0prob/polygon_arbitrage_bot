@@ -15,6 +15,7 @@ import { TierManager } from "../infra/resilience/tier_manager.ts";
 import type { HyperIndexMonitor } from "../infra/resilience/hyperindex_monitor.ts";
 import { MempoolAwareDryRunner } from "../services/execution/dryrun.ts";
 import { PendingOverrideStore } from "../services/mempool/pending-override.ts";
+import { MempoolSimulator } from "../services/mempool/simulator.ts";
 import { type Metrics } from "../core/types/metrics.ts";
 import { RpcManager } from "../rpc/manager.ts";
 import type { ReorgDetector } from "../infra/resilience/reorg_detector.ts";
@@ -249,8 +250,14 @@ export async function bootApplication(
     largeSwapThresholdWei: BigInt(Math.floor(config.mempool.largeSwapThresholdUsd)) * approxRawPerUsd,
     dataDir: config.paths.dataDir,
   };
-  const pendingStateOverlay = new InMemoryPendingStateOverlay();
-  const pendingOverrideStore = new PendingOverrideStore({ ttlMs: 2000, maxEntries: 100 });
+  const pendingOverrideTtlMs = 2000;
+  const pendingStateOverlay = new InMemoryPendingStateOverlay({ ttlMs: pendingOverrideTtlMs, maxPools: 500 });
+  const pendingOverrideStore = new PendingOverrideStore({ ttlMs: pendingOverrideTtlMs, maxEntries: 100 });
+  const getPoolState = (addr: string) => stateCache.get(addr) as import("../core/types/pool.ts").PoolState | undefined;
+  const mempoolSimulator = new MempoolSimulator({
+    client: publicClient,
+    getPoolState,
+  });
   const priceOracle = new PriceOracle({
     enabled: config.oracle.enabled,
     pythHermesUrl: config.oracle.pythHermesUrl,
@@ -261,7 +268,8 @@ export async function bootApplication(
     logger,
     {
       ...mempoolOptions,
-      getPoolState: (addr) => stateCache.get(addr) as import("../core/types/pool.ts").PoolState | undefined,
+      getPoolState,
+      mempoolSimulator,
       invalidatePoolTicks: (addr) => {
         const existing = stateCache.get(addr);
         if (!existing) return;
@@ -333,7 +341,7 @@ export async function bootApplication(
   } as RuntimeContext;
 
   const stateRefreshService = new StateRefreshService(ctx);
-  stateRefreshService.start();
+  void stateRefreshService.start();
   ctx.stateRefreshService = stateRefreshService;
 
   return ctx;

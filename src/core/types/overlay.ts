@@ -1,6 +1,11 @@
 import type { Address } from "./common.ts";
 import type { PoolState } from "./pool.ts";
 
+export interface PendingStateOverlayOptions {
+  ttlMs?: number;
+  maxPools?: number;
+}
+
 export interface PendingStateOverlay {
   update(poolAddress: Address, state: PoolState): void;
   get(poolAddress: Address): PoolState | undefined;
@@ -10,7 +15,8 @@ export interface PendingStateOverlay {
 
 export class InMemoryPendingStateOverlay implements PendingStateOverlay {
   private cache = new Map<string, { state: PoolState; timestamp: number }>();
-  private TTL = 1000; // ms - raised to 1s to better bridge the block interval
+  private ttlMs: number;
+  private maxPools: number;
 
   // Fields where pending swaps contribute additive deltas to the base state.
   private static DELTA_FIELDS = new Set([
@@ -24,12 +30,39 @@ export class InMemoryPendingStateOverlay implements PendingStateOverlay {
     "totalLiquidity",
   ]);
 
+  constructor(opts?: PendingStateOverlayOptions) {
+    this.ttlMs = opts?.ttlMs ?? 1000;
+    this.maxPools = opts?.maxPools ?? 500;
+  }
+
+  private isExpired(timestamp: number): boolean {
+    return Date.now() - timestamp > this.ttlMs;
+  }
+
+  private pruneExpired(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache) {
+      if (now - entry.timestamp > this.ttlMs) this.cache.delete(key);
+    }
+  }
+
+  private touch(key: string, state: PoolState, now: number): void {
+    if (this.cache.has(key)) this.cache.delete(key);
+    this.cache.set(key, { state, timestamp: now });
+    while (this.cache.size > this.maxPools) {
+      const oldest = this.cache.keys().next().value;
+      if (oldest === undefined) break;
+      this.cache.delete(oldest);
+    }
+  }
+
   update(poolAddress: Address, state: PoolState): void {
     const key = poolAddress.toLowerCase();
     const now = Date.now();
+    this.pruneExpired();
     const existing = this.cache.get(key);
 
-    if (existing && now - existing.timestamp <= this.TTL) {
+    if (existing && !this.isExpired(existing.timestamp)) {
       const merged: PoolState = { ...existing.state };
       for (const [k, v] of Object.entries(state)) {
         if (InMemoryPendingStateOverlay.DELTA_FIELDS.has(k)) {
@@ -43,45 +76,46 @@ export class InMemoryPendingStateOverlay implements PendingStateOverlay {
             merged[k] = current !== undefined ? current + val : val;
           }
         } else {
-          // Absolute fields (sqrtPriceX96, tick, etc.) are replaced by the latest pending tx value.
-          // This is still an approximation as we don't know the order of pending txs perfectly,
-          // but better than adding them.
           merged[k] = v;
         }
       }
-      this.cache.set(key, { state: merged, timestamp: now });
+      this.touch(key, merged, now);
     } else {
-      this.cache.set(key, { state, timestamp: now });
+      this.touch(key, state, now);
     }
   }
 
   get(poolAddress: Address): PoolState | undefined {
     const key = poolAddress.toLowerCase();
     const entry = this.cache.get(key);
-    if (!entry || Date.now() - entry.timestamp > this.TTL) {
+    if (!entry || this.isExpired(entry.timestamp)) {
+      if (entry) this.cache.delete(key);
       return undefined;
     }
     return entry.state;
   }
 
   getProjected(poolAddress: Address, baseState: PoolState): PoolState | undefined {
-    const entry = this.cache.get(poolAddress.toLowerCase());
-    if (!entry || Date.now() - entry.timestamp > this.TTL) return undefined;
+    const key = poolAddress.toLowerCase();
+    const entry = this.cache.get(key);
+    if (!entry || this.isExpired(entry.timestamp)) {
+      if (entry) this.cache.delete(key);
+      return undefined;
+    }
 
     const projected: PoolState = { ...baseState };
-    for (const [key, value] of Object.entries(entry.state)) {
-      if (InMemoryPendingStateOverlay.DELTA_FIELDS.has(key)) {
-        if (key === "balances" && Array.isArray(value) && Array.isArray(baseState[key])) {
-          const bBal = baseState[key] as bigint[];
+    for (const [field, value] of Object.entries(entry.state)) {
+      if (InMemoryPendingStateOverlay.DELTA_FIELDS.has(field)) {
+        if (field === "balances" && Array.isArray(value) && Array.isArray(baseState[field])) {
+          const bBal = baseState[field] as bigint[];
           const vBal = value as bigint[];
-          projected[key] = bBal.map((b, i) => b + (vBal[i] ?? 0n));
+          projected[field] = bBal.map((b, i) => b + (vBal[i] ?? 0n));
         } else {
-          const base = baseState[key] as bigint | undefined;
-          projected[key] = base !== undefined ? base + (value as bigint) : (value as bigint);
+          const base = baseState[field] as bigint | undefined;
+          projected[field] = base !== undefined ? base + (value as bigint) : (value as bigint);
         }
       } else {
-        // Replace base field with pending absolute value
-        projected[key] = value;
+        projected[field] = value;
       }
     }
     return projected;

@@ -166,4 +166,69 @@ describe("calldata module", () => {
       ),
     ).toThrow("Unsupported protocol for execution: UNKNOWN_PROTO");
   });
+
+  it("encodeRoute produces vault swap call for Balancer hops", () => {
+    const poolId = "0x" + "ab".repeat(32);
+    const calls = encodeRoute(
+      {
+        path: {
+          edges: [
+            {
+              protocol: "BALANCER",
+              poolAddress: "0x0000000000000000000000000000000000000001",
+              poolId,
+              tokenIn: "0x0000000000000000000000000000000000000002",
+              tokenOut: "0x0000000000000000000000000000000000000003",
+              tokenInIdx: 0,
+              tokenOutIdx: 1,
+              zeroForOne: true,
+              stateRef: {},
+            },
+          ],
+        },
+        result: { hopAmounts: [1000n, 900n] },
+      },
+      "0x0000000000000000000000000000000000000004",
+      { deadline: 9999999999n },
+    );
+    expect(calls).toHaveLength(2);
+    const decoded = decodeFunctionData({
+      abi: [
+        {
+          type: "function",
+          name: "swap",
+          inputs: [
+            {
+              name: "singleSwap",
+              type: "tuple",
+              components: [
+                { name: "poolId", type: "bytes32" },
+                { name: "kind", type: "uint8" },
+                { name: "assetIn", type: "address" },
+                { name: "assetOut", type: "address" },
+                { name: "amount", type: "uint256" },
+                { name: "userData", type: "bytes" },
+              ],
+            },
+            {
+              name: "funds",
+              type: "tuple",
+              components: [
+                { name: "sender", type: "address" },
+                { name: "fromInternalBalance", type: "bool" },
+                { name: "recipient", type: "address" },
+                { name: "toInternalBalance", type: "bool" },
+              ],
+            },
+            { name: "limit", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+          outputs: [{ name: "amountCalculated", type: "uint256" }],
+          stateMutability: "payable",
+        },
+      ],
+      data: calls[1].data,
+    });
+    expect(decoded.functionName).toBe("swap");
+  });
 });

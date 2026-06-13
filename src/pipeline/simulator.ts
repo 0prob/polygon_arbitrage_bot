@@ -1,7 +1,7 @@
 import type { PoolState } from "../core/types/pool.ts";
 import { isInvalidState } from "../core/types/pool.ts";
-import type { PendingStateOverlay } from "../core/types/overlay.ts";
 import type { PendingOverrideStore } from "../services/mempool/pending-override.ts";
+import type { PendingStateOverlay } from "../core/types/overlay.ts";
 import { getProjectedPoolState } from "../services/mempool/override_projection.ts";
 import type { Address } from "../core/types/common.ts";
 import type { SimulatedHopResult, RouteSimulationResult, RouteStateCache } from "../core/types/route.ts";
@@ -167,7 +167,7 @@ export function simulateHop(
       break;
     }
     case "V4": {
-      let feePips = edge.fee != null ? Number(edge.fee) : undefined;
+      const feePips = edge.fee != null ? Number(edge.fee) : undefined;
       const v4 = simulateV4Swap(state, amountIn, edge.zeroForOne, feePips);
       if (v4.rejectedReason) {
         throw new Error(`V4 swap rejected: ${v4.rejectedReason}`);
@@ -214,6 +214,7 @@ export function simulateRoute(
   stateCache: RouteStateCache,
   prebuiltSimEdges?: SimulationEdge[],
   overlay?: PendingStateOverlay,
+  overrideStore?: PendingOverrideStore,
 ): RouteSimulationResult {
   const hopAmounts: bigint[] = [amountIn];
   let totalGas = 0;
@@ -221,7 +222,7 @@ export function simulateRoute(
   const tokenPath: string[] = [];
   const protocols: string[] = [];
 
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay, overrideStore);
   if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
@@ -266,11 +267,12 @@ export function simulateRouteMinimal(
   stateCache: RouteStateCache,
   prebuiltSimEdges?: SimulationEdge[],
   overlay?: PendingStateOverlay,
+  overrideStore?: PendingOverrideStore,
 ): { profit: bigint; totalGas: number; amountOut: bigint } {
   let currentAmount = amountIn;
   let totalGas = 0;
 
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay, overrideStore);
   if (!simEdges) throw new Error("Missing state for simulation");
 
   for (let i = 0; i < simEdges.length; i++) {
@@ -332,6 +334,26 @@ export function buildSimulationEdges(
   return simEdges;
 }
 
+/** Re-project pool states from live mempool overrides onto prebuilt edges. */
+export function refreshProjectedStates(
+  simEdges: SimulationEdge[],
+  stateCache: RouteStateCache,
+  overlay?: PendingStateOverlay,
+  overrideStore?: PendingOverrideStore,
+): void {
+  if (!overrideStore?.hasActive() && !overlay) return;
+
+  for (let i = 0; i < simEdges.length; i++) {
+    const edge = simEdges[i];
+    const baseState = (stateCache.get(edge.poolAddress) ?? edge.stateRef) as PoolState | undefined;
+    if (!baseState || isInvalidState(baseState)) continue;
+    simEdges[i] = {
+      ...edge,
+      stateRef: getProjectedPoolState(edge.poolAddress, baseState, overlay, overrideStore),
+    };
+  }
+}
+
 /**
  * Combined minimal simulation + impact check in a single pass.
  * Calls simulateHop once per edge, uses the result for both impact checking
@@ -346,8 +368,9 @@ export function simulateMinimalWithImpactCheck(
   maxImpactThreshold: number,
   overlay?: PendingStateOverlay,
   v3ShallowMaxImpactBps?: number,
+  overrideStore?: PendingOverrideStore,
 ): { success: boolean; profit: bigint; totalGas: number; amountOut: bigint } {
-  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay);
+  const simEdges = prebuiltSimEdges ?? buildSimulationEdges(edges, stateCache, overlay, overrideStore);
   if (!simEdges) throw new Error("Missing state for simulation");
   let currentAmount = amountIn;
   let totalGas = 0;

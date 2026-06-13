@@ -14,49 +14,15 @@ export interface DryRunResult {
   revertData?: Hex;
 }
 
-export interface PendingState {
-  blockNumber: number;
-  blockHash: string;
-}
-
 const registry = new AbiRegistry();
 Object.entries(COMPILED_ABIS).forEach(([tag, abi]) => registry.registerAbi(abi, tag));
 registry.registerAbi(ARB_EXECUTOR_ABI, "Executor");
 
 export class MempoolAwareDryRunner {
-  private lastPendingState: PendingState | null = null;
-  private lastFetchAt = 0;
-
   constructor(
     private client: PublicClient,
     private pendingOverrideStore?: PendingOverrideStore,
   ) {}
-
-  async fetchPendingState(minIntervalMs = 0): Promise<PendingState | null> {
-    const now = Date.now();
-    if (minIntervalMs > 0 && this.lastPendingState && now - this.lastFetchAt < minIntervalMs) {
-      return this.lastPendingState;
-    }
-    try {
-      const block = await Promise.race([
-        this.client.getBlock({ blockTag: "pending" }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("fetchPendingState timeout")), 2_000),
-        ),
-      ]);
-      if (block.number && block.hash) {
-        this.lastFetchAt = now;
-        this.lastPendingState = {
-          blockNumber: Number(block.number),
-          blockHash: block.hash,
-        };
-        return this.lastPendingState;
-      }
-    } catch (err) {
-      console.warn("[dryrun] fetchPendingState failed:", err);
-    }
-    return this.lastPendingState;
-  }
 
   private getViemOverride(): ViemStateOverride | undefined {
     const merged = this.pendingOverrideStore?.get();
@@ -67,18 +33,11 @@ export class MempoolAwareDryRunner {
   async dryRun(candidate: CandidateExecution, fromAddress: string): Promise<DryRunResult> {
     const MAX_RETRIES = 3;
     let lastResult: DryRunResult | null = null;
-    const viemOverride = this.getViemOverride();
-
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const viemOverride = this.getViemOverride();
       try {
-        await this.runCall(fromAddress, candidate, viemOverride);
-
-        const gasEstimate = await this.runEstimateGas(fromAddress, candidate, viemOverride);
-
-        return {
-          success: true,
-          gasUsed: gasEstimate,
-        };
+        const gasUsed = await this.estimateGas(fromAddress, candidate, viemOverride);
+        return { success: true, gasUsed };
       } catch (err: unknown) {
         let reason = "Unknown revert";
         let revertData: Hex | undefined;
@@ -130,49 +89,19 @@ export class MempoolAwareDryRunner {
     return lastResult!;
   }
 
-  private async runCall(
-    fromAddress: string,
-    candidate: CandidateExecution,
-    viemOverride?: ViemStateOverride,
-  ): Promise<void> {
-    const base = {
-      account: fromAddress as `0x${string}`,
-      to: candidate.targetAddress as `0x${string}`,
-      data: candidate.calldata as `0x${string}`,
-      value: candidate.value,
-      blockTag: "pending" as const,
-    };
-    if (viemOverride) {
-      try {
-        await this.client.call({ ...base, stateOverride: viemOverride });
-        return;
-      } catch {
-        await this.client.call(base);
-        return;
-      }
-    }
-    await this.client.call(base);
-  }
-
-  private async runEstimateGas(
+  private estimateGas(
     fromAddress: string,
     candidate: CandidateExecution,
     viemOverride?: ViemStateOverride,
   ): Promise<bigint> {
-    const base = {
+    const params = {
       account: fromAddress as `0x${string}`,
       to: candidate.targetAddress as `0x${string}`,
       data: candidate.calldata as `0x${string}`,
       value: candidate.value,
       blockTag: "pending" as const,
+      ...(viemOverride ? { stateOverride: viemOverride } : {}),
     };
-    if (viemOverride) {
-      try {
-        return await this.client.estimateGas({ ...base, stateOverride: viemOverride });
-      } catch {
-        return await this.client.estimateGas(base).catch(() => 500_000n);
-      }
-    }
-    return await this.client.estimateGas(base).catch(() => 500_000n);
+    return this.client.estimateGas(params);
   }
 }

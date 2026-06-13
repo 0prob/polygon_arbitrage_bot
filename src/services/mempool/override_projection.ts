@@ -29,6 +29,9 @@ export function applyOverrideToPoolState(
   if (diff[V2_RESERVE1_SLOT]) {
     projected.reserve1 = slotToBigInt(diff[V2_RESERVE1_SLOT]);
   }
+  const v3PriceChanged = Boolean(diff[V3_SLOT0_SLOT]);
+  const v3LiquidityChanged = Boolean(diff[V3_LIQUIDITY_SLOT]);
+
   if (diff[V3_SLOT0_SLOT]) {
     const packed = slotToBigInt(diff[V3_SLOT0_SLOT]);
     projected.sqrtPriceX96 = packed & ((1n << 160n) - 1n);
@@ -37,6 +40,12 @@ export function applyOverrideToPoolState(
   }
   if (diff[V3_LIQUIDITY_SLOT]) {
     projected.liquidity = slotToBigInt(diff[V3_LIQUIDITY_SLOT]);
+  }
+
+  // Shallow V3 sim uses slot0/liquidity only — stale tick maps mis-price after a pending swap.
+  if (v3PriceChanged || v3LiquidityChanged) {
+    projected.ticks = undefined;
+    projected.tickVersion = Number(base.tickVersion ?? 0) + 1;
   }
 
   return projected;
@@ -48,16 +57,18 @@ export function getProjectedPoolState(
   overlay?: { getProjected(pool: string, base: PoolState): PoolState | undefined },
   overrideStore?: PendingOverrideStore,
 ): PoolState {
-  let state = baseState;
-  if (overlay) {
-    const overlaid = overlay.getProjected(poolAddress, baseState);
-    if (overlaid) state = overlaid;
-  }
+  // Override store wins: absolute post-swap reserves/price from simulateV2/V3 math.
   if (overrideStore?.hasActive() && overrideStore.isAffected(poolAddress as `0x${string}`)) {
     const merged = overrideStore.get();
     if (merged) {
-      state = applyOverrideToPoolState(state, merged, poolAddress.toLowerCase());
+      return applyOverrideToPoolState(baseState, merged, poolAddress.toLowerCase());
     }
   }
-  return state;
+
+  if (overlay) {
+    const overlaid = overlay.getProjected(poolAddress, baseState);
+    if (overlaid) return overlaid;
+  }
+
+  return baseState;
 }

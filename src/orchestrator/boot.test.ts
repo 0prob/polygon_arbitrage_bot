@@ -119,6 +119,6 @@ describe("bootApplication", () => {
     if (context.hyperIndexMonitor) void context.hyperIndexMonitor.stop();
     if (context.mempoolService) void context.mempoolService.stop();
     if (context.executionService) context.executionService.stop();
-    if (context.stateRefreshService) context.stateRefreshService.stop();
+    if (context.stateRefreshService) void context.stateRefreshService.stop();
   });
 });

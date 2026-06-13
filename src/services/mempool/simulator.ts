@@ -2,15 +2,13 @@ import type { PublicClient, StateOverride } from "viem";
 import type { StateOverride as InternalStateOverride, BuildOverrideInput } from "../../core/types/state-override.ts";
 import { buildStateOverride } from "./state-override-builder.ts";
 import { debugTraceCall } from "./trace-fallback.ts";
-import { PendingOverrideStore } from "./pending-override.ts";
 import type { PoolState } from "../../core/types/pool.ts";
 import type { Address } from "../../core/types/common.ts";
 import { toViemStateOverride } from "../../core/types/state-override.ts";
 
 export interface MempoolSimulatorOptions {
   client: PublicClient;
-  stateCache: Map<string, PoolState>;
-  overrideStore?: PendingOverrideStore;
+  getPoolState: (poolAddress: string) => PoolState | undefined;
   poolManagerAddress?: Address;
 }
 
@@ -34,12 +32,12 @@ export interface MempoolOverrideResult {
  */
 export class MempoolSimulator {
   private client: PublicClient;
-  private stateCache: Map<string, PoolState>;
+  private getPoolState: (poolAddress: string) => PoolState | undefined;
   private poolManagerAddress: Address | undefined;
 
   constructor(opts: MempoolSimulatorOptions) {
     this.client = opts.client;
-    this.stateCache = opts.stateCache;
+    this.getPoolState = opts.getPoolState;
     this.poolManagerAddress = opts.poolManagerAddress;
   }
 
@@ -56,7 +54,7 @@ export class MempoolSimulator {
     tx: { to: string; data: string; from?: string; value?: string },
     extras?: Partial<BuildOverrideInput>,
   ): Promise<MempoolOverrideResult> {
-    const currentState = this.stateCache.get(poolAddress.toLowerCase());
+    const currentState = this.getPoolState(poolAddress.toLowerCase());
     if (!currentState) {
       return { success: false, affectedPools: [], method: "manual", error: "No state in cache for pool" };
     }

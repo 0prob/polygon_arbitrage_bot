@@ -10,8 +10,9 @@ import type { Hex } from "viem";
 import type { Address } from "../../core/types/common.ts";
 import { PendingOverrideStore } from "./pending-override.ts";
 import { buildStateOverride } from "./state-override-builder.ts";
-import { getV2AmountIn } from "../../core/math/uniswap_v2.ts";
 import type { DecodedSwap } from "./decoder.ts";
+import { resolveSwapAmountIn, computeV2OverlayDeltas } from "./pending-amount.ts";
+import type { MempoolSimulator } from "./simulator.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
@@ -21,6 +22,8 @@ export interface MempoolServiceOptions {
   getPoolState?: (poolAddress: string) => PoolState | undefined;
   /** Invalidate cached tick data after mempool projection mutates pool state. */
   invalidatePoolTicks?: (poolAddress: string) => void;
+  /** Trace fallback when manual override construction fails. */
+  mempoolSimulator?: MempoolSimulator;
 }
 
 export const DEFAULT_MEMPOOL_OPTIONS: MempoolServiceOptions = {
@@ -175,14 +178,14 @@ export class MempoolService {
       this.knownPools.add(decoded.poolAddress);
     }
 
-    if (this.overlay) {
+    const overrideApplied = this.applyPendingOverride(decoded, tx.hash, tx);
+
+    if (this.overlay && !overrideApplied) {
       const proto = decoded.protocol.toUpperCase();
       if (proto.startsWith("UNISWAP_V2")) {
         this.applyV2OverlayUpdate(decoded);
       }
     }
-
-    this.applyPendingOverride(decoded, tx.hash);
 
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
     if (!isIndirect && decoded.amountIn < this.options.largeSwapThresholdWei) {
@@ -229,53 +232,85 @@ export class MempoolService {
   private applyV2OverlayUpdate(decoded: DecodedSwap): void {
     if (!this.overlay) return;
 
-    // V2 swap() args are output amounts; overlay needs estimated input delta.
-    const amountOut = decoded.amountIn;
-    const isZFO = decoded.zeroForOne ?? true;
-    let delta = amountOut;
-
     const currentState = this.options.getPoolState?.(decoded.poolAddress.toLowerCase());
-    if (currentState?.reserve0 != null && currentState?.reserve1 != null) {
-      const r0 = BigInt(currentState.reserve0);
-      const r1 = BigInt(currentState.reserve1);
-      if (r0 > 0n && r1 > 0n) {
-        delta = isZFO ? getV2AmountIn(amountOut, r0, r1) : getV2AmountIn(amountOut, r1, r0);
-        if (delta <= 0n) delta = amountOut;
-      }
-    }
+    const deltas = computeV2OverlayDeltas(decoded, currentState);
+    if (!deltas) return;
 
     this.logger.debug(
-      { pool: decoded.poolAddress, amountOut: amountOut.toString(), delta: delta.toString() },
-      "mempool: updating V2 overlay",
+      { pool: decoded.poolAddress, deltas: JSON.stringify(deltas, (_, v) => (typeof v === "bigint" ? v.toString() : v)) },
+      "mempool: updating V2 overlay (fallback)",
     );
 
-    if (isZFO) {
-      this.overlay.update(decoded.poolAddress, { reserve0: delta });
-    } else {
-      this.overlay.update(decoded.poolAddress, { reserve1: delta });
-    }
+    this.overlay.update(decoded.poolAddress, deltas);
   }
 
-  private applyPendingOverride(decoded: DecodedSwap, txHash: string): void {
-    if (!this.pendingOverrideStore || !this.options.getPoolState) return;
+  private applyPendingOverride(
+    decoded: DecodedSwap,
+    txHash: string,
+    tx: { to: string; input: string; value: string },
+  ): boolean {
+    if (!this.pendingOverrideStore || !this.options.getPoolState) return false;
 
     const poolAddr = decoded.poolAddress.toLowerCase();
     const currentState = this.options.getPoolState(poolAddr);
-    if (!currentState) return;
+    if (!currentState) return false;
+
+    const amountIn = resolveSwapAmountIn(decoded, currentState);
 
     const override = buildStateOverride({
       poolAddress: decoded.poolAddress,
       protocol: decoded.protocol,
       tokenIn: decoded.tokenIn,
       tokenOut: decoded.tokenOut,
-      amountIn: decoded.amountIn,
+      amountIn,
       zeroForOne: decoded.zeroForOne,
       currentState,
     });
-    if (!override) return;
+    if (!override) {
+      if (this.options.mempoolSimulator) {
+        void this.applyTraceOverride(decoded, amountIn, txHash, tx, poolAddr);
+      }
+      return false;
+    }
 
     this.pendingOverrideStore.update(override, [poolAddr], txHash);
     this.options.invalidatePoolTicks?.(poolAddr);
+    return true;
+  }
+
+  private async applyTraceOverride(
+    decoded: DecodedSwap,
+    amountIn: bigint,
+    txHash: string,
+    tx: { to: string; input: string; value: string },
+    poolAddr: string,
+  ): Promise<void> {
+    const simulator = this.options.mempoolSimulator;
+    if (!simulator || !this.pendingOverrideStore) return;
+
+    try {
+      const result = await simulator.buildOverride(
+        decoded.poolAddress,
+        decoded.protocol,
+        decoded.tokenIn,
+        decoded.tokenOut,
+        amountIn,
+        tx,
+        { zeroForOne: decoded.zeroForOne },
+      );
+      if (!result.success || !result.stateOverride) {
+        this.logger.debug({ txHash, error: result.error }, "mempool: trace override failed");
+        return;
+      }
+
+      this.pendingOverrideStore.update(result.stateOverride, result.affectedPools, txHash);
+      for (const pool of result.affectedPools) {
+        this.options.invalidatePoolTicks?.(pool);
+      }
+      this.logger.debug({ txHash, method: result.method, pools: result.affectedPools.length }, "mempool: trace override applied");
+    } catch (err) {
+      this.logger.warn({ err, txHash }, "mempool: trace override error");
+    }
   }
 
   private trackUnknownSelector(selector: string, to: string, hash: string): void {
