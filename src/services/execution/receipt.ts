@@ -19,6 +19,10 @@ export interface ReceiptData {
   traceSummary?: ParsedTraceSummary;
 }
 
+type ReceiptSource = "hypersync" | "hyperrpc" | "viem";
+
+const ALL_SOURCES: ReceiptSource[] = ["hypersync", "hyperrpc", "viem"];
+
 function normalizeReceipt(receipt: RawReceipt): ReceiptData {
   return {
     status: receipt.status === "0x1" || receipt.status === true || receipt.status === "success",
@@ -30,6 +34,8 @@ function normalizeReceipt(receipt: RawReceipt): ReceiptData {
 
 export class ReceiptPoller {
   private abortController = new AbortController();
+  /** Sticky fast path — set after the first successful fetch for this poller instance. */
+  private preferredSource: ReceiptSource | null = null;
 
   constructor(
     private logger: Logger,
@@ -38,9 +44,65 @@ export class ReceiptPoller {
     private pollMs: number,
   ) {}
 
-  // Allows external cancellation (used during shutdown)
   public cancel(): void {
     this.abortController.abort();
+  }
+
+  private sourceOrder(): ReceiptSource[] {
+    if (!this.preferredSource) return ALL_SOURCES;
+    return [this.preferredSource, ...ALL_SOURCES.filter((s) => s !== this.preferredSource)];
+  }
+
+  private async fetchFromSource(source: ReceiptSource, txHash: string): Promise<RawReceipt | null> {
+    if (source === "hypersync") {
+      const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
+      if (!hyperSync) return null;
+      const receipt = (await hyperSync.getTransactionReceipt(txHash)) as RawReceipt | null;
+      if (receipt) {
+        receipt.traces = await hyperSync.getTransactionTraces(txHash).catch(() => []);
+      }
+      return receipt;
+    }
+
+    if (source === "hyperrpc") {
+      const hyperRpc = this.rpc.hyperRpc as HyperRpcClient | undefined;
+      if (!hyperRpc) return null;
+      return (await hyperRpc.getTransactionReceipt(txHash as `0x${string}`)) as RawReceipt | null;
+    }
+
+    const viemReceipt = await this.rpc.read.getTransactionReceipt({ hash: txHash as `0x${string}` });
+    return {
+      status: viemReceipt.status,
+      gasUsed: viemReceipt.gasUsed,
+      logs: viemReceipt.logs as Array<{ topics: string[]; data: string }>,
+    };
+  }
+
+  private async fetchReceipt(txHash: string): Promise<ReceiptData | null> {
+    for (const source of this.sourceOrder()) {
+      try {
+        const receipt = await this.fetchFromSource(source, txHash);
+        if (!receipt) continue;
+
+        this.preferredSource = source;
+        const rawTraces = receipt.traces ?? [];
+        const traceSummary = rawTraces.length > 0 ? safeParseTraces(txHash, rawTraces) : undefined;
+        return {
+          ...normalizeReceipt(receipt),
+          traceSummary,
+        };
+      } catch (err: unknown) {
+        const error = err as { message?: string; name?: string };
+        const msg = error.message?.toLowerCase() || "";
+        const isNotFound =
+          msg.includes("not found") ||
+          msg.includes("could not be found") ||
+          error.name === "TransactionReceiptNotFoundError";
+        if (isNotFound) return null;
+        throw err;
+      }
+    }
+    return null;
   }
 
   async wait(txHash: string): Promise<ReceiptData | null> {
@@ -54,53 +116,15 @@ export class ReceiptPoller {
         return null;
       }
       try {
-        const hyperSync = this.rpc.hyperSync as HyperSyncService | undefined;
-        const hyperRpc = this.rpc.hyperRpc as HyperRpcClient | undefined;
-
-        let receipt: RawReceipt | null = null;
-
-        if (hyperSync) {
-          receipt = (await hyperSync.getTransactionReceipt(txHash)) as RawReceipt | null;
-          if (receipt) {
-            receipt.traces = await hyperSync.getTransactionTraces(txHash).catch(() => []);
-          }
-        }
-        if (!receipt && hyperRpc) {
-          receipt = (await hyperRpc.getTransactionReceipt(txHash as `0x${string}`)) as RawReceipt | null;
-        }
-        if (!receipt) {
-          const viemReceipt = await this.rpc.read.getTransactionReceipt({ hash: txHash as `0x${string}` });
-          receipt = {
-            status: viemReceipt.status,
-            gasUsed: viemReceipt.gasUsed,
-            logs: viemReceipt.logs as Array<{ topics: string[]; data: string }>,
-          };
-        }
-
-        if (receipt) {
-          const rawTraces = receipt.traces ?? [];
-          const traceSummary = rawTraces.length > 0 ? safeParseTraces(txHash, rawTraces) : undefined;
-
-          return {
-            ...normalizeReceipt(receipt),
-            traceSummary,
-          };
-        }
-
-        hardErrorCount = 0; // Successful poll (even if no receipt found yet)
-      } catch (err: any) {
-        const msg = err?.message?.toLowerCase() || "";
-        const isNotFound =
-          msg.includes("not found") || msg.includes("could not be found") || err?.name === "TransactionReceiptNotFoundError";
-
-        if (!isNotFound) {
-          hardErrorCount++;
-          if (hardErrorCount >= 5) {
-            this.logger.error({ txHash, error: err?.message, hardErrorCount }, "Persistent RPC error in ReceiptPoller — giving up");
-            return null;
-          }
-        } else {
-          hardErrorCount = 0; // Receipt not yet available is expected
+        const receipt = await this.fetchReceipt(txHash);
+        if (receipt) return receipt;
+        hardErrorCount = 0;
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        hardErrorCount++;
+        if (hardErrorCount >= 5) {
+          this.logger.error({ txHash, error: error.message, hardErrorCount }, "Persistent RPC error in ReceiptPoller — giving up");
+          return null;
         }
       }
       await new Promise((r) => setTimeout(r, this.pollMs));

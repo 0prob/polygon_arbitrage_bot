@@ -10,6 +10,8 @@ export interface InfraProfile {
   concurrencyScale: number;
   simBatchSize: number;
   hfBudgetMs: number;
+  /** Max parallel estimateGas dry-runs per HF execution batch. */
+  dryRunConcurrency: number;
 }
 
 const LOW_RPS_THRESHOLD = 250;
@@ -30,6 +32,7 @@ export function resolveInfraProfile(config: AppConfig): InfraProfile {
       concurrencyScale: 0.5,
       simBatchSize: 25,
       hfBudgetMs: 160,
+      dryRunConcurrency: 4,
     };
   }
 
@@ -42,6 +45,7 @@ export function resolveInfraProfile(config: AppConfig): InfraProfile {
     concurrencyScale: 1,
     simBatchSize: 50,
     hfBudgetMs: 160,
+    dryRunConcurrency: 8,
   };
 }
 

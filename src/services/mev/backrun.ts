@@ -2,6 +2,8 @@ import type { RuntimeContext } from "../../orchestrator/boot.ts";
 import type { LargeSwapSignal } from "../mempool/signals.ts";
 import type { CandidateExecution } from "../execution/service.ts";
 import { submitFastLaneBundleHttp, buildFastLaneBundle, type SolverOperationPayload } from "./fastlane_relay.ts";
+import type { PublicClient, Hash, Hex } from "viem";
+import { getAddress } from "viem";
 
 export interface BackrunContext {
   victim: LargeSwapSignal;
@@ -51,4 +53,72 @@ export async function submitBackrunBundle(
   }
 
   return { submitted: false, mode: "skipped", detail: relay.error };
+}
+
+function matchesBackrunTx(
+  tx: { from?: string; to?: string | null; input?: Hex },
+  operatorAddress: string,
+  candidate: CandidateExecution,
+): boolean {
+  const operator = getAddress(operatorAddress).toLowerCase();
+  const target = getAddress(candidate.targetAddress).toLowerCase();
+  return (
+    tx.from?.toLowerCase() === operator &&
+    tx.to?.toLowerCase() === target &&
+    tx.input?.toLowerCase() === candidate.calldata.toLowerCase()
+  );
+}
+
+/** Scan the victim block for our bundled backrun tx once the victim lands. */
+export function findBackrunTxInBlock(
+  blockTransactions: Array<Hash | { from?: string; to?: string | null; input?: Hex; hash?: Hash }>,
+  operatorAddress: string,
+  candidate: CandidateExecution,
+): Hash | null {
+  for (const tx of blockTransactions) {
+    if (typeof tx === "string") continue;
+    if (matchesBackrunTx(tx, operatorAddress, candidate) && tx.hash) {
+      return tx.hash;
+    }
+  }
+  return null;
+}
+
+/**
+ * Wait for a FastLane bundle to land by watching the victim tx, then scanning its block
+ * for a matching operator→executor call. Returns null if the bundle never lands.
+ */
+export async function waitForBundledBackrunTx(
+  client: PublicClient,
+  backrun: BackrunContext,
+  victimTxHash: string,
+  timeoutMs: number,
+  pollMs = 250,
+): Promise<{ txHash: Hash } | null> {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    try {
+      const victimReceipt = await client.getTransactionReceipt({ hash: victimTxHash as Hash });
+      const block = await client.getBlock({
+        blockNumber: victimReceipt.blockNumber,
+        includeTransactions: true,
+      });
+      const backrunHash = findBackrunTxInBlock(block.transactions, backrun.operatorAddress, backrun.candidate);
+      if (backrunHash) return { txHash: backrunHash };
+      return null;
+    } catch (err: unknown) {
+      const error = err as { name?: string; message?: string };
+      const msg = error.message?.toLowerCase() ?? "";
+      const notFound =
+        error.name === "TransactionReceiptNotFoundError" ||
+        msg.includes("not found") ||
+        msg.includes("could not be found");
+      if (!notFound) throw err;
+    }
+
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+
+  return null;
 }

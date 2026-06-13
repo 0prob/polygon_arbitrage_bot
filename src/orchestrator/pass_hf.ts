@@ -16,6 +16,7 @@ import { resolveInfraProfile, scaledConcurrency, type InfraProfile } from "../co
 import { buildHopBalancedWindow, hopSimBucket } from "../pipeline/finder.ts";
 import { getHfSnapshot, type HfReadSnapshot } from "./hf_snapshot.ts";
 import { debugBreak, debugLog, DebugSites } from "../infra/debug/session.ts";
+import { mapWithConcurrency } from "../core/utils/concurrency.ts";
 const INDEXER_LAG_THRESHOLD_BLOCKS = 5000;
 const ORACLE_FALLBACK_CONCURRENCY = 8;
 const ORACLE_FALLBACK_MAX_PER_TICK = 24;
@@ -464,7 +465,7 @@ async function buildAndExecuteCandidates(
 
   const candidates: { candidate: CandidateExecution; profitable: (typeof profitable)[number]; routeKey: string }[] = [];
 
-  const candidatePromises = profitable.map(async (profitableItem) => {
+  const buildOneCandidate = async (profitableItem: (typeof profitable)[number]) => {
     if (!ctx.isRunning) return null;
 
     const routeKey = profitableItem.cycle.id ?? deps.routeKeyFromEdges(profitableItem.cycle.edges);
@@ -475,7 +476,6 @@ async function buildAndExecuteCandidates(
       ctx.logger.debug({ routeKey, lastSubmit, now }, "Route recently submitted, skipping cooldown");
       return null;
     }
-    state.recentRouteTimestamps.set(routeKey, now);
 
     const path = profitableItem.result.tokenPath.map((t) => t.slice(0, 6)).join(" -> ");
     const roi = Number(profitableItem.assessment.roi);
@@ -567,9 +567,9 @@ async function buildAndExecuteCandidates(
       ctx.metrics.lastErrorMessage = "Failed to build tx for cycle";
       return null;
     }
-  });
+  };
 
-  const resolvedCandidates = await Promise.all(candidatePromises);
+  const resolvedCandidates = await mapWithConcurrency(profitable, infra.dryRunConcurrency, buildOneCandidate);
   for (const res of resolvedCandidates) {
     if (res) candidates.push(res);
   }
@@ -649,7 +649,9 @@ async function buildAndExecuteCandidates(
         bus?.emit({ type: "execution_submitted", routeKey });
       }
 
-      for (const c of candidates) {
+      for (const routeKey of groupRouteKeys) {
+        const c = candidates.find((item) => item.routeKey === routeKey);
+        if (!c) continue;
         bus?.emit({
           type: "execution_attempt",
           protocolPath: c.profitable.cycle.edges.map((e: SwapEdge) => e.protocol).join("→"),
@@ -660,27 +662,41 @@ async function buildAndExecuteCandidates(
       }
 
       let results: Awaited<ReturnType<typeof ctx.executionService.execute>>[] = [];
-      let usedBackrun = false;
+      let runPublicExecute = true;
 
       if (ctx.config.mev?.enabled && victimSignal && group.length === 1) {
         const match = candidates.find((c) => c.routeKey === group[0].routeKey);
         if (match) {
-          const { submitBackrunBundle } = await import("../services/mev/backrun.ts");
+          const { submitBackrunBundle, waitForBundledBackrunTx } = await import("../services/mev/backrun.ts");
           const backrun = await submitBackrunBundle(
             ctx,
             { victim: victimSignal, candidate: group[0], operatorAddress },
             victimSignal.rawTx ?? "",
           );
           if (backrun.submitted) {
-            usedBackrun = true;
-            results = [{ success: true, txHash: victimSignal.txHash }];
+            runPublicExecute = false;
+            ctx.logger.info({ routeKey: group[0].routeKey, detail: backrun.detail }, "MEV bundle submitted — waiting for inclusion");
+            const inclusion = await waitForBundledBackrunTx(
+              ctx.publicClient,
+              { victim: victimSignal, candidate: group[0], operatorAddress },
+              victimSignal.txHash,
+              ctx.config.mev.bundleWaitMs,
+            );
+            if (inclusion) {
+              results = [await ctx.executionService.confirmExecution(group[0], inclusion.txHash)];
+            } else if (ctx.config.mev.publicBackrunFallback) {
+              runPublicExecute = true;
+              ctx.logger.debug({ routeKey: group[0].routeKey }, "MEV bundle not included — public fallback");
+            } else {
+              results = [{ success: false, error: "mev_bundle_timeout" }];
+            }
           } else if (backrun.mode !== "public_fallback") {
             ctx.logger.debug({ detail: backrun.detail }, "MEV backrun skipped");
           }
         }
       }
 
-      if (!usedBackrun) {
+      if (runPublicExecute) {
         results =
           group.length === 1 ? [await ctx.executionService.execute(group[0])] : await ctx.executionService.batchExecute(group);
       }
@@ -694,7 +710,8 @@ async function buildAndExecuteCandidates(
 
         if (execResult.success) {
           ctx.metrics.executionsSuccessful++;
-          ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction submitted successfully");
+          state.recentRouteTimestamps.set(routeKey, now);
+          ctx.logger.info({ txHash: execResult.txHash, routeKey }, "Transaction confirmed successfully");
 
           const tracked = ctx.executionService.tracker.getRecentRecords(10).find((e) => e.txHash === execResult.txHash);
           const cand = candidates.find((c) => c.routeKey === routeKey);

@@ -1,4 +1,5 @@
 import { type PublicClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/schema.ts";
 import { createRootLogger, type Logger } from "../infra/observability/logger.ts";
 import type { RouteStateCache } from "../core/types/route.ts";
@@ -139,6 +140,9 @@ export async function bootApplication(
 
   const gasOracle = new GasOracle(gasOracleConfig, fetchGas, logger);
 
+  const operatorAccount = privateKeyToAccount(config.execution.privateKey as `0x${string}`);
+  const operatorAddress = operatorAccount.address;
+
   const nonceFetcher = async (address: string): Promise<number> => {
     const count = await publicClient.getTransactionCount({ address: address as `0x${string}`, blockTag: "pending" });
     return Number(count);
@@ -176,7 +180,12 @@ export async function bootApplication(
     );
   };
 
-  const nonceManager = new NonceManager(config.execution.executorAddress, nonceFetcher, stuckTxHandler);
+  // Nonces belong to the signing EOA (private key), not the executor contract we call.
+  const nonceManager = new NonceManager(operatorAddress, nonceFetcher, stuckTxHandler);
+  logger.info(
+    { operatorAddress, executorAddress: config.execution.executorAddress },
+    "Execution wallet configured",
+  );
 
   const submitters = walletClients.map((walletClient) => {
     return async (tx: {

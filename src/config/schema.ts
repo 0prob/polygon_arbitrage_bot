@@ -121,6 +121,8 @@ export const MevConfigSchema = z.object({
   jitEnabled: z.coerce.boolean().default(false),
   sandwichEnabled: z.coerce.boolean().default(false),
   maxBidBps: numberFromString.int().min(1).max(10_000).default(500),
+  /** How long to wait for a submitted FastLane bundle to land before public fallback. */
+  bundleWaitMs: numberFromString.int().min(500).max(30_000).default(6000),
 });
 export type MevConfig = z.infer<typeof MevConfigSchema>;
 

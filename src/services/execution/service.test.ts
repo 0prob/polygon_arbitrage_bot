@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { ExecutionService } from "./service.ts";
+import { padHex, getAddress } from "viem";
+import { ExecutionService, parseTransferLogs } from "./service.ts";
 import { SubmissionStrategy } from "./submit.ts";
 import { ReceiptPoller } from "./receipt.ts";
 import type { Logger } from "../../infra/observability/logger.ts";
@@ -48,7 +49,7 @@ describe("ExecutionService", () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe("no gas data");
-    expect(service.isQuarantined("test-route-gas")).toBe(true);
+    expect(service.isQuarantined("test-route-gas")).toBe(false);
   });
 
   it("quarantines route on execution failure", async () => {
@@ -76,5 +77,24 @@ describe("ExecutionService", () => {
     expect(result.success).toBe(false);
     expect(result.error).toBe("tx failed");
     expect(service.isQuarantined("test-route-execution")).toBe(true);
+  });
+
+  it("computes net ERC20 profit for the executor", () => {
+    const transferTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    const executor = getAddress("0x00000000000000000000000000000000000000Ee");
+    const other = getAddress("0x00000000000000000000000000000000000000Aa");
+
+    const logs = [
+      {
+        topics: [transferTopic, padHex(other, { size: 32 }), padHex(executor, { size: 32 })],
+        data: "0x0000000000000000000000000000000000000000000000000000000000000064",
+      },
+      {
+        topics: [transferTopic, padHex(executor, { size: 32 }), padHex(other, { size: 32 })],
+        data: "0x000000000000000000000000000000000000000000000000000000000000001e",
+      },
+    ];
+
+    expect(parseTransferLogs(logs, executor)).toBe(70n);
   });
 });

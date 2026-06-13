@@ -61,6 +61,7 @@ export const DEFAULTS = {
     jitEnabled: false,
     sandwichEnabled: false,
     maxBidBps: 500,
+    bundleWaitMs: 6000,
   },
   ranking: {
     mode: "statistical" as const,

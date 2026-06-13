@@ -5,7 +5,7 @@ import { ExecutionTracker } from "./tracker.ts";
 import { QuarantineManager } from "./quarantine.ts";
 import { getAddress, decodeEventLog } from "viem";
 import { SubmissionStrategy, type SubmitTxFn } from "./submit.ts";
-import { ReceiptPoller } from "./receipt.ts";
+import { ReceiptPoller, type ReceiptData } from "./receipt.ts";
 import { getTraceMessages } from "../../infra/hypersync/trace_parser.ts";
 import { debugBreak, debugLog, DebugSites } from "../../infra/debug/session.ts";
 
@@ -26,6 +26,7 @@ function parseTransferLogs(
   logger?: Logger,
 ): bigint {
   let netProfit = 0n;
+  const executorLower = executor.toLowerCase();
   for (const log of logs) {
     try {
       const parsed = decodeEventLog({
@@ -33,15 +34,20 @@ function parseTransferLogs(
         data: log.data as `0x${string}`,
         topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
       });
-      if (parsed.args.to?.toLowerCase() === executor.toLowerCase()) {
-        netProfit += parsed.args.value ?? 0n;
+      const value = parsed.args.value ?? 0n;
+      if (parsed.args.to?.toLowerCase() === executorLower) {
+        netProfit += value;
+      } else if (parsed.args.from?.toLowerCase() === executorLower) {
+        netProfit -= value;
       }
-      } catch (err) {
-        logger?.debug?.({ err }, "Failed to parse transfer log");
-      }
+    } catch (err) {
+      logger?.debug?.({ err }, "Failed to parse transfer log");
+    }
   }
   return netProfit;
 }
+
+export { parseTransferLogs };
 
 export interface CandidateExecution {
   routeKey: string;
@@ -149,11 +155,78 @@ export class ExecutionService {
 
   stop(): void {
     this.gasOracle.stop();
-    // Cancel any pending receipt polls to avoid lingering loops
-    if (typeof (this.receiptPoller as any).cancel === 'function') {
-      (this.receiptPoller as any).cancel();
-    }
+    this.receiptPoller.cancel();
     this.logger.info({}, "ExecutionService stopped");
+  }
+
+  /** Wait for an already-submitted tx (e.g. MEV bundle) and record the outcome. */
+  async confirmExecution(candidate: CandidateExecution, txHash: string): Promise<ExecutionResult> {
+    if (this.isInFlight(candidate.routeKey)) {
+      return { success: false, error: "route already in-flight (same calldata pending)" };
+    }
+
+    this.markInFlight(candidate.routeKey);
+    const receipt = await this.receiptPoller.wait(txHash);
+    return this.finalizeFromReceipt(candidate, txHash, receipt);
+  }
+
+  private finalizeFromReceipt(
+    candidate: CandidateExecution,
+    txHash: string,
+    receipt: ReceiptData | null,
+  ): ExecutionResult {
+    if (!receipt) {
+      this.inFlightRouteHashes.delete(candidate.routeKey);
+      this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout");
+      return { success: false, txHash, error: "timeout" };
+    }
+
+    const success = !!receipt.status;
+    const gasUsed = receipt.gasUsed ?? 0n;
+    const traceMessages = receipt.traceSummary ? getTraceMessages(receipt.traceSummary) : undefined;
+
+    let profit = 0n;
+    if (success && candidate.profitToken) {
+      const execAddr = getAddress(candidate.targetAddress);
+      profit = parseTransferLogs(receipt.logs, execAddr, this.logger);
+    }
+
+    this.tracker.record({
+      routeKey: candidate.routeKey,
+      txHash,
+      success,
+      gasUsed,
+      profit,
+      timestamp: Date.now(),
+      pools: poolsFromRouteKey(candidate.routeKey),
+      error: success ? undefined : "reverted",
+    });
+
+    this.inFlightRouteHashes.delete(candidate.routeKey);
+
+    if (!success) {
+      this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Transaction reverted");
+      this.quarantine.add(candidate.routeKey, "reverted");
+    } else {
+      this.quarantine.recordSuccess(candidate.routeKey);
+    }
+
+    debugBreak(DebugSites.TX_RESULT, {
+      routeKey: candidate.routeKey,
+      success,
+      txHash,
+      profit: profit.toString(),
+      gasUsed: gasUsed.toString(),
+    });
+    debugLog("service.ts:finalizeFromReceipt", "execution result", { routeKey: candidate.routeKey, success, txHash }, DebugSites.TX_RESULT);
+
+    return {
+      success,
+      txHash,
+      gasUsed,
+      traceMessages,
+      error: success ? undefined : "reverted",
+    };
   }
 
   async execute(candidate: CandidateExecution): Promise<ExecutionResult> {
@@ -170,7 +243,6 @@ export class ExecutionService {
     try {
       const fee = this.gasOracle.getSnapshot();
       if (!fee) {
-        this.quarantine.add(candidate.routeKey, "no gas data");
         return { success: false, error: "no gas data" };
       }
 
@@ -194,56 +266,11 @@ export class ExecutionService {
       this.logger.info({ txHash, routeKey: candidate.routeKey, endpoint }, "Transaction submitted");
 
       const receipt = await this.receiptPoller.wait(txHash);
-      if (!receipt) {
-        this.inFlightRouteHashes.delete(candidate.routeKey);
+      if (!receipt && nonce !== undefined) {
         this.nonceManager.markStale(nonce);
         this.consecutiveStaleFailures++;
-        this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
-        return { success: false, txHash, error: "timeout" };
       }
-      const success = !!receipt?.status;
-      const gasUsed = receipt?.gasUsed ?? 0n;
-
-      // Capture useful trace insights for TUI and logging
-      const traceMessages = receipt?.traceSummary ? getTraceMessages(receipt.traceSummary) : undefined;
-
-      let profit = 0n;
-      if (success && receipt && candidate.profitToken) {
-        const execAddr = getAddress(candidate.targetAddress);
-        const logs = receipt.logs;
-        profit = parseTransferLogs(logs, execAddr, this.logger);
-      }
-
-      this.tracker.record({
-        routeKey: candidate.routeKey,
-        txHash,
-        success,
-        gasUsed,
-        profit,
-        timestamp: Date.now(),
-        pools: poolsFromRouteKey(candidate.routeKey),
-        error: success ? undefined : "reverted",
-      });
-
-      this.inFlightRouteHashes.delete(candidate.routeKey);
-
-      if (!success && receipt) {
-        this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Transaction reverted");
-        this.quarantine.add(candidate.routeKey, "reverted");
-      } else if (success) {
-        this.quarantine.recordSuccess(candidate.routeKey);
-      }
-
-      debugBreak(DebugSites.TX_RESULT, {
-        routeKey: candidate.routeKey,
-        success,
-        txHash,
-        profit: profit.toString(),
-        gasUsed: gasUsed.toString(),
-      });
-      debugLog("service.ts:execute", "execution result", { routeKey: candidate.routeKey, success, txHash }, DebugSites.TX_RESULT);
-
-      return { success, txHash, gasUsed, traceMessages };
+      return this.finalizeFromReceipt(candidate, txHash, receipt);
     } catch (err: any) {
       this.inFlightRouteHashes.delete(candidate.routeKey);
       if (nonce !== undefined) this.nonceManager.markStale(nonce);
@@ -331,45 +358,9 @@ export class ExecutionService {
         try {
           const receipt = await this.receiptPoller.wait(txHash);
           if (!receipt) {
-            this.inFlightRouteHashes.delete(candidate.routeKey);
             this.nonceManager.markStale(nonce);
-            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "No receipt received within timeout — marking nonce stale");
-            results[index] = { success: false, txHash, error: "timeout" };
-            return;
           }
-
-          const success = !!receipt.status;
-          const gasUsed = receipt.gasUsed;
-
-          const traceMessages = receipt.traceSummary ? getTraceMessages(receipt.traceSummary) : undefined;
-
-          let profit = 0n;
-          if (success && candidate.profitToken) {
-            const execAddr = getAddress(candidate.targetAddress);
-            const logs = receipt.logs;
-            profit = parseTransferLogs(logs, execAddr, this.logger);
-          }
-
-          this.inFlightRouteHashes.delete(candidate.routeKey);
-          this.tracker.record({
-            routeKey: candidate.routeKey,
-            txHash,
-            success,
-            gasUsed,
-            profit,
-            timestamp: Date.now(),
-            pools: poolsFromRouteKey(candidate.routeKey),
-            error: success ? undefined : "reverted",
-          });
-
-          if (!success) {
-            this.logger.warn({ txHash, routeKey: candidate.routeKey }, "Batch tx reverted");
-            this.quarantine.add(candidate.routeKey, "reverted");
-          } else {
-            this.quarantine.recordSuccess(candidate.routeKey);
-          }
-
-          results[index] = { success, txHash, gasUsed, traceMessages };
+          results[index] = this.finalizeFromReceipt(candidate, txHash, receipt);
         } catch (err: any) {
           this.inFlightRouteHashes.delete(candidate.routeKey);
           const msg = err?.message || String(err);
