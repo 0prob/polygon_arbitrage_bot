@@ -67,4 +67,16 @@ describe("extractEncodedAddresses", () => {
     const addrs = extractEncodedAddresses(input);
     expect(addrs.length).toBeGreaterThan(0);
   });
+
+  it("prefers word-aligned known pool hits over substring scan", () => {
+    const pool = "0x0000000000000000000000000000000000000abc";
+    const known = new Set([pool]);
+    const input = encodeFunctionData({
+      abi: UNISWAP_V3_POOL_ABI,
+      functionName: "swap",
+      args: [pool, true, 123n * 10n ** 18n, 0n, "0x"],
+    });
+    const addrs = extractEncodedAddresses(input, known);
+    expect(addrs).toContain(pool);
+  });
 });

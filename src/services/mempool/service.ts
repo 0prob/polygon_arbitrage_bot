@@ -10,6 +10,8 @@ import type { Hex } from "viem";
 import type { Address } from "../../core/types/common.ts";
 import { PendingOverrideStore } from "./pending-override.ts";
 import { buildStateOverride } from "./state-override-builder.ts";
+import { getV2AmountIn } from "../../core/math/uniswap_v2.ts";
+import type { DecodedSwap } from "./decoder.ts";
 
 export interface MempoolServiceOptions {
   coalesceTtlMs: number;
@@ -136,6 +138,14 @@ export class MempoolService {
     const traceId = "tx-" + tx.hash.slice(2, 8);
     const selector = tx.input.slice(0, 10).toLowerCase();
 
+    // Fast reject: skip ABI decode for unknown selectors
+    if (!this.abiRegistry.hasSelector(selector)) {
+      if (this.knownPools.has(tx.to.toLowerCase())) {
+        this.trackUnknownSelector(selector, tx.to, tx.hash);
+      }
+      return;
+    }
+
     // 1. Check for specific well-known signals first (factories, etc)
     const factoryDecoded = this.abiRegistry.decodeCall(tx.input as Hex);
     if (factoryDecoded) {
@@ -168,24 +178,14 @@ export class MempoolService {
     if (this.overlay) {
       const proto = decoded.protocol.toUpperCase();
       if (proto.startsWith("UNISWAP_V2")) {
-        this.logger.debug({ pool: decoded.poolAddress, amount: decoded.amountIn.toString() }, "mempool: updating V2 overlay");
-        const amount = decoded.amountIn;
-        if (decoded.zeroForOne) {
-          this.overlay.update(decoded.poolAddress, { reserve0: amount });
-        } else {
-          this.overlay.update(decoded.poolAddress, { reserve1: amount });
-        }
-      } else if (proto.startsWith("UNISWAP_V3") && decoded.zeroForOne !== undefined) {
-        this.logger.debug({ pool: decoded.poolAddress }, "mempool: marking V3 pool dirty for overlay");
-        this.overlay.update(decoded.poolAddress, { pendingV3: true });
+        this.applyV2OverlayUpdate(decoded);
       }
     }
 
     this.applyPendingOverride(decoded, tx.hash);
 
     const isIndirect = decoded.poolAddress.toLowerCase() !== (tx.to || "").toLowerCase();
-    const effectiveSize = isIndirect ? this.options.largeSwapThresholdWei : decoded.amountIn;
-    if (!isIndirect && effectiveSize < this.options.largeSwapThresholdWei) {
+    if (!isIndirect && decoded.amountIn < this.options.largeSwapThresholdWei) {
       this.logger.debug(
         {
           pool: decoded.poolAddress,
@@ -220,13 +220,43 @@ export class MempoolService {
       poolAddress: decoded.poolAddress,
       tokenIn: decoded.tokenIn,
       tokenOut: decoded.tokenOut,
-      estimatedSwapSize: effectiveSize,
+      estimatedSwapSize: decoded.amountIn,
       zeroForOne: decoded.zeroForOne,
     };
     this.emit({ type: "large_swap", data: signal });
   }
 
-  private applyPendingOverride(decoded: import("./decoder.ts").DecodedSwap, txHash: string): void {
+  private applyV2OverlayUpdate(decoded: DecodedSwap): void {
+    if (!this.overlay) return;
+
+    // V2 swap() args are output amounts; overlay needs estimated input delta.
+    const amountOut = decoded.amountIn;
+    const isZFO = decoded.zeroForOne ?? true;
+    let delta = amountOut;
+
+    const currentState = this.options.getPoolState?.(decoded.poolAddress.toLowerCase());
+    if (currentState?.reserve0 != null && currentState?.reserve1 != null) {
+      const r0 = BigInt(currentState.reserve0);
+      const r1 = BigInt(currentState.reserve1);
+      if (r0 > 0n && r1 > 0n) {
+        delta = isZFO ? getV2AmountIn(amountOut, r0, r1) : getV2AmountIn(amountOut, r1, r0);
+        if (delta <= 0n) delta = amountOut;
+      }
+    }
+
+    this.logger.debug(
+      { pool: decoded.poolAddress, amountOut: amountOut.toString(), delta: delta.toString() },
+      "mempool: updating V2 overlay",
+    );
+
+    if (isZFO) {
+      this.overlay.update(decoded.poolAddress, { reserve0: delta });
+    } else {
+      this.overlay.update(decoded.poolAddress, { reserve1: delta });
+    }
+  }
+
+  private applyPendingOverride(decoded: DecodedSwap, txHash: string): void {
     if (!this.pendingOverrideStore || !this.options.getPoolState) return;
 
     const poolAddr = decoded.poolAddress.toLowerCase();

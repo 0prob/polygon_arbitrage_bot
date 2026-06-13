@@ -115,7 +115,37 @@ describe("MempoolService", () => {
     expect((signals[0].data as any).traceId).toBe("tx-123456");
   });
 
-  it("updates overlay for V2 swap", () => {
+  it("updates overlay for V2 swap with reserve-aware input estimate", () => {
+    const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+    const overlay = {
+      update: vi.fn(),
+      get: vi.fn(),
+      getProjected: vi.fn(),
+      clear: vi.fn(),
+    };
+    const service = new MempoolService(
+      logger,
+      {
+        coalesceTtlMs: 100,
+        largeSwapThresholdWei: 1n,
+        getPoolState: () => ({ reserve0: 1_000_000n, reserve1: 2_000_000n, initialized: true }),
+      },
+      overlay,
+    );
+    service.setKnownPools(["0xpool1"]);
+
+    // V2 swap: pool sends 10 of token1 → trader pays token0 (zeroForOne=true)
+    const input = encodeFunctionData({
+      abi: UNISWAP_V2_POOL_ABI,
+      functionName: "swap",
+      args: [0n, 10n, "0x0000000000000000000000000000000000000000", "0x"],
+    });
+    service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
+
+    expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: 6n });
+  });
+
+  it("updates overlay for V2 swap without pool state falls back to output amount", () => {
     const logger: Logger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
     const overlay = {
       update: vi.fn(),
@@ -126,19 +156,12 @@ describe("MempoolService", () => {
     const service = new MempoolService(logger, { coalesceTtlMs: 100, largeSwapThresholdWei: 1n }, overlay);
     service.setKnownPools(["0xpool1"]);
 
-    // V2 swap: pool sends 10 of token1, so it received token0.
     const input = encodeFunctionData({
       abi: UNISWAP_V2_POOL_ABI,
       functionName: "swap",
       args: [0n, 10n, "0x0000000000000000000000000000000000000000", "0x"],
     });
-    const tx = {
-      hash: "0xabc",
-      to: "0xpool1",
-      input,
-      value: "0x0",
-    };
-    service.processPendingTx(tx);
+    service.processPendingTx({ hash: "0xabc", to: "0xpool1", input, value: "0x0" });
     expect(overlay.update).toHaveBeenCalledWith("0xpool1", { reserve0: 10n });
   });
 

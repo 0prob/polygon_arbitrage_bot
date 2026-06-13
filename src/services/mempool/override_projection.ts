@@ -1,6 +1,6 @@
-import type { PoolState } from "../core/types/pool.ts";
-import type { StateOverride } from "../core/types/state-override.ts";
-import type { PendingOverrideStore } from "../services/mempool/pending-override.ts";
+import type { PoolState } from "../../core/types/pool.ts";
+import type { StateOverride } from "../../core/types/state-override.ts";
+import type { PendingOverrideStore } from "./pending-override.ts";
 
 const V2_RESERVE0_SLOT = "0x0000000000000000000000000000000000000000000000000000000000000008";
 const V2_RESERVE1_SLOT = "0x0000000000000000000000000000000000000000000000000000000000000009";
@@ -53,9 +53,11 @@ export function getProjectedPoolState(
     const overlaid = overlay.getProjected(poolAddress, baseState);
     if (overlaid) state = overlaid;
   }
-  const merged = overrideStore?.get();
-  if (merged && overrideStore.isAffected(poolAddress as `0x${string}`)) {
-    state = applyOverrideToPoolState(state, merged, poolAddress.toLowerCase());
+  if (overrideStore?.hasActive() && overrideStore.isAffected(poolAddress as `0x${string}`)) {
+    const merged = overrideStore.get();
+    if (merged) {
+      state = applyOverrideToPoolState(state, merged, poolAddress.toLowerCase());
+    }
   }
   return state;
 }

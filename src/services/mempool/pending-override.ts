@@ -61,8 +61,8 @@ export class PendingOverrideStore {
 
   /** Check if a specific pool is affected by the current override. */
   isAffected(poolAddress: Address): boolean {
-    if (!this.entry) return false;
-    return this.entry.affectedPools.has(poolAddress.toLowerCase());
+    if (!this.hasActive()) return false;
+    return this.entry!.affectedPools.has(poolAddress.toLowerCase());
   }
 
   /** Clear the override (e.g., on newHead). */

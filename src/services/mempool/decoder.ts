@@ -23,6 +23,9 @@ export function decodeSwapCalldata(
 ): DecodedSwap | null {
   if (!input || input.length < 10) return null;
 
+  const selector = input.slice(0, 10).toLowerCase();
+  if (!registry.hasSelector(selector)) return null;
+
   const decoded = registry.decodeCall(input as Hex);
   if (!decoded) return null;
 
@@ -106,32 +109,32 @@ export function decodeSwapCalldata(
 }
 
 /**
- * Extract all addresses from a transaction's input data.
- * Improved to find known pools even if not word-aligned (e.g. V3 packed paths).
+ * Extract pool addresses from calldata.
+ * Word-aligned scan first (O(slots)); substring scan only for packed paths (e.g. V3).
  */
 export function extractEncodedAddresses(input: string, knownPools?: Set<string>): string[] {
+  if (!input || input.length < 42) return [];
+
   const addrs: string[] = [];
-  if (!input || input.length < 42) return addrs;
 
-  const lcInput = input.toLowerCase();
-
-  // 1. Fast path: check for known pool addresses directly in the hex string
-  if (knownPools) {
-    for (const pool of knownPools) {
-      const addrHex = pool.startsWith("0x") ? pool.slice(2) : pool;
-      if (lcInput.includes(addrHex)) {
-        addrs.push(pool);
-      }
+  if (knownPools && knownPools.size > 0) {
+    for (let i = 10; i + 64 <= input.length; i += 64) {
+      const addr = ("0x" + input.slice(i + 24, i + 64)).toLowerCase();
+      if (knownPools.has(addr)) addrs.push(addr);
     }
     if (addrs.length > 0) return addrs;
+
+    const lcInput = input.toLowerCase();
+    for (const pool of knownPools) {
+      const normalized = pool.startsWith("0x") ? pool.toLowerCase() : `0x${pool}`;
+      const addrHex = normalized.slice(2);
+      if (lcInput.includes(addrHex)) addrs.push(normalized);
+    }
+    return addrs;
   }
 
-  // 2. Fallback: word-aligned extraction
   for (let i = 10; i + 64 <= input.length; i += 64) {
-    const chunk = "0x" + input.slice(i + 24, i + 64);
-    if (chunk.length === 42) {
-      addrs.push(chunk.toLowerCase());
-    }
+    addrs.push(("0x" + input.slice(i + 24, i + 64)).toLowerCase());
   }
   return addrs;
 }

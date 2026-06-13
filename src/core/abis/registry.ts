@@ -48,6 +48,11 @@ export class AbiRegistry {
     }
   }
 
+  hasSelector(selector: string): boolean {
+    if (selector.length !== 10 || !selector.startsWith("0x")) return false;
+    return this.functions.has(selector.toLowerCase() as Hex);
+  }
+
   decodeCall(data: Hex) {
     if (data.length < 10) return null;
     const selector = data.slice(0, 10).toLowerCase() as Hex;
@@ -61,8 +66,7 @@ export class AbiRegistry {
           data,
         });
         return { ...decoded, tag: entry.tag, abiItem: entry.abiItem };
-      } catch (err) {
-        console.warn("[abi-registry] decodeCall failed:", err);
+      } catch {
         continue;
       }
     }
